@@ -570,8 +570,8 @@
           "ZONE_MODULES": "Zona/Módulos"
         },
         "PLACEHOLDERS": {
-          "MODEL": "Modelo XX",
-          "LOT": "Lote XX",
+          "MODEL": "Denominación",
+          "LOT": "Lote",
           "FAILURES": "Nº de fallos",
           "CLIENT": "Nº de cliente",
           "FUZE_MODE": "Selecciona el modo",
@@ -581,6 +581,7 @@
           "ZONE_MODULES": "Selecciona zona/módulo"
         },
         "OBSERVATIONS_LABEL": "Observaciones",
+        "OBSERVATIONS_PLACEHOLDER": "Escribe aquí las observaciones",
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
         "FUZE_MODE_LABEL": "Modo funcionamiento espoleta",
         "FUZE_GRADUATION_LABEL": "Graduación de la espoleta",

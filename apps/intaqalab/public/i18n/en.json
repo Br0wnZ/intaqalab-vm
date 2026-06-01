@@ -512,8 +512,8 @@
           "ZONE_MODULES": "Zone/Modules"
         },
         "PLACEHOLDERS": {
-          "MODEL": "Model XX",
-          "LOT": "Batch XX",
+          "MODEL": "Denomination",
+          "LOT": "Batch",
           "FAILURES": "No. of failures",
           "CLIENT": "Client No.",
           "FUZE_MODE": "Select the mode",
@@ -523,6 +523,7 @@
           "ZONE_MODULES": "Select zone/module"
         },
         "OBSERVATIONS_LABEL": "Notes",
+        "OBSERVATIONS_PLACEHOLDER": "Write notes here",
         "CONDITIONING_CHECKBOX": "Conditioning",
         "FUZE_MODE_LABEL": "Fuze operating mode",
         "FUZE_GRADUATION_LABEL": "Fuze graduation",

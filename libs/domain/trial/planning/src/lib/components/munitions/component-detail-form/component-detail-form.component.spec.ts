@@ -338,21 +338,45 @@ describe('ComponentDetailFormComponent', () => {
     });
   });
 
+  const powderDetail: ComponentDetail = {
+    type: { id: 'ctype-003', type: 'pólvora', label: 'Pólvora' },
+    denomination: createEmptyDenomination(),
+    batch: '',
+    maxAllowedErrors: 0,
+    clientNumber: 0,
+    observations: '',
+    reconditioning: undefined,
+    fuseWorkingMode: undefined,
+    fuseMeasurement: 0,
+    manufacturerNumber: '',
+  };
+
   describe('addPowder output', () => {
-    it('should emit addPowder when the add powder button is clicked', async () => {
+    it('should not render the add powder button when the component type is not powder', async () => {
+      await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { detail: defaultDetail },
+      });
+
+      const addButton = screen.queryByText(/TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.ADD_POWDER_BUTTON/i);
+      expect(addButton).not.toBeInTheDocument();
+    });
+
+    it('should emit addPowder when the add powder button is clicked (when type is powder)', async () => {
       const user = userEvent.setup();
       const addPowderSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { detail: defaultDetail },
+        componentInputs: { detail: powderDetail },
         on: { addPowder: addPowderSpy },
       });
 
-      const addButton = screen
-        .getByText(/TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.ADD_POWDER_BUTTON/i)
-        .closest('button')!;
+      const addButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.ADD_POWDER_BUTTON/i,
+      });
       await user.click(addButton);
 
       expect(addPowderSpy).toHaveBeenCalledOnce();

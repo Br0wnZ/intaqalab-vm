@@ -4,10 +4,9 @@
   "license": "MIT",
   "scripts": {
     "start": "nx run intaqalab:serve",
-    "start:dev": "nx run intaqalab:serve & nx run mock-data:serve",
+    "start:dev": "concurrently \"nx run intaqalab:serve\" \"nx run mock-data:serve\"",
     "start:mocks:app": "cross-env VITE_MOCKS_AUTH=true PROXY_TARGET=mocks nx run intaqalab:serve:mocks",
-    "start:dev:mocks": "npm run start:mocks & npm run start:mocks:app",
-
+    "start:dev:mocks": "concurrently \"npm run start:mocks\" \"npm run start:mocks:app\"",
     "start:des": "nx serve intaqalab -c des",
     "start:pre": "nx serve intaqalab -c pre",
     "start:prod": "nx serve intaqalab -c production",
@@ -153,6 +152,7 @@
     "@vitest/coverage-v8": "^4.0.0",
     "@vitest/ui": "^4.0.0",
     "angular-eslint": "20.7.0",
+    "concurrently": "^10.0.1",
     "cross-env": "^10.1.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
