@@ -1,0 +1,94 @@
+@use 'tailwindcss';
+
+// =============================================================================
+// TEMA DEL CLIENTE - Importar desde la librería compartida
+// =============================================================================
+// El tema incluye: variables CSS, configuración de Angular Material y utilidades
+@use '@angular/material' as mat;
+@use 'index' as theme;
+
+// Importar estilos adicionales
+@import './styles/toast.css';
+@import './styles/calendar.scss';
+
+// =============================================================================
+// APLICAR TEMA DE ANGULAR MATERIAL
+// =============================================================================
+html {
+  // Aplicar el tema principal del cliente
+  @include theme.client-material-theme();
+
+  // Aplicar overrides de componentes Material
+  @include theme.client-material-overrides();
+}
+
+// =============================================================================
+// ESTILOS BASE DEL BODY
+// =============================================================================
+body {
+  // Esquema de color (light, dark, o light dark para auto)
+  color-scheme: light;
+
+  // Usar variables de Angular Material para superficie y texto
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset margen
+  margin: 0;
+}
+
+// =============================================================================
+// ESTILOS GLOBALES
+// =============================================================================
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--inta-font-primary), 'Helvetica Neue', sans-serif;
+}
+
+.special-date {
+  background: #ff4081 !important;
+  color: white;
+  border-radius: 50%;
+}
+
+.no-notam-date {
+  background: green !important;
+}
+
+.busy-date {
+  background: yellow !important;
+}
+.selected-date {
+  background-color: red !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.selected-dates {
+  margin-top: 16px;
+}
+
+.selected-dates ul {
+  padding-left: 20px;
+}
+
+.busy-date.mat-calendar-body-disabled {
+  background-color: gray !important;
+}
+.no-notam-date.mat-calendar-body-disabled {
+  background-color: gray !important;
+}
+.special-date.mat-calendar-body-disabled {
+  background-color: gray !important;
+}
+
+// =============================================================================
+// COMPONENTES GLOBALES REUTILIZABLES
+// =============================================================================
+@import './styles/components/index';

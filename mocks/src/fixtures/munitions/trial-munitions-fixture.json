@@ -1,0 +1,104 @@
+{
+  "series": [
+    {
+      "seriesId": "ser-001",
+      "seriesName": "Serie 1",
+      "configurations": [
+        {
+          "id": "cfg-001",
+          "seriesId": "ser-001",
+          "denomination": "M107 HE",
+          "batch": "LOT-2025-001",
+          "reconditioning": {
+            "temperature": 21,
+            "tolerance": 2,
+            "timeMin": 4,
+            "timeMax": 24,
+            "observations": "Acondicionamiento estándar"
+          },
+          "maxAllowedErrors": 2,
+          "observations": "Configuración principal serie 1",
+          "components": [
+            {
+              "id": "comp-001",
+              "type": {
+                "id": "Proyectil",
+                "type": "Proyectil",
+                "label": "Proyectil"
+              },
+              "denomination": {
+                "id": "proy-1",
+                "name": "Proyectil 1"
+              },
+              "batch": "PROJ-2025-001",
+              "clientNumber": 1,
+              "observations": "Proyectil estándar",
+              "maxAllowedErrors": 1
+            },
+            {
+              "id": "comp-002",
+              "type": {
+                "id": "Espoleta",
+                "type": "Espoleta",
+                "label": "Espoleta"
+              },
+              "denomination": {
+                "id": "esp-1",
+                "name": "Espoleta 1"
+              },
+              "batch": "FUZE-2025-001",
+              "fuseWorkingMode": {
+                "id": "fwm-001",
+                "type": "INSTANT",
+                "label": "Instantáneo"
+              },
+              "fuseMeasurement": 0,
+              "manufacturerNumber": "MFG-ESP-2025-001",
+              "clientNumber": 2,
+              "maxAllowedErrors": 0
+            }
+          ],
+          "assignedShotIds": ["shot-001", "shot-002", "shot-003"]
+        }
+      ]
+    },
+    {
+      "seriesId": "ser-002",
+      "seriesName": "Serie 2",
+      "configurations": [
+        {
+          "id": "cfg-002",
+          "seriesId": "ser-002",
+          "denomination": "M116 SMK",
+          "batch": "LOT-2025-002",
+          "reconditioning": {
+            "temperature": 20,
+            "tolerance": 3,
+            "timeMin": 2,
+            "timeMax": 12
+          },
+          "maxAllowedErrors": 1,
+          "observations": "Configuración humo",
+          "components": [
+            {
+              "id": "comp-003",
+              "type": {
+                "id": "Proyectil",
+                "type": "Proyectil",
+                "label": "Proyectil"
+              },
+              "denomination": {
+                "id": "proy-2",
+                "name": "Proyectil 2"
+              },
+              "batch": "PROJ-2025-002",
+              "clientNumber": 1,
+              "maxAllowedErrors": 1
+            }
+          ],
+          "assignedShotIds": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,609 @@
+// =============================================================================
+// ANGULAR MATERIAL THEME - Configuración del tema M3
+// =============================================================================
+@use '@angular/material' as mat;
+
+// Importar variables del cliente
+@use './variables' as *;
+
+// -----------------------------------------------------------------------------
+// PALETA PERSONALIZADA DEL CLIENTE
+// -----------------------------------------------------------------------------
+// Angular Material permite usar paletas predefinidas o crear custom palettes
+// usando el schematic: ng generate @angular/material:theme-color
+
+// Mixin principal para aplicar el tema de Angular Material
+@mixin client-material-theme() {
+  @include mat.theme(
+    (
+      color: (
+        // Usar paletas predefinidas o custom
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette,
+        theme-type: light,
+      ),
+      typography: (
+        plain-family: var(--inta-font-primary),
+        brand-family: var(--inta-font-secondary),
+        bold-weight: 700,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: 0,
+    )
+  );
+
+  // Aplicar clases de utilidad de Material
+  @include mat.system-classes();
+}
+
+// -----------------------------------------------------------------------------
+// OVERRIDES DE COMPONENTES MATERIAL
+// -----------------------------------------------------------------------------
+// Usar la API de `overrides` para personalizar tokens específicos
+
+@mixin client-material-overrides() {
+  // Añade esto en la sección de @mixin client-material-overrides() en _material-theme.scss
+  // Reemplaza la sección existente de form-field-overrides
+
+  // =========================================================================
+  // FORM FIELDS - Personalización completa de inputs con TOKENS VÁLIDOS
+  // =========================================================================
+  @include mat.form-field-overrides(
+    (
+      // Filled variant (appearance="fill")
+      filled-container-color: var(--inta-bg-white),
+      filled-label-text-color: var(--inta-neutral-600),
+      filled-hover-label-text-color: var(--inta-neutral-700),
+      filled-focus-label-text-color: var(--inta-button),
+      filled-input-text-color: var(--inta-neutral-900),
+      filled-disabled-container-color: var(--inta-neutral-100),
+      filled-disabled-input-text-color: var(--inta-neutral-400),
+      filled-disabled-label-text-color: var(--inta-neutral-400),
+      // Outlined variant (appearance="outline")
+      outlined-label-text-color: var(--inta-neutral-600),
+      outlined-hover-label-text-color: var(--inta-neutral-700),
+      outlined-focus-label-text-color: var(--inta-button),
+      outlined-outline-color: var(--inta-neutral-300),
+      outlined-hover-outline-color: var(--inta-neutral-400),
+      outlined-focus-outline-color: var(--inta-button),
+      outlined-input-text-color: var(--inta-neutral-900),
+      outlined-disabled-input-text-color: var(--inta-neutral-400),
+      outlined-disabled-label-text-color: var(--inta-neutral-400),
+      outlined-disabled-outline-color: var(--inta-neutral-200),
+      // Error states
+      filled-error-label-text-color: var(--inta-error),
+      filled-error-focus-label-text-color: var(--inta-error),
+      filled-error-hover-label-text-color: var(--inta-error),
+      outlined-error-label-text-color: var(--inta-error),
+      outlined-error-focus-label-text-color: var(--inta-error),
+      outlined-error-hover-label-text-color: var(--inta-error),
+      outlined-error-outline-color: var(--inta-error),
+      outlined-error-focus-outline-color: var(--inta-error),
+      outlined-error-hover-outline-color: var(--inta-error),
+      // Placeholder text
+      filled-input-text-placeholder-color: var(--inta-neutral-400),
+      outlined-input-text-placeholder-color: var(--inta-neutral-400),
+      disabled-input-text-placeholder-color: var(--inta-neutral-300),
+      // States
+      focus-state-layer-opacity: 0.08,
+      hover-state-layer-opacity: 0.04,
+      state-layer-color: var(--inta-button)
+    )
+  );
+
+  // =========================================================================
+  // CSS ADICIONAL PARA FONDO BLANCO EN TODOS LOS INPUTS
+  // =========================================================================
+  // Esto asegura que todos los inputs tengan fondo blanco independientemente de la variante
+
+  // Para inputs con appearance="outline"
+  .mat-mdc-form-field.mat-form-field-appearance-outline {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--inta-bg-white);
+      border-radius: var(--inta-radius-md);
+    }
+
+    .mat-mdc-form-field-flex {
+      background-color: var(--inta-bg-white);
+    }
+  }
+
+  // Para inputs con appearance="fill"
+  .mat-mdc-form-field.mat-form-field-appearance-fill {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--inta-bg-white);
+    }
+
+    .mdc-text-field--filled {
+      background-color: var(--inta-bg-white);
+    }
+  }
+
+  // Para textareas e inputs directamente
+  .mat-mdc-form-field {
+    textarea.mat-mdc-input-element,
+    input.mat-mdc-input-element {
+      background-color: transparent; // El contenedor ya tiene el fondo
+    }
+  }
+
+  // Para mat-select
+  .mat-mdc-form-field .mat-mdc-select-trigger {
+    background-color: transparent; // El contenedor ya tiene el fondo
+  }
+
+  // Estado disabled - fondo más claro
+  .mat-mdc-form-field.mat-form-field-disabled {
+    .mat-mdc-text-field-wrapper,
+    .mat-mdc-form-field-flex {
+      background-color: var(--inta-neutral-100);
+    }
+  }
+
+  // =========================================================================
+  // ESTILOS ADICIONALES PARA SELECT
+  // =========================================================================
+  @include mat.select-overrides(
+    (
+      enabled-trigger-text-color: var(--inta-neutral-900),
+      disabled-trigger-text-color: var(--inta-neutral-400),
+      enabled-arrow-color: var(--inta-neutral-600),
+      disabled-arrow-color: var(--inta-neutral-400),
+      focused-arrow-color: var(--inta-button),
+    )
+  );
+
+  // =========================================================================
+  // ESTILOS PARA DATEPICKER
+  // =========================================================================
+  @include mat.datepicker-overrides(
+    (
+      calendar-container-background-color: var(--inta-bg-white),
+      calendar-container-text-color: var(--inta-neutral-900),
+    )
+  );
+
+  // Asegurar que el contenedor del datepicker input tenga fondo blanco
+  .mat-datepicker-toggle {
+    .mat-mdc-icon-button {
+      color: var(--inta-neutral-600);
+    }
+  }
+  // =========================================================================
+  // BOTONES - Personalización completa de todas las variantes
+  // =========================================================================
+  // Tokens válidos según Angular Material v21 para cada variante
+  @include mat.button-overrides(
+    (
+      // ----- Text buttons (matButton) -----
+      text-label-text-color: var(--inta-text-button-color),
+      text-hover-state-layer-opacity: 0.08,
+      text-pressed-state-layer-opacity: 0.12,
+      text-focus-state-layer-opacity: 0.12,
+      text-disabled-label-text-color: var(--inta-text-button-disabled-color),
+      text-container-shape: var(--inta-radius-md),
+      // ----- Outlined buttons (matButton="outlined") -----
+      outlined-label-text-color: var(--inta-outlined-button-color),
+      outlined-outline-color: var(--inta-outlined-button-outline-color),
+      outlined-hover-state-layer-opacity: 0.08,
+      outlined-pressed-state-layer-opacity: 0.12,
+      outlined-focus-state-layer-opacity: 0.12,
+      outlined-disabled-label-text-color: var(--inta-outlined-button-disabled-color),
+      outlined-disabled-outline-color: var(--inta-outlined-button-disabled-outline-color),
+      outlined-container-shape: var(--inta-radius-md),
+      // ----- Filled buttons (matButton="filled") -----
+      filled-container-color: var(--inta-filled-button-bg),
+      filled-label-text-color: var(--inta-filled-button-color),
+      filled-hover-state-layer-opacity: 0.08,
+      filled-pressed-state-layer-opacity: 0.12,
+      filled-focus-state-layer-opacity: 0.12,
+      filled-disabled-container-color: var(--inta-filled-button-disabled-bg),
+      filled-disabled-label-text-color: var(--inta-filled-button-disabled-color),
+      filled-container-shape: var(--inta-radius-md),
+      // ----- Tonal buttons (matButton="tonal") -----
+      tonal-container-color: var(--inta-tonal-button-bg),
+      tonal-label-text-color: var(--inta-tonal-button-color),
+      tonal-hover-state-layer-opacity: 0.08,
+      tonal-pressed-state-layer-opacity: 0.12,
+      tonal-focus-state-layer-opacity: 0.12,
+      tonal-disabled-container-color: var(--inta-tonal-button-disabled-bg),
+      tonal-disabled-label-text-color: var(--inta-tonal-button-disabled-color),
+      tonal-container-shape: var(--inta-radius-md),
+      // ----- Elevated buttons (matButton="elevated") -----
+      protected-container-color: var(--inta-elevated-button-bg),
+      protected-label-text-color: var(--inta-elevated-button-color),
+      protected-hover-state-layer-opacity: 0.08,
+      protected-pressed-state-layer-opacity: 0.12,
+      protected-focus-state-layer-opacity: 0.12,
+      protected-disabled-container-color: var(--inta-elevated-button-disabled-bg),
+      protected-disabled-label-text-color: var(--inta-elevated-button-disabled-color),
+      protected-container-shape: var(--inta-radius-md)
+    )
+  );
+
+  // =========================================================================
+  // ICON BUTTONS
+  // =========================================================================
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--inta-icon-button-color),
+      disabled-icon-color: var(--inta-icon-button-disabled-color),
+      hover-state-layer-opacity: 0.08,
+      pressed-state-layer-opacity: 0.12,
+      focus-state-layer-opacity: 0.12,
+    )
+  );
+
+  // =========================================================================
+  // FAB BUTTONS (Floating Action Button)
+  // =========================================================================
+  @include mat.fab-overrides(
+    (
+      // FAB regular
+      container-color: var(--inta-fab-bg),
+      foreground-color: var(--inta-fab-color),
+      container-shape: var(--inta-radius-full),
+      hover-state-layer-opacity: 0.08,
+      pressed-state-layer-opacity: 0.12,
+      focus-state-layer-opacity: 0.12,
+      disabled-state-container-color: var(--inta-fab-disabled-bg),
+      disabled-state-foreground-color: var(--inta-fab-disabled-color),
+      // Mini FAB
+      small-container-color: var(--inta-mini-fab-bg),
+      small-foreground-color: var(--inta-mini-fab-color),
+      small-container-shape: var(--inta-radius-full),
+      small-hover-state-layer-opacity: 0.08,
+      small-pressed-state-layer-opacity: 0.12,
+      small-focus-state-layer-opacity: 0.12,
+      small-disabled-state-container-color: var(--inta-mini-fab-disabled-bg),
+      small-disabled-state-foreground-color: var(--inta-mini-fab-disabled-color)
+    )
+  );
+
+  // =========================================================================
+  // CSS PERSONALIZADO PARA HOVER DE BOTONES
+  // =========================================================================
+  // Como algunos tokens de hover no están disponibles, usamos CSS personalizado
+  // Aplicar hover ligeramente más oscuro que `--inta-button-hover`
+  /* Hover solo para `mat-flat-button` (variant filled) */
+  button[mat-flat-button],
+  .mat-mdc-button[mat-flat-button] {
+    &:hover {
+      color: var(--inta-bg-white) !important;
+      background-color: var(--inta-filled-button-hover-bg) !important; // Hover color from tokens
+    }
+  }
+
+  // =========================================================================
+  // ICONOS EN BOTONES - Posición a la derecha
+  // =========================================================================
+  // Aplicar flexbox al botón completo para reordenar elementos
+  .mat-mdc-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  button[mat-flat-button],
+  button[mat-raised-button],
+  button[mat-button],
+  button[mat-stroked-button] {
+    // Los elementos internos de ripple y touch deben estar al fondo
+    .mat-mdc-button-persistent-ripple,
+    .mat-focus-indicator,
+    .mat-mdc-button-touch-target,
+    .mat-ripple {
+      order: 0 !important;
+    }
+  }
+
+  // Personalizar cards
+  @include mat.card-overrides(
+    (
+      elevated-container-color: var(--inta-bg-white),
+      elevated-container-shape: var(--inta-radius-lg),
+      subtitle-text-color: var(--inta-neutral-600),
+    )
+  );
+
+  // Personalizar inputs/form fields
+  @include mat.form-field-overrides(
+    (
+      filled-container-color: var(--inta-bg-white),
+      outlined-outline-color: var(--inta-neutral-300),
+      focus-state-layer-opacity: 0.08,
+    )
+  );
+
+  // Personalizar chips
+  @include mat.chips-overrides(
+    (
+      elevated-container-color: var(--inta-surface-variant),
+      elevated-selected-container-color: var(--inta-primary-light),
+    )
+  );
+
+  // Personalizar diálogos
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--inta-bg-white),
+      container-shape: var(--inta-radius-lg),
+    )
+  );
+
+  // =========================================================================
+  // CENTRAR TITULOS DE DIALOG (mat-dialog-title / h2[mat-dialog-title])
+  .mat-mdc-dialog-title,
+  mat-dialog-title,
+  .mat-mdc-dialog-surface h2[mat-dialog-title] {
+    @apply flex gap-3 items-center justify-center text-xl font-semibold mx-auto text-gray-900;
+  }
+
+  // Personalizar snackbar/toast
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--inta-neutral-800),
+      supporting-text-color: var(--inta-color-on-primary),
+    )
+  );
+
+  // Personalizar tabs
+  @include mat.tabs-overrides(
+    (
+      active-indicator-color: var(--inta-primary),
+      active-label-text-color: var(--inta-primary),
+    )
+  );
+
+  // Personalizar toolbar
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: var(--inta-primary),
+      container-text-color: var(--inta-color-on-primary),
+    )
+  );
+
+  // Personalizar slide toggle
+  @include mat.slide-toggle-overrides(
+    (
+      selected-handle-color: var(--inta-button-hover),
+      selected-track-color: var(--inta-button),
+      selected-icon-color: var(--inta-success),
+    )
+  );
+
+  /// =========================================================================
+  // SLIDE TOGGLE - Personalización completa con hover
+  // =========================================================================
+
+  // Personalizar slide toggle con tokens de Material
+  @include mat.slide-toggle-overrides(
+    (
+      selected-handle-color: var(--inta-button-hover),
+      selected-track-color: var(--inta-button),
+      selected-hover-handle-color: color-mix(in srgb, var(--inta-button-hover) 88%, black 12%),
+      selected-hover-track-color: color-mix(in srgb, var(--inta-button) 88%, black 12%),
+      unselected-hover-handle-color: color-mix(in srgb, var(--inta-button-hover) 78%, black 22%),
+      unselected-hover-track-color: color-mix(in srgb, var(--inta-button-hover) 88%, black 12%),
+    )
+  );
+
+  // =========================================================================
+  // PROGRESS BAR - Estilos globales para `mat-progress-bar`
+  @include mat.progress-bar-overrides(
+    (
+      track-color: var(--inta-primary),
+      active-indicator-color: var(--inta-button),
+      track-shape: var(--inta-button-hover),
+      track-height: 4px,
+    )
+  );
+
+  @include mat.chips-overrides(
+    (
+      elevated-container-color: var(--inta-button),
+      elevated-disabled-container-color: var(--inta-button-hover),
+      label-text-color: var(--color-white),
+      with-icon-icon-color: var(--color-white),
+      with-icon-selected-icon-color: var(--color-white),
+      selected-disabled-trailing-icon-color: var(--color-white),
+      with-trailing-icon-trailing-icon-color: var(--color-white),
+      with-trailing-icon-disabled-trailing-icon-color: var(--color-white),
+    )
+  );
+
+  // =========================================================================
+  // CSS PERSONALIZADO PARA MAT-DIALOG-ACTIONS
+  // =========================================================================
+  .mat-mdc-dialog-actions {
+    flex: 1;
+    @apply bg-white items-end mx-auto gap-4;
+    > * {
+      margin: 0 !important;
+    }
+  }
+
+  // =========================================================================
+  // CSS PERSONALIZADO PARA MAT-DIALOG-SURFACE
+  // =========================================================================
+  .mat-mdc-dialog-surface {
+    padding: 1.5rem !important;
+  }
+
+  // =========================================================================
+  // DIALOG - Margen lateral responsive
+  // =========================================================================
+  .cdk-overlay-pane:has(.mat-mdc-dialog-surface) {
+    padding: 0 16px;
+    box-sizing: border-box;
+    .mat-mdc-dialog-surface.mdc-dialog__surface{
+      overflow: hidden;
+    }
+  }
+
+  // =========================================================================
+  // ESTILOS ADICIONALES PARA ELEVATED BUTTONS
+  // =========================================================================
+  // Aplicar borde y sombreado personalizado a los botones elevated
+  .mat-mdc-elevated-button {
+    border: 1px solid var(--inta-elevated-button-border-color) !important;
+    box-shadow: var(--inta-elevated-button-shadow) !important;
+  }
+
+  // Asegurar que el hover mantenga el sombreado y borde
+  .mat-mdc-elevated-button:hover {
+    box-shadow: var(--inta-elevated-button-shadow) !important;
+  }
+
+  // Estado disabled
+  .mat-mdc-elevated-button:disabled {
+    border-color: var(--inta-elevated-button-disabled-border-color) !important;
+  }
+
+  // =========================================================================
+  // ESTILOS PARA TOOLTIPS
+  // =========================================================================
+  .mat-mdc-tooltip .mat-mdc-tooltip-surface {
+    background: var(--inta-bg-white) !important;
+    color: var(--inta-neutral-900) !important;
+    padding: 0.75rem !important;
+    font-size: 0.875rem !important;
+    font-weight: var(--inta-font-weight-medium) !important;
+    box-shadow: var(--inta-shadow-sm) !important;
+  }
+
+  // =========================================================================
+  // PROGRESS BAR - Estilos globales para `mat-progress-bar`
+  // Basado en: https://material.angular.dev/components/progress-bar/styling
+  // Forzar altura y color del track interno para ajustarse al tema
+  ::ng-deep .mat-mdc-progress-bar {
+    height: 4px !important;
+  }
+
+  ::ng-deep .mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+    border-color: var(--inta-color-primary) !important;
+  }
+
+  // =========================================================================
+  // MAT-TREE - Líneas de conexión entre nodos
+  // =========================================================================
+  .mat-tree.mat-tree--with-guides {
+    --tree-line-color: var(--inta-ui-tree-line);
+    --tree-line-width: 1px;
+    --tree-indent: 24px;
+
+    .mat-tree-node {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      padding-left: var(--tree-indent);
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 0;
+        height: 100%;
+        width: var(--tree-line-width);
+        background-color: var(--tree-line-color);
+        z-index: 1;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        width: 1.25rem;
+        height: var(--tree-line-width);
+        background-color: var(--tree-line-color);
+        z-index: 1;
+      }
+
+      &[mattreenodetoggle]::after,
+      &.mat-nested-tree-node::after,
+      &[aria-expanded]::after {
+        display: none;
+      }
+
+      &:first-child::before {
+        top: 50%;
+        height: 50%;
+      }
+
+      &:last-child::before {
+        height: 50%;
+      }
+
+      .mat-tree > &,
+      &.mat-tree-node-level-0 {
+        padding-left: 0;
+
+        &::before,
+        &::after {
+          display: none;
+        }
+      }
+    }
+
+    .mat-nested-tree-node {
+      > div[role='group'] {
+        position: relative;
+        padding-left: var(--tree-indent);
+        .mat-nested-tree-node[aria-expanded] > & .mat-tree-node::after,
+        .mat-nested-tree-node[mattreenodetoggle][aria-expanded] > & .mat-tree-node::after {
+          width: 30px;
+        }
+      }
+    }
+  }
+
+  .mat-tree.mat-tree--with-guides-dark {
+    --tree-line-color: var(--inta-ui-tree-line-strong);
+    --tree-line-width: 2px;
+  }
+
+  .mat-tree.mat-tree--with-guides-dotted {
+    .mat-tree-node::before,
+    .mat-tree-node::after {
+      background: none;
+      border-left: var(--tree-line-width) dotted var(--tree-line-color);
+    }
+
+    .mat-tree-node::after {
+      border-left: none;
+      border-top: var(--tree-line-width) dotted var(--tree-line-color);
+    }
+  }
+
+  // =========================================================================
+  // MAT-TAB-BODY - Prevenir scroll vertical en toda la aplicación
+  // =========================================================================
+  mat-tab-body {
+    overflow-y: hidden !important;
+
+    .mat-mdc-tab-body-content {
+      overflow-y: hidden !important;
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// TEMA OSCURO (opcional)
+// -----------------------------------------------------------------------------
+@mixin client-material-dark-theme() {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$cyan-palette,
+        theme-type: dark,
+      ),
+      typography: (
+        plain-family: var(--inta-font-primary),
+        brand-family: var(--inta-font-secondary),
+      ),
+      density: 0,
+    )
+  );
+}

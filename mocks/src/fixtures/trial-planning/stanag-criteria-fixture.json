@@ -1,0 +1,42 @@
+{
+  "page": 0,
+  "pageSize": 20,
+  "totalElements": 3,
+  "items": [
+    {
+      "id": "sc-001",
+      "name": { "es": "Velocidad del viento", "en": "Wind Speed" },
+      "label": "Wind Speed Threshold",
+      "variable": "WIND_SPEED",
+      "numericThreshold": 15,
+      "unit": "M_S",
+      "calculationType": "SINGLE_VALUE",
+      "involvedLayer": "SURFACE",
+      "active": true
+    },
+    {
+      "id": "sc-002",
+      "name": { "es": "Dirección del viento", "en": "Wind Direction" },
+      "label": "Wind Direction Limit",
+      "variable": "WIND_DIRECTION",
+      "numericThreshold": 180,
+      "unit": "DEGREES",
+      "calculationType": "LAYER_DIFFERENCE",
+      "involvedLayer": "BETWEEN_TWO_HEIGHTS",
+      "startLayer": 0,
+      "endLayer": 500,
+      "active": true
+    },
+    {
+      "id": "sc-003",
+      "name": { "es": "Temperatura", "en": "Temperature" },
+      "label": "Temperature Range",
+      "variable": "TEMPERATURE",
+      "numericThreshold": 40,
+      "unit": "CELSIUS",
+      "calculationType": "SINGLE_VALUE",
+      "involvedLayer": "SURFACE",
+      "active": false
+    }
+  ]
+}

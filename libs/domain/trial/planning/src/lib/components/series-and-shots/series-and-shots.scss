@@ -1,0 +1,233 @@
+/* Responsive tabla series-and-shots */
+.series-table-wrapper {
+  overflow-x: auto;
+}
+.series-table-min {
+  min-width: 600px;
+}
+.series-table-cell {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.custom-expansion-panel .mat-expansion-panel-header {
+  transition: background-color 200ms ease-in-out;
+  position: relative !important;
+  padding-left: 1rem !important;
+  padding-right: 2.5rem !important;
+  overflow: visible !important;
+}
+
+.custom-expansion-panel .mat-expansion-indicator,
+.custom-expansion-panel .mat-mdc-expansion-indicator {
+  position: absolute !important;
+  right: 1rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Solo rotar cuando está expandido, sin cambiar la posición */
+.custom-expansion-panel .mat-expansion-panel-header.mat-expanded .mat-expansion-indicator,
+.custom-expansion-panel .mat-mdc-expansion-panel-header.mat-expanded .mat-mdc-expansion-indicator {
+  transform: translateY(-50%) rotate(180deg) !important;
+}
+
+.custom-expansion-panel .mat-expansion-panel-header .mat-content,
+.custom-expansion-panel .mat-mdc-expansion-panel-header .mat-content {
+  padding-inline: 1rem !important;
+  box-sizing: border-box !important;
+}
+
+.mat-expansion-panel,
+.mat-mdc-expansion-panel {
+  margin-bottom: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.mat-expansion-panel + .mat-expansion-panel,
+.mat-mdc-expansion-panel + .mat-mdc-expansion-panel {
+  margin-top: 0 !important;
+}
+
+.mat-expansion-panel-body,
+.mat-mdc-expansion-panel-body {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.mat-expansion-panel-body {
+  padding: 0 !important;
+}
+.cdk-drag-preview {
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  background: white;
+  opacity: 0.9;
+  overflow: hidden !important;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag {
+  cursor: default;
+  overflow: hidden !important;
+}
+
+.drag-handle-btn {
+  cursor: pointer;
+}
+
+.drag-handle-btn[cdkDragHandle] {
+  cursor: grab !important;
+}
+
+.drag-handle-btn[cdkDragHandle]:active {
+  cursor: grabbing !important;
+}
+
+.drag-handle-btn {
+  opacity: 0.6;
+  transition: opacity 200ms;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.drag-handle-btn mat-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.group:hover .drag-handle-btn {
+  opacity: 1;
+}
+
+.drag-handle-btn:hover {
+  opacity: 1;
+}
+
+.custom-expansion-panel .mat-icon-button,
+.custom-expansion-panel .mat-mdc-icon-button,
+.custom-expansion-panel button[mat-icon-button] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.custom-expansion-panel button[mat-icon-button] .mat-icon,
+.custom-expansion-panel button[mat-icon-button] .mat-mdc-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.custom-expansion-panel button[mat-icon-button]:hover .mat-icon,
+.custom-expansion-panel button[mat-icon-button]:focus .mat-icon,
+.custom-expansion-panel button[mat-icon-button]:hover .mat-mdc-icon,
+.custom-expansion-panel button[mat-icon-button]:focus .mat-mdc-icon {
+  color: #7c3aed !important;
+}
+
+.custom-expansion-panel .overflow-hidden,
+.custom-expansion-panel .flex-1 {
+  min-width: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:not(:first-child):not(:last-child),
+.mat-mdc-expansion-panel.mat-expanded:not(:first-child):not(:last-child) {
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.mat-expansion-panel.mat-expanded:not(:first-child):not(:last-child) .mat-expansion-panel-header,
+.mat-mdc-expansion-panel.mat-expanded:not(:first-child):not(:last-child) .mat-mdc-expansion-panel-header {
+  border-radius: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:not(:first-child):not(:last-child) .mat-expansion-panel-body,
+.mat-mdc-expansion-panel.mat-expanded:not(:first-child):not(:last-child) .mat-mdc-expansion-panel-body {
+  border-radius: 0 !important;
+  padding-top: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:first-child,
+.mat-mdc-expansion-panel.mat-expanded:first-child {
+  border-top-left-radius: 0.5rem !important;
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.mat-expansion-panel.mat-expanded:first-child .mat-expansion-panel-header,
+.mat-mdc-expansion-panel.mat-expanded:first-child .mat-mdc-expansion-panel-header {
+  border-top-left-radius: 0.5rem !important;
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:first-child .mat-expansion-panel-body,
+.mat-mdc-expansion-panel.mat-expanded:first-child .mat-mdc-expansion-panel-body {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  padding-top: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:last-child,
+.mat-mdc-expansion-panel.mat-expanded:last-child {
+  border-bottom-left-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.mat-expansion-panel.mat-expanded:last-child .mat-expansion-panel-header,
+.mat-mdc-expansion-panel.mat-expanded:last-child .mat-mdc-expansion-panel-header {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.mat-expansion-panel.mat-expanded:last-child .mat-mdc-expansion-panel-body {
+  border-bottom-left-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+  padding-top: 0 !important;
+}
+
+.dense-form-field {
+  .mat-mdc-text-field-wrapper {
+    height: 2rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .mat-mdc-form-field-infix {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  input.mat-mdc-input-element {
+    margin-top: 0 !important;
+    transform: translateY(-2px);
+  }
+}

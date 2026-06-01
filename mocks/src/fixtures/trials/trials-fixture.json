@@ -1,0 +1,518 @@
+[
+  {
+    "id": "e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f",
+    "centerId": "center-001",
+    "trialNumber": "0044/25",
+    "status": "UNDER_REVIEW",
+    "statusReason": "Ensayo completado satisfactoriamente",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "1",
+      "name": "Particular"
+    },
+    "client": {
+      "id": "client-001",
+      "name": "RHEINMETALL EXPAL MUNITIONS"
+    },
+    "clientReference": "REF-FMN-2024-001",
+    "requestedDate": "2024-02-01T00:00:00Z",
+    "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+    "observations": "Prueba de espoletas MT M565, lote 39-RHG-25. (Aceptación técnica del cliente)",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-02-15T10:30:00Z",
+    "updatedAt": "2024-02-20T16:45:00Z"
+  },
+  {
+    "id": "f3f2c8f3-2c3b-5d4e-9f2a-2b3c4d5e6f7a",
+    "centerId": "center-001",
+    "trialNumber": "0004/25",
+    "status": "PLANNED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": {
+      "id": "0044-25",
+      "trialNumber": "0001/24",
+      "description": "Prueba de espoletas MT M565, lote 39-RHG-25."
+    },
+    "fireTrialType": {
+      "id": "2",
+      "name": "Homologación"
+    },
+    "client": {
+      "id": "client-002",
+      "name": "Fábrica de Municiones de Granada"
+    },
+    "clientReference": "REF-CGA-2024-002",
+    "requestedDate": "2024-03-01T00:00:00Z",
+    "description": "Vigilancia Disparos M490 para Cañón de Caroo de Combate de 105 mm",
+    "observations": "Vigilancia Disparos M490 para Cañón de Caroo de Combate de 105 mm",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2024-03-10T14:20:00Z",
+    "updatedAt": "2024-03-15T11:30:00Z"
+  },
+  {
+    "id": "a4a3d9a4-3d4c-6e5f-0a3b-3c4d5e6f7a8b",
+    "centerId": "center-001",
+    "trialNumber": "0010/25",
+    "status": "PREPARED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "3",
+      "name": "Aseguramiento de la calidad"
+    },
+    "client": {
+      "id": "client-001",
+      "name": "JAL Dirección de Construcciones Navales"
+    },
+    "clientReference": "REF-FMN-2024-003",
+    "requestedDate": "2024-04-01T00:00:00Z",
+    "description": "Vigilancia Granadas de Mortero 81 mm",
+    "observations": "",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-04-05T09:15:00Z",
+    "updatedAt": "2024-04-05T09:15:00Z"
+  },
+  {
+    "id": "b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c",
+    "centerId": "center-001",
+    "trialNumber": "0045/23",
+    "status": "IN_PROGRESS",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "3",
+      "name": "Ensayo de propagación de llama"
+    },
+    "client": {
+      "id": "client-003",
+      "name": "Soluciones Ignífugas Ibérica"
+    },
+    "clientReference": "REF-SII-2023-045",
+    "requestedDate": "2023-11-10T00:00:00Z",
+    "description": "Prueba de resistencia al fuego de vigas de acero EI-90",
+    "observations": "Ensayo conforme a normativa UNE-EN 13501",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2023-11-22T11:45:00Z",
+    "updatedAt": "2023-11-28T10:00:00Z"
+  },
+  {
+    "id": "c6c5fbc6-5f6e-8a7b-2c5d-5e6f7a8b9c0d",
+    "centerId": "center-001",
+    "trialNumber": "0046/23",
+    "status": "INTERRUPTED",
+    "statusReason": "statusReason",
+    "linkedTrial": {
+      "id": "trial-004",
+      "trialNumber": "0045/23",
+      "description": "Prueba de resistencia al fuego de vigas de acero EI-90"
+    },
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "4",
+      "name": "Ensayo de resistencia térmica"
+    },
+    "client": {
+      "id": "client-004",
+      "name": "Ingeniería y Proyectos Técnicos S.A."
+    },
+    "clientReference": "REF-IPT-2023-046",
+    "requestedDate": "2023-12-01T00:00:00Z",
+    "description": "Ensayo de compuertas cortafuegos automatizadas",
+    "observations": "Sistema de cierre automático verificado correctamente",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2023-12-08T15:30:00Z",
+    "updatedAt": "2023-12-15T14:20:00Z"
+  },
+  {
+    "id": "d7d6gcd7-6g7f-9b8c-3d6e-6f7a8b9c0d1e",
+    "centerId": "center-001",
+    "trialNumber": "0044/24",
+    "status": "STARTED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "5",
+      "name": "Ensayo de autoextinción"
+    },
+    "client": {
+      "id": "client-005",
+      "name": "Aislamientos Térmicos Avanzados"
+    },
+    "clientReference": "REF-ATA-2024-004",
+    "requestedDate": "2024-01-10T00:00:00Z",
+    "description": "Certificación de panel sándwich con núcleo resistente al fuego",
+    "observations": "Muestras en proceso de acondicionamiento",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2024-01-18T08:00:00Z",
+    "updatedAt": "2024-01-25T13:45:00Z"
+  },
+  {
+    "id": "e8e7hde8-7h8i-0c9d-4e7f-7a8b9c0d1e2f",
+    "centerId": "center-001",
+    "trialNumber": "0055/24",
+    "status": "EXECUTED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-001",
+      "name": "Puertas Metálicas"
+    },
+    "client": {
+      "id": "client-006",
+      "name": "Maderas y Carpintería Industrial"
+    },
+    "clientReference": "REF-MCI-2024-005",
+    "requestedDate": "2024-03-20T00:00:00Z",
+    "description": "Ensayo de puertas cortafuegos de madera RF-30",
+    "observations": "",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-03-25T13:10:00Z",
+    "updatedAt": "2024-03-25T13:10:00Z"
+  },
+  {
+    "id": "f9f8ief9-8i9j-1d0e-5f8g-8b9c0d1e2f3g",
+    "centerId": "center-001",
+    "trialNumber": "0047/23",
+    "status": "ANALYZING",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-006",
+      "name": "Selladores Intumescentes"
+    },
+    "client": {
+      "id": "client-007",
+      "name": "Sistemas de Protección Pasiva"
+    },
+    "clientReference": "REF-SPP-2023-047",
+    "requestedDate": "2023-10-05T00:00:00Z",
+    "description": "Prueba de resistencia de selladores intumescentes",
+    "observations": "Producto conforme a especificaciones técnicas",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2023-10-15T10:20:00Z",
+    "updatedAt": "2023-10-22T16:00:00Z"
+  },
+  {
+    "id": "g0g9jfg0-9j0k-2e1f-6g9h-9c0d1e2f3g4h",
+    "centerId": "center-001",
+    "trialNumber": "0066/24",
+    "status": "FINALIZING",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-007",
+      "name": "Ventanas y Cristales"
+    },
+    "client": {
+      "id": "client-008",
+      "name": "Cristalería y Cerramientos Modernos"
+    },
+    "clientReference": "REF-CCM-2024-006",
+    "requestedDate": "2024-02-20T00:00:00Z",
+    "description": "Ensayo de ventanas con vidrio resistente al fuego EI-60",
+    "observations": "Verificación de integridad del marco en proceso",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2024-02-28T12:00:00Z",
+    "updatedAt": "2024-03-05T09:30:00Z"
+  },
+  {
+    "id": "h1h0kgh1-0k1l-3f2g-7h0i-0d1e2f3g4h5i",
+    "centerId": "center-001",
+    "trialNumber": "0088/23",
+    "status": "CLOSED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-008",
+      "name": "Conductos de Ventilación"
+    },
+    "client": {
+      "id": "client-009",
+      "name": "Climatización y Aire Acondicionado S.L."
+    },
+    "clientReference": "REF-CAA-2023-048",
+    "requestedDate": "2023-09-20T00:00:00Z",
+    "description": "Certificación de conductos de ventilación resistentes al fuego",
+    "observations": "Ensayo según EN 1366-1",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2023-09-30T16:45:00Z",
+    "updatedAt": "2023-10-08T11:15:00Z"
+  },
+  {
+    "id": "i2i1lhi2-1l2m-4g3h-8i1j-1e2f3g4h5i6j",
+    "centerId": "center-001",
+    "trialNumber": "0077/24",
+    "status": "CANCELLED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-009",
+      "name": "Estructuras de Madera"
+    },
+    "client": {
+      "id": "client-010",
+      "name": "Estructuras de Madera Sostenible"
+    },
+    "clientReference": "REF-EMS-2024-007",
+    "requestedDate": "2024-04-10T00:00:00Z",
+    "description": "Ensayo de elementos estructurales de madera laminada",
+    "observations": "A la espera de fichas técnicas del fabricante",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2024-04-12T09:30:00Z",
+    "updatedAt": "2024-04-12T09:30:00Z"
+  },
+  {
+    "id": "j3j2mij3-2m3n-5h4i-9j2k-2f3g4h5i6j7k",
+    "centerId": "center-001",
+    "trialNumber": "0099/23",
+    "status": "VOIDED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-010",
+      "name": "Sistemas de Cableado"
+    },
+    "client": {
+      "id": "client-002",
+      "name": "Construcciones García y Asociados"
+    },
+    "clientReference": "REF-CGA-2023-049",
+    "requestedDate": "2023-11-01T00:00:00Z",
+    "description": "Prueba de resistencia al fuego de sistemas de cableado",
+    "observations": "Conforme a normativa CPR",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2023-11-05T14:15:00Z",
+    "updatedAt": "2023-11-12T10:45:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-0",
+    "centerId": "center-001",
+    "trialNumber": "0090/25",
+    "status": "UNDER_REVIEW",
+    "statusReason": "Ensayo completado satisfactoriamente",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "1",
+      "name": "Particular"
+    },
+    "client": {
+      "id": "client-001",
+      "name": "RHEINMETALL EXPAL MUNITIONS"
+    },
+    "clientReference": "REF-FMN-2024-001",
+    "requestedDate": "2024-02-01T00:00:00Z",
+    "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+    "observations": "Prueba de espoletas MT M565, lote 39-RHG-25. (Aceptación técnica del cliente)",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-02-15T10:30:00Z",
+    "updatedAt": "2024-02-20T16:45:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-1",
+    "centerId": "center-001",
+    "trialNumber": "0091/25",
+    "status": "PLANNED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": {
+      "id": "0044-25",
+      "trialNumber": "0001/24",
+      "description": "Prueba de espoletas MT M565, lote 39-RHG-25."
+    },
+    "fireTrialType": {
+      "id": "2",
+      "name": "Homologación"
+    },
+    "client": {
+      "id": "client-002",
+      "name": "Fábrica de Municiones de Granada"
+    },
+    "clientReference": "REF-CGA-2024-002",
+    "requestedDate": "2024-03-01T00:00:00Z",
+    "description": "Vigilancia Disparos M490 para Cañón de Caroo de Combate de 105 mm",
+    "observations": "Vigilancia Disparos M490 para Cañón de Caroo de Combate de 105 mm",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2024-03-10T14:20:00Z",
+    "updatedAt": "2024-03-15T11:30:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-2",
+    "centerId": "center-001",
+    "trialNumber": "0092/25",
+    "status": "PREPARED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "3",
+      "name": "Aseguramiento de la calidad"
+    },
+    "client": {
+      "id": "client-001",
+      "name": "JAL Dirección de Construcciones Navales"
+    },
+    "clientReference": "REF-FMN-2024-003",
+    "requestedDate": "2024-04-01T00:00:00Z",
+    "description": "Vigilancia Granadas de Mortero 81 mm",
+    "observations": "",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-04-05T09:15:00Z",
+    "updatedAt": "2024-04-05T09:15:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-3",
+    "centerId": "center-001",
+    "trialNumber": "0093/25",
+    "status": "IN_PROGRESS",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "3",
+      "name": "Ensayo de propagación de llama"
+    },
+    "client": {
+      "id": "client-003",
+      "name": "Soluciones Ignífugas Ibérica"
+    },
+    "clientReference": "REF-SII-2023-045",
+    "requestedDate": "2023-11-10T00:00:00Z",
+    "description": "Prueba de resistencia al fuego de vigas de acero EI-90",
+    "observations": "Ensayo conforme a normativa UNE-EN 13501",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2023-11-22T11:45:00Z",
+    "updatedAt": "2023-11-28T10:00:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-4",
+    "centerId": "center-001",
+    "trialNumber": "0094/25",
+    "status": "INTERRUPTED",
+    "statusReason": "statusReason",
+    "linkedTrial": {
+      "id": "trial-004",
+      "trialNumber": "0045/23",
+      "description": "Prueba de resistencia al fuego de vigas de acero EI-90"
+    },
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "4",
+      "name": "Ensayo de resistencia térmica"
+    },
+    "client": {
+      "id": "client-004",
+      "name": "Ingeniería y Proyectos Técnicos S.A."
+    },
+    "clientReference": "REF-IPT-2023-046",
+    "requestedDate": "2023-12-01T00:00:00Z",
+    "description": "Ensayo de compuertas cortafuegos automatizadas",
+    "observations": "Sistema de cierre automático verificado correctamente",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2023-12-08T15:30:00Z",
+    "updatedAt": "2023-12-15T14:20:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-5",
+    "centerId": "center-001",
+    "trialNumber": "0095/25",
+    "status": "STARTED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "5",
+      "name": "Ensayo de autoextinción"
+    },
+    "client": {
+      "id": "client-005",
+      "name": "Aislamientos Térmicos Avanzados"
+    },
+    "clientReference": "REF-ATA-2024-004",
+    "requestedDate": "2024-01-10T00:00:00Z",
+    "description": "Certificación de panel sándwich con núcleo resistente al fuego",
+    "observations": "Muestras en proceso de acondicionamiento",
+    "createdBy": "user-003",
+    "modifiedBy": "user-003",
+    "createdAt": "2024-01-18T08:00:00Z",
+    "updatedAt": "2024-01-25T13:45:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-6",
+    "centerId": "center-001",
+    "trialNumber": "0096/25",
+    "status": "EXECUTED",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-001",
+      "name": "Puertas Metálicas"
+    },
+    "client": {
+      "id": "client-006",
+      "name": "Maderas y Carpintería Industrial"
+    },
+    "clientReference": "REF-MCI-2024-005",
+    "requestedDate": "2024-03-20T00:00:00Z",
+    "description": "Ensayo de puertas cortafuegos de madera RF-30",
+    "observations": "",
+    "createdBy": "user-001",
+    "modifiedBy": "user-001",
+    "createdAt": "2024-03-25T13:10:00Z",
+    "updatedAt": "2024-03-25T13:10:00Z"
+  },
+  {
+    "id": "generated-id-1777463432536-7",
+    "centerId": "center-001",
+    "trialNumber": "0097/25",
+    "status": "ANALYZING",
+    "statusReason": "statusReason",
+    "linkedTrial": null,
+    "associatedTrial": null,
+    "fireTrialType": {
+      "id": "type-006",
+      "name": "Selladores Intumescentes"
+    },
+    "client": {
+      "id": "client-007",
+      "name": "Sistemas de Protección Pasiva"
+    },
+    "clientReference": "REF-SPP-2023-047",
+    "requestedDate": "2023-10-05T00:00:00Z",
+    "description": "Prueba de resistencia de selladores intumescentes",
+    "observations": "Producto conforme a especificaciones técnicas",
+    "createdBy": "user-002",
+    "modifiedBy": "user-002",
+    "createdAt": "2023-10-15T10:20:00Z",
+    "updatedAt": "2023-10-22T16:00:00Z"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "munitionType": {
+    "id": "munitionType",
+    "name": "tipo de municion"
+  },
+  "denomination": {
+    "id": " denominationId",
+    "name": "Una denominación"
+  },
+  "batch": "Lote Y",
+  "generalData": {
+    "client": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Cliente Y"
+    },
+    "entryDate": "2026-02-18",
+    "plannedFireTrial": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Prueba Y",
+      "scheduledDate": "2026-02-18"
+    },
+    "observations": "string"
+  },
+  "totalNeq": 300,
+  "location": {
+    "munitionDump": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "munitionDumpId": "Polvorín Y"
+    },
+    "cellName": "Celda Y"
+  },
+
+  "retirementDate": "2026-02-18",
+  "retirementReason": "Retirada por motivos Y",
+  "status": "AVAILABLE",
+  "createdBy": "username",
+  "modifiedBy": "username",
+  "createdAt": "2026-02-12T10:30:00Z",
+  "updatedAt": "2026-02-12T12:15:00Z"
+}

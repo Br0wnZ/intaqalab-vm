@@ -1,0 +1,252 @@
+stages:
+    - security-tests
+    - unit-tests    
+    - build
+    - compile
+    - deploy
+
+include:
+  - project: 'iocp/iocp-tools/blackduck/blackduck'
+    file: 'security_scan.yml'
+    ref: 'main'
+
+variables:
+  INTA_REGISTRY_IMAGE_SUBPATH: "intaqalab/frontend/$ENV/$CI_PROJECT_NAME"
+  INTA_REGISTRY_IMAGE_NAME: "$CI_PROJECT_NAME"
+  KANIKO_IMAGE: "registry.tools.inta.es/builders/kaniko-executor:v1.23.2-debug" 
+  KUBERNETES_MEMORY_REQUEST: "4Gi"
+  KUBERNETES_MEMORY_LIMIT: "8Gi"
+
+
+blackduck:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/builders/java/maven:3.9.12-eclipse-temurin-25
+    entrypoint: [""]
+  variables:
+    BRIDGE_BLACKDUCKSCA_URL: "https://blackduck.tools.inta.es"
+    BRIDGE_BLACKDUCKSCA_TOKEN: $BRIDGE_BLACKDUCKSCA_TOKEN
+    DETECT_PROJECT_NAME: $CI_PROJECT_NAME
+    DETECT_DETECTOR_SEARCH_DEPTH: "5"
+    DETECT_REQUIRED_DETECTOR_TYPES: "NPM"
+    DETECT_REQUIRE_ALL_DETECTORS_PASSED: "true"
+    INCLUDE_DIAGNOSTICS: 'true'
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - echo "=== Instalando dependencias npm ==="
+    - npm install --ignore-scripts
+    - echo "=== Install OK, Detect puede proceder ==="
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "preprod" || $CI_COMMIT_BRANCH == "main") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'true'
+        BRIDGE_BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES: 'BLOCKER,CRITICAL'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: $CI_PROJECT_DIR/report.sarif.json
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES: 'CRITICAL,HIGH'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_GROUPSCAISSUES: 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event')
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'false'
+        BRIDGE_BLACKDUCKSCA_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN
+  tags: [k8s-tools]
+  extends: .run-black-duck-tools
+  artifacts:
+    when: always
+    paths:
+      - $CI_PROJECT_DIR/report.sarif.json
+    expire_in: 1 hour
+  allow_failure: true  
+
+coverity:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/utils/coverity:2025.06.0
+    entrypoint: [""]
+  extends: .run-black-duck-tools
+  tags: [k8s-tools]
+  variables:
+    BRIDGE_COVERITY_CONNECT_URL: $COVERITY_URL
+    BRIDGE_COVERITY_CONNECT_USER_NAME: $COVERITY_USER
+    BRIDGE_COVERITY_CONNECT_USER_PASSWORD: $COVERITY_PASSWORD
+    BRIDGE_COVERITY_LOCAL: 'true'
+    BRIDGE_COVERITY_INSTALL_DIRECTORY: "/opt/coverity"
+    BRIDGE_COVERITY_CONNECT_PROJECT_NAME: $CI_PROJECT_NAME
+    MARK_BUILD_STATUS: "success"
+    BRIDGE_RUN_COMPONENTS: "coverity"
+    BRIDGE_BLACKDUCKSCA_SCAN_FULL: "false"
+    BRIDGE_BLACKDUCKSCA_FIXPR_ENABLED: "false"
+    BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
+    # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - npm ci --ignore-scripts
+    - mkdir -p /opt/coverity/bin
+    - cp "$COVERITY_LICENSE_FILE" /opt/coverity/bin/license.dat
+    - export BRIDGE_BREAK="false"
+    - env | grep BRIDGE_BREAK
+    - |
+      cat <<EOF > coverity.yaml
+      capture:
+        files:
+          exclude-regex: ".*node_modules.*|.*[Ss]pec.*|.*[Mm]ock.*|.*__tests__.*"
+      EOF
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "preprod" || $CI_COMMIT_BRANCH == "main") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event')
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        BRIDGE_COVERITY_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN
+  artifacts:
+    when: always
+    paths:
+      - .bridge
+  allow_failure: true
+
+unit-test-des:
+  stage: unit-tests
+  image: registry.tools.inta.es/builders/node:22.14.0
+  tags: [k8s-des]
+  before_script:
+    - git fetch origin develop --depth=1  
+  script:
+    - npm install --cache .npm --prefer-offline
+    - npm run build:des
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - dist/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+unit-test-pre:
+  stage: unit-tests
+  image: registry.tools.inta.es/builders/node:22.14.0
+  tags: [k8s-pre]
+  before_script:
+    - git fetch origin develop --depth=1  
+  script:
+    - npm install --cache .npm --prefer-offline
+    - npm run build:pre
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - dist/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "preprod"
+
+build-des:
+  stage: build
+  tags: [k8s-des]    
+  image: registry.tools.inta.es/builders/node:22.14.0
+  script:
+      - npm install --cache .npm --prefer-offline
+      - npm run build -- --configuration des
+      - find dist/ -type f | head -30
+  artifacts:
+      paths:
+      - dist/
+      expire_in: 1 hour
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - .npm/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"      
+
+build-pre:
+  stage: build
+  tags: [k8s-pre]    
+  image: registry.tools.inta.es/builders/node:22.14.0
+  script:
+      - npm install --cache .npm --prefer-offline
+      - npm run build -- --configuration pre
+      - find dist/ -type f | head -30
+  artifacts:
+      paths:
+      - dist/
+      expire_in: 1 hour
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - .npm/  
+  rules:
+    - if: $CI_COMMIT_BRANCH == "preprod"          
+
+.kaniko-package-image-job:
+  stage: compile
+  image:
+    name: ${KANIKO_IMAGE}
+    entrypoint: [""]
+  script:
+    - > 
+      echo "{\"auths\":{
+        \"${INTA_REGISTRY_URL}\":{\"auth\":\"${INTA_REGISTRIES_CREDS}\"},
+        \"${INTA_REGISTRY_BASE_URL}\":{\"auth\":\"${INTA_REGISTRIES_CREDS}\"},
+        \"${INTA_REGISTRY_INT_URL}\":{\"auth\":\"${INTA_REGISTRIES_CREDS}\"}
+      }}" > /kaniko/.docker/config.json
+    
+    - |
+      FULL_IMAGE_PATH="${INTA_REGISTRY_INT_URL}/${INTA_REGISTRY_IMAGE_SUBPATH}"
+      
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}" \
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
+        --destination "${FULL_IMAGE_PATH}:${INTA_REGISTRY_IMAGE_TAG}" \
+        --destination "${FULL_IMAGE_PATH}:latest" \
+        --cache=true \
+        --cache-repo="${FULL_IMAGE_PATH}/cache" \
+        --cleanup
+      
+      echo "Image built and pushed:"
+      echo "  - ${FULL_IMAGE_PATH}:latest"
+      echo "  - ${FULL_IMAGE_PATH}:${INTA_REGISTRY_IMAGE_TAG}"
+
+image-package-des:
+  environment: des
+  tags: [k8s-des]  
+  variables:
+    ENV: "des"
+    INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+  extends: .kaniko-package-image-job
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+image-package-pre:
+  environment: pre
+  tags: [k8s-pre]  
+  variables:
+    ENV: "pre"
+    INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+  extends: .kaniko-package-image-job
+  rules:
+    - if: $CI_COMMIT_BRANCH == "preprod"    
+
+deploy-des:
+  stage: deploy
+  trigger:
+    project: "iac/intaqalab/intaqalab-des"
+    branch: main
+    strategy: depend
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  variables:
+    IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    SERVICE_NAME: "${CI_PROJECT_NAME}"
+
+deploy-pre:
+  stage: deploy
+  trigger:
+    project: "iac/intaqalab/intaqalab-pre"
+    branch: main
+    strategy: depend
+  rules:
+    - if: $CI_COMMIT_BRANCH == "preprod"
+  variables:
+    IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    SERVICE_NAME: "${CI_PROJECT_NAME}"

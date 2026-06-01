@@ -1,0 +1,10 @@
+{
+  "id": "550e8400-e29b-41d4-a716-TrialType1",
+  "name": {
+    "es": "Prueba 1",
+    "en": "Trial 1"
+  },
+  "label": "Prueba 1",
+  "status": false,
+  "description": "Prueba 1 description"
+}

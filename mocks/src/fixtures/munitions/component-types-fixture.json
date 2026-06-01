@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ctype-001",
+    "name": {
+      "es": "Proyectil",
+      "en": "Projectile"
+    },
+    "label": "Proyectil",
+    "active": true
+  },
+  {
+    "id": "ctype-002",
+    "name": {
+      "es": "Espoleta",
+      "en": "Fuze"
+    },
+    "label": "Espoleta",
+    "active": true
+  },
+  {
+    "id": "ctype-003",
+    "name": {
+      "es": "Estopín",
+      "en": "Primer"
+    },
+    "label": "Estopín",
+    "active": true
+  },
+  {
+    "id": "ctype-004",
+    "name": {
+      "es": "Carga propulsora",
+      "en": "Propellant Charge"
+    },
+    "label": "Carga propulsora",
+    "active": true
+  },
+  {
+    "id": "ctype-005",
+    "name": {
+      "es": "Vaina",
+      "en": "Cartridge Case"
+    },
+    "label": "Vaina",
+    "active": false
+  }
+]

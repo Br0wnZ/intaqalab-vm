@@ -1,0 +1,1448 @@
+{
+  "MENU_LEFT": {
+    "GESTION_TRIALS": "Trial management",
+    "GESTION_TRIALS_NEW": "New Fire Trial",
+    "GESTION_TRIALS_LIST": "Fire Trials",
+    "CALENDAR_TRIALS": "Fire Trials Calendar",
+    "CATALOG": {
+      "TITLE": "Catalog",
+      "OPTIONS": {
+        "TRIAL_TYPE": "Trial type",
+        "DOCUMENT_TYPE": "Document type",
+        "TARGET_TYPE": "Target type",
+        "MATERIAL": "Material",
+        "DIMENSION": "Dimension",
+        "FUZE_TYPE": "Fuze type"
+      }
+    },
+    "WHAREHOUSE": {
+      "TITLE": "Warehouse management",
+      "OPTIONS": {
+        "MUNITION_NEW": "Add ammunition",
+        "MUNITION_STOCK": "Ammunition stock",
+        "MUNITIONS_DUMPS": "Magazine management",
+        "DENOMINATIONS": "Denomination management",
+        "MUNITIONS_COMPONENTS": "Ammunition type management"
+      }
+    }
+  },
+  "COMMONS": {
+    "ACCEPT": "Accept",
+    "CONFIRM": "Confirm",
+    "EDIT": "Edit",
+    "OPTIONAL": "Optional",
+    "REGISTER": "Register",
+    "SAVE": "Save",
+    "DELETE_DATA": "Clear data",
+    "CANCEL": "Cancel",
+    "RETURN": "Back",
+    "REQUIRED_FIELD": "Required value"
+  },
+  "TOAST": {
+    "DEFAULT_TITLE": "Save",
+    "DEFAULT_MESSAGE": "Record saved successfully",
+    "DEFAULT_ERROR_TITLE": "Error",
+    "DEFAULT_ERROR_MESSAGE": "Error performing the operation",
+    "DEFAULT_POST_MESSAGE": "Operation completed successfully"
+  },
+  "TRIAL_CREATE_MODIFY_FORM": {
+    "HEADING_PAGE": "Trial details",
+    "CODE": "Trial number",
+    "ASSOCIATED_TRIAL": "Associated trial",
+    "LINKED_TRIAL": "Linked trial",
+    "ASSOCIATED_TRIAL_REQUIRED": "Associated trial is required",
+    "DESCRIPTION": "Trial description (Optional)",
+    "DESCRIPTION_PLACEHOLDER": "Write the trial description here",
+    "TYPE": "Trial type",
+    "TYPE_PLACEHOLDER": "Select a trial type",
+    "CLIENT": "Client",
+    "CLIENT_PLACEHOLDER": "Select the client",
+    "CLIENT_REFERENCE": "Client reference (Optional)",
+    "CLIENT_REFERENCE_PLACEHOLDER": "Enter the reference here",
+    "REQUESTED_DATE": "Date requested by the client (Optional)",
+    "REQUESTED_DATE_PLACEHOLDER": "Select the date",
+    "SCHEDULED_DATE": "Scheduled date",
+    "OBSERVATIONS": "Notes (Optional)",
+    "OBSERVATIONS_PLACEHOLDER": "Write notes here",
+    "CREATE_SUCCESS": "Trial created successfully",
+    "MODIFY_SUCCESS": "Trial updated successfully",
+    "SAVE_TRIAL": "Register",
+    "RESET_DATA": "Clear data"
+  },
+  "TRIAL_DOCS": {
+    "LABEL": "Associated documentation (Optional)",
+    "ADD_DOC": "Add documentation",
+    "DRAG_HERE": "or drag and drop the files here",
+    "DROP_FILES_HERE": "Drop files here to upload",
+    "DELETE_SUCCESS": "Document deleted successfully",
+    "UPLOAD_SUCCESS": "Document uploaded successfully",
+    "UPDATE_SUCCESS": "Document updated successfully",
+    "UPLOAD_NEW_VERSION_SUCCESS": "New document version uploaded successfully",
+    "VERSION_SET_ACTIVE_SUCCESS": "Document version set successfully",
+    "NO_RESULTS": "No documents found with the selected filters",
+    "TABLE": {
+      "FILENAME": "File name",
+      "STATUS": "Status",
+      "VERSION": "Version",
+      "CATEGORY": "Category",
+      "TYPE": "Type",
+      "DATE": "Date",
+      "ACTIONS": "Actions"
+    },
+    "TOOLTIPS": {
+      "VIEW_DOC": "View document",
+      "DOWNLOAD_DOC": "Download document",
+      "COPY_DOC": "Copy document",
+      "DELETE_DOC": "Delete document"
+    },
+    "FILTERS": {
+      "CATEGORY": "Category",
+      "CATEGORY_PLACEHOLDER": "Select category",
+      "TYPE": "Type",
+      "TYPE_PLACEHOLDER": "Select type",
+      "STATUS": "Status",
+      "STATUS_PLACEHOLDER": "Select status",
+      "SHOW_ACTIVE_ONLY": "Show active documents only",
+      "OPTIONS": {
+        "STATUS": {
+          "ALL": "All",
+          "ACTIVE": "In force",
+          "OBSOLETE": "Obsolete"
+        },
+        "CATEGORY": {
+          "ALL": "All",
+          "SPECIFIC": "Specific",
+          "GENERAL": "General"
+        }
+      }
+    },
+    "DOC_DETAILS": {
+      "TITLE": "Document details",
+      "DOCUMENT_MAT_LABEL": "Document",
+      "VERSIONS_MAT_LABEL": "Revisions and versions",
+      "OBSOLETE": "Obsolete",
+      "ACTIVE": "In force",
+      "ACTIONS": "Actions",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "NEW_VERSION": "New version",
+      "DOWNLOAD": "Download",
+      "ASSOCIATED_TRIALS": "Associate with other trials",
+      "DOCUMENT_TYPE": "Document type",
+      "DOCUMENT_TYPE_PLACEHOLDER": "Document type here",
+      "DOCUMENT_SUBTYPE": "Document subtype",
+      "DOCUMENT_SUBTYPE_PLACEHOLDER": "Document subtype here",
+      "RESPONSIBLE_USER_NAME": "Responsible user's name",
+      "RESPONSIBLE_USER_PLACEHOLDER": "First name Last name Last name",
+      "DOCUMENT_TITLE": "Document title",
+      "DOCUMENT_TITLE_PLACEHOLDER": "Document title here",
+      "OBSERVATIONS": "Notes (Optional)",
+      "OBSERVATIONS_PLACEHOLDER": "Notes",
+      "OTHER_USERS_OBSERVATIONS": "Other users' notes",
+      "OTHER_USERS_OBSERVATIONS_PLACEHOLDER": "Other users' notes",
+      "VINCULATED_TRIALS": "Linked trials",
+      "TABLE_COLUMNS": {
+        "TRIAL_NUMBER": "Trial number",
+        "VINCULATED_USER": "Linked by",
+        "VINCULATED_DATE": "Link date"
+      },
+      "FILENAME": "File name",
+      "CATEGORY": "Category",
+      "TYPE": "Type",
+      "STATUS": "Status",
+      "VERSION": "Version",
+      "DATE_UPLOADED": "Upload date",
+      "UPLOADED_BY": "Uploaded by",
+      "DESCRIPTION": "Description",
+      "DOWNLOAD_BUTTON": "Download document",
+      "CLOSE_BUTTON": "Close"
+    },
+    "VERSIONS": {
+      "TITLE": "Full version history",
+      "TABLE_COLUMNS": {
+        "VERSION_NUMBER": "Version number",
+        "UPLOAD_DATE": "Upload date",
+        "UPLOADED_BY": "Responsible"
+      },
+      "CHANGE_VERSION_DIALOG": {
+        "TITLE": "Change active version",
+        "DESCRIPTION": "Do you want to change the active document version?",
+        "BODY": "<b>You can change it again</b> at any time.<br> Note that <b>if you change it, this will be the default version used in reports, queries, and other system features.</b>",
+        "CONFIRM_BUTTON": "Confirm",
+        "CANCEL_BUTTON": "Cancel"
+      }
+    },
+    "DELETE_DOCUMENT_DIALOG": {
+      "TITLE": "Document deletion",
+      "DESCRIPTION": "You are about to delete the <b>document {{ fileName }}</b>",
+      "MESSAGE": "<b>This action permanently deletes the document from all trials it is linked to.</b>",
+      "CONFIRM": "Delete document",
+      "BACK": "Back"
+    },
+    "NEW_DOCUMENT_VERSION_DIALOG": {
+      "TITLE": "Upload new version",
+      "DOCUMENT_MAT_LABEL": "Documentation",
+      "DOCUMENT_PLACEHOLDER": "Search by file name",
+      "SELECT_DOC": "Select the document",
+      "DRAG_HERE": "or drag and drop the files here",
+      "UPLOADING": "Uploading",
+      "ADD": "Add",
+      "CANCEL": "Cancel"
+    }
+  },
+  "ASSOCIATED_TRIAL_DIALOG": {
+    "ASSOCIATED_TITLE": "Association to existing trials",
+    "LINKED_TITLE": "Link to existing trials",
+    "YEAR_LABEL": "Year",
+    "YEAR_SEARCH_PLACEHOLDER": "Select year",
+    "CLIENT_LABEL": "Client",
+    "CLIENT_PLACEHOLDER": "Select the client",
+    "SEARCH_TERM_LABEL": "Keyword search",
+    "SEARCH_TERM_PLACEHOLDER": "Type the words to search",
+    "TRIAL_LABEL": "Trial",
+    "TRIAL_PLACEHOLDER": "Select a trial",
+    "NO_TRIALS_FOUND": "No trials found",
+    "ERROR_TRIALS": "Error loading trials",
+    "CONFIRM": "ASSOCIATE",
+    "CANCEL": "CANCEL"
+  },
+  "TRIALS_LIST": {
+    "FILTERS": {
+      "TRIAL_NUMBER": "Nº de prueba",
+      "TRIAL_NUMBER_PLACEHOLDER": "Select trial No.",
+      "STATUS": "Status",
+      "STATUS_PLACEHOLDER": "Select status",
+      "CLIENT": "Client",
+      "CLIENT_PLACEHOLDER": "Select client",
+      "FIRE_TRIAL_TYPE": "Trial type",
+      "FIRE_TRIAL_TYPE_PLACEHOLDER": "Select trial type",
+      "CLEAN_FILTERS": "Limpiar filtros",
+      "DOCUMENT_TYPE": "Document type",
+      "DOCUMENT_TYPE_PLACEHOLDER": "Select document type"
+    },
+    "TABLE": {
+      "TRIAL_NUMBER": "Nº de prueba",
+      "STATUS": "Status",
+      "CLIENT": "Client",
+      "DESCRIPTION": "Description",
+      "TYPE": "Trial type",
+      "ASSIGNED_USERS": "Usuarios asignados",
+      "OTHER_DATA": "Other data",
+      "ACTIONS": "Actions",
+      "OBSERVATIONS": "Notes",
+      "REQUESTED_DATE": "Fecha solicitada por el cliente"
+    }
+  },
+  "TAPS_TOP": {
+    "TRIAL_NEW": "Nueva ficha de prueba",
+    "TRIAL": "Ficha de prueba",
+    "TRIAL_LIST": "Fire trials list",
+    "CALENDAR_TRIALS": "Calendario de pruebas de fuego",
+    "TRIAL_GENERAL_INFO": "General information",
+    "TRIAL_PLANIFICATION": "Planning",
+    "TRIAL_EXECUTION": "Execution",
+    "TRIAL_DOCUMENT": "Document"
+  },
+  "UTILS_TRIALS": {
+    "TRIAL_ACTIONS_LABEL": "Actions",
+    "TRIAL_ACTIONS": {
+      "MODIFY": "Modify",
+      "CANCEL": "Cancel",
+      "ANNUL": "Void",
+      "REACTIVATE": "Reactivate",
+      "CLOSE": "Close",
+      "REOPEN": "Reopen",
+      "REMOVE": "Delete"
+    },
+    "TRIAL_STATUS": {
+      "UNDER_REVIEW": "Under review",
+      "PLANNED": "Planned",
+      "PREPARED": "Prepared",
+      "IN_PROGRESS": "In progress",
+      "INTERRUPTED": "Interrupted",
+      "STARTED": "Started",
+      "EXECUTED": "Executed",
+      "ANALYZING": "Analyzing",
+      "FINALIZING": "Finalized",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled",
+      "VOIDED": "Voided"
+    }
+  },
+  "CALENDAR_TRIALS": {
+    "CONTROLS": {
+      "PREVIOUS": "<",
+      "TODAY": "Today",
+      "NEXT": ">",
+      "MONTH": "Monthly",
+      "WEEK": "Weekly",
+      "DAY": "Daily",
+      "LINE": "Line",
+      "SHOW_WEEKENDS": "Mostrar no laborables"
+    },
+    "ACTIONS": {
+      "PROGAM": "Schedule trial",
+      "UNPROGAM": "Unschedule",
+      "ADD_OBS": "Add notes"
+    },
+    "EVENT_TOOLTIP": {
+      "TRIAL": "Trial",
+      "APPLIER": "Requester",
+      "DESCRIPTION": "Description"
+    },
+    "MODAL_ADD_OBS": {
+      "ADD": "Add",
+      "TITLE": "Notes",
+      "PLACEHOLDER": "Write notes here..."
+    },
+    "EVENT": {
+      "TRIAL": "Trial",
+      "APPLIER": "Requester",
+      "DESCRIPTION": "Description"
+    },
+    "ALL_LINES": "All lines",
+    "CELL_NO_NOTAM": "NO NOTAM",
+    "CELL_HOLIDAY": "HOLIDAY"
+  },
+  "SPECIAL_DAYS_MANAGER": {
+    "BUTTON_MANAGE_SPECIAL_DAYS": "Manage special days",
+    "TITLE": "Special days management",
+    "DAY_TYPES": "Special day type",
+    "DAY_TYPES_PLACEHOLDER": "Select the day type",
+    "DAY_NO_NOTAM": "No NOTAM",
+    "DAY_HOLIDAY": "Non-working",
+    "BUTTON_ANNUL": "Cancel holidays"
+  },
+  "TRIAL_SCHEDULER": {
+    "SCHEDULE_TRIAL_TITLE": "Trial scheduling",
+    "SELECT_DAYS": "Select the days to run the trial",
+    "SCHEDULE_TRIAL": "Schedule trial",
+    "UNPROGAM": {
+      "TITLE": "Desprogramar prueba",
+      "DESCRIPTION": "You are about to unschedule trial {{id}} on {{day}}",
+      "LABEL_COFIRM": "Unschedule"
+    },
+    "LEGEND": {
+      "SPECIAL_DAY": "Non-working",
+      "NO_NOTAM": "No NOTAM",
+      "LABEL_COFIRM": "Unschedule",
+      "BUSY": "Day with trials",
+      "SELECTED": "Selected"
+    },
+    "SCHEDULE_TRIAL_INLINE_LABEL": "Scheduled date"
+  },
+  "TRIAL_ACTIONS": {
+    "CANCEL_TITLE": "Trial cancellation",
+    "CANCEL_PLACEHOLDER": "Write the cancellation reason here",
+    "CANCEL_BUTTON_CONFIRM": "Cancel trial",
+    "ANNUL_TITLE": "Trial voiding",
+    "ANNUL_PLACEHOLDER": "Write the voiding reason here",
+    "ANNUL_BUTTON_CONFIRM": "Void trial",
+    "REMOVE_TITLE": "Trial deletion",
+    "REMOVE_TITLE2": "You are about to delete trial: {{ paramTitle2 }}",
+    "REMOVE_DESCRIPTION": "This action permanently deletes the trial from the system. This action is irreversible.",
+    "REMOVE_BUTTON_CONFIRM": "Delete trial",
+    "CLOSE_TITLE": "Trial closure",
+    "CLOSE_TITLE2": "You are about to close trial: {{ paramTitle2 }}",
+    "CLOSE_DESCRIPTION": "This action permanently ends its lifecycle. All actions will be locked and no further changes will be allowed.",
+    "CLOSE_BUTTON_CONFIRM": "Close trial",
+    "REACTIVATE_TITLE": "Trial reactivation",
+    "REACTIVATE_TITLE2": "You are about to reactivate trial: {{ paramTitle2 }}",
+    "REACTIVATE_DESCRIPTION": "This action restores its lifecycle, re-enabling the actions and statuses for an ongoing trial.",
+    "REACTIVATE_BUTTON_CONFIRM": "Trial reopening",
+    "REOPEN_TITLE": "Trial reopening",
+    "REOPEN_TITLE2": "You are about to reopen trial: {{ paramTitle2 }}",
+    "REOPEN_DESCRIPTION": "This action reverts a closure done by mistake, returning it to a state that allows its lifecycle to be completed correctly.",
+    "REOPEN_BUTTON_CONFIRM": "Reopen trial"
+  },
+  "TRIAL_TABLE_SELECTOR_MODAL": {
+    "TITLE": "Trial scheduling",
+    "PENDING_TRIALS": "Pending trials",
+    "SEARCH_PLACEHOLDER": "Search by description",
+    "CANCEL": "CANCEL"
+  },
+  "TRIAL_DOC_PICKER_DIALOG": {
+    "TITLE": "Documentation upload",
+    "DOCUMENT_TYPE_LABEL": "Document type",
+    "DOCUMENT_TYPE_PLACEHOLDER": "Select the document type",
+    "DOCUMENT_LABEL": "Documentation",
+    "DOCUMENT_PLACEHOLDER": "Search by file name",
+    "SELECT_DOC": "Select the documentation",
+    "DRAG_HERE": "or drag and drop the files here",
+    "UPLOADING": "Uploading",
+    "ADD": "Add",
+    "CANCEL": "Cancel"
+  },
+  "CONFIRM_DELETE_DIALOG": {
+    "TITLE": "Delete document",
+    "MESSAGE": "Are you sure you want to delete the document {{ name }}?",
+    "CONFIRM": "Delete",
+    "CANCEL": "Cancel"
+  },
+  "MODIFY_DOC_DIALOG": {
+    "TITLE": "Edit document",
+    "TYPE_LABEL": "Document type",
+    "TYPE_PLACEHOLDER": "Select the document type",
+    "NAME_LABEL": "Document name",
+    "NAME_PLACEHOLDER": "Document name",
+    "CANCEL": "Cancel",
+    "SAVE": "Accept"
+  },
+  "TRIAL_PLANNING": {
+    "GENERAL_DATA_SECTION": {
+      "TAB_TITLE": "General",
+      "TRIAL_NUMBER": "Trial number",
+      "TRIAL_GOAL_LABEL": "Trial objective",
+      "TRIAL_GOAL_PLACEHOLDER": "Write the trial objective",
+      "SPECIMEN_LABEL": "Specimen",
+      "SPECIMEN_PLACEHOLDER": "Select specimen",
+      "MANAGE_SPECIMEN_BUTTON": "Manage specimen",
+      "PLANNING_USER_LABEL": "Planning user",
+      "PLANNING_USER_PLACEHOLDER": "Select planning user",
+      "EXECUTION_DATE_LABEL": "Scheduled execution date",
+      "EXECUTION_DATE_PLACEHOLDER": "Select scheduled execution date",
+      "OBSERVATIONS_LABEL": "Notes",
+      "OBSERVATIONS_PLACEHOLDER": "Write notes here",
+      "REQUERIMENTS_LABEL": "Requirements for approving or rejecting the results",
+      "REQUERIMENTS_PLACEHOLDER": "Write the requirements for approving or rejecting results here",
+      "ADDITIONAL_INFO_LABEL": "Additional client information",
+      "ADDITIONAL_INFO_PLACEHOLDER": "Write the additional information here",
+      "DATE_PARAMS_CONTROL": "Date control parameters",
+      "MAX_DATE_REPORT_LABEL": "Maximum days to issue report",
+      "MAX_DATE_REPORT_PLACEHOLDER": "Enter the maximum days to issue the report",
+      "LIMIT_DATE_LABEL": "Execution deadline",
+      "LIMIT_DATE_PLACEHOLDER": "Select the execution deadline",
+      "UNITS_PERCENTAGE_LABEL": "Percentage for technical units",
+      "UNITS_PERCENTAGE_PLACEHOLDER": "Enter the percentage for technical units",
+      "END_PERCENTAGE_LABEL": "Percentage for trial end",
+      "END_PERCENTAGE_PLACEHOLDER": "Enter the percentage for trial end",
+      "DAYS_SIGN_REPORT_LABEL": "Days to sign the report",
+      "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
+      "VALIDATE": "Validate"
+    },
+    "SERIES_AND_SHOTS_SECTION": {
+      "TAB_TITLE": "Series and shots",
+      "TITLE": "Trial series",
+      "CREATE_SERIE_BUTTON": "Create series",
+      "NEW_SERIE_BUTTON": "New series",
+      "SERIES_TABLE": {
+        "SERIE_NAME": "Series name",
+        "EXECUTION_ORDER": "Execution order",
+        "OBSERVATIONS": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "SERIES_SHOTS": "Series shots",
+      "ADD_SHOT_BUTTON": "Add shot",
+      "SHOTS_TABLE": {
+        "SHOT_NUMBER": "Shot No.",
+        "OBSERVATIONS": "Notes",
+        "OBSERVATIONS_PLACEHOLDER": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "NO_SERIES_RESULTS": "No series found.",
+      "NO_SHOTS_RESULTS": "No shots found.",
+      "NOT_SHOTS_IN_SERIE": "There are no shots in the series"
+    },
+    "SHOOTING_CONDITIONS_SECTION": {
+      "TITLE": "Shooting conditions",
+      "TABLE": {
+        "SHOT": "Shot",
+        "DATE": "Date",
+        "TARGET": "Target",
+        "TARGET_MATERIAL": "Target material",
+        "IMPACT_ZONE": "Impact zone",
+        "TARGET_DIMENSIONS": "Target dimensions",
+        "TARGET_THICKNESS": "Target thickness",
+        "DISTANCE": "Distance",
+        "ORIENTATION": "Orientation",
+        "ELEVATION": "Elevation",
+        "ANGLE": "Firing angle",
+        "RANGE": "Range",
+        "NOMINAL_SPEED": "Nominal speed",
+        "POWDER_WEIGHT": "Powder",
+        "FUNCTIONING_HEIGHT": "Functioning height",
+        "OBSERVATIONS": "Notes"
+      },
+      "EMPTY_STATE": "There are no shots in this series",
+      "ACTIONS": {
+        "SAVE": "Save draft",
+        "CANCEL": "Cancel"
+      }
+    },
+    "MUNITIONS": {
+      "TITLE": "Ammunition",
+      "HEADER": {
+        "TRIAL_NUMBER": "Trial number",
+        "MASSIVE_CONFIG_BUTTON": "Apply bulk configuration",
+        "SAVE_BUTTON": "Save configuration",
+        "CANCEL_BUTTON": "Cancel",
+        "EMPTY_STATE": "No series configured."
+      },
+      "SERIE_PANEL": {
+        "TITLE": "Serie {{index}} - {{name}}",
+        "add_munition": "Add ammunition",
+        "CONFIG_TITLE": "Configuration {{index}}",
+        "EMPTY_CONFIGS": "No ammunition configurations. Click \"Add ammunition\" to start."
+      },
+      "CONFIGURATION_FORM": {
+        "DENOMINATION_LABEL": "Denomination",
+        "LOT_LABEL": "Batch",
+        "LOT_PLACEHOLDER": "Batch name",
+        "ASSOCIATED_SHOTS_LABEL": "Associated shots",
+        "MAX_FAILURES_LABEL": "Max. allowed failures",
+        "MAX_FAILURES_PLACEHOLDER": "No. of failures",
+        "OBSERVATIONS_LABEL": "Notes",
+        "CONDITIONING_CHECKBOX": "Conditioning",
+        "COMPONENT_SELECTOR_LABEL": "Component selector",
+        "COMPONENT_SELECTOR_PLACEHOLDER": "Select component types",
+        "OPTIONS": {
+          "ALL": "All",
+          "SOME": "Some",
+          "SELECT": "Select"
+        }
+      },
+      "COMPONENT_DETAIL_FORM": {
+        "HEADERS": {
+          "TYPE": "Ammunition type",
+          "DENOMINATION": "Denomination",
+          "LOT": "Batch",
+          "MAX_FAILURES": "Max. allowed failures",
+          "CLIENT_NUMBER": "Client No.",
+          "QUANTITY": "Quantity",
+          "ZONE_MODULES": "Zone/Modules"
+        },
+        "PLACEHOLDERS": {
+          "MODEL": "Model XX",
+          "LOT": "Batch XX",
+          "FAILURES": "No. of failures",
+          "CLIENT": "Client No.",
+          "FUZE_MODE": "Select the mode",
+          "FUZE_GRADUATION": "Graduation",
+          "MANUFACTURER_NUMBER": "Manufacturer No.",
+          "MODULES": "Select module",
+          "ZONE_MODULES": "Select zone/module"
+        },
+        "OBSERVATIONS_LABEL": "Notes",
+        "CONDITIONING_CHECKBOX": "Conditioning",
+        "FUZE_MODE_LABEL": "Fuze operating mode",
+        "FUZE_GRADUATION_LABEL": "Fuze graduation",
+        "MANUFACTURER_NUMBER_LABEL": "Manufacturer No.",
+        "ADD_POWDER_BUTTON": "Add powder"
+      },
+      "CONDITIONING_FIELDS": {
+        "TEMPERATURE_LABEL": "Conditioning temperature (°C)",
+        "TOLERANCE_LABEL": "Tolerance (°C)",
+        "MIN_TIME_LABEL": "Minimum time (h)",
+        "MAX_TIME_LABEL": "Maximum time (h)",
+        "OBSERVATIONS_LABEL": "Notes",
+        "OBSERVATIONS_PLACEHOLDER": "Conditioning notes"
+      },
+      "MASSIVE_CONFIG_DIALOG": {
+        "TITLE": "Bulk ammunition configuration",
+        "APPLY_BUTTON": "Apply",
+        "CANCEL_BUTTON": "Cancel",
+        "DENOMINATION_LABEL": "Denomination",
+        "LOT_LABEL": "Batch",
+        "ASSOCIATED_SHOTS_LABEL": "Associated shots",
+        "MAX_FAILURES_LABEL": "Max. allowed failures",
+        "CLIENT_NUMBER_LABEL": "Client No.",
+        "OBSERVATIONS_LABEL": "Notes",
+        "CONDITIONING_CHECKBOX": "Conditioning",
+        "COMPONENT_SELECTOR_LABEL": "Component selector",
+        "COMPONENT_SELECTOR_PLACEHOLDER": "Select component types",
+        "VALIDATION": {
+          "DENOMINATION_REQUIRED": "Denomination is required",
+          "LOT_REQUIRED": "Batch is required",
+          "TEMPERATURE_REQUIRED": "Conditioning temperature is required",
+          "TOLERANCE_REQUIRED": "Tolerance is required",
+          "MIN_TIME_REQUIRED": "Minimum time is required",
+          "MAX_TIME_REQUIRED": "Maximum time is required",
+          "COMPONENT_DENOMINATION_REQUIRED": "Denomination required for {{component}}",
+          "COMPONENT_LOT_REQUIRED": "Batch required for {{component}}"
+        },
+        "COMPONENT_LABELS": {
+          "ESTOPIN": "Primer",
+          "ESPOLETA": "Fuze",
+          "PROYECTIL": "Projectile"
+        }
+      }
+    },
+    "ARMAMENT": {
+      "TITLE": "Armament",
+      "HEADER": {
+        "TRIAL_NUMBER": "Trial number",
+        "SAVE_BUTTON": "Save configuration",
+        "CANCEL_BUTTON": "Cancel",
+        "EMPTY_STATE": "No series configured.",
+        "MASSIVE_CONFIG_BUTTON": "Apply bulk configuration"
+      },
+      "TABLE_TITLE": "Armament table",
+      "TABLE": {
+        "SERIE": "Series",
+        "SHOT": "Shot",
+        "WEAPON": "Weapon designation",
+        "TUBE": "Tube designation",
+        "INSTRUMENTED": "Instrumented",
+        "LIFE": "Service life",
+        "OBSERVATIONS": "Notes",
+        "YES": "Yes",
+        "NO": "No"
+      },
+      "FOOTER": {
+        "SAVE_DRAFT": "Save draft"
+      },
+      "SERIE_PANEL": {
+        "TITLE": "Serie {{index}} - {{name}}",
+        "add_weapon": "Add weapon"
+      },
+      "UPDATE_SHOT_DIALOG": {
+        "TITLE": "Edit shot",
+        "SERIES_LABEL": "Series",
+        "SERIES_PLACEHOLDER": "Select series",
+        "WEAPON_LABEL": "Weapon designation",
+        "WEAPON_PLACEHOLDER": "Select weapon",
+        "TUBE_LABEL": "Tube designation",
+        "TUBE_PLACEHOLDER": "Select tube designation",
+        "INSTRUMENTED_LABEL": "Instrumented",
+        "INSTRUMENTED_PLACEHOLDER": "Select instrumented",
+        "INSTRUMENTED_YES": "Yes",
+        "INSTRUMENTED_NO": "No",
+        "LIFE_LABEL": "Service life",
+        "LIFE_PLACEHOLDER": "Select % service life",
+        "OBSERVATIONS_PLACEHOLDER": "Write notes here...",
+        "REMOVE_ARIA_LABEL": "Delete",
+        "CANCEL_BUTTON": "Cancel",
+        "APPLY_BUTTON": "Apply"
+      },
+      "MASSIVE_SHOTS_DIALOG": {
+        "TITLE": "Bulk shot configuration",
+        "SERIES_LABEL": "Series",
+        "SERIES_PLACEHOLDER": "Select series",
+        "WEAPON_LABEL": "Weapon designation",
+        "WEAPON_PLACEHOLDER": "Select weapon",
+        "TUBE_LABEL": "Tube designation",
+        "TUBE_PLACEHOLDER": "Select tube designation",
+        "INSTRUMENTED_LABEL": "Instrumented",
+        "INSTRUMENTED_PLACEHOLDER": "Select instrumented",
+        "INSTRUMENTED_YES": "Yes",
+        "INSTRUMENTED_NO": "No",
+        "LIFE_LABEL": "Service life",
+        "LIFE_PLACEHOLDER": "Select % service life",
+        "OBSERVATIONS_PLACEHOLDER": "Write notes here...",
+        "REMOVE_ARIA_LABEL": "Delete",
+        "CANCEL_BUTTON": "Cancel",
+        "APPLY_BUTTON": "Apply"
+      }
+    },
+    "UPSERT_SERIE_DIALOG": {
+      "TITLE_NEW": "Create new series",
+      "TITLE_EDIT": "Edit series",
+      "SERIE_NAME_LABEL": "Series name",
+      "SERIE_NAME_PLACEHOLDER": "Enter the series name",
+      "NUMBER_OF_SHOTS_LABEL": "Number of shots",
+      "NUMBER_OF_SHOTS_PLACEHOLDER": "Enter the number of shots",
+      "OBSERVATIONS_LABEL": "Notes",
+      "OBSERVATIONS_PLACEHOLDER": "Write notes here",
+      "CANCEL": "Cancel",
+      "UPDATE": "Save changes",
+      "SAVE": "Save"
+    },
+    "DELETE_SERIE_DIALOG": {
+      "TITLE": "Delete series",
+      "DESCRIPTION": "You are about to delete a series",
+      "MESSAGE": "<b>This action will delete all its associated shots.</b>",
+      "CONFIRM": "Delete",
+      "CANCEL": "Back"
+    },
+    "DELETE_SHOT_DIALOG": {
+      "TITLE": "Delete shot",
+      "DESCRIPTION": "You are about to delete a shot",
+      "MESSAGE": "<b>This action permanently deletes the shot.</b>",
+      "CONFIRM": "Delete",
+      "CANCEL": "Back"
+    }
+  },
+  "SPECIMENS_MANAGMENT_DIALOG": {
+    "TITLE": "Specimen management",
+    "SPECIMEN_LABEL": "Specimen",
+    "SPECIMEN_PLACEHOLDER": "Select specimen",
+    "GROUP_WEAPONS_TUBES": "Weapons and tubes",
+    "GROUP_DENOMINATIONS": "Denominations",
+    "NO_RESULTS": "No results found",
+    "SERIAL_NUMBER_LABEL": "Serial No.",
+    "SERIAL_NUMBER_PLACEHOLDER": "Serial number",
+    "LOT_LABEL": "Batch",
+    "LOT_PLACEHOLDER": "Batch",
+    "SELECTED_TITLE": "Selected specimen",
+    "SELECTED_HEADER_SPECIMEN": "Specimen",
+    "SELECTED_HEADER_LOT_SERIAL": "Lote / N° serie",
+    "REMOVE_ARIA": "Remove specimen",
+    "SAVE": "Save",
+    "CANCEL": "Cancel"
+  },
+  "ADMIN": {
+    "ADMIN_DOCS_SECTION": {
+      "HEADER": "Document type management",
+      "NEW_DOCUMENT_TYPE": "New document type",
+      "DOCUMENTS_LIST": "Document type list",
+      "TABLE": {
+        "NAME": "Nombre tipo documento",
+        "STATUS": "Status",
+        "OBSERVATIONS": "Notes",
+        "CATEGORY": "Category",
+        "ACTIONS": "Actions"
+      },
+      "FILTER_BY_STATUS": "Filter by status",
+      "SEARCH_PLACEHOLDER": "Search by document name",
+      "SYNC": "Loading...",
+      "NO_RESULTS": "No documents found."
+    }
+  },
+  "MASTER_DATA": {
+    "CREATE_EDIT_DIALOG": {
+      "TITLE_CREATE": "Create record",
+      "TITLE_EDIT": "Edit record",
+      "TITLE_CREATE1": "Name",
+      "TITLE_CREATE2": "English name",
+      "TITLE_CREATE3": "Description"
+    },
+    "DIMENSIONS_DIALOG": {
+      "TITLE_CREATE": "Create record",
+      "TITLE_EDIT": "Edit record",
+      "TITLE_CREATE1": "Width",
+      "TITLE_CREATE2": "Height",
+      "TITLE_CREATE3": "Diameter"
+    },
+    "TRIAL_TYPE": {
+      "TITLE": "Trial type management",
+      "BUTTON_NEW": "New trial type",
+      "LIST": {
+        "TITLE": "Trial types",
+        "NAME": "Trial type name",
+        "STATUS": "Status",
+        "DESCRIPTION": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Eliminar tipo de prueba",
+          "DESCRIPTION": "Are you sure you want to delete this trial type? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar tipo de prueba",
+          "TEXT_ONE": "Do you want to enable/disable this trial type?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit trial type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Trial type name",
+              "PLACEHOLDER": "Enter the trial type name here"
+            },
+            "EN": {
+              "LABEL": "Trial type name (English)",
+              "PLACEHOLDER": "Enter the trial type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the trial type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the trial type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create trial type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Trial type name",
+              "PLACEHOLDER": "Enter the trial type name here"
+            },
+            "EN": {
+              "LABEL": "Trial type name (English)",
+              "PLACEHOLDER": "Enter the trial type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the trial type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the trial type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Create",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "TARGET_TYPE": {
+      "TITLE": "Target type management",
+      "BUTTON_NEW": "New target type",
+      "LIST": {
+        "TITLE": "Target types",
+        "NAME": "Target type name",
+        "STATUS": "Status",
+        "DESCRIPTION": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Eliminar tipo de blanco",
+          "DESCRIPTION": "Are you sure you want to delete this target type? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar tipo de blanco",
+          "TEXT_ONE": "Do you want to enable/disable this target type?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit target type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Target type name",
+              "PLACEHOLDER": "Enter the target type name here"
+            },
+            "EN": {
+              "LABEL": "Target type name (English)",
+              "PLACEHOLDER": "Enter the target type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the target type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the target type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create target type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Target type name",
+              "PLACEHOLDER": "Enter the target type name here"
+            },
+            "EN": {
+              "LABEL": "Target type name (English)",
+              "PLACEHOLDER": "Enter the target type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the target type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the target type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "DOCUMENT_TYPE": {
+      "TITLE": "Document type management",
+      "BUTTON_NEW": "New document type",
+      "LIST": {
+        "TITLE": "Document types",
+        "NAME": "Document type name",
+        "STATUS": "Status",
+        "DESCRIPTION": "Notes",
+        "CLIENT_TYPE": "Category",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Eliminar tipo de documento",
+          "DESCRIPTION": "Are you sure you want to delete this document type? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar tipo de documento",
+          "TEXT_ONE": "Do you want to enable/disable this document type?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit document type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Document type name",
+              "PLACEHOLDER": "Enter the document type name here"
+            },
+            "EN": {
+              "LABEL": "Document type name (English)",
+              "PLACEHOLDER": "Enter the document type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the document type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the document type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create document type",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Document type name",
+              "PLACEHOLDER": "Enter the document type name here"
+            },
+            "EN": {
+              "LABEL": "Document type name (English)",
+              "PLACEHOLDER": "Enter the document type name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the document type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the document type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "FUZE_TYPE": {
+      "TITLE": "Fuze operating mode management",
+      "BUTTON_NEW": "New fuze type",
+      "LIST": {
+        "TITLE": "Fuze operating modes",
+        "ID": "Operating mode ID",
+        "MODE": "Operating mode",
+        "DESCRIPTION": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Eliminar tipo de espoleta",
+          "DESCRIPTION": "Are you sure you want to delete this fuze type? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar tipo de espoleta",
+          "TEXT_ONE": "Do you want to enable/disable this fuze type?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit fuze operating mode",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Fuze operating mode name",
+              "PLACEHOLDER": "Enter the fuze operating mode name here"
+            },
+            "EN": {
+              "LABEL": "Fuze operating mode name (English)",
+              "PLACEHOLDER": "Enter the fuze operating mode name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the target type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the target type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create fuze operating mode",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Fuze operating mode name",
+              "PLACEHOLDER": "Enter the fuze operating mode name here"
+            },
+            "EN": {
+              "LABEL": "Fuze operating mode name (English)",
+              "PLACEHOLDER": "Enter the fuze operating mode name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the target type description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the target type description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "MATERIAL": {
+      "TITLE": "Material management",
+      "BUTTON_NEW": "New material type",
+      "LIST": {
+        "TITLE": "Material types",
+        "ID": "Material ID",
+        "NAME": "Material name",
+        "DESCRIPTION": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Eliminar material",
+          "DESCRIPTION": "Are you sure you want to delete this material? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar material",
+          "TEXT_ONE": "Do you want to enable/disable this material?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit material",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Material name",
+              "PLACEHOLDER": "Enter the material name here"
+            },
+            "EN": {
+              "LABEL": "Material name (English)",
+              "PLACEHOLDER": "Enter the material name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the material description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the material description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create material",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Material name",
+              "PLACEHOLDER": "Enter the material name here"
+            },
+            "EN": {
+              "LABEL": "Material name (English)",
+              "PLACEHOLDER": "Enter the material name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the material description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the material description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "DIMENSION": {
+      "TITLE": "Dimension management",
+      "BUTTON_NEW": "New dimension type",
+      "LIST": {
+        "TITLE": "Dimension types",
+        "ID": "Dimension ID",
+        "NAME": "Dimension",
+        "DESCRIPTION": "Notes",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "DELETE": {
+          "TITLE": "Delete dimension",
+          "DESCRIPTION": "Are you sure you want to delete this dimension? <br><b>This action cannot be undone.</b>",
+          "BUTTONS": {
+            "OK": "Delete",
+            "CANCEL": "Undo"
+          }
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Enable / Disable dimension",
+          "TEXT_ONE": "Do you want to enable/disable this dimension?",
+          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
+          "BUTTONS": {
+            "OK": "Confirm",
+            "CANCEL": "Cancel"
+          }
+        },
+        "EDIT": {
+          "TITLE": "Edit dimension",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Dimension name",
+              "PLACEHOLDER": "Enter the dimension name here"
+            },
+            "EN": {
+              "LABEL": "Dimension name (English)",
+              "PLACEHOLDER": "Enter the dimension name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the dimension description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the dimension description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        },
+        "CREATE": {
+          "TITLE": "Create dimension",
+          "INPUT": {
+            "ES": {
+              "LABEL": "Dimension name",
+              "PLACEHOLDER": "Enter the dimension name here"
+            },
+            "EN": {
+              "LABEL": "Dimension name (English)",
+              "PLACEHOLDER": "Enter the dimension name in English"
+            }
+          },
+          "DESCRIPTION": {
+            "ES": {
+              "LABEL": "Notes (Optional)",
+              "PLACEHOLDER": "Write the dimension description here"
+            },
+            "EN": {
+              "LABEL": "Notes in English (Optional)",
+              "PLACEHOLDER": "Write the dimension description in English here"
+            }
+          },
+          "BUTTONS": {
+            "OK": "Add",
+            "CANCEL": "Cancel"
+          }
+        }
+      }
+    },
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    }
+  },
+  "WHAREHOUSE_MANAGMENT": {
+    "MUNITION": "Ammunition",
+    "MUNITION_COMPONENT": "Ammunition component",
+    "SEARH_LIST_PLACEHOLDER": "Enter search text",
+    "MUNITION_COMPONENTS": {
+      "TITLE": "Ammunition components",
+      "CREATE": "Create component",
+      "COMPONENT_TYPE": "Component type",
+      "CATEGORY": "Category",
+      "STATUS": "Status",
+      "OBSERVATIONS": "Notes",
+      "ACTIONS": "Actions",
+      "MODAL": {
+        "CATEGORY": "Category",
+        "CATEGORY_PLACEHOLDER": "Select a value",
+        "TITLE_CREATE": "Create component",
+        "TITLE_EDIT": "Edit component",
+        "NAME_LABEL": "Component type",
+        "NAME_PLACEHOLDER": "Enter a name for the component",
+        "NAME_EN_LABEL": "Component type (English)",
+        "NAME_EN_PLACEHOLDER": "Enter a name for the component (English)",
+        "OBSERVATIONS_PLACEHOLDER": "Write your notes"
+      },
+      "MODAL_DELETE": {
+        "TITLE": "Delete component",
+        "CONTENT_HTML": "You are about to delete a component even though it is linked to registered items. <b>The component will no longer be available in dropdown lists.</b>"
+      }
+    },
+    "DENOMINATIONS": {
+      "TITLE": "Ammunition denomination",
+      "CREATE": "Create denomination",
+      "COLUMNS": {
+        "DENOMINATION": "Denomination",
+        "MUNITION_TYPE": "Ammunition type",
+        "NEQ": "NEQ",
+        "ONU": "ONU",
+        "RISK_GROUP": "Risk group",
+        "COMPATIBILITY": "Compatibility",
+        "NOMINAL_WEIGHT": "Nominal weight",
+        "STATUS": "Status"
+      },
+      "COMPONENT_TYPE": "Component type",
+      "STATUS": "Status",
+      "OBSERVATIONS": "Notes",
+      "ACTIONS": "Actions",
+      "MODAL": {
+        "TITLE_CREATE": "Create denomination",
+        "TITLE_EDIT": "Edit denomination",
+        "DENOMINATION_LABEL": "Denomination",
+        "DENOMINATION_PLACEHOLDER": "Enter the denomination",
+        "MUNITION_TYPE_LABEL": "Ammunition type",
+        "MUNITION_TYPE_PLACEHOLDER": "Select the ammunition type",
+        "CATEGORY_LABEL": "Category",
+        "CATEGORY_PLACEHOLDER": "Select the category",
+        "NEQ_LABEL": "NEQ (opcional)",
+        "NEQ_PLACEHOLDER": "Enter the kg",
+        "ONU_LABEL": "ONU (opcional)",
+        "ONU_PLACEHOLDER": "UN code",
+        "RISK_GROUP_LABEL": "Grupo de riesgo (opcional)",
+        "RISK_GROUP_PLACEHOLDER": "Select a value",
+        "COMPATIBILITY_LABEL": "Compatibilidad (opcional)",
+        "COMPATIBILITY_PLACEHOLDER": "Select a value",
+        "NOMINAL_WEIGHT_LABEL": "Peso nominal (opcional)",
+        "NOMINAL_WEIGHT_PLACEHOLDER": "Enter a value here",
+        "OPTION_MUNITION": "Ammunition",
+        "OPTION_MUNITION_COMPONENT": "Ammunition component"
+      },
+      "MODAL_DELETE": {
+        "TITLE": "Delete denomination",
+        "CONTENT_HTML": "You are about to delete a denomination even though it is linked to registered items. <b>The denomination will no longer be available in dropdown lists.</b>"
+      }
+    },
+    "MUNITIONS_DUMPS": {
+      "TITLE": "Magazines",
+      "CREATE": "Create magazine",
+      "COLUMNS": {
+        "NAME": "Magazine ID",
+        "CELLS_COUNT": "No. of cells",
+        "NEQMAXCELL": "Max. NEQ per cell",
+        "NEQMAX": "Max. NEQ per magazine",
+        "STATUS": "Status",
+        "ACTIONS": "Actions"
+      },
+      "MODAL": {
+        "TITLE_CREATE": "Create magazines",
+        "TITLE_EDIT": "Edit magazines",
+        "ID": "Magazine ID",
+        "ID_PLACEHOLDER": "Magazine ID",
+        "CELLS_COUNT": "Number of cells",
+        "CELLS_COUNT_PLACEHOLDER": "Select a value",
+        "CELL_PREFIX": "Cell",
+        "CELL_PREFIX_PLACEHOLDER": "Enter cell name",
+        "NEQMAXCELL": "Max. NEQ per cell GR 1.1 and 1.2",
+        "NEQMAXCELL_PLACEHOLDER": "Enter the kg",
+        "NEQMAXTOTAL": "Max. EQ per magazine",
+        "NEQMAXTOTAL_PLACEHOLDER": "Enter the kg",
+        "STATUS": "Status"
+      },
+      "MODAL_DELETE": {
+        "TITLE": "Delete magazine",
+        "CONTENT_HTML": "You are about to delete a magazine even though it is linked to registered items. <b>The magazine will no longer be available in dropdown lists.</b>"
+      }
+    },
+    "MUNITION_CREATE": {
+      "SECTION_IDENTIFICATION": "Ammunition identification",
+      "CATEGORY": "Category",
+      "CATEGORY_PLACEHOLDER": "Category",
+      "ADD_COMPONENT": "Add component",
+      "SAVE": "Register",
+      "RESET": "Clear data",
+      "MUNITION_TYPE_PLACEHOLDER": "Select the ammunition type",
+      "MUNITION_TYPE_LABEL": "Ammunition type",
+      "DENOMINATION_LABEL": "Denomination",
+      "DENOMINATION_PLACEHOLDER": "Select the denomination",
+      "BATCH_LABEL": "Batch",
+      "BATCH_PLACEHOLDER": "Enter the batch here",
+      "ENTRY_DATE_LABEL": "Entry date",
+      "ENTRY_DATE_PLACEHOLDER": "Select a planned trial",
+      "PLANNED_TRIAL_LABEL": "Planned trial",
+      "PLANNED_TRIAL_PLACEHOLDER": "Select the entry date",
+      "CLIENT_LABEL": "Client",
+      "CLIENT_PLACEHOLDER": "Select the client",
+      "QUANTITY_LABEL": "Quantity",
+      "SECTION_COMPONENTS": "Components",
+      "SECTION_GENERAL_DATA": "General data",
+      "SECTION_LOCATION": "Location and logistics",
+      "OBSERVATIONS_LABEL": "Notes",
+      "OBSERVATIONS_PLACEHOLDER": "Write your notes here",
+      "MUNITIONS_DUMPS_ARRIVAL_LABEL": "Destination magazine",
+      "MUNITIONS_DUMPS_ARRIVAL_PLACEHOLDER": "Select a magazine",
+      "MUNITIONS_DUMPS_CELL_LABEL": "Magazine cell",
+      "MUNITIONS_DUMPS_CELL_PLACEHOLDER": "Select a cell",
+      "SHOW_UBICATON_LABEL": "Location",
+      "TYPE": "Type"
+    },
+    "MUNITION_DETAIL": {
+      "HEADING": "Item details",
+      "ACTIONS": "Actions",
+      "TOTAL_NEQ": "Total NEQ",
+      "NOMINAL_WEIGHT": "Nominal weight",
+      "STATUS": "Status",
+      "RETIREMENT_DATE": "Retirement date",
+      "RETIREMENT_REASON": "Retirement reason",
+      "MUNITIONS_DUMP": "Magazine",
+      "CELL": "Cell",
+      "DAY_UTILIZATION": "Planned usage date",
+      "STATUS_AVAILABLE": "Available",
+      "ACTION_RETIRE": "Retire ammunition",
+      "ACTION_TRANSFER": "Transfer to another magazine",
+      "ACTION_MOVEMENTS": "Movement history"
+    },
+    "TABLE_COMPONENTS": {
+      "HEADING": "Linked components",
+      "TYPE": "Type",
+      "DENOMINATION": "Denomination",
+      "BATCH": "Batch",
+      "ACTIONS": "Actions",
+      "ADD_COMPONENTS": "Add components"
+    },
+    "DIALOG_EDIT_COMPONENT": {
+      "ADD": "Add component",
+      "EDIT": "Edit component information",
+      "TYPE": "Type",
+      "DENOMINATION": "Denomination",
+      "DENOMINATION_LABEL": "Denomination",
+      "DENOMINATION_PLACEHOLDER": "Enter a denomination",
+      "MUNITION_TYPE_LABEL": "Type",
+      "MUNITION_TYPE_PLACEHOLDER": "Select a type",
+      "BATCH_LABEL": "Batch",
+      "BATCH_PLACEHOLDER": "Batch"
+    },
+    "DIALOG_RETIRE": {
+      "TITLE": "Manual ammunition retirement",
+      "INTRO": "Select ammunition to retire",
+      "TITLE_TABLE": "Selection of ammunition to retire",
+      "DENOMINATION": "Denomination",
+      "BATCH": "Batch",
+      "STOCK": "Stock",
+      "QUANTITY_LABEL": "Quantity",
+      "REASON_LABEL": "Retirement reasons",
+      "REASON_PLACEHOLDER": "Select a reason",
+      "BUTTON_CONFIRM": "Retire",
+      "REASON_RETURN": "Return to client",
+      "REASON_DESTRUCTION": "Destruction",
+      "REASON_EXTERNAL": "External tests"
+    }
+  },
+  "HTTP_ERRORS": {
+    "TITLE": "Error",
+    "NO_CONNECTION": "Could not connect to the server.",
+    "BAD_REQUEST": "Check the data sent.",
+    "UNAUTHORIZED": "Your session has expired or you don't have permissions.",
+    "FORBIDDEN": "You don't have access to this resource.",
+    "NOT_FOUND": "The requested resource does not exist.",
+    "SERVER_ERROR": "A server error occurred. Try again later.",
+    "DEFAULT": "An unexpected error occurred."
+  },
+  "BREADCRUMB": {
+    "DEMOS": "Demos",
+    "CATALOG": "Catalog",
+    "CATALOG_TRIAL_TYPE": "Trial type",
+    "CATALOG_DOCUMENT_TYPE": "Document type",
+    "CATALOG_TARGET_TYPE": "Target type",
+    "CATALOG_MATERIAL": "Material",
+    "CATALOG_DIMENSION": "Dimension",
+    "CATALOG_FUZE_TYPE": "Fuze type",
+    "TRIALS": "Trial management",
+    "TRIAL_NEW": "New trial",
+    "TRIAL_LIST": "Trial list",
+    "TRIAL_VIEW": "Trial details",
+    "TRIAL_DOCUMENT": "Documentation",
+    "WAREHOUSE": "Warehouse management",
+    "WAREHOUSE_MUNITIONS": "Add ammunition",
+    "WAREHOUSE_DENOMINATIONS": "Denomination management",
+    "WAREHOUSE_MUNITIONS_DUMPS": "Magazine management",
+    "WAREHOUSE_MUNITION_COMPONENTS": "Ammunition type management",
+    "WAREHOUSE_STOCK": "Ammunition stock",
+    "CALENDAR_TRIALS": "Trials calendar",
+    "CALENDAR": "Calendar",
+    "PLANNING": "Planning",
+    "PLANNING_DETAIL": "Planning details"
+  }
+}

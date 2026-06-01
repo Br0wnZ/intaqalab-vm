@@ -1,0 +1,25 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 3,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": { "es": "Zona Central", "en": "Central Zone" },
+      "label": "Central Zone",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": { "es": "Zona Norte", "en": "North Zone" },
+      "label": "North Zone",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": { "es": "Zona Sur", "en": "South Zone" },
+      "label": "South Zone",
+      "active": true
+    }
+  ]
+}

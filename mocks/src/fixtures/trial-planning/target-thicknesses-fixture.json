@@ -1,0 +1,11 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 4,
+  "items": [
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "name": "5 mm", "active": true },
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa7", "name": "10 mm", "active": true },
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa8", "name": "15 mm", "active": true },
+    { "id": "3fa85f64-5717-4562-b3fc-2c963f66afa9", "name": "20 mm", "active": true }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "munitionType": {
+    "id": "munitionType",
+    "name": "tipo de municion"
+  },
+  "denomination": {
+    "id": " denominationId",
+    "name": "Una denominación"
+  },
+  "batch": "Lote X",
+  "quantity": 10,
+  "totalNeq": 100,
+  "weight": 20,
+  "generalData": {
+    "client": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Cliente X"
+    },
+    "entryDate": "2026-02-18",
+    "plannedFireTrial": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Prueba X",
+      "scheduledDate": "2026-02-18"
+    },
+    "observations": "string"
+  },
+  "location": {
+    "munitionDump": {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "munitionDumpId": "Polvorín X"
+    },
+    "cellName": "Celda X"
+  },
+  "associatedComponents": [
+    {
+      "id": "1",
+      "munitionType": {
+        "id": "Proyectil",
+        "name": "Proyectil"
+      },
+      "denomination": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Denominación 1"
+      },
+      "batch": "Lote 1",
+      "quantity": 10
+    },
+    {
+      "id": "2",
+      "munitionType": {
+        "id": "Vaso",
+        "name": "Vaso"
+      },
+      "denomination": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Denominación 2"
+      },
+      "batch": "Lote 2",
+      "quantity": 200
+    },
+    {
+      "id": "3",
+      "munitionType": {
+        "id": "Vaso",
+        "name": "Vaso"
+      },
+      "denomination": {
+        "id": "Vaso XXX",
+        "name": "Vaso XXX"
+      },
+      "batch": "Lote 2",
+      "quantity": 200
+    }
+  ],
+  "retirementDate": "2026-02-18",
+  "retirementReason": "Retirada por motivos X",
+  "status": "AVAILABLE",
+  "createdBy": "username",
+  "modifiedBy": "username",
+  "createdAt": "2026-02-12T10:30:00Z",
+  "updatedAt": "2026-02-12T12:15:00Z"
+}

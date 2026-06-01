@@ -1,0 +1,34 @@
+// Componente: Radio buttons globales (`mat-radio-button`)
+@layer components {
+  .mat-mdc-radio-button,
+  .mat-mdc-radio-button.mat-primary,
+  .mat-mdc-radio-button.mat-accent {
+    --mat-radio-selected-icon-color: var(--inta-color-primary) !important;
+    --mat-radio-selected-hover-icon-color: var(--inta-color-primary) !important;
+    --mat-radio-selected-focus-icon-color: var(--inta-color-primary) !important;
+    --mat-radio-selected-pressed-icon-color: var(--inta-color-primary-hover) !important;
+    --mat-radio-unselected-icon-color: var(--inta-ui-checkbox-unselected) !important;
+    --mat-radio-unselected-hover-icon-color: var(--inta-ui-checkbox-unselected) !important;
+    --mat-radio-unselected-focus-icon-color: var(--inta-ui-checkbox-unselected) !important;
+    --mat-radio-unselected-pressed-icon-color: var(--inta-ui-checkbox-unselected) !important;
+    --mat-radio-ripple-color: color-mix(in srgb, var(--inta-color-primary) 14%, transparent) !important;
+    --mat-radio-checked-ripple-color: color-mix(in srgb, var(--inta-color-primary) 16%, transparent) !important;
+  }
+
+  .mat-mdc-radio-button .mdc-radio__outer-circle {
+    border-width: 2px !important;
+    border-color: var(--inta-ui-checkbox-unselected) !important;
+  }
+
+  .mat-mdc-radio-button .mdc-radio__inner-circle {
+    background-color: var(--inta-color-primary) !important;
+  }
+
+  .mat-mdc-radio-button.mat-mdc-radio-checked .mdc-radio__outer-circle {
+    border-color: var(--inta-color-primary) !important;
+  }
+
+  .mat-mdc-radio-button.mat-mdc-radio-checked .mdc-radio__inner-circle {
+    background-color: var(--inta-color-primary) !important;
+  }
+}

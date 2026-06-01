@@ -1,0 +1,4 @@
+{
+  "vitest.maximumConfigs": 20,
+  "vitest.disableWorkspaceWarning": true
+}

@@ -1,0 +1,30 @@
+{
+  "widgets": [
+    {
+      "id": "disparo",
+      "x": 0,
+      "y": 0,
+      "width": 3,
+      "height": 2,
+      "visible": true
+    },
+    {
+      "id": "seguimiento-general",
+      "x": 3,
+      "y": 0,
+      "width": 2,
+      "height": 2,
+      "visible": true
+    },
+    {
+      "id": "preparacion-ejecucion",
+      "x": 5,
+      "y": 0,
+      "width": 1,
+      "height": 2,
+      "visible": false
+    }
+  ],
+  "layout": "grid",
+  "refreshInterval": 5000
+}

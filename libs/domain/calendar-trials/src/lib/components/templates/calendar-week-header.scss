@@ -1,0 +1,45 @@
+.cal-day-headers {
+  display: flex;
+}
+
+.cal-header-cell {
+  flex: 1;
+  min-height: 5rem;
+  padding: 0.75rem 0.875rem;
+  border-right: 1px solid var(--inta-neutral-200);
+  border-bottom: 1px solid var(--inta-neutral-200);
+  background-color: var(--inta-bg-white);
+}
+
+.cal-week-day-header__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cal-week-day-header__number {
+  color: var(--inta-neutral-900);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.cal-week-day-header__number--today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background-color: var(--inta-neutral-900);
+  color: white;
+}
+
+.cal-week-day-header__label {
+  display: block;
+  color: var(--inta-neutral-600);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+}

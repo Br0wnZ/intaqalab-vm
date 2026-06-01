@@ -1,0 +1,15 @@
+[
+  { "id": "b1e1e7e0-1a2b-4c3d-8e9f-1a2b3c4d5e6f", "name": "Autorización" },
+  { "id": "c2f2f8f1-2b3c-5d4e-9f0a-2b3c4d5e6f7a", "name": "Certificado de conformidad" },
+  { "id": "d3g3g9g2-3c4d-6e5f-0a1b-3c4d5e6f7a8b", "name": "Comunicaciones" },
+  { "id": "e4h4h0h3-4d5e-7f6a-1b2c-4d5e6f7a8b9c", "name": "Datos meteorológicos" },
+  { "id": "f5i5i1i4-5e6f-8a7b-2c3d-5e6f7a8b9c0d", "name": "Documentación de referencia" },
+  { "id": "a6j6j2j5-6f7a-9b8c-3d4e-6f7a8b9c0d1e", "name": "Informe de actividad técnica" },
+  { "id": "b7k7k3k6-7a8b-0c9d-4e5f-7a8b9c0d1e2f", "name": "Informe externo" },
+  { "id": "c8l8l4l7-8b9c-1d0e-5f6a-8b9c0d1e2f3a", "name": "Otros" },
+  { "id": "d9m9m5m8-9c0d-2e1f-6a7b-9c0d1e2f3a4b", "name": "Plan de ensayos" },
+  { "id": "e0n0n6n9-0d1e-3f2a-7b8c-0d1e2f3a4b5c", "name": "Presupuesto" },
+  { "id": "f1o1o7o0-1e2f-4a3b-8c9d-1e2f3a4b5c6d", "name": "Solicitud" },
+  { "id": "a2p2p8p1-2f3a-5b4c-9d0e-2f3a4b5c6d7e", "name": "Catálogo de Ensayos" },
+  { "id": "b3q3q9q2-3a4b-6c5d-0e1f-3a4b5c6d7e8f", "name": "Nota de experiencias" }
+]

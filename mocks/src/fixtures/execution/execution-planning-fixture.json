@@ -1,0 +1,19 @@
+{
+  "goal": "Evaluar comportamiento del material en condiciones estándar",
+  "specimens": [
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440010", "batch": "LOTE-001" },
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440011", "batch": "LOTE-002" }
+  ],
+  "planningUser": { "id": "U-123", "name": "Juan Pérez" },
+  "executionDate": "2026-03-10",
+  "observations": "Se requiere control de humedad antes del ensayo.",
+  "requirements": "Temperatura controlada; equipo calibrado.",
+  "additionalInfo": "Priorizar muestras con lote anterior.",
+  "dateControl": {
+    "maxEmissionDates": 20,
+    "percentageTechnicalUnits": 40,
+    "percentageEndTrial": 60,
+    "daysSignReport": 1,
+    "reportDeadlineDate": "2026-04-10"
+  }
+}

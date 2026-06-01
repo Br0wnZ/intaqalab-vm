@@ -1,0 +1,59 @@
+{
+  "page": 1,
+  "pageSize": 25,
+  "totalElements": 151,
+  "items": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Certificado1.pdf",
+      "components": [
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 2"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 3"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 4"
+        }
+      ],
+      "createdBy": "username",
+      "modifiedBy": "username",
+      "createdAt": "2026-02-12T10:30:00Z",
+      "updatedAt": "2026-02-12T12:15:00Z"
+    },
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "Certificado2.pdf",
+      "components": [
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 88"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 32"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 311"
+        },
+        {
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "Componente 4444"
+        }
+      ],
+      "createdBy": "username",
+      "modifiedBy": "username",
+      "createdAt": "2026-02-12T10:30:00Z",
+      "updatedAt": "2026-02-12T12:15:00Z"
+    }
+  ]
+}

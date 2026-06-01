@@ -1,0 +1,187 @@
+﻿import { signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideTestingEnvironment } from '@intaqalab/config';
+import { UiDialogService } from '@intaqalab/ui';
+import { createMockMatDialog } from '@intaqalab/utils';
+import { TranslateModule } from '@ngx-translate/core';
+import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
+
+import { DenominationsStore } from '../../../+state/denominations.store';
+import type { DenominationModel, DenominationUpSertModel } from '../../../models/denominations.model';
+import { DenominationsDialogComponent } from '../denomination-dialog/denominations-dialog.component';
+import { DenominationsListComponent } from './denominations-list.component';
+
+// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
+
+const mockItem: DenominationModel = {
+  id: 'item-1',
+  category: 'MUNITION',
+  munitionType: { id: 'mt-1', name: 'Granada mortero' },
+  name: 'Granada mortero 120 mm inerte M-AE-85',
+  neq: 0.68,
+  riskGroups: '1.3',
+  compatibility: 'G',
+  weight: 21.5,
+  active: true,
+};
+
+function createMockStore(items: DenominationModel[] = []) {
+  return {
+    items: signal(items),
+    totalElements: signal(items.length),
+    isLoading: signal(false),
+    hasError: signal(false),
+    isMutating: signal(false),
+    search: vi.fn(),
+    createItem: vi.fn(),
+    updateItem: vi.fn(),
+    deleteItem: vi.fn(),
+    toogleEnabledItem: vi.fn(),
+    reload: vi.fn(),
+  };
+}
+
+describe('DenominationsListComponent', () => {
+  let mockStore: ReturnType<typeof createMockStore>;
+  let mockUiDialog: { confirm: ReturnType<typeof vi.fn> };
+
+  const setup = async (items: DenominationModel[] = [], dialogResult: unknown = null) => {
+    const user = userEvent.setup();
+    mockStore = createMockStore(items);
+    mockUiDialog = { confirm: vi.fn().mockResolvedValue(false) };
+    const mockDialog = createMockMatDialog({ defaultResult: dialogResult });
+
+    const view = await render(DenominationsListComponent, {
+      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      providers: [
+        provideTestingEnvironment(),
+        { provide: DenominationsStore, useValue: mockStore },
+        { provide: MatDialog, useValue: mockDialog },
+        { provide: UiDialogService, useValue: mockUiDialog },
+      ],
+    });
+
+    const container = view.fixture.nativeElement as HTMLElement;
+    return { user, view, container };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('Rendering', () => {
+    it('should render the denominations title', async () => {
+      await setup();
+      expect(screen.getAllByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.TITLE/i)[0]).toBeInTheDocument();
+    });
+
+    it('should render the create button', async () => {
+      await setup();
+      expect(screen.getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)).toBeInTheDocument();
+    });
+
+    it('should render items from the store in the table', async () => {
+      await setup([mockItem]);
+      expect(screen.getByText(mockItem.name)).toBeInTheDocument();
+      expect(screen.getByText(mockItem.munitionType.name)).toBeInTheDocument();
+      expect(screen.getByText(String(mockItem.neq))).toBeInTheDocument();
+    });
+  });
+
+  describe('Initialization', () => {
+    it('should call store.search on init with default pagination', async () => {
+      await setup();
+      expect(mockStore.search).toHaveBeenCalledWith(expect.objectContaining({ page: 1, pageSize: 10 }));
+    });
+  });
+
+  describe('Create', () => {
+    it('should open the create dialog with item null when create button is clicked', async () => {
+      const { user } = await setup();
+      const mockDialog = createMockMatDialog({ defaultResult: null });
+
+      const createBtn = screen
+        .getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)
+        .closest('button') as HTMLButtonElement;
+      await user.click(createBtn);
+
+      expect(mockStore.createItem).not.toHaveBeenCalled();
+    });
+
+    it('should call store.createItem with dialog result when create is confirmed', async () => {
+      const newDenomination: DenominationUpSertModel = {
+        name: 'New Denomination',
+        category: 'MUNITION',
+        munitionTypeId: 'mt-1',
+        active: true,
+        weight: 5,
+      };
+      const { user } = await setup([], newDenomination);
+      const createBtn = screen
+        .getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)
+        .closest('button') as HTMLButtonElement;
+      await user.click(createBtn);
+
+      expect(mockStore.createItem).toHaveBeenCalledWith(newDenomination);
+    });
+  });
+
+  describe('Edit', () => {
+    it('should call store.updateItem with merged result when edit is confirmed', async () => {
+      const editResult: DenominationUpSertModel = {
+        name: 'Updated Name',
+        category: 'MUNITION',
+        munitionTypeId: 'mt-1',
+        active: true,
+        weight: 10,
+      };
+      const { user, container } = await setup([mockItem], editResult);
+      const editBtns = container.querySelectorAll('button[mat-icon-button]');
+      const editBtn = editBtns[1] as HTMLButtonElement; // delete=0, edit=1
+      await user.click(editBtn);
+
+      expect(mockStore.updateItem).toHaveBeenCalledWith(expect.objectContaining({ name: editResult.name }));
+    });
+  });
+
+  describe('Delete', () => {
+    it('should call store.deleteItem when delete is confirmed', async () => {
+      const { user, container } = await setup([mockItem]);
+      mockUiDialog.confirm.mockResolvedValue(true);
+      const deleteBtn = container.querySelectorAll('button[mat-icon-button]')[0] as HTMLButtonElement;
+      await user.click(deleteBtn);
+
+      expect(mockStore.deleteItem).toHaveBeenCalledWith(mockItem);
+    });
+
+    it('should NOT call store.deleteItem when delete is cancelled', async () => {
+      const { user, container } = await setup([mockItem]);
+      mockUiDialog.confirm.mockResolvedValue(false);
+      const deleteBtn = container.querySelectorAll('button[mat-icon-button]')[0] as HTMLButtonElement;
+      await user.click(deleteBtn);
+
+      expect(mockStore.deleteItem).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Toggle active', () => {
+    it('should call store.toogleEnabledItem when slide toggle changes', async () => {
+      const { container } = await setup([mockItem]);
+      const toggle = container.querySelector('mat-slide-toggle') as HTMLElement;
+      const input = toggle?.querySelector('input[type="checkbox"]') ?? toggle?.querySelector('button[role="switch"]');
+      (input as HTMLElement)?.click();
+      await Promise.resolve();
+
+      expect(mockStore.toogleEnabledItem).toHaveBeenCalledWith(mockItem, expect.any(Boolean));
+    });
+  });
+});

@@ -1,0 +1,117 @@
+// Componente: Selects globales (Angular Material)
+@layer components {
+  html body .mat-mdc-form-field {
+    .mat-mdc-select-arrow {
+      display: none;
+    }
+
+    .mat-mdc-select-arrow-wrapper {
+      @apply text-gray-500;
+      width: 12px;
+      height: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transform: none !important;
+    }
+
+    .mat-mdc-select-arrow-wrapper::before {
+      content: '';
+      width: 12px;
+      height: 7px;
+      background-color: currentColor;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.8333 5.83325L5.83325 0.833252L0.833252 5.83325' stroke='black' stroke-width='1.66667' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.8333 5.83325L5.83325 0.833252L0.833252 5.83325' stroke='black' stroke-width='1.66667' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-size: 12px 7px;
+      mask-size: 12px 7px;
+      transform: rotate(180deg);
+      transition: transform 160ms ease-in-out;
+    }
+
+    .mat-mdc-select[aria-expanded='true'] .mat-mdc-select-arrow-wrapper::before {
+      transform: rotate(0deg);
+    }
+
+    &.mat-focused .mat-mdc-select-arrow-wrapper {
+      @apply text-violet-500;
+    }
+
+    &.mat-form-field-disabled .mat-mdc-select-arrow-wrapper {
+      @apply text-gray-400;
+    }
+  }
+
+  html body .mat-mdc-select-panel {
+    border-radius: 8px !important;
+  }
+
+  html body .mat-mdc-select-panel.mdc-menu-surface.mdc-menu-surface--open,
+  html body .mat-select-panel-animations-enabled.mat-mdc-select-panel.mdc-menu-surface.mdc-menu-surface--open,
+  html
+    body
+    .mat-select-panel-animations-enabled.mat-mdc-select-panel.mdc-menu-surface.mdc-menu-surface--open.mat-primary {
+    --mat-select-panel-background-color: var(--inta-bg-white);
+    background-color: var(--inta-bg-white) !important;
+  }
+
+  html body .mat-mdc-option:focus.mdc-list-item,
+  html body .mat-mdc-option.mat-mdc-option-active.mdc-list-item {
+    background-color: var(--color-gray-50) !important;
+  }
+
+  html body .mat-mdc-option .mdc-list-item__primary-text {
+    color: var(--color-gray-900) !important;
+    font-weight: 500 !important;
+  }
+
+  html body .mat-mdc-select-panel .mat-pseudo-checkbox-full {
+    border-color: var(--inta-ui-checkbox-unselected) !important;
+  }
+
+  html body .mat-mdc-select-panel .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked,
+  html body .mat-mdc-select-panel .mat-pseudo-checkbox-full.mat-pseudo-checkbox-indeterminate {
+    background-color: var(--inta-color-primary) !important;
+    border-color: transparent !important;
+  }
+
+  html body .mat-mdc-select-panel .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked::after,
+  html body .mat-mdc-select-panel .mat-pseudo-checkbox-full.mat-pseudo-checkbox-indeterminate::after {
+    color: var(--inta-color-on-primary) !important;
+  }
+
+  html body .mat-mdc-select-panel .mat-mdc-option:hover .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked,
+  html body .mat-mdc-select-panel .mat-mdc-option:focus .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked,
+  html
+    body
+    .mat-mdc-select-panel
+    .mat-mdc-option.mat-mdc-option-active
+    .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked {
+    background-color: var(--inta-color-primary-hover) !important;
+  }
+
+  html
+    body
+    .mat-mdc-select-panel
+    .mat-mdc-option:hover
+    .mat-pseudo-checkbox-full:not(.mat-pseudo-checkbox-checked):not(.mat-pseudo-checkbox-indeterminate),
+  html
+    body
+    .mat-mdc-select-panel
+    .mat-mdc-option:focus
+    .mat-pseudo-checkbox-full:not(.mat-pseudo-checkbox-checked):not(.mat-pseudo-checkbox-indeterminate),
+  html
+    body
+    .mat-mdc-select-panel
+    .mat-mdc-option.mat-mdc-option-active
+    .mat-pseudo-checkbox-full:not(.mat-pseudo-checkbox-checked):not(.mat-pseudo-checkbox-indeterminate) {
+    border-color: var(--inta-color-primary) !important;
+  }
+
+  html body .mat-mdc-menu-panel {
+    background-color: var(--inta-bg-white) !important;
+  }
+}

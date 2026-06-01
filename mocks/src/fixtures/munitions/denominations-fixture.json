@@ -1,0 +1,47 @@
+[
+  {
+    "id": "denom-001",
+    "name": {
+      "es": "M107 HE",
+      "en": "M107 HE"
+    },
+    "label": "M107 HE",
+    "active": true
+  },
+  {
+    "id": "denom-002",
+    "name": {
+      "es": "M557",
+      "en": "M557"
+    },
+    "label": "M557",
+    "active": true
+  },
+  {
+    "id": "denom-003",
+    "name": {
+      "es": "M116 SMK",
+      "en": "M116 SMK"
+    },
+    "label": "M116 SMK",
+    "active": true
+  },
+  {
+    "id": "denom-004",
+    "name": {
+      "es": "M549A1 RAP",
+      "en": "M549A1 RAP"
+    },
+    "label": "M549A1 RAP",
+    "active": true
+  },
+  {
+    "id": "denom-005",
+    "name": {
+      "es": "M483A1 DPICM",
+      "en": "M483A1 DPICM"
+    },
+    "label": "M483A1 DPICM",
+    "active": false
+  }
+]

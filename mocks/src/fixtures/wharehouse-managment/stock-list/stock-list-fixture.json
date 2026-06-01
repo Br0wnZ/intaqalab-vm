@@ -1,0 +1,71 @@
+{
+  "page": 1,
+  "pageSize": 25,
+  "totalElements": 151,
+  "items": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "category": "MUNITION",
+      "munitionType": {
+        "id": "DIPARO_COMPLETO",
+        "name": "Disparo completo"
+      },
+      "denomination": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Denominacion 1"
+      },
+      "client": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Cliente 2"
+      },
+      "batch": "Lote1",
+      "munitionDump": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "munitionDumpId": "string"
+      },
+      "status": "AVAILABLE",
+      "plannedFireTrial": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Trial 2"
+      },
+      "quantity": 0,
+      "totalNeq": 0,
+      "createdBy": "username",
+      "modifiedBy": "username",
+      "createdAt": "2026-02-12T10:30:00Z",
+      "updatedAt": "2026-02-12T12:15:00Z"
+    },
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "category": "MUNITION_COMPONENT",
+      "munitionType": {
+        "id": "Vaso",
+        "name": "Vaso"
+      },
+      "denomination": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Denominacion 2"
+      },
+      "client": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Cliente 2"
+      },
+      "batch": "Lote1",
+      "munitionDump": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "munitionDumpId": "string"
+      },
+      "status": "AVAILABLE",
+      "plannedFireTrial": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Trial 2"
+      },
+      "quantity": 0,
+      "totalNeq": 0,
+      "createdBy": "username",
+      "modifiedBy": "username",
+      "createdAt": "2026-02-12T10:30:00Z",
+      "updatedAt": "2026-02-12T12:15:00Z"
+    }
+  ]
+}

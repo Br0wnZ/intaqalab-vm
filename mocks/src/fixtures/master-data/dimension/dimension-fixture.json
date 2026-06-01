@@ -1,0 +1,41 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension1",
+    "height": 20,
+    "width": 45,
+    "label": "20 x 45 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension2",
+    "height": 20,
+    "width": 450,
+    "label": "20 x 450 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension3",
+    "diameter": 500,
+    "label": "500 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension4",
+    "diameter": 300,
+    "label": "300 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension5",
+    "height": 220,
+    "width": 40,
+    "label": "220 x 40 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension6",
+    "height": 20,
+    "width": 450,
+    "label": "20 x 450 cm"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-Dimension7",
+    "diameter": 700,
+    "label": "700 cm"
+  }
+]

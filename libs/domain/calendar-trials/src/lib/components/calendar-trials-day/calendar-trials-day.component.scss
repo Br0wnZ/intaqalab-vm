@@ -1,0 +1,57 @@
+:host {
+  display: block;
+
+  ::ng-deep {
+    .cal-day-view {
+      background-color: var(--inta-bg-white);
+
+      .cal-events-container {
+        margin-left: 0;
+      }
+
+      .cal-all-day-events {
+        border: 1px solid var(--inta-neutral-200);
+        border-top: 0;
+        padding: 0.75rem;
+
+        .cal-time-label-column {
+          display: none;
+        }
+
+        .cal-events-row {
+          min-height: 0;
+          height: auto;
+          margin-left: 0;
+        }
+
+        .cal-event-container {
+          position: relative;
+          width: 100% !important;
+          margin-left: 0 !important;
+          margin-bottom: 0.75rem;
+        }
+
+        .cal-event {
+          width: 100%;
+          height: auto;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: transparent;
+        }
+      }
+
+      .cal-time-events {
+        display: none;
+      }
+    }
+
+    .calendar-day-is-weekend {
+      background-color: var(--inta-neutral-300) !important;
+
+      .custom-day-header {
+        background-color: var(--inta-neutral-300) !important;
+      }
+    }
+  }
+}

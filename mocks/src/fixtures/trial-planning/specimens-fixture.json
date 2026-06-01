@@ -1,0 +1,67 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 10,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440010",
+      "name": "Probeta de ensayo A-105",
+      "type": "MUNITION",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440011",
+      "name": "Cañón 120mm L44",
+      "type": "WEAPON",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440012",
+      "name": "Tubo de ensayo T-1",
+      "type": "TUBE",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440013",
+      "name": "Munición inerte 155mm",
+      "type": "MUNITION",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440014",
+      "name": "Obús M107",
+      "type": "WEAPON",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440015",
+      "name": "Probeta cilíndrica B-200",
+      "type": "MUNITION",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440016",
+      "name": "Tubo calibrador T-2",
+      "type": "TUBE",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440017",
+      "name": "Mortero M120",
+      "type": "WEAPON",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440018",
+      "name": "Proyectil de prueba P-50",
+      "type": "MUNITION",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440019",
+      "name": "Tubo de ánima lisa T-3",
+      "type": "TUBE",
+      "active": true
+    }
+  ]
+}

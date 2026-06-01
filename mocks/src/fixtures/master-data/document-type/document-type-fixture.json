@@ -1,0 +1,11 @@
+{
+  "id": "550e8400-e29b-41d4-a716-DocumentType1",
+  "name": {
+    "es": "Tipo documento 1",
+    "en": "Document type 1"
+  },
+  "label": "Tipo documento 1",
+  "status": true,
+  "description": "Tipo documento 1 description",
+  "client": "Particular"
+}

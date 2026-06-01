@@ -1,0 +1,33 @@
+{
+  "goal": "Evaluar comportamiento del material en condiciones estándar",
+  "specimens": [
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440010", "batch": "" },
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440011", "batch": "" }
+  ],
+  "planningUser": { "id": "U-123", "name": "Juan Pérez" },
+  "hypochelometricReviewBefore": false,
+  "hypochelometricReviewAfter": false,
+  "observations": "Se requiere control de humedad antes del ensayo.",
+  "requirements": "Temperatura controlada; equipo calibrado.",
+  "additionalInfo": "Priorizar muestras con lote anterior.",
+  "dateControl": {
+    "maxEmissionDates": 3,
+    "percentageTechnicalUnits": 75,
+    "percentageEndTrial": 90,
+    "daysSignReport": 7
+  },
+  "stanagCriteria": [
+    { "id": "sc-001", "name": "Wind Speed Threshold" },
+    { "id": "sc-002", "name": "Temperature Range" }
+  ],
+  "ratingCriteria": {
+    "v0c": { "useful1Min": 0, "useful1Max": 100, "uselessMin": 101, "uselessMax": 200 },
+    "v0cMean": { "useful1Min": 10, "useful1Max": 90, "uselessMin": 91, "uselessMax": 150 },
+    "v0cStdDev": { "useful1Min": 0, "useful1Max": 5, "uselessMin": 6, "uselessMax": 20 },
+    "p": { "useful1Min": 0, "useful1Max": 50, "uselessMin": 51, "uselessMax": 100 },
+    "pMean": { "useful1Min": 0, "useful1Max": 45, "uselessMin": 46, "uselessMax": 90 },
+    "projectile": { "useful1Min": 1, "useful1Max": 10, "uselessMin": 11, "uselessMax": 50 },
+    "fuse": { "useful1Min": 1, "useful1Max": 5, "uselessMin": 6, "uselessMax": 20 },
+    "primer": { "useful1Min": 1, "useful1Max": 3, "uselessMin": 4, "uselessMax": 15 }
+  }
+}

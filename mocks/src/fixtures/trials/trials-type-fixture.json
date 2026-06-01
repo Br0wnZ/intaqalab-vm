@@ -1,0 +1,8 @@
+[
+  { "id": "1", "name": "Particular" },
+  { "id": "2", "name": "Oficial" },
+  { "id": "3", "name": "Interna" },
+  { "id": "4", "name": "Vigilancia" },
+  { "id": "5", "name": "Homologación" },
+  { "id": "6", "name": "Aseguramiento de la calidad" }
+]

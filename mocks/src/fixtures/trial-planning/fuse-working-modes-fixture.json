@@ -1,0 +1,10 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 3,
+  "items": [
+    { "id": "550e8400-e29b-41d4-a716-446655440030", "name": "INSTANT", "active": true },
+    { "id": "550e8400-e29b-41d4-a716-446655440035", "name": "DELAY", "active": true },
+    { "id": "550e8400-e29b-41d4-a716-446655440036", "name": "PROXIMITY", "active": true }
+  ]
+}

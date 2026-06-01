@@ -1,0 +1,28 @@
+{
+  "series": [
+    {
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+      "seriesName": "Serie 1",
+      "configurations": [
+        {
+          "id": "cfg-001",
+          "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+          "denomination": "denom-001",
+          "batch": "LOT-2024-001",
+          "maxAllowedErrors": 2,
+          "observations": "Configuración estándar",
+          "components": [
+            {
+              "id": "comp-001",
+              "type": { "id": "type-001", "type": "PROJECTILE", "label": "Proyectil" },
+              "denomination": { "id": "den-001", "name": "Proyectil 155mm" },
+              "batch": "LOT-P-001",
+              "clientNumber": 1001
+            }
+          ],
+          "assignedShotIds": null
+        }
+      ]
+    }
+  ]
+}

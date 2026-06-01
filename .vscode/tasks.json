@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "nx build all",
+      "type": "shell",
+      "command": "npx",
+      "args": ["nx", "run-many", "-t", "build", "--all"],
+      "isBackground": false,
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}

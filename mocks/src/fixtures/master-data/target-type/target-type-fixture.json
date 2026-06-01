@@ -1,0 +1,72 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeSea",
+    "name": {
+      "es": "Mar",
+      "en": "Sea"
+    },
+    "label": "Mar",
+    "enabled": true,
+    "description": "Esto es disparar en el Mar"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeSandbox",
+    "name": {
+      "es": "Arenero",
+      "en": "Sandbox"
+    },
+    "label": "Arenero",
+    "enabled": false,
+    "description": "Esto es disparar en el Arenero"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeMetalPlates",
+    "name": {
+      "es": "Plancha",
+      "en": "Metal plates"
+    },
+    "label": "Plancha",
+    "enabled": false,
+    "description": "Esto es disparar en el Plancha"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeMesh",
+    "name": {
+      "es": "Malla",
+      "en": "Mesh"
+    },
+    "label": "Malla",
+    "enabled": false,
+    "description": "Esto es disparar en el Malla"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeVirtual",
+    "name": {
+      "es": "Virtual",
+      "en": "Virtual"
+    },
+    "label": "Virtual",
+    "enabled": true,
+    "description": "Esto es disparar en el Virtual"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeProximity",
+    "name": {
+      "es": "Proximidad",
+      "en": "Proximity"
+    },
+    "label": "Proximidad",
+    "enabled": false,
+    "description": "Esto es disparar en el Proximidad"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-TargetTypeInfrared",
+    "name": {
+      "es": "Infrarrojo",
+      "en": "Infrared"
+    },
+    "label": "Infrarrojo",
+    "enabled": true,
+    "description": "Esto es disparar en el Infrarrojo"
+  }
+]

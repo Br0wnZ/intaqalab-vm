@@ -1,0 +1,26 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": { "es": "Línea 1", "en": "Line 1" },
+    "label": "Línea 1",
+    "active": true
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "name": { "es": "Línea 2", "en": "Line 2" },
+    "label": "Línea 2",
+    "active": true
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "name": { "es": "Línea 3", "en": "Line 3" },
+    "label": "Línea 3",
+    "active": true
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440004",
+    "name": { "es": "Línea 4 (inactiva)", "en": "Line 4 (inactive)" },
+    "label": "Línea 4 (inactiva)",
+    "active": false
+  }
+]

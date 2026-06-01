@@ -1,0 +1,39 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "target": "es2022",
+    "module": "es2022",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "rootDir": ".",
+    "lib": ["es2020", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@intaqalab/calendar-trials": ["libs/domain/calendar-trials/src/index.ts"],
+      "@intaqalab/core": ["libs/core/src/index.ts"],
+      "@intaqalab/data-access": ["libs/shared/data-access/src/index.ts"],
+      "@intaqalab/demos": ["libs/demos/src/index.ts"],
+      "@intaqalab/models": ["libs/shared/models/src/index.ts"],
+      "@intaqalab/planning": ["libs/domain/trial/planning/src/index.ts"],
+      "@intaqalab/theme": ["libs/shared/theme/src/index.ts"],
+      "@intaqalab/ui": ["libs/shared/ui/src/index.ts"],
+      "@intaqalab/utils": ["libs/shared/utils/src/index.ts"],
+      "@intaqalab/utils/testing/dialog-test-helpers": ["libs/shared/utils/src/lib/testing/dialog-test-helpers.ts"],
+      "@intaqalab/utils/testing/testing-helpers": ["libs/shared/utils/src/lib/testing/testing-helpers.ts"],
+      "@intaqalab/utils/testing/core": ["libs/shared/utils/src/lib/testing/core/index.ts"],
+      "@intaqalab/trial-management": ["libs/domain/trial/trial-management/src/index.ts"],
+      "@intaqalab/admin": ["libs/domain/admin/src/index.ts"],
+      "@intaqalab/config": ["libs/shared/config/src/index.ts"],
+      "@intaqalab/pruebas": ["libs/pruebas/src/index.ts"],
+      "@intaqalab/master-data": ["libs/domain/master-data/src/index.ts"],
+      "@intaqalab/wharehouse-managment": ["libs/domain/wharehouse-managment/src/index.ts"],
+      "@intaqalab/event-log": ["libs/domain/event-log/src/index.ts"],
+      "@intaqalab/execution": ["libs/domain/trial/execution/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "dist"]
+}

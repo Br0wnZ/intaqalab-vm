@@ -1,0 +1,121 @@
+// Componente: Inputs globales (Angular Material form-field)
+@layer components {
+  html body .mat-mdc-form-field.mat-form-field-appearance-outline {
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      ),
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger),
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container) {
+      @apply rounded-lg;
+      --mat-form-field-container-shape: 8px !important;
+      --mat-form-field-container-height: 44px;
+      --mat-form-field-container-vertical-padding: 10px;
+      height: 44px;
+      max-height: 44px;
+      border-radius: 8px !important;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      .mat-mdc-form-field-flex,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mat-mdc-form-field-flex,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mat-mdc-form-field-flex {
+      min-height: 44px;
+      max-height: 44px;
+      height: 44px;
+      align-items: center;
+      border-radius: 8px !important;
+    }
+
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      ),
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger),
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container) {
+      @apply bg-white;
+      background-color: var(--inta-ui-surface-default);
+    }
+
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      .mat-mdc-form-field-flex,
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mat-mdc-form-field-flex,
+    &:not(.mat-form-field-disabled)
+      .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mat-mdc-form-field-flex {
+      @apply bg-white;
+      background-color: var(--inta-ui-surface-default);
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      .mat-mdc-form-field-infix,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mat-mdc-form-field-infix,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mat-mdc-form-field-infix {
+      min-height: 44px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      .mdc-notched-outline__leading,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mdc-notched-outline__leading,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mdc-notched-outline__leading {
+      border-top-left-radius: 8px !important;
+      border-bottom-left-radius: 8px !important;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      .mdc-notched-outline__trailing,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mdc-notched-outline__trailing,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mdc-notched-outline__trailing {
+      border-top-right-radius: 8px !important;
+      border-bottom-right-radius: 8px !important;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      input.mat-mdc-input-element,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mat-mdc-select-value-text,
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-date-range-input-container)
+      .mat-date-range-input-separator {
+      @apply text-base text-gray-900;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
+        input.mat-mdc-input-element:not(.mat-mdc-form-field-textarea-control)
+      )
+      input.mat-mdc-input-element::placeholder {
+      @apply text-base text-gray-500;
+      opacity: 1;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(.mat-mdc-select-trigger)
+      .mat-mdc-select-placeholder {
+      @apply text-base text-gray-500;
+    }
+  }
+}

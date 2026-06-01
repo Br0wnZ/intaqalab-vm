@@ -1,0 +1,53 @@
+{
+  "series": [
+    {
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+      "seriesName": "Serie 1",
+      "measures": {
+        "topographyMeasures": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440040",
+            "name": "Presión",
+            "minLimit": 0.5,
+            "maxLimit": 2,
+            "deviation": 0.1
+          },
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440041",
+            "name": "Altura",
+            "minLimit": 1,
+            "maxLimit": 3.5,
+            "deviation": 0.2
+          }
+        ],
+        "munitionsMeasures": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440050",
+            "name": "Velocidad de proyectil",
+            "minLimit": 100,
+            "maxLimit": 200,
+            "deviation": 5
+          }
+        ],
+        "armamentMeasures": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440060",
+            "name": "Vida útil tubo",
+            "minLimit": 10,
+            "maxLimit": 100,
+            "deviation": 5
+          }
+        ],
+        "ballisticsMeasures": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440070",
+            "name": "Alcance",
+            "minLimit": 50,
+            "maxLimit": 500,
+            "deviation": 10
+          }
+        ]
+      }
+    }
+  ]
+}

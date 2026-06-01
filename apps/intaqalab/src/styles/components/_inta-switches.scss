@@ -1,0 +1,22 @@
+// Componente: Switch global (`mat-slide-toggle`)
+@layer components {
+  .mat-mdc-slide-toggle {
+    .mdc-switch {
+      transform: scale(0.8);
+      &:focus .mdc-switch__track::after,
+      &:active .mdc-switch__track::after {
+        background-color: var(--inta-button) !important;
+      }
+      .mdc-switch__track::after,
+      .mdc-switch__track::before {
+        border: 0 !important;
+      }
+    }
+    .mdc-switch__icons {
+      @apply hidden;
+    }
+    .mdc-switch__shadow {
+      @apply bg-white;
+    }
+  }
+}

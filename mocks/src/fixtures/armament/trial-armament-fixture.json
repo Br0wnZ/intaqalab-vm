@@ -1,0 +1,82 @@
+{
+  "series": [
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440001",
+      "seriesName": "Serie 1",
+      "shots": [
+        {
+          "shotId": "750e8400-e29b-41d4-a716-446655440001",
+          "armament": {
+            "weaponName": "Cañón 120mm L44",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440011",
+            "tubeName": "Tubo de ensayo T-1",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440012",
+            "isInstrumented": true,
+            "tubeLifePercentage": 75.5,
+            "observations": "Tubo en buen estado"
+          }
+        },
+        {
+          "shotId": "750e8400-e29b-41d4-a716-446655440002",
+          "armament": {
+            "weaponName": "Cañón 120mm L44",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440011",
+            "tubeName": "Tubo de ensayo T-1",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440012",
+            "isInstrumented": false,
+            "tubeLifePercentage": 75.5,
+            "observations": ""
+          }
+        }
+      ]
+    },
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440002",
+      "seriesName": "Serie 2",
+      "shots": [
+        {
+          "shotId": "750e8400-e29b-41d4-a716-446655440003",
+          "armament": {
+            "weaponName": "Obús M107",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440014",
+            "tubeName": "Tubo calibrador T-2",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440016",
+            "isInstrumented": true,
+            "tubeLifePercentage": 60.0,
+            "observations": "Requiere inspección post-disparo"
+          }
+        },
+        {
+          "shotId": "750e8400-e29b-41d4-a716-446655440004",
+          "armament": {
+            "weaponName": "Obús M107",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440014",
+            "tubeName": "Tubo calibrador T-2",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440016",
+            "isInstrumented": false,
+            "tubeLifePercentage": 60.0,
+            "observations": ""
+          }
+        }
+      ]
+    },
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440003",
+      "seriesName": "Serie 3",
+      "shots": [
+        {
+          "shotId": "750e8400-e29b-41d4-a716-446655440005",
+          "armament": {
+            "weaponName": "Mortero M120",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440017",
+            "tubeName": "Tubo de ánima lisa T-3",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440019",
+            "isInstrumented": true,
+            "tubeLifePercentage": 85.2,
+            "observations": "Nuevo, primera serie de disparos"
+          }
+        }
+      ]
+    }
+  ]
+}

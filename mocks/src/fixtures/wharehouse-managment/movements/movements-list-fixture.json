@@ -1,0 +1,35 @@
+{
+  "page": 1,
+  "pageSize": 25,
+  "totalElements": 151,
+  "items": [
+    {
+      "date": "2026-03-03T16:23:32.191Z",
+      "movementType": "TRANSFER",
+      "user": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "Pedro Ruiz"
+      },
+      "originMunitionDump": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "munitionDumpId": "Polvorín 1"
+      },
+      "destinationMunitionDump": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "munitionDumpId": "Polvorín 2"
+      },
+      "quantity": 10,
+      "affectedNeq": 10,
+      "reason": "un motivo",
+      "associatedFireTrial": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "name": "un trial"
+      },
+      "observations": "Observaciones",
+      "createdBy": "username",
+      "modifiedBy": "username",
+      "createdAt": "2026-02-12T10:30:00Z",
+      "updatedAt": "2026-02-12T12:15:00Z"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+:host {
+  display: block;
+
+  ::ng-deep .compact-table {
+    th.mat-mdc-header-cell,
+    td.mat-mdc-cell {
+      width: 8rem !important;
+      min-width: 8rem !important;
+      max-width: 8rem !important;
+      padding: 0.25rem !important;
+      vertical-align: middle;
+      font-size: 0.75rem;
+      box-sizing: border-box;
+    }
+
+    th.mat-mdc-header-cell:first-child,
+    td.mat-mdc-cell:first-child {
+      width: 5rem !important;
+      min-width: 5rem !important;
+      max-width: 5rem !important;
+      padding-left: 1rem !important;
+    }
+  }
+
+  ::ng-deep .mat-mdc-form-field {
+    width: 7rem !important;
+  }
+
+  ::ng-deep .mat-mdc-select-panel {
+    min-width: fit-content !important;
+    width: auto !important;
+    max-width: 400px !important;
+  }
+
+  ::ng-deep .mat-mdc-option {
+    min-width: 150px !important;
+    max-width: 400px !important;
+    width: auto !important;
+    padding: 0 16px !important;
+
+    .mdc-list-item__primary-text {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .truncate {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  ::ng-deep .density-xs {
+    width: 7rem !important;
+    .mat-mdc-text-field-wrapper {
+      height: 2.5rem !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      background-color: white !important;
+      border-radius: 0.375rem !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    .mat-mdc-form-field-infix {
+      padding-top: 0.25rem !important;
+      padding-bottom: 0.25rem !important;
+      min-height: 0 !important;
+      width: auto !important;
+      min-height: 2.5rem !important;
+    }
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+    input.mat-mdc-input-element,
+    .mat-mdc-select-value {
+      font-size: 0.75rem;
+      line-height: 1rem;
+      color: rgb(55 65 81);
+    }
+    .mat-mdc-form-field-icon-suffix .mat-icon {
+      transform: scale(0.75) !important;
+    }
+  }
+}

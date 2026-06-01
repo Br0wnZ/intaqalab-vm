@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>hello</h2>
+<mat-dialog-content>
+  <p>What's your favorite animal?</p>
+
+  <p>trial-table-selector-modal-shell works!</p>
+
+  <button matButton [mat-dialog-close]="results() ? results()[0] : false">Select</button>
+  <lib-trial-list />
+  <pre>{{ results() | json }}</pre>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button matButton [mat-dialog-close]="false">Cancel</button>
+</mat-dialog-actions>

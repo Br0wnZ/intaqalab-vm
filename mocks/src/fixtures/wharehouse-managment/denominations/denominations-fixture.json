@@ -1,0 +1,632 @@
+[
+  {
+    "id": "1",
+    "name": "Granada mortero 1",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "GRANADA_MORTERO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "2",
+    "name": "Granada mortero 2",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "GRANADA_MORTERO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "3",
+    "name": "Granada mortero 3",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "GRANADA_MORTERO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.4",
+    "compatibility": "D",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  1",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "E",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  2",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  3",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  4",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  5",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo  6",
+    "category": "MUNITION",
+    "munitionType": {
+      "id": "DIPARO_COMPLETO",
+      "name": "Granada mortero"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "4",
+    "name": "Disparo completo 2555",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Carga suplementaria",
+      "name": "Carga suplementaria"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Vaso 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "Vaso 134343",
+    "name": "Vaso 134343",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "Vaso XXX",
+    "name": "Vaso XXX",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "Vaso 1ewewe",
+    "name": "Vaso 1ewewe",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Vaso 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Vaso 3",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Vaso 4",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Vaso 5",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaso",
+      "name": "Vaso"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Cartucho 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Cartucho",
+      "name": "Cartucho"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "1000",
+    "name": "Cartucho 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Cartucho",
+      "name": "Cartucho"
+    },
+    "neq": 2,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 3,
+    "active": true
+  },
+  {
+    "id": "proy-1",
+    "name": "Proyectil 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Proyectil",
+      "name": "Proyectil"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "B",
+    "weight": 5,
+    "active": true
+  },
+  {
+    "id": "proy-2",
+    "name": "Proyectil 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Proyectil",
+      "name": "Proyectil"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 6,
+    "active": true
+  },
+  {
+    "id": "ci-1",
+    "name": "Carga interna 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Carga interna",
+      "name": "Carga interna"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 2,
+    "active": true
+  },
+  {
+    "id": "ci-2",
+    "name": "Carga interna 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Carga interna",
+      "name": "Carga interna"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "D",
+    "weight": 2,
+    "active": true
+  },
+  {
+    "id": "cp-1",
+    "name": "Carga de proyección 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Carga de proyección",
+      "name": "Carga de proyección"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "cp-2",
+    "name": "Carga de proyección 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Carga de proyección",
+      "name": "Carga de proyección"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "bb-1",
+    "name": "Base Bleed (BB) 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Base Bleed (BB)",
+      "name": "Base Bleed (BB)"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "bb-2",
+    "name": "Base Bleed (BB) 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Base Bleed (BB)",
+      "name": "Base Bleed (BB)"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "esp-1",
+    "name": "Espoleta 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Espoleta",
+      "name": "Espoleta"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.4",
+    "compatibility": "B",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "esp-2",
+    "name": "Espoleta 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Espoleta",
+      "name": "Espoleta"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.4",
+    "compatibility": "B",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "pol-1",
+    "name": "Pólvora 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Pólvora",
+      "name": "Pólvora"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "pol-2",
+    "name": "Pólvora 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Pólvora",
+      "name": "Pólvora"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "vai-1",
+    "name": "Vaina 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaina",
+      "name": "Vaina"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "vai-2",
+    "name": "Vaina 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Vaina",
+      "name": "Vaina"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "esto-1",
+    "name": "Estopín 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Estopín",
+      "name": "Estopín"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.4",
+    "compatibility": "B",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "esto-2",
+    "name": "Estopín 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Estopín",
+      "name": "Estopín"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.4",
+    "compatibility": "B",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "traz-1",
+    "name": "Trazador 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Trazador",
+      "name": "Trazador"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "traz-2",
+    "name": "Trazador 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Trazador",
+      "name": "Trazador"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "sup-1",
+    "name": "Suplemento 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Suplemento",
+      "name": "Suplemento"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "sup-2",
+    "name": "Suplemento 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Suplemento",
+      "name": "Suplemento"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "otros-1",
+    "name": "Otros 1",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Otros",
+      "name": "Otros"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.1",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  },
+  {
+    "id": "otros-2",
+    "name": "Otros 2",
+    "category": "MUNITION_COMPONENT",
+    "munitionType": {
+      "id": "Otros",
+      "name": "Otros"
+    },
+    "neq": 1,
+    "unNumber": "unNumber",
+    "riskGroup": "1.2",
+    "compatibility": "C",
+    "weight": 1,
+    "active": true
+  }
+]

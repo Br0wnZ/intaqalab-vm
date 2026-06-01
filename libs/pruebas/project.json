@@ -1,0 +1,20 @@
+{
+  "name": "pruebas",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/pruebas/src",
+  "prefix": "inta",
+  "projectType": "library",
+  "tags": ["type:demo", "scope:dev"],
+  "targets": {
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/libs/pruebas"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

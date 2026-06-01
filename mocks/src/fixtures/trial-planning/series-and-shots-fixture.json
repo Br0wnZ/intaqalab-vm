@@ -1,0 +1,43 @@
+[
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+    "name": "Serie 1",
+    "executionOrder": 1,
+    "observations": "Primera serie de disparos",
+    "shots": [
+      { "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa1", "globalNumber": 1 },
+      { "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa2", "globalNumber": 2 }
+    ]
+  },
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa2",
+    "name": "Serie 2",
+    "executionOrder": 2,
+    "observations": "Segunda serie de disparos",
+    "shots": [
+      { "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa3", "globalNumber": 3 },
+      { "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa4", "globalNumber": 4 }
+    ]
+  },
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa3",
+    "name": "Serie 3",
+    "executionOrder": 3,
+    "observations": "Tercera serie de disparos",
+    "shots": [{ "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa5", "globalNumber": 5 }]
+  },
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa4",
+    "name": "Serie 4",
+    "executionOrder": 4,
+    "observations": "Cuarta serie de disparos",
+    "shots": [{ "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa6", "globalNumber": 6 }]
+  },
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
+    "name": "Serie 5",
+    "executionOrder": 5,
+    "observations": "Quinta serie de disparos",
+    "shots": [{ "id": "3fa85f64-5717-4562-b3fc-2c963f66bfa7", "globalNumber": 7 }]
+  }
+]

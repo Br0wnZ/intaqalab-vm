@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fwm-001",
+    "name": "INSTANT",
+    "active": true
+  },
+  {
+    "id": "fwm-002",
+    "name": "DELAY",
+    "active": true
+  },
+  {
+    "id": "fwm-003",
+    "name": "PROXIMITY",
+    "active": true
+  },
+  {
+    "id": "fwm-004",
+    "name": "TIME",
+    "active": true
+  },
+  {
+    "id": "fwm-005",
+    "name": "IMPACT",
+    "active": true
+  },
+  {
+    "id": "fwm-006",
+    "name": "SQ",
+    "active": false
+  }
+]

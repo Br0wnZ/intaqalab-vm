@@ -1,0 +1,92 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440011",
+      "name": "Velocidad del viento"
+    },
+    "description": "Velocidad media del viento en superficie inferior a 10 m/s",
+    "numThreshold": 10,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440001", "name": "m/s" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440001", "name": "Valor único" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440001", "name": "Superficie" },
+    "startLayer": "0",
+    "endLayer": "0",
+    "active": true
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440011",
+      "name": "Velocidad del viento"
+    },
+    "description": "La velocidad del viento es superior a 2,5 m/s entre 300 m y la flecha máxima",
+    "numThreshold": 2.5,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440001", "name": "m/s" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "Diferencia entre capas" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440004", "name": "Entre dos alturas" },
+    "startLayer": "300",
+    "endLayer": "Flecha máxima",
+    "active": false
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440022",
+      "name": "Dirección del viento"
+    },
+    "description": "La dirección del viento entre 300 grados y la flecha",
+    "numThreshold": 245,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "grados" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "Diferencia entre capas" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440004", "name": "Entre dos alturas" },
+    "startLayer": "300",
+    "endLayer": "Flecha máxima",
+    "active": false
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440004",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440033",
+      "name": "Temperatura"
+    },
+    "description": "La temperatura entre 300 y 400",
+    "numThreshold": 2.5,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "grados" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440003", "name": "Capas consecutivas" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440003", "name": "Flecha máxima" },
+    "startLayer": "300",
+    "endLayer": "400",
+    "active": false
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440005",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440044",
+      "name": "Presión"
+    },
+    "description": "La presión entre 30 y 40",
+    "numThreshold": 2.5,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440003", "name": "Pascales" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "Diferencia entre capas" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "Altura aproximada" },
+    "startLayer": "30",
+    "endLayer": "40",
+    "active": true
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440006",
+    "variable": {
+      "id": "550e8400-e29b-41d4-a716-446655440055",
+      "name": "Densidad"
+    },
+    "description": "La densidad entre 1100 y la flecha máxima",
+    "numThreshold": 10,
+    "measureUnit": { "id": "550e8400-e29b-41d4-a716-446655440004", "name": "kg/m3" },
+    "calcType": { "id": "550e8400-e29b-41d4-a716-446655440002", "name": "Diferencia entre capas" },
+    "involvedLayers": { "id": "550e8400-e29b-41d4-a716-446655440003", "name": "Flecha máxima" },
+    "startLayer": "1100",
+    "endLayer": "Flecha máxima",
+    "active": true
+  }
+]

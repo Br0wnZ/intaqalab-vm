@@ -1,0 +1,283 @@
+.cal-month-view {
+  .cal-cell-top {
+    padding: 12px;
+    min-height: 45px;
+  }
+
+  .calendar-month-cell__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    padding: 12px 12px 0 !important;
+    position: sticky;
+    background-color: var(--color-white);
+    top: 0;
+    cursor: default;
+  }
+
+  .calendar-month-cell__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 0;
+    overflow: visible;
+    padding: 0 0 12px 12px;
+  }
+
+  .calendar-month-cell__special-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    margin: 0 !important;
+    color: var(--inta-neutral-400);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.15;
+    pointer-events: none;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .calendar-month-cell__special-state--no-notam {
+    color: var(--inta-neutral-400);
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 18px !important;
+  }
+
+  .calendar-month-cell__special-state--holiday {
+    color: #d46a7f;
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 18px !important;
+  }
+
+  .cal-day-headers {
+    background-color: var(--inta-neutral-50) !important;
+    border: 1px solid var(--inta-neutral-200) !important;
+    border-bottom: 0;
+  }
+
+  .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    background-color: var(--inta-neutral-50) !important;
+    border: 1px solid var(--inta-neutral-200) !important;
+    border-bottom: 0 !important;
+    color: var(--inta-neutral-500) !important;
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .cal-header:not(:last-child) {
+    border-right: 1px solid var(--inta-neutral-200) !important;
+  }
+
+  .cal-header:hover {
+    background-color: var(--inta-neutral-50) !important;
+  }
+
+  .cal-header b {
+    color: inherit;
+    font-size: inherit;
+    font-weight: 500;
+  }
+
+  .cal-cell-row:hover {
+    background-color: transparent;
+  }
+
+  .cal-cell-row .cal-cell:hover,
+  .cal-day-cell:hover,
+  .cal-cell.cal-has-events.cal-open {
+    background-color: transparent;
+  }
+
+  .cal-event {
+    color: #000;
+  }
+
+  .cal-day-cell {
+    min-height: 135px !important;
+    height: 135px !important;
+    max-height: 135px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+
+  .cal-day-cell.cal-today {
+    background-color: transparent !important;
+  }
+
+  .cal-day-cell.cal-today:hover {
+    background-color: transparent !important;
+  }
+
+  .cell--holiday.cal-day-cell.cal-today {
+    background-color: pink !important;
+    .calendar-month-cell__body {
+      background-color: pink;
+    }
+  }
+
+  .cell--holiday.cal-day-cell.cal-today:hover {
+    background-color: pink !important;
+    .calendar-month-cell__body {
+      background-color: pink;
+    }
+  }
+
+  .cal-cell {
+    min-height: 0;
+  }
+
+  .cal-day-number {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    float: left;
+    color: var(--inta-neutral-900) !important;
+    font-size: 24px !important;
+    font-weight: 500 !important;
+    line-height: 1.2;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .cal-day-cell.cal-today .cal-day-number {
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background-color: var(--inta-neutral-900);
+    color: #fff !important;
+    font-size: 24px !important;
+    font-weight: 500 !important;
+  }
+
+  .cal-actions {
+    float: right;
+    margin: -8px -50% -8px -8px;
+  }
+
+  .cal-observations {
+    position: absolute;
+    right: 32px;
+    top: 16px;
+    bottom: 8px;
+    margin: auto;
+    padding: 0;
+    color: var(--inta-neutral-900);
+    cursor: default;
+    .mat-mdc-button-persistent-ripple {
+      display: none;
+    }
+  }
+}
+
+.cal-month-view .cal-event-item {
+  margin: 0;
+  overflow: visible;
+}
+
+.cell--holiday {
+  background-color: pink !important;
+  .cal-cell-top.calendar-month-cell__top {
+    background-color: pink;
+  }
+  .calendar-month-cell__body {
+    background-color: pink;
+  }
+}
+
+.calendar-month-cell__top--holiday {
+  background-color: pink !important;
+}
+
+.calendar-month-cell__body--holiday {
+  background-color: pink !important;
+}
+
+.cell--weekend {
+  background-color: var(--inta-neutral-300) !important;
+}
+
+// week calendar
+.visible-weekends {
+  .cal-day-columns > .cal-day-column:last-child,
+  .cal-day-columns > .cal-day-column:nth-last-child(2) {
+    background-color: var(--inta-neutral-300) !important;
+  }
+}
+
+.calendar-day-is-weekend {
+  background-color: var(--inta-neutral-300) !important;
+
+  .custom-day-header {
+    background-color: var(--inta-neutral-300) !important;
+  }
+}
+
+.cell--holiday:hover {
+  background-color: pink !important;
+}
+
+.cal-weekend {
+  .cal-cell-top.calendar-month-cell__top {
+    background-color: var(--inta-neutral-300);
+  }
+
+  .calendar-month-cell__body {
+    background-color: var(--inta-neutral-300);
+  }
+}
+
+// calendar week header
+.cal-weekend {
+  .cal-cell-top.calendar-month-cell__top {
+    background-color: var(--inta-neutral-300);
+  }
+
+  .calendar-month-cell__body {
+    background-color: var(--inta-neutral-300);
+  }
+}
+
+.cell--no-notam {
+  background-color: var(--inta-neutral-300) !important;
+  .cal-cell-top.calendar-month-cell__top {
+    background-color: var(--inta-neutral-300);
+  }
+}
+
+.cell--no-notam:hover {
+  background-color: var(--inta-neutral-300) !important;
+}
+
+// week calendar
+
+.cal-week-view {
+  .cal-day-headers .cal-header:hover,
+  .cal-day-headers .cal-drag-over {
+    background-color: var(--inta-neutral-50) !important;
+  }
+
+  .cal-time-events {
+    display: none !important;
+  }
+
+  .cal-all-day-events {
+    .cal-events-row {
+      height: 140px;
+    }
+  }
+}

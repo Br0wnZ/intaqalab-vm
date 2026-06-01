@@ -1,0 +1,62 @@
+{
+  "page": 0,
+  "pageSize": 5,
+  "totalElements": 5,
+  "items": [
+    {
+      "id": "doc-001",
+      "name": "FT-1105 IAT 0019_22",
+      "fileName": "FT-1105 IAT 0019_22_V_M_CÑ_3_50_DIS.pdf",
+      "status": "ACTIVE",
+      "version": "v1",
+      "category": "SPECIFIC",
+      "type": { "id": "a6j6j2j5-6f7a-9b8c-3d4e-6f7a8b9c0d1e", "name": "Informe de actividad técnica" },
+      "createdAt": "2025-07-15T10:00:00Z",
+      "updatedAt": "2025-07-15T10:00:00Z"
+    },
+    {
+      "id": "doc-002",
+      "name": "Autorizacion",
+      "fileName": "Autorizacion.pdf",
+      "status": "OBSOLETE",
+      "version": "v2",
+      "category": "SPECIFIC",
+      "type": { "id": "b1e1e7e0-1a2b-4c3d-8e9f-1a2b3c4d5e6f", "name": "Autorización" },
+      "createdAt": "2025-07-15T10:00:00Z",
+      "updatedAt": "2025-07-15T10:00:00Z"
+    },
+    {
+      "id": "doc-003",
+      "name": "Plan de Ensayo",
+      "fileName": "Plan de Ensayo.pdf",
+      "status": "ACTIVE",
+      "version": "v3",
+      "category": "SPECIFIC",
+      "type": { "id": "c8l8l4l7-8b9c-1d0e-5f6a-8b9c0d1e2f3a", "name": "Plan de Ensayo" },
+      "createdAt": "2025-07-15T10:00:00Z",
+      "updatedAt": "2025-07-15T10:00:00Z"
+    },
+    {
+      "id": "doc-004",
+      "name": "Autorizacion 2",
+      "fileName": "Autorizacion.pdf",
+      "status": "ACTIVE",
+      "version": "v4",
+      "category": "SPECIFIC",
+      "type": { "id": "b1e1e7e0-1a2b-4c3d-8e9f-1a2b3c4d5e6f", "name": "Autorización" },
+      "createdAt": "2025-07-15T10:00:00Z",
+      "updatedAt": "2025-07-15T10:00:00Z"
+    },
+    {
+      "id": "doc-005",
+      "name": "UX Guidelines",
+      "fileName": "UX Design Guidelines.docx",
+      "status": "OBSOLETE",
+      "version": "v5",
+      "category": "SPECIFIC",
+      "type": { "id": "a6j6j2j5-6f7a-9b8c-3d4e-6f7a8b9c0d1e", "name": "Informe de actividad técnica" },
+      "createdAt": "2025-07-15T10:00:00Z",
+      "updatedAt": "2025-07-15T10:00:00Z"
+    }
+  ]
+}

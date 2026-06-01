@@ -1,0 +1,189 @@
+[
+  {
+    "id": "GRANADA_MORTERO",
+    "label": "Granada mortero",
+    "name": {
+      "es": "Granada mortero",
+      "en": "Granada mortero"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION",
+    "active": true
+  },
+  {
+    "id": "DIPARO_COMPLETO",
+    "label": "Disparo completo",
+    "name": {
+      "es": "Disparo completo",
+      "en": "Disparo completo"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION",
+    "active": true
+  },
+  {
+    "id": "Proyectil",
+    "label": "Proyectil",
+    "name": {
+      "es": "Proyectil",
+      "en": "Proyectil"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Carga interna",
+    "label": "Carga interna",
+    "name": {
+      "es": "Carga interna",
+      "en": "Carga interna"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Carga suplementaria",
+    "label": "Carga suplementaria",
+    "name": {
+      "es": "Carga suplementaria",
+      "en": "Carga suplementaria"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Carga de proyección",
+    "label": "Carga de proyección",
+    "name": {
+      "es": "Carga de proyección",
+      "en": "Carga de proyección"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Vaso",
+    "label": "Vaso",
+    "name": {
+      "es": "Vaso",
+      "en": "Vaso"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Base Bleed (BB)",
+    "label": "Base Bleed (BB)",
+    "name": {
+      "es": "Base Bleed (BB)",
+      "en": "Base Bleed (BB)"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Espoleta",
+    "label": "Espoleta",
+    "name": {
+      "es": "Espoleta",
+      "en": "Espoleta"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Espoleta",
+    "label": "Espoleta",
+    "name": {
+      "es": "Espoleta",
+      "en": "Espoleta"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Pólvora",
+    "name": {
+      "es": "Pólvora",
+      "en": "Pólvora"
+    },
+    "label": "Pólvora",
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Vaina",
+    "label": "Vaina",
+    "name": {
+      "es": "Vaina",
+      "en": "Vaina"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Estopín",
+    "label": "Estopín",
+    "name": {
+      "es": "Estopín",
+      "en": "Estopín"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Trazador",
+    "label": "Trazador",
+    "name": {
+      "es": "Trazador",
+      "en": "Trazador"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Cartucho",
+    "label": "Cartucho",
+    "name": {
+      "es": "Cartucho",
+      "en": "Cartucho"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
+    "id": "Suplemento",
+    "label": "Suplemento",
+    "name": {
+      "es": "Suplemento",
+      "en": "Suplemento"
+    },
+    "category": "MUNITION_COMPONENT",
+    "observations": "bla, bla, bla",
+    "active": true
+  },
+  {
+    "id": "Otros",
+    "label": "Otros",
+    "name": {
+      "es": "Otros",
+      "en": "Otros"
+    },
+    "observations": "bla, bla, bla",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  }
+]

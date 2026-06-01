@@ -1,0 +1,187 @@
+[
+  {
+    "id": "a0000001-0000-0000-0000-000000000001",
+    "description": "Día del pilarwwww",
+    "date": "2025-10-12",
+    "eventType": "HOLIDAY"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000002",
+    "date": "2025-10-15",
+    "eventType": "NO_NOTAM"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000003",
+    "description": "Día festivo",
+    "date": "2025-10-09",
+    "eventType": "HOLIDAY"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000004",
+    "date": "2025-11-05",
+    "eventType": "NO_NOTAM"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000005",
+    "date": "2025-11-06",
+    "eventType": "NO_NOTAM"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000006",
+    "date": "2025-11-11",
+    "eventType": "HOLIDAY",
+    "description": "algo"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000007",
+    "date": "2025-10-05",
+    "eventType": "NO_NOTAM"
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000001",
+    "date": "2025-11-28",
+    "eventType": "FIRE_TRIAL",
+    "description": "Fire MEMO",
+    "lineOfShootId": "1",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/25",
+      "description": "Fire Trial Description",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000002",
+    "date": "2025-11-25",
+    "eventType": "FIRE_TRIAL",
+    "description": "Fire Trial 25",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/25",
+      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+
+  {
+    "id": "b0000001-0000-0000-0000-000000000003",
+    "date": "2025-11-26",
+    "eventType": "FIRE_TRIAL",
+    "description": "Esta prueba es duplicada del mes pasado",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/25",
+      "status": "FINALIZING",
+      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000004",
+    "date": "2025-11-26",
+    "eventType": "FIRE_TRIAL",
+    "description": "prueba de fuego creada por prioridad ",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/26",
+      "status": "UNDER_REVIEW",
+      "description": "Fire Trial222",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000005",
+    "date": "2025-11-26",
+    "eventType": "FIRE_TRIAL",
+    "description": "Finalmente se hace en otra prueba",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/29",
+      "status": "PLANNED",
+      "description": "Fire Trial222",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000006",
+    "date": "2025-11-26",
+    "eventType": "FIRE_TRIAL",
+    "description": "Finalmente se hace en otra prueba",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "trialNumber": "0001/29",
+      "status": "ANALYZING",
+      "description": "Fire Trial222",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "Client Name"
+      }
+    }
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000008",
+    "date": "2025-12-25",
+    "eventType": "HOLIDAY",
+    "description": "NAVIDAD"
+  },
+  {
+    "id": "a0000001-0000-0000-0000-000000000009",
+    "date": "2025-12-24",
+    "eventType": "HOLIDAY",
+    "description": "NAVIDAD"
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000007",
+    "date": "2025-12-22",
+    "eventType": "FIRE_TRIAL",
+    "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f",
+      "trialNumber": "0044-25",
+      "status": "UNDER_REVIEW",
+      "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "RHEINMETALL EXPAL MUNITIONS"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000008",
+    "date": "2025-12-23",
+    "eventType": "FIRE_TRIAL",
+    "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f",
+      "trialNumber": "0044-25",
+      "status": "UNDER_REVIEW",
+      "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "RHEINMETALL EXPAL MUNITIONS"
+      }
+    }
+  }
+]

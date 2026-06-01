@@ -1,0 +1,55 @@
+{
+  "name": "mock-data",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "mocks/src",
+  "projectType": "application",
+  "tags": ["type:mock", "scope:dev"],
+  "targets": {
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": ["{workspaceRoot}/dist/mocks/package.json", "{workspaceRoot}/dist/mocks/package-lock.json"],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/mocks/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/mocks/main.js"
+      },
+      "configurations": {
+        "development": {
+          "command": "node dist/mocks/main.js"
+        },
+        "production": {
+          "command": "node dist/mocks/main.js"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../coverage/mocks"
+      }
+    }
+  }
+}

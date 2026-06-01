@@ -1,0 +1,8 @@
+// Componente: Spinners globales (`mat-spinner` / `mat-progress-spinner`)
+@layer components {
+  .mat-mdc-progress-spinner,
+  .mat-mdc-progress-spinner.mat-primary,
+  .mat-mdc-progress-spinner.mat-accent {
+    --mat-progress-spinner-active-indicator-color: var(--inta-color-primary) !important;
+  }
+}

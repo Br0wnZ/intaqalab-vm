@@ -1,0 +1,20 @@
+{
+  "name": "event-log",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domain/event-log/src",
+  "prefix": "inta",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:event-log"],
+  "targets": {
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../../coverage/libs/domain/event-log"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

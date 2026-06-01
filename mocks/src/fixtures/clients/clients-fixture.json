@@ -1,0 +1,37 @@
+[
+  {
+    "id": "client-001",
+    "name": "RHEINMETALL EXPAL MUNITIONS",
+    "email": "contacto@rheinmetall-expal.com",
+    "identificationDocumentTypeId": "CIF",
+    "identificationDocumentId": "A28000001J"
+  },
+  {
+    "id": "client-002",
+    "name": "Fábrica de Municiones de Granada",
+    "email": "info@fmgranada.es",
+    "identificationDocumentTypeId": "CIF",
+    "identificationDocumentId": "Q1800001F"
+  },
+  {
+    "id": "client-003",
+    "name": "JAL – Dirección de Construcciones Navales",
+    "email": "contacto@jal-dcn.es",
+    "identificationDocumentTypeId": "CIF",
+    "identificationDocumentId": "Q2900001C"
+  },
+  {
+    "id": "client-004",
+    "name": "General Dynamics Santa Bárbara Sistemas",
+    "email": "info@gd-ots.es",
+    "identificationDocumentTypeId": "CIF",
+    "identificationDocumentId": "A28000004H"
+  },
+  {
+    "id": "client-005",
+    "name": "Instalaza S.A.",
+    "email": "contacto@instalaza.es",
+    "identificationDocumentTypeId": "CIF",
+    "identificationDocumentId": "A50000005G"
+  }
+]

@@ -1,0 +1,27 @@
+<header class="h-16 bg-white shadow flex items-center justify-between pr-4">
+  <div class="flex items-center gap-2">
+    <div class="bg-gray-400 rounded-md flex justify-center items-center w-8 h-8">
+      <ui-inta-icon name="user" color="#fff" size="md" />
+    </div>
+    <h1 class="text-base font-medium">{{ userView() }}</h1>
+  </div>
+  <div class="flex gap-4 items-center">
+    @if (isDevMode) {
+      <div class="flex items-center gap-2">
+        <button type="button" class="inta-icon-btn" (click)="toggleTabsNavigation()">
+          <mat-icon>{{ tabsNavigationEnabled ? 'tab' : 'tab_unselected' }}</mat-icon>
+        </button>
+        <span class="text-xs">Tabs: {{ tabsNavigationEnabled ? 'ON' : 'OFF' }}</span>
+      </div>
+      <button type="button" class="inta-icon-btn">
+        <ui-inta-icon name="maximize" color="#fff" size="sm" />
+      </button>
+    }
+    <button type="button" class="inta-icon-btn" (click)="logout.emit()">
+      <ui-inta-icon name="exit" color="#fff" size="sm" />
+    </button>
+    @if (isDevMode) {
+      <lib-header-tools></lib-header-tools>
+    }
+  </div>
+</header>

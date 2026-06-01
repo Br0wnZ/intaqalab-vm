@@ -1,0 +1,25 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 3,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": { "es": "Acero", "en": "Steel" },
+      "label": "Steel",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": { "es": "Hormigón", "en": "Concrete" },
+      "label": "Concrete",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": { "es": "Madera", "en": "Wood" },
+      "label": "Wood",
+      "active": true
+    }
+  ]
+}

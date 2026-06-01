@@ -1,0 +1,197 @@
+// =============================================================================
+// DESIGN TOKENS - Variables CSS del cliente
+// =============================================================================
+// Estas variables se comparten entre Tailwind CSS y Angular Material
+// Definir aquí los colores y fuentes específicos del cliente
+
+:root {
+  // -------------------------------------------------------------------------
+  // COLORES DEL CLIENTE
+  // -------------------------------------------------------------------------
+  // Paleta primaria (Gris claro)
+  --inta-primary: #a4a7ae;
+  --inta-primary-light: #b8bbc2;
+  --inta-primary-dark: #90949b;
+  --color-white: #ffffff;
+  --inta-bg-white: #ffffff;
+
+  // Paleta secundaria
+  --inta-secondary: #059669;
+  --inta-secondary-light: #10b981;
+  --inta-secondary-dark: #047857;
+
+  // Paleta terciaria/acento
+  --inta-tertiary: #f59e0b;
+  --inta-tertiary-light: #fbbf24;
+  --inta-tertiary-dark: #d97706;
+
+  // Colores de estado
+  --inta-success: #22c55e;
+  --inta-warning: #eab308;
+  --inta-error: #ef4444;
+  --inta-info: #3b82f6;
+
+  // Color específico para botones principales
+  --inta-button: #7f56d9;
+  --inta-button-hover: #4c1d95;
+  --inta-color-primary: var(--inta-button);
+  --inta-color-primary-hover: var(--inta-button-hover);
+  --inta-color-on-primary: var(--color-white);
+  --inta-color-button-secondary: #414651;
+  --inta-bg-button-secondary: var(--color-white);
+
+  // Color para links
+  --inta-link-color: #155dfc;
+  --inta-link-hover-color: #0d4bb8;
+
+  // -------------------------------------------------------------------------
+  // PALETAS DE BOTONES - Variables específicas por variante
+  // -------------------------------------------------------------------------
+  // Text buttons
+  --inta-text-button-color: var(--inta-button);
+  --inta-text-button-hover-color: var(--inta-button);
+  --inta-text-button-focus-color: var(--inta-button);
+  --inta-text-button-disabled-color: var(--inta-neutral-400);
+
+  // Outlined buttons
+  --inta-outlined-button-bg: var(--color-white);
+  --inta-outlined-button-color: var(--inta-color-button-secondary);
+  --inta-outlined-button-hover-color: var(--inta-color-button-secondary);
+  --inta-outlined-button-focus-color: var(--inta-primary);
+  --inta-outlined-button-disabled-color: var(--inta-neutral-400);
+  --inta-outlined-button-outline-color: var(--inta-primary);
+  --inta-outlined-button-disabled-outline-color: var(--inta-neutral-300);
+
+  // Filled buttons
+  --inta-filled-button-bg: var(--inta-button);
+  --inta-filled-button-color: var(--color-white);
+  --inta-filled-button-hover-bg: var(--inta-button-hover);
+  --inta-filled-button-focus-bg: var(--inta-button);
+  --inta-filled-button-disabled-bg: var(--inta-neutral-200);
+  --inta-filled-button-disabled-color: var(--inta-neutral-400);
+
+  // Tonal buttons
+  --inta-tonal-button-bg: rgba(127, 86, 217, 0.1);
+  --inta-tonal-button-color: #000000;
+  --inta-tonal-button-hover-bg: rgba(127, 86, 217, 0.15);
+  --inta-tonal-button-focus-bg: rgba(127, 86, 217, 0.12);
+  --inta-tonal-button-disabled-bg: var(--inta-neutral-200);
+  --inta-tonal-button-disabled-color: var(--inta-neutral-400);
+
+  // Elevated buttons
+  --inta-elevated-button-bg: transparent;
+  --inta-elevated-button-color: var(--inta-button);
+  --inta-elevated-button-hover-bg: rgba(127, 86, 217, 0.08);
+  --inta-elevated-button-focus-bg: rgba(127, 86, 217, 0.12);
+  --inta-elevated-button-disabled-bg: transparent;
+  --inta-elevated-button-disabled-color: var(--inta-neutral-400);
+  --inta-elevated-button-border-color: rgba(127, 86, 217, 0.2);
+  --inta-elevated-button-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+  // Icon buttons
+  --inta-icon-button-color: var(--inta-primary);
+  --inta-icon-button-hover-color: var(--inta-primary-light);
+  --inta-icon-button-focus-color: var(--inta-primary);
+  --inta-icon-button-disabled-color: var(--inta-neutral-400);
+
+  // FAB buttons
+  --inta-fab-bg: rgba(127, 86, 217, 0.1);
+  --inta-fab-color: #000000;
+  --inta-fab-hover-bg: rgba(127, 86, 217, 0.15);
+  --inta-fab-focus-bg: rgba(127, 86, 217, 0.12);
+  --inta-fab-disabled-bg: var(--inta-neutral-200);
+  --inta-fab-disabled-color: var(--inta-neutral-400);
+
+  // Mini FAB buttons
+  --inta-mini-fab-bg: rgba(127, 86, 217, 0.1);
+  --inta-mini-fab-color: #000000;
+  --inta-mini-fab-hover-bg: rgba(127, 86, 217, 0.15);
+  --inta-mini-fab-focus-bg: rgba(127, 86, 217, 0.12);
+  --inta-mini-fab-disabled-bg: var(--inta-neutral-200);
+  --inta-mini-fab-disabled-color: var(--inta-neutral-400);
+
+  // Extended FAB buttons
+  --inta-extended-fab-bg: rgba(127, 86, 217, 0.1);
+  --inta-extended-fab-color: #000000;
+  --inta-extended-fab-hover-bg: rgba(127, 86, 217, 0.15);
+  --inta-extended-fab-focus-bg: rgba(127, 86, 217, 0.12);
+  --inta-extended-fab-disabled-bg: var(--inta-neutral-200);
+  --inta-extended-fab-disabled-color: var(--inta-neutral-400);
+
+  // Iconos en botones FAB
+  --inta-fab-icon-color: var(--inta-button);
+  --inta-fab-icon-disabled-color: var(--inta-neutral-400);
+
+  // Iconos en botones Filled
+  --inta-filled-icon-color: var(--color-white);
+  --inta-filled-icon-disabled-color: var(--inta-neutral-400);
+
+  // Colores neutros
+  --inta-neutral-50: #fafafa;
+  --inta-neutral-100: #f5f5f5;
+  --inta-neutral-200: #e5e5e5;
+  --inta-neutral-300: #d4d4d4;
+  --inta-neutral-400: #a3a3a3;
+  --inta-neutral-500: #737373;
+  --inta-neutral-600: #525252;
+  --inta-neutral-700: #404040;
+  --inta-neutral-800: #262626;
+  --inta-neutral-900: #171717;
+
+  // Superficie y fondo
+  --inta-surface: #ffffff;
+  --inta-surface-variant: #f5f5f5;
+  --inta-background: #fafafa;
+
+  // Tokens semánticos de UI
+  --inta-ui-border-default: var(--inta-neutral-300);
+  --inta-ui-label-default: var(--inta-neutral-700);
+  --inta-ui-surface-default: var(--inta-bg-white);
+  --inta-ui-surface-subtle: var(--inta-neutral-50);
+  --inta-ui-surface-active: var(--inta-neutral-200);
+  --inta-ui-checkbox-unselected: #9ca3af;
+  --inta-ui-tree-line: var(--inta-neutral-300);
+  --inta-ui-tree-line-strong: var(--inta-neutral-400);
+  --inta-elevated-button-disabled-border-color: color-mix(in srgb, var(--inta-color-primary) 10%, transparent);
+
+  // -------------------------------------------------------------------------
+  // TIPOGRAFÍA DEL CLIENTE
+  // -------------------------------------------------------------------------
+  --inta-font-primary: 'Inter', 'Roboto', sans-serif;
+  --inta-font-secondary: 'Open Sans', sans-serif;
+  --inta-font-mono: 'Fira Code', monospace;
+
+  // Pesos de fuente
+  --inta-font-weight-regular: 400;
+  --inta-font-weight-medium: 500;
+  --inta-font-weight-bold: 700;
+
+  // -------------------------------------------------------------------------
+  // ESPACIADO Y BORDES
+  // -------------------------------------------------------------------------
+  --inta-radius-sm: 0.25rem;
+  --inta-radius-md: 0.5rem;
+  --inta-radius-lg: 1rem;
+  --inta-radius-full: 9999px;
+
+  // Sombras
+  --inta-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --inta-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --inta-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+// Tema oscuro (opcional)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --inta-surface: #1a1a1a;
+    --inta-surface-variant: #262626;
+    --inta-background: #0a0a0a;
+  }
+}
+
+// Clase para forzar tema oscuro
+.dark-theme {
+  --inta-surface: #1a1a1a;
+  --inta-surface-variant: #262626;
+  --inta-background: #0a0a0a;
+}

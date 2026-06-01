@@ -1,0 +1,59 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import type { Signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
+
+import { TrialStore } from '../../+state/trial-list.store';
+import { FeatureTrialListShellComponent } from './feature-trial-list-shell.component';
+
+// vi.mock hoisted by Vitest
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
+
+@Component({
+  selector: 'inta-trial-list',
+  template: '',
+})
+class TrialListStubComponent {}
+
+const loadTrials = vi.fn<(arg: Signal<string>) => void>();
+const search = vi.fn();
+const items = vi.fn();
+const totalElements = vi.fn();
+const currentSearch = signal({});
+const mockStore = {
+  trials: signal(null),
+  sortField: signal(null),
+  sortDirection: signal(null),
+  isLoading: signal(false),
+  total: signal(null),
+  pageIndex: signal(null),
+  pageSize: signal(null),
+  error: signal(null),
+  loadTrials,
+  search,
+  items,
+  totalElements,
+  currentSearch,
+};
+
+describe('FeatureTrialListShellComponent', () => {
+  it('should render', async () => {
+    await render(FeatureTrialListShellComponent, {
+      declarations: [TrialListStubComponent],
+      imports: [TranslateModule.forRoot()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      componentProviders: [
+        { provide: TrialStore, useValue: mockStore },
+        {
+          provide: injectionTokenTabCommand,
+          useValue: null,
+        },
+      ],
+    });
+  });
+});

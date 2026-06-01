@@ -1,0 +1,26 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "name": {
+      "es": "Zona Central",
+      "en": "Central Zone"
+    },
+    "label": "Zona Central"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "name": {
+      "es": "Zona Periférica",
+      "en": "Peripheral Zone"
+    },
+    "label": "Zona Periférica"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440004",
+    "name": {
+      "es": "Zona Superior",
+      "en": "Upper Zone"
+    },
+    "label": "Zona Superior"
+  }
+]

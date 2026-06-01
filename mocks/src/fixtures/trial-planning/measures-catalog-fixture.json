@@ -1,0 +1,42 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 5,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440040",
+      "name": { "es": "Presión", "en": "Pressure" },
+      "label": "Pressure",
+      "category": "TOPOGRAPHY",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440041",
+      "name": { "es": "Altura", "en": "Height" },
+      "label": "Height",
+      "category": "TOPOGRAPHY",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440050",
+      "name": { "es": "Velocidad de proyectil", "en": "Projectile Speed" },
+      "label": "Projectile Speed",
+      "category": "MUNITIONS",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440060",
+      "name": { "es": "Vida útil tubo", "en": "Tube Life" },
+      "label": "Tube Life",
+      "category": "ARMAMENT",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440070",
+      "name": { "es": "Alcance", "en": "Range" },
+      "label": "Range",
+      "category": "BALLISTICS",
+      "active": true
+    }
+  ]
+}

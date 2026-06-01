@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "module": "es2022",
+    "declarationMap": true,
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "types": ["node"],
+    "moduleResolution": "bundler"
+  },
+  "exclude": ["src/**/*.spec.ts", "src/test-setup.ts", "src/**/*.test.ts"],
+  "include": ["src/**/*.ts"]
+}

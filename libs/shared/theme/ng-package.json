@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/libs/shared/theme",
+  "lib": {
+    "entryFile": "src/index.ts",
+    "styleIncludePaths": []
+  },
+  "assets": ["src/lib/fonts/**/*"],
+  "allowedNonPeerDependencies": ["@angular/material", "@angular/cdk"]
+}

@@ -1,0 +1,19 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 2,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440005",
+      "name": { "es": "Fusil", "en": "Rifle" },
+      "label": "Rifle",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440007",
+      "name": { "es": "Cañón 155mm", "en": "155mm Cannon" },
+      "label": "155mm Cannon",
+      "active": true
+    }
+  ]
+}

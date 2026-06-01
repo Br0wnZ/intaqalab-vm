@@ -1,0 +1,16 @@
+// =============================================================================
+// THEME INDEX - Punto de entrada principal del tema
+// =============================================================================
+// Importar este archivo en styles.scss de la aplicación
+
+// Fuentes locales del cliente
+@forward './fonts';
+
+// Variables CSS del cliente (Design Tokens)
+@forward './variables';
+
+// Tema de Angular Material
+@forward './material-theme';
+
+// Clases de utilidad personalizadas
+@forward './utilities';

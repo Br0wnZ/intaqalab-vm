@@ -1,0 +1,148 @@
+{
+  "name": "intaqalab",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "includedScripts": [],
+  "projectType": "application",
+  "prefix": "inta",
+  "sourceRoot": "apps/intaqalab/src",
+  "tags": ["type:app", "scope:intaqalab"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:browser-esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/intaqalab",
+        "index": "apps/intaqalab/src/index.html",
+        "main": "apps/intaqalab/src/main.ts",
+        "polyfills": [],
+        "tsConfig": "apps/intaqalab/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/intaqalab/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/intaqalab/src/assets",
+            "output": "assets"
+          }
+        ],
+        "styles": ["node_modules/angular-calendar/css/angular-calendar.css", "apps/intaqalab/src/styles.scss"],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/shared/theme/src/lib"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/intaqalab/src/environments/environment.ts",
+              "with": "apps/intaqalab/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "des": {
+          "fileReplacements": [
+            {
+              "replace": "apps/intaqalab/src/environments/environment.ts",
+              "with": "apps/intaqalab/src/environments/environment.dev.ts"
+            }
+          ],
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
+        "pre": {
+          "fileReplacements": [
+            {
+              "replace": "apps/intaqalab/src/environments/environment.ts",
+              "with": "apps/intaqalab/src/environments/environment.pre.ts"
+            }
+          ],
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
+        "mocks": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "intaqalab:build:production"
+        },
+        "des": {
+          "buildTarget": "intaqalab:build:des"
+        },
+        "pre": {
+          "buildTarget": "intaqalab:build:pre"
+        },
+        "development": {
+          "buildTarget": "intaqalab:build:development"
+        },
+        "mocks": {
+          "buildTarget": "intaqalab:build:mocks"
+        }
+      },
+      "defaultConfiguration": "development",
+      "options": {
+        "proxyConfig": "apps/intaqalab/proxy.conf.js"
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "intaqalab:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["apps/intaqalab/src"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/intaqalab"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "intaqalab:build",
+        "port": 4200,
+        "staticFilePath": "dist/intaqalab/browser",
+        "spa": true
+      }
+    }
+  }
+}

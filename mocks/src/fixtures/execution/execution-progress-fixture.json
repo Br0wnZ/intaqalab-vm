@@ -1,0 +1,76 @@
+{
+  "series": [
+    {
+      "serieId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+      "sequenceNumber": 1,
+      "shoots": [
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+          "sequenceNumber": 1,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        },
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+          "sequenceNumber": 2,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        }
+      ]
+    },
+    {
+      "serieId": "3fa85f64-5717-4562-b3fc-2c963f66afa2",
+      "sequenceNumber": 2,
+      "shoots": [
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa3",
+          "sequenceNumber": 3,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        },
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa4",
+          "sequenceNumber": 4,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        }
+      ]
+    },
+    {
+      "serieId": "3fa85f64-5717-4562-b3fc-2c963f66afa3",
+      "sequenceNumber": 3,
+      "shoots": [
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa5",
+          "sequenceNumber": 5,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        }
+      ]
+    },
+    {
+      "serieId": "3fa85f64-5717-4562-b3fc-2c963f66afa4",
+      "sequenceNumber": 4,
+      "shoots": [
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa6",
+          "sequenceNumber": 6,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        }
+      ]
+    },
+    {
+      "serieId": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
+      "sequenceNumber": 5,
+      "shoots": [
+        {
+          "shootId": "3fa85f64-5717-4562-b3fc-2c963f66bfa7",
+          "sequenceNumber": 7,
+          "status": "PENDING",
+          "updatedAt": "2026-03-10T10:15:30Z"
+        }
+      ]
+    }
+  ]
+}

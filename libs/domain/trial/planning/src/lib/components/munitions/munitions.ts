@@ -1,0 +1,487 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
+import { applyEach, form, required, validate } from '@angular/forms/signals';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { Badge } from '@intaqalab/ui';
+import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { TranslateModule } from '@ngx-translate/core';
+
+import { MunitionsStore } from '../../+state/munitions.store';
+import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
+import type { MasterDataI18nItem, MasterDataIItem } from '../../utils-models/catalog.model';
+import type {
+  BackendMunitionComponent,
+  ComponentDetail,
+  ComponentType,
+  Configuration,
+  Denomination,
+  FuseWorkingMode,
+  MunitionConfigRequest,
+  Serie,
+  SeriesMunitionsData,
+} from '../../utils-models/munitions.model';
+import {
+  createEmptyConfiguration,
+  createEmptySerie,
+  getSelectedComponentTypes,
+} from '../../utils-models/munitions.model';
+import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog/massive-munitions-configuration-dialog';
+import { SeriePanelComponent } from './serie-panel/serie-panel.component';
+
+@Component({
+  selector: 'inta-munitions',
+  imports: [MatExpansionModule, MatButtonModule, SeriePanelComponent, TranslateModule, Badge, TrialStatusLabelPipe],
+  providers: [MunitionsStore, SeriesAndShotsStore],
+  template: `
+    <div class="py-6">
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex gap-2">
+            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+              {{ trialCode() }}
+            </h2>
+            <ui-badge [status]="trialStatus()">
+              {{ trialStatus()! | trialStatusLabel }}
+            </ui-badge>
+          </div>
+          <button mat-flat-button (click)="openMassiveConfigDialog()">
+            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
+          </button>
+        </div>
+
+        <mat-accordion class="flex flex-col gap-5">
+          @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
+            <inta-serie-panel
+              [serie]="serie"
+              [serieIndex]="serieIdx"
+              [seriesSignal]="seriesSignal"
+              [shots]="shotsPerSerie().get(serie.seriesId) ?? []"
+              [expanded]="serieIdx === 0"
+              (deleteConfiguration)="deleteConfiguration(serieIdx, $event)"
+            />
+          }
+        </mat-accordion>
+
+        @if (seriesSignal().length === 0) {
+          <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.EMPTY_STATE' | translate }}
+          </div>
+        }
+
+        <div class="mt-6 flex gap-4 justify-end">
+          <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
+            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
+          </button>
+          <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: `
+    :host {
+      display: block;
+    }
+
+    ::ng-deep .mat-mdc-form-field {
+      .mat-mdc-form-field-infix {
+        min-height: 40px !important;
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        min-height: 40px !important;
+      }
+    }
+  `,
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class Munitions {
+  readonly #munitionsStore = inject(MunitionsStore);
+  readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
+  readonly #dialog = inject(MatDialog);
+  readonly #seriesAndShotsStore = inject(SeriesAndShotsStore);
+  readonly #injector = inject(Injector);
+
+  readonly shotsPerSerie = computed(() => {
+    const series = this.#seriesAndShotsStore.series() ?? [];
+    return new Map(series.map((s) => [s.id, s.shots]));
+  });
+
+  readonly seriesSignal = signal<Serie[]>([]);
+
+  readonly isLoading = this.#munitionsStore.isLoading;
+  readonly isSaving = this.#munitionsStore.isUpdatingMunitions;
+  readonly updateStatus = this.#munitionsStore.updateMunitionsStatus;
+
+  readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
+  readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
+
+  #initialSeriesData: Serie[] = [];
+  #isLocalInitialized = false;
+  #preDeleteSnapshot: Serie[] | null = null;
+  #massiveDialogOpen = false;
+
+  constructor() {
+    effect(() => {
+      const trialId = this.#planningGeneralDataStore.fireTrialId();
+      if (trialId && !this.#munitionsStore.isInitialized()) {
+        this.#munitionsStore.loadMunitions();
+        this.#munitionsStore.loadAllCatalogs();
+      }
+    });
+
+    effect(() => {
+      const trialId = this.#planningGeneralDataStore.fireTrialId();
+      if (trialId && !this.#seriesAndShotsStore.isInitialized()) {
+        this.#seriesAndShotsStore.loadSeries();
+      }
+    });
+
+    effect(() => {
+      const allSeries = this.#seriesAndShotsStore.series();
+      const seriesMunitions = this.#munitionsStore.seriesMunitions();
+      const componentTypes = this.#munitionsStore.componentTypes();
+      const denominations = this.#munitionsStore.denominations();
+      const fuseWorkingModes = this.#munitionsStore.fuseWorkingModes();
+
+      if (!allSeries) return;
+      if (this.#munitionsStore.isLoadingMunitions()) return;
+
+      const mappedMunitions = this.#mapBackendToLocal(
+        seriesMunitions ?? [],
+        componentTypes,
+        denominations,
+        fuseWorkingModes,
+      );
+      const munitionsById = new Map(mappedMunitions.map((s) => [s.seriesId, s]));
+
+      const completeSeries = allSeries.map(
+        (serie) =>
+          munitionsById.get(serie.id) ?? {
+            seriesId: serie.id,
+            seriesName: serie.name,
+            configurations: [],
+          },
+      );
+
+      this.seriesSignal.set(completeSeries);
+
+      if (!this.#isLocalInitialized && !this.#munitionsStore.isLoadingMunitions() && seriesMunitions !== undefined) {
+        this.#initialSeriesData = this.#deepClone(completeSeries);
+        this.#isLocalInitialized = true;
+      }
+    });
+
+    effect(() => {
+      const status = this.updateStatus();
+      if (status === 'resolved') {
+        this.#preDeleteSnapshot = null;
+        if (!this.#massiveDialogOpen) {
+          this.#munitionsStore.resetUpdateMunitions();
+          this.#munitionsStore.reloadMunitions();
+        }
+      } else if (status === 'error') {
+        if (this.#preDeleteSnapshot !== null) {
+          this.seriesSignal.set(this.#preDeleteSnapshot);
+          this.#preDeleteSnapshot = null;
+        }
+        this.#munitionsStore.resetUpdateMunitions();
+      }
+    });
+  }
+
+  seriesForm = form(this.seriesSignal, (formPath) => {
+    applyEach(formPath, (seriePath) => {
+      required(seriePath.seriesName);
+      required(seriePath.seriesId);
+
+      applyEach(seriePath.configurations, (configPath) => {
+        required(configPath.denomination);
+        validate(configPath.assignedShotIds, ({ value }) => {
+          const shots = value();
+          return !shots || shots.length === 0
+            ? { kind: 'required-shots', message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.ASSIGNED_SHOTS_REQUIRED' }
+            : undefined;
+        });
+      });
+    });
+  });
+
+  getSerieField(serieIdx: number): unknown {
+    return (this.seriesForm as unknown as Record<number, unknown>)[serieIdx];
+  }
+
+  getConfigField(serieIdx: number, configIdx: number): unknown {
+    const serieForm = this.seriesForm as unknown as Record<number, { configurations: unknown[] }>;
+    return serieForm[serieIdx]?.configurations[configIdx];
+  }
+
+  addSerie(): void {
+    this.seriesSignal.update((series) => [...series, createEmptySerie(`Serie ${series.length + 1}`)]);
+  }
+
+  removeSerie(serieIndex: number): void {
+    this.seriesSignal.update((series) => series.filter((_, idx) => idx !== serieIndex));
+  }
+
+  isFormValid(): boolean {
+    return this.seriesForm().valid();
+  }
+
+  getFormValues(): Serie[] {
+    return this.seriesSignal();
+  }
+
+  openMassiveConfigDialog(): void {
+    this.#massiveDialogOpen = true;
+    const dialogRef = this.#dialog.open(MassiveMunitionsConfigurationDialog, {
+      maxWidth: 1200,
+      width: '100vw',
+      height: '100vh',
+      maxHeight: 800,
+      disableClose: false,
+      injector: this.#injector,
+      data: {
+        preloadedData: {
+          denomination: '',
+          conditioning: false,
+          selectedComponents: [],
+        },
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((saved: boolean | null) => {
+      this.#massiveDialogOpen = false;
+      this.#munitionsStore.resetUpdateMunitions();
+      if (saved) {
+        this.#munitionsStore.reloadMunitions();
+      }
+    });
+  }
+
+  saveForm(): void {
+    if (!this.isFormValid()) {
+      console.error('Formulario inválido');
+      return;
+    }
+
+    const configurations = this.#mapLocalToRequest(this.seriesSignal());
+    this.#munitionsStore.updateMunitions({ configurations });
+  }
+
+  resetForm(): void {
+    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
+  }
+
+  deleteConfiguration(serieIdx: number, configIdx: number): void {
+    this.#preDeleteSnapshot = this.#deepClone(this.seriesSignal());
+
+    this.seriesSignal.update((series) =>
+      series.map((s, idx) => {
+        if (idx !== serieIdx) return s;
+        return { ...s, configurations: s.configurations.filter((_, cIdx) => cIdx !== configIdx) };
+      }),
+    );
+
+    if (!this.isFormValid()) {
+      console.warn('Form inválido tras eliminar configuración, PUT cancelado');
+      this.#preDeleteSnapshot = null;
+      return;
+    }
+
+    const configurations = this.#mapLocalToRequest(this.seriesSignal());
+    this.#munitionsStore.updateMunitions({ configurations });
+  }
+
+  loadConfiguration(data: Serie[]): void {
+    this.seriesSignal.set(data);
+    this.#initialSeriesData = this.#deepClone(data);
+  }
+
+  validateConfiguration(): boolean {
+    return this.isFormValid();
+  }
+
+  exportToJSON(): string {
+    return JSON.stringify(this.seriesSignal(), null, 2);
+  }
+
+  importFromJSON(jsonString: string): void {
+    try {
+      const data = JSON.parse(jsonString);
+      this.loadConfiguration(data);
+      console.log('Configuración importada correctamente');
+    } catch (error) {
+      console.error('Error al importar configuración:', error);
+    }
+  }
+
+  resetConfiguration(): void {
+    const defaultData = [
+      {
+        ...createEmptySerie('Serie 1'),
+        configurations: [createEmptyConfiguration()],
+      },
+    ];
+    this.loadConfiguration(defaultData);
+  }
+
+  #resolveDenominationId(denomination: string | null | undefined, denominations: MasterDataI18nItem[]): string {
+    if (!denomination) return '';
+    const found = denominations.find((d) => d.label === denomination || d.id === denomination);
+    return found?.id ?? denomination;
+  }
+
+  #deepClone(data: Serie[]): Serie[] {
+    return structuredClone(data);
+  }
+
+  #mapBackendToLocal(
+    seriesMunitions: SeriesMunitionsData[],
+    componentTypes: MasterDataI18nItem[],
+    denominations: MasterDataI18nItem[],
+    fuseWorkingModes: MasterDataIItem[],
+  ): Serie[] {
+    return seriesMunitions.map((series) => ({
+      seriesId: series.seriesId,
+      seriesName: series.seriesName,
+      configurations: series.configurations.map((config): Configuration => {
+        const components = config.components.map((comp) =>
+          this.#mapComponentToDetail(comp, componentTypes, denominations, fuseWorkingModes),
+        );
+
+        const denomination = this.#resolveDenominationId(config.denomination?.id, denominations);
+
+        return {
+          id: config.id,
+          seriesId: config.seriesId,
+          denomination,
+          batch: config.batch ?? '',
+          reconditioning: config.reconditioning ?? undefined,
+          maxAllowedErrors: config.maxAllowedErrors ?? 0,
+          observations: config.observations ?? '',
+          assignedShotIds: config.assignedShotIds ?? null,
+          components,
+          selectedComponents: getSelectedComponentTypes({
+            id: config.id,
+            seriesId: config.seriesId,
+            denomination,
+            batch: config.batch ?? '',
+            maxAllowedErrors: config.maxAllowedErrors ?? 0,
+            observations: config.observations ?? '',
+            assignedShotIds: config.assignedShotIds ?? null,
+            components,
+          }),
+        };
+      }),
+    }));
+  }
+
+  #mapComponentToDetail(
+    component: BackendMunitionComponent,
+    componentTypes: MasterDataI18nItem[],
+    denominations: MasterDataI18nItem[],
+    fuseWorkingModes: MasterDataIItem[],
+  ): ComponentDetail {
+    return {
+      id: component.id,
+      type: this.#resolveComponentType(component, componentTypes),
+      denomination: this.#resolveDenomination(component, denominations),
+      batch: component.batch ?? '',
+      reconditioning: component.reconditioning ?? undefined,
+      clientNumber: component.clientNumber ?? 0,
+      observations: component.observations ?? '',
+      fuseWorkingMode: this.#resolveFuseWorkingMode(component, fuseWorkingModes),
+      fuseMeasurement: component.fuseMeasurement ?? 0,
+      maxAllowedErrors: component.maxAllowedErrors ?? 0,
+      manufacturerNumber: '',
+    };
+  }
+
+  #resolveComponentType(component: BackendMunitionComponent, componentTypes: MasterDataI18nItem[]): ComponentType {
+    if (component.type?.id) {
+      const typeId = component.type.id;
+      const catalogType = componentTypes.find((ct) => ct.id === typeId);
+      const label = catalogType?.label ?? component.type.label ?? '';
+      return { id: component.type.id, type: label.toLowerCase(), label };
+    }
+
+    const typeId = component.typeId?.id?.value ?? '';
+    const matchedType = componentTypes.find((item) => item.id === typeId);
+    const label = matchedType?.label ?? component.typeId?.label ?? component.typeId?.type ?? '';
+
+    return { id: typeId, label, type: label.toLowerCase() };
+  }
+
+  #resolveDenomination(component: BackendMunitionComponent, denominations: MasterDataI18nItem[]): Denomination {
+    if (component.denomination?.id) {
+      return { id: component.denomination.id, name: component.denomination.name ?? '' };
+    }
+
+    const denominationId = component.denominationId?.id?.value ?? '';
+    const matchedDenomination = denominations.find((item) => item.id === denominationId);
+    const name = matchedDenomination?.label ?? component.denominationId?.name ?? '';
+
+    return { id: denominationId, name: name ?? '' };
+  }
+
+  #resolveFuseWorkingMode(
+    component: BackendMunitionComponent,
+    fuseWorkingModes: MasterDataIItem[],
+  ): FuseWorkingMode | undefined {
+    if (component.fuseWorkingMode?.id) {
+      return component.fuseWorkingMode;
+    }
+
+    const fuseWorkingModeId = component.fuseWorkingModeId ?? '';
+    if (!fuseWorkingModeId) return undefined;
+
+    const matchedMode = fuseWorkingModes.find((item) => item.id === fuseWorkingModeId);
+    const label = matchedMode?.label ?? '';
+
+    return { id: fuseWorkingModeId, type: label, label };
+  }
+
+  #mapLocalToRequest(series: Serie[]): MunitionConfigRequest[] {
+    return series.flatMap((serie) =>
+      serie.configurations.map(
+        (config): MunitionConfigRequest => ({
+          id: config.id,
+          seriesId: serie.seriesId,
+          denominationId: config.denomination,
+          batch: config.batch,
+          observations: config.observations,
+          reconditioning: config.reconditioning,
+          maxAllowedErrors: config.maxAllowedErrors,
+          components: config.components.map((comp) => ({
+            typeId: comp.type.id,
+            denominationId: comp.denomination.id,
+            batch: comp.batch,
+            reconditioning: comp.reconditioning,
+            clientNumber: comp.clientNumber,
+            observations: comp.observations,
+            fuseWorkingModeId: comp.fuseWorkingMode?.id,
+            fuseMeasurement: comp.fuseMeasurement,
+            maxAllowedErrors: comp.maxAllowedErrors,
+          })),
+          assignedShotIds: config.assignedShotIds ?? undefined,
+        }),
+      ),
+    );
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "019a2ad8-f9cc-7c55-b18b-f075cb2dd091f",
+  "name": "Procedimiento de Seguridad P-01",
+  "category": "GENERAL",
+  "type": { "id": "5", "name": "Homologación" },
+  "versions": [
+    {
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+      "versionTag": "v1",
+      "isActive": true,
+      "createdAt": "2025-12-01T12:30:00Z"
+    }
+  ],
+  "createdBy": "username",
+  "createdAt": "2025-12-01T12:30:00Z",
+  "updatedAt": "2025-12-05T16:30:00Z"
+}

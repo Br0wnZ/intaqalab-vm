@@ -1,0 +1,47 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-FuzeTypeInstantSQ",
+    "name": {
+      "es": "Instantáneo, SQ",
+      "en": "Instant, SQ"
+    },
+    "label": "Instantáneo, SQ",
+    "description": "Espoleta de acción instantánea"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-FuzeTypeDelaySQ",
+    "name": {
+      "es": "Retardo, DLY",
+      "en": "Delay, SQ"
+    },
+    "label": "Retardo, DLY",
+    "description": "Espoleta de acción retardada"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-FuzeTypeTimes",
+    "name": {
+      "es": "A tiempos",
+      "en": "At times"
+    },
+    "label": "A tiempos",
+    "description": "Espoleta de acción a tiempos"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-FuzeTypeImpact",
+    "name": {
+      "es": "Impacto",
+      "en": "Impact"
+    },
+    "label": "Impacto",
+    "description": "Espoleta de acción por impacto"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-FuzeTypeProximity",
+    "name": {
+      "es": "Proximidad",
+      "en": "Proximity"
+    },
+    "label": "Proximidad",
+    "description": "Espoleta de acción por proximidad"
+  }
+]

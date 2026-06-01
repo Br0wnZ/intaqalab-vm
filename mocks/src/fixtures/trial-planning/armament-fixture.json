@@ -1,0 +1,34 @@
+{
+  "series": [
+    {
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+      "seriesName": "Serie 1",
+      "shots": [
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+          "armament": {
+            "weaponName": "Cañón 155mm",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440007",
+            "tubeName": "Tubo A",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440006",
+            "isInstrumented": false,
+            "tubeLifePercentage": 75,
+            "observations": ""
+          }
+        },
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+          "armament": {
+            "weaponName": "Cañón 155mm",
+            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440007",
+            "tubeName": "Tubo A",
+            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440006",
+            "isInstrumented": true,
+            "tubeLifePercentage": 60,
+            "observations": "Instrumentado para pruebas"
+          }
+        }
+      ]
+    }
+  ]
+}

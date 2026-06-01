@@ -1,0 +1,196 @@
+// =============================================================================
+// CLASES DE UTILIDAD PERSONALIZADAS
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// BOTONES PERSONALIZADOS - Variantes completas
+// -----------------------------------------------------------------------------
+.btn-client-primary {
+  background-color: var(--inta-filled-button-bg);
+  color: var(--inta-filled-button-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--inta-radius-md);
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-medium);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--inta-button-hover);
+    cursor: pointer;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--inta-filled-button-bg);
+    outline-offset: 2px;
+  }
+}
+
+.btn-client-secondary {
+  background-color: transparent;
+  color: var(--inta-outlined-button-color);
+  border: 1px solid var(--inta-outlined-button-outline-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--inta-radius-md);
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-medium);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--inta-outlined-button-color);
+    color: #ffffff;
+  }
+}
+
+.btn-client-text {
+  background-color: transparent;
+  color: var(--inta-text-button-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--inta-radius-md);
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-medium);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--inta-text-button-color) 8%, transparent);
+  }
+}
+
+.btn-client-tonal {
+  background-color: var(--inta-tonal-button-bg);
+  color: var(--inta-tonal-button-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--inta-radius-md);
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-medium);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--inta-tonal-button-hover-bg);
+  }
+}
+
+.btn-client-elevated {
+  background-color: var(--inta-elevated-button-bg);
+  color: var(--inta-elevated-button-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--inta-radius-md);
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-medium);
+  box-shadow: var(--inta-shadow-sm);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--inta-elevated-button-hover-bg);
+    box-shadow: var(--inta-shadow-md);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// CARDS PERSONALIZADAS
+// -----------------------------------------------------------------------------
+.card-client {
+  background-color: var(--inta-surface);
+  border-radius: var(--inta-radius-lg);
+  box-shadow: var(--inta-shadow-md);
+  padding: 1.5rem;
+}
+
+.card-client-elevated {
+  background-color: var(--inta-surface);
+  border-radius: var(--inta-radius-lg);
+  box-shadow: var(--inta-shadow-lg);
+  padding: 1.5rem;
+}
+
+// -----------------------------------------------------------------------------
+// TIPOGRAFÍA
+// -----------------------------------------------------------------------------
+.text-client-heading {
+  font-family: var(--inta-font-secondary);
+  font-weight: var(--inta-font-weight-bold);
+  color: var(--inta-neutral-900);
+}
+
+.text-client-body {
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-regular);
+  color: var(--inta-neutral-700);
+}
+
+.text-client-caption {
+  font-family: var(--inta-font-primary);
+  font-weight: var(--inta-font-weight-regular);
+  font-size: 0.875rem;
+  color: var(--inta-neutral-500);
+}
+
+// -----------------------------------------------------------------------------
+// LINKS
+// -----------------------------------------------------------------------------
+.inta-link {
+  color: var(--inta-link-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--inta-link-hover-color);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// ESTADOS
+// -----------------------------------------------------------------------------
+.bg-inta-primary {
+  background-color: var(--inta-button);
+}
+
+.bg-client-success {
+  background-color: var(--inta-success);
+}
+
+.bg-client-warning {
+  background-color: var(--inta-warning);
+}
+
+.bg-client-error {
+  background-color: var(--inta-error);
+}
+
+.bg-client-info {
+  background-color: var(--inta-info);
+}
+
+.text-client-success {
+  color: var(--inta-success);
+}
+
+.text-client-warning {
+  color: var(--inta-warning);
+}
+
+.text-client-error {
+  color: var(--inta-error);
+}
+
+.text-client-info {
+  color: var(--inta-info);
+}
+
+// -----------------------------------------------------------------------------
+// SUPERFICIES
+// -----------------------------------------------------------------------------
+.bg-client-surface {
+  background-color: var(--inta-surface);
+}
+
+.bg-client-surface-variant {
+  background-color: var(--inta-surface-variant);
+}
+
+.bg-client-background {
+  background-color: var(--inta-background);
+}
+
+.inta-bg-white {
+  background-color: var(--inta-bg-white);
+}

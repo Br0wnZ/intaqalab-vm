@@ -1,0 +1,16 @@
+// Componente: Tabla base reutilizable para Angular Material (`.inta-table`)
+@layer components {
+  .mat-mdc-table {
+    @apply border-separate border-spacing-0;
+    --mat-table-row-item-container-height: 72px;
+
+    .mat-mdc-header-cell {
+      border-bottom: 1px solid var(--inta-neutral-200) !important;
+    }
+
+    .mat-mdc-cell {
+      border-bottom: 1px solid var(--inta-neutral-200) !important;
+      background-color: var(--color-white) !important;
+    }
+  }
+}

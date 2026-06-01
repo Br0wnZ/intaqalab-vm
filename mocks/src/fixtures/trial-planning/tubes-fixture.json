@@ -1,0 +1,19 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "totalElements": 2,
+  "items": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440006",
+      "name": { "es": "Tubo A", "en": "Tube A" },
+      "label": "Tube A",
+      "active": true
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440008",
+      "name": { "es": "Tubo B", "en": "Tube B" },
+      "label": "Tube B",
+      "active": true
+    }
+  ]
+}
