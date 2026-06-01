@@ -13,7 +13,7 @@ export interface MunitionComponentsModel {
   };
   label: string;
   observations: string;
-  enabled: boolean;
+  active: boolean;
   category: string;
 }
 

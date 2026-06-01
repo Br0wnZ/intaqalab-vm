@@ -77,7 +77,8 @@ interface MunitionBulkUpdateRequest {
 interface MunitionConfigRequest {
   id?: string;
   seriesId: string;
-  denomination: string;
+  denomination?: string;
+  denominationId?: string;
   batch?: string;
   observations?: string;
   reconditioning?: ReconditioningData;
@@ -171,7 +172,7 @@ function transformConfigRequest(config: MunitionConfigRequest): MunitionConfigRe
   return {
     id: config.id || generateUuid(),
     seriesId: config.seriesId,
-    denomination: config.denomination,
+    denomination: config.denominationId || config.denomination || 'Unknown Denomination',
     batch: config.batch,
     reconditioning: config.reconditioning,
     maxAllowedErrors: config.maxAllowedErrors,

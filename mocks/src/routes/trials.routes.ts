@@ -244,74 +244,7 @@ trialsRouter.delete('/:centerId/loading-zone/:loadingZoneId', (req, res) => {
   res.status(204).send({});
 });
 
-// --- Fuse Working Modes ---
-trialsRouter.get('/:centerId/fuse-working-modes', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'fuse-working-modes-fixture.json');
-  res.status(200).send(data);
-});
-trialsRouter.post('/:centerId/fuse-working-modes', (req, res) => {
-  res.status(201).send({ id: 'new-fuse-working-mode-id', ...req.body });
-});
-trialsRouter.put('/:centerId/fuse-working-modes/:fuseWorkingModeId', (req, res) => {
-  res.status(200).send({ id: req.params['fuseWorkingModeId'], ...req.body });
-});
-trialsRouter.delete('/:centerId/fuse-working-modes/:fuseWorkingModeId', (req, res) => {
-  res.status(204).send({});
-});
 
-// --- Weapons ---
-trialsRouter.get('/:centerId/weapons', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'weapons-fixture.json');
-  res.status(200).send(data);
-});
-
-// --- Tubes ---
-trialsRouter.get('/:centerId/tubes', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'tubes-fixture.json');
-  res.status(200).send(data);
-});
-
-// --- Measures Catalog ---
-trialsRouter.get('/:centerId/measures', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'measures-catalog-fixture.json');
-  res.status(200).send(data);
-});
-trialsRouter.post('/:centerId/measures', (req, res) => {
-  res.status(201).send({ id: 'new-measure-id', ...req.body, label: req.body?.name?.es ?? '' });
-});
-trialsRouter.put('/:centerId/measures/:measureId', (req, res) => {
-  res.status(200).send({ id: req.params['measureId'], ...req.body, label: req.body?.name?.es ?? '' });
-});
-trialsRouter.delete('/:centerId/measures/:measureId', (req, res) => {
-  res.status(204).send({});
-});
-
-// --- Munitions ---
-trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/munitions', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'munitions-fixture.json');
-  res.status(200).send(data);
-});
-trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/munitions', (req, res) => {
-  res.status(200).send({});
-});
-
-// --- Armament ---
-trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/armament', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'armament-fixture.json');
-  res.status(200).send(data);
-});
-trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/armament', (req, res) => {
-  res.status(200).send({});
-});
-
-// --- Measures (Trial) ---
-trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/measures', (_req, res) => {
-  const data = getFixture('fixtures/trial-planning', 'measures-fixture.json');
-  res.status(200).send(data);
-});
-trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/measures', (req, res) => {
-  res.status(200).send({});
-});
 
 // ==========================================
 // STANAG CRITERIA

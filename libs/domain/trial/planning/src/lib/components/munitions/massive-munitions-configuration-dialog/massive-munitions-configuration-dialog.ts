@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject } from '@angular/core';
+import type { ElementRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -74,9 +84,28 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                   id="denomination"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
                   [(ngModel)]="formData.denomination"
+                  (openedChange)="onDenominationPanelToggle($event)"
                 >
-                  @for (denom of munitionsStore.denominations(); track denom.id) {
+                  <div class="px-3 py-2">
+                    <input
+                      matInput
+                      type="text"
+                      [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
+                      [value]="denominationSearchTerm()"
+                      (input)="onDenominationSearchInput($event)"
+                      (keydown)="$event.stopPropagation()"
+                      (click)="$event.stopPropagation()"
+                      (mousedown)="$event.stopPropagation()"
+                      #denominationSearchInput
+                    />
+                  </div>
+                  @for (denom of filteredDenominations(); track denom.id) {
                     <mat-option [value]="denom.id">{{ denom.label }}</mat-option>
+                  }
+                  @if (filteredDenominations().length === 0) {
+                    <mat-option disabled>
+                      {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
+                    </mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -104,9 +133,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
-                  placeholder="Selecciona disparos"
                   id="assignedShotIds"
                   multiple
+                  [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS' | translate"
                   [(ngModel)]="formData.assignedShotIds"
                 >
                   <div class="px-3 py-2 border-b border-gray-200">
@@ -611,6 +640,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MassiveMunitionsConfigurationDialog {
+  readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
   readonly #dialogRef = inject(MatDialogRef<MassiveMunitionsConfigurationDialog>);
   readonly #translate = inject(TranslateService);
   public data = inject<MassiveConfigDialogData>(MAT_DIALOG_DATA, { optional: true });
@@ -618,6 +648,45 @@ export class MassiveMunitionsConfigurationDialog {
   readonly munitionsStore = inject(MunitionsStore);
   readonly seriesAndShotsStore = inject(SeriesAndShotsStore);
   readonly componentTypes = this.munitionsStore.componentTypes;
+
+  readonly denominationSearchTerm = signal('');
+
+  readonly filteredDenominations = computed(() => {
+    const term = this.#normalizeText(this.denominationSearchTerm());
+    const items = this.munitionsStore.denominations();
+
+    if (!term) return items;
+
+    return items.filter((denom) => {
+      const label = this.#normalizeText(denom.label);
+      const esName = this.#normalizeText(denom.name?.['es'] ?? '');
+      const enName = this.#normalizeText(denom.name?.['en'] ?? '');
+      return label.includes(term) || esName.includes(term) || enName.includes(term);
+    });
+  });
+
+  #normalizeText(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  onDenominationSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.denominationSearchTerm.set(target?.value ?? '');
+  }
+
+  onDenominationPanelToggle(opened: boolean): void {
+    if (opened) {
+      setTimeout(() => {
+        this.denominationSearchInputRef()?.nativeElement.focus();
+      }, 0);
+    } else {
+      this.denominationSearchTerm.set('');
+    }
+  }
 
   readonly allShots = computed(() => {
     return this.seriesAndShotsStore.series()?.flatMap((s) => s.shots) ?? [];

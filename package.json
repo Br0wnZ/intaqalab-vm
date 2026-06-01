@@ -64,7 +64,7 @@
     "test:wharehouse-managment": "nx test wharehouse-managment",
     "test:wharehouse-managment:watch": "nx test wharehouse-managment --watch",
     "test:wharehouse-managment:ui": "nx test wharehouse-managment --ui --watch",
-    "start:mocks": "npx nx run mock-data:build && node dist/mocks/main.js",
+    "start:mocks": "nx run mock-data:serve",
     "format": "prettier --write .",
     "affected:lint": "npx nx affected --target=lint",
     "lint:all": "npx nx run-many --target=lint --outputStyle=stream",

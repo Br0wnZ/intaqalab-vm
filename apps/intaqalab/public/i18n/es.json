@@ -551,6 +551,8 @@
         "COMPONENT_SELECTOR_PLACEHOLDER": "Selecciona tipos de componentes",
         "ASSOCIATED_SHOTS": "Disparos asociados",
         "SELECT_ALL_SHOTS": "Seleccionar todos",
+        "SEARCH_PLACEHOLDER": "Buscar denominación",
+        "NO_RESULTS": "Sin resultados",
         "OPTIONS": {
           "ALL": "Todos",
           "SOME": "Algunos",

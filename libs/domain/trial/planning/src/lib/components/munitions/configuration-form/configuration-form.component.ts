@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ViewChild,
   ViewEncapsulation,
   computed,
   inject,
@@ -10,6 +9,7 @@ import {
   linkedSignal,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 import { FormField, form, min, required } from '@angular/forms/signals';
@@ -70,10 +70,10 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             >
               <div class="px-3 py-2">
                 <input
-                  placeholder="Buscar denominacion"
                   matInput
                   type="text"
                   data-testid="denomination-search-input"
+                  [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
                   [value]="denominationSearchTerm()"
                   (input)="onDenominationSearchInput($event)"
                   (keydown)="$event.stopPropagation()"
@@ -86,7 +86,9 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 <mat-option [value]="denom.id">{{ denom.label }}</mat-option>
               }
               @if (filteredDenominations().length === 0) {
-                <mat-option disabled>Sin resultados</mat-option>
+                <mat-option disabled>
+                  {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
+                </mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -279,7 +281,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigurationFormComponent {
-  @ViewChild('denominationSearchInput') denominationSearchInputRef?: ElementRef<HTMLInputElement>;
+  readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
   readonly #munitionsStore = inject(MunitionsStore);
 
   readonly config = input.required<Configuration>();
@@ -346,7 +348,7 @@ export class ConfigurationFormComponent {
     if (opened) {
       // Autofocus the search input when the panel opens
       setTimeout(() => {
-        this.denominationSearchInputRef?.nativeElement.focus();
+        this.denominationSearchInputRef()?.nativeElement.focus();
       }, 0);
     } else {
       this.denominationSearchTerm.set('');
