@@ -1,5 +1,7 @@
+import { httpResource } from '@angular/common/http';
 import { Component, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
+import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { CalendarTrialScheduleService, LinesOfShotDataService } from '@intaqalab/data-access';
 import type { CalendarTrialScheduleApiResponse, LinesOfShot } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
@@ -59,8 +61,25 @@ export class PlanningScheduledDatesComponent {
 
   readonly #calendarTrialScheduleService = inject(CalendarTrialScheduleService);
   readonly #linesOfShotDataService = inject(LinesOfShotDataService);
+  readonly #apiUrl = injectFireTrialsEndpoint();
 
-  scheduleItems = signal<CalendarTrialScheduleApiResponse | null>(null);
+  readonly #scheduleParams = computed(() => {
+    const trialId = this.trialId();
+    // Establish reactive dependency on the shared schedule trigger
+    this.#calendarTrialScheduleService.scheduleChangeTrigger();
+    return trialId;
+  });
+
+  readonly scheduleResource = httpResource<CalendarTrialScheduleApiResponse>(() => {
+    const trialId = this.#scheduleParams();
+    if (!trialId) return undefined;
+    const encodedTrialId = encodeURIComponent(trialId);
+    return {
+      url: `${this.#apiUrl}/${encodedTrialId}/schedule`,
+      method: 'GET',
+    };
+  });
+
   linesOfShots = signal<LinesOfShot[] | null>(null);
 
   linesOfShotsDictionary = computed(() => {
@@ -73,9 +92,9 @@ export class PlanningScheduledDatesComponent {
   });
 
   itemsView = computed(() => {
-    const scheduleItems = this.scheduleItems();
+    const scheduleItems = this.scheduleResource.value() || [];
     const itemsView = new Array<SchedulerChip>();
-    if (this.linesOfShots() !== null && scheduleItems !== null) {
+    if (this.linesOfShots() !== null && scheduleItems.length > 0) {
       const linesOfShotsDictionary = this.linesOfShotsDictionary();
       for (const { date, lineOfShootId } of scheduleItems) {
         itemsView.push({
@@ -89,14 +108,6 @@ export class PlanningScheduledDatesComponent {
   });
 
   constructor() {
-    effect(async () => {
-      const trialId = this.trialId();
-      if (trialId) {
-        const items = await this.#calendarTrialScheduleService.getSchedule(trialId);
-        this.scheduleItems.set(items);
-      }
-    });
-
     effect(async () => {
       if (this.linesOfShots() === null) {
         const linesOfShots = await lastValueFrom(this.#linesOfShotDataService.list());

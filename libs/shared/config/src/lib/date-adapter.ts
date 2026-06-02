@@ -4,6 +4,15 @@ import type { MatDateFormats } from '@angular/material/core';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 import { isValid, parse } from 'date-fns';
 
+// Generic override to prevent timezone shift errors during JSON serialization of Date objects.
+// When a date is selected, it represents a local day. Subtracting the offset forces JSON.stringify()
+// to serialize the local values in YYYY-MM-DDTHH:mm:ss.sssZ format, avoiding off-by-one-day errors.
+Date.prototype.toJSON = function (this: Date) {
+  const timezoneOffsetInMs = this.getTimezoneOffset() * 60 * 1000;
+  const localDate = new Date(this.getTime() - timezoneOffsetInMs);
+  return localDate.toISOString();
+};
+
 /**
  * Spanish date format: DD/MM/YYYY
  */

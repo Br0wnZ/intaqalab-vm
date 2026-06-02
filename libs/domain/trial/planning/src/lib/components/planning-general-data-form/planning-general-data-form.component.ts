@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import { Badge, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -368,6 +369,7 @@ export type PlanningGeneralData = {
 })
 export class PlanningGeneralDataFormComponent {
   protected readonly store = inject(PlanningGeneralDataStore);
+  readonly #calendarTrialScheduleService = inject(CalendarTrialScheduleService);
   readonly #cachedSpecimens = signal<
     Array<{ id: string; label?: string; name?: { es?: string; en?: string } | string; type?: string }>
   >([]);
@@ -480,6 +482,13 @@ export class PlanningGeneralDataFormComponent {
       if (status === 'resolved') {
         this.store.reloadPlanningInfo();
       }
+    });
+
+    effect(() => {
+      this.#calendarTrialScheduleService.scheduleChangeTrigger();
+      untracked(() => {
+        this.store.reloadPlanningInfo();
+      });
     });
   }
 

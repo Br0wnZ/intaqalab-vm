@@ -46,6 +46,9 @@ export const TrialGeneralDataStore = signalStore(
         patchState(store, { trialId: id });
         trialIdSignal.set({ id });
       },
+      reloadTrial() {
+        trialResource.reload();
+      },
     };
   }),
 );

@@ -190,6 +190,7 @@ export class TrialSchedulerInlineComponent {
 
       if (ok) {
         this.#loadItemsToShow(trialId);
+        this.calendarTrialScheduleService.triggerRefresh?.();
         this.#trialStore.setTrialId(trialId);
       }
     }
@@ -200,6 +201,7 @@ export class TrialSchedulerInlineComponent {
     items.splice(index, 1);
     this.calendarTrialScheduleService.update(this.trialId(), items).subscribe(() => {
       this.scheduleItems.set([...items]);
+      this.calendarTrialScheduleService.triggerRefresh?.();
       this.#trialStore.setTrialId(this.trialId());
     });
   }
