@@ -6,7 +6,7 @@ import { specimensCreateDispatcher } from '../fixtures/trial-planning/specimens-
 import { specimensDispatcher } from '../fixtures/trial-planning/specimens-dispatcher';
 import { trialPlanningInfoDispatcher } from '../fixtures/trial-planning/trial-planning-info-dispatcher';
 import { usersDispatcher } from '../fixtures/trial-planning/users-dispatcher';
-import { trialScheduleDispatchById } from '../fixtures/trial-schedule/trial-schedule-dispatcher';
+import { setTrialSchedule, trialScheduleDispatchById } from '../fixtures/trial-schedule/trial-schedule-dispatcher';
 import { trialsDocumentsDispatch } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';
@@ -37,7 +37,12 @@ trialsRouter.get('/:centerId/fire-trials/:id/schedule', (req, res) =>
 );
 
 // Reemplaza todas las fechas programadas de una prueba de fuego con las nuevas fechas proporcionadas.
-trialsRouter.put('/:centerId/fire-trials/:trialId/schedule', (req, res) => res.send({}));
+trialsRouter.put('/:centerId/fire-trials/:trialId/schedule', (req, res) => {
+  const trialId = req.params['trialId'];
+  const schedule = req.body;
+  setTrialSchedule(trialId, schedule);
+  res.send(schedule);
+});
 
 // Obtener planificación
 trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/info', (req, res) =>
@@ -243,8 +248,6 @@ trialsRouter.put('/:centerId/loading-zone/:loadingZoneId', (req, res) => {
 trialsRouter.delete('/:centerId/loading-zone/:loadingZoneId', (req, res) => {
   res.status(204).send({});
 });
-
-
 
 // ==========================================
 // STANAG CRITERIA

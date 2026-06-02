@@ -18,6 +18,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { format } from 'date-fns';
 import { lastValueFrom } from 'rxjs';
 
+import { TrialGeneralDataStore } from '../../../components/shared/+state/trial-general-data.store';
 import { TrialPersmissionsService } from '../../../permissions/trial-persmissions.service';
 import { TrialScheduleService } from '../../trial-schedule.service';
 
@@ -104,6 +105,7 @@ interface SchedulerChip {
   encapsulation: ViewEncapsulation.None,
 })
 export class TrialSchedulerInlineComponent {
+  readonly #trialStore = inject(TrialGeneralDataStore);
   trialId = input.required<string>();
   trialStatus = input<TrialStatus>();
   trialNumber = input<string>('');
@@ -188,6 +190,7 @@ export class TrialSchedulerInlineComponent {
 
       if (ok) {
         this.#loadItemsToShow(trialId);
+        this.#trialStore.setTrialId(trialId);
       }
     }
   }
@@ -197,6 +200,7 @@ export class TrialSchedulerInlineComponent {
     items.splice(index, 1);
     this.calendarTrialScheduleService.update(this.trialId(), items).subscribe(() => {
       this.scheduleItems.set([...items]);
+      this.#trialStore.setTrialId(this.trialId());
     });
   }
 

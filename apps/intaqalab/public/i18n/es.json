@@ -519,6 +519,38 @@
       "ACTIONS": {
         "SAVE": "Guardar borrador",
         "CANCEL": "Cancelar"
+      },
+      "MASSIVE_CONFIG_DIALOG": {
+        "TITLE": "Configuración masiva de disparos",
+        "APPLY_BUTTON": "Aplicar",
+        "CANCEL_BUTTON": "Cancelar",
+        "SERIES_LABEL": "Series",
+        "SERIES_PLACEHOLDER": "Selecciona las series",
+        "DATE_LABEL": "Fecha",
+        "DATE_PLACEHOLDER": "Selecciona la fecha",
+        "TARGET_LABEL": "Blanco",
+        "TARGET_PLACEHOLDER": "Selecciona el blanco",
+        "TARGET_MATERIAL_LABEL": "Material blanco",
+        "TARGET_MATERIAL_PLACEHOLDER": "Selecciona el material del blanco",
+        "IMPACT_ZONE_LABEL": "Zona impacto",
+        "IMPACT_ZONE_PLACEHOLDER": "Selecciona la zona de impacto",
+        "TARGET_DIMENSIONS_LABEL": "Dimensiones blanco",
+        "TARGET_DIMENSIONS_PLACEHOLDER": "Selecciona las dimensiones del blanco",
+        "TARGET_THICKNESS_LABEL": "Espesor blanco",
+        "TARGET_THICKNESS_PLACEHOLDER": "Selecciona el espesor del blanco",
+        "DISTANCE_LABEL": "Distancia",
+        "ORIENTATION_LABEL": "Orientación",
+        "ELEVATION_LABEL": "Elevación",
+        "ANGLE_LABEL": "Ángulo tiro",
+        "RANGE_LABEL": "Alcance",
+        "FUNCTIONING_HEIGHT_LABEL": "Altura funcionamiento",
+        "POWDER_WEIGHT_LABEL": "Peso de pólvora",
+        "PROJECTILE_WEIGHT_LABEL": "Peso del proyectil",
+        "NOMINAL_SPEED_LABEL": "Velocidad nominal",
+        "VALIDATIONS": {
+          "REQUIRED_SERIES": "Debe haber al menos una serie seleccionada",
+          "NEGATIVE_VALUE": "El valor no puede ser negativo"
+        }
       }
     },
     "MUNITIONS": {

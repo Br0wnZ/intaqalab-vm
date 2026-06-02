@@ -24,9 +24,12 @@ export class CalendarTrialScheduleService {
 
   update(fireTrialId: string, payload: CalendarTrialScheduleApiResponse) {
     const encodedTrialId = encodeURIComponent(fireTrialId);
-    return this.#httpClient.put<CalendarTrialScheduleApiResponse>(`${this.#apiUrl}/${encodedTrialId}/schedule`, payload, {
-        context: new HttpContext().set(SKIP_ERROR_TOAST, true)
-      })
-    
+    return this.#httpClient.put<CalendarTrialScheduleApiResponse>(
+      `${this.#apiUrl}/${encodedTrialId}/schedule`,
+      payload,
+      {
+        context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+      },
+    );
   }
 }

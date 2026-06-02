@@ -6,7 +6,17 @@ type CalendarTrialScheduleApiResponse = {
   lineOfShootId: string;
 }[];
 
+const scheduleOverrides = new Map<string, CalendarTrialScheduleApiResponse>();
+
+export function setTrialSchedule(id: string, schedule: CalendarTrialScheduleApiResponse) {
+  scheduleOverrides.set(id, schedule);
+}
+
 export function trialScheduleDispatchById(id: string) {
+  if (scheduleOverrides.has(id)) {
+    return scheduleOverrides.get(id)!;
+  }
+
   const data = getFixture<DictionaryResponses<CalendarTrialScheduleApiResponse>>(
     'fixtures/trial-schedule',
     'trial-schedule-fixture.json',

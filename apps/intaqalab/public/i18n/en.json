@@ -467,6 +467,38 @@
       "ACTIONS": {
         "SAVE": "Save draft",
         "CANCEL": "Cancel"
+      },
+      "MASSIVE_CONFIG_DIALOG": {
+        "TITLE": "Massive shooting configuration",
+        "APPLY_BUTTON": "Apply",
+        "CANCEL_BUTTON": "Cancel",
+        "SERIES_LABEL": "Series",
+        "SERIES_PLACEHOLDER": "Select series",
+        "DATE_LABEL": "Date",
+        "DATE_PLACEHOLDER": "Select date",
+        "TARGET_LABEL": "Target",
+        "TARGET_PLACEHOLDER": "Select target",
+        "TARGET_MATERIAL_LABEL": "Target material",
+        "TARGET_MATERIAL_PLACEHOLDER": "Select target material",
+        "IMPACT_ZONE_LABEL": "Impact zone",
+        "IMPACT_ZONE_PLACEHOLDER": "Select impact zone",
+        "TARGET_DIMENSIONS_LABEL": "Target dimensions",
+        "TARGET_DIMENSIONS_PLACEHOLDER": "Select target dimensions",
+        "TARGET_THICKNESS_LABEL": "Target thickness",
+        "TARGET_THICKNESS_PLACEHOLDER": "Select target thickness",
+        "DISTANCE_LABEL": "Distance",
+        "ORIENTATION_LABEL": "Orientation",
+        "ELEVATION_LABEL": "Elevation",
+        "ANGLE_LABEL": "Firing angle",
+        "RANGE_LABEL": "Range",
+        "FUNCTIONING_HEIGHT_LABEL": "Functioning height",
+        "POWDER_WEIGHT_LABEL": "Powder",
+        "PROJECTILE_WEIGHT_LABEL": "Projectile weight",
+        "NOMINAL_SPEED_LABEL": "Nominal speed",
+        "VALIDATIONS": {
+          "REQUIRED_SERIES": "At least one series must be selected",
+          "NEGATIVE_VALUE": "Value cannot be negative"
+        }
       }
     },
     "MUNITIONS": {
