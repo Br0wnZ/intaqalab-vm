@@ -1,3 +1,4 @@
+import '@intaqalab/utils/testing/pdf-mock';
 import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
 import '@angular/compiler';
 import { getTestBed } from '@angular/core/testing';

@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { Badge, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -42,6 +42,7 @@ export type PlanningGeneralData = {
     Badge,
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
     <div class="py-6">
@@ -275,6 +276,7 @@ export type PlanningGeneralData = {
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
                   id="maxDaysReport"
+                  libNoNegativeValues
                   matInput
                   type="number"
                   [formField]="generalDataForm.maxEmissionDates"
@@ -291,6 +293,7 @@ export type PlanningGeneralData = {
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
                   id="percentageTechnicalUnits"
+                  libNoNegativeValues
                   matInput
                   type="number"
                   [formField]="generalDataForm.percentageTechnicalUnits"
@@ -317,6 +320,7 @@ export type PlanningGeneralData = {
                   <input
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
                     id="percentageEndTrial"
+                    libNoNegativeValues
                     matInput
                     type="number"
                     class="flex-1"
@@ -341,6 +345,7 @@ export type PlanningGeneralData = {
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
                   id="daysSignReport"
+                  libNoNegativeValues
                   matInput
                   type="number"
                   [formField]="generalDataForm.daysSignReport"

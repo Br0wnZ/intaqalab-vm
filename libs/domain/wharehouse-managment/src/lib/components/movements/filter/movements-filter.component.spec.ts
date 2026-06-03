@@ -10,11 +10,6 @@ import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import type { MovementListSearch } from '../../../models/movements.model';
 import { MovementsFilterComponent } from './movements-filter.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 function createMockMovementsStore() {
   return {
     search: vi.fn(),

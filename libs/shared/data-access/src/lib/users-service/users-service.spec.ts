@@ -3,16 +3,16 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { waitFor } from '@testing-library/dom';
-import { beforeEach, describe, expect, it, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import type { User, UserListResponse } from './users-service.model';
 import { UsersService } from './users-service';
+import type { User, UserListResponse } from './users-service.model';
 
 describe('UsersService', () => {
   let service: UsersService;
   let httpTesting: HttpTestingController;
 
-  const USERS_URL = 'http://localhost:3000/api/users';
+  const USERS_URL = 'http://localhost:3000/api/users/users';
 
   const mockUsers: User[] = [
     {
@@ -36,12 +36,7 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideTestingEnvironment(),
-        UsersService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), UsersService],
     });
 
     httpTesting = TestBed.inject(HttpTestingController);

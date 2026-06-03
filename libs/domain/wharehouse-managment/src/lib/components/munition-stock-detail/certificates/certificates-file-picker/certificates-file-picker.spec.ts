@@ -11,11 +11,6 @@ import { render } from '@testing-library/angular';
 import { MunitionsStockCertificatesService } from '../../../../services/munitions-stock-certificates.service';
 import { CertificatesFilePicker } from './certificates-file-picker';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 export const createDragEvent = (type: string, files: File[] = []): DragEvent => {
   const event = new Event(type, { bubbles: true, cancelable: true }) as DragEvent;
 

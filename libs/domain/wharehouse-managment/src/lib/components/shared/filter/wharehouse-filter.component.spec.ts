@@ -6,11 +6,6 @@ import { render } from '@testing-library/angular';
 
 import { WharehouseFilterComponent } from './wharehouse-filter.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 async function setup() {
   const renderResult = await render(WharehouseFilterComponent, {
     declarations: [],

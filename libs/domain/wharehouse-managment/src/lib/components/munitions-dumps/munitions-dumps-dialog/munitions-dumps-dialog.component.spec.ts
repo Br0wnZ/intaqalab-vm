@@ -10,11 +10,6 @@ import { userEvent } from '@testing-library/user-event';
 import type { MunitionsDumpDialog, MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 import { MunitionsDumpsDialogComponent } from './munitions-dumps-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 async function renderDialog(data: MunitionsDumpDialog, closeFn?: ReturnType<typeof vi.fn>) {
   const defaultImports = [TranslateModule.forRoot()];
   return render(MunitionsDumpsDialogComponent, {

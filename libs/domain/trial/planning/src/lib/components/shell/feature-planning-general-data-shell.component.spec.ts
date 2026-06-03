@@ -9,11 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { FeaturePlanningGeneralDataShellComponent } from './feature-planning-general-data-shell.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('FeaturePlanningGeneralDataShellComponent', () => {
   const planningInfoFixture = {
     goal: 'Goal',

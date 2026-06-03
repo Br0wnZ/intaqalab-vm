@@ -412,7 +412,8 @@ export class Munitions {
       denomination: this.#resolveDenomination(component, denominations),
       batch: component.batch ?? '',
       reconditioning: component.reconditioning ?? undefined,
-      clientNumber: component.clientNumber !== undefined && component.clientNumber !== null ? String(component.clientNumber) : '',
+      clientNumber:
+        component.clientNumber !== undefined && component.clientNumber !== null ? String(component.clientNumber) : '',
       observations: component.observations ?? '',
       fuseWorkingMode: this.#resolveFuseWorkingMode(component, fuseWorkingModes),
       fuseMeasurement: component.fuseMeasurement ?? 0,

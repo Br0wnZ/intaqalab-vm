@@ -9,11 +9,6 @@ import { vi } from 'vitest';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import { ConfirmDeleteShotDialog } from './confirm-delete-shot-dialog';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 type DialogData = ConfirmDialogData & { shotId: string };
 
 const createMockDialogData = (overrides?: Partial<DialogData>): DialogData => ({

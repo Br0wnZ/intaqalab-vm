@@ -16,10 +16,8 @@ export class UsersService {
     () => {
       const { page, pageSize } = this.#queryParams();
       return {
-        url: this.#url,
-        params: new HttpParams()
-          .set('page', String(page))
-          .set('pageSize', String(pageSize)),
+        url: `${this.#url}/users`,
+        params: new HttpParams().set('page', String(page)).set('pageSize', String(pageSize)),
         context: new HttpContext().set(SKIP_CENTER_INTERCEPTOR, true),
       };
     },

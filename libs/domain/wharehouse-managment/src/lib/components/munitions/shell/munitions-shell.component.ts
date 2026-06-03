@@ -77,6 +77,7 @@ import { MunitionLocationComponent } from '../location/location.component';
         @if (category() !== null) {
           <inta-munition-identification
             data-testid="identificationForm"
+            [category]="category()"
             #identificationForm
           ></inta-munition-identification>
 

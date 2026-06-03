@@ -27,21 +27,20 @@ masterDataRouter.get('/clients', (req, res) => {
 });
 
 masterDataRouter.get('/users', (req, res) => {
-  const page = parseInt(req.query.page as string || '1', 10);
-  const pageSize = parseInt(req.query.pageSize as string || '25', 10);
+  const page = parseInt((req.query.page as string) || '1', 10);
+  const pageSize = parseInt((req.query.pageSize as string) || '25', 10);
   const mockUsers = [
     { id: 'b01a0e23-da71-3a08-9893-11b8b2dfb069', username: 'Usuario CET 1', roles: ['SYSTEM_ADMIN'] },
     { id: 'd6d77053-92bc-3af6-b332-8bea8c4c6904', username: 'Usuario CET 2', roles: ['ADMINISTRATIVE'] },
-    { id: '3d58ce20-fe80-3793-a0b2-21905baa60b3', username: 'Usuario CET 3', roles: ['TRIAL_ADMIN'] }
+    { id: '3d58ce20-fe80-3793-a0b2-21905baa60b3', username: 'Usuario CET 3', roles: ['TRIAL_ADMIN'] },
   ];
   res.send({
     page,
     pageSize,
     totalElements: mockUsers.length,
-    items: mockUsers
+    items: mockUsers,
   });
 });
-
 
 // Lines of Shoot — swagger: GET /centers/{centerId}/lines-of-shoot → MasterDataI18nListResponse
 const linesOfShootHandler = (req: Request, res: Response) => res.send(linesOfShootDispatcher(req));

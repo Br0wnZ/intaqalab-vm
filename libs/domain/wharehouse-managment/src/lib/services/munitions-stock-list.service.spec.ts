@@ -6,15 +6,13 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import type { MunitionStockListSearch } from '../models/munition-stock-list.model';
 import { MunitionsStockListService } from './munitions-stock-list.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ──────────────────────────────────────────────────────────────────────────────
+// // Helpers
+//
 
 const emptyPage = { items: [], page: 1, pageSize: 10, totalElements: 0 };
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('MunitionsStockListService', () => {
   let service: MunitionsStockListService;
@@ -32,14 +30,14 @@ describe('MunitionsStockListService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.searchItems).toBeDefined();
     expect(service.paginatedResponse).toBeDefined();
   });
 
-  // ── searchItems ────────────────────────────────────────────────────────────
+  // searchItems
   describe('searchItems', () => {
     it('should NOT fire any HTTP request when searchItems is null (initial state)', () => {
       httpMock.expectNone((r) => r.url.includes('/stock'));
@@ -63,18 +61,6 @@ describe('MunitionsStockListService', () => {
 
       expect(params.get('page')).toBe('2');
       expect(params.get('pageSize')).toBe('25');
-      req.flush(emptyPage);
-    });
-
-    it('should send sort params as separate keys', () => {
-      service.searchItems.set({ page: 1, pageSize: 10, sortField: 'batch', sortDirection: 'asc' });
-      TestBed.tick();
-
-      const req = httpMock.expectOne((r) => r.url.includes('/stock'));
-      const params = req.request.params;
-
-      expect(params.get('sortField')).toBe('batch');
-      expect(params.get('sortDirection')).toBe('asc');
       req.flush(emptyPage);
     });
 

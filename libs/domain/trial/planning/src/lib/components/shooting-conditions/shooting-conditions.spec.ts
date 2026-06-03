@@ -15,11 +15,6 @@ import type { Shot } from '../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../services/shooting-conditions.service';
 import { ShootingConditionsComponent } from './shooting-conditions';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('ShootingConditionsComponent', () => {
   let fixture: ComponentFixture<ShootingConditionsComponent>;
   let component: ShootingConditionsComponent;

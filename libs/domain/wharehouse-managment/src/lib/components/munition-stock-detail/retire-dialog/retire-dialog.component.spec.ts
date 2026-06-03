@@ -8,11 +8,6 @@ import { render } from '@testing-library/angular';
 
 import { RetireDialogComponent } from './retire-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 let mockDialog: ReturnType<typeof createMockMatDialog>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mockService: any /* eslint-disable-line @typescript-eslint/no-explicit-any */;

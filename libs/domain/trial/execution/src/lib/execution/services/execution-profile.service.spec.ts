@@ -6,9 +6,8 @@ import { EXECUTION_PROFILE_REGISTRY } from '../models/execution-profile-registry
 import { ExecutionFeature, ExecutionProfile } from '../models/execution-profile.model';
 import { ExecutionProfileService, resolveExecutionProfile } from './execution-profile.service';
 
-// ────────────────────────────────────────────────────────────────
-// Pure function tests
-// ────────────────────────────────────────────────────────────────
+// // Pure function tests
+//
 
 describe('resolveExecutionProfile', () => {
   it('resolves UNIT_TECHNICIAN to UNIT_TECHNICIAN', () => {
@@ -36,9 +35,8 @@ describe('resolveExecutionProfile', () => {
   // });
 });
 
-// ────────────────────────────────────────────────────────────────
-// Service tests
-// ────────────────────────────────────────────────────────────────
+// // Service tests
+//
 
 describe('ExecutionProfileService', () => {
   let service: ExecutionProfileService;
@@ -142,9 +140,8 @@ describe('ExecutionProfileService', () => {
   // });
 });
 
-// ────────────────────────────────────────────────────────────────
-// Registry completeness tests
-// ────────────────────────────────────────────────────────────────
+// // Registry completeness tests
+//
 
 describe('EXECUTION_PROFILE_REGISTRY', () => {
   it('has an entry for every ExecutionProfile value', () => {

@@ -1,5 +1,4 @@
 import { computed, inject } from '@angular/core';
-import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type { MunitionComponentsModel } from '../models/munition-components.model';

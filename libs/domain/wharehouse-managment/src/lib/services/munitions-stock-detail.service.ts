@@ -15,8 +15,11 @@ export type UpdateAssociatedComponentsData = { denominationId: string; batch: st
   providedIn: 'root',
 })
 export class MunitionsStockDetailService {
-  #resource = injectWarehouseResource<MunitionDetailResponseModel, { associatedComponents: UpdateAssociatedComponentsData[] }, { id: string } | undefined>(`${injectWharehouseEndpoint()}/stock`);
-  
+  #resource = injectWarehouseResource<
+    MunitionDetailResponseModel,
+    { associatedComponents: UpdateAssociatedComponentsData[] }
+  >(`${injectWharehouseEndpoint()}/stock`);
+
   readonly deleteResource = this.#resource.deleteResource;
   readonly response = this.#resource.response;
 
@@ -28,10 +31,8 @@ export class MunitionsStockDetailService {
   updateAssociatedComponents(dataToSend: UpdateAssociatedComponentsPayload) {
     const { data, id } = dataToSend;
     const url = `munitions/${id}`;
-    this.#resource.partialUpdateItem({ associatedComponents:data}, url);
+    this.#resource.partialUpdateItem({ associatedComponents: data }, url);
   }
-
-
 
   readonly #whareHouseUrl = injectWharehouseEndpoint();
   readonly #apiUrlMovements = `${this.#whareHouseUrl}/movements`;

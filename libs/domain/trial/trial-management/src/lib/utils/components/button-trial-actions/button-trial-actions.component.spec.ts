@@ -9,10 +9,6 @@ import { ButtonTrialActionsComponent } from './button-trial-actions.component';
 import type { ButtonTrialActionsInput } from './button-trial-actions.model';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class FakeTranslateLoader {
   getTranslation() {
     return of({ HELLO: 'Hola' });

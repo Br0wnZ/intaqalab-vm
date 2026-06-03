@@ -20,10 +20,6 @@ import { TrialDocDetails } from './trial-doc-details';
 
 // Issue #14: ng2-pdf-viewer crashes JSDOM — must be mocked BEFORE any import
 // that transitively loads it. Use a SYNCHRONOUS factory (async fails in this project).
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 // ---------------------------------------------------------------------------
 // Mock factory
 // ---------------------------------------------------------------------------

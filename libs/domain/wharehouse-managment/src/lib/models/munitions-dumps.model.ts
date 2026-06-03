@@ -34,10 +34,11 @@ export interface MunitionDumpForm {
 }
 
 export type MunitionTypePayload = {
+  id?: string;
+  currentNeq?: number;
   munitionDumpId?: string;
-  cells: {
-    name: string;
-  }[];
+  cells?: MunitionsDumpModelCell[];
+  occupancyPercentage?: number;
   maxRiskGroupNeqPerCell: number;
   maxNeq: number;
   active: boolean;

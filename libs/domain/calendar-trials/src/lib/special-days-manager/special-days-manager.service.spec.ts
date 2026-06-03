@@ -5,11 +5,6 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 
 import { SpecialDaysManagerService } from './special-days-manager.service';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('SpecialDaysManagerService', () => {
   let service: SpecialDaysManagerService;
 

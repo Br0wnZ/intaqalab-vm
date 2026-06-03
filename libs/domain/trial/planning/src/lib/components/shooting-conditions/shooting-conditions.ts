@@ -740,12 +740,7 @@ export class ShootingConditionsComponent implements OnInit {
     return conditions.find((candidate) => candidate.seriesId === serie.id || candidate.seriesName === serie.name);
   }
 
-  #findShotCondition(
-    shotConditions: Shot[] | undefined,
-    shotId: string,
-    globalNumber: number,
-    index: number,
-  ): Shot | undefined {
+  #findShotCondition(shotConditions: Shot[] | undefined, shotId: string, globalNumber: number): Shot | undefined {
     if (!shotConditions?.length) return undefined;
 
     const byId = shotConditions.find((shot) => shot.shotId === shotId);
@@ -754,7 +749,7 @@ export class ShootingConditionsComponent implements OnInit {
     const byGlobalNumber = shotConditions.find((shot) => shot.globalNumber === globalNumber);
     if (byGlobalNumber) return byGlobalNumber;
 
-    return shotConditions[index];
+    return undefined;
   }
 
   #buildSeriesFromStore(series: SeriesAndShotsSerie[], conditions?: Serie[]): Serie[] {
@@ -763,11 +758,12 @@ export class ShootingConditionsComponent implements OnInit {
       return {
         seriesId: serie.id,
         seriesName: serie.name,
-        shots: serie.shots.map((shot, index) => {
-          const existing = this.#findShotCondition(serieCondition?.shots, shot.id, shot.globalNumber, index);
+        shots: serie.shots.map((shot) => {
+          const existing = this.#findShotCondition(serieCondition?.shots, shot.id, shot.globalNumber);
           if (existing)
             return {
               ...existing,
+              shotId: shot.id,
               projectWeight: existing.projectWeight ?? 0,
               nominalSpeed: existing.nominalSpeed ?? 0,
             };

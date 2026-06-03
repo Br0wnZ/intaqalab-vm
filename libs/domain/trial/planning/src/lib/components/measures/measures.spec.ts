@@ -21,11 +21,6 @@ import { MeasuresService } from '../../services/measures-service';
 import { SeriesAndShotsService } from '../../services/series-and-shots-service';
 import { Measures } from './measures';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const defaultImports = [TranslateModule.forRoot()];
 
 const defaultCatalogData = [

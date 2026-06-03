@@ -12,10 +12,6 @@ import { ALLOWED_EXTENSIONS } from '../../../utils-models/valid-extensions';
 import { TrialDocsFilePicker } from './trial-docs-file-picker';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 export const createDragEvent = (type: string, files: File[] = []): DragEvent => {
   const event = new Event(type, { bubbles: true, cancelable: true }) as DragEvent;
 

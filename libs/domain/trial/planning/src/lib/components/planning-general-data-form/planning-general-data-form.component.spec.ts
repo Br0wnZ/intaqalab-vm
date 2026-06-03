@@ -199,6 +199,19 @@ describe('PlanningGeneralDataFormComponent', () => {
         expect(screen.queryByText(/La suma de los porcentajes deben ser 100/i)).not.toBeInTheDocument();
       });
     });
+
+    it('should prevent negative values on percentageEndTrial field', async () => {
+      const { user } = await setup();
+      const endInput = screen.getByLabelText(/TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL/i) as HTMLInputElement;
+
+      const event = new KeyboardEvent('keydown', { key: '-' });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+      endInput.dispatchEvent(event);
+      expect(preventDefaultSpy).toHaveBeenCalled();
+
+      fireEvent.input(endInput, { target: { value: '-45' } });
+      expect(endInput.value).toBe('45');
+    });
   });
 
   // ── Date fields ────────────────────────────────────────────────────────────

@@ -10,11 +10,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataDefault } from '../../../../models/master-data-default.model';
 import { MasterDataDefaultUpsertDialogComponent } from './default-upsert-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_EDIT_DATA: MasterDataDefault = {
   id: '123',
   name: { es: 'Nombre ES', en: 'Name EN' },

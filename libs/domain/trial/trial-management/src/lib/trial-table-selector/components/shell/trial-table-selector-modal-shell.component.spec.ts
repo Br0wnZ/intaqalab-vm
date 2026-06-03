@@ -8,10 +8,6 @@ import { render, screen } from '@testing-library/angular';
 import { TrialTableSelectorModalShellComponent } from './trial-table-selector-modal-shell.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('TrialTableSelectorModalShellComponent', () => {
   beforeEach(async () => {
     await render(TrialTableSelectorModalShellComponent, {

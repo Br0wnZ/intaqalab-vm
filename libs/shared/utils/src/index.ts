@@ -4,3 +4,4 @@ export * from './lib/testing/testing-helpers';
 export * from './lib/testing/core/index';
 export * from './lib/pipes/inta-trial-status-label.pipe';
 export * from './lib/directives/no-leading-zeros.directive';
+export * from './lib/directives/no-negative-values.directive';

@@ -11,11 +11,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
 import { UpsertSerieDialog } from './upsert-serie-dialog';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('UpsertSerieDialog', () => {
   let fixture: ComponentFixture<UpsertSerieDialog>;
   let component: UpsertSerieDialog;

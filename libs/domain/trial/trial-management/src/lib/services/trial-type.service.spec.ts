@@ -6,10 +6,6 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialTypeService } from './trial-type.service';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('TrialTypeService', () => {
   let service: TrialTypeService;
 

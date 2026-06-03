@@ -5,6 +5,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
@@ -15,10 +16,13 @@ import { BooleanStatusBadge, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { delay } from 'rxjs';
 
+import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
+import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListResponse, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import { TransferDialogComponent } from '../../shared/transfer-dialog/transfer-dialog.component';
 import { StockListFilterComponent } from '../filter/stock-list-filter.component';
+import { NeqDataComponent } from '../neq-data/neq-data.component';
 
 const DEFAULT_COLUMNS = [
   'munitionTypeName',
@@ -48,12 +52,31 @@ const DEFAULT_COLUMNS = [
     IntaIconComponent,
     StockListFilterComponent,
     BooleanStatusBadge,
+    MatMenuModule,
+    NeqDataComponent,
   ],
   template: `
+    <div class="flex justify-between items-center">
+      <h2 class="text-base font-semibold text-gray-900 my-6">
+        {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TITLE' | translate }}
+      </h2>
+      <button mat-flat-button [matMenuTriggerFor]="menu">
+        {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON' | translate }}
+      </button>
+      <mat-menu panelClass="warehouse-mat-mene-neq" #menu="matMenu">
+        <inta-stock-list-neq-data></inta-stock-list-neq-data>
+      </mat-menu>
+    </div>
+
     <inta-stock-list-filter (filtersData)="setFiltersData($event)" />
 
     <div class="w-full flex justify-end mb-4 mt-6">
-      <button mat-flat-button [disabled]="selection.selected.length === 0" (click)="transfer()">
+      <button
+        mat-flat-button
+        data-testid="transfer-btn"
+        [disabled]="selection.selected.length === 0"
+        (click)="transfer()"
+      >
         {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER' | translate }}
       </button>
     </div>
@@ -234,12 +257,25 @@ const DEFAULT_COLUMNS = [
       />
     </div>
   `,
-  styles: ``,
+  styles: `
+    .cdk-overlay-pane {
+      min-width: 350px;
+      .mat-mdc-menu-panel {
+        min-width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.1);
+        .mat-mdc-menu-content {
+          padding: 0;
+        }
+      }
+    }
+  `,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StockListComponent {
   readonly stockListStore = inject(StockListStore);
+  readonly #munitionDumpsStore: MunitionsDumpsStoreType = inject(MunitionsDumpsStore);
 
   readonly #dialog = inject(MatDialog);
   readonly #router = inject(Router);
@@ -254,6 +290,8 @@ export class StockListComponent {
   filtersData = signal<MunitionStockListSearch | undefined>(undefined);
 
   constructor() {
+    this.#munitionDumpsStore.search({ pageSize: 500 });
+
     effect(() => {
       const page = this.pageIndex() + 1;
       const pageSize = this.pageSize();

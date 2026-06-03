@@ -24,7 +24,6 @@ import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import type { DenominationModel } from '../../../models/denominations.model';
-import type { MunitionComponentsModel } from '../../../models/munition-components.model';
 import type { ComponentListMunitionForm } from '../../../models/munition-stock.model';
 import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 import { getMunitionsPartitionedByCategory } from '../../../models/utils.model';

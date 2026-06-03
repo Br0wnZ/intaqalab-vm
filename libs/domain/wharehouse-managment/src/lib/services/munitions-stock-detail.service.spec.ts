@@ -6,9 +6,8 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import type { UpdateAssociatedComponentsData } from './munitions-stock-detail.service';
 import { MunitionsStockDetailService } from './munitions-stock-detail.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('MunitionsStockDetailService', () => {
   let service: MunitionsStockDetailService;
@@ -26,7 +25,7 @@ describe('MunitionsStockDetailService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.response).toBeDefined();
@@ -35,7 +34,7 @@ describe('MunitionsStockDetailService', () => {
     expect(service.transferResource).toBeDefined();
   });
 
-  // ── searchById ─────────────────────────────────────────────────────────────
+  // searchById
   describe('searchById()', () => {
     it('should NOT fire any HTTP request initially', () => {
       httpMock.expectNone((r) => r.url.includes('/stock'));
@@ -60,7 +59,7 @@ describe('MunitionsStockDetailService', () => {
     });
   });
 
-  // ── updateAssociatedComponents ─────────────────────────────────────────────
+  // updateAssociatedComponents
   describe('updateAssociatedComponents()', () => {
     const makeComponent = (): UpdateAssociatedComponentsData => ({
       denominationId: 'denom-1',
@@ -88,7 +87,7 @@ describe('MunitionsStockDetailService', () => {
     });
   });
 
-  // ── retireResource ─────────────────────────────────────────────────────────
+  // retireResource
   describe('retireResource (retire signal)', () => {
     it('should NOT fire any request when retire is undefined', () => {
       httpMock.expectNone((r) => r.url.includes('/movements'));
@@ -105,7 +104,7 @@ describe('MunitionsStockDetailService', () => {
     });
   });
 
-  // ── transferResource ───────────────────────────────────────────────────────
+  // transferResource
   describe('transferResource (transfer signal)', () => {
     it('should NOT fire any request when transfer is undefined', () => {
       httpMock.expectNone((r) => r.url.includes('/movements'));

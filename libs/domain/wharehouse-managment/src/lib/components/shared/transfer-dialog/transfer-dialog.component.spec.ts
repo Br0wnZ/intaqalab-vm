@@ -8,11 +8,6 @@ import { render } from '@testing-library/angular';
 
 import { TransferDialogComponent } from './transfer-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 let mockDialog: ReturnType<typeof createMockMatDialog>;
 
 let mockDialogRef: { close: ReturnType<typeof vi.fn> };

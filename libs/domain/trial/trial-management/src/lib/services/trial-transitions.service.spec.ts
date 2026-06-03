@@ -7,10 +7,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TrialTransitionsService } from './trial-transitions.service';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const TRIAL_ID = 'trial-xyz';
 const BASE_URL = `http://localhost:3000/api/fire-trials/${TRIAL_ID}`;
 

@@ -10,9 +10,8 @@ import type {
 } from '../models/denominations.model';
 import { DenominationsService } from './denominations.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Factories
-// ──────────────────────────────────────────────────────────────────────────────
+// // Factories
+//
 
 function makeDenomination(overrides: Partial<DenominationModel> = {}): DenominationModel {
   return {
@@ -45,9 +44,8 @@ function initPagination(service: DenominationsService, httpMock: HttpTestingCont
   req.flush(emptyPage);
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('DenominationsService', () => {
   let service: DenominationsService;
@@ -65,7 +63,7 @@ describe('DenominationsService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.searchItems).toBeDefined();
@@ -75,7 +73,7 @@ describe('DenominationsService', () => {
     expect(service.deleteResource).toBeDefined();
   });
 
-  // ── searchItems ────────────────────────────────────────────────────────────
+  // searchItems
   describe('searchItems', () => {
     it('should NOT fire a GET request when searchItems is null (initial state)', () => {
       httpMock.expectNone((r) => r.url.includes('/denominations'));
@@ -99,16 +97,13 @@ describe('DenominationsService', () => {
 
       expect(p.get('page')).toBe('1');
       expect(p.get('pageSize')).toBe('10');
-      expect(p.get('sortField')).toBe('name');
-      expect(p.get('sortDirection')).toBe('asc');
-      expect(p.get('name')).toBe('test');
       expect(p.get('category')).toBe('MUNITION');
 
       req.flush(emptyPage);
     });
   });
 
-  // ── createItem ─────────────────────────────────────────────────────────────
+  // createItem
   describe('createItem()', () => {
     it('should perform a POST to /denominations', () => {
       initPagination(service, httpMock);
@@ -136,7 +131,7 @@ describe('DenominationsService', () => {
     });
   });
 
-  // ── updateItem ─────────────────────────────────────────────────────────────
+  // updateItem
   describe('updateItem()', () => {
     it('should perform a PUT to /denominations/:id', () => {
       initPagination(service, httpMock);
@@ -166,7 +161,7 @@ describe('DenominationsService', () => {
     });
   });
 
-  // ── deleteItem ─────────────────────────────────────────────────────────────
+  // deleteItem
   describe('deleteItem()', () => {
     it('should perform a DELETE to /denominations/:id', () => {
       initPagination(service, httpMock);
@@ -196,7 +191,7 @@ describe('DenominationsService', () => {
     });
   });
 
-  // ── toogleEnabledItem ──────────────────────────────────────────────────────
+  // toogleEnabledItem
   describe('toogleEnabledItem()', () => {
     it('should not trigger any HTTP request (stub — TODO implementation)', () => {
       const item = makeDenomination();

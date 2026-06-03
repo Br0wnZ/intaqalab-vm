@@ -10,11 +10,6 @@ import { MunitionComponentStore } from '../../../+state/munition-component.store
 import type { DenominationModel, DenominationUpSertModel } from '../../../models/denominations.model';
 import { DenominationsDialogComponent } from './denominations-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const createMockMunitionStore = () => ({
   items: signal([]),
   search: vi.fn(),

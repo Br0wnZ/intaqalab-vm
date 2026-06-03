@@ -8,11 +8,9 @@ import { injectWarehouseResource } from './warehouse-resource.factory';
   providedIn: 'root',
 })
 export class MunitionsStockListService {
-  readonly #resource = injectWarehouseResource<
-    MunitionStockListResponse,
-    MunitionStockListResponse,
-    MunitionStockListSearch
-  >(`${injectWharehouseEndpoint()}/stock`);
+  readonly #resource = injectWarehouseResource<MunitionStockListResponse, MunitionStockListResponse>(
+    `${injectWharehouseEndpoint()}/stock`,
+  );
 
   readonly searchItems = this.#resource.searchItems;
   readonly paginatedResponse = this.#resource.paginatedResponse;

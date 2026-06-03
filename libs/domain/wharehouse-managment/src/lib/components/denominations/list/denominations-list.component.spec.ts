@@ -10,13 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
 import type { DenominationModel, DenominationUpSertModel } from '../../../models/denominations.model';
-import { DenominationsDialogComponent } from '../denomination-dialog/denominations-dialog.component';
 import { DenominationsListComponent } from './denominations-list.component';
-
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
 
 const mockItem: DenominationModel = {
   id: 'item-1',
@@ -54,6 +48,7 @@ describe('DenominationsListComponent', () => {
     const user = userEvent.setup();
     mockStore = createMockStore(items);
     mockUiDialog = { confirm: vi.fn().mockResolvedValue(false) };
+
     const mockDialog = createMockMatDialog({ defaultResult: dialogResult });
 
     const view = await render(DenominationsListComponent, {

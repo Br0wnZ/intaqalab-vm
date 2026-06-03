@@ -13,11 +13,6 @@ import { EventsActionsService } from '../../services/events-actions.service';
 import { DayActionsComponent } from './day-actions.component';
 
 // Mock ng2-pdf-viewer to prevent PDF.js from crashing in JSDOM.
-// Must be before any import that transitively loads doc-viewer (UiDialogService â†’ doc-viewer â†’ ng2-pdf-viewer).
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class FakeTranslateLoader {
   getTranslation() {
     return of({ HELLO: 'Hola' });
@@ -87,7 +82,7 @@ describe('DayActionsComponent', () => {
     vi.restoreAllMocks();
   });
 
-  // â”€â”€ Menu items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Menu items
 
   describe('Menu items', () => {
     it('should show 2 items when canSchedule=true and no observations', async () => {
@@ -123,7 +118,7 @@ describe('DayActionsComponent', () => {
     });
   });
 
-  // â”€â”€ Service delegation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Service delegation
 
   describe('Service delegation', () => {
     it('addObs should delegate to EventsActionsService.addObservationsToDay', async () => {
@@ -173,7 +168,7 @@ describe('DayActionsComponent', () => {
     });
   });
 
-  // â”€â”€ refreshView output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // refreshView output
 
   describe('refreshView output', () => {
     it('should emit refreshView after successful addObs', async () => {
@@ -247,7 +242,7 @@ describe('DayActionsComponent', () => {
     });
   });
 
-  // â”€â”€ isDisabled input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // isDisabled input
 
   describe('isDisabled input', () => {
     it('should disable the trigger button when isDisabled=true', async () => {

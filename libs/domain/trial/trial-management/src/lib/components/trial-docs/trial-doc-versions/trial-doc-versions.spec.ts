@@ -8,10 +8,6 @@ import type { DocumentVersion } from '../../../utils-models/documents-service.mo
 import { TrialDocVersions } from './trial-doc-versions';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const mockDocumentVersions: DocumentVersion[] = [
   {
     id: '1',

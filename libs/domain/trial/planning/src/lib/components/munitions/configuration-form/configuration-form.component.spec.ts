@@ -14,11 +14,6 @@ import type { Configuration } from '../../../utils-models/munitions.model';
 import { createEmptyComponentDetail, createEmptyConfiguration } from '../../../utils-models/munitions.model';
 import { ConfigurationFormComponent } from './configuration-form.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const waitFor = async (fn: () => any) => fn();
 

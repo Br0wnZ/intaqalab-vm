@@ -9,11 +9,9 @@ import { injectWarehouseResource } from './warehouse-resource.factory';
   providedIn: 'root',
 })
 export class MunitionsDumpsService {
-  readonly #crud = injectWarehouseResource<
-    MunitionsDumpModel | MunitionTypePayload,
-    MunitionTypePayload,
-    PaginatedSortedViewRequest
-  >(`${injectWharehouseEndpoint()}/munitions-dumps`);
+  readonly #crud = injectWarehouseResource<MunitionsDumpModel | MunitionTypePayload, MunitionTypePayload>(
+    `${injectWharehouseEndpoint()}/munitions-dumps`,
+  );
 
   readonly searchItems = this.#crud.searchItems;
   readonly paginatedResponse = this.#crud.paginatedResponse;

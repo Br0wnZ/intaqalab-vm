@@ -7,11 +7,6 @@ import { render, screen } from '@testing-library/angular';
 import { BreadcrumbService } from '../../services/breadcrumb/breadcrumb.service';
 import { BreadcrumbComponent } from './breadcrumb.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 type BreadcrumbItem = { label: string; url: string };
 
 async function setup(items: BreadcrumbItem[] = []) {

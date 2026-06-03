@@ -15,11 +15,6 @@ import { MasterDataService } from '../../services/master-data.service';
 import { MasterDataDefaultUpsertDialogComponent } from '../dialogs/upsert/default/default-upsert-dialog.component';
 import { MasterDataListComponent } from './master-data-list.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_ITEMS = [
   { id: 'id-1', label: 'Material 1', name: { es: 'Material 1', en: 'Material 1' }, active: true },
   { id: 'id-2', label: 'Material 2', name: { es: 'Material 2', en: 'Material 2' }, active: false },

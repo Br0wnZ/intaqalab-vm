@@ -8,10 +8,6 @@ import { render, screen } from '@testing-library/angular';
 import { AssociatedTrialDialog } from './associated-trial-dialog';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('AssociatedTrialDialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
   const defaultImports = [TranslateModule.forRoot()];

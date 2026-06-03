@@ -1,3 +1,4 @@
+import '@intaqalab/utils/testing/pdf-mock';
 import '@analogjs/vitest-angular/setup-zone';
 import '@angular/compiler';
 import { getTestBed } from '@angular/core/testing';

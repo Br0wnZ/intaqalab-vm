@@ -10,10 +10,6 @@ import { TrialStore } from '../../+state/trial-list.store';
 import { FeatureTrialListShellComponent } from './feature-trial-list-shell.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 @Component({
   selector: 'inta-trial-list',
   template: '',

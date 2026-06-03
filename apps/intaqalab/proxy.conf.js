@@ -169,10 +169,10 @@ proxyConfig['^/api/clients-api'] = buildProxyRule({
 // Users API — /intaqalab/users-api/1.0.0/users (sin center, usa SKIP_CENTER_INTERCEPTOR)
 proxyConfig['^/api/users-api'] = buildProxyRule({
   remotePathRewrite: {
-    '^/api/users-api/[^/]+': `${USERS_API_BASE_PATH}/users`,
+    '^/api/users-api/.*': `${USERS_API_BASE_PATH}/users`,
   },
   mockPathRewrite: {
-    '^/api/users-api/[^/]+': '/api/users',
+    '^/api/users-api/.*': '/api/users',
   },
 });
 

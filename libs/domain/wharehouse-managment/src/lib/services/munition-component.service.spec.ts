@@ -6,9 +6,8 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import type { MunitionComponentsModel } from '../models/munition-components.model';
 import { MunitionComponentService } from './munition-component.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Factories
-// ──────────────────────────────────────────────────────────────────────────────
+// // Factories
+//
 
 function makeItem(overrides: Partial<MunitionComponentsModel> = {}): MunitionComponentsModel {
   return {
@@ -30,9 +29,8 @@ function initPagination(service: MunitionComponentService, httpMock: HttpTesting
   httpMock.expectOne((r) => r.url.includes('/munition-types') && r.method === 'GET').flush(emptyPage);
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('MunitionComponentService', () => {
   let service: MunitionComponentService;
@@ -50,7 +48,7 @@ describe('MunitionComponentService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.searchItems).toBeDefined();
@@ -60,7 +58,7 @@ describe('MunitionComponentService', () => {
     expect(service.deleteResource).toBeDefined();
   });
 
-  // ── searchItems ────────────────────────────────────────────────────────────
+  // searchItems
   describe('searchItems', () => {
     it('should NOT fire any HTTP request when searchItems is null (initial state)', () => {
       httpMock.expectNone((r) => r.url.includes('/munition-types'));
@@ -75,7 +73,7 @@ describe('MunitionComponentService', () => {
       req.flush(emptyPage);
     });
 
-    it('should send pagination and sort params as separate keys', () => {
+    it('should send pagination params', () => {
       service.searchItems.set({ page: 2, pageSize: 25, sortField: 'name', sortDirection: 'asc' });
       TestBed.tick();
 
@@ -84,8 +82,6 @@ describe('MunitionComponentService', () => {
 
       expect(params.get('page')).toBe('2');
       expect(params.get('pageSize')).toBe('25');
-      expect(params.get('sortField')).toBe('name');
-      expect(params.get('sortDirection')).toBe('asc');
       req.flush(emptyPage);
     });
 
@@ -100,7 +96,7 @@ describe('MunitionComponentService', () => {
     });
   });
 
-  // ── createItem ─────────────────────────────────────────────────────────────
+  // createItem
   describe('createItem()', () => {
     it('should perform a POST to /munition-types', () => {
       initPagination(service, httpMock);
@@ -129,7 +125,7 @@ describe('MunitionComponentService', () => {
     });
   });
 
-  // ── updateItem ─────────────────────────────────────────────────────────────
+  // updateItem
   describe('updateItem()', () => {
     it('should perform a PUT to /munition-types/:id', () => {
       initPagination(service, httpMock);
@@ -158,7 +154,7 @@ describe('MunitionComponentService', () => {
     });
   });
 
-  // ── deleteItem ─────────────────────────────────────────────────────────────
+  // deleteItem
   describe('deleteItem()', () => {
     it('should perform a DELETE to /munition-types/:id', () => {
       initPagination(service, httpMock);
@@ -187,7 +183,7 @@ describe('MunitionComponentService', () => {
     });
   });
 
-  // ── toogleEnabledItem ──────────────────────────────────────────────────────
+  // toogleEnabledItem
   describe('toogleEnabledItem()', () => {
     it('should perform a PUT with the toggled active value', () => {
       initPagination(service, httpMock);

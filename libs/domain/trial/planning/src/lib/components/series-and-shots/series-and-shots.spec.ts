@@ -19,11 +19,6 @@ import { PlanningGeneralDataStore } from '../../+state/planning-general-data.sto
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import { SeriesAndShots } from './series-and-shots';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('SeriesAndShots', () => {
   let mockPlanningStore: ReturnType<typeof createMockPlanningGeneralDataStore>;
   let mockSeriesStore: ReturnType<typeof createMockSeriesAndShotsStore>;

@@ -23,12 +23,7 @@ import type { Serie } from '../../utils-models/munitions.model';
 import { createEmptyConfiguration, createEmptySerie } from '../../utils-models/munitions.model';
 import { Munitions } from './munitions';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// Helpers
 
 const defaultImports = [TranslateModule.forRoot()];
 
@@ -47,7 +42,7 @@ function createValidSerie(name: string): Serie {
   };
 }
 
-// ─── Setup ───────────────────────────────────────────────────────────────────
+// Setup
 
 const runSetup = async (options?: { mockDialog?: Partial<MatDialog> }) => {
   const catalogData = createMunitionsCatalogTestData();
@@ -88,7 +83,7 @@ const runSetup = async (options?: { mockDialog?: Partial<MatDialog> }) => {
   return { view, component, user, mockPlanningStore, mockMunitionsService };
 };
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
+// Tests
 
 describe('Munitions', () => {
   beforeEach(() => {
@@ -99,7 +94,7 @@ describe('Munitions', () => {
     vi.restoreAllMocks();
   });
 
-  // ── Initial rendering ──────────────────────────────────────────────────────
+  // Initial rendering
 
   describe('Initial rendering', () => {
     it('should create the component', async () => {
@@ -144,7 +139,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Form state ─────────────────────────────────────────────────────────────
+  // Form state
 
   describe('Form state', () => {
     it('should report the form as valid when all required fields are filled', async () => {
@@ -227,7 +222,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Series management ──────────────────────────────────────────────────────
+  // Series management
 
   describe('Series management', () => {
     it('should add a new serie', async () => {
@@ -265,7 +260,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Save configuration ─────────────────────────────────────────────────────
+  // Save configuration
 
   describe('Save configuration', () => {
     it('should call saveForm without error when form is valid', async () => {
@@ -292,7 +287,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Reset configuration ────────────────────────────────────────────────────
+  // Reset configuration
 
   describe('Reset configuration', () => {
     it('should restore initial series after manual modification', async () => {
@@ -320,7 +315,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Export / Import ────────────────────────────────────────────────────────
+  // Export / Import
 
   describe('Export/Import configuration', () => {
     it('should export the current series as a JSON string', async () => {
@@ -355,7 +350,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── Massive configuration dialog ───────────────────────────────────────────
+  // Massive configuration dialog
 
   describe('Massive configuration dialog', () => {
     it('should open the dialog when the massive config button is clicked', async () => {
@@ -386,7 +381,7 @@ describe('Munitions', () => {
     });
   });
 
-  // ── validateConfiguration ──────────────────────────────────────────────────
+  // validateConfiguration
 
   describe('validateConfiguration', () => {
     it('should return true when the form is valid', async () => {

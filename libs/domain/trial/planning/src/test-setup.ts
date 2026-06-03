@@ -5,6 +5,7 @@ import { getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import '@testing-library/jest-dom';
+import '@intaqalab/utils/testing/pdf-mock';
 
 // Initialize DOM adapter BEFORE TestBed - critical for direct Vitest runs
 BrowserDomAdapter.makeCurrent();

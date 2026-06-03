@@ -13,10 +13,6 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
 import { AssociateDocTrialsDialog } from './associate-doc-trials-dialog';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('AssociateDocTrialsDialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

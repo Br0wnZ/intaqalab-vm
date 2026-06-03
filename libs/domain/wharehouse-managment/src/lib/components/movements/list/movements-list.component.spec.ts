@@ -10,11 +10,6 @@ import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import type { MovementListItem } from '../../../models/movements.model';
 import { MovementsListComponent } from './movements-list.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const mockItem: MovementListItem = {
   date: '2026-01-15T10:30:00Z',
   movementType: 'TRANSFER',

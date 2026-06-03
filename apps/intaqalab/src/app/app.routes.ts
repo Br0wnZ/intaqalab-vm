@@ -7,7 +7,7 @@ export const appRoutes: Route[] = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'planning',
+    redirectTo: 'trial/new',
   },
   {
     path: 'demos',

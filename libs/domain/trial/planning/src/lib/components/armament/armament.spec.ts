@@ -16,11 +16,6 @@ import { ArmamentService } from '../../services/armament-service';
 import type { TrialArmamentResponse } from '../../utils-models/armament.model';
 import { Armament } from './armament';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmamentResponse => ({
   series: Array.from({ length: seriesCount }, (_, seriesIdx) => ({
     seriesId: `series-${seriesIdx + 1}`,

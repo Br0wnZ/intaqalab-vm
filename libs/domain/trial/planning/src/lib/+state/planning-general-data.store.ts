@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { computed, effect, inject } from '@angular/core';
+import { UsersService } from '@intaqalab/data-access';
 import type { MasterData, TrialCreateModifyForm } from '@intaqalab/models';
 import type { TargetDimension, TargetThickness } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
-import { UsersService } from '@intaqalab/data-access';
-
 
 import type { UpdateConditionsRequest } from '../models/shooting-conditions.model';
 import { DataPlanningService } from '../services/data-planning-service';

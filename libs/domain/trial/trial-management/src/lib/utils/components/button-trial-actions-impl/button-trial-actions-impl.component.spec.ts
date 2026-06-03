@@ -9,10 +9,6 @@ import { of } from 'rxjs';
 import { ButtonTrialActionsImplComponent } from './button-trial-actions-impl.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class FakeTranslateLoader {
   getTranslation() {
     return of({ HELLO: 'Hola' });

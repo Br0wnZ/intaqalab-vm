@@ -6,9 +6,8 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import type { MunitionComponentPostModel, MunitionStockPostModel } from '../models/munition-stock.model';
 import { MunitionsStockService } from './munitions-stock.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Factories
-// ──────────────────────────────────────────────────────────────────────────────
+// // Factories
+//
 
 function makeMunitionStock(overrides: Partial<MunitionStockPostModel> = {}): MunitionStockPostModel {
   return {
@@ -45,9 +44,8 @@ function makeMunitionComponentStock(): MunitionComponentPostModel {
   };
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('MunitionsStockService', () => {
   let service: MunitionsStockService;
@@ -65,7 +63,7 @@ describe('MunitionsStockService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.munition).toBeDefined();
@@ -74,7 +72,7 @@ describe('MunitionsStockService', () => {
     expect(service.saveMunitionComponentsResource).toBeDefined();
   });
 
-  // ── saveMunitionResource ───────────────────────────────────────────────────
+  // saveMunitionResource
   describe('saveMunitionResource (munition signal)', () => {
     it('should NOT fire any request when munition is null (initial state)', () => {
       httpMock.expectNone((r) => r.url.includes('/stock'));
@@ -117,7 +115,7 @@ describe('MunitionsStockService', () => {
     });
   });
 
-  // ── saveMunitionComponentsResource ────────────────────────────────────────
+  // saveMunitionComponentsResource
   describe('saveMunitionComponentsResource (munitionComponents signal)', () => {
     it('should NOT fire any request when munitionComponents is null (initial state)', () => {
       httpMock.expectNone((r) => r.url.includes('/stock'));
@@ -143,7 +141,7 @@ describe('MunitionsStockService', () => {
     });
   });
 
-  // ── clear() ────────────────────────────────────────────────────────────────
+  // clear()
   describe('clear()', () => {
     it('should reset both munition and munitionComponents signals to null', () => {
       service.munition.set({ itemToSave: makeMunitionStock() });

@@ -6,11 +6,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataRemoveDialog } from '../../../models/master-data-remove-dialog.model';
 import { MasterDataRemoveDialogComponent } from './remove-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_DIALOG_DATA: MasterDataRemoveDialog = {
   title: 'MASTER_DATA.DIALOGS.DELETE.TITLE',
   description: 'MASTER_DATA.DIALOGS.DELETE.DESCRIPTION',

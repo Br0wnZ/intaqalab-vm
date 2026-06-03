@@ -1,3 +1,4 @@
+import '@intaqalab/utils/testing/pdf-mock';
 import '@analogjs/vitest-angular/setup-zone';
 import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
 import { getTestBed } from '@angular/core/testing';

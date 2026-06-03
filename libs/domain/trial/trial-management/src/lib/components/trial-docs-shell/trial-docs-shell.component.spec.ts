@@ -8,10 +8,6 @@ import { render } from '@testing-library/angular';
 import { TrialDocsShellComponent, injectionTokenTrialViewDocument } from './trial-docs-shell.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 @Component({
   selector: 'inta-trial-doc-details',
   template: `

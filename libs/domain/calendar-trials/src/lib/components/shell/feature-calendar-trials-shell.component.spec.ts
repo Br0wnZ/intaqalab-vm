@@ -9,11 +9,6 @@ import { of } from 'rxjs';
 
 import { FeatureCalendarTrialsShellComponent } from './feature-calendar-trials-shell.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class ToasterStub {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   showSuccess(): void {}

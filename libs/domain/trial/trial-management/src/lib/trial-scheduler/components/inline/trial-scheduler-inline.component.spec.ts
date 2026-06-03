@@ -15,10 +15,6 @@ import { TrialScheduleService } from '../../trial-schedule.service';
 import { TrialSchedulerInlineComponent } from './trial-scheduler-inline.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('TrialSchedulerInlineComponent', () => {
   let mockTrialStore: any;
   let mockTrialPermissionsService: any;

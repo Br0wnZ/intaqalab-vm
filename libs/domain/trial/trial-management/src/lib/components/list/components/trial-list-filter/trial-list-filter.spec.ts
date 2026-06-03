@@ -12,10 +12,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TrialListFilter } from './trial-list-filter';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('TrialListFilter', () => {
   let fixture: ComponentFixture<TrialListFilter>;
   let detectChanges: () => void;

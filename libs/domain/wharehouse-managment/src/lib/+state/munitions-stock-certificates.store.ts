@@ -2,7 +2,6 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type { MovementListSearch } from '../models/movements.model';
-import { MunitionsDumpsService } from '../services/munitions-dumps.service';
 import { MunitionsStockCertificatesService } from '../services/munitions-stock-certificates.service';
 
 interface MunitionsStockCertificatesStoreState {

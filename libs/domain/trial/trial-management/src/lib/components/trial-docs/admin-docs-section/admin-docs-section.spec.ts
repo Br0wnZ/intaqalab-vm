@@ -7,10 +7,6 @@ import { userEvent } from '@testing-library/user-event';
 import { AdminDocsSection } from './admin-docs-section';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('AdminDocsSection', () => {
   let user: UserEvent;
 

@@ -9,7 +9,7 @@ import { injectWarehouseResource } from './warehouse-resource.factory';
   providedIn: 'root',
 })
 export class MunitionsStockCertificatesService {
-  #resource = injectWarehouseResource<CertificateApiResponse, CertificateApiResponse, { id: string } | undefined>(
+  #resource = injectWarehouseResource<CertificateApiResponse, CertificateApiResponse>(
     `${injectWharehouseEndpoint()}/stock`,
   );
 

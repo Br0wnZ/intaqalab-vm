@@ -6,10 +6,6 @@ import type { ButtonTrialActionsConfiguration } from './button-trial-actions.mod
 import { filterTrialActions } from './button-trial-actions.utils';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('filterTrialActions', () => {
   it('should filter out actions based on status', () => {
     const actions: ButtonTrialActionsConfiguration = [

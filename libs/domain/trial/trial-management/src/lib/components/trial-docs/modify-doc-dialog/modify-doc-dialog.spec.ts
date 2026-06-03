@@ -13,10 +13,6 @@ import { TrialTypeService } from '../../../services/trial-type.service';
 import { ModifyDocDialog } from './modify-doc-dialog';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('ModifyDocDialog', () => {
   let fixture: ComponentFixture<ModifyDocDialog>;
   let component: ModifyDocDialog;

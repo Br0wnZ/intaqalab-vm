@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +21,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import type { DenominationModel } from '../../../models/denominations.model';
-import type { MunitionComponentsModel } from '../../../models/munition-components.model';
+import type { WarehouseMunitionCategoryType } from '../../../models/munition-components.model';
 import type { MunitionIdentificationForm } from '../../../models/munition-stock.model';
 
 type RepositoryDenominations = Record<string, DenominationModel[]>;
@@ -123,10 +132,14 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
 export class MunitionIdentificationComponent {
   readonly #denominationStore = inject(DenominationsStore);
   readonly #munitionComponentStore = inject(MunitionComponentStore);
+  readonly category = input.required<WarehouseMunitionCategoryType | null>();
 
-  munitionTypeOptions = computed(() =>
-    this.#munitionComponentStore.items().filter((item) => item.category === 'MUNITION'),
-  );
+  munitionTypeOptions = computed(() => {
+    const isMunitionComponent = this.category() === 'MUNITION_COMPONENT';
+    const items = this.#munitionComponentStore.items();
+
+    return isMunitionComponent ? items : items.filter((item) => item.category === 'MUNITION');
+  });
 
   readonly formModel = signal<MunitionIdentificationForm>({
     batch: '',

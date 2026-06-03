@@ -9,11 +9,6 @@ import userEvent from '@testing-library/user-event';
 
 import { HeaderComponent } from './header.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 // Stub with correct selector to replace HeaderToolsComponent (lib-header-tools)
 // eslint-disable-next-line @angular-eslint/component-selector
 @Component({ selector: 'lib-header-tools', template: '', standalone: true })

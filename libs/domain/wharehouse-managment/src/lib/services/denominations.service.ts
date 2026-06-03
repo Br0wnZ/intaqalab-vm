@@ -12,11 +12,9 @@ import { injectWarehouseResource } from './warehouse-resource.factory';
   providedIn: 'root',
 })
 export class DenominationsService {
-  readonly #crud = injectWarehouseResource<
-    DenominationModel,
-    DenominationUpSertModel,
-    SearchDenominationsPaginatedSortedRequest
-  >(`${injectWharehouseEndpoint()}/denominations`);
+  readonly #crud = injectWarehouseResource<DenominationModel, DenominationUpSertModel>(
+    `${injectWharehouseEndpoint()}/denominations`,
+  );
 
   readonly searchItems = this.#crud.searchItems;
   readonly paginatedResponse = this.#crud.paginatedResponse;
@@ -36,6 +34,7 @@ export class DenominationsService {
     this.#crud.deleteItem(item);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toogleEnabledItem(_item: DenominationModel, _active: boolean) {
     // TODO: implement
   }

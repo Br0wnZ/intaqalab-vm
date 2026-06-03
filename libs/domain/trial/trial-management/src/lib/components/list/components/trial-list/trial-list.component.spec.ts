@@ -15,10 +15,6 @@ import { DataTrialCreateModifyService } from '../../../../services/data-trial-cr
 import { TrialListComponent } from './trial-list.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const mockTrials: FireTrial[] = [
   {
     id: 'e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f',

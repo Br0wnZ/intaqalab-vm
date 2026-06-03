@@ -7,11 +7,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataDimension } from '../../../../models/master-data-dimension.model';
 import { DimensionsUpsertDialogComponent } from './dimensions-upsert-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_EDIT_DATA: MasterDataDimension = {
   id: '1',
   width: 100,

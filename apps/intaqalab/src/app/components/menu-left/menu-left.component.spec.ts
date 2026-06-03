@@ -10,11 +10,6 @@ import { Subject } from 'rxjs';
 import { CommandsTabService } from '../../services/tabs/commands-tab-service';
 import { MenuLeftComponent } from './menu-left.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const createRouterFake = (initialUrl = '/') => {
   const events$ = new Subject<NavigationEnd>();
   return {

@@ -8,7 +8,7 @@ import { injectWarehouseResource } from './warehouse-resource.factory';
   providedIn: 'root',
 })
 export class MovementsListService {
-  readonly #resource = injectWarehouseResource<MovementListItem, MovementListItem, MovementListSearch>(
+  readonly #resource = injectWarehouseResource<MovementListItem, MovementListItem>(
     `${injectWharehouseEndpoint()}/movements`,
   );
 

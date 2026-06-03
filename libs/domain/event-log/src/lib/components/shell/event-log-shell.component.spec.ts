@@ -13,11 +13,6 @@ import { SeriesAndShootsService } from '../../services/series-and-shoots/series-
 import { UserDataService } from '../../services/user-data.service';
 import { EventLogShellComponent } from './event-log-shell.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 function makeMockDocumentsService() {
   return {
     searchItems: signal({}),

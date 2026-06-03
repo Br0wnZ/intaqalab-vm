@@ -7,10 +7,6 @@ import { of } from 'rxjs';
 import { DataTrialCreateModifyService } from './data-trial-create-modify-service';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('DataTrialCreateModifyService', () => {
   let serviceToTest: DataTrialCreateModifyService;
   let baseUrl: string;

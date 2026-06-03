@@ -44,13 +44,13 @@ describe('StockListStore', () => {
     vi.restoreAllMocks();
   });
 
-  // ── Estado inicial ─────────────────────────────────────────────────────────
+  // Estado inicial
 
   it('should start as not initialized', () => {
     expect(store.isInitialized()).toBe(false);
   });
 
-  // ── Estado derivado ────────────────────────────────────────────────────────
+  // Estado derivado
 
   it('should expose items from paginated response', () => {
     const items = store.items();
@@ -70,7 +70,7 @@ describe('StockListStore', () => {
     expect(store.error()).toBeFalsy();
   });
 
-  // ── search() ──────────────────────────────────────────────────────────────
+  // search()
 
   it('should delegate search params to the service', () => {
     const params = { page: 1, pageSize: 25, sortField: 'name', sortDirection: 'asc' as const };
@@ -89,14 +89,14 @@ describe('StockListStore', () => {
     expect(store.isInitialized()).toBe(true);
   });
 
-  // ── reload() ──────────────────────────────────────────────────────────────
+  // reload()
 
   it('should call reload on the service paginatedResponse', () => {
     store.reload();
     expect(mockService.paginatedResponse.reload).toHaveBeenCalledTimes(1);
   });
 
-  // ── reset() ───────────────────────────────────────────────────────────────
+  // reset()
 
   it('should reset isInitialized to false on reset()', () => {
     store.search({ page: 1, pageSize: 10 });

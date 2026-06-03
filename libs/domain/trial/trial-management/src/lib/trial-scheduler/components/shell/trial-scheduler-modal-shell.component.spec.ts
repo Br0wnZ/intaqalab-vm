@@ -10,10 +10,6 @@ import type { TrialSchedulerModalShellInput } from '../../trial-schedule.service
 import { TrialSchedulerModalShellComponent } from './trial-scheduler-modal-shell.component';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class FakeTranslateLoader {
   getTranslation() {
     return of({ HELLO: 'Hola' });

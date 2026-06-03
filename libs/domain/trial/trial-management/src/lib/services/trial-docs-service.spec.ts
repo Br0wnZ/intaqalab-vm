@@ -14,10 +14,6 @@ import type {
 import { TrialDocsService } from './trial-docs-service';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('TrialDocsService', () => {
   let service: TrialDocsService;
   let httpTesting: HttpTestingController;

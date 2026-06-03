@@ -9,11 +9,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataLoadingZone } from '../../../../models/master-data-loading-zone.model';
 import { LoadingZoneUpsertDialogComponent } from './loading-zone-upsert-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('LoadingZoneUpsertDialogComponent', () => {
   const mockDialogRef = { close: vi.fn() };
 

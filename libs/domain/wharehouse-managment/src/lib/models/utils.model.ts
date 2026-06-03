@@ -1,19 +1,24 @@
 import { HttpParams } from '@angular/common/http';
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 
-import type {
-  GroupedMunitionsByCategory,
-  MunitionComponentsModel,
-  WarehouseMunitionCategoryType,
-} from './munition-components.model';
+import type { MunitionComponentsModel, WarehouseMunitionCategoryType } from './munition-components.model';
 
 export const setParamsAsHttpParams = (params: PaginatedSortedViewRequest) => {
   let result = new HttpParams();
 
+  const sortData = { sortDirection: '', sortField: '' };
+
   Object.entries(params).forEach(([key, value]) => {
     if (!value) return;
-    result = result.append(key, value as string);
+
+    if (key === 'sortField' || key === 'sortDirection') {
+      sortData[key] = value as string;
+    } else {
+      result = result.append(key, value as string);
+    }
   });
+
+  if (sortData.sortField) result = result.append('sort', `${sortData.sortField};${sortData.sortDirection}`);
 
   return result;
 };

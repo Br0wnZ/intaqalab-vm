@@ -12,11 +12,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('MassiveShotsConfigurationDialog', () => {
   let mockDialogRef: ReturnType<typeof createMockMatDialogRef>;
 

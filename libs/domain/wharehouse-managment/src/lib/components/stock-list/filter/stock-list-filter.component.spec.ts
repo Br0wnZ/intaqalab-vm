@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TranslateModule } from '@ngx-translate/core';
-import { fireEvent, render, screen } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -14,14 +14,8 @@ import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import { StockListFilterComponent } from './stock-list-filter.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Factories
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Factories
+//
 
 function makeStockListStore() {
   return {
@@ -67,9 +61,8 @@ function makeClientsDataService() {
   };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Setup
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Setup
+//
 
 async function setup() {
   const stockListStore = makeStockListStore();
@@ -97,9 +90,8 @@ async function setup() {
   return { fixture, component, container, stockListStore, munitionComponentStore, munitionsDumpsStore };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Tests
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Tests
+//
 
 describe('StockListFilterComponent', () => {
   beforeEach(() => {
@@ -110,7 +102,7 @@ describe('StockListFilterComponent', () => {
     vi.restoreAllMocks();
   });
 
-  // â”€â”€ Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Initialization
   describe('Initialization', () => {
     it('should render the page title', async () => {
       await setup();
@@ -125,11 +117,6 @@ describe('StockListFilterComponent', () => {
     it('should call MunitionComponentStore.search() on init with pageSize 100', async () => {
       const { munitionComponentStore } = await setup();
       expect(munitionComponentStore.search).toHaveBeenCalledWith({ pageSize: 100 });
-    });
-
-    it('should call MunitionsDumpsStore.search() on init', async () => {
-      const { munitionsDumpsStore } = await setup();
-      expect(munitionsDumpsStore.search).toHaveBeenCalledWith({});
     });
 
     it('should have the search button disabled initially (form is not dirty)', async () => {
@@ -237,7 +224,7 @@ describe('StockListFilterComponent', () => {
     });
   });
 
-  // â”€â”€ munitionComboOptions() computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // munitionComboOptions() computed
   describe('munitionComboOptions() computed', () => {
     it('should return empty array when munitionComponentStore has no items', async () => {
       const { component } = await setup();

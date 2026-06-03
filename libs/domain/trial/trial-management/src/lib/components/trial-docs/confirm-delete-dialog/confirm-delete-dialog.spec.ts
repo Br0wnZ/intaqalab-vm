@@ -10,10 +10,6 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
 import { ConfirmDeleteDialogComponent } from './confirm-delete-dialog';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 type DialogData = ConfirmDialogData & { trialId: string; documentId: string };
 
 describe('ConfirmDeleteDialogComponent', () => {

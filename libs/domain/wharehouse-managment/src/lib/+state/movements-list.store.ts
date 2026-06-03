@@ -3,7 +3,6 @@ import { patchState, signalStore, withComputed, withHooks, withMethods, withStat
 
 import type { MovementListSearch } from '../models/movements.model';
 import { MovementsListService } from '../services/movements-list.service';
-import { MunitionsDumpsService } from '../services/munitions-dumps.service';
 
 interface MovementsListStoreState {
   isInitialized: boolean;
@@ -18,44 +17,40 @@ const initialState: MovementsListStoreState = {
 export const MovementsListStore = signalStore(
   withState(initialState),
 
-  withComputed(
-    (store, service = inject(MovementsListService), munitionDumpsService = inject(MunitionsDumpsService)) => ({
-      items: computed(() => {
-        const response = service.paginatedResponse.value();
-        return response?.items ?? [];
-      }),
-
-      totalElements: computed(() => {
-        const response = service.paginatedResponse.value();
-        return response?.totalElements ?? 0;
-      }),
-
-      isLoading: computed(() => service.paginatedResponse.isLoading()),
-
-      error: computed(() => service.paginatedResponse.error()),
-
-      hasError: computed(() => service.paginatedResponse.error() !== null),
+  withComputed((store, service = inject(MovementsListService)) => ({
+    items: computed(() => {
+      const response = service.paginatedResponse.value();
+      return response?.items ?? [];
     }),
-  ),
 
-  withMethods(
-    (store, service = inject(MovementsListService), munitionDumpsService = inject(MunitionsDumpsService)) => ({
-      search(params: MovementListSearch): void {
-        service.searchItems.set(params);
-        if (!store.isInitialized()) {
-          patchState(store, { isInitialized: true });
-        }
-      },
-
-      reload(): void {
-        service.paginatedResponse.reload();
-      },
-
-      reset(): void {
-        patchState(store, initialState);
-      },
+    totalElements: computed(() => {
+      const response = service.paginatedResponse.value();
+      return response?.totalElements ?? 0;
     }),
-  ),
+
+    isLoading: computed(() => service.paginatedResponse.isLoading()),
+
+    error: computed(() => service.paginatedResponse.error()),
+
+    hasError: computed(() => service.paginatedResponse.error() !== null),
+  })),
+
+  withMethods((store, service = inject(MovementsListService)) => ({
+    search(params: MovementListSearch): void {
+      service.searchItems.set(params);
+      if (!store.isInitialized()) {
+        patchState(store, { isInitialized: true });
+      }
+    },
+
+    reload(): void {
+      service.paginatedResponse.reload();
+    },
+
+    reset(): void {
+      patchState(store, initialState);
+    },
+  })),
 
   withHooks({
     onDestroy(store) {

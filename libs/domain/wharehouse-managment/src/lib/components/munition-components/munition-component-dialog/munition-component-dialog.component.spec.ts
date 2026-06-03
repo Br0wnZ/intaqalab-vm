@@ -10,11 +10,6 @@ import { userEvent } from '@testing-library/user-event';
 import type { MunitionDialog } from '../../../models/munition-components.model';
 import { MunitionComponentDialogComponent } from './munition-component-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('MunitionComponentDialogComponent', () => {
   let user: UserEvent;
   const defaultImports = [TranslateModule.forRoot()];

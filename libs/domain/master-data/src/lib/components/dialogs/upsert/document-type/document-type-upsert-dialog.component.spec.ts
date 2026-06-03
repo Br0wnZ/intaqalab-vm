@@ -8,11 +8,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataDocumentType } from '../../../../models/master-data-document-type.model';
 import { DocumentTypeUpsertDialogComponent } from './document-type-upsert-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_DOCUMENT_TYPE: MasterDataDocumentType = {
   id: 'dt-1',
   name: { es: 'Autorización', en: 'Authorization' },

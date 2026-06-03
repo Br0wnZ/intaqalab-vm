@@ -8,10 +8,6 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
 import { ChangeDocVersionDialog } from './change-doc-version-dialog';
 
 // vi.mock hoisted by Vitest
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('ChangeDocVersionDialog', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const version = { id: 'doc-1', versionTag: 'v2' } as any;

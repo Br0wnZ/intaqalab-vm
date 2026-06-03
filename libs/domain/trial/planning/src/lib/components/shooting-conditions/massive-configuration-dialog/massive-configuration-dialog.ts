@@ -10,6 +10,7 @@ import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { Serie } from '../../../models/shooting-conditions.model';
+import type { UpdateShot } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 
 interface BulkConfig {
@@ -235,7 +236,13 @@ interface DialogData {
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input placeholder="0" id="bulk-inclination" matInput type="number" [formField]="bulkForm.targetInclination" />
+            <input
+              placeholder="0"
+              id="bulk-inclination"
+              matInput
+              type="number"
+              [formField]="bulkForm.targetInclination"
+            />
           </mat-form-field>
         </div>
 
@@ -297,7 +304,14 @@ interface DialogData {
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline">
-            <input placeholder="0" id="bulk-powder" matInput type="number" step="any" [formField]="bulkForm.powderWeight" />
+            <input
+              placeholder="0"
+              id="bulk-powder"
+              matInput
+              type="number"
+              step="any"
+              [formField]="bulkForm.powderWeight"
+            />
             <mat-error>
               {{
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
@@ -422,32 +436,36 @@ export class MassiveConfigurationDialog {
     const config = this.configModel();
     const selectedSeriesIds = new Set(config.series);
 
-    const shots = this.data.series.flatMap((serie) => {
-      const isSelected = selectedSeriesIds.has(serie.seriesId);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      return serie.shots.map(({ globalNumber, date, ...rest }) => {
-        if (!isSelected) return { date, ...rest };
-        return {
-          date: config.date || date,
-          ...rest,
-          ...(config.targetType && { targetTypeId: config.targetType }),
-          ...(config.material && { targetMaterialId: config.material }),
-          ...(config.impactZone && { impactZoneId: config.impactZone }),
-          ...(config.dimensions && { targetDimensionsId: config.dimensions }),
-          ...(config.thickness && { targetThicknessId: config.thickness }),
-          ...(config.distance && { distance: Number(config.distance) }),
-          ...(config.targetInclination && { targetInclination: Number(config.targetInclination) }),
-          ...(config.orientation && { orientation: Number(config.orientation) }),
-          ...(config.elevation && { elevation: Number(config.elevation) }),
-          ...(config.angle && { angle: Number(config.angle) }),
-          ...(config.range && { range: Number(config.range) }),
-          ...(config.functioningHeight && { functioningHeight: Number(config.functioningHeight) }),
-          ...(config.powderWeight && { powderWeight: Number(config.powderWeight) }),
-          ...(config.projectWeight && { projectWeight: Number(config.projectWeight) }),
-          ...(config.nominalSpeed && { nominalSpeed: Number(config.nominalSpeed) }),
-        };
-      });
-    });
+    const override: Partial<UpdateShot> = {};
+    if (config.date) override.date = config.date;
+    if (config.targetType) override.targetTypeId = config.targetType;
+    if (config.material) override.targetMaterialId = config.material;
+    if (config.impactZone) override.impactZoneId = config.impactZone;
+    if (config.dimensions) override.targetDimensionsId = config.dimensions;
+    if (config.thickness) override.targetThicknessId = config.thickness;
+    if (config.distance !== '') override.distance = Number(config.distance);
+    if (config.targetInclination !== '') override.targetInclination = Number(config.targetInclination);
+    if (config.orientation !== '') override.orientation = Number(config.orientation);
+    if (config.elevation !== '') override.elevation = Number(config.elevation);
+    if (config.angle !== '') override.angle = Number(config.angle);
+    if (config.range !== '') override.range = Number(config.range);
+    if (config.functioningHeight !== '') override.functioningHeight = Number(config.functioningHeight);
+    if (config.powderWeight !== '') override.powderWeight = Number(config.powderWeight);
+    if (config.projectWeight !== '') override.projectWeight = Number(config.projectWeight);
+    if (config.nominalSpeed !== '') override.nominalSpeed = Number(config.nominalSpeed);
+
+    const shotsById = new Map<string, UpdateShot>();
+    for (const serie of this.data.series) {
+      if (!selectedSeriesIds.has(serie.seriesId)) continue;
+      for (const shot of serie.shots) {
+        if (!shot.shotId) continue;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { globalNumber, ...rest } = shot;
+        shotsById.set(shot.shotId, { ...rest, ...override, shotId: shot.shotId });
+      }
+    }
+
+    const shots = Array.from(shotsById.values());
 
     this.#applyConfirmed.set(true);
     this.shootingConditionsService.updateShootingConditions({

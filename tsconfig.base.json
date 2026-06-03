@@ -25,6 +25,7 @@
       "@intaqalab/utils/testing/dialog-test-helpers": ["libs/shared/utils/src/lib/testing/dialog-test-helpers.ts"],
       "@intaqalab/utils/testing/testing-helpers": ["libs/shared/utils/src/lib/testing/testing-helpers.ts"],
       "@intaqalab/utils/testing/core": ["libs/shared/utils/src/lib/testing/core/index.ts"],
+      "@intaqalab/utils/testing/pdf-mock": ["libs/shared/utils/src/lib/testing/pdf-mock.ts"],
       "@intaqalab/trial-management": ["libs/domain/trial/trial-management/src/index.ts"],
       "@intaqalab/admin": ["libs/domain/admin/src/index.ts"],
       "@intaqalab/config": ["libs/shared/config/src/index.ts"],

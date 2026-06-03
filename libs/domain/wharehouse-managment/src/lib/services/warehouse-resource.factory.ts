@@ -4,7 +4,7 @@ import type { PaginatedApiResponse, PaginatedSortedViewRequest } from '@intaqala
 
 import { setParamsAsHttpParams } from '../models/utils.model';
 
-export function injectWarehouseResource<T, U, W>(endpointUrl: string, context: HttpContext = new HttpContext()) {
+export function injectWarehouseResource<T, U>(endpointUrl: string, context: HttpContext = new HttpContext()) {
   const searchItems = signal<PaginatedSortedViewRequest | null>(null);
 
   const saveItem = signal<U | null>(null);

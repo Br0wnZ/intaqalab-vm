@@ -54,9 +54,6 @@ type FilterForm = {
     MatDatepickerModule,
   ],
   template: `
-    <h2 class="text-base font-semibold text-gray-900 my-6">
-      {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TITLE' | translate }}
-    </h2>
     <div class="w-full bg-white rounded-lg border border-gray-200">
       <div class="pl-6 pt-6 space-y-6">
         <h3 class="text-base font-medium text-gray-900">
@@ -265,8 +262,6 @@ export class StockListFilterComponent {
 
   constructor() {
     this.#munitionComponentStore.search({ pageSize: 100 });
-
-    this.munitionDumpsStore.search({});
   }
 
   readonly defaultFormValues = {

@@ -1,4 +1,4 @@
-﻿import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -13,14 +13,8 @@ import type { DenominationModel } from '../../../models/denominations.model';
 import type { MunitionComponentsModel } from '../../../models/munition-components.model';
 import { MunitionIdentificationComponent } from './identification.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Factories
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Factories
+//
 
 function makeDenomination(overrides: Partial<DenominationModel> = {}): DenominationModel {
   return {
@@ -74,10 +68,7 @@ function makeMunitionComponentStore(items: MunitionComponentsModel[] = []) {
   };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Setup
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 async function setup(
   opts: {
     denominationsItems?: DenominationModel[];
@@ -89,6 +80,7 @@ async function setup(
   const munitionComponentStore = makeMunitionComponentStore(opts.munitionComponentItems ?? []);
 
   const view = await render(MunitionIdentificationComponent, {
+    componentInputs: { category: 'MUNITION' },
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
       provideHttpClient(),
@@ -105,10 +97,7 @@ async function setup(
   return { fixture, user, component, denominationsStore, munitionComponentStore };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Tests
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 describe('MunitionIdentificationComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -118,7 +107,7 @@ describe('MunitionIdentificationComponent', () => {
     vi.restoreAllMocks();
   });
 
-  // â”€â”€ Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Initialization
   describe('Initialization', () => {
     it('should render the denomination input', async () => {
       await setup();
@@ -146,7 +135,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ errors() computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // errors() computed
   describe('errors() computed', () => {
     it('should return true when all required fields are empty', async () => {
       const { component } = await setup();
@@ -186,7 +175,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ value() computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // value() computed
   describe('value() computed', () => {
     it('should return false when the form has errors', async () => {
       const { component } = await setup();
@@ -210,7 +199,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ Denomination enabled/disabled â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Denomination enabled/disabled
   describe('denomination field disabled state', () => {
     it('should enable the denomination field after munitionTypeId is set', async () => {
       const { component, fixture } = await setup();
@@ -232,7 +221,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ markAsTouched() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // markAsTouched()
   describe('markAsTouched()', () => {
     it('should set touched signal to true', async () => {
       const { component } = await setup();
@@ -248,7 +237,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ reset() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // reset()
   describe('reset()', () => {
     it('should reset the formModel to initial empty state', async () => {
       const { component, fixture } = await setup();
@@ -268,7 +257,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ munitionTypeChangeHandler() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // munitionTypeChangeHandler()
   describe('munitionTypeChangeHandler()', () => {
     it('should reset the denomination field to empty string', async () => {
       const { component, fixture } = await setup();
@@ -297,7 +286,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ munitionTypeOptions() computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // munitionTypeOptions() computed
   describe('munitionTypeOptions() computed', () => {
     it('should return empty array when component store has no items', async () => {
       const { component } = await setup();
@@ -314,7 +303,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ Effect: DenominationsStore.search() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Effect: DenominationsStore.search()
   describe('Effect: denominationsStore.search()', () => {
     it('should call search on DenominationsStore when munitionTypeId is set', async () => {
       const { component, denominationsStore, fixture } = await setup();
@@ -344,7 +333,7 @@ describe('MunitionIdentificationComponent', () => {
     });
   });
 
-  // â”€â”€ Effect: repositoryDenominations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Effect: repositoryDenominations
   describe('Effect: repositoryDenominations population', () => {
     it('should return filtered denominations via filteredOptions() when items match munitionType', async () => {
       // #repositoryDenominations is private; test the behavior via filteredOptions() instead.

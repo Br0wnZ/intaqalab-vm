@@ -8,11 +8,6 @@ import { vi } from 'vitest';
 
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('MassiveMunitionsConfigurationDialog Placeholder', () => {
   it('should be skipped temporarily due to testing-library crash', () => {
     expect(true).toBe(true);

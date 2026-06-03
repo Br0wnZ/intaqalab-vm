@@ -5,9 +5,8 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 
 import { MunitionsStockCertificatesService } from './munitions-stock-certificates.service';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Tests
-// ──────────────────────────────────────────────────────────────────────────────
+// // Tests
+//
 
 describe('MunitionsStockCertificatesService', () => {
   let service: MunitionsStockCertificatesService;
@@ -25,7 +24,7 @@ describe('MunitionsStockCertificatesService', () => {
     httpMock.verify();
   });
 
-  // ── Creation ───────────────────────────────────────────────────────────────
+  // Creation
   it('should be created with the expected API', () => {
     expect(service).toBeTruthy();
     expect(service.response).toBeDefined();
@@ -34,7 +33,7 @@ describe('MunitionsStockCertificatesService', () => {
     expect(service.munitionCertificateLinkResource).toBeDefined();
   });
 
-  // ── searchById ─────────────────────────────────────────────────────────────
+  // searchById
   describe('searchById()', () => {
     it('should NOT fire any HTTP request initially', () => {
       httpMock.expectNone((r) => r.url.includes('/stock'));
@@ -50,7 +49,7 @@ describe('MunitionsStockCertificatesService', () => {
     });
   });
 
-  // ── deleteItem ─────────────────────────────────────────────────────────────
+  // deleteItem
   describe('deleteItem()', () => {
     it('should fire a DELETE request when deleteItem is called', () => {
       service.deleteItem('stock-1', 'cert-1');
@@ -66,7 +65,7 @@ describe('MunitionsStockCertificatesService', () => {
     });
   });
 
-  // ── uploadDocument ─────────────────────────────────────────────────────────
+  // uploadDocument
   describe('uploadDocument()', () => {
     it('should NOT fire any upload request initially', () => {
       httpMock.expectNone((r) => r.url.includes('/certificates'));
@@ -85,7 +84,7 @@ describe('MunitionsStockCertificatesService', () => {
     });
   });
 
-  // ── munitionCertificateLinkResource ───────────────────────────────────────
+  // munitionCertificateLinkResource
   describe('link (munitionCertificateLinkResource)', () => {
     it('should NOT fire any request when link is undefined', () => {
       httpMock.expectNone((r) => r.url.includes('/certificates'));

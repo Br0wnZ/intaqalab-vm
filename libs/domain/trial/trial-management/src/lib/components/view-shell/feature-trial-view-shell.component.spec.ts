@@ -34,7 +34,7 @@ vi.mock('ng2-pdf-viewer', async () => {
   return { PdfViewerModule };
 });
 
-// ── Stub components ────────────────────────────────────────────────────────
+// Stub components
 @Component({
   selector: 'inta-feature-trial-create-form',
   template: `
@@ -83,7 +83,7 @@ class MockButtonTrialActionsImplComponent {
   readonly clicked = output<string>();
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+// Helpers
 const MOCK_TRIAL = {
   code: 'T-001',
   status: TrialStatus.EXECUTED,

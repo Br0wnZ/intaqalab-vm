@@ -1,4 +1,4 @@
-﻿import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CONFIG, provideTestingEnvironment } from '@intaqalab/config';
+import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen, within } from '@testing-library/angular';
@@ -16,11 +16,6 @@ import { of } from 'rxjs';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionComponentService } from '../../../services/munition-component.service';
 import { MunitionComponentsListComponent } from './munition-components-list.component';
-
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
 
 const mockDialogFactory = () => ({
   open: () => {
@@ -41,11 +36,6 @@ describe('MunitionComponentsListComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        {
-          provide: CONFIG,
-          useValue: {},
-        },
-
         { provide: MunitionComponentService, useValue: mockService },
         { provide: MunitionComponentStore },
       ],
@@ -95,9 +85,9 @@ function munitionComponentServiceMock() {
     searchItems: signal<any>(null),
     updateItem: vi.fn(),
     paginatedResponse,
-    updateMunitionResource: createMockResource({}),
-    saveMunitionResource: createMockResource({}),
-    deleteMunitionResource: createMockResource({}),
+    updateResource: createMockResource({}),
+    saveResource: createMockResource({}),
+    deleteResource: createMockResource({}),
   };
   return mock;
 }

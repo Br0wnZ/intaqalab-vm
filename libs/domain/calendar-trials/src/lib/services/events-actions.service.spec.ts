@@ -10,11 +10,6 @@ import { of } from 'rxjs';
 
 import { EventsActionsService } from './events-actions.service';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 class FakeTranslateLoader {
   getTranslation() {
     return of({ HELLO: 'Hola' });

@@ -8,11 +8,6 @@ import userEvent from '@testing-library/user-event';
 import type { MasterDataStanag } from '../../../../models/master-data-stanag.model';
 import { StanagUpsertDialogComponent } from './stanag-upsert-dialog.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_STANAG: MasterDataStanag = {
   id: 'stanag-1',
   variable: { id: '550e8400-e29b-41d4-a716-446655440011', name: 'Velocidad del viento' },

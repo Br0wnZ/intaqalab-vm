@@ -15,11 +15,6 @@ import type { Serie } from '../../../utils-models/munitions.model';
 import { createEmptyConfiguration, createEmptySerie } from '../../../utils-models/munitions.model';
 import { SeriePanelComponent } from './serie-panel.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const defaultImports = [TranslateModule.forRoot()];
 const defaultProviders = [
   provideHttpClient(),

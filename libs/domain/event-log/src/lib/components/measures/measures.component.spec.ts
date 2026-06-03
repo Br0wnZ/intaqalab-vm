@@ -11,11 +11,6 @@ import type { EventLogMeasuresResponse, EventLogMeasuresSearch } from '../../uti
 import type { EventLogUser } from '../../utils-models/user.model';
 import { EventLogMeasuresComponent } from './measures.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 const MOCK_USERS: EventLogUser[] = [
   { id: 'u1', label: 'Usuario 1' },
   { id: 'u2', label: 'Usuario 2' },

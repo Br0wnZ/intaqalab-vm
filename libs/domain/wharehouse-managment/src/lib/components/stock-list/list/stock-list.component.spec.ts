@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TranslateModule } from '@ngx-translate/core';
-import { fireEvent, render, screen } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -17,14 +17,8 @@ import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListResponse } from '../../../models/munition-stock-list.model';
 import { StockListComponent } from './stock-list.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Factories
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Factories
+//
 
 function makeStockItem(overrides: Partial<MunitionStockListResponse> = {}): MunitionStockListResponse {
   return {
@@ -105,9 +99,8 @@ function makeRouter() {
   return { navigateByUrl: vi.fn().mockResolvedValue(true) };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Setup
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Setup
+//
 
 interface SetupOptions {
   items?: MunitionStockListResponse[];
@@ -143,12 +136,11 @@ async function setup(opts: SetupOptions = {}) {
   const component = fixture.componentInstance;
   const container = fixture.nativeElement as HTMLElement;
 
-  return { fixture, component, container, stockListStore, mockDialog, mockRouter };
+  return { fixture, component, container, stockListStore, mockDialog, mockRouter, munitionsDumpsStore };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Tests
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// // Tests
+//
 
 describe('StockListComponent', () => {
   beforeEach(() => {
@@ -159,7 +151,7 @@ describe('StockListComponent', () => {
     vi.restoreAllMocks();
   });
 
-  // â”€â”€ Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Initialization
   describe('Initialization', () => {
     it('should render the transfer button', async () => {
       await setup();
@@ -176,8 +168,13 @@ describe('StockListComponent', () => {
 
     it('should have the transfer button disabled when no rows are selected', async () => {
       const { container } = await setup();
-      const transferBtn = container.querySelector('[mat-flat-button]') as HTMLButtonElement;
+      const transferBtn = container.querySelector('[data-testid="transfer-btn"]') as HTMLButtonElement;
       expect(transferBtn.disabled).toBe(true);
+    });
+
+    it('should call MunitionsDumpsStore.search() on init', async () => {
+      const { munitionsDumpsStore } = await setup();
+      expect(munitionsDumpsStore.search).toHaveBeenCalledWith({ pageSize: 500 });
     });
 
     it('should call store.search() on init via the effect', async () => {
@@ -198,7 +195,7 @@ describe('StockListComponent', () => {
     });
   });
 
-  // â”€â”€ transfer() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // transfer()
   describe('transfer()', () => {
     it('should open TransferDialogComponent when an item is selected', async () => {
       const item = makeStockItem();
@@ -241,7 +238,7 @@ describe('StockListComponent', () => {
     });
   });
 
-  // â”€â”€ navigate() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // navigate()
   describe('navigate()', () => {
     it('should navigate to the MUNITION detail route for MUNITION category items', async () => {
       const item = makeStockItem({ id: 'item-1', category: 'MUNITION' });
@@ -258,7 +255,7 @@ describe('StockListComponent', () => {
     });
   });
 
-  // â”€â”€ onPage() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // onPage()
   describe('onPage()', () => {
     it('should update pageIndex and pageSize signals', async () => {
       const { component } = await setup();
@@ -281,7 +278,7 @@ describe('StockListComponent', () => {
     });
   });
 
-  // â”€â”€ onSort() â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // onSort()
   describe('onSort()', () => {
     it('should update sortField and sortDirection signals', async () => {
       const { component } = await setup();
@@ -321,7 +318,7 @@ describe('StockListComponent', () => {
     });
   });
 
-  // â”€â”€ Row selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Row selection
   describe('Row selection', () => {
     it('should toggle a row into the selection model', async () => {
       const item = makeStockItem();

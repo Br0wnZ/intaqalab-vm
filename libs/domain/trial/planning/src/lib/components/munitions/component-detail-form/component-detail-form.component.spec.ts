@@ -436,12 +436,12 @@ describe('ComponentDetailFormComponent', () => {
         imports: defaultImports,
         providers: defaultProviders,
         componentInputs: {
-          detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } }
+          detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
         },
       });
 
       const component = renderResult.fixture.componentInstance;
-      component.formModel.update(c => ({ ...c, clientNumber: '1,2,' }));
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2,' }));
       expect(component.detailForm().valid()).toBe(false);
       expect(component.detailForm.clientNumber().errors()).not.toBeNull();
     });
@@ -459,11 +459,11 @@ describe('ComponentDetailFormComponent', () => {
       const component = renderResult.fixture.componentInstance;
 
       // Valid: 2 numbers, limit is 2
-      component.formModel.update(c => ({ ...c, clientNumber: '1,2' }));
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2' }));
       expect(component.detailForm().valid()).toBe(true);
 
       // Invalid: 3 numbers, limit is 2
-      component.formModel.update(c => ({ ...c, clientNumber: '1,2,3' }));
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2,3' }));
       expect(component.detailForm().valid()).toBe(false);
       expect(component.detailForm.clientNumber().errors()).not.toBeNull();
     });

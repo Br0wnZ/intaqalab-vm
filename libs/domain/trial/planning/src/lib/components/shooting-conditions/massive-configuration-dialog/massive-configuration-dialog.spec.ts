@@ -12,10 +12,6 @@ import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 import { MassiveConfigurationDialog } from './massive-configuration-dialog';
 
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 describe('MassiveConfigurationDialog', () => {
   function createFullMockDialogRef() {
     return {
