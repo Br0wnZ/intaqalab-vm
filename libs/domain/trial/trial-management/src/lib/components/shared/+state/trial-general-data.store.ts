@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
-import { effect, inject, signal } from '@angular/core';
+import { effect, inject, signal, untracked } from '@angular/core';
+import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import type { FireTrial } from '@intaqalab/models';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 
@@ -23,6 +24,7 @@ export const TrialGeneralDataStore = signalStore(
   withState(initialState),
   withMethods((store) => {
     const dataService = inject(DataTrialCreateModifyService);
+    const calendarScheduleService = inject(CalendarTrialScheduleService);
     const trialIdSignal = signal<{ id: string } | null>(null);
     const trialResource = httpResource<FireTrial>(() => {
       const value = trialIdSignal();
@@ -39,6 +41,16 @@ export const TrialGeneralDataStore = signalStore(
         const trial = mapTrialDetailsToState(trialDetails);
         patchState(store, { trial });
       }
+    });
+
+    // Reload trial detail whenever a schedule PUT succeeds.
+    effect(() => {
+      calendarScheduleService.scheduleChangeTrigger();
+      untracked(() => {
+        if (trialIdSignal()) {
+          trialResource.reload();
+        }
+      });
     });
 
     return {

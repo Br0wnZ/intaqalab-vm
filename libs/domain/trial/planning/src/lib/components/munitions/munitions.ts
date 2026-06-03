@@ -55,7 +55,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
               {{ trialStatus()! | trialStatusLabel }}
             </ui-badge>
           </div>
-          <button mat-flat-button (click)="openMassiveConfigDialog()">
+          <button mat-flat-button [disabled]="checkIfAnyConfigurationsHaveValues()" (click)="openMassiveConfigDialog()">
             {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
           </button>
         </div>
@@ -390,6 +390,14 @@ export class Munitions {
         };
       }),
     }));
+  }
+
+  // checkear si hay configuraciones en munitions
+  checkIfAnyConfigurationsHaveValues(): boolean {
+    const series = this.seriesSignal();
+    return series.some((s) =>
+      s.configurations.some((c) => c.denomination || c.batch || (c.components && c.components.length > 0)),
+    );
   }
 
   #mapComponentToDetail(

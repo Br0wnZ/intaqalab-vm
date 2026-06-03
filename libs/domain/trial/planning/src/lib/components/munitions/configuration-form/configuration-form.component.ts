@@ -329,7 +329,6 @@ export class ConfigurationFormComponent {
   });
 
   readonly configForm = form(this.formModel, (f) => {
-    required(f.denomination);
     required(f.batch);
     min(f.maxAllowedErrors, 0);
   });

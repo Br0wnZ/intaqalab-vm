@@ -1,9 +1,7 @@
-import { httpResource } from '@angular/common/http';
 import { Component, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
-import { CalendarTrialScheduleService, LinesOfShotDataService } from '@intaqalab/data-access';
-import type { CalendarTrialScheduleApiResponse, LinesOfShot } from '@intaqalab/models';
+import { CalendarTrialScheduleStore, LinesOfShotDataService } from '@intaqalab/data-access';
+import type { LinesOfShot } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslatePipe } from '@ngx-translate/core';
 import { format } from 'date-fns';
@@ -59,31 +57,13 @@ interface SchedulerChip {
 export class PlanningScheduledDatesComponent {
   trialId = input.required<string>();
 
-  readonly #calendarTrialScheduleService = inject(CalendarTrialScheduleService);
+  readonly #calendarStore = inject(CalendarTrialScheduleStore);
   readonly #linesOfShotDataService = inject(LinesOfShotDataService);
-  readonly #apiUrl = injectFireTrialsEndpoint();
 
-  readonly #scheduleParams = computed(() => {
-    const trialId = this.trialId();
-    // Establish reactive dependency on the shared schedule trigger
-    this.#calendarTrialScheduleService.scheduleChangeTrigger();
-    return trialId;
-  });
+  readonly #linesOfShots = signal<LinesOfShot[] | null>(null);
 
-  readonly scheduleResource = httpResource<CalendarTrialScheduleApiResponse>(() => {
-    const trialId = this.#scheduleParams();
-    if (!trialId) return undefined;
-    const encodedTrialId = encodeURIComponent(trialId);
-    return {
-      url: `${this.#apiUrl}/${encodedTrialId}/schedule`,
-      method: 'GET',
-    };
-  });
-
-  linesOfShots = signal<LinesOfShot[] | null>(null);
-
-  linesOfShotsDictionary = computed(() => {
-    const list = this.linesOfShots() || [];
+  readonly #linesOfShotsDictionary = computed(() => {
+    const list = this.#linesOfShots() || [];
     const dictionary: Record<string, LinesOfShot> = {};
     for (const item of list) {
       dictionary[item.id] = item;
@@ -91,11 +71,11 @@ export class PlanningScheduledDatesComponent {
     return dictionary;
   });
 
-  itemsView = computed(() => {
-    const scheduleItems = this.scheduleResource.value() || [];
+  readonly itemsView = computed(() => {
+    const scheduleItems = this.#calendarStore.schedule();
     const itemsView = new Array<SchedulerChip>();
-    if (this.linesOfShots() !== null && scheduleItems.length > 0) {
-      const linesOfShotsDictionary = this.linesOfShotsDictionary();
+    if (this.#linesOfShots() !== null && scheduleItems.length > 0) {
+      const linesOfShotsDictionary = this.#linesOfShotsDictionary();
       for (const { date, lineOfShootId } of scheduleItems) {
         itemsView.push({
           lineOfShootId,
@@ -108,10 +88,17 @@ export class PlanningScheduledDatesComponent {
   });
 
   constructor() {
+    effect(() => {
+      const trialId = this.trialId();
+      if (trialId) {
+        this.#calendarStore.loadSchedule(trialId);
+      }
+    });
+
     effect(async () => {
-      if (this.linesOfShots() === null) {
+      if (this.#linesOfShots() === null) {
         const linesOfShots = await lastValueFrom(this.#linesOfShotDataService.list());
-        this.linesOfShots.set(linesOfShots);
+        this.#linesOfShots.set(linesOfShots);
       }
     });
   }

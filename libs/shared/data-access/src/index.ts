@@ -9,3 +9,4 @@ export * from './lib/trials/trials-data-service';
 
 export * from './lib/calendar-trials/calendar-events-data.service';
 export * from './lib/calendar-trials/calendar-trial-schedule.service';
+export * from './lib/calendar-trials/calendar-trial-schedule.store';
