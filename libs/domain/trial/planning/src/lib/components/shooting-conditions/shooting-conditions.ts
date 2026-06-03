@@ -426,6 +426,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                           placeholder="0"
                           matInput
                           type="number"
+                          step="any"
                           [formField]="getShotField(serieIdx, i).powderWeight"
                         />
                       </mat-form-field>
@@ -456,7 +457,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     </td>
                   </ng-container>
 
-                  <ng-container matColumnDef="projectileWeight">
+                  <ng-container matColumnDef="projectWeight">
                     <th
                       *matHeaderCellDef
                       mat-header-cell
@@ -474,7 +475,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                           placeholder="0"
                           matInput
                           type="number"
-                          [formField]="getShotField(serieIdx, i).projectileWeight"
+                          [formField]="getShotField(serieIdx, i).projectWeight"
                         />
                       </mat-form-field>
                     </td>
@@ -579,7 +580,7 @@ export class ShootingConditionsComponent implements OnInit {
     'range',
     'functioningHeight',
     'powderWeight',
-    'projectileWeight',
+    'projectWeight',
     'nominalSpeed',
     'observations',
   ];
@@ -658,7 +659,7 @@ export class ShootingConditionsComponent implements OnInit {
         min(shotPath.angle, 0);
         min(shotPath.range, 0);
         min(shotPath.functioningHeight, 0);
-        min(shotPath.projectileWeight, 0);
+        min(shotPath.projectWeight, 0);
         min(shotPath.nominalSpeed, 0);
       });
     });
@@ -685,7 +686,17 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return this.seriesForm().valid();
+    const length = this.seriesSignal().length;
+    for (let i = 0; i < length; i++) {
+      const serieForm = this.getSerieField(i);
+      if (serieForm) {
+        const state = serieForm();
+        if (state.touched() && !state.valid()) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   openMassiveConfigurationDialog() {
@@ -757,7 +768,7 @@ export class ShootingConditionsComponent implements OnInit {
           if (existing)
             return {
               ...existing,
-              projectileWeight: existing.projectileWeight ?? 0,
+              projectWeight: existing.projectWeight ?? 0,
               nominalSpeed: existing.nominalSpeed ?? 0,
             };
           return {
@@ -776,7 +787,7 @@ export class ShootingConditionsComponent implements OnInit {
             range: 0,
             impactZoneId: '',
             functioningHeight: 0,
-            projectileWeight: 0,
+            projectWeight: 0,
             powderWeight: 0,
             nominalSpeed: 0,
             observations: '',

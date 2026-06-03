@@ -103,6 +103,7 @@ describe('ShootingConditionsService', () => {
             functioningHeight: 50,
             nominalSpeed: 0,
             powderWeight: 3.5,
+            projectWeight: 0,
             observations: 'Test observation',
           },
         ],
@@ -128,7 +129,20 @@ describe('ShootingConditionsService', () => {
     it('should not make request when params are null', () => {
       TestBed.tick();
       httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions`);
-      expect(service.conditionsResource.value()).toEqual([]);
+      expect(service.conditionsResource.value()).toEqual({
+        units: {
+          distance: null,
+          orientation: null,
+          targetInclination: null,
+          elevation: null,
+          angle: null,
+          range: null,
+          functioningHeight: null,
+          nominalSpeed: null,
+          powderWeight: null,
+        },
+        series: [],
+      });
     });
   });
 

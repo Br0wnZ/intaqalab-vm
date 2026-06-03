@@ -1,5 +1,22 @@
 import type { FireTrial } from '@intaqalab/models';
 
+export type ShootingConditionsUnits = {
+  distance: number | null;
+  orientation: number | null;
+  targetInclination: number | null;
+  elevation: number | null;
+  angle: number | null;
+  range: number | null;
+  functioningHeight: number | null;
+  nominalSpeed: number | null;
+  powderWeight: number | null;
+};
+
+export type ShootingConditionsResponse = {
+  units: ShootingConditionsUnits;
+  series: Serie[];
+};
+
 export type Serie = {
   seriesId: string;
   seriesName: string;
@@ -22,7 +39,7 @@ export type Shot = {
   range: number;
   impactZoneId: string;
   functioningHeight: number;
-  projectileWeight: number;
+  projectWeight: number;
   nominalSpeed: number;
   powderWeight: number;
   observations: string;
@@ -48,7 +65,7 @@ export type UpdateShot = {
   range: number;
   impactZoneId: string;
   functioningHeight: number;
-  projectileWeight: number;
+  projectWeight: number;
   nominalSpeed: number;
   powderWeight: number;
   observations: string;

@@ -487,6 +487,7 @@
         "TARGET_THICKNESS_LABEL": "Target thickness",
         "TARGET_THICKNESS_PLACEHOLDER": "Select target thickness",
         "DISTANCE_LABEL": "Distance",
+        "INCLINATION_LABEL": "Inclination",
         "ORIENTATION_LABEL": "Orientation",
         "ELEVATION_LABEL": "Elevation",
         "ANGLE_LABEL": "Firing angle",

@@ -48,7 +48,7 @@ describe('ComponentDetailFormComponent', () => {
     denomination: createEmptyDenomination(),
     batch: '',
     maxAllowedErrors: 0,
-    clientNumber: 0,
+    clientNumber: '',
     observations: '',
     reconditioning: undefined,
     fuseWorkingMode: undefined,
@@ -61,7 +61,7 @@ describe('ComponentDetailFormComponent', () => {
     denomination: createEmptyDenomination(),
     batch: '',
     maxAllowedErrors: 0,
-    clientNumber: 0,
+    clientNumber: '',
     observations: '',
     reconditioning: undefined,
     fuseWorkingMode: undefined,
@@ -343,7 +343,7 @@ describe('ComponentDetailFormComponent', () => {
     denomination: createEmptyDenomination(),
     batch: '',
     maxAllowedErrors: 0,
-    clientNumber: 0,
+    clientNumber: '',
     observations: '',
     reconditioning: undefined,
     fuseWorkingMode: undefined,
@@ -412,6 +412,60 @@ describe('ComponentDetailFormComponent', () => {
       const component = fixture.componentInstance;
 
       expect(component.detailForm().valid()).toBe(true);
+    });
+
+    it('should sanitize clientNumber input to allow only digits and commas, preventing consecutive/leading commas', async () => {
+      const user = userEvent.setup();
+      await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { detail: nonEspoletaDetail },
+      });
+
+      const clientNumberInput = screen.getByPlaceholderText(
+        /TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT/i,
+      ) as HTMLInputElement;
+
+      await user.clear(clientNumberInput);
+      await user.type(clientNumberInput, ',,12,,a3b,4,');
+      expect(clientNumberInput.value).toBe('12,3,4,');
+    });
+
+    it('should validate trailing comma in clientNumber', async () => {
+      const renderResult = await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } }
+        },
+      });
+
+      const component = renderResult.fixture.componentInstance;
+      component.formModel.update(c => ({ ...c, clientNumber: '1,2,' }));
+      expect(component.detailForm().valid()).toBe(false);
+      expect(component.detailForm.clientNumber().errors()).not.toBeNull();
+    });
+
+    it('should validate clientNumber counts against assignedShotsCount', async () => {
+      const renderResult = await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
+          assignedShotsCount: 2,
+        },
+      });
+
+      const component = renderResult.fixture.componentInstance;
+
+      // Valid: 2 numbers, limit is 2
+      component.formModel.update(c => ({ ...c, clientNumber: '1,2' }));
+      expect(component.detailForm().valid()).toBe(true);
+
+      // Invalid: 3 numbers, limit is 2
+      component.formModel.update(c => ({ ...c, clientNumber: '1,2,3' }));
+      expect(component.detailForm().valid()).toBe(false);
+      expect(component.detailForm.clientNumber().errors()).not.toBeNull();
     });
   });
 });

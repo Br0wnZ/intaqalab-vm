@@ -1,4 +1,6 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { UsersService } from '@intaqalab/data-access';
 import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import {
@@ -19,10 +21,21 @@ describe('PlanningGeneralDataStore', () => {
   let seriesAndShotsServiceMock: ReturnType<typeof createMockSeriesAndShotsService>;
   let shootingConditionsServiceMock: ReturnType<typeof createMockShootingConditionsService>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let usersServiceMock: any;
+
   beforeEach(() => {
     dataPlanningServiceMock = createMockDataPlanningService();
     seriesAndShotsServiceMock = createMockSeriesAndShotsService();
     shootingConditionsServiceMock = createMockShootingConditionsService();
+    usersServiceMock = {
+      users: signal([]),
+      usersResource: {
+        isLoading: signal(false),
+        error: signal(undefined),
+      },
+      load: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -30,6 +43,7 @@ describe('PlanningGeneralDataStore', () => {
         { provide: DataPlanningService, useValue: dataPlanningServiceMock },
         { provide: SeriesAndShotsService, useValue: seriesAndShotsServiceMock },
         { provide: ShootingConditionsService, useValue: shootingConditionsServiceMock },
+        { provide: UsersService, useValue: usersServiceMock },
       ],
     });
 

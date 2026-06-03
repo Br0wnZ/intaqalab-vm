@@ -415,7 +415,7 @@
   // CSS PERSONALIZADO PARA MAT-DIALOG-ACTIONS
   // =========================================================================
   .mat-mdc-dialog-actions {
-    flex: 1;
+    flex: 0 0 auto;
     @apply bg-white items-end mx-auto gap-4;
     > * {
       margin: 0 !important;
@@ -427,6 +427,15 @@
   // =========================================================================
   .mat-mdc-dialog-surface {
     padding: 1.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+
+    // El componente hijo debe poder ocupar todo el espacio disponible
+    > * {
+      height: 100%;
+    }
   }
 
   // =========================================================================
@@ -435,7 +444,7 @@
   .cdk-overlay-pane:has(.mat-mdc-dialog-surface) {
     padding: 0 16px;
     box-sizing: border-box;
-    .mat-mdc-dialog-surface.mdc-dialog__surface{
+    .mat-mdc-dialog-surface.mdc-dialog__surface {
       overflow: hidden;
     }
   }

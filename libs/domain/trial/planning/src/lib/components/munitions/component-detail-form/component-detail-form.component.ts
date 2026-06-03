@@ -13,7 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -175,11 +175,17 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
                 <input
                   id="component-client"
                   matInput
-                  type="number"
+                  type="text"
                   [formField]="detailForm.clientNumber"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate"
+                  (input)="onClientNumberInput($event)"
                   (blur)="emitChanges()"
                 />
+                @if (detailForm.clientNumber().touched() && detailForm.clientNumber().errors()) {
+                  @for (error of detailForm.clientNumber().errors(); track error) {
+                    <mat-error class="!text-xs mt-2">{{ error.message }}</mat-error>
+                  }
+                }
               </mat-form-field>
             </div>
           </div>
@@ -234,6 +240,7 @@ export class ComponentDetailFormComponent {
   readonly #warehouseUrl = injectWharehouseEndpoint();
 
   readonly detail = input.required<ComponentDetail>();
+  readonly assignedShotsCount = input<number>(0);
   readonly detailChange = output<ComponentDetail>();
   readonly addPowder = output<void>();
 
@@ -299,11 +306,53 @@ export class ComponentDetailFormComponent {
 
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
+    validate(f.clientNumber, ({ value }) => {
+      const val = String(value() ?? '').trim();
+      if (!val || val === '0') return null;
+
+      if (val.endsWith(',')) {
+        return { kind: 'trailing-comma', message: 'No puede terminar con coma' };
+      }
+
+      const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+      const limit = this.assignedShotsCount();
+
+      if (numbersCount > limit) {
+        return {
+          kind: 'max-numbers',
+          message: `No puede haber más números (${numbersCount}) que disparos asociados (${limit})`,
+        };
+      }
+
+      return null;
+    });
   });
 
   emitChanges(): void {
     const value = this.detailForm().value();
     this.detailChange.emit(value as ComponentDetail);
+  }
+
+  onClientNumberInput(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    const rawVal = inputEl.value;
+
+    let sanitized = rawVal.replace(/[^0-9,]/g, '');
+    sanitized = sanitized.replace(/,+/g, ',');
+    if (sanitized.startsWith(',')) {
+      sanitized = sanitized.slice(1);
+    }
+
+    if (inputEl.value !== sanitized) {
+      inputEl.value = sanitized;
+    }
+
+    if (this.formModel().clientNumber !== sanitized) {
+      this.formModel.update((current) => ({
+        ...current,
+        clientNumber: sanitized,
+      }));
+    }
   }
 
   onDetailChange(updatedDetail: ComponentDetail): void {

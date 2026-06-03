@@ -240,6 +240,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             <mat-tab [label]="component | titlecase">
               <inta-component-detail-form
                 [detail]="getComponentDetail(component)"
+                [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
                 (detailChange)="onComponentDetailChange(component, $event)"
                 (addPowder)="onAddPowder(component)"
               />
@@ -249,6 +250,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             <mat-tab [label]="'Pólvora ' + powder.index">
               <inta-component-detail-form
                 [detail]="powder.detail"
+                [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
                 (detailChange)="onPowderDetailChange(powder.id, $event)"
                 (addPowder)="onAddPowder('polvora')"
               />

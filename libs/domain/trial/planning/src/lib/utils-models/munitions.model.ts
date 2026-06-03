@@ -23,7 +23,7 @@ export type MunitionComponent = {
   denomination: MunitionDenomination | null;
   batch?: string;
   reconditioning?: ReconditioningData | null;
-  clientNumber?: number;
+  clientNumber?: string | number;
   observations?: string;
   fuseWorkingMode?: FuseWorkingMode | null;
   fuseMeasurement?: number;
@@ -65,7 +65,7 @@ export type BackendMunitionComponent = {
   fuseWorkingModeId?: string | null;
   batch?: string;
   reconditioning?: ReconditioningData | null;
-  clientNumber?: number;
+  clientNumber?: string | number;
   observations?: string;
   fuseMeasurement?: number;
   maxAllowedErrors?: number;
@@ -76,7 +76,7 @@ export type MunitionComponentRequest = {
   denominationId: string;
   batch?: string;
   reconditioning?: ReconditioningData;
-  clientNumber?: number;
+  clientNumber?: string | number;
   observations?: string;
   fuseWorkingModeId?: string;
   fuseMeasurement?: number;
@@ -153,7 +153,7 @@ export type ComponentDetail = {
   denomination: Denomination;
   batch: string;
   reconditioning?: ReconditioningData;
-  clientNumber: number;
+  clientNumber: string;
   observations: string;
   fuseWorkingMode?: FuseWorkingMode;
   fuseMeasurement: number;
@@ -216,7 +216,7 @@ export function createEmptyComponentDetail(typeValue: string): ComponentDetail {
     type: { id: '', type: typeValue, label: typeValue },
     denomination: createEmptyDenomination(),
     batch: '',
-    clientNumber: 0,
+    clientNumber: '',
     observations: '',
     fuseWorkingMode: undefined,
     fuseMeasurement: 0,
@@ -260,7 +260,7 @@ export type MassiveConfigFormData = {
   batch: string;
   assignedShotIds: string[] | null;
   maxAllowedErrors: number;
-  clientNumber: number | undefined;
+  clientNumber: string | undefined;
   observations: string;
   selectedComponents: string[];
   componentsData: Record<string, ComponentDetail>;

@@ -10,7 +10,13 @@ import type {
   TargetThickness,
 } from '@intaqalab/models';
 
-import type { Serie, Shot, UpdateConditionsRequest } from '../models/shooting-conditions.model';
+import type {
+  Serie,
+  ShootingConditionsResponse,
+  ShootingConditionsUnits,
+  Shot,
+  UpdateConditionsRequest,
+} from '../models/shooting-conditions.model';
 
 function mapShotRecord(shot: Record<string, unknown>): Shot {
   const date = shot['date'];
@@ -32,30 +38,29 @@ function mapShotRecord(shot: Record<string, unknown>): Shot {
     functioningHeight: (shot['functioningHeight'] as number) ?? 0,
     nominalSpeed: (shot['nominalSpeed'] as number) ?? 0,
     powderWeight: (shot['powderWeight'] as number) ?? 0,
-    projectileWeight: (shot['projectileWeight'] as number) ?? 0,
+    projectWeight: (shot['projectWeight'] as number) ?? 0,
     observations: (shot['observations'] as string | null) ?? '',
   };
 }
 
-function parseConditionsResponse(items: unknown[]): Serie[] {
+function parseUnits(raw: unknown): ShootingConditionsUnits {
+  const u = (raw ?? {}) as Record<string, unknown>;
+  return {
+    distance: (u['distance'] as number | null) ?? null,
+    orientation: (u['orientation'] as number | null) ?? null,
+    targetInclination: (u['targetInclination'] as number | null) ?? null,
+    elevation: (u['elevation'] as number | null) ?? null,
+    angle: (u['angle'] as number | null) ?? null,
+    range: (u['range'] as number | null) ?? null,
+    functioningHeight: (u['functioningHeight'] as number | null) ?? null,
+    nominalSpeed: (u['nominalSpeed'] as number | null) ?? null,
+    powderWeight: (u['powderWeight'] as number | null) ?? null,
+  };
+}
+
+function parseSeriesArray(items: unknown[]): Serie[] {
   if (!items.length) return [];
 
-  // New API format: each item is { units, series: { id, name, shots } }
-  const firstItem = items[0] as Record<string, unknown>;
-  if (firstItem['series'] && typeof firstItem['series'] === 'object' && !Array.isArray(firstItem['series'])) {
-    const seriesMap = new Map<string, { seriesId: string; seriesName: string; shots: Shot[] }>();
-    for (const rawItem of items) {
-      const item = rawItem as { series: { id: string; name: string; shots: Record<string, unknown>[] } };
-      const { id, name, shots } = item.series;
-      if (!seriesMap.has(name)) {
-        seriesMap.set(name, { seriesId: id, seriesName: name, shots: [] });
-      }
-      seriesMap.get(name)!.shots.push(...shots.map(mapShotRecord));
-    }
-    return Array.from(seriesMap.values());
-  }
-
-  // Legacy format: items are Serie-like objects directly
   return items.map((rawItem) => {
     const item = rawItem as Record<string, unknown>;
     return {
@@ -91,7 +96,7 @@ export class ShootingConditionsService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #fireTrialsUrl = injectFireTrialsEndpoint();
 
-  readonly conditionsResource = httpResource<Serie[]>(
+  readonly conditionsResource = httpResource<ShootingConditionsResponse>(
     () => {
       const params = this.#getConditionsParams();
       if (!params) return undefined;
@@ -103,13 +108,30 @@ export class ShootingConditionsService {
       };
     },
     {
-      defaultValue: [],
-      parse: (raw): Serie[] => {
-        const items: unknown[] = Array.isArray(raw)
-          ? raw
-          : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((raw as any)?.series ?? (raw as any)?.items ?? []);
-        return parseConditionsResponse(items);
+      defaultValue: {
+        units: {
+          distance: null,
+          orientation: null,
+          targetInclination: null,
+          elevation: null,
+          angle: null,
+          range: null,
+          functioningHeight: null,
+          nominalSpeed: null,
+          powderWeight: null,
+        },
+        series: [],
+      },
+      parse: (raw): ShootingConditionsResponse => {
+        const response = raw as Record<string, unknown>;
+        const units = parseUnits(response?.['units']);
+        const seriesRaw: unknown[] = Array.isArray(raw)
+          ? (raw as unknown[])
+          : Array.isArray(response?.['series'])
+            ? (response['series'] as unknown[])
+            : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((raw as any)?.items ?? []);
+        return { units, series: parseSeriesArray(seriesRaw) };
       },
     },
   );

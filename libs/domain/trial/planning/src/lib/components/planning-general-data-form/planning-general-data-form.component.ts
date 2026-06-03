@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
-import { FormField, form, required, submit, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, required, submit, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -122,7 +122,7 @@ export type PlanningGeneralData = {
             [formField]="generalDataForm.planningUser"
             [label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
             [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate"
-            [options]="fakeUsers"
+            [options]="store.users()"
           />
 
           <!-- Fechas programadas (solo lectura) -->
@@ -392,12 +392,6 @@ export class PlanningGeneralDataFormComponent {
   #initialFormModel = this.formModel();
   #initialSelectedSpecimens: { specimenId: string; batch: string }[] = [];
 
-  readonly fakeUsers = [
-    { id: crypto.randomUUID(), fullname: 'Usuario Uno' },
-    { id: crypto.randomUUID(), fullname: 'Usuario Dos' },
-    { id: crypto.randomUUID(), fullname: 'Usuario Tres' },
-  ];
-
   readonly fakeSpecimens = [
     { id: crypto.randomUUID(), label: 'Specimen 1' },
     { id: crypto.randomUUID(), label: 'Specimen 2' },
@@ -409,7 +403,7 @@ export class PlanningGeneralDataFormComponent {
     // validate(f.specimen, ({ value }) => (value().length === 0 ? { kind: 'required', message: 'Requerido' } : null));
     required(f.planningUser);
     // disabled(f.specimen, () => this.store.isLoadingSpecimens());
-    // disabled(f.planningUser, () => this.store.isLoadingUsers());
+    disabled(f.planningUser, () => this.store.isLoadingUsers());
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
       return !isNaN(sum) && sum !== 100

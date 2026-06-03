@@ -539,6 +539,7 @@
         "TARGET_THICKNESS_LABEL": "Espesor blanco",
         "TARGET_THICKNESS_PLACEHOLDER": "Selecciona el espesor del blanco",
         "DISTANCE_LABEL": "Distancia",
+        "INCLINATION_LABEL": "Inclinación",
         "ORIENTATION_LABEL": "Orientación",
         "ELEVATION_LABEL": "Elevación",
         "ANGLE_LABEL": "Ángulo tiro",

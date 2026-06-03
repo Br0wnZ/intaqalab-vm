@@ -3,6 +3,8 @@ import { computed, effect, inject } from '@angular/core';
 import type { MasterData, TrialCreateModifyForm } from '@intaqalab/models';
 import type { TargetDimension, TargetThickness } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
+import { UsersService } from '@intaqalab/data-access';
+
 
 import type { UpdateConditionsRequest } from '../models/shooting-conditions.model';
 import { DataPlanningService } from '../services/data-planning-service';
@@ -39,6 +41,7 @@ export const PlanningGeneralDataStore = signalStore(
       dataPlanningService = inject(DataPlanningService),
       seriesService = inject(SeriesAndShotsService),
       shootingConditionsService = inject(ShootingConditionsService),
+      usersService = inject(UsersService),
     ) => {
       const readPlanningInfo = () =>
         dataPlanningService.getPlanningDataResource.hasValue()
@@ -60,7 +63,7 @@ export const PlanningGeneralDataStore = signalStore(
           return Boolean(info.goal || info.planningUser?.id || (info.specimens && info.specimens.length > 0));
         }),
 
-        shootingConditions: computed(() => shootingConditionsService.conditionsResource.value()),
+        shootingConditions: computed(() => shootingConditionsService.conditionsResource.value()?.series),
 
         isLoadingPlanningInfo: computed(() => dataPlanningService.getPlanningDataResource.isLoading()),
 
@@ -78,11 +81,17 @@ export const PlanningGeneralDataStore = signalStore(
 
         specimensError: computed(() => dataPlanningService.specimenResource.error()),
 
-        // users: computed(() => dataPlanningService.usersResource.value()),
+        users: computed(() => {
+          return usersService.users().map((u) => ({
+            id: u.id,
+            fullname: u.username,
+            roles: u.roles,
+          }));
+        }),
 
-        // isLoadingUsers: computed(() => dataPlanningService.usersResource.isLoading()),
+        isLoadingUsers: computed(() => usersService.usersResource.isLoading()),
 
-        // usersError: computed(() => dataPlanningService.usersResource.error()),
+        usersError: computed(() => usersService.usersResource.error()),
 
         isUpdatingPlanningInfo: computed(() => dataPlanningService.updatePlanningDataResource.isLoading()),
 
@@ -178,7 +187,7 @@ export const PlanningGeneralDataStore = signalStore(
           () =>
             dataPlanningService.getPlanningDataResource.isLoading() ||
             dataPlanningService.specimenResource.isLoading() ||
-            // dataPlanningService.usersResource.isLoading() ||
+            usersService.usersResource.isLoading() ||
             dataPlanningService.updatePlanningDataResource.isLoading() ||
             seriesService.seriesAndShotsResource.isLoading() ||
             shootingConditionsService.conditionsResource.isLoading() ||
@@ -199,6 +208,7 @@ export const PlanningGeneralDataStore = signalStore(
       dataPlanningService = inject(DataPlanningService),
       seriesService = inject(SeriesAndShotsService),
       shootingConditionsService = inject(ShootingConditionsService),
+      usersService = inject(UsersService),
     ) => ({
       setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
         patchState(store, { fireTrialId, fireTrial, selectedSpecimens: [] });
@@ -218,7 +228,7 @@ export const PlanningGeneralDataStore = signalStore(
       },
 
       loadUsers(): void {
-        // dataPlanningService.getUsers();
+        usersService.load({ page: 1, pageSize: 100 });
       },
 
       updatePlanningInfo(data: UpsertTrialPlanningInfo): void {
@@ -239,8 +249,7 @@ export const PlanningGeneralDataStore = signalStore(
       },
 
       reloadUsers(): void {
-        dataPlanningService.refreshUsers();
-        dataPlanningService.getUsers();
+        usersService.load({ page: 1, pageSize: 100 });
       },
 
       loadSeries(): void {

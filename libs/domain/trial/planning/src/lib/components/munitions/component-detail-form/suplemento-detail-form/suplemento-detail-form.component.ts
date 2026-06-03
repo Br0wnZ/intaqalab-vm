@@ -107,7 +107,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
           <input
             id="supl-client"
             matInput
-            type="number"
+            type="text"
             [formField]="detailForm.clientNumber"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate"
             (blur)="emitChanges()"

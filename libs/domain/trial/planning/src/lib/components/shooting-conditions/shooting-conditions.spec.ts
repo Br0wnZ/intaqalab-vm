@@ -230,6 +230,31 @@ describe('ShootingConditionsComponent', () => {
 
       expect(component.isFormValid()).toBe(true);
     });
+
+    it('should report form as valid when invalid but untouched', () => {
+      component.seriesSignal.update((series) => {
+        const copy = JSON.parse(JSON.stringify(series));
+        copy[0].shots[0].impactZoneId = '';
+        return copy;
+      });
+      fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(true);
+    });
+
+    it('should report form as invalid when invalid and touched', () => {
+      component.seriesSignal.update((series) => {
+        const copy = JSON.parse(JSON.stringify(series));
+        copy[0].shots[0].impactZoneId = '';
+        return copy;
+      });
+      fixture.detectChanges();
+
+      component.getShotField(0, 0).impactZoneId().markAsTouched();
+      fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+    });
   });
 
   describe('Data Mapping for Request', () => {
@@ -259,6 +284,7 @@ describe('ShootingConditionsComponent', () => {
       expect(component.displayedColumns).toContain('range');
 
       expect(component.displayedColumns).toContain('powderWeight');
+      expect(component.displayedColumns).toContain('projectWeight');
       expect(component.displayedColumns).toContain('functioningHeight');
       expect(component.displayedColumns).toContain('observations');
     });

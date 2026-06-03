@@ -14,6 +14,7 @@ const API_TARGETS = {
 const REMOTE_API_BASE_PATH = '/intaqalab';
 const FIRE_TRIALS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/fire-trials-api/1.0.0`;
 const CLIENTS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/clients-api/1.0.0`;
+const USERS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/users-api/1.0.0`;
 const PLANNING_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/planning-api/1.1.0`;
 const EXECUTION_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/execution-api/1.0.0`;
 
@@ -162,6 +163,16 @@ proxyConfig['^/api/clients-api'] = buildProxyRule({
   },
   mockPathRewrite: {
     '^/api/clients-api/[^/]+': '/api/clients',
+  },
+});
+
+// Users API — /intaqalab/users-api/1.0.0/users (sin center, usa SKIP_CENTER_INTERCEPTOR)
+proxyConfig['^/api/users-api'] = buildProxyRule({
+  remotePathRewrite: {
+    '^/api/users-api/[^/]+': `${USERS_API_BASE_PATH}/users`,
+  },
+  mockPathRewrite: {
+    '^/api/users-api/[^/]+': '/api/users',
   },
 });
 
