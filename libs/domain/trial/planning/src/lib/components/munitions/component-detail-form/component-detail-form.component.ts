@@ -64,13 +64,25 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
 
       @switch (detail().type.type.toLowerCase()) {
         @case ('espoleta') {
-          <inta-espoleta-detail-form [detail]="detail()" (detailChange)="onDetailChange($event)" />
+          <inta-espoleta-detail-form
+            [detail]="detail()"
+            [assignedShotsCount]="assignedShotsCount()"
+            (detailChange)="onDetailChange($event)"
+          />
         }
         @case ('suplemento') {
-          <inta-suplemento-detail-form [detail]="detail()" (detailChange)="onDetailChange($event)" />
+          <inta-suplemento-detail-form
+            [detail]="detail()"
+            [assignedShotsCount]="assignedShotsCount()"
+            (detailChange)="onDetailChange($event)"
+          />
         }
         @case ('carga de proyección') {
-          <inta-carga-detail-form [detail]="detail()" (detailChange)="onDetailChange($event)" />
+          <inta-carga-detail-form
+            [detail]="detail()"
+            [assignedShotsCount]="assignedShotsCount()"
+            (detailChange)="onDetailChange($event)"
+          />
         }
         @default {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">

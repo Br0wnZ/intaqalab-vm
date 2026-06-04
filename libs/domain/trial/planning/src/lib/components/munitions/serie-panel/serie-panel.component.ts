@@ -70,11 +70,11 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
                 </span>
                 <button
                   mat-icon-button
-                  class="!h-7 !w-7 !min-h-0 text-red-500 hover:text-red-700 mr-4"
+                  class="!h-7 !w-7 !min-h-0 text-red-500 hover:text-red-700 mr-8"
                   [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
                   (click)="onDeleteConfiguration(configIdx); $event.stopPropagation()"
                 >
-                  <mat-icon class="!text-base">delete</mat-icon>
+                  <mat-icon class="!text-base !text-red-500">delete</mat-icon>
                 </button>
               </div>
             </mat-expansion-panel-header>

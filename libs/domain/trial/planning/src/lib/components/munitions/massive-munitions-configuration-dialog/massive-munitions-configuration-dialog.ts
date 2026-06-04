@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -188,10 +189,17 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 <input
                   id="clientNumber"
                   matInput
+                  type="text"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate"
-                  [(ngModel)]="formData.clientNumber"
+                  [ngModel]="formData.clientNumber"
+                  (input)="onClientNumberInput($event)"
                 />
               </mat-form-field>
+              @if (getClientNumberError(formData.clientNumber)) {
+                <div class="text-red-600 text-xs mt-1">
+                  {{ getClientNumberError(formData.clientNumber) }}
+                </div>
+              }
             </div>
           </div>
 
@@ -365,18 +373,21 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                       @case ('espoleta') {
                         <inta-espoleta-detail-form
                           [detail]="getComponentData(component)"
+                          [assignedShotsCount]="formData.assignedShotIds?.length ?? 0"
                           (detailChange)="onComponentSubFormChange(component, $event)"
                         />
                       }
                       @case ('suplemento') {
                         <inta-suplemento-detail-form
                           [detail]="getComponentData(component)"
+                          [assignedShotsCount]="formData.assignedShotIds?.length ?? 0"
                           (detailChange)="onComponentSubFormChange(component, $event)"
                         />
                       }
                       @case ('carga de proyección') {
                         <inta-carga-detail-form
                           [detail]="getComponentData(component)"
+                          [assignedShotsCount]="formData.assignedShotIds?.length ?? 0"
                           (detailChange)="onComponentSubFormChange(component, $event)"
                         />
                       }
@@ -450,16 +461,24 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </mat-form-field>
 
                           <!-- Nº cliente -->
-                          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                            <input
-                              matInput
-                              type="number"
-                              [placeholder]="
-                                'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate
-                              "
-                              [(ngModel)]="getComponentData(component).clientNumber"
-                            />
-                          </mat-form-field>
+                          <div class="w-full">
+                            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                              <input
+                                matInput
+                                type="text"
+                                [placeholder]="
+                                  'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate
+                                "
+                                [ngModel]="getComponentData(component).clientNumber"
+                                (input)="onComponentClientNumberInput(component, $event)"
+                              />
+                            </mat-form-field>
+                            @if (getClientNumberError(getComponentData(component).clientNumber)) {
+                              <div class="text-red-600 text-xs mt-1">
+                                {{ getClientNumberError(getComponentData(component).clientNumber) }}
+                              </div>
+                            }
+                          </div>
                         </div>
 
                         <!-- Observaciones -->
@@ -725,6 +744,15 @@ export class MassiveMunitionsConfigurationDialog {
         this.#dialogRef.close(true);
       }
     });
+
+    effect(() => {
+      const shots = this.allShots();
+      if (shots.length > 0 && !this.data?.preloadedData?.assignedShotIds && this.formData.assignedShotIds === null) {
+        untracked(() => {
+          this.formData.assignedShotIds = shots.map((s) => s.id);
+        });
+      }
+    });
   }
 
   onDecimalKeydown(event: KeyboardEvent): void {
@@ -764,6 +792,58 @@ export class MassiveMunitionsConfigurationDialog {
   onSelectAllShots(checked: boolean): void {
     const ids = checked ? this.allShots().map((s) => s.id) : [];
     this.formData.assignedShotIds = ids.length > 0 ? ids : null;
+  }
+
+  onClientNumberInput(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    const rawVal = inputEl.value;
+
+    let sanitized = rawVal.replace(/[^0-9,]/g, '');
+    sanitized = sanitized.replace(/,+/g, ',');
+    if (sanitized.startsWith(',')) {
+      sanitized = sanitized.slice(1);
+    }
+
+    if (inputEl.value !== sanitized) {
+      inputEl.value = sanitized;
+    }
+
+    this.formData.clientNumber = sanitized;
+  }
+
+  onComponentClientNumberInput(component: string, event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    const rawVal = inputEl.value;
+
+    let sanitized = rawVal.replace(/[^0-9,]/g, '');
+    sanitized = sanitized.replace(/,+/g, ',');
+    if (sanitized.startsWith(',')) {
+      sanitized = sanitized.slice(1);
+    }
+
+    if (inputEl.value !== sanitized) {
+      inputEl.value = sanitized;
+    }
+
+    this.getComponentData(component).clientNumber = sanitized;
+  }
+
+  getClientNumberError(clientNumber: string | number | undefined): string | null {
+    const val = String(clientNumber ?? '').trim();
+    if (!val || val === '0') return null;
+
+    if (val.endsWith(',')) {
+      return 'No puede terminar con coma';
+    }
+
+    const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+    const limit = this.formData.assignedShotIds?.length ?? 0;
+
+    if (numbersCount > limit) {
+      return `No puede haber más números (${numbersCount}) que disparos asociados (${limit})`;
+    }
+
+    return null;
   }
 
   onConditioningToggle(checked: boolean): void {
@@ -857,6 +937,23 @@ export class MassiveMunitionsConfigurationDialog {
       }
     }
 
+    if (this.formData.clientNumber) {
+      const val = String(this.formData.clientNumber).trim();
+      if (val && val !== '0') {
+        if (val.endsWith(',')) {
+          errors.push('El número de cliente no puede terminar con coma');
+        } else {
+          const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+          const limit = this.formData.assignedShotIds?.length ?? 0;
+          if (numbersCount > limit) {
+            errors.push(
+              `El número de cliente no puede tener más números (${numbersCount}) que disparos asociados (${limit})`,
+            );
+          }
+        }
+      }
+    }
+
     if (this.formData.selectedComponents.length > 0) {
       this.formData.selectedComponents.forEach((component) => {
         const componentData = this.formData.componentsData[component];
@@ -879,6 +976,22 @@ export class MassiveMunitionsConfigurationDialog {
               },
             ),
           );
+        }
+        if (componentData?.clientNumber) {
+          const val = String(componentData.clientNumber).trim();
+          if (val && val !== '0') {
+            if (val.endsWith(',')) {
+              errors.push(`El número de cliente de ${this.getComponentLabel(component)} no puede terminar con coma`);
+            } else {
+              const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+              const limit = this.formData.assignedShotIds?.length ?? 0;
+              if (numbersCount > limit) {
+                errors.push(
+                  `El número de cliente de ${this.getComponentLabel(component)} no puede tener más números (${numbersCount}) que disparos asociados (${limit})`,
+                );
+              }
+            }
+          }
         }
       });
     }

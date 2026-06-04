@@ -4,11 +4,13 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { ElementRef } from '@angular/core';
@@ -330,14 +332,29 @@ export class ConfigurationFormComponent {
     return this.formModel().reconditioning ?? {};
   });
 
+  constructor() {
+    effect(() => {
+      const config = this.config();
+      const shots = this.shots();
+      if (shots.length > 0 && (!config.assignedShotIds || config.assignedShotIds.length === 0)) {
+        untracked(() => {
+          this.formModel.update((current) => ({
+            ...current,
+            assignedShotIds: shots.map((s) => s.id),
+          }));
+          this.emitChanges();
+        });
+      }
+    });
+  }
+
   readonly configForm = form(this.formModel, (f) => {
     required(f.batch);
     min(f.maxAllowedErrors, 0);
   });
 
   emitChanges(): void {
-    const value = this.configForm().value();
-    this.configChange.emit(value as Configuration);
+    this.configChange.emit(this.formModel());
   }
 
   onDenominationSearchInput(event: Event): void {
