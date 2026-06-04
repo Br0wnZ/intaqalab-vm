@@ -13,29 +13,37 @@ export class LanguageService {
 
   readonly #translate = inject(TranslateService);
 
+  readonly initializationPromise: Promise<void>;
+
   constructor() {
-    this.#initializeLanguage();
+    this.initializationPromise = this.#initializeLanguage();
   }
 
-  #initializeLanguage() {
+  #initializeLanguage(): Promise<void> {
+    this.#translate.addLangs(this.supportedLanguages);
+    this.#translate.setDefaultLang('es');
+
     const savedLanguage = localStorage.getItem('app-language') as SupportedLanguage;
 
     const browserLang = this.#translate.getBrowserLang() as SupportedLanguage;
 
     const languageToUse = savedLanguage || (this.supportedLanguages.includes(browserLang) ? browserLang : 'es');
 
-    this.setLanguage(languageToUse);
+    return this.setLanguage(languageToUse);
   }
 
-  setLanguage(lang: SupportedLanguage) {
-    this.#translate.use(lang).subscribe(() => {
-      this.currentLanguage.set(lang);
+  setLanguage(lang: SupportedLanguage): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.#translate.use(lang).subscribe(() => {
+        this.currentLanguage.set(lang);
 
-      localStorage.setItem('app-language', lang);
+        localStorage.setItem('app-language', lang);
 
-      document.documentElement.lang = lang;
+        document.documentElement.lang = lang;
 
-      console.log(`Idioma cambiado a: ${lang}`);
+        console.log(`Idioma cambiado a: ${lang}`);
+        resolve();
+      });
     });
   }
 

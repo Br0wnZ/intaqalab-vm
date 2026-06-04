@@ -1,5 +1,30 @@
 {
   "app": {
     "title": "Translation Demo"
+  },
+  "HEADER_TOOLS": {
+    "TITLE": "Kopfzeilen-Tools",
+    "CURRENT_ROLES": "Aktuelle Rollen"
+  },
+  "ROLES": {
+    "INTAQALAB_ADMIN": "Systemadministrator",
+    "ADMINISTRATIVE": "Verwaltung",
+    "PLANNING_TECHNICIAN": "Planungstechniker",
+    "UNIT_TECHNICIAN": "Gerätetechniker",
+    "INTAQALAB_VIEWER": "Nur Lesen",
+    "HEAD_ARMAMENT_TRIALS": "Leitung des Bereichs Rüstungsprüfungen",
+    "INTAQALAB_TRIAL_ENGINEER": "Prüfingenieur",
+    "INTAQALAB_TRIAL_ADMINISTRATIVE": "Prüfungsverwaltung",
+    "INTAQALAB_SHOOTING_LINE_HEAD": "Schießlinienleiter",
+    "INTAQALAB_ARMAMENT_UNIT_HEAD": "Leiter der Rüstungseinheit",
+    "INTAQALAB_ARMAMENT_UNIT_TECHNICIAN": "Techniker der Rüstungseinheit",
+    "INTAQALAB_MUNITIONS_UNIT_HEAD": "Leiter der Munitionseinheit",
+    "INTAQALAB_MUNITIONS_UNIT_TECHNICIAN": "Techniker der Munitionseinheit",
+    "INTAQALAB_BALLISTICS_UNIT_HEAD": "Leiter der Ballistikeinheit",
+    "INTAQALAB_BALLISTICS_UNIT_TECHNICIAN": "Techniker der Ballistikeinheit",
+    "INTAQALAB_PLANNING_ANALYSIS_HEAD": "Leiter der Planungs- und Analyseeinheit",
+    "INTAQALAB_TRIAL_CONSULTANT": "Prüfungsberater",
+    "INTAQALAB_FIRE_TRIALS_UNIT_HEAD": "Leiter der Brandprüfungen - Topographieeinheit",
+    "INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN": "Techniker der Brandprüfungen - Topographieeinheit"
   }
 }

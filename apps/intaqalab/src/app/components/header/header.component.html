@@ -22,6 +22,23 @@
     </button>
     @if (isDevMode) {
       <lib-header-tools></lib-header-tools>
+
+      <button
+        type="button"
+        class="flex items-center gap-1 px-3 py-1.5 hover:bg-gray-100 rounded transition-colors text-sm font-medium"
+        [matMenuTriggerFor]="langMenu"
+      >
+        <span>{{ getFlag(languageService.currentLanguage()) }}</span>
+        <span class="uppercase text-gray-700">{{ languageService.currentLanguage() }}</span>
+      </button>
+      <mat-menu xPosition="before" #langMenu="matMenu">
+        @for (lang of languageService.supportedLanguages; track lang) {
+          <button mat-menu-item (click)="changeLanguage(lang)">
+            <span class="mr-2">{{ getFlag(lang) }}</span>
+            <span>{{ getLanguageName(lang) }}</span>
+          </button>
+        }
+      </mat-menu>
     }
   </div>
 </header>

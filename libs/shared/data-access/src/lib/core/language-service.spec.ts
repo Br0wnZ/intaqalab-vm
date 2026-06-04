@@ -24,6 +24,8 @@ describe('LanguageService', () => {
       getBrowserLang: vi.fn().mockReturnValue('es'),
       use: vi.fn().mockReturnValue(of({})),
       instant: vi.fn().mockImplementation((key: string) => key),
+      setDefaultLang: vi.fn().mockReturnValue(of({})),
+      addLangs: vi.fn(),
     } as unknown as TranslateService;
 
     localStorageGetItemSpy = vi.spyOn(Storage.prototype, 'getItem');

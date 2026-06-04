@@ -12,7 +12,9 @@
         "TARGET_TYPE": "Target type",
         "MATERIAL": "Material",
         "DIMENSION": "Dimension",
-        "FUZE_TYPE": "Fuze type"
+        "FUZE_TYPE": "Fuze type",
+        "LOADING_ZONE": "Loading Zone",
+        "STANAG": "STANAG criteria"
       }
     },
     "WHAREHOUSE": {
@@ -24,11 +26,14 @@
         "DENOMINATIONS": "Denomination management",
         "MUNITIONS_COMPONENTS": "Ammunition type management"
       }
-    }
+    },
+    "EVENT_LOG": "Event Log",
+    "EXECUTION": "Execution"
   },
   "COMMONS": {
     "ACCEPT": "Accept",
     "CONFIRM": "Confirm",
+    "CREATE": "Create",
     "EDIT": "Edit",
     "OPTIONAL": "Optional",
     "REGISTER": "Register",
@@ -36,7 +41,13 @@
     "DELETE_DATA": "Clear data",
     "CANCEL": "Cancel",
     "RETURN": "Back",
-    "REQUIRED_FIELD": "Required value"
+    "SEARCH": "Look for",
+    "REQUIRED_FIELD": "Required value",
+    "INVALID_DATE_FORMAT": "Invalid date format"
+  },
+  "VALIDATIONS": {
+    "INVALID_DATE": "Please enter a valid date",
+    "DATE_MIN": "The date cannot be earlier than today"
   },
   "TOAST": {
     "DEFAULT_TITLE": "Save",
@@ -92,6 +103,7 @@
     "TOOLTIPS": {
       "VIEW_DOC": "View document",
       "DOWNLOAD_DOC": "Download document",
+      "DOC_DETAILS": "See document details",
       "COPY_DOC": "Copy document",
       "DELETE_DOC": "Delete document"
     },
@@ -114,7 +126,8 @@
           "SPECIFIC": "Specific",
           "GENERAL": "General"
         }
-      }
+      },
+      "CLEAN_FILTERS": "Clean filters"
     },
     "DOC_DETAILS": {
       "TITLE": "Document details",
@@ -188,6 +201,21 @@
       "UPLOADING": "Uploading",
       "ADD": "Add",
       "CANCEL": "Cancel"
+    },
+    "ASSOCIATE_DOC_TO_TRIAL_DIALOG": {
+      "TITLE": "Associate to other tests",
+      "SELECT_TRIALS_LABEL": "Select tests",
+      "SELECT_TRIALS_PLACEHOLDER": "Select tests to associate the document with",
+      "SEARCH_PLACEHOLDER": "Search by test number",
+      "MIN_CHARS_HINT": "Enter at least 3 characters to search",
+      "SEARCHING": "Searching...",
+      "NO_RESULTS": "No evidence found",
+      "ASSOCIATE": "Associate",
+      "CANCEL": "Cancel"
+    },
+    "DOWNLOAD_REQUIRED_DIALOG": {
+      "MESSAGE": "You need to download the document to continue.",
+      "ACCEPT": "Accept"
     }
   },
   "ASSOCIATED_TRIAL_DIALOG": {
@@ -216,6 +244,14 @@
       "CLIENT_PLACEHOLDER": "Select client",
       "FIRE_TRIAL_TYPE": "Trial type",
       "FIRE_TRIAL_TYPE_PLACEHOLDER": "Select trial type",
+      "YEAR": "Year",
+      "YEAR_PLACEHOLDER": "Select year",
+      "YEAR_ALL": "every year",
+      "DESCRIPTION": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Search by description",
+      "SCHEDULED_DATE_RANGE": "Scheduled date",
+      "DATE_FROM_PLACEHOLDER": "From",
+      "DATE_TO_PLACEHOLDER": "Until",
       "CLEAN_FILTERS": "Limpiar filtros",
       "DOCUMENT_TYPE": "Document type",
       "DOCUMENT_TYPE_PLACEHOLDER": "Select document type"
@@ -230,7 +266,8 @@
       "OTHER_DATA": "Other data",
       "ACTIONS": "Actions",
       "OBSERVATIONS": "Notes",
-      "REQUESTED_DATE": "Fecha solicitada por el cliente"
+      "REQUESTED_DATE": "Fecha solicitada por el cliente",
+      "SCHEDULED_DATE": "Scheduled date(s): {{date}}"
     }
   },
   "TAPS_TOP": {
@@ -283,7 +320,14 @@
     "ACTIONS": {
       "PROGAM": "Schedule trial",
       "UNPROGAM": "Unschedule",
-      "ADD_OBS": "Add notes"
+      "ADD_OBS": "Add notes",
+      "EDIT_OBS": "Edit observations",
+      "DELETE_OBS": "Delete observations"
+    },
+    "CONFIRM_DELETE_OBS": {
+      "TITLE": "Delete observations",
+      "DESCRIPTION": "You are going to delete the observation for day {{day}}",
+      "LABEL_COFIRM": "Eliminate"
     },
     "EVENT_TOOLTIP": {
       "TRIAL": "Trial",
@@ -292,6 +336,7 @@
     },
     "MODAL_ADD_OBS": {
       "ADD": "Add",
+      "EDIT": "Edit",
       "TITLE": "Notes",
       "PLACEHOLDER": "Write notes here..."
     },
@@ -418,7 +463,9 @@
       "END_PERCENTAGE_PLACEHOLDER": "Enter the percentage for trial end",
       "DAYS_SIGN_REPORT_LABEL": "Days to sign the report",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
-      "VALIDATE": "Validate"
+      "VALIDATE": "Validate",
+      "SAVE_DRAFT": "Save draft",
+      "CANCEL": "Cancel"
     },
     "SERIES_AND_SHOTS_SECTION": {
       "TAB_TITLE": "Series and shots",
@@ -427,6 +474,7 @@
       "NEW_SERIE_BUTTON": "New series",
       "SERIES_TABLE": {
         "SERIE_NAME": "Series name",
+        "SHOTS_QUANTITY": "Number of shots",
         "EXECUTION_ORDER": "Execution order",
         "OBSERVATIONS": "Notes",
         "ACTIONS": "Actions"
@@ -454,13 +502,16 @@
         "TARGET_DIMENSIONS": "Target dimensions",
         "TARGET_THICKNESS": "Target thickness",
         "DISTANCE": "Distance",
+        "INCLINATION": "Inclination",
         "ORIENTATION": "Orientation",
         "ELEVATION": "Elevation",
         "ANGLE": "Firing angle",
         "RANGE": "Range",
         "NOMINAL_SPEED": "Nominal speed",
         "POWDER_WEIGHT": "Powder",
+        "PROJECTILE_WEIGHT": "Projectile weight",
         "FUNCTIONING_HEIGHT": "Functioning height",
+        "NOMINAL_VELOCITY": "Rated speed",
         "OBSERVATIONS": "Notes"
       },
       "EMPTY_STATE": "There are no shots in this series",
@@ -515,7 +566,8 @@
         "TITLE": "Serie {{index}} - {{name}}",
         "add_munition": "Add ammunition",
         "CONFIG_TITLE": "Configuration {{index}}",
-        "EMPTY_CONFIGS": "No ammunition configurations. Click \"Add ammunition\" to start."
+        "EMPTY_CONFIGS": "No ammunition configurations. Click \"Add ammunition\" to start.",
+        "DELETE_CONFIG": "Delete settings"
       },
       "CONFIGURATION_FORM": {
         "DENOMINATION_LABEL": "Denomination",
@@ -525,9 +577,14 @@
         "MAX_FAILURES_LABEL": "Max. allowed failures",
         "MAX_FAILURES_PLACEHOLDER": "No. of failures",
         "OBSERVATIONS_LABEL": "Notes",
+        "OBSERVATIONS_PLACEHOLDER": "Write your observations here",
         "CONDITIONING_CHECKBOX": "Conditioning",
         "COMPONENT_SELECTOR_LABEL": "Component selector",
         "COMPONENT_SELECTOR_PLACEHOLDER": "Select component types",
+        "ASSOCIATED_SHOTS": "Associated shots",
+        "SELECT_ALL_SHOTS": "Select all",
+        "SEARCH_PLACEHOLDER": "Search denomination",
+        "NO_RESULTS": "No results",
         "OPTIONS": {
           "ALL": "All",
           "SOME": "Some",
@@ -651,6 +708,7 @@
       "MASSIVE_SHOTS_DIALOG": {
         "TITLE": "Bulk shot configuration",
         "SERIES_LABEL": "Series",
+        "OBSERVATIONS": "Observations",
         "SERIES_PLACEHOLDER": "Select series",
         "WEAPON_LABEL": "Weapon designation",
         "WEAPON_PLACEHOLDER": "Select weapon",
@@ -732,13 +790,198 @@
       "NO_RESULTS": "No documents found."
     }
   },
+  "EVENT_LOG": {
+    "TABS": {
+      "DOCUMENTS": "Documents",
+      "GENERAL_DATA": "General data",
+      "SERIES_AND_SHOOTS": "Series and shots",
+      "MEASURES": "Measures"
+    },
+    "FILTERS": {
+      "EXPORT_PDF_BUTTON": "Export PDF",
+      "EXPORT_EXCEL_BUTTON": "Export Excel",
+      "TOGGLE_FILTERS_PANEL_BUTTON": "Filters",
+      "SEARCH_BUTTON": "Look for",
+      "CLEAN_BUTTON": "Clean filters",
+      "DATE": {
+        "LABEL": "Date",
+        "PLACEHOLDER_START": "Start date",
+        "PLACEHOLDER_END": "End date",
+        "ERROR": "An end date is required"
+      },
+      "ACTION": {
+        "LABEL": "Action",
+        "PLACEHOLDER": "Action"
+      },
+      "USER": {
+        "LABEL": "User",
+        "PLACEHOLDER": "User"
+      },
+      "HARDWARE": {
+        "LABEL": "Equipment",
+        "PLACEHOLDER": "Equipment"
+      }
+    },
+    "LIST_LABELS": {
+      "DATE": "Date",
+      "ACTION": "Action",
+      "USER": "User",
+      "HARDWARE_ID": "Equipment"
+    },
+    "GENERAL_DATA": {
+      "FILTERS": {
+        "VALUE": {
+          "LABEL": "Worth",
+          "PLACEHOLDER": "Write value here"
+        }
+      },
+      "LABELS": {
+        "VALUE": "Worth"
+      },
+      "ACTIONS": {
+        "CREATE": "Create",
+        "EDIT": "Edit"
+      }
+    },
+    "DOCUMENTS": {
+      "FILTERS": {
+        "TYPE": {
+          "LABEL": "Guy",
+          "PLACEHOLDER": "Guy"
+        }
+      },
+      "LABELS": {
+        "TITLE": "Document name",
+        "TYPE": "Guy",
+        "ACCESS_COUNT": "Access"
+      },
+      "ACTIONS": {
+        "ADD": "Add",
+        "VIEW": "Visualize",
+        "MODIFY": "Modify",
+        "LINK": "Link",
+        "DELETE": "Eliminate"
+      },
+      "TYPES": {
+        "AUTH": "Authorization",
+        "CERT_CONF": "Certificate of conformity",
+        "COMMUNICATIONS": "Communications",
+        "METEO_DATA": "Meteorological data",
+        "REF_DOC": "Reference documentation",
+        "TECH_ACT_REPORT": "Technical activity report",
+        "EXT_REPORT": "External report",
+        "OTHER": "Others",
+        "TEST_PLAN": "Test plan",
+        "BUDGET": "Budget",
+        "APPLICATION": "Application",
+        "TEST_CATALOG": "Test Catalog",
+        "NOTE_EXP": "Note of experiences"
+      }
+    },
+    "SERIES_AND_SHOOTS": {
+      "FILTERS": {
+        "ELEMENT": {
+          "LABEL": "Element",
+          "PLACEHOLDER": "Element"
+        },
+        "VISIBLE_NUMBER": {
+          "LABEL": "Visible number",
+          "PLACEHOLDER": "Visible number"
+        },
+        "INTERNAL_ID": {
+          "LABEL": "internal ID",
+          "PLACEHOLDER": "internal ID"
+        }
+      },
+      "LABELS": {
+        "ELEMENT": "Element",
+        "VISIBLE_NUMBER": "No. visible at the moment",
+        "INTERNAL_ID": "internal ID"
+      },
+      "ACTIONS": {
+        "CREATE": "Create",
+        "EDIT": "Edit"
+      },
+      "ELEMENT": {
+        "SERIE": "Series",
+        "SHOOT": "Shot"
+      }
+    },
+    "MEASURES": {
+      "FILTERS": {
+        "INSTRUMENT": {
+          "LABEL": "Instrument",
+          "PLACEHOLDER": "Instrument"
+        },
+        "VALUE": {
+          "LABEL": "Worth",
+          "PLACEHOLDER": "Worth"
+        },
+        "MEASURE": {
+          "LABEL": "Extent",
+          "PLACEHOLDER": "Extent"
+        },
+        "SHOOT": {
+          "LABEL": "Shot",
+          "PLACEHOLDER": "Shot"
+        },
+        "SERIE": {
+          "LABEL": "Series",
+          "PLACEHOLDER": "Series"
+        }
+      },
+      "LABELS": {
+        "INSTRUMENT": "Instrument",
+        "VALUE": "Worth",
+        "MEASURE": "Extent",
+        "SHOOT": "Shot",
+        "SERIE": "Series"
+      },
+      "ACTIONS": {
+        "CREATE": "Create",
+        "EDIT": "Edit"
+      },
+      "ELEMENT": {
+        "SERIE": "Series",
+        "SHOOT": "Shot"
+      }
+    }
+  },
   "MASTER_DATA": {
-    "CREATE_EDIT_DIALOG": {
-      "TITLE_CREATE": "Create record",
-      "TITLE_EDIT": "Edit record",
-      "TITLE_CREATE1": "Name",
-      "TITLE_CREATE2": "English name",
-      "TITLE_CREATE3": "Description"
+    "DIALOGS": {
+      "UPSERT": {
+        "CREATE_TITLE": "Create Registry",
+        "EDIT_TITLE": "Edit Registry",
+        "INPUTS": {
+          "NAME_ES": {
+            "LABEL": "Name",
+            "PLACEHOLDER": "Enter the name"
+          },
+          "NAME_EN": {
+            "LABEL": "English name",
+            "PLACEHOLDER": "Enter the name in English"
+          },
+          "DESCRIPTION": "Description (Optional)"
+        },
+        "BUTTONS": {
+          "SAVE": "Accept",
+          "CANCEL": "Cancel"
+        }
+      },
+      "DELETE": {
+        "CONFIRMATION": "This action cannot be undone.",
+        "BUTTONS": {
+          "REMOVE": "Eliminate",
+          "CANCEL": "Cancel"
+        }
+      },
+      "SWITCH_STATUS": {
+        "INFO": "<b>You can change its status again</b> at any time. Please note that <b>if you disable it, it will not be available.</b>",
+        "BUTTONS": {
+          "SWITCH": "Confirm",
+          "CANCEL": "Cancel"
+        }
+      }
     },
     "DIMENSIONS_DIALOG": {
       "TITLE_CREATE": "Create record",
@@ -749,7 +992,6 @@
     },
     "TRIAL_TYPE": {
       "TITLE": "Trial type management",
-      "BUTTON_NEW": "New trial type",
       "LIST": {
         "TITLE": "Trial types",
         "NAME": "Trial type name",
@@ -768,6 +1010,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar tipo de prueba",
+          "DESCRIPTION": "Do you want to activate/deactivate this type of test?",
           "TEXT_ONE": "Do you want to enable/disable this trial type?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -829,11 +1072,11 @@
             "CANCEL": "Cancel"
           }
         }
-      }
+      },
+      "BUTTON_NEW": "New trial type"
     },
     "TARGET_TYPE": {
       "TITLE": "Target type management",
-      "BUTTON_NEW": "New target type",
       "LIST": {
         "TITLE": "Target types",
         "NAME": "Target type name",
@@ -852,6 +1095,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar tipo de blanco",
+          "DESCRIPTION": "Do you want to activate/deactivate this type of target?",
           "TEXT_ONE": "Do you want to enable/disable this target type?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -913,18 +1157,25 @@
             "CANCEL": "Cancel"
           }
         }
-      }
+      },
+      "BUTTON_NEW": "New target type"
     },
     "DOCUMENT_TYPE": {
       "TITLE": "Document type management",
-      "BUTTON_NEW": "New document type",
       "LIST": {
         "TITLE": "Document types",
         "NAME": "Document type name",
         "STATUS": "Status",
         "DESCRIPTION": "Notes",
-        "CLIENT_TYPE": "Category",
-        "ACTIONS": "Actions"
+        "CATEGORY": {
+          "TITLE": "Category",
+          "VALUES": {
+            "GENERAL": "General",
+            "SPECIFIC": "Particular"
+          }
+        },
+        "ACTIONS": "Actions",
+        "CLIENT_TYPE": "Category"
       },
       "DIALOGS": {
         "DELETE": {
@@ -937,6 +1188,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar tipo de documento",
+          "DESCRIPTION": "Do you want to activate/deactivate this type of document?",
           "TEXT_ONE": "Do you want to enable/disable this document type?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -998,11 +1250,11 @@
             "CANCEL": "Cancel"
           }
         }
-      }
+      },
+      "BUTTON_NEW": "New document type"
     },
     "FUZE_TYPE": {
       "TITLE": "Fuze operating mode management",
-      "BUTTON_NEW": "New fuze type",
       "LIST": {
         "TITLE": "Fuze operating modes",
         "ID": "Operating mode ID",
@@ -1021,6 +1273,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar tipo de espoleta",
+          "DESCRIPTION": "Do you want to activate/deactivate this type of wishbone?",
           "TEXT_ONE": "Do you want to enable/disable this fuze type?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -1082,11 +1335,11 @@
             "CANCEL": "Cancel"
           }
         }
-      }
+      },
+      "BUTTON_NEW": "New fuze type"
     },
     "MATERIAL": {
       "TITLE": "Material management",
-      "BUTTON_NEW": "New material type",
       "LIST": {
         "TITLE": "Material types",
         "ID": "Material ID",
@@ -1105,6 +1358,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar material",
+          "DESCRIPTION": "Do you want to activate/deactivate this material?",
           "TEXT_ONE": "Do you want to enable/disable this material?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -1166,11 +1420,11 @@
             "CANCEL": "Cancel"
           }
         }
-      }
+      },
+      "BUTTON_NEW": "New material type"
     },
     "DIMENSION": {
       "TITLE": "Dimension management",
-      "BUTTON_NEW": "New dimension type",
       "LIST": {
         "TITLE": "Dimension types",
         "ID": "Dimension ID",
@@ -1179,6 +1433,16 @@
         "ACTIONS": "Actions"
       },
       "DIALOGS": {
+        "UPSERT": {
+          "WIDTH": "Broad",
+          "HEIGHT": "High",
+          "DIAMETER": "Diameter",
+          "ERROR": {
+            "WIDTH": "You must indicate the width if you indicate the height",
+            "HEIGHT": "You must indicate the height if you indicate the width",
+            "POSITIVE": "A positive number is required"
+          }
+        },
         "DELETE": {
           "TITLE": "Delete dimension",
           "DESCRIPTION": "Are you sure you want to delete this dimension? <br><b>This action cannot be undone.</b>",
@@ -1189,6 +1453,7 @@
         },
         "SWITCH_STATUS": {
           "TITLE": "Enable / Disable dimension",
+          "DESCRIPTION": "Do you want to activate/deactivate this dimension?",
           "TEXT_ONE": "Do you want to enable/disable this dimension?",
           "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "BUTTONS": {
@@ -1250,17 +1515,131 @@
             "CANCEL": "Cancel"
           }
         }
+      },
+      "BUTTON_NEW": "New dimension type"
+    },
+    "LOADING_ZONE": {
+      "TITLE": "Loading zone management",
+      "LIST": {
+        "ID": "Loading zone ID",
+        "DENOMINATION": "Load type name",
+        "WEAPON": "Weapon",
+        "ZONE": "Loading areas",
+        "CALIBER": "Caliber",
+        "DESCRIPTION": "Observations",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "UPSERT": {
+          "DENOMINATION": {
+            "LABEL": "Load type name",
+            "PLACEHOLDER": "Indicate the type of load name"
+          },
+          "ZONE": {
+            "LABEL": "Loading areas",
+            "PLACEHOLDER": "Indicate the loading area(s)"
+          },
+          "WEAPON": {
+            "LABEL": "Weapon (Optional)",
+            "PLACEHOLDER": "indicate the weapon"
+          },
+          "CALIBER": {
+            "LABEL": "Gauge (Optional)",
+            "PLACEHOLDER": "Please indicate the caliber"
+          },
+          "DESCRIPTION": "Observations (Optional)"
+        },
+        "DELETE": {
+          "TITLE": "Delete loading zone",
+          "DESCRIPTION": "Are you sure you want to delete this loading zone?"
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activate/Deactivate this charging zone",
+          "DESCRIPTION": "Do you want to activate/deactivate this charging zone?"
+        }
+      }
+    },
+    "STANAG": {
+      "TITLE": "STANAG criteria management",
+      "LIST": {
+        "VARIABLE": "Variable",
+        "DESCRIPTION": "Description",
+        "ACTIVE": "State",
+        "NUM_THRESHOLD": "Numerical threshold",
+        "MEASURE_UNIT": "Unit",
+        "CALC_TYPE": "Calculation type",
+        "INV_LAYERS": "Layer involved",
+        "START_LAYER": "Home layer",
+        "END_LAYER": "final layer",
+        "ACTIONS": "Actions"
+      },
+      "DIALOGS": {
+        "UPSERT": {
+          "VARIABLE": {
+            "LABEL": "Variable",
+            "PLACEHOLDER": "Select variable"
+          },
+          "NUM_THRESHOLD": {
+            "LABEL": "Numerical threshold",
+            "PLACEHOLDER": "Enter the numerical threshold"
+          },
+          "MEASURE_UNIT": {
+            "LABEL": "Unit",
+            "PLACEHOLDER": "Select the unit"
+          },
+          "CALC_TYPE": {
+            "LABEL": "Calculation type",
+            "PLACEHOLDER": "Select the type of calculation"
+          },
+          "INV_LAYERS": {
+            "LABEL": "Layer involved",
+            "PLACEHOLDER": "Select the layer involved"
+          },
+          "START_LAYER": {
+            "LABEL": "Home layer",
+            "PLACEHOLDER": "Indicate the start layer"
+          },
+          "END_LAYER": {
+            "LABEL": "final layer",
+            "PLACEHOLDER": "Indicate the final layer"
+          },
+          "DESCRIPTION": "Description"
+        },
+        "DELETE": {
+          "TITLE": "Delete STANAG criteria",
+          "DESCRIPTION": "Are you sure you want to remove this STANAG criterion?"
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activate/Deactivate this STANAG criterion",
+          "DESCRIPTION": "Do you want to activate/deactivate this STANAG criterion?"
+        }
       }
     },
     "STATUS": {
       "ACTIVE": "Active",
       "INACTIVE": "Inactive"
+    },
+    "CREATE_EDIT_DIALOG": {
+      "TITLE_CREATE": "Create record",
+      "TITLE_EDIT": "Edit record",
+      "TITLE_CREATE1": "Name",
+      "TITLE_CREATE2": "English name",
+      "TITLE_CREATE3": "Description"
     }
   },
   "WHAREHOUSE_MANAGMENT": {
+    "VALIDATIONS": {
+      "GREATER_THAN_ZERO": "Enter value greater than zero",
+      "CELL_GREATER_THAN_MUNITIONDUMP": "Maximum NEQ per cell cannot be higher than maximum NEQ per magazine",
+      "DATE_TIME_INTERVAL_WRONG": "Poorly defined time interval",
+      "NUMERIC_INTERVAL_WRONG": "Ill-defined numeric interval",
+      "TRIAL_PATTERN": "Enter a correctly formatted test code"
+    },
     "MUNITION": "Ammunition",
     "MUNITION_COMPONENT": "Ammunition component",
     "SEARH_LIST_PLACEHOLDER": "Enter search text",
+    "TRIAL_NOT_FOUND": "No test found with this code",
+    "TRIAL_NOT_FOUND_NETWORK": "The existence of the test could not be verified",
     "MUNITION_COMPONENTS": {
       "TITLE": "Ammunition components",
       "CREATE": "Create component",
@@ -1349,6 +1728,7 @@
         "CELLS_COUNT_PLACEHOLDER": "Select a value",
         "CELL_PREFIX": "Cell",
         "CELL_PREFIX_PLACEHOLDER": "Enter cell name",
+        "CELL_VALUE_REQUIRED": "You must indicate a name for each cell in this powder magazine",
         "NEQMAXCELL": "Max. NEQ per cell GR 1.1 and 1.2",
         "NEQMAXCELL_PLACEHOLDER": "Enter the kg",
         "NEQMAXTOTAL": "Max. EQ per magazine",
@@ -1379,6 +1759,7 @@
       "PLANNED_TRIAL_PLACEHOLDER": "Select the entry date",
       "CLIENT_LABEL": "Client",
       "CLIENT_PLACEHOLDER": "Select the client",
+      "CLIENT_NO_TRIAL_ERROR": "You must create a test associated with the client in order to assign ammo to it",
       "QUANTITY_LABEL": "Quantity",
       "SECTION_COMPONENTS": "Components",
       "SECTION_GENERAL_DATA": "General data",
@@ -1390,7 +1771,11 @@
       "MUNITIONS_DUMPS_CELL_LABEL": "Magazine cell",
       "MUNITIONS_DUMPS_CELL_PLACEHOLDER": "Select a cell",
       "SHOW_UBICATON_LABEL": "Location",
-      "TYPE": "Type"
+      "TYPE": "Type",
+      "CONFIRM_NEQ_CONTROL_TITLE": "NEQ control",
+      "CONFIRM_NEQ_CONTROL_TEXT": "There is an excess of the authorized NEQ limit, if it is correct, you must confirm it",
+      "CONFIRM_COMPATIBILITY_TITLE": "Compatibility check",
+      "CONFIRM_COMPATIBILITY_TEXT": "An incompatibility has been detected, if it is correct, you must confirm it"
     },
     "MUNITION_DETAIL": {
       "HEADING": "Item details",
@@ -1404,6 +1789,7 @@
       "CELL": "Cell",
       "DAY_UTILIZATION": "Planned usage date",
       "STATUS_AVAILABLE": "Available",
+      "STATUS_RETIRE": "Retired",
       "ACTION_RETIRE": "Retire ammunition",
       "ACTION_TRANSFER": "Transfer to another magazine",
       "ACTION_MOVEMENTS": "Movement history"
@@ -1414,7 +1800,9 @@
       "DENOMINATION": "Denomination",
       "BATCH": "Batch",
       "ACTIONS": "Actions",
-      "ADD_COMPONENTS": "Add components"
+      "ADD_COMPONENTS": "Add components",
+      "ACTION_DELETE_TITLE": "Delete associated component",
+      "ACTION_DELETE_HTML": "You are going to delete a component"
     },
     "DIALOG_EDIT_COMPONENT": {
       "ADD": "Add component",
@@ -1442,6 +1830,131 @@
       "REASON_RETURN": "Return to client",
       "REASON_DESTRUCTION": "Destruction",
       "REASON_EXTERNAL": "External tests"
+    },
+    "DIALOG_TRANSFER": {
+      "TITLE": "Transfer to another powder magazine",
+      "INTRO": "Origin and destination selection",
+      "QUANTITY_LABEL": "Amount",
+      "DESTINATION_LABEL": "powder keg destiny",
+      "DESTINATION_PLACEHOLDER": "Select destination powder magazine",
+      "CELL_LABEL": "destination cell",
+      "CELL_PLACEHOLDER": "Select destination cell",
+      "BUTTON_CONFIRM": "Continue"
+    },
+    "CERTIFICATES": {
+      "HEADING": "Certificates",
+      "INTRO": "Associated documentation",
+      "BUTTON_ADD": "Add documentation",
+      "FILENAME": "Archive",
+      "COMPONENT": "Components",
+      "DATE": "Date",
+      "ACTIONS": "Actions",
+      "ACTION_DELETE_TITLE": "Delete associated certificate",
+      "ACTION_DELETE_HTML": "You are deleting an associated certificate"
+    },
+    "LINK": {
+      "TITLE": "Link document to an ammunition",
+      "BUTTON_CONFIRM": "Link",
+      "CLIENT_LABEL": "Customer",
+      "CLIENT_PLACEHOLDER": "Select a client",
+      "TRIAL_LABEL": "Planned test",
+      "TRIAL_PLACEHOLDER": "Write a test",
+      "TYPE_LABEL": "Guy",
+      "TYPE_PLACEHOLDER": "Select a type",
+      "TABLE_INTRO": "Associated documentation",
+      "TYPE": "Guy",
+      "DENOMINATION": "Denomination",
+      "BATCH": "Batch",
+      "CLIENT": "Customer",
+      "TRIAL": "Planned test"
+    },
+    "CERTIFICATES_DOC_PICKER_DIALOG": {
+      "TITLE": "Documentation upload",
+      "COMPONENTS_LABEL": "Components",
+      "COMPONENTS_PLACEHOLDER": "Select the components",
+      "DOCUMENT_TYPE_LABEL": "Document type",
+      "DOCUMENT_TYPE_PLACEHOLDER": "Select the type of document",
+      "DOCUMENT_LABEL": "Documentation",
+      "DOCUMENT_PLACEHOLDER": "Search by file name",
+      "SELECT_DOC": "Select the documentation",
+      "DRAG_HERE": "or drag and drop files here",
+      "UPLOADING": "Going up",
+      "ADD": "Add",
+      "CANCEL": "Cancel"
+    },
+    "STOCK_LIST": {
+      "TITLE": "Ammunition stock",
+      "TRANSFER": "Transfer to another powder magazine",
+      "STATUS": "State",
+      "STATUS_AVAILABLE": "Available",
+      "STATUS_RETIRE": "Retired",
+      "TRIAL_PREVIEW": "Planned test",
+      "ENTERING_DATE": "Entry date",
+      "EXIT_DATE": "Departure date",
+      "FROM": "From",
+      "TO": "Until",
+      "DATE_HINT": "DD/MM/YYYY - DD/MM/YYYY",
+      "DATE_ERROR": "An end date is required",
+      "RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR": "The departure start date must be greater than or equal to the arrival date",
+      "RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR": "The departure end date must be greater than or equal to the arrival date",
+      "QUANTITY_MIN": "Minimum quantity",
+      "QUANTITY_MAX": "Maximum quantity",
+      "NEQ_DATA": {
+        "NEQ_BUTTON": "NEQ",
+        "NEQ": "NEQ powder magazine",
+        "NEQ_MAX": "Max NEQ powder keg:",
+        "OCCUPANCY_PERCENTAGE": "Occupation (%):",
+        "CELL_MAX_NEQ": "Max NEQ cell (1.1, 1.2):"
+      },
+      "COL_TYPE": "Guy",
+      "COL_CLIENT": "Customer",
+      "COL_DENOMINATION": "Denomination",
+      "COL_BATCH": "Batch",
+      "COL_MUNITION_DUMP": "Powder keg",
+      "COL_CELL": "Cell",
+      "COL_STATUS": "State",
+      "COL_TRIAL": "Planned test",
+      "COL_QUANTITY": "Amount",
+      "COL_NEQ_TOTAL": "total NEQ",
+      "COL_CELL_NAME": "Cell",
+      "CLEAN_FILTERS_BUTTON": "Clean filters"
+    },
+    "MOVEMENTS": {
+      "TITLE": "Historical movements",
+      "MOVEMENT_TRANSFER": "Transfer",
+      "MOVEMENT_RETIRE": "Withdrawal",
+      "FILTER": {
+        "DATE_FROM": "Date from",
+        "DATE_TO": "Date until",
+        "DATE_PLACEHOLDER": "Select the date",
+        "HOUR_FROM": "Time since",
+        "HOUR_TO": "Time until",
+        "HOUR_PLACEHOLDER": "Select the time",
+        "MOVEMENT_TYPE_LABEL": "Movement type",
+        "MOVEMENT_TYPE_PLACEHOLDER": "Select type",
+        "USER": "User",
+        "MUNITION_DUMP_ORIGIN": "Powder magazine origin",
+        "MUNITION_DUMP_DESTINATION": "powder keg destiny",
+        "QUANTITY_MIN": "Minimum quantity",
+        "QUANTITY_MAX": "Maximum quantity",
+        "NEQ_AFECTED": "NEQ affected",
+        "REASON": "Reason",
+        "TRIAL_ASSOCIATED": "Associated test"
+      },
+      "TABLE": {
+        "COL_USER": "User",
+        "COL_DATE": "Date",
+        "COL_HOUR": "Hour",
+        "COL_MOVEMENT_TYPE": "Movement type",
+        "COL_MUNITION_DUMP_ORIGIN": "Dust origin",
+        "COL_MUNITION_DUMP_DESTINATION": "Dust destination",
+        "COL_QUANTITY": "Amount",
+        "COL_NEQ_AFECTED": "NEQ affected",
+        "COL_REASON": "Reason",
+        "COL_TRIAL_ASSOCIATED": "Associated test",
+        "REASON_RETURN": "Return to customer",
+        "REASON_DESTRUCTION": "Destruction"
+      }
     }
   },
   "HTTP_ERRORS": {
@@ -1463,6 +1976,8 @@
     "CATALOG_MATERIAL": "Material",
     "CATALOG_DIMENSION": "Dimension",
     "CATALOG_FUZE_TYPE": "Fuze type",
+    "CATALOG_LOADING_ZONE": "Loading areas",
+    "CATALOG_STANAG": "STANAG criteria",
     "TRIALS": "Trial management",
     "TRIAL_NEW": "New trial",
     "TRIAL_LIST": "Trial list",
@@ -1474,9 +1989,630 @@
     "WAREHOUSE_MUNITIONS_DUMPS": "Magazine management",
     "WAREHOUSE_MUNITION_COMPONENTS": "Ammunition type management",
     "WAREHOUSE_STOCK": "Ammunition stock",
+    "WAREHOUSE_MOVEMENTS": "Historical movements",
     "CALENDAR_TRIALS": "Trials calendar",
     "CALENDAR": "Calendar",
     "PLANNING": "Planning",
-    "PLANNING_DETAIL": "Planning details"
+    "PLANNING_DETAIL": "Planning details",
+    "EVENT_LOG": "Event log",
+    "EXECUTION": "Execution"
+  },
+  "TRIAL_EXECUTION": {
+    "TITLE": "Execution",
+    "ACTIONS": "Actions",
+    "MORE_INFO": "+Info",
+    "WIDGETS_BTN": "Widgets",
+    "EDIT_PANEL": "Edit panel",
+    "EMPTY_PANEL_TITLE": "Your panel is empty",
+    "EMPTY_PANEL_DESC_1": "Click",
+    "EMPTY_PANEL_DESC_WIDGETS_BTN": "'Widgets'",
+    "EMPTY_PANEL_DESC_2": "to add modules",
+    "FREE_SPACE_TITLE": "You have space on your panel",
+    "FREE_SPACE_DESC_1": "Click",
+    "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
+    "FREE_SPACE_DESC_2": "to add more modules",
+    "WIDGET_LIBRARY_TITLE": "Widget Library",
+    "SEARCH_WIDGET_PLACEHOLDER": "Search widget...",
+    "ADD": "Add",
+    "NO_WIDGETS_FOUND": "No widgets found",
+    "CLOSE_WIDGET_PANEL": "Close widget panel",
+    "ACTION_START": "Start execution",
+    "ACTION_PAUSE": "Pause execution",
+    "ACTION_STOP": "Interrupt execution",
+    "ACTION_EXPORT": "Export data",
+    "SHOT_HISTORY_TITLE": "Shooting History",
+    "SHOT_HISTORY_DESC": "Latest run records",
+    "ACTION_RESUME": "Resume execution",
+    "ACTION_CANCEL": "Cancel execution",
+    "ACTION_FINISH": "End execution",
+    "WIDGETS": {
+      "EXEC_PREP_TECH": {
+        "TITLE": "Execution preparation",
+        "SELECT_ALL": "Select all series",
+        "OBSERVATIONS": "Observations",
+        "OBSERVATIONS_PLACEHOLDER": "Write your observations...",
+        "PROFILES": {
+          "VELOCIDADES": "Speeds",
+          "PRESIONES": "Pressures",
+          "VIDEO": "Video",
+          "TRAYECTOGRAFIA": "Trajectory",
+          "MUNICIONES": "Ammunition",
+          "ARMAMENTO": "Armament"
+        }
+      },
+      "EXEC_PREP_JLT": {
+        "TITLE": "Execution preparation",
+        "SANITARY": "Health services",
+        "SECURITY": "Security",
+        "BOAT": "boat",
+        "OBSERVATIONS_PLACEHOLDER": "Write your observations about the fixed equipment",
+        "NO_OBSERVATIONS": "There are no observations",
+        "EXECUTION": "Execution",
+        "SELECT_SHOT": "Select shot",
+        "FIRE": "Shoot",
+        "SERIE_READY": "Series ready for execution",
+        "SERIE_PENDING": "Pending preparation"
+      },
+      "COMMON": {
+        "PENDING_CHANGES": "Changes pending saving"
+      },
+      "VIDEO_CAMERA_ORIENTATION": {
+        "TITLE": "Video camera orientation",
+        "CAMERA_LABEL": "Camera",
+        "CAMERA_PLACEHOLDER": "Camera",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "ESTIMATED_DISTANCE_LABEL": "Predicted dive distance",
+        "OPERATING_HEIGHT_LABEL": "Operating height",
+        "OPERATING_RANGE_LABEL": "Operating scope",
+        "ANGULAR_DIFFERENCE_LABEL": "Camera angular difference",
+        "CALCULATED_BADGE": "Calculated"
+      },
+      "RADAR_TRAYECTOGRAPHY_ORIENTATION": {
+        "TITLE": "Trajectory radar guidance",
+        "DESCRIPTION": "Piece coordinates, calculated drop points, geographic OLT and radar angular difference",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "RADAR_LABEL": "Radar",
+        "RADAR_PLACEHOLDER": "Radar",
+        "X_PIEZA_LABEL": "Piece",
+        "Y_PIEZA_LABEL": "Piece Y",
+        "Z_PIEZA_LABEL": "Z Piece",
+        "ALCANCE_PREVISTO_LABEL": "Planned scope",
+        "X_CAIDA_LABEL": "X P. Fall",
+        "Y_CAIDA_LABEL": "And P. Fall",
+        "OLT_GEOGRAFICO_LABEL": "geographic OLT",
+        "DIF_ANGULAR_RADAR_LABEL": "Radar angle difference",
+        "I_TRANSVERSAL_LABEL": "I. Transversal",
+        "I_LONGITUDINAL_LABEL": "I. Longitudinal",
+        "VELOCIDAD_INICIAL_LABEL": "Initial speed",
+        "TIEMPO_VUELO_LABEL": "Theoretical flight time",
+        "GRAD_ESPOLETA_LABEL": "Fuse grad.",
+        "ANGULO_TIRO_LABEL": "Shooting angle",
+        "PESO_PROYECTIL_LABEL": "Nom. weight projectile",
+        "ALTURA_BOCA_LABEL": "mouth height"
+      },
+      "MAO_TOPOGRAPHY": {
+        "TITLE": "Introduce. MAO Topography data",
+        "DESCRIPTION": "OLT, part and target coordinates, observer",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "MASS_CONFIG_BTN": "Apply bulk configuration",
+        "MASS_CONFIG_TITLE": "Extend settings",
+        "MASS_CONFIG_SERIES_LABEL": "series",
+        "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
+        "MASS_CONFIG_APPLY_BTN": "Apply",
+        "MASS_CONFIG_CANCEL_BTN": "Cancel",
+        "STATUS_ACTIVE": "In progress",
+        "OLT_LABEL": "OLT for angular difference",
+        "OLT_PLACEHOLDER": "XXX",
+        "X_PIEZA_LABEL": "Piece",
+        "X_PIEZA_PLACEHOLDER": "x",
+        "Y_PIEZA_LABEL": "Piece Y",
+        "Y_PIEZA_PLACEHOLDER": "AND",
+        "Z_PIEZA_LABEL": "Z Piece",
+        "Z_PIEZA_PLACEHOLDER": "Z",
+        "OBSERVADOR_LABEL": "Observer",
+        "OBSERVADOR_PLACEHOLDER": "XXX",
+        "X_BLANCO_LABEL": "White",
+        "X_BLANCO_PLACEHOLDER": "x",
+        "Y_BLANCO_LABEL": "White And",
+        "Y_BLANCO_PLACEHOLDER": "AND",
+        "Z_BLANCO_LABEL": "White Z",
+        "Z_BLANCO_PLACEHOLDER": "Z"
+      },
+      "JLT_MAO": {
+        "TITLE": "Introduce. JLT MAO data",
+        "DESCRIPTION": "Ballistic data of the shot: pickaxe, muzzle velocity, angle of fire, fuze and more",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "MASS_CONFIG_BTN": "Apply bulk configuration",
+        "MASS_CONFIG_TITLE": "Extend settings",
+        "MASS_CONFIG_SERIES_LABEL": "series",
+        "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
+        "MASS_CONFIG_APPLY_BTN": "Apply",
+        "MASS_CONFIG_CANCEL_BTN": "Cancel",
+        "TTN_LABEL": "Numerical Shot Table (TTN)",
+        "TTN_PLACEHOLDER": "TTN",
+        "PIQUETA_LABEL": "Pickaxe",
+        "PIQUETA_PLACEHOLDER": "XXX",
+        "VELOCIDAD_INICIAL_LABEL": "Theoretical initial speed",
+        "VELOCIDAD_INICIAL_PLACEHOLDER": "XXX",
+        "DISTANCIA_PIQUE_LABEL": "Predicted dive distance",
+        "DISTANCIA_PIQUE_PLACEHOLDER": "XXX",
+        "DERIVA_TABULAR_LABEL": "tabular drift",
+        "DERIVA_TABULAR_PLACEHOLDER": "XXX",
+        "TIEMPO_VUELO_LABEL": "Theoretical flight time",
+        "TIEMPO_VUELO_PLACEHOLDER": "XXX",
+        "DIFERENCIA_ANGULAR_LABEL": "Angular difference",
+        "DIFERENCIA_ANGULAR_PLACEHOLDER": "Difference",
+        "ANGULO_TIRO_LABEL": "Shooting angle",
+        "ANGULO_TIRO_PLACEHOLDER": "XXX",
+        "GRADUACION_ESPOLETA_LABEL": "Fuse graduation",
+        "GRADUACION_ESPOLETA_PLACEHOLDER": "XXX",
+        "ALTURA_FUNCIONAMIENTO_LABEL": "Operating height",
+        "ALTURA_FUNCIONAMIENTO_PLACEHOLDER": "XXX",
+        "DISTANCIA_FUNCIONAMIENTO_LABEL": "Operating distance",
+        "DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER": "XXX",
+        "ALTURA_EXPLOSION_LABEL": "explosion height",
+        "ALTURA_EXPLOSION_PLACEHOLDER": "XXX",
+        "DISTANCIA_EXPLOSION_LABEL": "Explosion distance",
+        "DISTANCIA_EXPLOSION_PLACEHOLDER": "XXX"
+      },
+      "ARMAMENT_INTRODUCTION": {
+        "TITLE": "Weapon data introduction",
+        "DESCRIPTION": "Weapon, series, tube, attacked equipment and recoil equipment",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "MASS_CONFIG_BTN": "Apply bulk configuration",
+        "MASS_CONFIG_TITLE": "Extend settings",
+        "MASS_CONFIG_SERIES_LABEL": "series",
+        "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
+        "MASS_CONFIG_APPLY_BTN": "Apply",
+        "MASS_CONFIG_CANCEL_BTN": "Cancel",
+        "ARMA_LABEL": "Weapon",
+        "ARMA_PLACEHOLDER": "Weapon",
+        "NÑ_SERIE_ARMA_LABEL": "Weapon serial number",
+        "NÑ_SERIE_ARMA_PLACEHOLDER": "Serial number",
+        "TUBO_LABEL": "Tube",
+        "TUBO_PLACEHOLDER": "Tube",
+        "NÑ_SERIE_TUBO_LABEL": "Tube serial number",
+        "NÑ_SERIE_TUBO_PLACEHOLDER": "Serial number",
+        "EQUIPO_ATACADO_LABEL": "Team Attacked",
+        "EQUIPO_ATACADO_PLACEHOLDER": "Equipment",
+        "EQUIPO_RETROCESO_LABEL": "Throwback Team",
+        "EQUIPO_RETROCESO_PLACEHOLDER": "Equipment"
+      },
+      "RADAR_METCMQ": {
+        "TITLE": "METCMQ radar trajectory",
+        "DESCRIPTION": "METCMQ weather bulletin for the time block of the selected shot",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "TEXTO_PLACEHOLDER": "Text",
+        "COPY_TOOLTIP": "Copy text",
+        "GENERATE_BTN": "Trigger"
+      },
+      "JLT_SHOT_DATA": {
+        "TITLE": "JLT data entry",
+        "DESCRIPTION": "JET, operator, equipment attacked, attacked, recoil and observations of the shot",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "JET_LABEL": "JET",
+        "JET_PLACEHOLDER": "Writes...",
+        "OPERADOR_PIEZA_LABEL": "Part operator",
+        "OPERADOR_PIEZA_PLACEHOLDER": "Writes...",
+        "EQUIPO_ATACADO_LABEL": "Team Attacked",
+        "EQUIPO_ATACADO_PLACEHOLDER": "Equipment",
+        "ATACADO_LABEL": "attacked",
+        "ATACADO_PLACEHOLDER": "0.00",
+        "EQUIPO_RETROCESO_LABEL": "recoil equipment",
+        "EQUIPO_RETROCESO_PLACEHOLDER": "Equipment",
+        "RETROCESO_LABEL": "Recoil",
+        "RETROCESO_PLACEHOLDER": "0.00",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      },
+      "MUNITION_INTRODUCTION": {
+        "TITLE": "Entering ammunition data",
+        "DESCRIPTION": "Entering ammunition data for the test",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "MASSIVE_CONFIG_BTN": "Apply bulk configuration",
+        "TAB_IDENTIFICACION": "ID",
+        "TAB_PESOS": "Weights",
+        "TAB_ACONDICIONAMIENTO": "Conditioning",
+        "COMPONENTE_LABEL": "Component",
+        "COMPONENTE_PLACEHOLDER": "Select component",
+        "DENOMINACION_LABEL": "Denomination",
+        "DENOMINACION_PLACEHOLDER": "Select name",
+        "LOTE_LABEL": "Batch",
+        "LOTE_PLACEHOLDER": "Select lot",
+        "NUMERO_CLIENTE_LABEL": "Client No.",
+        "NUMERO_CLIENTE_PLACEHOLDER": "Customer number",
+        "MODO_FUNCIONAMIENTO_LABEL": "Operating mode",
+        "MODO_FUNCIONAMIENTO_PLACEHOLDER": "Select mode",
+        "GRADUACION_ESPOLETA_LABEL": "Fuse graduation",
+        "GRADUACION_ESPOLETA_PLACEHOLDER": "0.0",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations",
+        "BALANZA_LABEL": "Balance",
+        "BALANZA_PLACEHOLDER": "Select scale",
+        "EQUIPO_LABEL": "Equipment",
+        "EQUIPO_PLACEHOLDER": "Select team",
+        "PESO_LABEL": "Weight",
+        "PESO_PLACEHOLDER": "0.000",
+        "PESO_ANADIDO_LABEL": "Added weight",
+        "PESO_ANADIDO_PLACEHOLDER": "0.000",
+        "PESO_RETIRADO_LABEL": "Retired weight",
+        "PESO_RETIRADO_PLACEHOLDER": "0.000",
+        "FECHA_HORA_LABEL": "Date and time",
+        "FECHA_HORA_BTN": "Capture",
+        "RANGO_PESADA_LABEL": "Heavy range",
+        "CAMARA_LABEL": "Camera",
+        "CAMARA_PLACEHOLDER": "Select camera",
+        "FECHA_HORA_ENTRADA_LABEL": "F/H Input",
+        "FECHA_HORA_ENTRADA_BTN": "Capture entry",
+        "FECHA_HORA_SALIDA_LABEL": "F/H Output",
+        "FECHA_HORA_SALIDA_BTN": "Capture output",
+        "TEMPERATURA_LABEL": "Temperature",
+        "TEMPERATURA_PROGRAMADA_LABEL": "Temp. scheduled",
+        "TIEMPO_CAMARA_LABEL": "Camera time",
+        "DIALOG": {
+          "TITLE": "Extend settings",
+          "SERIES_LABEL": "series",
+          "SERIES_PLACEHOLDER": "Select the series",
+          "APPLY_BTN": "Apply",
+          "CANCEL_BTN": "Cancel"
+        }
+      },
+      "MANOMETER_INTRODUCTION": {
+        "TITLE": "Manometer pressure measurements",
+        "DESCRIPTION": "Entering pressure data with pressure gauges and crusher",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "MANOMETRO_LABEL": "Pressure gauge",
+        "CRUSHER_LABEL": "Crusher",
+        "MICROMETRO_LABEL": "Probe micrometer",
+        "EQUIPO_PLACEHOLDER": "Equipment",
+        "PRESION_LABEL": "Pressure",
+        "H1_LABEL": "H1",
+        "H2_LABEL": "H2",
+        "H3_LABEL": "H3",
+        "H4_LABEL": "H4",
+        "H5_LABEL": "H5",
+        "H_PLACEHOLDER": "0",
+        "ALTURA_MEDIA_LABEL": "average height",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      },
+      "VELOCITY_INTRODUCTION": {
+        "TITLE": "Entering speed data",
+        "DESCRIPTION": "Introduction of velocity data measured with Doppler radar",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "RADAR_DOPPLER_LABEL": "doppler radar",
+        "RADAR_DOPPLER_PLACEHOLDER": "Select radar",
+        "ANTENA_LABEL": "Antenna",
+        "ANTENA_PLACEHOLDER": "Select antenna",
+        "VELOCIDAD_LABEL": "Speed",
+        "VELOCIDAD_PLACEHOLDER": "0.00",
+        "INCERT_SOFTWARE_LABEL": "Incert. Software",
+        "PERDIDA_LABEL": "Loss",
+        "PERDIDA_PLACEHOLDER": "0.0000",
+        "CADENCIA_LABEL": "Cadence",
+        "CADENCIA_PLACEHOLDER": "0",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      },
+      "PIEZO_PRESSURE": {
+        "TITLE": "Entering piezoelectric pressure data",
+        "DESCRIPTION": "Entering pressure data with piezoelectric sensors",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "TAB_CIERRE": "Piezo closure",
+        "TAB_INTERMEDIO": "intermediate piezo",
+        "TAB_CULOTE": "Piezo culotte",
+        "CAPTADOR_LABEL": "Sensor",
+        "CAPTADOR_PLACEHOLDER": "Select sensor",
+        "AMPLIFICADOR_LABEL": "Amplifier",
+        "AMPLIFICADOR_PLACEHOLDER": "Select amplifier",
+        "REGISTRADOR_LABEL": "Recorder",
+        "REGISTRADOR_PLACEHOLDER": "Select logger",
+        "PRESION_MAXIMA_LABEL": "Maximum pressure",
+        "PRESION_MAXIMA_PLACEHOLDER": "0.00",
+        "TIEMPO_ACCION_LABEL": "Action time",
+        "TIEMPO_ACCION_PLACEHOLDER": "0.00",
+        "TIEMPO_RETARDO_LABEL": "delay time",
+        "TIEMPO_RETARDO_PLACEHOLDER": "0.00"
+      },
+      "TARADO_VELOCIDAD": {
+        "TITLE": "Tare Chart - Speed",
+        "DESCRIPTION": "Linear regression graph V0c vs Wc/g for gunpowder calibration",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "VELOCIDAD_NOMINAL_LABEL": "Rated speed",
+        "VELOCIDAD_NOMINAL_PLACEHOLDER": "m/s",
+        "CONFIG_LABEL": "Select settings",
+        "CONFIG_PLACEHOLDER": "Configuration",
+        "CONFIG_BTN": "Configuration",
+        "LEGEND_LINE": "Linear (Taring line)",
+        "LEGEND_RECTA": "straight tared",
+        "LEGEND_PUNTO": "Tared point",
+        "PENDIENTE_LABEL": "Earring",
+        "ORDENADA_LABEL": "Orderly",
+        "PESO_TARADO_LABEL": "Tared weight",
+        "WC_LABEL": "Wc/g",
+        "X_AXIS": "Wc/g (g)",
+        "Y_AXIS": "Speed ​​(m/s)"
+      },
+      "SEGUIMIENTO": {
+        "TITLE": "Follow-up",
+        "DESCRIPTION": "Tracking speeds and pressures by series and shot",
+        "TAB_VELOCIDADES": "Speeds",
+        "TAB_P_MANOM": "P Manom",
+        "TAB_P_PZ_CIE": "P PZ Cie",
+        "TAB_P_PZ_INT": "P PZ Int",
+        "TAB_P_PZ_CUL": "P PZ Cul",
+        "TAB_P_IPG": "P IPG",
+        "UNIT_PRESSURE_LABEL": "Pressure/velocity unit",
+        "UNIT_WEIGHT_LABEL": "Unit weights",
+        "COL_DISP": "Disp.",
+        "COL_V0C": "V0c",
+        "COL_P_MEAN": "P̄",
+        "NO_DATA": "No data"
+      },
+      "INFORMACION_TARADO": {
+        "TITLE": "Tarado Information",
+        "DESCRIPTION": "Nominal speed, deviation and powder weight data by calibration series",
+        "COL_ZONA": "Area",
+        "COL_VEL_NOM": "Vel. Nom.",
+        "COL_SIGMA_V": "σV max",
+        "COL_WC": "Wc/g"
+      },
+      "TARADO_PRESION": {
+        "TITLE": "Setting Graph - Pressure",
+        "DESCRIPTION": "Linear regression Mean pressure (MPa) vs Wc/g to determine the powder charge weight",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "All series",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "all shots",
+        "LEGEND_LINE": "Linear (Taring line)",
+        "LEGEND_RECTA": "straight tared",
+        "LEGEND_PUNTO": "Tared point",
+        "PENDIENTE_LABEL": "Earring",
+        "ORDENADA_LABEL": "Orderly",
+        "PESO_TARADO_LABEL": "Tared weight",
+        "WC_LABEL": "Wc/g"
+      },
+      "TRAYECTOGRAFIA_INTRODUCTION": {
+        "TITLE": "Trajectory data entry",
+        "DESCRIPTION": "Introduction of data from trajectory measurements: trajectories, operations and traces",
+        "SERIE_PLACEHOLDER": "Operation",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "TAB_TRAYECTORIAS": "Trajectories",
+        "TAB_FUNCIONAMIENTOS": "Operations",
+        "TAB_TRAZAS": "Traces",
+        "EQUIPO_LABEL": "Equipment",
+        "EQUIPO_PLACEHOLDER": "Select team",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations",
+        "ALCANCE_LABEL": "Scope",
+        "DERIVA_LABEL": "Drift",
+        "TIEMPO_VUELO_LABEL": "Flight time",
+        "TIEM_FUNC_ESPOLETA_LABEL": "Time function. fuse",
+        "ALT_FUNC_ESPOLETA_LABEL": "Alt. function. fuse",
+        "ALC_FUNC_ESPOLETA_LABEL": "Alc. function. fuse",
+        "FLECHA_LABEL": "Arrow",
+        "CALIFICACION_VUELO_LABEL": "Flight qualification",
+        "CALIFICACION_VUELO_PLACEHOLDER": "Qualification",
+        "COEF_AERODINAMICO_LABEL": "Coef. aerodynamic",
+        "COEF_AERODINAMICO_PLACEHOLDER": "0.00",
+        "TIEM_EYEC_BOTES_FUM_LABEL": "Time ejection smoke cans",
+        "FUNC_ESPOLETAS_TRAY_LABEL": "Trajectory fuze operation",
+        "FUNC_ESPOLETAS_TRAY_PLACEHOLDER": "Worth",
+        "FUNC_MUN_FUMIGENA_LABEL": "Radar smoke ammunition operation",
+        "FUNC_MUN_FUMIGENA_PLACEHOLDER": "Worth",
+        "FUNC_MUN_ILUMINANTE_LABEL": "Operation of radar illuminant ammunition",
+        "FUNC_MUN_ILUMINANTE_PLACEHOLDER": "Worth",
+        "NUM_BOTES_EYECTADOS_LABEL": "Number of canisters ejected",
+        "NUM_BOTES_EYECTADOS_PLACEHOLDER": "0",
+        "TIEMPO_TRAZA_LABEL": "Trace time",
+        "EXISTENCIA_TRAZA_LABEL": "Radar Trace Existence",
+        "EXISTENCIA_TRAZA_PLACEHOLDER": "Text"
+      },
+      "STANAG_CRITERIOS": {
+        "TITLE": "STANAG criteria",
+        "DESCRIPTION": "Acceptance criteria defined in the test planning according to the attached technical bulletin",
+        "ACTUALIZAR_BTN": "Update",
+        "LAST_CHECKED": "Last verification",
+        "NOT_CHECKED": "Not verified yet",
+        "NO_CRITERIOS": "There are no defined criteria",
+        "STATUS_PASS": "Compliant",
+        "STATUS_FAIL": "Does not comply",
+        "STATUS_UNKNOWN": "Unverified"
+      },
+      "UNIFORMIDAD": {
+        "TITLE": "Uniformity Chart",
+        "DESCRIPTION": "Graphic representation of the uniformity of corrected speeds with respect to the selected calibration configuration",
+        "CONFIG_LABEL": "Tare Conf.",
+        "CONFIG_PLACEHOLDER": "Select settings",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "All",
+        "DISPARO_LABEL": "Shot",
+        "DISPARO_PLACEHOLDER": "All",
+        "LEGEND_NOMINAL": "Rated speed",
+        "LEGEND_MEDIA": "Average speed",
+        "LEGEND_MIN": "Minimum",
+        "LEGEND_MAX": "Maximum",
+        "PENDIENTE_LABEL": "Earring",
+        "WC_LABEL": "Wc/g",
+        "ORDENADA_LABEL": "Orderly",
+        "DESVIACION_LABEL": "Deviation"
+      },
+      "OVERPRESSURE_INFO": {
+        "TITLE": "Overpressure Information",
+        "DESCRIPTION": "Test pressure management: maximum, minimum, reference and safety pressure",
+        "PRESION_MAXIMA_LABEL": "Maximum Pressure",
+        "PRESION_MINIMA_LABEL": "Minimum Pressure",
+        "PRESION_REF_LABEL": "Pres. Ref.",
+        "PRESION_SEGURIDAD_LABEL": "Security Pres.",
+        "PRESION_BUSCADA_LABEL": "Wanted Pres.",
+        "VALUE_PLACEHOLDER": "0.00"
+      },
+      "OVERPRESSURE_CHART": {
+        "TITLE": "Overpressure Graph",
+        "DESCRIPTION": "Overpressure graph: pressure line, deviation bands and reference lines",
+        "SERIE_LABEL": "Series",
+        "SERIE_PLACEHOLDER": "All",
+        "LEGEND_SEGURIDAD": "Security Pres.",
+        "LEGEND_DESV_MAX": "Dev. maximum",
+        "LEGEND_PRES_MAX": "Maximum pressure",
+        "LEGEND_RECTA": "straight pressure",
+        "LEGEND_PRES_MIN": "Minimum pressure",
+        "LEGEND_DESV_MIN": "Dev. minimum"
+      },
+      "GRUBBS_CRITERION": {
+        "TITLE": "Grubbs criterion",
+        "DESCRIPTION": "Detection of outliers using the Grubbs criterion on the quantitative variables of the trial",
+        "SERIE_LABEL": "Series",
+        "VARIABLE_LABEL": "Variable",
+        "EMPTY_STATE_MSG": "Select a series and a variable",
+        "NO_OUTLIERS_MSG": "There are no deviated values",
+        "MANTENER_BTN": "Keep",
+        "ELIMINAR_BTN": "Eliminate"
+      },
+      "PASS_COORDS": {
+        "TITLE": "Step coordinate calculation",
+        "DESCRIPTION": "Pitch coordinates calculated by trigonometry from ball, part and chamber data",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "ALTURA_BOCA_BOLA_LABEL": "Mouth-ball piece height",
+        "DISTANCIA_GEOMETRICA_LABEL": "Mouth-ball geometric distance",
+        "DISTANCIA_CAMARA_FRONTAL_LABEL": "Ball front camera dist.",
+        "DISTANCIA_CAMARA_TRANSVERSAL_LABEL": "Transverse ball chamber dist.",
+        "INCREM_COTA_FRONTAL_LABEL": "Increase cam dimension front ball",
+        "INCREM_COTA_TRANSVERSAL_LABEL": "Increase cam dimension trans. ball"
+      },
+      "TARGET_DATA": {
+        "TITLE": "Target Data",
+        "DESCRIPTION": "Target, material, dimensions, thickness, distance and inclination from planning",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "BLANCO_LABEL": "White",
+        "BLANCO_PLACEHOLDER": "XXXX",
+        "MATERIAL_LABEL": "Material",
+        "MATERIAL_PLACEHOLDER": "XXXX",
+        "DIMENSIONES_LABEL": "Dimensions",
+        "DIMENSIONES_PLACEHOLDER": "XXXX",
+        "ESPESOR_LABEL": "Thickness",
+        "DISTANCIA_LABEL": "Distance",
+        "INCLINACION_LABEL": "Inclination"
+      },
+      "TOPOGRAPHY_INTRODUCTION": {
+        "TITLE": "Entering topography data",
+        "DESCRIPTION": "Chronometer equipment, flight times and lighting, number of smoke trails and observations",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "EQUIPO_LABEL": "Equipment",
+        "EQUIPO_PLACEHOLDER": "Select team",
+        "TIEMPO_VUELO_LABEL": "Flight time",
+        "TIEMPO_ILUMINACION_LABEL": "Lighting time",
+        "NUM_ESTELAS_LABEL": "No. smoke trails",
+        "NUM_ESTELAS_PLACEHOLDER": "0",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      },
+      "ACOUSTIC_LEVEL_INTRODUCTION": {
+        "TITLE": "Acoustic level data entry",
+        "DESCRIPTION": "Sound level meter equipment, coordinates, sound level meter-mouth distance, acoustic level and observations",
+        "SERIE_PLACEHOLDER": "Series",
+        "DISPARO_PLACEHOLDER": "Shot",
+        "CURRENT_SHOT_BTN": "Current shot",
+        "EQUIPO_LABEL": "Equipment",
+        "EQUIPO_PLACEHOLDER": "Select team",
+        "DISTANCIA_BOCA_LABEL": "Sound level meter-mouth distance",
+        "DISTANCIA_BOCA_PLACEHOLDER": "0",
+        "NIVEL_ACUSTICO_LABEL": "acoustic level",
+        "NIVEL_ACUSTICO_PLACEHOLDER": "0",
+        "X_SONOMETRO_LABEL": "Sound level meter",
+        "X_SONOMETRO_PLACEHOLDER": "x",
+        "Y_SONOMETRO_LABEL": "Sound level meter Y",
+        "Y_SONOMETRO_PLACEHOLDER": "AND",
+        "Z_SONOMETRO_LABEL": "Sound level meter Z",
+        "Z_SONOMETRO_PLACEHOLDER": "Z",
+        "OBSERVACIONES_LABEL": "Observations",
+        "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      }
+    },
+    "DIALOGS": {
+      "PAUSE_EXECUTION": {
+        "TITLE": "Pause test",
+        "TRIAL_NAME_PREFIX": "You are going to pause the test:",
+        "DESCRIPTION": "The test execution will be paused and you can resume it at another time.",
+        "CONFIRM": "Pause test",
+        "CANCEL": "Cancel"
+      },
+      "EQUIPMENT_SELECTOR": {
+        "TITLE": "Teams",
+        "BTN_LABEL": "Equipment selector",
+        "EQUIPMENT_HEADING": "Equipment",
+        "SELECTION_LIMIT": "Selection ({{max}} max)",
+        "COL_EQUIPMENT": "Teams",
+        "COL_SERIES": "series",
+        "COL_SHOTS": "Shooting",
+        "SERIES_PLACEHOLDER": "Select a series",
+        "SHOTS_PLACEHOLDER": "All shots in the series",
+        "SAVE": "Keep",
+        "BACK": "Return"
+      }
+    }
+  },
+  "HEADER_TOOLS": {
+    "TITLE": "Header tools",
+    "CURRENT_ROLES": "Current roles"
+  },
+  "ROLES": {
+    "INTAQALAB_ADMIN": "System Administrator",
+    "ADMINISTRATIVE": "Administrative",
+    "PLANNING_TECHNICIAN": "Planning Technician",
+    "UNIT_TECHNICIAN": "Unit Technician",
+    "INTAQALAB_VIEWER": "Read Only",
+    "HEAD_ARMAMENT_TRIALS": "Head of Armament Trials Area",
+    "INTAQALAB_TRIAL_ENGINEER": "Trials Engineer",
+    "INTAQALAB_TRIAL_ADMINISTRATIVE": "Trials Administrative",
+    "INTAQALAB_SHOOTING_LINE_HEAD": "Shooting Line Head",
+    "INTAQALAB_ARMAMENT_UNIT_HEAD": "Armament Unit Head",
+    "INTAQALAB_ARMAMENT_UNIT_TECHNICIAN": "Armament Unit Technician",
+    "INTAQALAB_MUNITIONS_UNIT_HEAD": "Munitions Unit Head",
+    "INTAQALAB_MUNITIONS_UNIT_TECHNICIAN": "Munitions Unit Technician",
+    "INTAQALAB_BALLISTICS_UNIT_HEAD": "Ballistics Unit Head",
+    "INTAQALAB_BALLISTICS_UNIT_TECHNICIAN": "Ballistics Unit Technician",
+    "INTAQALAB_PLANNING_ANALYSIS_HEAD": "Planning and Analysis Unit Head",
+    "INTAQALAB_TRIAL_CONSULTANT": "Trials Consultant",
+    "INTAQALAB_FIRE_TRIALS_UNIT_HEAD": "Fire Trials - Topography Unit Head",
+    "INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN": "Fire Trials - Topography Unit Technician"
   }
 }

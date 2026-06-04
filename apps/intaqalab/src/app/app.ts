@@ -4,7 +4,6 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FeatureFlagService } from '@intaqalab/config';
 import type { CommandTab } from '@intaqalab/core';
 import { AuthService, LoaderComponent, Role, TabsTopComponent } from '@intaqalab/core';
-import { TranslateService } from '@ngx-translate/core';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { EMPTY, catchError, filter, of, switchMap, tap } from 'rxjs';
 
@@ -23,8 +22,6 @@ import { CommandsTabService } from './services/tabs/commands-tab-service';
   styleUrl: './app.scss',
 })
 export class App {
-  readonly #translate = inject(TranslateService);
-
   readonly #tabsService = inject(CommandsTabService);
   readonly #breadcrumbService = inject(BreadcrumbService);
   readonly featureFlags = inject(FeatureFlagService);
@@ -84,10 +81,6 @@ export class App {
   activeRoutedView = signal<boolean>(true);
 
   constructor() {
-    this.#translate.addLangs(['es', 'en']);
-    this.#translate.setFallbackLang('es');
-    this.#translate.use('es');
-
     this.#router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(() => {

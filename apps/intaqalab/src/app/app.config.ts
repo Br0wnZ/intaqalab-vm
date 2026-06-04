@@ -30,6 +30,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { authInterceptor, provideAuth } from 'angular-auth-oidc-client';
 import { provideToastr } from 'ngx-toastr';
 
+import { LanguageService } from '@intaqalab/data-access';
 import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
 
@@ -89,12 +90,9 @@ export const Config: ApplicationConfig = {
         prefix: '/i18n/',
         suffix: '.json',
       }),
-      fallbackLang: 'en',
-      lang: 'en',
     }),
     provideAppInitializer(() => {
-      const translate = inject(TranslateService);
-      translate.use(translate.getBrowserLang() || 'en');
+      return inject(LanguageService).initializationPromise;
     }),
     provideAnimations(),
     provideToastr(),

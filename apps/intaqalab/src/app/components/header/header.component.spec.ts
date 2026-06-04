@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { FeatureFlagService, provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
+import { LanguageService } from '@intaqalab/data-access';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -27,8 +29,13 @@ function makeMockFeatureFlagService(tabsEnabled = true) {
   };
 }
 
-type MockFeatureFlagService = ReturnType<typeof makeMockFeatureFlagService>;
-
+function makeMockLanguageService() {
+  return {
+    currentLanguage: signal('es'),
+    supportedLanguages: ['es', 'en'],
+    setLanguage: vi.fn(),
+  };
+}
 interface SetupOptions {
   user?: MockUser | null;
   tabsEnabled?: boolean;
@@ -37,17 +44,19 @@ interface SetupOptions {
 async function setup({ user = { name: 'Test User' }, tabsEnabled = true }: SetupOptions = {}) {
   const mockAuthService = makeMockAuthService(user);
   const mockFeatureFlagService = makeMockFeatureFlagService(tabsEnabled);
+  const mockLanguageService = makeMockLanguageService();
   const events = userEvent.setup();
   const logoutSpy = vi.fn();
 
   const view = await render(HeaderComponent, {
-    componentImports: [MatIconModule, MatButtonModule, IntaIconComponent, HeaderToolsStub],
-    on: { logout: logoutSpy },
+    componentImports: [MatIconModule, MatButtonModule, MatMenuModule, IntaIconComponent, HeaderToolsStub],
     providers: [
       provideTestingEnvironment(),
       { provide: FeatureFlagService, useValue: mockFeatureFlagService },
       { provide: AuthService, useValue: mockAuthService },
+      { provide: LanguageService, useValue: mockLanguageService },
     ],
+    on: { logout: logoutSpy },
   });
 
   view.fixture.detectChanges();

@@ -735,31 +735,24 @@ export class ShootingConditionsComponent implements OnInit {
     return JSON.parse(JSON.stringify(series));
   }
 
-  #findSerieCondition(serie: SeriesAndShotsSerie, conditions: Serie[] | undefined): Serie | undefined {
-    if (!conditions?.length) return undefined;
-    return conditions.find((candidate) => candidate.seriesId === serie.id || candidate.seriesName === serie.name);
-  }
-
-  #findShotCondition(shotConditions: Shot[] | undefined, shotId: string, globalNumber: number): Shot | undefined {
-    if (!shotConditions?.length) return undefined;
-
-    const byId = shotConditions.find((shot) => shot.shotId === shotId);
-    if (byId) return byId;
-
-    const byGlobalNumber = shotConditions.find((shot) => shot.globalNumber === globalNumber);
-    if (byGlobalNumber) return byGlobalNumber;
-
-    return undefined;
-  }
-
   #buildSeriesFromStore(series: SeriesAndShotsSerie[], conditions?: Serie[]): Serie[] {
+    // Build flat maps from ALL condition shots regardless of how the backend groups them by serie.
+    // Backend may return one-serie-per-shot (seriesId === shotId), so per-serie grouping is unreliable.
+    const byId = new Map<string, Shot>();
+    const byGlobalNumber = new Map<number, Shot>();
+    conditions?.forEach((serieCond) =>
+      serieCond.shots.forEach((s) => {
+        byId.set(s.shotId, s);
+        if (!byGlobalNumber.has(s.globalNumber)) byGlobalNumber.set(s.globalNumber, s);
+      }),
+    );
+
     return series.map((serie) => {
-      const serieCondition = this.#findSerieCondition(serie, conditions);
       return {
         seriesId: serie.id,
         seriesName: serie.name,
         shots: serie.shots.map((shot) => {
-          const existing = this.#findShotCondition(serieCondition?.shots, shot.id, shot.globalNumber);
+          const existing = byId.get(shot.id) ?? byGlobalNumber.get(shot.globalNumber);
           if (existing)
             return {
               ...existing,

@@ -38,7 +38,7 @@ function mapShotRecord(shot: Record<string, unknown>): Shot {
     functioningHeight: (shot['functioningHeight'] as number) ?? 0,
     nominalSpeed: (shot['nominalSpeed'] as number) ?? 0,
     powderWeight: (shot['powderWeight'] as number) ?? 0,
-    projectWeight: (shot['projectWeight'] as number) ?? 0,
+    projectWeight: ((shot['projectWeight'] ?? shot['projectileWeight']) as number) ?? 0,
     observations: (shot['observations'] as string | null) ?? '',
   };
 }

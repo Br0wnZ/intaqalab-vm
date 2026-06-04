@@ -2246,5 +2246,30 @@
         "BACK": "Volver"
       }
     }
+  },
+  "HEADER_TOOLS": {
+    "TITLE": "Herramientas de cabecera",
+    "CURRENT_ROLES": "Roles actuales"
+  },
+  "ROLES": {
+    "INTAQALAB_ADMIN": "Administrador sistema",
+    "ADMINISTRATIVE": "Administrativo",
+    "PLANNING_TECHNICIAN": "Técnico planificación",
+    "UNIT_TECHNICIAN": "Técnico Unidad",
+    "INTAQALAB_VIEWER": "Solo Lectura",
+    "HEAD_ARMAMENT_TRIALS": "Jefatura Área de ensayos de armamento",
+    "INTAQALAB_TRIAL_ENGINEER": "Ingeniero ensayos",
+    "INTAQALAB_TRIAL_ADMINISTRATIVE": "Administrativo ensayos",
+    "INTAQALAB_SHOOTING_LINE_HEAD": "Jefe Linea Tiro",
+    "INTAQALAB_ARMAMENT_UNIT_HEAD": "Jefe Unidad Armamento",
+    "INTAQALAB_ARMAMENT_UNIT_TECHNICIAN": "Técnico Unidad Armamento",
+    "INTAQALAB_MUNITIONS_UNIT_HEAD": "Jefe Unidad Municiones",
+    "INTAQALAB_MUNITIONS_UNIT_TECHNICIAN": "Técnico Unidad Municiones",
+    "INTAQALAB_BALLISTICS_UNIT_HEAD": "Jefe Unidad Balística",
+    "INTAQALAB_BALLISTICS_UNIT_TECHNICIAN": "Técnico Unidad Balística",
+    "INTAQALAB_PLANNING_ANALYSIS_HEAD": "Jefe Unidad Planificación y Análisis",
+    "INTAQALAB_TRIAL_CONSULTANT": "Consultor Ensayos",
+    "INTAQALAB_FIRE_TRIALS_UNIT_HEAD": "Jefe Unidad de Ensayos de fuego - Topografía",
+    "INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN": "Técnico Unidad Ensayos de fuego - Topografía"
   }
 }
