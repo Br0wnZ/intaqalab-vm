@@ -361,9 +361,25 @@ export class Munitions {
       seriesId: series.seriesId,
       seriesName: series.seriesName,
       configurations: series.configurations.map((config): Configuration => {
-        const components = config.components.map((comp) =>
-          this.#mapComponentToDetail(comp, componentTypes, denominations, fuseWorkingModes),
-        );
+        let powderCount = 0;
+        const components = config.components.map((comp) => {
+          const detail = this.#mapComponentToDetail(comp, componentTypes, denominations, fuseWorkingModes);
+          const typeNormalized = detail.type.type
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          if (typeNormalized === 'polvora' || typeNormalized.startsWith('polvora-')) {
+            powderCount++;
+            if (powderCount > 1) {
+              detail.type.type = `polvora-${powderCount - 1}`;
+              detail.type.label = `Pólvora ${powderCount - 1}`;
+            } else {
+              detail.type.type = 'pólvora';
+              detail.type.label = 'Pólvora';
+            }
+          }
+          return detail;
+        });
 
         const denomination = this.#resolveDenominationId(config.denomination?.id, denominations);
 

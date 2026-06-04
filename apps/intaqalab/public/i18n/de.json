@@ -26,5 +26,12 @@
     "INTAQALAB_TRIAL_CONSULTANT": "Prüfungsberater",
     "INTAQALAB_FIRE_TRIALS_UNIT_HEAD": "Leiter der Brandprüfungen - Topographieeinheit",
     "INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN": "Techniker der Brandprüfungen - Topographieeinheit"
+  },
+  "TRIAL_PLANNING": {
+    "MUNITIONS": {
+      "CONFIGURATION_FORM": {
+        "POWDER_INDEX": "Pulver {{index}}"
+      }
+    }
   }
 }

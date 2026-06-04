@@ -586,6 +586,7 @@
         "SELECT_ALL_SHOTS": "Seleccionar todos",
         "SEARCH_PLACEHOLDER": "Buscar denominación",
         "NO_RESULTS": "Sin resultados",
+        "POWDER_INDEX": "Pólvora {{index}}",
         "OPTIONS": {
           "ALL": "Todos",
           "SOME": "Algunos",

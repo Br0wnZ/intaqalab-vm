@@ -136,7 +136,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                   (click)="$event.stopPropagation()"
                   (keydown)="$event.stopPropagation()"
                 >
-                  Seleccionar todos
+                  {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SELECT_ALL_SHOTS' | translate }}
                 </mat-checkbox>
               </div>
               @for (shot of shots(); track shot.id) {
@@ -208,7 +208,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
           <mat-select
             multiple
             [id]="'selectedComponents-' + configIndex()"
-            [value]="selectedComponents()"
+            [value]="selectableComponentsSelected()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR_PLACEHOLDER' | translate"
             (selectionChange)="onComponentsChange($event.value)"
           >
@@ -219,12 +219,32 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
         </mat-form-field>
 
         <!-- Chips for selected components -->
-        @if (selectedComponents().length > 0) {
+        @if (selectedComponents().length > 0 || powderTabs().length > 0) {
           <div class="flex flex-wrap gap-2 mt-3">
             <mat-chip-set>
               @for (component of selectedComponents(); track component) {
-                <mat-chip [removable]="true" (removed)="removeComponent(component)">
-                  {{ component | titlecase }}
+                @if (
+                  component !== 'pólvora' && component !== 'polvora' && !component.toLowerCase().startsWith('polvora-')
+                ) {
+                  <mat-chip [removable]="true" (removed)="removeComponent(component)">
+                    {{ component | titlecase }}
+                    <button matChipRemove>
+                      <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
+                    </button>
+                  </mat-chip>
+                }
+              }
+              @if (hasMainPowder()) {
+                <mat-chip [removable]="true" (removed)="removeMainPowder()">
+                  {{ 'pólvora' | titlecase }}
+                  <button matChipRemove>
+                    <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
+                  </button>
+                </mat-chip>
+              }
+              @for (powder of powderTabs(); track powder.id) {
+                <mat-chip [removable]="true" (removed)="removePowder(powder.detail.type.type)">
+                  {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.POWDER_INDEX' | translate: { index: powder.index } }}
                   <button matChipRemove>
                     <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
                   </button>
@@ -239,21 +259,25 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
       @if (selectedComponents().length > 0) {
         <mat-tab-group class="mt-4">
           @for (component of selectedComponents(); track component) {
-            <mat-tab [label]="component | titlecase">
-              <inta-component-detail-form
-                [detail]="getComponentDetail(component)"
-                [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
-                (detailChange)="onComponentDetailChange(component, $event)"
-                (addPowder)="onAddPowder(component)"
-              />
-            </mat-tab>
+            @if (!component.toLowerCase().startsWith('polvora-')) {
+              <mat-tab [label]="component | titlecase">
+                <inta-component-detail-form
+                  [detail]="getComponentDetail(component)"
+                  [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
+                  (detailChange)="onComponentDetailChange(component, $event)"
+                  (addPowder)="onAddPowder(component)"
+                />
+              </mat-tab>
+            }
           }
           @for (powder of powderTabs(); track powder.id) {
-            <mat-tab [label]="'Pólvora ' + powder.index">
+            <mat-tab
+              [label]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.POWDER_INDEX' | translate: { index: powder.index }"
+            >
               <inta-component-detail-form
                 [detail]="powder.detail"
                 [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
-                (detailChange)="onPowderDetailChange(powder.id, $event)"
+                (detailChange)="onPowderDetailChange(powder.detail.type.type, $event)"
                 (addPowder)="onAddPowder('polvora')"
               />
             </mat-tab>
@@ -300,6 +324,13 @@ export class ConfigurationFormComponent {
   readonly denominationSearchTerm = signal('');
 
   readonly selectedComponents = computed(() => this.formModel().selectedComponents ?? []);
+  readonly selectableComponentsSelected = computed(() => {
+    const allowed = this.componentTypes().map((t) => t.label.toLowerCase());
+    return this.selectedComponents().filter((c) => allowed.includes(c.toLowerCase()));
+  });
+  readonly hasMainPowder = computed(() => {
+    return this.selectedComponents().some((c) => c.toLowerCase() === 'polvora' || c.toLowerCase() === 'pólvora');
+  });
   readonly allShotsSelected = computed(() => {
     const shots = this.shots();
     const assigned = this.formModel().assignedShotIds ?? [];
@@ -326,7 +357,26 @@ export class ConfigurationFormComponent {
 
   readonly isConditioningEnabled = computed(() => hasReconditioning(this.formModel().reconditioning));
 
-  readonly powderTabs = signal<{ id: string; index: number; detail: ComponentDetail }[]>([]);
+  readonly powderTabs = computed(() => {
+    const components = this.formModel().components ?? [];
+    const powders = components.filter((c) => {
+      const type = c.type.type
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      return type.startsWith('polvora-');
+    });
+
+    return powders.map((c, index) => {
+      const match = c.type.type.match(/\d+/);
+      const idx = match ? parseInt(match[0], 10) : index + 1;
+      return {
+        id: c.id || c.type.type,
+        index: idx,
+        detail: c,
+      };
+    });
+  });
 
   readonly conditioningData = computed<ReconditioningData>(() => {
     return this.formModel().reconditioning ?? {};
@@ -430,22 +480,128 @@ export class ConfigurationFormComponent {
         existingComponents.push(detail);
       }
     }
-    const filteredComponents = existingComponents.filter((d) => components.includes(d.type.type.toLowerCase()));
+
+    const hasPowder = components.some((c) => c.toLowerCase() === 'polvora' || c.toLowerCase() === 'pólvora');
+    const filteredComponents = existingComponents.filter((d) => {
+      const typeNormalized = d.type.type
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (typeNormalized.startsWith('polvora-')) {
+        return hasPowder;
+      }
+      return components.includes(d.type.type.toLowerCase());
+    });
+
+    const updatedSelectedComponents = [...components];
+    if (hasPowder) {
+      const extraPowders = existingComponents
+        .filter((d) => {
+          const typeNormalized = d.type.type
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          return typeNormalized.startsWith('polvora-');
+        })
+        .map((d) => d.type.type.toLowerCase());
+
+      updatedSelectedComponents.push(...extraPowders);
+    }
 
     this.formModel.update((c) => ({
       ...c,
-      selectedComponents: components,
+      selectedComponents: updatedSelectedComponents,
       components: filteredComponents,
     }));
     this.emitChanges();
   }
 
+  removeMainPowder(): void {
+    this.removeComponent('pólvora');
+  }
+
+  removePowder(powderType: string): void {
+    this.formModel.update((current) => {
+      const remainingComponents = current.components.filter((c) => c.type.type !== powderType);
+
+      let powderCount = 0;
+      const updatedComponents = remainingComponents.map((c) => {
+        const type = c.type.type
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        if (type.startsWith('polvora-')) {
+          powderCount++;
+          return {
+            ...c,
+            type: {
+              ...c.type,
+              type: `polvora-${powderCount}`,
+              label: `Pólvora ${powderCount}`,
+            },
+          };
+        }
+        return c;
+      });
+
+      const remainingSelected = (current.selectedComponents ?? []).filter((c) => c !== powderType);
+      const nonPowderSelected = remainingSelected.filter((c) => {
+        const type = c
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        return type !== 'polvora' && type !== 'pólvora' && !type.startsWith('polvora-');
+      });
+
+      const hasMain = remainingSelected.some((c) => c.toLowerCase() === 'polvora' || c.toLowerCase() === 'pólvora');
+
+      const newSelectedComponents = [...nonPowderSelected];
+      if (hasMain) {
+        newSelectedComponents.push('pólvora');
+        for (let i = 1; i <= powderCount; i++) {
+          newSelectedComponents.push(`polvora-${i}`);
+        }
+      }
+
+      return {
+        ...current,
+        selectedComponents: newSelectedComponents,
+        components: updatedComponents,
+      };
+    });
+    this.emitChanges();
+  }
+
   removeComponent(component: string): void {
-    this.formModel.update((current) => ({
-      ...current,
-      selectedComponents: (current.selectedComponents ?? []).filter((c) => c !== component),
-      components: current.components.filter((d) => d.type.type.toLowerCase() !== component),
-    }));
+    this.formModel.update((current) => {
+      const isPowder = component.toLowerCase() === 'pólvora' || component.toLowerCase() === 'polvora';
+
+      let remainingComponents = current.components;
+      let remainingSelected = current.selectedComponents ?? [];
+
+      if (isPowder) {
+        remainingComponents = current.components.filter((c) => {
+          const type = c.type.type
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          return type !== 'polvora' && type !== 'pólvora' && !type.startsWith('polvora-');
+        });
+        remainingSelected = remainingSelected.filter(
+          (c) =>
+            c.toLowerCase() !== 'polvora' && c.toLowerCase() !== 'pólvora' && !c.toLowerCase().startsWith('polvora-'),
+        );
+      } else {
+        remainingComponents = current.components.filter((d) => d.type.type.toLowerCase() !== component);
+        remainingSelected = remainingSelected.filter((c) => c !== component);
+      }
+
+      return {
+        ...current,
+        selectedComponents: remainingSelected,
+        components: remainingComponents,
+      };
+    });
     this.emitChanges();
   }
 
@@ -475,17 +631,59 @@ export class ConfigurationFormComponent {
 
   onAddPowder(_componentType: string): void {
     void _componentType;
-    const currentPowders = this.powderTabs();
-    const nextIndex = currentPowders.length + 1;
-    const newPowder = {
-      id: `powder-${Date.now()}`,
-      index: nextIndex,
-      detail: createEmptyComponentDetail(`polvora-${nextIndex}`),
-    };
-    this.powderTabs.update((powders) => [...powders, newPowder]);
+    const currentComponents = this.formModel().components ?? [];
+
+    const powders = currentComponents.filter((c) => {
+      const type = c.type.type
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      return type.startsWith('polvora-');
+    });
+
+    const nextIndex = powders.length + 1;
+    const typeValue = `polvora-${nextIndex}`;
+
+    const newPowderDetail = createEmptyComponentDetail(typeValue);
+
+    const matchedType = this.componentTypes().find(
+      (t) => t.label.toLowerCase() === 'pólvora' || t.label.toLowerCase() === 'polvora',
+    );
+    if (matchedType) {
+      newPowderDetail.type = {
+        id: matchedType.id,
+        type: typeValue,
+        label: `Pólvora ${nextIndex}`,
+      };
+    }
+
+    const updatedSelected = [...(this.formModel().selectedComponents ?? [])];
+    if (!updatedSelected.includes(typeValue)) {
+      updatedSelected.push(typeValue);
+    }
+
+    this.formModel.update((current) => ({
+      ...current,
+      selectedComponents: updatedSelected,
+      components: [...current.components, newPowderDetail],
+    }));
+
+    this.emitChanges();
   }
 
-  onPowderDetailChange(powderId: string, detail: ComponentDetail): void {
-    this.powderTabs.update((powders) => powders.map((p) => (p.id === powderId ? { ...p, detail } : p)));
+  onPowderDetailChange(powderType: string, detail: ComponentDetail): void {
+    this.formModel.update((current) => {
+      const updatedComponents = current.components.map((c) => {
+        if (c.type.type === powderType) {
+          return detail;
+        }
+        return c;
+      });
+      return {
+        ...current,
+        components: updatedComponents,
+      };
+    });
+    this.emitChanges();
   }
 }

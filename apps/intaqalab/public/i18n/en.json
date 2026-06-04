@@ -585,6 +585,7 @@
         "SELECT_ALL_SHOTS": "Select all",
         "SEARCH_PLACEHOLDER": "Search denomination",
         "NO_RESULTS": "No results",
+        "POWDER_INDEX": "Powder {{index}}",
         "OPTIONS": {
           "ALL": "All",
           "SOME": "Some",
