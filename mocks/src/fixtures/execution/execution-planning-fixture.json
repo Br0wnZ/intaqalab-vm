@@ -7,7 +7,7 @@
   "planningUser": { "id": "b01a0e23-da71-3a08-9893-11b8b2dfb069", "name": "Usuario CET 1" },
   "executionDate": "2026-03-10",
   "observations": "Se requiere control de humedad antes del ensayo.",
-  "requirements": "Temperatura controlada; equipo calibrado.",
+  "requirements": "",
   "additionalInfo": "Priorizar muestras con lote anterior.",
   "dateControl": {
     "maxEmissionDates": 20,

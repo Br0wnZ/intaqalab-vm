@@ -8,7 +8,7 @@
   "hypochelometricReviewBefore": false,
   "hypochelometricReviewAfter": false,
   "observations": "Se requiere control de humedad antes del ensayo.",
-  "requirements": "Temperatura controlada; equipo calibrado.",
+  "requirements": "",
   "additionalInfo": "Priorizar muestras con lote anterior.",
   "dateControl": {
     "maxEmissionDates": 3,

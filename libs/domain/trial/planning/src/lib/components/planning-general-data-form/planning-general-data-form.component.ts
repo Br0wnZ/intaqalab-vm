@@ -28,6 +28,11 @@ export type PlanningGeneralData = {
   percentageEndTrial: number | string;
   daysSignReport: number | string;
 };
+
+const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
+- Por cualquier otra circunstancia que afecte a la seguridad o validez de los resultados, según criterio del Jefe del Área de Ensayos.
+- A petición del cliente.`;
+
 @Component({
   selector: 'inta-planning-general-data-form',
   imports: [
@@ -387,7 +392,7 @@ export class PlanningGeneralDataFormComponent {
     specimen: [],
     planningUser: '',
     observations: '',
-    requeriments: '',
+    requeriments: DEFAULT_REQUERIMENTS,
     additionalInfo: '',
     maxEmissionDates: 20,
     percentageTechnicalUnits: 40,
@@ -567,7 +572,7 @@ export class PlanningGeneralDataFormComponent {
       })),
       planningUser: data.planningUser.id,
       observations: data.observations,
-      requeriments: data.requirements,
+      requeriments: data.requirements || DEFAULT_REQUERIMENTS,
       additionalInfo: data.additionalInfo,
       maxEmissionDates: String(data.dateControl.maxEmissionDates),
       percentageTechnicalUnits: String(data.dateControl.percentageTechnicalUnits),
