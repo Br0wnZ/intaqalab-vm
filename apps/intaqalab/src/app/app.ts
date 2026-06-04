@@ -8,7 +8,6 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { EMPTY, catchError, filter, of, switchMap, tap } from 'rxjs';
 
 import { environment } from '../environments/environment';
-
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { HeaderComponent } from './components/header/header.component';
 import { MenuLeftComponent } from './components/menu-left/menu-left.component';

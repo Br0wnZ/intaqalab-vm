@@ -25,12 +25,12 @@ import {
   provideHeaderWidget,
   successToastInterceptor,
 } from '@intaqalab/core';
+import { LanguageService } from '@intaqalab/data-access';
 import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { authInterceptor, provideAuth } from 'angular-auth-oidc-client';
 import { provideToastr } from 'ngx-toastr';
 
-import { LanguageService } from '@intaqalab/data-access';
 import { environment } from '../environments/environment';
 import { appRoutes } from './app.routes';
 
