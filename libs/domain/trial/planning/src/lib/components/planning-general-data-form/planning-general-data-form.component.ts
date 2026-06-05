@@ -277,7 +277,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               <label for="maxDaysReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_LABEL' | translate }}
               </label>
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
                   id="maxDaysReport"
@@ -294,7 +294,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               <label for="percentageTechnicalUnits" class="flex items-end text-xs text-gray-600 mb-2 h-8">
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_LABEL' | translate }}
               </label>
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
                   id="percentageTechnicalUnits"
@@ -320,7 +320,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               <label for="percentageEndTrial" class="flex items-end text-xs text-gray-600 mb-2 h-8">
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL' | translate }}
               </label>
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <div class="flex items-center justify-between w-full">
                   <input
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
@@ -346,7 +346,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               <label for="daysSignReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_LABEL' | translate }}
               </label>
-              <mat-form-field appearance="outline" class="w-full">
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <input
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
                   id="daysSignReport"

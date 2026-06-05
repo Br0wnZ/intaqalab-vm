@@ -64,16 +64,18 @@
         textarea.mat-mdc-form-field-textarea-control
       )
       textarea.mat-mdc-form-field-textarea-control {
-      @apply text-base text-gray-900;
+      @apply text-gray-900;
       min-height: 96px;
+      font-size: var(--text-sm) !important;
     }
 
     .mat-mdc-text-field-wrapper.mdc-text-field.mdc-text-field--outlined:has(
         textarea.mat-mdc-form-field-textarea-control
       )
       textarea.mat-mdc-form-field-textarea-control::placeholder {
-      @apply text-base text-gray-500;
+      @apply text-gray-500;
       opacity: 1;
+      font-size: var(--text-sm) !important;
     }
   }
 }

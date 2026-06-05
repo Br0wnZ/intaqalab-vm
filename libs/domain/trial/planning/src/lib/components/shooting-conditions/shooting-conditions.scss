@@ -5,8 +5,8 @@
     th.mat-mdc-header-cell,
     td.mat-mdc-cell {
       width: 8rem !important;
-      min-width: 8rem !important;
-      max-width: 8rem !important;
+      min-width: 9.5rem !important;
+      max-width: 9.5rem !important;
       padding: 0.25rem !important;
       vertical-align: middle;
       font-size: 0.75rem;
@@ -20,10 +20,6 @@
       max-width: 5rem !important;
       padding-left: 1rem !important;
     }
-  }
-
-  ::ng-deep .mat-mdc-form-field {
-    width: 7rem !important;
   }
 
   ::ng-deep .mat-mdc-select-panel {
