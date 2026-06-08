@@ -140,7 +140,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 </mat-checkbox>
               </div>
               @for (shot of shots(); track shot.id) {
-                <mat-option [value]="shot.id">{{ shot.globalNumber }}</mat-option>
+                <mat-option [value]="shot.id" [disabled]="excludeShotIds().includes(shot.id)">{{ shot.globalNumber }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -315,6 +315,7 @@ export class ConfigurationFormComponent {
   readonly config = input.required<Configuration>();
   readonly configIndex = input.required<number>();
   readonly shots = input<Shot[]>([]);
+  readonly excludeShotIds = input<string[]>([]);
   readonly configChange = output<Configuration>();
 
   readonly componentTypes = this.#munitionsStore.componentTypes;
@@ -331,15 +332,21 @@ export class ConfigurationFormComponent {
   readonly hasMainPowder = computed(() => {
     return this.selectedComponents().some((c) => c.toLowerCase() === 'polvora' || c.toLowerCase() === 'pólvora');
   });
-  readonly allShotsSelected = computed(() => {
-    const shots = this.shots();
-    const assigned = this.formModel().assignedShotIds ?? [];
-    return shots.length > 0 && shots.every((s) => assigned.includes(s.id));
+  readonly eligibleShots = computed(() => {
+    const excluded = this.excludeShotIds();
+    return this.shots().filter((s) => !excluded.includes(s.id));
   });
-  readonly someShotsSelected = computed(() => {
-    const shots = this.shots();
+
+  readonly allShotsSelected = computed(() => {
+    const eligible = this.eligibleShots();
     const assigned = this.formModel().assignedShotIds ?? [];
-    return assigned.length > 0 && !shots.every((s) => assigned.includes(s.id));
+    return eligible.length > 0 && eligible.every((s) => assigned.includes(s.id));
+  });
+
+  readonly someShotsSelected = computed(() => {
+    const eligible = this.eligibleShots();
+    const assigned = this.formModel().assignedShotIds ?? [];
+    return assigned.length > 0 && !eligible.every((s) => assigned.includes(s.id));
   });
   readonly filteredDenominations = computed(() => {
     const term = this.#normalizeText(this.denominationSearchTerm());
@@ -388,9 +395,10 @@ export class ConfigurationFormComponent {
       const shots = this.shots();
       if (shots.length > 0 && (!config.assignedShotIds || config.assignedShotIds.length === 0)) {
         untracked(() => {
+          const eligibleIds = this.eligibleShots().map((s) => s.id);
           this.formModel.update((current) => ({
             ...current,
-            assignedShotIds: shots.map((s) => s.id),
+            assignedShotIds: eligibleIds.length > 0 ? eligibleIds : null,
           }));
           this.emitChanges();
         });
@@ -432,7 +440,7 @@ export class ConfigurationFormComponent {
   }
 
   onSelectAllShots(checked: boolean): void {
-    const ids = checked ? this.shots().map((s) => s.id) : [];
+    const ids = checked ? this.eligibleShots().map((s) => s.id) : [];
     this.formModel.update((current) => ({
       ...current,
       assignedShotIds: ids.length > 0 ? ids : null,

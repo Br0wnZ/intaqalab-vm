@@ -155,6 +155,67 @@ describe('SeriePanelComponent', () => {
 
       expect(seriesSignal()[0].configurations.length).toBe(3);
     });
+
+    it('should disable the add button when all shots are assigned configurations', async () => {
+      const shots = [
+        { id: 'shot-1', globalNumber: 1, observation: '' },
+        { id: 'shot-2', globalNumber: 2, observation: '' },
+      ];
+      const serieWithAllShotsAssigned: Serie = {
+        ...defaultSerie,
+        configurations: [
+          { ...createEmptyConfiguration(), assignedShotIds: ['shot-1'] },
+          { ...createEmptyConfiguration(), assignedShotIds: ['shot-2'] },
+        ],
+      };
+
+      await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          serie: serieWithAllShotsAssigned,
+          serieIndex: 0,
+          seriesSignal: signal([serieWithAllShotsAssigned]),
+          shots,
+        },
+      });
+
+      const buttons = screen.getAllByRole('button');
+      const addButton = buttons.find((btn) =>
+        btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
+      );
+      expect(addButton).toBeDisabled();
+    });
+
+    it('should NOT disable the add button when not all shots are assigned configurations', async () => {
+      const shots = [
+        { id: 'shot-1', globalNumber: 1, observation: '' },
+        { id: 'shot-2', globalNumber: 2, observation: '' },
+      ];
+      const serieWithSomeShotsAssigned: Serie = {
+        ...defaultSerie,
+        configurations: [
+          { ...createEmptyConfiguration(), assignedShotIds: ['shot-1'] },
+        ],
+      };
+
+      await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          serie: serieWithSomeShotsAssigned,
+          serieIndex: 0,
+          seriesSignal: signal([serieWithSomeShotsAssigned]),
+          shots,
+        },
+      });
+
+      const buttons = screen.getAllByRole('button');
+      const addButton = buttons.find((btn) =>
+        btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
+      );
+      expect(addButton).not.toBeDisabled();
+    });
   });
 
   describe('Configuration updates', () => {

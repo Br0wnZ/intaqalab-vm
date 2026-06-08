@@ -48,6 +48,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
           <button
             mat-flat-button
             class="!h-7 !min-h-0 !px-2 !text-xs flex items-center gap-1"
+            [disabled]="allShotsAssigned()"
             (click)="onAddMunition(); $event.stopPropagation()"
           >
             <ui-inta-icon name="plus" size="xs" />
@@ -84,6 +85,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
               [config]="config"
               [configIndex]="configIdx"
               [shots]="shots()"
+              [excludeShotIds]="getExcludeShotIds(configIdx)"
               (configChange)="onConfigChange(configIdx, $event)"
             />
           </mat-expansion-panel>
@@ -133,6 +135,19 @@ export class SeriePanelComponent {
   readonly deleteConfiguration = output<number>();
 
   readonly isExpanded = linkedSignal(() => this.expanded());
+
+  readonly allShotsAssigned = computed(() => {
+    const shots = this.shots();
+    if (shots.length === 0) return false;
+    const assigned = new Set(this.configurations().flatMap((c) => c.assignedShotIds ?? []));
+    return shots.every((s) => assigned.has(s.id));
+  });
+
+  getExcludeShotIds(configIdx: number): string[] {
+    return this.configurations()
+      .filter((_, idx) => idx !== configIdx)
+      .flatMap((c) => c.assignedShotIds ?? []);
+  }
 
   onAddMunition(): void {
     const serieIdx = this.serieIndex();
