@@ -1,4 +1,5 @@
-import { Directive, HostListener } from '@angular/core';
+import type { OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 
 /**
  * Prevents negative values in number inputs.
@@ -11,7 +12,19 @@ import { Directive, HostListener } from '@angular/core';
   selector: 'input[libNoNegativeValues]',
   standalone: true,
 })
-export class NoNegativeValuesDirective {
+export class NoNegativeValuesDirective implements OnInit {
+  readonly #el = inject(ElementRef<HTMLInputElement>);
+
+  public ngOnInit(): void {
+    const input = this.#el.nativeElement;
+    if (input.type === 'number') {
+      const currentMin = input.getAttribute('min');
+      if (!currentMin || parseFloat(currentMin) < 0) {
+        input.min = '0';
+      }
+    }
+  }
+
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === '-' || event.key === '+') {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
@@ -14,18 +15,44 @@ import { NoNegativeValuesDirective } from './no-negative-values.directive';
 })
 class TestComponent {}
 
+@Component({
+  standalone: true,
+  imports: [NoNegativeValuesDirective],
+  template: `
+    <input id="num-default" type="number" libNoNegativeValues />
+    <input id="num-min-5" type="number" libNoNegativeValues min="5" />
+    <input id="num-min-neg" type="number" libNoNegativeValues min="-3" />
+  `,
+})
+class TestNumberComponent {}
+
 describe('NoNegativeValuesDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   let inputEl: HTMLInputElement;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestComponent],
+      imports: [TestComponent, TestNumberComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     inputEl = fixture.nativeElement.querySelector('input');
+  });
+
+  it('should set min="0" on number input by default or if current min is negative', () => {
+    const numFixture = TestBed.createComponent(TestNumberComponent);
+    numFixture.detectChanges();
+    const compiled = numFixture.nativeElement;
+
+    const defaultInput = compiled.querySelector('#num-default') as HTMLInputElement;
+    expect(defaultInput.getAttribute('min')).toBe('0');
+
+    const min5Input = compiled.querySelector('#num-min-5') as HTMLInputElement;
+    expect(min5Input.getAttribute('min')).toBe('5');
+
+    const minNegInput = compiled.querySelector('#num-min-neg') as HTMLInputElement;
+    expect(minNegInput.getAttribute('min')).toBe('0');
   });
 
   it('should block "-" and "+" keydown events', () => {
