@@ -1,13 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { disabled, form } from '@angular/forms/signals';
+import { Component, computed, inject, isDevMode, signal } from '@angular/core';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LanguageService, type SupportedLanguage } from '@intaqalab/data-access';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../auth-service';
 import { Role } from '../models/role.model';
 
@@ -20,6 +20,8 @@ import { Role } from '../models/role.model';
     MatFormFieldModule,
     MatInputModule,
     TranslateModule,
+    IntaSignalSelectComponent,
+    FormField,
   ],
   template: `
     <div class="relative">
@@ -30,51 +32,44 @@ import { Role } from '../models/role.model';
       } @else {
         <div class="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl p-6 w-96">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">{{'HEADER_TOOLS.TITLE' | translate}}</h2>
+            <h2 class="text-lg font-semibold text-gray-800">{{ 'HEADER_TOOLS.TITLE' | translate }}</h2>
             <button type="button" mat-icon-button class="hover:bg-gray-100 -mr-2" (click)="hidden.set(true)">
-              <ui-inta-icon name="close" [label]="'HEADER_TOOLS.TITLE' | translate" size="xl" />
+              <ui-inta-icon name="close" size="xl" [label]="'HEADER_TOOLS.TITLE' | translate" />
             </button>
           </div>
 
           <div class="space-y-6">
             <div class="mb-4">
-              <label for="currentRole" class="block text-sm font-medium text-gray-700 mb-2">{{'HEADER_TOOLS.CURRENT_ROLES' | translate}}</label>
+              <label for="currentRole" class="block text-sm font-medium text-gray-700 mb-2">
+                {{ 'HEADER_TOOLS.CURRENT_ROLES' | translate }}
+              </label>
               <ul>
-
-                @for(userRole of currentUserRoles(); track userRole){
+                @for (userRole of currentUserRoles(); track userRole) {
                   <li>{{ 'ROLES.' + userRole | translate }}</li>
                 }
               </ul>
-              <!-- <mat-form-field appearance="outline" class="w-full">
-                <input id="currentRole" matInput type="text" [formField]="form.currentRole" />
-              </mat-form-field> -->
             </div>
 
-            <!-- <ui-inta-signal-select
-              appearance="outline"
-              [id]="'trial-status'"
-              [valueKey]="'id'"
-              [labelKey]="'label'"
-              [formField]="form.roles"
-              [label]="'Seleccionar Roles'"
-              [placeholder]="'Elige uno o más roles'"
-              [options]="userRoles()"
-              [multiple]="true"
-            /> -->
+            @if (isDev) {
+              <div class="border-t border-gray-200 pt-4">
+                <ui-inta-signal-select
+                  appearance="outline"
+                  [id]="'trial-status'"
+                  [valueKey]="'id'"
+                  [labelKey]="'label'"
+                  [formField]="form.roles"
+                  [label]="'Seleccionar Roles'"
+                  [placeholder]="'Elige uno o más roles'"
+                  [options]="userRoles()"
+                  [multiple]="true"
+                />
 
-            <!-- <div class="flex justify-end py-2">
-              <button mat-flat-button color="primary" (click)="send()">Cambiar permisos</button>
-            </div> -->
+                <div class="flex justify-end mt-3">
+                  <button mat-flat-button color="primary" (click)="send()">Cambiar permisos</button>
+                </div>
+              </div>
+            }
           </div>
-          <!-- <mat-form-field appearance="outline">
-            <mat-select [value]="languageService.currentLanguage()" (selectionChange)="changeLanguage($event.value)">
-              @for (lang of languageService.supportedLanguages; track $index) {
-                <mat-option [value]="lang">
-                  <span class="flex items-center gap-2">{{ getFlag(lang) }} {{ getLanguageName(lang) }}</span>
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field> -->
         </div>
       }
     </div>
@@ -84,13 +79,22 @@ import { Role } from '../models/role.model';
 export class HeaderToolsComponent {
   readonly languageService = inject(LanguageService);
   readonly hidden = signal(true);
+  readonly isDev = isDevMode();
 
   readonly #authService = inject(AuthService);
+  readonly #translate = inject(TranslateService);
 
   readonly roles = Object.values(Role);
 
   readonly currentUserRoles = this.#authService.userRoles;
-  readonly userRoles = computed(() => this.roles.map((role) => ({ id: role, label: role })));
+  readonly userRoles = computed(() => {
+    // Access languageService.currentLanguage() to make this computed react when language changes
+    this.languageService.currentLanguage();
+    return this.roles.map((role) => ({
+      id: role,
+      label: this.#translate.instant('ROLES.' + role),
+    }));
+  });
 
   readonly formModel = signal({
     currentRole: '',
@@ -108,11 +112,13 @@ export class HeaderToolsComponent {
   constructor() {
     const sessionPermissions = sessionStorage.getItem('permissions');
     if (sessionPermissions !== null) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.#authService.setRoles(sessionPermissions.split(',') as any);
+      const roles = sessionPermissions ? (sessionPermissions.split(',') as Role[]) : [];
+      this.#authService.setRoles(roles);
     }
-    this.formModel().currentRole = this.#authService.userRoles().join(', ');
-    this.formModel().roles = this.#authService.userRoles();
+    this.formModel.set({
+      currentRole: this.#authService.userRoles().join(', '),
+      roles: this.#authService.userRoles(),
+    });
   }
 
   getFlag(lang: SupportedLanguage): string {

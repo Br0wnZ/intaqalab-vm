@@ -34,14 +34,14 @@ export class AuthService {
   setRawRoles(rawroles: string[]) {
     const rolesvalidByFormat = onlyUpperCases(rawroles);
     console.log('raw values:', rolesvalidByFormat);
-    const rolesToAdd :Role[] = [];
-    for ( const rawRole of rawroles){
-      const role = parseRol(rawRole); 
-      if(role !== null){
-        rolesToAdd.push(role)
+    const rolesToAdd: Role[] = [];
+    for (const rawRole of rawroles) {
+      const role = parseRol(rawRole);
+      if (role !== null) {
+        rolesToAdd.push(role);
       }
     }
-    console.log('setting roles to', rolesToAdd)
+    console.log('setting roles to', rolesToAdd);
     this.userRoles.set(rolesToAdd);
   }
 
@@ -95,12 +95,15 @@ function onlyUpperCases(arr: string[]): string[] {
   return arr.filter((str) => str.length > 0 && str === str.toUpperCase());
 }
 
-
 function parseRol(value: string): Role | null {
   if (Object.keys(Role).includes(value as Role)) {
     return value as Role;
   } else {
-    console.warn(`Unknown role: ${value}, skipping it`)
-    return null
+    console.warn(`Unknown role: ${value}, skipping it`);
+    return null;
   }
+}
+
+export function injectCurrentUserRole() {
+  return inject(AuthService).userRoles.asReadonly();
 }
