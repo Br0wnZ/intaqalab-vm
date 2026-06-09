@@ -41,7 +41,7 @@ const DEFAULT_COLUMNS = [
 
 const SCHEDULER_COLUMNS = [
   'trialNumber',
-  'observations',
+  'description',
   'fireTrialType',
   'client',
   'requestedDate',
