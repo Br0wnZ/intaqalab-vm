@@ -624,9 +624,11 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                         </label>
                         <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                           <textarea
-                            placeholder="XX"
                             matInput
                             rows="2"
+                            [placeholder]="
+                              'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.OBSERVATIONS_LABEL' | translate
+                            "
                             [id]="'component-reconditioningObservations-' + component"
                             [value]="getComponentData(component).reconditioning?.observations ?? ''"
                             (input)="
@@ -645,7 +647,11 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
       </mat-dialog-content>
 
       <mat-dialog-actions class="!flex !justify-center !gap-3 !px-6 !pb-6 !pt-4">
-        <button mat-flat-button (click)="onApply()">
+        <button
+          mat-flat-button
+          [disabled]="!formData.assignedShotIds || formData.assignedShotIds.length === 0"
+          (click)="onApply()"
+        >
           {{ 'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' | translate }}
         </button>
         <button mat-stroked-button (click)="onCancel()">
