@@ -16,22 +16,38 @@ import {
  * (highest priority) determines their active execution profile.
  *
  * Roles not listed here are not mapped to any execution profile
- * and will fall back to `INTAQALAB_TRIAL_CONSULTANT` (observer).
+ * and will fall back to `TRIAL_CONSULTANT` (observer).
  */
 const ROLE_TO_PROFILE_PRIORITY: ReadonlyArray<{ role: Role; profile: ExecutionProfile }> = [
-  { role: Role.UNIT_TECHNICIAN, profile: ExecutionProfile.UNIT_TECHNICIAN },
-  { role: Role.INTAQALAB_ADMIN, profile: ExecutionProfile.DIRECTOR },
-  { role: Role.INTAQALAB_VIEWER, profile: ExecutionProfile.INTAQALAB_TRIAL_CONSULTANT },
+  { role: Role.INTAQALAB_ADMIN,                    profile: ExecutionProfile.DIRECTOR },
+  { role: Role.HEAD_ARMAMENT_TRIALS,               profile: ExecutionProfile.TRIAL_AREA_CHIEF },
+  { role: Role.INTAQALAB_SHOOTING_LINE_HEAD,        profile: ExecutionProfile.FIRING_LINE_CHIEF },
+  { role: Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,    profile: ExecutionProfile.PLANNING_ANALYSIS_CHIEF },
+  { role: Role.INTAQALAB_TRIAL_ENGINEER,            profile: ExecutionProfile.TRIAL_ENGINEER },
+  { role: Role.INTAQALAB_ARMAMENT_UNIT_HEAD,        profile: ExecutionProfile.UNIT_CHIEF },
+  { role: Role.INTAQALAB_MUNITIONS_UNIT_HEAD,       profile: ExecutionProfile.UNIT_CHIEF },
+  { role: Role.INTAQALAB_BALLISTICS_UNIT_HEAD,      profile: ExecutionProfile.UNIT_CHIEF },
+  { role: Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,     profile: ExecutionProfile.UNIT_CHIEF },
+  { role: Role.UNIT_TECHNICIAN,                    profile: ExecutionProfile.UNIT_TECHNICIAN },
+  { role: Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,  profile: ExecutionProfile.UNIT_TECHNICIAN },
+  { role: Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN, profile: ExecutionProfile.UNIT_TECHNICIAN },
+  { role: Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,profile: ExecutionProfile.UNIT_TECHNICIAN },
+  { role: Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,profile: ExecutionProfile.UNIT_TECHNICIAN },
+  { role: Role.INTAQALAB_TRIAL_CONSULTANT,          profile: ExecutionProfile.TRIAL_CONSULTANT },
+  { role: Role.PLANNING_TECHNICIAN,                profile: ExecutionProfile.TRIAL_CONSULTANT },
+  { role: Role.INTAQALAB_TRIAL_ADMINISTRATIVE,      profile: ExecutionProfile.TRIAL_CONSULTANT },
+  { role: Role.ADMINISTRATIVE,                     profile: ExecutionProfile.TRIAL_CONSULTANT },
+  { role: Role.INTAQALAB_VIEWER,                   profile: ExecutionProfile.TRIAL_CONSULTANT },
 ];
 
 /** Fallback profile when no role matches */
-const FALLBACK_PROFILE = ExecutionProfile.INTAQALAB_TRIAL_CONSULTANT;
+const FALLBACK_PROFILE = ExecutionProfile.TRIAL_CONSULTANT;
 
 /**
  * Resolves the execution profile for a given set of roles.
  *
  * Uses the priority-ordered mapping: the first matching role wins.
- * Falls back to `INTAQALAB_TRIAL_CONSULTANT` (observer) if no role matches.
+ * Falls back to `TRIAL_CONSULTANT` (observer) if no role matches.
  */
 export function resolveExecutionProfile(roles: readonly Role[]): ExecutionProfile {
   for (const entry of ROLE_TO_PROFILE_PRIORITY) {

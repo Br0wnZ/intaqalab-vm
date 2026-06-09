@@ -12,14 +12,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ExecutionGeneralDataStore } from '../stores/execution-general-data.store';
+import { ExecutionStore } from '../+state/execution.store';
 import { ExecutionGridComponent } from './components/execution-grid/execution-grid';
 import { CancelExecutionDialog } from './dialogs/cancel-execution-dialog';
+import type { EquipmentSelectorDialogResult } from './dialogs/equipment-selector-dialog';
+import { EquipmentSelectorDialog } from './dialogs/equipment-selector-dialog';
 import { InterruptExecutionDialog } from './dialogs/interrupt-execution-dialog';
-import type { WidgetType } from './models/execution-grid.models';
+import { PauseExecutionDialog } from './dialogs/pause-execution-dialog';
+import type { TechProfile, WidgetType } from './models/execution-grid.models';
 import { WidgetStateService } from './services/widget-state.service';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 // ID de demo mientras la ruta no expose :fireTrialId como parámetro
 const DEMO_FIRE_TRIAL_ID = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
@@ -36,6 +40,9 @@ interface Widget {
   badge?: string;
   badgeColor?: 'purple' | 'blue';
   defaultWidth: 1 | 2 | 3;
+  defaultHeight?: 1 | 2;
+  /** 🎭 Perfil técnico (sólo para type 'execution-prep-tech') */
+  techProfile?: TechProfile;
 }
 
 @Component({
@@ -54,35 +61,35 @@ interface Widget {
     MatTooltipModule,
     TranslateModule,
     ExecutionGridComponent,
-  ],
+    IntaIconComponent
+],
   providers: [WidgetStateService],
   template: `
     <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
       <!-- Header -->
-      <div
-        class="mx-6 mt-6 px-6 py-4 shrink-0 flex flex-col gap-4 bg-white rounded-lg border border-gray-100 shadow-sm"
+      <div class="flex flex-col gap-4"
       >
         <!-- Fila 1: Datos de ejecución principales -->
-        <div class="flex items-center justify-between">
+        <div class="flex gap-4 flex-wrap items-center justify-between">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-50 text-purple-700">
+            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
               {{ executionData().code }}
             </span>
-            <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-50 text-purple-700">
+            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
               {{ shotInfo().actual.serie }}
             </span>
-            <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-50 text-purple-700">
+            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
               {{ shotInfo().actual.shot }}
             </span>
 
             <!-- Botón de Avance (Trigger de historial) -->
             <button
               mat-flat-button
-              class="!bg-purple-600 !text-white !rounded-xl !h-10 !px-4 flex items-center gap-2"
+              color="primary"
               [matMenuTriggerFor]="shotHistoryMenu"
             >
-              <mat-icon class="scale-90">info_outline</mat-icon>
-              <span class="text-sm font-medium">% avance prueba: {{ shotInfo().actual.percentaje }}%</span>
+              <ui-inta-icon name="info" class="mr-2" />
+              <span class="font-normal">% avance prueba: <b>{{ shotInfo().actual.percentaje }}%</b></span>
             </button>
 
             <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700 ml-1">
@@ -92,7 +99,7 @@ interface Widget {
 
           <button
             mat-flat-button
-            class="!bg-purple-600 !text-white !rounded-xl !h-10"
+            color="primary"
             [matMenuTriggerFor]="actionsMenu"
           >
             {{ 'TRIAL_EXECUTION.ACTIONS' | translate }}
@@ -101,26 +108,36 @@ interface Widget {
         </div>
 
         <!-- Fila 2: Metadata y Controles de UI -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap gap-4 items-center justify-between">
           <div class="flex items-center gap-3 flex-wrap">
-            <span class="px-4 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600">
+            <span class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gray-200 text-gray-700">
               {{ executionData().client }}
             </span>
-            <span class="px-4 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600">
+            <span class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gray-200 text-gray-700">
               {{ executionData().project }}
             </span>
           </div>
 
           <div class="flex items-center gap-4">
+            <!-- Botón Selector Equipos -->
+            <button
+              mat-flat-button
+              color="primary"
+              (click)="openEquipmentSelectorDialog()"
+            >
+              {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.BTN_LABEL' | translate }}
+            </button>
+
             <!-- Botón Guardar -->
-            <button mat-mini-fab class="!bg-purple-600 !text-white !shadow-none !rounded-xl" (click)="saveAllChanges()">
-              <mat-icon>save</mat-icon>
+            <button mat-flat-button color="primary" class="!px-4 !min-w-auto" (click)="saveAllChanges()">
+              <ui-inta-icon name="save" />
             </button>
 
             <!-- Botón Widgets -->
             <button
               mat-flat-button
-              class="!bg-purple-50 !text-purple-700 !rounded-xl !h-10 !px-6"
+              color="primary"
+              class="!bg-transparent !p-0 !text-[var(--inta-button)]"
               (click)="toggleWidgetsPanel()"
             >
               {{ 'TRIAL_EXECUTION.WIDGETS_BTN' | translate }}
@@ -137,7 +154,7 @@ interface Widget {
       </div>
 
       <!-- Debug Info Card -->
-      <div class="mx-6 mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+      <div class="mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
         <div class="flex items-center gap-6">
           <div class="flex items-center gap-2">
             <mat-icon class="text-purple-600 scale-75">dashboard</mat-icon>
@@ -165,31 +182,13 @@ interface Widget {
         </div>
       </div>
 
-      <div class="flex-1 mx-6 my-6 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
-        @if (widgetStateService.placedWidgets().length === 0 && !isEditMode()) {
-          <div class="flex-1 flex items-center justify-center p-6">
-            <div class="text-center">
-              <p class="text-gray-600 text-lg mb-2">{{ 'TRIAL_EXECUTION.EMPTY_PANEL_TITLE' | translate }}</p>
-              <p class="text-gray-500 text-sm">
-                {{ 'TRIAL_EXECUTION.EMPTY_PANEL_DESC_1' | translate }}
-                <button
-                  mat-button
-                  class="!text-purple-600 !font-medium !inline-flex !px-1"
-                  (click)="toggleWidgetsPanel()"
-                >
-                  {{ 'TRIAL_EXECUTION.EMPTY_PANEL_DESC_WIDGETS_BTN' | translate }}
-                </button>
-                {{ 'TRIAL_EXECUTION.EMPTY_PANEL_DESC_2' | translate }}
-              </p>
-            </div>
-          </div>
-        } @else {
-          <inta-execution-grid
-            [editMode]="isEditMode()"
-            (widgetAdded)="onWidgetAdded($event)"
-            (widgetRemoved)="onWidgetRemoved($event)"
-          />
-        }
+      <div class="flex-1 my-6 bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
+        <inta-execution-grid
+          [editMode]="isEditMode()"
+          (widgetAdded)="onWidgetAdded($event)"
+          (widgetRemoved)="onWidgetRemoved($event)"
+          (openWidgetsPanel)="toggleWidgetsPanel()"
+        />
       </div>
 
       <!-- Widgets Side Panel -->
@@ -198,42 +197,49 @@ interface Widget {
         [class.translate-x-full]="!isWidgetsPanelOpen()"
         [class.translate-x-0]="isWidgetsPanelOpen()"
       >
-        <div class="flex items-center justify-between p-5 border-b border-gray-200 shrink-0">
-          <h2 class="text-lg font-semibold text-gray-800">{{ 'TRIAL_EXECUTION.WIDGET_LIBRARY_TITLE' | translate }}</h2>
-          <button mat-icon-button (click)="closeWidgetsPanel()">
-            <mat-icon>close</mat-icon>
-          </button>
+        <div class="flex flex-col gap-4 justify-between p-5 border-b border-gray-200 shrink-0">
+          <div class="flex flex-column items-center justify-between gap-4">
+            <h2 class="text-lg font-semibold text-gray-800">{{ 'TRIAL_EXECUTION.WIDGET_LIBRARY_TITLE' | translate }}</h2>
+            <button mat-icon-button (click)="closeWidgetsPanel()">
+              <ui-inta-icon name="close" size="xxl" />
+            </button>
+          </div>
+          <!-- Search -->
+          <div class="flex items-center">
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <ui-inta-icon matPrefix name="search" size="md" class="mx-3" color="var(--inta-button)" />
+              <input
+                matInput
+                type="text"
+                class="flex-1 border-none outline-none bg-white text-sm text-gray-700 placeholder:text-gray-400"
+                [placeholder]="'TRIAL_EXECUTION.SEARCH_WIDGET_PLACEHOLDER' | translate"
+                [value]="searchTerm()"
+                (input)="onSearchChange($event)"
+              />
+              </mat-form-field>
+          </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6">
-          <!-- Search -->
-          <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 mb-6">
-            <mat-icon class="text-gray-400 mr-2 text-[20px] w-5 h-5">search</mat-icon>
-            <input
-              type="text"
-              class="flex-1 border-none outline-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400"
-              [placeholder]="'TRIAL_EXECUTION.SEARCH_WIDGET_PLACEHOLDER' | translate"
-              [value]="searchTerm()"
-              (input)="onSearchChange($event)"
-            />
-          </div>
+        <div class="flex-1 overflow-y-auto overflow-x-hidden p-6">
+
+
 
           <!-- Widgets List -->
           <div class="flex flex-col gap-6">
             @for (category of getCategoryKeys(); track category) {
               <div class="flex flex-col gap-3">
-                <h3 class="text-[13px] font-semibold text-gray-500 tracking-wide mb-1">{{ category | translate }}</h3>
+                <h3 class="text-xs font-semibold text-gray-600 tracking-wide mb-1">{{ category | translate }}</h3>
 
                 @for (widget of groupedWidgets()[category]; track widget.id) {
                   <div
-                    class="bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
+                    class="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
                   >
                     <div class="flex items-center justify-between mb-2">
-                      <h4 class="text-[15px] font-semibold text-gray-900 m-0">{{ widget.title | translate }}</h4>
+                      <h4 class="text-sm text-gray-900 m-0 flex-1">{{ widget.title | translate }}</h4>
                       <div class="flex items-center gap-2">
                         @if (widget.badge) {
                           <span
-                            class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold shrink-0"
+                            class="inline-flex items-center justify-center w-6 h-6 rounded-md font-medium shrink-0"
                             [ngClass]="getBadgeColorClass(widget.badgeColor)"
                           >
                             {{ widget.badge }}
@@ -244,11 +250,11 @@ interface Widget {
                         </span>
                       </div>
                     </div>
-                    <p class="text-[13px] text-gray-500 leading-relaxed m-0">{{ widget.description | translate }}</p>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ widget.description | translate }}</p>
                     <button
                       mat-flat-button
                       color="primary"
-                      class="!bg-purple-600 hover:!bg-purple-700 w-full !mt-3"
+                      class="w-full"
                       (click)="addWidget(widget.id)"
                     >
                       {{ 'TRIAL_EXECUTION.ADD' | translate }}
@@ -363,8 +369,9 @@ export class Execution implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #destroyRef = inject(DestroyRef);
   //readonly #transitionsService = inject(ExecutionTransitionsService);
-  readonly #store = inject(ExecutionGeneralDataStore);
+  readonly #store = inject(ExecutionStore);
   readonly widgetStateService = inject(WidgetStateService);
+  readonly #translate = inject(TranslateService);
 
   readonly #fireTrialId = DEMO_FIRE_TRIAL_ID;
   isWidgetsPanelOpen = signal(false);
@@ -433,53 +440,389 @@ export class Execution implements OnInit {
       badge: 'L',
       defaultWidth: 3,
     },
+    // 🛡️ Preparación ejecución – Unidades técnicas (6 perfiles)
     {
-      id: 'seguimiento-general',
-      type: 'general-tracking',
-      title: 'Seguimiento general',
-      description: 'Activos, pendientes y críticas',
-      category: 'Genéricos',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 2,
-    },
-    {
-      id: 'preparacion-ejecucion',
-      type: 'execution-prep',
-      title: 'Preparación ejecución',
-      description: 'Estado previo de sensores, contución y recursos',
-      category: 'Genéricos',
+      id: 'prep-tech-velocidades',
+      type: 'execution-prep-tech',
+      techProfile: 'velocidades',
+      title: 'Preparación ejecución – Velocidades',
+      description: 'Indicar preparación del técnico de balistíca (velocidades) para el inicio de series',
+      category: 'Balistíca',
       badge: 'S',
       badgeColor: 'purple',
       defaultWidth: 1,
     },
     {
-      id: 'parametros-radar',
-      type: 'radar-config',
-      title: 'Parámetros de configuración radar',
-      description: 'Configuración del radar',
-      category: 'Balística',
+      id: 'prep-tech-presiones',
+      type: 'execution-prep-tech',
+      techProfile: 'presiones',
+      title: 'Preparación ejecución – Presiones',
+      description: 'Indicar preparación del técnico de balistíca (presiones) para el inicio de series',
+      category: 'Balistíca',
       badge: 'S',
       badgeColor: 'purple',
       defaultWidth: 1,
     },
     {
-      id: 'historico-velocidades',
-      type: 'velocity-history',
-      title: 'Histórico velocidades',
-      description: 'Evolución de velocidades registradas',
-      category: 'Balística',
-      badge: 'L',
-      defaultWidth: 3,
+      id: 'prep-tech-video',
+      type: 'execution-prep-tech',
+      techProfile: 'video',
+      title: 'Preparación ejecución – Vídeo',
+      description: 'Indicar preparación del técnico de balistíca (cámaras de vídeo) para el inicio de series',
+      category: 'Balistíca',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
     },
     {
-      id: 'magnitudes',
-      type: 'magnitudes',
-      title: 'Magnitudes',
-      description: 'Magnitudes de la prueba',
+      id: 'prep-tech-trayectografia',
+      type: 'execution-prep-tech',
+      techProfile: 'trayectografia',
+      title: 'Preparación ejecución – Trayectografía',
+      description: 'Indicar preparación del técnico de balistíca (radar) para el inicio de series',
+      category: 'Balistíca',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+    },
+    {
+      id: 'prep-tech-municiones',
+      type: 'execution-prep-tech',
+      techProfile: 'municiones',
+      title: 'Preparación ejecución – Municiones',
+      description: 'Indicar preparación del técnico de municiones para el inicio de series',
+      category: 'Municiones',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+    },
+    {
+      id: 'prep-tech-armamento',
+      type: 'execution-prep-tech',
+      techProfile: 'armamento',
+      title: 'Preparación ejecución – Armamento',
+      description: 'Indicar preparación del técnico de armamento para el inicio de series',
+      category: 'Armamento',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+    },
+    {
+      id: 'prep-jlt',
+      type: 'execution-prep-jlt',
+      title: 'Preparación ejecución – JLT',
+      description: 'Control de preparación de series y disparos para el Jefe de Línea de Tiro',
       category: 'Jefe línea de tiro',
       badge: 'L',
       defaultWidth: 3,
+    },
+    {
+      id: 'orientacion-camaras-video',
+      type: 'video-camera-orientation',
+      title: 'Orientación cámaras de vídeo',
+      description: 'Configuración de cámara, distancia, altura, alcance y diferencia angular',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'orientacion-radar-trayectografia',
+      type: 'radar-trayectography-orientation',
+      title: 'Orientación radar de trayectografía',
+      description: 'Coordenadas pieza, puntos de caída calculados, OLT geográfico y diferencia angular del radar',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-topografia-mao',
+      type: 'mao-topography',
+      title: 'Introducción de datos Topografía MAO',
+      description: 'OLT, coordenadas de pieza y blanco, observador',
+      category: 'Topografía',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-jlt-mao',
+      type: 'jlt-mao',
+      title: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DESCRIPTION',
+      category: 'Jefe línea de tiro',
+      badge: 'J',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-armamento',
+      type: 'armament-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.DESCRIPTION',
+      category: 'Municiones',
+      badge: 'M',
+      badgeColor: 'blue',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-municion',
+      type: 'munition-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DESCRIPTION',
+      category: 'Municiones',
+      badge: 'M',
+      badgeColor: 'blue',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'radar-trayectografia-metcmq',
+      type: 'radar-metcmq',
+      title: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.DESCRIPTION',
+      category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-jlt',
+      type: 'jlt-shot-data',
+      title: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.DESCRIPTION',
+      category: 'Jefe línea de tiro',
+      badge: 'J',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-presion-manometros',
+      type: 'manometer-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-presion-piezo',
+      type: 'piezo-pressure-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'blue',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-velocidades',
+      type: 'velocity-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'tarado-velocidad-chart',
+      type: 'tarado-velocidad-chart',
+      title: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'tarado-presion-chart',
+      type: 'tarado-presion-chart',
+      title: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'trayectografia-introduction',
+      type: 'trayectografia-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.DESCRIPTION',
+      category: 'Trayectografía',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'stanag-criterios',
+      type: 'stanag-criterios',
+      title: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.DESCRIPTION',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'uniformidad-chart',
+      type: 'uniformidad-chart',
+      title: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESCRIPTION',
+      category: 'Balística',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'seguimiento',
+      type: 'seguimiento',
+      title: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.DESCRIPTION',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'informacion-tarado',
+      type: 'informacion-tarado',
+      title: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.DESCRIPTION',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'overpressure-info',
+      type: 'overpressure-info',
+      title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.DESCRIPTION',
+      category: 'Presiones',
+      badge: 'P',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 1,
+    },
+    {
+      id: 'overpressure-chart',
+      type: 'overpressure-chart',
+      title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.DESCRIPTION',
+      category: 'Presiones',
+      badge: 'P',
+      badgeColor: 'purple',
+      defaultWidth: 2,
+      defaultHeight: 1,
+    },
+    {
+      id: 'calculo-coordenadas-paso',
+      type: 'pass-coords',
+      title: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DESCRIPTION',
+      category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
+      badge: 'B',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'criterio-grubbs',
+      type: 'grubbs-criterion',
+      title: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.DESCRIPTION',
+      category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
+      badge: 'E',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-topografia',
+      type: 'topography-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.DESCRIPTION',
+      category: 'Topografía',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'datos-del-blanco',
+      type: 'target-data',
+      title: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DESCRIPTION',
+      category: 'Armamento',
+      badge: 'A',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'introduccion-datos-nivel-acustico',
+      type: 'acoustic-level-introduction',
+      title: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DESCRIPTION',
+      category: 'Balística',
+      badge: 'A',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'vigilancia',
+      type: 'vigilancia',
+      title: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.DESCRIPTION',
+      category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
+      badge: 'V',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
+    },
+    {
+      id: 'datos-blanco-bola',
+      type: 'datos-blanco-bola',
+      title: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DESCRIPTION',
+      category: 'Topografía',
+      badge: 'T',
+      badgeColor: 'purple',
+      defaultWidth: 3,
+      defaultHeight: 1,
+    },
+    {
+      id: 'seguridad',
+      type: 'seguridad',
+      title: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE',
+      description: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.DESCRIPTION',
+      category: 'Balística',
+      badge: 'S',
+      badgeColor: 'purple',
+      defaultWidth: 1,
+      defaultHeight: 2,
     },
   ]);
 
@@ -528,12 +871,12 @@ export class Execution implements OnInit {
     if (!search) {
       this.filteredWidgets.set(allWidgets);
     } else {
-      const filtered = allWidgets.filter(
-        (widget) =>
-          widget.title.toLowerCase().includes(search) ||
-          widget.description.toLowerCase().includes(search) ||
-          widget.category.toLowerCase().includes(search),
-      );
+      const filtered = allWidgets.filter((widget) => {
+        const title = this.#translate.instant(widget.title).toLowerCase();
+        const description = this.#translate.instant(widget.description).toLowerCase();
+        const category = this.#translate.instant(widget.category).toLowerCase();
+        return title.includes(search) || description.includes(search) || category.includes(search);
+      });
       this.filteredWidgets.set(filtered);
     }
 
@@ -569,12 +912,21 @@ export class Execution implements OnInit {
   }
 
   startExecution(): void {
-    // Use new store method
     this.#store.startExecution(this.#fireTrialId);
   }
 
   pauseExecution(): void {
-    this.#store.pauseExecution(this.#fireTrialId);
+    const dialogRef = this.#dialog.open(PauseExecutionDialog, {
+      width: '600px',
+      data: { trialName: this.executionData().code, trialId: this.#fireTrialId },
+    });
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((result) => {
+        if (!result || result.action === 'back') return;
+        console.log('Pausing execution with reason:', result.action);
+      });
   }
 
   resumeExecution(): void {
@@ -617,7 +969,13 @@ export class Execution implements OnInit {
     const widget = this.widgets().find((w) => w.id === widgetId);
     if (!widget) return;
 
-    this.widgetStateService.addWidget(widget.type, widget.defaultWidth);
+    this.widgetStateService.addWidget(
+      widget.type,
+      widget.defaultWidth,
+      undefined,
+      widget.techProfile,
+      widget.defaultHeight ?? 1,
+    );
 
     this.onWidgetAdded(widgetId);
     this.closeWidgetsPanel();
@@ -642,6 +1000,29 @@ export class Execution implements OnInit {
 
   onWidgetRemoved(widgetId: string): void {
     console.log('Widget removido:', widgetId);
+  }
+
+  openEquipmentSelectorDialog(): void {
+    const selector = this.#store.equipmentSelector();
+    this.#dialog
+      .open<EquipmentSelectorDialog, unknown, EquipmentSelectorDialogResult>(EquipmentSelectorDialog, {
+        width: '900px',
+        minWidth: '900px',
+        maxHeight: '90vh',
+        data: {
+          categories: selector.categories,
+          items: selector.items,
+          serieOptions: selector.serieOptions,
+          disparoOptions: selector.disparoOptions,
+          initialSelections: selector.selections,
+        },
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((result) => {
+        if (!result || result.action === 'back') return;
+        this.#store.updateEquipmentSelections(result.selections);
+      });
   }
 
   async saveAllChanges(): Promise<void> {

@@ -1,0 +1,55 @@
+// =============================================================================
+// READONLY CONTENT — modo de solo lectura para widgets de ejecución
+// Activado por ReadonlyContentDirective cuando la prueba está en estado
+// Ejecutada, Finalizando, Cerrada o Cancelada.
+// =============================================================================
+
+// El elemento HOST con [inert] y la clase .inta-readonly-content recibe estos estilos.
+// El atributo HTML `inert` ya previene toda interacción (ratón, teclado, foco);
+// estos estilos únicamente añaden la indicación visual correspondiente.
+
+.inta-readonly-content {
+  // Señal visual sutil: el área bloqueada aparece ligeramente atenuada
+  opacity: 0.72;
+
+  // Cursor "not-allowed" sobre los elementos que normalmente serían editables
+  // (necesario aunque inert impida la interacción, porque inert no cambia el cursor)
+  *,
+  *::before,
+  *::after {
+    cursor: default !important;
+  }
+
+  // Form fields Angular Material: deshabilitar el aspecto "active/hover"
+  .mat-mdc-form-field,
+  .mdc-text-field--focused {
+    pointer-events: none;
+  }
+
+  // Eliminar la línea de foco de los text-fields
+  .mdc-line-ripple {
+    display: none;
+  }
+
+  // Eliminar el ripple del mat-select dropdown
+  .mat-mdc-select-arrow-wrapper {
+    opacity: 0.4;
+  }
+
+  // ui-input-select interno de Intaqalab
+  ui-input-select {
+    pointer-events: none;
+  }
+
+  // Botones: aspecto deshabilitado
+  button,
+  .mat-mdc-button-base {
+    opacity: 0.45 !important;
+  }
+
+  // Textareas e inputs de texto: cursor de solo lectura
+  textarea,
+  input {
+    cursor: default !important;
+  }
+}

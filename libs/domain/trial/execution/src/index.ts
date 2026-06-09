@@ -7,4 +7,4 @@ export * from './lib/execution/models/execution-profile-registry';
 export * from './lib/execution/services/execution-profile.service';
 export * from './lib/execution/services/execution-transitions.service';
 export * from './lib/services/execution.service';
-export * from './lib/stores/execution-general-data.store';
+export * from './lib/+state/execution.store';

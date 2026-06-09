@@ -3,7 +3,9 @@ import { Injectable, computed, signal } from '@angular/core';
 import type {
   GridPosition,
   PlacedWidget,
+  TechProfile,
   WidgetFormState,
+  WidgetHeight,
   WidgetType,
   WidgetWidth,
 } from '../models/execution-grid.models';
@@ -61,9 +63,9 @@ export class WidgetStateService {
   /**
    * ➕ Añadir widget al grid
    */
-  addWidget(type: WidgetType, width: WidgetWidth, position?: GridPosition): string {
+  addWidget(type: WidgetType, width: WidgetWidth, position?: GridPosition, techProfile?: TechProfile, height: WidgetHeight = 1): string {
     const id = this.#generateWidgetId();
-    const finalPosition = position || this.#findNextAvailablePosition(width);
+    const finalPosition = position || this.#findNextAvailablePosition(width, height);
 
     if (!finalPosition) {
       throw new Error('No hay espacio disponible en el grid');
@@ -74,8 +76,9 @@ export class WidgetStateService {
       type,
       position: finalPosition,
       width,
-      height: 1,
+      height,
       color: this.#colors[Math.floor(Math.random() * this.#colors.length)],
+      ...(techProfile ? { techProfile } : {}),
     };
 
     this.#placedWidgets.update((widgets) => [...widgets, newWidget]);
@@ -168,8 +171,8 @@ export class WidgetStateService {
       }
 
       // Validar si ambos caben en sus nuevas posiciones (para swaps no-W3)
-      const canSourceFit = this.#isPositionValid(newSourcePos, sourceWidget.width, [widgetId, targetWidget.id]);
-      const canTargetFit = this.#isPositionValid(newTargetPos, targetWidget.width, [widgetId, targetWidget.id]);
+      const canSourceFit = this.#isPositionValid(newSourcePos, sourceWidget.width, [widgetId, targetWidget.id], sourceWidget.height);
+      const canTargetFit = this.#isPositionValid(newTargetPos, targetWidget.width, [widgetId, targetWidget.id], targetWidget.height);
 
       if (canSourceFit && canTargetFit) {
         this.#placedWidgets.update((list) =>
@@ -184,7 +187,7 @@ export class WidgetStateService {
     }
 
     // 2. Si no hay swap posible, intentar movimiento normal
-    if (!this.#isPositionValid(finalPosition, sourceWidget.width, widgetId)) {
+    if (!this.#isPositionValid(finalPosition, sourceWidget.width, widgetId, sourceWidget.height)) {
       return false;
     }
 
@@ -214,12 +217,17 @@ export class WidgetStateService {
   /**
    * 🔍 Verificar si una posición es válida
    */
-  #isPositionValid(position: GridPosition, width: WidgetWidth, excludeWidgetIds: string | string[] = []): boolean {
+  #isPositionValid(position: GridPosition, width: WidgetWidth, excludeWidgetIds: string | string[] = [], height: WidgetHeight = 1): boolean {
     const { row, col } = position;
     const excludes = Array.isArray(excludeWidgetIds) ? excludeWidgetIds : [excludeWidgetIds];
 
     // Verificar límites del grid
     if (row < 1 || row > 3 || col < 1 || col > 3) {
+      return false;
+    }
+
+    // Verificar que no se salga del grid verticalmente
+    if (row + height - 1 > 3) {
       return false;
     }
 
@@ -233,7 +241,7 @@ export class WidgetStateService {
 
     for (const widget of otherWidgets) {
       // Verificar si hay overlap
-      if (this.#hasOverlap(position, width, widget)) {
+      if (this.#hasOverlap(position, width, height, widget)) {
         return false;
       }
     }
@@ -244,30 +252,36 @@ export class WidgetStateService {
   /**
    * 🔍 Verificar si dos widgets se solapan
    */
-  #hasOverlap(position: GridPosition, width: WidgetWidth, widget: PlacedWidget): boolean {
-    // Mismo row
-    if (position.row !== widget.position.row) {
+  #hasOverlap(position: GridPosition, width: WidgetWidth, height: WidgetHeight, widget: PlacedWidget): boolean {
+    // Calcular rangos de filas
+    const newRowStart = position.row;
+    const newRowEnd = position.row + height - 1;
+    const existingRowStart = widget.position.row;
+    const existingRowEnd = widget.position.row + widget.height - 1;
+
+    // Si no hay overlap de filas, no hay colisión
+    if (newRowEnd < existingRowStart || newRowStart > existingRowEnd) {
       return false;
     }
 
     // Calcular rangos de columnas
-    const newStart = position.col;
-    const newEnd = position.col + width - 1;
-    const existingStart = widget.position.col;
-    const existingEnd = widget.position.col + widget.width - 1;
+    const newColStart = position.col;
+    const newColEnd = position.col + width - 1;
+    const existingColStart = widget.position.col;
+    const existingColEnd = widget.position.col + widget.width - 1;
 
-    // Verificar overlap
-    return !(newEnd < existingStart || newStart > existingEnd);
+    // Verificar overlap de columnas
+    return !(newColEnd < existingColStart || newColStart > existingColEnd);
   }
 
   /**
    * 🔍 Encontrar siguiente posición disponible
    */
-  #findNextAvailablePosition(width: WidgetWidth): GridPosition | null {
+  #findNextAvailablePosition(width: WidgetWidth, height: WidgetHeight = 1): GridPosition | null {
     for (let row = 1; row <= 3; row++) {
       for (let col = 1; col <= 3; col++) {
         const position: GridPosition = { row, col };
-        if (this.#isPositionValid(position, width)) {
+        if (this.#isPositionValid(position, width, [], height)) {
           return position;
         }
       }

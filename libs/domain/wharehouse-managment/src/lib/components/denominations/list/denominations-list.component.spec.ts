@@ -1,9 +1,13 @@
-﻿import { signal } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component, input, output, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
-import { createMockMatDialog } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -40,6 +44,29 @@ function createMockStore(items: DenominationModel[] = []) {
   };
 }
 
+function createMockDialog(defaultResult: unknown = null) {
+  return {
+    open: vi.fn().mockImplementation(() => ({
+      afterClosed: vi.fn(() => ({
+        subscribe: vi.fn((callback: (result: unknown) => void) => {
+          callback(defaultResult);
+          return { unsubscribe: vi.fn() };
+        }),
+      })),
+    })),
+  };
+}
+
+@Component({
+  selector: 'inta-wharehouse-filter',
+  standalone: true,
+  template: '',
+})
+class MockWharehouseFilterComponent {
+  readonly placeholdeTranslation = input<string>('');
+  readonly searchItems = output<{ name: string }>();
+}
+
 describe('DenominationsListComponent', () => {
   let mockStore: ReturnType<typeof createMockStore>;
   let mockUiDialog: { confirm: ReturnType<typeof vi.fn> };
@@ -49,16 +76,42 @@ describe('DenominationsListComponent', () => {
     mockStore = createMockStore(items);
     mockUiDialog = { confirm: vi.fn().mockResolvedValue(false) };
 
-    const mockDialog = createMockMatDialog({ defaultResult: dialogResult });
+    const mockDialog = createMockDialog(dialogResult);
+
+    TestBed.overrideComponent(DenominationsListComponent, {
+      set: {
+        imports: [CommonModule, FormsModule, MatSlideToggleModule, TranslateModule, MockWharehouseFilterComponent],
+        template: `
+          <h2>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.TITLE' | translate }}</h2>
+          <inta-wharehouse-filter
+            [placeholdeTranslation]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.COLUMNS.DENOMINATION'"
+            (searchItems)="searchedName.set($event)"
+          />
+          <button mat-flat-button type="button" (click)="create()">
+            {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.CREATE' | translate }}
+          </button>
+
+          <div *ngFor="let item of store.items()">
+            <span>{{ item.name }}</span>
+            <span>{{ item.munitionType.name }}</span>
+            <span>{{ item.neq }}</span>
+            <button mat-icon-button type="button" (click)="delete(item)"></button>
+            <button mat-icon-button type="button" (click)="edit(item)"></button>
+            <mat-slide-toggle [(ngModel)]="item.active" (change)="toogleActive(item, $event)"></mat-slide-toggle>
+          </div>
+        `,
+      },
+    });
 
     const view = await render(DenominationsListComponent, {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
-        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: DenominationsStore, useValue: mockStore },
-        { provide: MatDialog, useValue: mockDialog },
         { provide: UiDialogService, useValue: mockUiDialog },
       ],
+      componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
     });
 
     const container = view.fixture.nativeElement as HTMLElement;
@@ -102,7 +155,6 @@ describe('DenominationsListComponent', () => {
   describe('Create', () => {
     it('should open the create dialog with item null when create button is clicked', async () => {
       const { user } = await setup();
-      const mockDialog = createMockMatDialog({ defaultResult: null });
 
       const createBtn = screen
         .getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)
@@ -116,6 +168,7 @@ describe('DenominationsListComponent', () => {
       const newDenomination: DenominationUpSertModel = {
         name: 'New Denomination',
         category: 'MUNITION',
+        munitionType: { id: 'mt-1', name: 'Granada mortero' },
         munitionTypeId: 'mt-1',
         active: true,
         weight: 5,
@@ -135,6 +188,7 @@ describe('DenominationsListComponent', () => {
       const editResult: DenominationUpSertModel = {
         name: 'Updated Name',
         category: 'MUNITION',
+        munitionType: { id: 'mt-1', name: 'Granada mortero' },
         munitionTypeId: 'mt-1',
         active: true,
         weight: 10,
@@ -176,7 +230,13 @@ describe('DenominationsListComponent', () => {
       (input as HTMLElement)?.click();
       await Promise.resolve();
 
-      expect(mockStore.toogleEnabledItem).toHaveBeenCalledWith(mockItem, expect.any(Boolean));
+      expect(mockStore.toogleEnabledItem).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockItem.id,
+          active: expect.any(Boolean),
+          munitionTypeId: mockItem.munitionType.id,
+        })
+      );
     });
   });
 });

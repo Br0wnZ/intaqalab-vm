@@ -138,11 +138,11 @@ export const EXECUTION_PROFILE_REGISTRY: ReadonlyMap<ExecutionProfile, Execution
   ],
 
   [
-    ExecutionProfile.INTAQALAB_TRIAL_CONSULTANT,
+    ExecutionProfile.TRIAL_CONSULTANT,
     {
-      profile: ExecutionProfile.INTAQALAB_TRIAL_CONSULTANT,
+      profile: ExecutionProfile.TRIAL_CONSULTANT,
       category: 'observer',
-      labelKey: 'EXECUTION_PROFILES.INTAQALAB_TRIAL_CONSULTANT',
+      labelKey: 'EXECUTION_PROFILES.TRIAL_CONSULTANT',
       defaultWidgetIds: ['seguimiento-general'],
       availableFeatures: [
         ExecutionFeature.SERIES_AND_SHOTS,

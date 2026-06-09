@@ -34,8 +34,7 @@ export class DenominationsService {
     this.#crud.deleteItem(item);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  toogleEnabledItem(_item: DenominationModel, _active: boolean) {
-    // TODO: implement
+  toogleEnabledItem(item: DenominationUpSertModel) {
+    this.#crud.updateItem(item);
   }
 }

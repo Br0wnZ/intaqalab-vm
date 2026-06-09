@@ -9,7 +9,7 @@ export function injectWarehouseResource<T, U>(endpointUrl: string, context: Http
 
   const saveItem = signal<U | null>(null);
   const searchByIdSrc = signal<string | null>(null);
-  const updateItemSrc = signal<T | null>(null);
+  const updateItemSrc = signal<T | U | null>(null);
   const partialUpdateItemSrc = signal<{ body: T | U; url: string } | null>(null);
   const deleteItemSrc = signal<string | number | T | null>(null);
 
@@ -103,7 +103,7 @@ export function injectWarehouseResource<T, U>(endpointUrl: string, context: Http
     paginatedResponse,
     searchById: (param: string) => searchByIdSrc.set(param),
     createItem: (record: U) => saveItem.set(record),
-    updateItem: (record: T) => updateItemSrc.set(record),
+    updateItem: (record: T | U) => updateItemSrc.set(record),
     partialUpdateItem: (record: T | U, url: string) => partialUpdateItemSrc.set({ body: record, url }),
     deleteItem: (item: string | number | T) => deleteItemSrc.set(item),
 

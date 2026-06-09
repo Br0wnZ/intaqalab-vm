@@ -10,6 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 /**
  * 🎯 Widget de Disparo con formulario
@@ -25,7 +26,9 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
     MatCardModule,
     MatIconModule,
     FormField,
+    ReadonlyContentDirective,
   ],
+  host: { class: 'block h-full' },
   template: `
     <mat-card class="h-full !shadow-none border border-gray-100 flex flex-col bg-white">
       <mat-card-header class="!p-3 shrink-0">
@@ -38,7 +41,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
         </mat-card-title>
       </mat-card-header>
 
-      <mat-card-content class="flex-1 px-4 pb-4 overflow-hidden">
+      <mat-card-content intaReadonlyContent class="flex-1 px-4 pb-4 overflow-hidden">
         <!-- Layout dinámico basado en el ancho -->
         <div [class]="width() === 1 ? 'flex flex-col gap-2' : 'grid grid-cols-12 gap-x-4 gap-y-1'">
           <!-- Número de Disparo -->

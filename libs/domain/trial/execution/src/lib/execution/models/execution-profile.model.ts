@@ -31,7 +31,7 @@ export enum ExecutionProfile {
   PLANNING_ANALYSIS_CHIEF = 'PLANNING_ANALYSIS_CHIEF',
 
   /** Consultor de ensayos */
-  INTAQALAB_TRIAL_CONSULTANT = 'INTAQALAB_TRIAL_CONSULTANT',
+  TRIAL_CONSULTANT = 'TRIAL_CONSULTANT',
 }
 
 export type ExecutionProfileCategory = 'direct' | 'observer';

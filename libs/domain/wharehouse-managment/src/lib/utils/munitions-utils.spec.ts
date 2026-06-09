@@ -22,7 +22,7 @@ describe('munitions-utils', () => {
 
     const generalDataForm: MunitionGeneralDataForm = {
       client: 'client',
-      entryDate: 'entryDate',
+      entryDate: new Date('2026-06-09T14:30:55.661Z'),
       observations: 'observations',
       plannedFireTrialId: 'plannedFireTrialId',
       plannedFireTrialView: '',
@@ -50,7 +50,7 @@ describe('munitions-utils', () => {
       denominationId: (identificationForm.denominationId as any).id,
       generalData: {
         clientId: generalDataForm.client,
-        entryDate: generalDataForm.entryDate,
+        entryDate: '2026-06-09T14:30:55.661Z',
         observations: generalDataForm.observations,
         plannedFireTrialId: generalDataForm.plannedFireTrialId,
       },
@@ -70,7 +70,7 @@ describe('munitions-utils', () => {
     };
     const generalDataForm: MunitionGeneralDataForm = {
       client: 'client',
-      entryDate: 'entryDate',
+      entryDate: new Date('2026-06-09T14:30:55.661Z'),
       observations: 'observations',
       plannedFireTrialId: 'plannedFireTrialId',
       plannedFireTrialView: '',
@@ -92,7 +92,7 @@ describe('munitions-utils', () => {
         denominationId: (componentValue.denominationId as any).id,
         generalData: {
           clientId: generalDataForm.client,
-          entryDate: generalDataForm.entryDate,
+          entryDate: '2026-06-09T14:30:55.661Z',
           observations: generalDataForm.observations,
           plannedFireTrialId: generalDataForm.plannedFireTrialId,
         },

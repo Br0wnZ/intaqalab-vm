@@ -1,23 +1,23 @@
-// import type { ComponentFixture } from '@angular/core/testing';
-// import { TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
-// import { ShotWidget } from './shot-widget';
+import { ShotWidget } from './shot-widget';
 
-// describe('ShotWidget', () => {
-//   let component: ShotWidget;
-//   let fixture: ComponentFixture<ShotWidget>;
+describe('ShotWidget', () => {
+  let component: ShotWidget;
+  let fixture: ComponentFixture<ShotWidget>;
 
-//   beforeEach(async () => {
-//     await TestBed.configureTestingModule({
-//       imports: [ShotWidget],
-//     }).compileComponents();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ShotWidget],
+    }).compileComponents();
 
-//     fixture = TestBed.createComponent(ShotWidget);
-//     component = fixture.componentInstance;
-//     fixture.detectChanges();
-//   });
+    fixture = TestBed.createComponent(ShotWidget);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-//   it('should create', () => {
-//     expect(component).toBeTruthy();
-//   });
-// });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

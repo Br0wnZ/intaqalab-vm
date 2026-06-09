@@ -19,7 +19,11 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { DenominationsStoreType } from '../../../+state/denominations.store';
 import { DenominationsStore } from '../../../+state/denominations.store';
-import type { DenominationDialog, DenominationModel } from '../../../models/denominations.model';
+import type {
+  DenominationDialog,
+  DenominationModel,
+  DenominationUpSertModel,
+} from '../../../models/denominations.model';
 import { WharehouseFilterComponent } from '../../shared/filter/wharehouse-filter.component';
 import { DenominationsDialogComponent } from '../denomination-dialog/denominations-dialog.component';
 
@@ -282,8 +286,9 @@ export class DenominationsListComponent {
     }
   }
 
-  toogleActive(item: DenominationModel, event: { checked: boolean }) {
-    this.store.toogleEnabledItem(item, event.checked);
+  toogleActive(item: DenominationUpSertModel, event: { checked: boolean }) {
+    const itemToSend = { ...item, active: event.checked, munitionTypeId: item.munitionType.id };
+    this.store.toogleEnabledItem(itemToSend);
   }
 
   onPage(event: PageEvent): void {

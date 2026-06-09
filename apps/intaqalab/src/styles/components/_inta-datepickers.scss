@@ -414,7 +414,7 @@ html body .inta-calendar--inline {
   }
 
   .mat-calendar-body-cell.selected-date > .mat-calendar-body-cell-content,
-  .mat-calendar-body-cell.selected-date.busy-date > .mat-calendar-body-cell-content{
+  .mat-calendar-body-cell.selected-date.busy-date > .mat-calendar-body-cell-content {
     background: #fff !important;
     border-color: #6b7280 !important;
     color: var(--inta-neutral-900) !important;
@@ -498,6 +498,10 @@ html body .inta-calendar--inline {
   }
 }
 
-html body .mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input, .mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{
+html
+  body
+  .mdc-text-field--no-label:not(.mdc-text-field--textarea)
+  .mat-mdc-form-field-input-control.mdc-text-field__input,
+.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control {
   font-size: var(--text-sm);
 }

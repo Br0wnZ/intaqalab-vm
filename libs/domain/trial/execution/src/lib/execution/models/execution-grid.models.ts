@@ -4,7 +4,7 @@ import type { Signal } from '@angular/core';
  * 📐 Tamaño de un widget en el grid
  */
 export type WidgetWidth = 1 | 2 | 3;
-export type WidgetHeight = 1;
+export type WidgetHeight = 1 | 2;
 
 /**
  * 📍 Posición en el grid (1-based)
@@ -24,6 +24,8 @@ export interface PlacedWidget {
   width: WidgetWidth;
   height: WidgetHeight;
   color?: string;
+  /** 🎭 Perfil técnico — sólo para widgets de tipo 'execution-prep-tech' */
+  techProfile?: TechProfile;
 }
 
 /**
@@ -31,11 +33,47 @@ export interface PlacedWidget {
  */
 export type WidgetType =
   | 'shot'
-  | 'general-tracking'
-  | 'execution-prep'
-  | 'radar-config'
-  | 'velocity-history'
-  | 'magnitudes';
+  | 'execution-prep-tech'
+  | 'execution-prep-jlt'
+  | 'video-camera-orientation'
+  | 'radar-trayectography-orientation'
+  | 'mao-topography'
+  | 'jlt-mao'
+  | 'armament-introduction'
+  | 'jlt-shot-data'
+  | 'munition-introduction'
+  | 'radar-metcmq'
+  | 'tarado-velocidad-chart'
+  | 'velocity-introduction'
+  | 'piezo-pressure-introduction'
+  | 'manometer-introduction'
+  | 'seguimiento'
+  | 'informacion-tarado'
+  | 'tarado-presion-chart'
+  | 'uniformidad-chart'
+  | 'stanag-criterios'
+  | 'trayectografia-introduction'
+  | 'overpressure-info'
+  | 'overpressure-chart'
+  | 'pass-coords'
+  | 'grubbs-criterion'
+  | 'topography-introduction'
+  | 'target-data'
+  | 'acoustic-level-introduction'
+  | 'vigilancia'
+  | 'datos-blanco-bola'
+  | 'seguridad';
+
+/**
+ * 🎭 Perfiles técnicos para el widget Preparación ejecución – Unidades técnicas
+ */
+export type TechProfile =
+  | 'velocidades'
+  | 'presiones'
+  | 'video'
+  | 'trayectografia'
+  | 'municiones'
+  | 'armamento';
 
 /**
  * 📊 Estado del formulario de un widget

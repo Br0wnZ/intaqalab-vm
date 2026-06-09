@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
@@ -57,8 +57,7 @@ async function setup(opts: { trialsSource?: any } = {}) {
   return { fixture, user, component, trialsService, clientsService };
 }
 
-// // Tests
-//
+// Tests
 
 describe('MunitionGeneralDataComponent', () => {
   beforeEach(() => {
@@ -165,7 +164,7 @@ describe('MunitionGeneralDataComponent', () => {
       const { component, fixture } = await setup();
       component.formModel.set({
         client: 'client-1',
-        entryDate: '2025-01-01',
+        entryDate: new Date('2025-01-01'),
         observations: 'some notes',
         plannedFireTrialId: 'trial-1',
       });
@@ -176,7 +175,7 @@ describe('MunitionGeneralDataComponent', () => {
 
       expect(component.formModel()).toEqual({
         client: '',
-        entryDate: '',
+        entryDate: expect.any(Date),
         observations: '',
         plannedFireTrialId: '',
       });
@@ -186,7 +185,7 @@ describe('MunitionGeneralDataComponent', () => {
       const { component, fixture } = await setup();
       component.formModel.set({
         client: 'c',
-        entryDate: '2025-01-01',
+        entryDate: new Date(),
         observations: '',
         plannedFireTrialId: 'p',
       });

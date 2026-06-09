@@ -26,7 +26,7 @@ export interface ComponentListMunitionForm {
 
 export interface MunitionGeneralDataForm {
   client: string;
-  entryDate: string;
+  entryDate: Date;
   plannedFireTrialId: string;
   observations: string;
 }

@@ -121,7 +121,7 @@ export class MunitionGeneralDataComponent {
 
   readonly formModel = signal<MunitionGeneralDataForm>({
     client: '',
-    entryDate: '',
+    entryDate: new Date(),
     observations: '',
     plannedFireTrialId: '',
   });
@@ -192,7 +192,7 @@ export class MunitionGeneralDataComponent {
   reset() {
     this.formModel.set({
       client: '',
-      entryDate: '',
+      entryDate: new Date(),
       observations: '',
       plannedFireTrialId: '',
     });

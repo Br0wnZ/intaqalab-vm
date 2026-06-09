@@ -5,7 +5,7 @@
  *
  * Migration guide:
  * - Replace ExecutionTransitionsService with ExecutionService from libs/domain/trial/execution
- * - Use ExecutionGeneralDataStore for state management (single source of truth)
+ * - Use ExecutionStore for state management (single source of truth)
  * - The new service uses injectExecutionEndpoint() which properly handles the API URL structure
  */
 import { httpResource } from '@angular/common/http';

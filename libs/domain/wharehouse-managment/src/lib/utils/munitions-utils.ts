@@ -41,7 +41,7 @@ export function getPayloadMunition(
         denominationId: denomination.id,
         generalData: {
           clientId: generalDataForm.client,
-          entryDate: generalDataForm.entryDate,
+          entryDate: generalDataForm.entryDate.toISOString(),
           observations: generalDataForm.observations,
           plannedFireTrialId: generalDataForm.plannedFireTrialId,
         },
@@ -75,7 +75,7 @@ export function getPayloadMunitionComponents(
         denominationId: denomination.id,
         generalData: {
           clientId: generalDataForm.client,
-          entryDate: generalDataForm.entryDate,
+          entryDate: generalDataForm.entryDate.toISOString(),
           observations: generalDataForm.observations,
           plannedFireTrialId: generalDataForm.plannedFireTrialId,
         },

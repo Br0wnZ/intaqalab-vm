@@ -193,11 +193,15 @@ describe('DenominationsService', () => {
 
   // toogleEnabledItem
   describe('toogleEnabledItem()', () => {
-    it('should not trigger any HTTP request (stub — TODO implementation)', () => {
-      const item = makeDenomination();
-      service.toogleEnabledItem(item, false);
+    it('should perform a PUT request to update the active state of the denomination', () => {
+      initPagination(service, httpMock);
+      const item = makeDenomination({ id: 'denom-1', active: true });
+      service.toogleEnabledItem(item);
       TestBed.tick();
-      httpMock.expectNone((r) => r.url.includes('/denominations'));
+
+      const req = httpMock.expectOne((r) => r.url.includes(`/denominations/${item.id}`) && r.method === 'PUT');
+      expect(req.request.method).toBe('PUT');
+      req.flush({});
     });
   });
 });

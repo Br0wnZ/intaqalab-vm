@@ -59,8 +59,8 @@ export const DenominationsStore = signalStore(
       }
     },
 
-    toogleEnabledItem(item: DenominationModel, active: boolean): void {
-      service.toogleEnabledItem(item, active);
+    toogleEnabledItem(item: DenominationUpSertModel): void {
+      service.toogleEnabledItem(item);
     },
 
     createItem(record: DenominationUpSertModel): void {
