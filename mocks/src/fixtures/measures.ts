@@ -1,15 +1,15 @@
 export const MEASURES_CATALOG = [
   {
     id: '550e8400-e29b-41d4-a716-446655440040',
-    name: { es: 'Magnitud A', en: 'Magnitude A' },
-    label: 'Magnitud A - Procedimiento A',
+    name: { es: 'Magnitud Presión en recámara', en: 'Chamber Pressure' },
+    label: 'Magnitud Presión en recámara - Procedimiento Presión',
     active: true,
     favorite: true,
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440041',
-    name: { es: 'Magnitud B', en: 'Magnitude B' },
-    label: 'Magnitud B - Procedimiento B',
+    name: { es: 'Magnitud Velocidad en boca', en: 'Muzzle Velocity' },
+    label: 'Magnitud Velocidad en boca - Procedimiento Velocidad',
     active: true,
     favorite: false,
   },
@@ -22,8 +22,8 @@ export const MEASURES_CATALOG = [
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440043',
-    name: { es: 'Magnitud D', en: 'Magnitude D' },
-    label: 'Magnitud D - Procedimiento D',
+    name: { es: 'Registro Desviación lateral', en: 'Lateral Deviation' },
+    label: 'Registro Desviación lateral - Procedimiento Desviación',
     active: true,
     favorite: true,
   },
@@ -32,7 +32,7 @@ export const MEASURES_CATALOG = [
 export const TRIAL_MEASURES = {
   series: [
     {
-      seriesId: 'serie-uuid-1',
+      seriesId: '3fa85f64-5717-4562-b3fc-2c963f66afa1',
       seriesName: 'Serie 1',
       measures: {
         topographyMeasures: [
@@ -65,7 +65,7 @@ export const TRIAL_MEASURES = {
       },
     },
     {
-      seriesId: 'serie-uuid-2',
+      seriesId: '3fa85f64-5717-4562-b3fc-2c963f66afa2',
       seriesName: 'Serie 2',
       measures: {
         topographyMeasures: [],

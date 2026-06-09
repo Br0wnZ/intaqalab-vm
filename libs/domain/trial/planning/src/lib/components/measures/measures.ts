@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal, linkedSignal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { applyEach, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +17,8 @@ import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import type { MagnitudesOptions, MeasureSelectionData, SerieData } from '../../utils-models/measure-serie.model';
-import type { MeasuresBulkUpdateRequest } from '../../utils-models/measures.model';
+import type { Serie } from '../../utils-models/series-and-shots.model';
+import type { MeasuresBulkUpdateRequest, SeriesMeasuresData, MeasureData } from '../../utils-models/measures.model';
 import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
 @Component({
@@ -362,7 +363,20 @@ export class Measures {
   readonly #seriesStore = inject(SeriesAndShotsStore);
 
   readonly seriesConfiguration = signal<boolean>(false);
-  readonly seriesSignal = signal<SerieData[]>([]);
+
+  readonly #backendData = computed(() => {
+    const planningSeries = this.#seriesStore.series();
+    const measuresSeries = this.#measuresStore.seriesMeasures();
+    return { planningSeries, measuresSeries };
+  });
+
+  readonly seriesSignal = linkedSignal({
+    source: () => this.#backendData(),
+    computation: (data) => {
+      if (!data.planningSeries) return [];
+      return this.#mapResponseToLocal(data.planningSeries, data.measuresSeries);
+    },
+  });
 
   readonly isLoading = this.#measuresStore.isLoading;
   readonly isSaving = this.#measuresStore.isUpdatingMeasures;
@@ -402,9 +416,6 @@ export class Measures {
     };
   });
 
-  #initialSeriesData: SerieData[] = [];
-  #isLocalInitialized = false;
-
   constructor() {
     effect(() => {
       const trialId = this.#planningGeneralDataStore.fireTrialId();
@@ -420,76 +431,11 @@ export class Measures {
     });
 
     effect(() => {
-      const planningSeries = this.#seriesStore.series();
-      const measuresSeries = this.#measuresStore.seriesMeasures();
-
-      if (planningSeries) {
-        const mergedSeries = planningSeries.map((pSerie) => {
-          const config = measuresSeries?.find((mSerie) => mSerie.seriesId === pSerie.id);
-
-          return {
-            id: pSerie.id,
-            nombre: pSerie.name,
-            expanded: false,
-            topografia:
-              config?.measures.topographyMeasures.map((m) => ({
-                id: m.id,
-                minLimit: m.minLimit ?? null,
-                maxLimit: m.maxLimit ?? null,
-                deviation: m.deviation ?? null,
-                expanded: true,
-              })) ?? [],
-            municiones:
-              config?.measures.munitionsMeasures.map((m) => ({
-                id: m.id,
-                minLimit: m.minLimit ?? null,
-                maxLimit: m.maxLimit ?? null,
-                deviation: m.deviation ?? null,
-                expanded: true,
-              })) ?? [],
-            armamento:
-              config?.measures.armamentMeasures.map((m) => ({
-                id: m.id,
-                minLimit: m.minLimit ?? null,
-                maxLimit: m.maxLimit ?? null,
-                deviation: m.deviation ?? null,
-                expanded: true,
-              })) ?? [],
-            balistica:
-              config?.measures.ballisticsMeasures.map((m) => ({
-                id: m.id,
-                minLimit: m.minLimit ?? null,
-                maxLimit: m.maxLimit ?? null,
-                deviation: m.deviation ?? null,
-                expanded: true,
-              })) ?? [],
-          };
-        });
-
-        if (!this.#isLocalInitialized) {
-          this.seriesSignal.set(mergedSeries);
-          this.#initialSeriesData = this.#deepClone(mergedSeries);
-          this.#isLocalInitialized = true;
-        } else {
-          this.seriesSignal.update((current) => {
-            return mergedSeries.map((newSerie) => {
-              const existing = current.find((c) => c.id === newSerie.id);
-              if (existing) return existing;
-              return newSerie;
-            });
-          });
-          this.#initialSeriesData = this.#deepClone(mergedSeries);
-        }
-      }
-    });
-
-    effect(() => {
       const status = this.updateStatus();
       if (status === 'resolved') {
         console.log('Measures saved successfully');
         this.#measuresStore.resetUpdateMeasures();
         this.#measuresStore.reloadMeasures();
-        this.#initialSeriesData = this.#deepClone(this.seriesSignal());
       } else if (status === 'error') {
         console.error('Error saving measures');
         this.#measuresStore.resetUpdateMeasures();
@@ -613,11 +559,54 @@ export class Measures {
   }
 
   cancel(): void {
-    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
+    const data = this.#backendData();
+    if (data.planningSeries) {
+      this.seriesSignal.set(this.#mapResponseToLocal(data.planningSeries, data.measuresSeries));
+    }
   }
 
-  #deepClone(data: SerieData[]): SerieData[] {
-    return JSON.parse(JSON.stringify(data));
+  #mapResponseToLocal(planningSeries: Serie[], measuresSeries?: SeriesMeasuresData[]): SerieData[] {
+    return planningSeries.map((pSerie) => {
+      const config = measuresSeries?.find((mSerie) => mSerie.seriesId === pSerie.id);
+
+      return {
+        id: pSerie.id,
+        nombre: pSerie.name,
+        expanded: false,
+        topografia:
+          config?.measures?.topographyMeasures?.map((m: MeasureData) => ({
+            id: m.id,
+            minLimit: m.minLimit ?? null,
+            maxLimit: m.maxLimit ?? null,
+            deviation: m.deviation ?? null,
+            expanded: true,
+          })) ?? [],
+        municiones:
+          config?.measures?.munitionsMeasures?.map((m: MeasureData) => ({
+            id: m.id,
+            minLimit: m.minLimit ?? null,
+            maxLimit: m.maxLimit ?? null,
+            deviation: m.deviation ?? null,
+            expanded: true,
+          })) ?? [],
+        armamento:
+          config?.measures?.armamentMeasures?.map((m: MeasureData) => ({
+            id: m.id,
+            minLimit: m.minLimit ?? null,
+            maxLimit: m.maxLimit ?? null,
+            deviation: m.deviation ?? null,
+            expanded: true,
+          })) ?? [],
+        balistica:
+          config?.measures?.ballisticsMeasures?.map((m: MeasureData) => ({
+            id: m.id,
+            minLimit: m.minLimit ?? null,
+            maxLimit: m.maxLimit ?? null,
+            deviation: m.deviation ?? null,
+            expanded: true,
+          })) ?? [],
+      };
+    });
   }
 
   #mapLocalToRequest(data: SerieData[]): MeasuresBulkUpdateRequest {

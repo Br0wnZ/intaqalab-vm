@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, model, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, model, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,7 +21,6 @@ export type { MeasureSelectionData, SelectOption };
           {{ label() }}
         </label>
       }
-
       <mat-form-field id="multi-select-field" appearance="outline" class="w-full">
         <mat-select
           panelClass="custom-select-panel"
@@ -216,6 +215,7 @@ export type { MeasureSelectionData, SelectOption };
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultiSelectSearchableComponent {
   readonly label = input<string>('');
@@ -227,7 +227,9 @@ export class MultiSelectSearchableComponent {
 
   selectedValues = model<MeasureSelectionData[]>([]);
 
-  readonly _internalIds = computed(() => this.selectedValues().map((v) => v.id));
+  // Writable signal (not computed) so that mat-select ControlValueAccessor
+  // receives an explicit writeValue() call via template binding on each change.
+  readonly _internalIds = signal<string[]>([]);
 
   readonly searchTerm = signal<string>('');
   readonly starredItems = signal<string[]>([]);
@@ -261,6 +263,11 @@ export class MultiSelectSearchableComponent {
   });
 
   constructor() {
+    // Sync selectedValues → _internalIds so mat-select gets explicit writeValue()
+    effect(() => {
+      this._internalIds.set(this.selectedValues().map((v) => v.id));
+    });
+
     effect(() => {
       const starred = this.options()
         .filter((opt) => opt.favorite)
