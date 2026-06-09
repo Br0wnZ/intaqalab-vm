@@ -43,7 +43,6 @@ function makeMockDocsService() {
     uploadNewDocumentVersionResource,
     fireTrialId: vi.fn(() => null),
     getDocumentDetail: vi.fn(),
-    getDocumentObservations: vi.fn(),
     getDocumentVersions: vi.fn(),
     getDocumentAssociatedTrials: vi.fn(),
     deleteAssociatedDocument: vi.fn(),
@@ -142,7 +141,6 @@ describe('TrialDocDetails', () => {
       const { mockService } = await setup({ documentId: 'doc-123' });
 
       expect(mockService.getDocumentDetail).toHaveBeenCalledWith('doc-123');
-      expect(mockService.getDocumentObservations).toHaveBeenCalledWith('doc-123');
       expect(mockService.getDocumentVersions).toHaveBeenCalledWith('doc-123');
       expect(mockService.getDocumentAssociatedTrials).toHaveBeenCalledWith('doc-123');
     });
@@ -151,7 +149,6 @@ describe('TrialDocDetails', () => {
       const { mockService } = await setup();
 
       expect(mockService.resetDocumentDetail).toHaveBeenCalled();
-      expect(mockService.resetDocumentObservations).toHaveBeenCalled();
       expect(mockService.resetDocumentVersions).toHaveBeenCalled();
       expect(mockService.resetDocumentAssociatedTrials).toHaveBeenCalled();
     });

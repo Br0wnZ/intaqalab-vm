@@ -361,6 +361,10 @@ export class TrialDocsService {
     this.#associateDocToExistingTrialParams.set(params);
   }
 
+  resetAssociateDoc(): void {
+    this.#associateDocToExistingTrialParams.set(null);
+  }
+
   getDocumentVersions(documentId: string): void {
     this.#documentVersionsParams.set({ documentId });
   }

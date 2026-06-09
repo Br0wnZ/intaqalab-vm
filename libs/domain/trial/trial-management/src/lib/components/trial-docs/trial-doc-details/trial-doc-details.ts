@@ -153,7 +153,7 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                 </div>
               </div>
 
-              <div>
+              <!--  <div>
                 <label for="observations" class="block text-sm font-medium text-gray-900 mb-2">
                   {{ 'TRIAL_DOCS.DOC_DETAILS.OBSERVATIONS' | translate }}
                 </label>
@@ -167,9 +167,9 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                     [formField]="docDetailsForm.observations"
                   ></textarea>
                 </mat-form-field>
-              </div>
+              </div> -->
 
-              <div>
+              <!--  <div>
                 <label for="other-observations" class="block text-sm font-medium text-gray-900 mb-2">
                   {{ 'TRIAL_DOCS.DOC_DETAILS.OTHER_USERS_OBSERVATIONS' | translate }}
                 </label>
@@ -183,78 +183,81 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                     [formField]="docDetailsForm.otherUsersObservations"
                   ></textarea>
                 </mat-form-field>
-              </div>
+              </div> -->
             </div>
 
-            <div class="mt-8">
-              <h4 class="text-sm font-medium text-gray-900 mb-4">
-                {{ 'TRIAL_DOCS.DOC_DETAILS.VINCULATED_TRIALS' | translate }}
-              </h4>
+            @if (linkedTrialsResource.hasValue() && linkedTrialsResource.value().fireTrialIds.length > 0) {
+              <!-- Quitar hidden para mostrar la tabla de pruebas vinculadas -->
+              <div class="mt-8 hidden">
+                <h4 class="text-sm font-medium text-gray-900 mb-4">
+                  {{ 'TRIAL_DOCS.DOC_DETAILS.VINCULATED_TRIALS' | translate }}
+                </h4>
 
-              <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value()?.fireTrialIds || []">
-                  <!-- Columna Número de prueba -->
-                  <ng-container matColumnDef="trialNumber">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                    >
-                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.TRIAL_NUMBER' | translate }}
-                    </th>
-                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                      {{ trial.trialNumber }}
-                    </td>
-                  </ng-container>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                  <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value().fireTrialIds">
+                    <!-- Columna Número de prueba -->
+                    <ng-container matColumnDef="trialNumber">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                      >
+                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.TRIAL_NUMBER' | translate }}
+                      </th>
+                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                        {{ trial.trialNumber }}
+                      </td>
+                    </ng-container>
 
-                  <!-- Columna Usuario vinculación -->
-                  <ng-container matColumnDef="linkedUser">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                    >
-                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
-                    </th>
-                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                      {{ trial.linkedUser }}
-                    </td>
-                  </ng-container>
+                    <!-- Columna Usuario vinculación -->
+                    <ng-container matColumnDef="linkedUser">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                      >
+                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
+                      </th>
+                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                        {{ trial.linkedUser }}
+                      </td>
+                    </ng-container>
 
-                  <!-- Columna Fecha vinculación -->
-                  <ng-container matColumnDef="linkDate">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                    >
-                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
-                    </th>
-                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                      {{ trial.linkDate }}
-                    </td>
-                  </ng-container>
+                    <!-- Columna Fecha vinculación -->
+                    <ng-container matColumnDef="linkDate">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                      >
+                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
+                      </th>
+                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                        {{ trial.linkDate }}
+                      </td>
+                    </ng-container>
 
-                  <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-                  <tr
-                    *matRowDef="let row; columns: displayedColumns"
-                    mat-row
-                    class="hover:!bg-gray-50 !border-b !border-gray-100"
-                  ></tr>
-                </table>
+                    <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+                    <tr
+                      *matRowDef="let row; columns: displayedColumns"
+                      mat-row
+                      class="hover:!bg-gray-50 !border-b !border-gray-100"
+                    ></tr>
+                  </table>
+                </div>
               </div>
-            </div>
+            }
           </div>
         </mat-tab>
 
         <mat-tab label="{{ 'TRIAL_DOCS.DOC_DETAILS.VERSIONS_MAT_LABEL' | translate }}">
-          @if (documentVersionsResource.hasValue()) {
+          @if (documentVersionsResource.hasValue() && documentVersionsResource.value().length > 0) {
             <inta-trial-doc-versions [documentVersions]="documentVersionsResource.value()" />
           }
         </mat-tab>
         <!-- Descomentar par ver la parte de Admin -->
         <!-- <mat-tab label="{{ 'Gestión (Admin)' | translate }}">
-          <inta-admin-docs-section />
+          <inta-admin-docs-section />F
         </mat-tab> -->
       </mat-tab-group>
     </div>
@@ -354,8 +357,6 @@ export class TrialDocDetails {
     documentType: '',
     responsibleUser: '',
     documentTitle: '',
-    observations: '',
-    otherUsersObservations: '',
   });
 
   readonly docDetailsForm = form(this.deoDetailsModel, (f) => {
@@ -363,8 +364,6 @@ export class TrialDocDetails {
     disabled(f.documentType, () => true);
     disabled(f.responsibleUser, () => true);
     disabled(f.documentTitle, () => true);
-    disabled(f.observations, () => true);
-    disabled(f.otherUsersObservations, () => true);
   });
 
   constructor() {
@@ -372,12 +371,10 @@ export class TrialDocDetails {
       const id = this.documentId();
       if (id) {
         this.#docsService.getDocumentDetail(id);
-        this.#docsService.getDocumentObservations(id);
         this.#docsService.getDocumentVersions(id);
         this.#docsService.getDocumentAssociatedTrials(id);
       } else {
         this.#docsService.resetDocumentDetail();
-        this.#docsService.resetDocumentObservations();
         this.#docsService.resetDocumentVersions();
         this.#docsService.resetDocumentAssociatedTrials();
         this.deoDetailsModel.set({
@@ -385,8 +382,6 @@ export class TrialDocDetails {
           documentType: '',
           responsibleUser: '',
           documentTitle: '',
-          observations: '',
-          otherUsersObservations: '',
         });
       }
     });
