@@ -1,5 +1,14 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal, linkedSignal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { applyEach, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,8 +26,8 @@ import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import type { MagnitudesOptions, MeasureSelectionData, SerieData } from '../../utils-models/measure-serie.model';
+import type { MeasureData, MeasuresBulkUpdateRequest, SeriesMeasuresData } from '../../utils-models/measures.model';
 import type { Serie } from '../../utils-models/series-and-shots.model';
-import type { MeasuresBulkUpdateRequest, SeriesMeasuresData, MeasureData } from '../../utils-models/measures.model';
 import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
 @Component({
