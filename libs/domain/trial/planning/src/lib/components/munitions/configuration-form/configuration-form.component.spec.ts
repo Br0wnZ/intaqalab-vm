@@ -19,21 +19,44 @@ const waitFor = async (fn: () => any) => fn();
 
 const defaultImports = [TranslateModule.forRoot()];
 
-const mockDenominations = signal([
-  { id: '1', label: 'Denominación 1', translations: {} },
-  { id: '2', label: 'Denominación 2', translations: {} },
-  { id: '3', label: 'Denominación 3', translations: {} },
+const mockMunitionTypes = signal([
+  { id: 'type-1', label: 'Tipo 1', name: { es: 'Tipo 1', en: 'Tipo 1' }, active: true },
+]);
+
+const mockDenominationsRaw = signal([
+  {
+    id: '1',
+    name: 'Denominación 1',
+    munitionType: { id: 'type-1', name: 'Tipo 1' },
+    active: true,
+    category: 'MUNITION' as const,
+  },
+  {
+    id: '2',
+    name: 'Denominación 2',
+    munitionType: { id: 'type-1', name: 'Tipo 1' },
+    active: true,
+    category: 'MUNITION' as const,
+  },
+  {
+    id: '3',
+    name: 'Denominación 3',
+    munitionType: { id: 'type-1', name: 'Tipo 1' },
+    active: true,
+    category: 'MUNITION' as const,
+  },
 ]);
 
 const mockComponentTypes = signal([
-  { id: '1', label: 'Espoleta', translations: {} },
-  { id: '2', label: 'Detonador', translations: {} },
-  { id: '3', label: 'Proyectil', translations: {} },
+  { id: '1', label: 'Espoleta', name: { es: 'Espoleta', en: 'Fuze' }, active: true },
+  { id: '2', label: 'Detonador', name: { es: 'Detonador', en: 'Detonator' }, active: true },
+  { id: '3', label: 'Proyectil', name: { es: 'Proyectil', en: 'Projectile' }, active: true },
 ]);
 
 const mockMunitionsStore = {
-  denominations: mockDenominations,
+  denominationsRaw: mockDenominationsRaw,
   componentTypes: mockComponentTypes,
+  munitionTypes: mockMunitionTypes,
   fuseWorkingModes: signal([]),
   isLoading: signal(false),
   seriesMunitions: signal(undefined),
@@ -118,6 +141,17 @@ describe('ConfigurationFormComponent', () => {
         on: { configChange: configChangeSpy },
       });
 
+      // Select a munition type first to enable the denomination field
+      const munitionTypeSelect = screen.getByTestId('munition-type-select');
+      await user.click(munitionTypeSelect);
+      await fixture.whenStable();
+      const typeOptions = document.querySelectorAll('mat-option');
+      const tipo1Option = Array.from(typeOptions).find((opt) => opt.textContent?.includes('Tipo 1'));
+      expect(tipo1Option).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await user.click(tipo1Option!);
+      await fixture.whenStable();
+
       const denominationSelect = document.querySelector('#denomination-0') as HTMLElement;
       expect(denominationSelect).toBeInTheDocument();
 
@@ -141,11 +175,21 @@ describe('ConfigurationFormComponent', () => {
     it('should filter denominations with contains match', async () => {
       const user = userEvent.setup();
 
-      await render(ConfigurationFormComponent, {
+      const { fixture } = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
+
+      // Select a munition type first to enable the denomination field
+      const munitionTypeSelect = screen.getByTestId('munition-type-select');
+      await user.click(munitionTypeSelect);
+      await fixture.whenStable();
+      const typeOptions = document.querySelectorAll('mat-option');
+      const tipo1Option = Array.from(typeOptions).find((opt) => opt.textContent?.includes('Tipo 1'));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await user.click(tipo1Option!);
+      await fixture.whenStable();
 
       const denominationSelect = document.querySelector('#denomination-0') as HTMLElement;
       await user.click(denominationSelect);

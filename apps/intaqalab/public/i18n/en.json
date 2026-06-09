@@ -570,6 +570,8 @@
         "DELETE_CONFIG": "Delete settings"
       },
       "CONFIGURATION_FORM": {
+        "MUNITION_TYPE_LABEL": "Ammunition type",
+        "MUNITION_TYPE_PLACEHOLDER": "Ammunition type",
         "DENOMINATION_LABEL": "Denomination",
         "LOT_LABEL": "Batch",
         "LOT_PLACEHOLDER": "Batch name",
@@ -618,7 +620,7 @@
         "CONDITIONING_CHECKBOX": "Conditioning",
         "FUZE_MODE_LABEL": "Fuze operating mode",
         "FUZE_GRADUATION_LABEL": "Fuze graduation",
-        "MANUFACTURER_NUMBER_LABEL": "Manufacturer No.",
+        "MANUFACTURER_NUMBER_LABEL": "Client number",
         "ADD_POWDER_BUTTON": "Add powder"
       },
       "CONDITIONING_FIELDS": {
@@ -757,6 +759,11 @@
   },
   "SPECIMENS_MANAGMENT_DIALOG": {
     "TITLE": "Specimen management",
+    "TYPE_LABEL": "Specimen type",
+    "TYPE_PLACEHOLDER": "Select type",
+    "TYPE_WEAPON": "Weapon",
+    "TYPE_TUBE": "Tube",
+    "TYPE_MUNITION": "Ammunition",
     "SPECIMEN_LABEL": "Specimen",
     "SPECIMEN_PLACEHOLDER": "Select specimen",
     "GROUP_WEAPONS_TUBES": "Weapons and tubes",

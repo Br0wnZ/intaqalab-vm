@@ -14,7 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { ElementRef } from '@angular/core';
-import { FormField, form, min, required } from '@angular/forms/signals';
+import { FormField, disabled, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
@@ -56,6 +56,26 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
   template: `
     <div class="bg-gray-200 p-6 space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <!-- Tipo de munición -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-2" [for]="'munitionType-' + configIndex()">
+            {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-select
+              data-testid="munition-type-select"
+              [id]="'munitionType-' + configIndex()"
+              [value]="selectedMunitionTypeId()"
+              [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_PLACEHOLDER' | translate"
+              (selectionChange)="onMunitionTypeChange($event.value)"
+            >
+              @for (type of munitionTypes(); track type.id) {
+                <mat-option [value]="type.id">{{ type.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <!-- Denominación -->
         <div>
           <label class="block text-xs font-medium text-gray-600 mb-2" [for]="'denomination-' + configIndex()">
@@ -140,7 +160,9 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 </mat-checkbox>
               </div>
               @for (shot of shots(); track shot.id) {
-                <mat-option [value]="shot.id" [disabled]="excludeShotIds().includes(shot.id)">{{ shot.globalNumber }}</mat-option>
+                <mat-option [value]="shot.id" [disabled]="excludeShotIds().includes(shot.id)">
+                  {{ shot.globalNumber }}
+                </mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -319,8 +341,10 @@ export class ConfigurationFormComponent {
   readonly configChange = output<Configuration>();
 
   readonly componentTypes = this.#munitionsStore.componentTypes;
-  readonly denominations = this.#munitionsStore.denominations;
+  readonly munitionTypes = this.#munitionsStore.munitionTypes;
+  readonly denominationsRaw = this.#munitionsStore.denominationsRaw;
 
+  readonly selectedMunitionTypeId = signal<string>('');
   readonly formModel = linkedSignal(() => this.config());
   readonly denominationSearchTerm = signal('');
 
@@ -349,17 +373,19 @@ export class ConfigurationFormComponent {
     return assigned.length > 0 && !eligible.every((s) => assigned.includes(s.id));
   });
   readonly filteredDenominations = computed(() => {
+    const munitionTypeId = this.selectedMunitionTypeId();
+    const allDenominations = this.denominationsRaw();
+
+    // Filter by selected munition type
+    const byType = munitionTypeId ? allDenominations.filter((d) => d.munitionType?.id === munitionTypeId) : [];
+
     const term = this.#normalizeText(this.denominationSearchTerm());
-    const items = this.denominations();
+    if (!term)
+      return byType.map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
 
-    if (!term) return items;
-
-    return items.filter((denom) => {
-      const label = this.#normalizeText(denom.label);
-      const esName = this.#normalizeText(denom.name?.['es'] ?? '');
-      const enName = this.#normalizeText(denom.name?.['en'] ?? '');
-      return label.includes(term) || esName.includes(term) || enName.includes(term);
-    });
+    return byType
+      .filter((d) => this.#normalizeText(d.name).includes(term))
+      .map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
   });
 
   readonly isConditioningEnabled = computed(() => hasReconditioning(this.formModel().reconditioning));
@@ -408,6 +434,7 @@ export class ConfigurationFormComponent {
 
   readonly configForm = form(this.formModel, (f) => {
     required(f.batch);
+    disabled(f.denomination, () => !this.selectedMunitionTypeId());
     min(f.maxAllowedErrors, 0);
   });
 
@@ -429,6 +456,10 @@ export class ConfigurationFormComponent {
     } else {
       this.denominationSearchTerm.set('');
     }
+  }
+
+  onMunitionTypeChange(munitionTypeId: string): void {
+    this.selectedMunitionTypeId.set(munitionTypeId);
   }
 
   #normalizeText(value: string): string {

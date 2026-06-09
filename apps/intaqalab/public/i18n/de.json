@@ -30,6 +30,8 @@
   "TRIAL_PLANNING": {
     "MUNITIONS": {
       "CONFIGURATION_FORM": {
+        "MUNITION_TYPE_LABEL": "Munitionstyp",
+        "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
         "POWDER_INDEX": "Pulver {{index}}"
       }
     }

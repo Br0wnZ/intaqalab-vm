@@ -571,6 +571,8 @@
         "DELETE_CONFIG": "Eliminar configuración"
       },
       "CONFIGURATION_FORM": {
+        "MUNITION_TYPE_LABEL": "Tipo de munición",
+        "MUNITION_TYPE_PLACEHOLDER": "Tipo de munición",
         "DENOMINATION_LABEL": "Denominación",
         "LOT_LABEL": "Lote",
         "LOT_PLACEHOLDER": "Lote",
@@ -619,7 +621,7 @@
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
         "FUZE_MODE_LABEL": "Modo funcionamiento espoleta",
         "FUZE_GRADUATION_LABEL": "Graduación de la espoleta",
-        "MANUFACTURER_NUMBER_LABEL": "Nº de fabricante",
+        "MANUFACTURER_NUMBER_LABEL": "Nº de cliente",
         "ADD_POWDER_BUTTON": "Añadir pólvora"
       },
       "CONDITIONING_FIELDS": {
@@ -758,6 +760,11 @@
   },
   "SPECIMENS_MANAGMENT_DIALOG": {
     "TITLE": "Gestión de espécimen",
+    "TYPE_LABEL": "Tipo de espécimen",
+    "TYPE_PLACEHOLDER": "Seleccionar tipo",
+    "TYPE_WEAPON": "Arma",
+    "TYPE_TUBE": "Tubo",
+    "TYPE_MUNITION": "Munición",
     "SPECIMEN_LABEL": "Espécimen",
     "SPECIMEN_PLACEHOLDER": "Selecciona espécimen",
     "GROUP_WEAPONS_TUBES": "Armas y tubos",
