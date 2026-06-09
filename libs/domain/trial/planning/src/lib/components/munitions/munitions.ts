@@ -158,9 +158,9 @@ export class Munitions {
       const componentTypes = this.#munitionsStore.componentTypes();
       const denominations = this.#munitionsStore.denominations();
       const fuseWorkingModes = this.#munitionsStore.fuseWorkingModes();
+      const munitionsStatus = this.#munitionsStore.munitionsStatus();
 
       if (!allSeries) return;
-      if (this.#munitionsStore.isLoadingMunitions()) return;
 
       const mappedMunitions = this.#mapBackendToLocal(
         seriesMunitions ?? [],
@@ -181,7 +181,7 @@ export class Munitions {
 
       this.seriesSignal.set(completeSeries);
 
-      if (!this.#isLocalInitialized && !this.#munitionsStore.isLoadingMunitions() && seriesMunitions !== undefined) {
+      if (!this.#isLocalInitialized && (munitionsStatus === 'resolved' || munitionsStatus === 'error')) {
         this.#initialSeriesData = this.#deepClone(completeSeries);
         this.#isLocalInitialized = true;
       }

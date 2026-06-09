@@ -9,13 +9,16 @@ import {
   input,
   linkedSignal,
   output,
+  signal,
+  viewChild,
 } from '@angular/core';
+import type { ElementRef } from '@angular/core';
 import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../../+state/munitions.store';
@@ -35,10 +38,11 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatSelectModule,
     FormField,
     NoLeadingZerosDirective,
+    NoNegativeValuesDirective,
     TranslateModule,
   ],
   template: `
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="w-full">
         <label for="component-type" class="block text-xs font-medium text-gray-600 mb-2 min-h-[2.25rem] flex items-end">
           {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.TYPE' | translate }}
@@ -61,9 +65,28 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
             (selectionChange)="onDenominationChange($event.value)"
+            (openedChange)="onDenominationPanelToggle($event)"
           >
-            @for (denom of denominations(); track denom.id) {
+            <div class="px-3 py-2">
+              <input
+                matInput
+                type="text"
+                [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
+                [value]="denominationSearchTerm()"
+                (input)="onDenominationSearchInput($event)"
+                (keydown)="$event.stopPropagation()"
+                (click)="$event.stopPropagation()"
+                (mousedown)="$event.stopPropagation()"
+                #denominationSearchInput
+              />
+            </div>
+            @for (denom of filteredDenominations(); track denom.id) {
               <mat-option [value]="denom.id">{{ denom.label }}</mat-option>
+            }
+            @if (filteredDenominations().length === 0) {
+              <mat-option disabled>
+                {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
+              </mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -151,6 +174,27 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
           />
         </mat-form-field>
       </div>
+
+      <div class="w-full">
+        <label
+          for="espoleta-errors"
+          class="block text-xs font-medium text-gray-600 mb-2 min-h-[2.25rem] flex items-end"
+        >
+          {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.MAX_FAILURES' | translate }}
+        </label>
+        <mat-form-field appearance="outline" class="w-full">
+          <input
+            id="espoleta-errors"
+            matInput
+            type="number"
+            libNoLeadingZeros
+            libNoNegativeValues
+            [formField]="detailForm.maxAllowedErrors"
+            [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"
+            (blur)="emitChanges()"
+          />
+        </mat-form-field>
+      </div>
     </div>
 
     <div class="mt-4">
@@ -211,6 +255,23 @@ export class EspoletaDetailFormComponent {
   });
 
   readonly fuseWorkingModes = this.#munitionsStore.fuseWorkingModes;
+
+  readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
+  readonly denominationSearchTerm = signal('');
+
+  readonly filteredDenominations = computed(() => {
+    const term = this.#normalizeText(this.denominationSearchTerm());
+    const items = this.denominations();
+
+    if (!term) return items;
+
+    return items.filter((denom) => {
+      const label = this.#normalizeText(denom.label);
+      const esName = this.#normalizeText(denom.name?.['es'] ?? '');
+      const enName = this.#normalizeText(denom.name?.['en'] ?? '');
+      return label.includes(term) || esName.includes(term) || enName.includes(term);
+    });
+  });
 
   readonly formModel = linkedSignal(() => this.detail());
 
@@ -289,5 +350,28 @@ export class EspoletaDetailFormComponent {
       }));
       this.emitChanges();
     }
+  }
+
+  onDenominationSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.denominationSearchTerm.set(target?.value ?? '');
+  }
+
+  onDenominationPanelToggle(opened: boolean): void {
+    if (opened) {
+      setTimeout(() => {
+        this.denominationSearchInputRef()?.nativeElement.focus();
+      }, 0);
+    } else {
+      this.denominationSearchTerm.set('');
+    }
+  }
+
+  #normalizeText(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 }

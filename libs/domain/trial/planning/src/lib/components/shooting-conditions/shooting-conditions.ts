@@ -107,7 +107,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select [formField]="getShotField(serieIdx, i).date">
                           @for (schedule of getTrialSchedulesResource.value(); track schedule.date) {
                             <mat-option
@@ -137,7 +137,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select [formField]="getShotField(serieIdx, i).impactZoneId">
                           @for (zone of impactZones(); track zone.id) {
                             <mat-option
@@ -167,7 +167,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select [formField]="getShotField(serieIdx, i).targetTypeId">
                           @for (target of targetTypes(); track target.id) {
                             <mat-option
@@ -197,7 +197,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select [formField]="getShotField(serieIdx, i).targetMaterialId">
                           @for (material of targetMaterials(); track material.id) {
                             <mat-option
@@ -227,7 +227,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select matNativeControl [formField]="getShotField(serieIdx, i).targetDimensionsId">
                           @for (dimension of targetDimensions(); track dimension.id) {
                             <mat-option
@@ -257,7 +257,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <mat-select [formField]="getShotField(serieIdx, i).targetThicknessId">
                           @for (thickness of targetThicknesses(); track thickness.id) {
                             <mat-option
@@ -287,7 +287,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -311,7 +311,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -335,7 +335,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -359,7 +359,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -383,7 +383,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input placeholder="0" matInput type="number" [formField]="getShotField(serieIdx, i).angle" />
                       </mat-form-field>
                     </td>
@@ -402,7 +402,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input placeholder="0" matInput type="number" [formField]="getShotField(serieIdx, i).range" />
                       </mat-form-field>
                     </td>
@@ -421,7 +421,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -446,7 +446,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -470,7 +470,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -494,7 +494,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       mat-cell
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
-                      <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'" class="w-full">
+                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                         <input
                           placeholder="0"
                           matInput
@@ -514,7 +514,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.OBSERVATIONS' | translate }}
                     </th>
                     <td *matCellDef="let shot" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
-                      <button mat-icon-button class="!text-gray-600 scale-90" [title]="shot.observation">
+                      <button mat-icon-button class="!text-gray-600 scale-90" [title]="shot.observations">
                         <ui-inta-icon name="info" size="xxl" />
                       </button>
                     </td>

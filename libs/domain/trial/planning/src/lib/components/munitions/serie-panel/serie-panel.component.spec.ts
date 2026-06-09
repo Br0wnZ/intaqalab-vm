@@ -181,8 +181,9 @@ describe('SeriePanelComponent', () => {
       });
 
       const buttons = screen.getAllByRole('button');
-      const addButton = buttons.find((btn) =>
-        btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
+      const addButton = buttons.find(
+        (btn) =>
+          btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
       );
       expect(addButton).toBeDisabled();
     });
@@ -194,9 +195,7 @@ describe('SeriePanelComponent', () => {
       ];
       const serieWithSomeShotsAssigned: Serie = {
         ...defaultSerie,
-        configurations: [
-          { ...createEmptyConfiguration(), assignedShotIds: ['shot-1'] },
-        ],
+        configurations: [{ ...createEmptyConfiguration(), assignedShotIds: ['shot-1'] }],
       };
 
       await render(SeriePanelComponent, {
@@ -211,8 +210,9 @@ describe('SeriePanelComponent', () => {
       });
 
       const buttons = screen.getAllByRole('button');
-      const addButton = buttons.find((btn) =>
-        btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
+      const addButton = buttons.find(
+        (btn) =>
+          btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
       );
       expect(addButton).not.toBeDisabled();
     });

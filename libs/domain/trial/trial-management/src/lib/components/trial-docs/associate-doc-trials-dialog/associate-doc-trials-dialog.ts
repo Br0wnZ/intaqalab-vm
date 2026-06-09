@@ -32,7 +32,7 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
       {{ 'TRIAL_DOCS.ASSOCIATE_DOC_TO_TRIAL_DIALOG.TITLE' | translate }}
     </h2>
 
-    <mat-dialog-content>
+    <mat-dialog-content class="!h-[150px]">
       <div class="space-y-4">
         <label for="trialSelect" class="block text-sm font-medium text-gray-700 mb-2">
           {{ 'TRIAL_DOCS.ASSOCIATE_DOC_TO_TRIAL_DIALOG.SELECT_TRIALS_LABEL' | translate }}
@@ -45,7 +45,7 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
             [placeholder]="'TRIAL_DOCS.ASSOCIATE_DOC_TO_TRIAL_DIALOG.SELECT_TRIALS_PLACEHOLDER' | translate"
             [value]="selectedTrials()"
             [compareWith]="compareTrials"
-            (valueChange)="selectedTrials.set($event)"
+            (valueChange)="onSelectionChange($event)"
           >
             <!-- Buscador dentro del panel del select -->
             <div class="px-3 pt-2 pb-1">
@@ -136,7 +136,7 @@ export class AssociateDocTrialsDialog {
     const term = this.searchTerm();
     if (term.length < 3) return undefined;
     return {
-      url: `${this.#fireTrialsEndpoint}?page=1&pageSize=10&trialNumber=${encodeURIComponent(term)}&status=${TrialStatus.UNDER_REVIEW}`,
+      url: `${this.#fireTrialsEndpoint}?page=1&pageSize=100&trialNumber=${encodeURIComponent(term)}&status=${TrialStatus.UNDER_REVIEW}`,
     };
   });
 
@@ -147,6 +147,7 @@ export class AssociateDocTrialsDialog {
   );
 
   constructor() {
+    this.#docsService.resetAssociateDoc();
     this.#docsService.getDocumentAssociatedTrials(this.data.documentId);
     effect(() => {
       const status = this.#associateDocResource.status();
@@ -157,6 +158,14 @@ export class AssociateDocTrialsDialog {
   }
 
   readonly compareTrials = (a: FireTrial, b: FireTrial): boolean => a.id === b.id;
+
+  onSelectionChange(newValues: FireTrial[]): void {
+    const currentSearchIds = new Set(this.searchedTrials().map((t) => t.id));
+    this.selectedTrials.update((current) => {
+      const previousNotInSearch = current.filter((t) => !currentSearchIds.has(t.id));
+      return [...previousNotInSearch, ...newValues];
+    });
+  }
 
   onSearchInput(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
