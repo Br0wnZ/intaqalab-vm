@@ -54,6 +54,8 @@ export const MunitionsStore = signalStore(
 
       hasMunitionsError: computed(() => munitionsService.munitionsResource.error() !== null),
 
+      munitionsStatus: computed(() => munitionsService.munitionsResource.status()),
+
       updateMunitionsStatus: computed(() => munitionsService.updateMunitionsResource.status()),
 
       isUpdatingMunitions: computed(() => munitionsService.updateMunitionsResource.isLoading()),
@@ -70,6 +72,22 @@ export const MunitionsStore = signalStore(
               active: item.active,
             }),
           ) ?? []
+        );
+      }),
+
+      munitionTypes: computed<MasterDataI18nItem[]>(() => {
+        const response = munitionsService.componentTypesResource.value();
+        return (
+          response?.items
+            .filter((item: WarehouseMunitionTypeItem) => item.category === 'MUNITION')
+            .map(
+              (item: WarehouseMunitionTypeItem): MasterDataI18nItem => ({
+                id: item.id,
+                name: item.name as Record<string, string>,
+                label: item.label,
+                active: item.active,
+              }),
+            ) ?? []
         );
       }),
       componentTypesPagination: computed(() => {
@@ -109,6 +127,10 @@ export const MunitionsStore = signalStore(
             }),
           ) ?? []
         );
+      }),
+
+      denominationsRaw: computed<WarehouseDenominationItem[]>(() => {
+        return munitionsService.denominationsResource.value()?.items ?? [];
       }),
 
       denominationsPagination: computed(() => {
