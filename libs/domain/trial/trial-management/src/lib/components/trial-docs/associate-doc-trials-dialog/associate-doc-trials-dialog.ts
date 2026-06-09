@@ -108,14 +108,14 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
     `
       mat-chip {
         background-color: var(--color-purple-100) !important;
-        .mdc-evolution-chip__text-label.mat-mdc-chip-action-label,
-        .mat-mdc-chip-remove {
-          color: var(--color-purple-600) !important;
-          font-size: 12px;
-        }
-        &:not(.mdc-evolution-chip--disabled) .mdc-evolution-chip__action--primary::before {
-          border: 0 !important;
-        }
+      }
+      mat-chip .mdc-evolution-chip__text-label.mat-mdc-chip-action-label,
+      mat-chip .mat-mdc-chip-remove {
+        color: var(--color-purple-600) !important;
+        font-size: 12px;
+      }
+      mat-chip:not(.mdc-evolution-chip--disabled) .mdc-evolution-chip__action--primary::before {
+        border: 0 !important;
       }
     `,
   ],

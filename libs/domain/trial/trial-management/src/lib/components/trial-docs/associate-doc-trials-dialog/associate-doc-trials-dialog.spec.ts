@@ -43,6 +43,7 @@ describe('AssociateDocTrialsDialog', () => {
       },
       getDocumentAssociatedTrials: vi.fn(),
       associateDocToTrial: vi.fn(),
+      resetAssociateDoc: vi.fn(),
     };
 
     const renderResult = await render(AssociateDocTrialsDialog, {
