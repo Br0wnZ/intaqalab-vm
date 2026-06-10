@@ -234,7 +234,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR_PLACEHOLDER' | translate"
             (selectionChange)="onComponentsChange($event.value)"
           >
-            @for (type of componentTypes(); track type.id) {
+            @for (type of filteredComponentTypes(); track type.id) {
               <mat-option [value]="type.label.toLowerCase()">{{ type.label }}</mat-option>
             }
           </mat-select>
@@ -347,6 +347,11 @@ export class ConfigurationFormComponent {
   readonly selectedMunitionTypeId = signal<string>('');
   readonly formModel = linkedSignal(() => this.config());
   readonly denominationSearchTerm = signal('');
+
+  readonly filteredComponentTypes = computed(() => {
+    const components = this.componentTypes();
+    return components.filter((c) => c.category === 'MUNITION_COMPONENT');
+  });
 
   readonly selectedComponents = computed(() => this.formModel().selectedComponents ?? []);
   readonly selectableComponentsSelected = computed(() => {

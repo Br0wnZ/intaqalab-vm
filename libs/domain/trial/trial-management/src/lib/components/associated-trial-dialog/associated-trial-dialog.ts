@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
+import type { TrialSearchFilters } from '@intaqalab/models';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -149,7 +150,7 @@ export class AssociatedTrialDialog {
       return {
         year: this.associatedTrialForm.year().value(),
         clientId: this.associatedTrialForm.clientId().value(),
-        content: this.associatedTrialForm.searchTerm().value(),
+        description: this.associatedTrialForm.searchTerm().value(),
       };
     },
     {
@@ -172,8 +173,8 @@ export class AssociatedTrialDialog {
   constructor() {
     effect(() => {
       const params = this.searchParams();
-      if (params.year && (params.clientId || params.content)) {
-        this.trialsService.search(params);
+      if (params.year && (params.clientId || params.description)) {
+        this.trialsService.search(params as TrialSearchFilters);
       }
     });
   }

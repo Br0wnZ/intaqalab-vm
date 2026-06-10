@@ -61,18 +61,9 @@ export const MunitionsStore = signalStore(
       isUpdatingMunitions: computed(() => munitionsService.updateMunitionsResource.isLoading()),
       updateMunitionsError: computed(() => munitionsService.updateMunitionsResource.error()),
 
-      componentTypes: computed<MasterDataI18nItem[]>(() => {
+      componentTypes: computed<WarehouseMunitionTypeItem[]>(() => {
         const response = munitionsService.componentTypesResource.value();
-        return (
-          response?.items.map(
-            (item: WarehouseMunitionTypeItem): MasterDataI18nItem => ({
-              id: item.id,
-              name: item.name as Record<string, string>,
-              label: item.label,
-              active: item.active,
-            }),
-          ) ?? []
-        );
+        return response?.items ?? [];
       }),
 
       munitionTypes: computed<MasterDataI18nItem[]>(() => {

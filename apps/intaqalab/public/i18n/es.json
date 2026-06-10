@@ -443,6 +443,7 @@
       "SPECIMEN_LABEL": "Espécimen",
       "SPECIMEN_PLACEHOLDER": "Seleccionar Espécimen",
       "MANAGE_SPECIMEN_BUTTON": "Gestionar espécimen",
+      "SPECIMEN_REQUIRED": "El espécimen es obligatorio",
       "PLANNING_USER_LABEL": "Usuario planificación",
       "PLANNING_USER_PLACEHOLDER": "Seleccionar Usuario planificación",
       "EXECUTION_DATE_LABEL": "Fecha de ejecución programada",

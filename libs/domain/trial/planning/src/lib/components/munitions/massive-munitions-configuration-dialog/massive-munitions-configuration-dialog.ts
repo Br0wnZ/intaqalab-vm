@@ -74,7 +74,27 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
 
       <mat-dialog-content class="!px-6 !py-6">
         <div class="space-y-6">
-          <div class="grid grid-cols-5 gap-4">
+          <div class="grid grid-cols-6 gap-4">
+            <!-- Tipo de munición -->
+            <div>
+              <label for="munitionType" class="block text-xs font-medium text-gray-700 mb-2">
+                {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="munitionType"
+                  data-testid="munition-type-select"
+                  [value]="selectedMunitionTypeId()"
+                  [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_PLACEHOLDER' | translate"
+                  (selectionChange)="onMunitionTypeChange($event.value)"
+                >
+                  @for (type of munitionTypes(); track type.id) {
+                    <mat-option [value]="type.id">{{ type.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
             <!-- Denominación -->
             <div>
               <label for="denomination" class="block text-xs font-medium text-gray-700 mb-2">
@@ -84,6 +104,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 <mat-select
                   id="denomination"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
+                  [disabled]="!selectedMunitionTypeId()"
                   [(ngModel)]="formData.denomination"
                   (openedChange)="onDenominationPanelToggle($event)"
                 >
@@ -341,10 +362,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 "
                 [(ngModel)]="formData.selectedComponents"
               >
-                @for (type of componentTypes(); track type.id) {
+                @for (type of filteredComponentTypes(); track type.id) {
                   <mat-option [value]="type.label.toLowerCase()">{{ type.label }}</mat-option>
                 }
-                F
               </mat-select>
             </mat-form-field>
 
@@ -673,21 +693,31 @@ export class MassiveMunitionsConfigurationDialog {
   readonly munitionsStore = inject(MunitionsStore);
   readonly seriesAndShotsStore = inject(SeriesAndShotsStore);
   readonly componentTypes = this.munitionsStore.componentTypes;
+  readonly munitionTypes = this.munitionsStore.munitionTypes;
+  readonly denominationsRaw = this.munitionsStore.denominationsRaw;
 
+  readonly selectedMunitionTypeId = signal<string>('');
   readonly denominationSearchTerm = signal('');
 
+  readonly filteredComponentTypes = computed(() => {
+    const components = this.componentTypes();
+    return components.filter((c) => c.category === 'MUNITION_COMPONENT');
+  });
+
   readonly filteredDenominations = computed(() => {
+    const munitionTypeId = this.selectedMunitionTypeId();
+    const allDenominations = this.denominationsRaw();
+
+    // Filter by selected munition type (same logic as configuration-form)
+    const byType = munitionTypeId ? allDenominations.filter((d) => d.munitionType?.id === munitionTypeId) : [];
+
     const term = this.#normalizeText(this.denominationSearchTerm());
-    const items = this.munitionsStore.denominations();
+    if (!term)
+      return byType.map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
 
-    if (!term) return items;
-
-    return items.filter((denom) => {
-      const label = this.#normalizeText(denom.label);
-      const esName = this.#normalizeText(denom.name?.['es'] ?? '');
-      const enName = this.#normalizeText(denom.name?.['en'] ?? '');
-      return label.includes(term) || esName.includes(term) || enName.includes(term);
-    });
+    return byType
+      .filter((d) => this.#normalizeText(d.name).includes(term))
+      .map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
   });
 
   #normalizeText(value: string): string {
@@ -701,6 +731,12 @@ export class MassiveMunitionsConfigurationDialog {
   onDenominationSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement | null;
     this.denominationSearchTerm.set(target?.value ?? '');
+  }
+
+  onMunitionTypeChange(munitionTypeId: string): void {
+    this.selectedMunitionTypeId.set(munitionTypeId);
+    // Reset denomination when type changes
+    this.formData.denomination = '';
   }
 
   onDenominationPanelToggle(opened: boolean): void {
@@ -914,10 +950,6 @@ export class MassiveMunitionsConfigurationDialog {
       errors.push(
         this.#translate.instant('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.DENOMINATION_REQUIRED'),
       );
-    }
-
-    if (!this.formData.batch) {
-      errors.push(this.#translate.instant('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.LOT_REQUIRED'));
     }
 
     if (this.formData.reconditioning) {

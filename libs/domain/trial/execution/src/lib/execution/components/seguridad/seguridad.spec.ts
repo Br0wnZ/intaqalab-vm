@@ -1,12 +1,13 @@
-import { TestBed } from '@angular/core/testing';
-import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
+import { describe, expect, it } from 'vitest';
+
 import { ExecutionStore } from '../../../+state/execution.store';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguridadWidget } from './seguridad';

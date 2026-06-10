@@ -442,6 +442,7 @@
       "SPECIMEN_LABEL": "Specimen",
       "SPECIMEN_PLACEHOLDER": "Select specimen",
       "MANAGE_SPECIMEN_BUTTON": "Manage specimen",
+      "SPECIMEN_REQUIRED": "Specimen is required",
       "PLANNING_USER_LABEL": "Planning user",
       "PLANNING_USER_PLACEHOLDER": "Select planning user",
       "EXECUTION_DATE_LABEL": "Scheduled execution date",

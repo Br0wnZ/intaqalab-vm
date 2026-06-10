@@ -238,8 +238,22 @@ describe('MunitionsStore', () => {
         const types = store.componentTypes();
 
         expect(types).toEqual([
-          { id: 'ct-1', name: { es: 'Espoleta', en: 'Fuse' }, label: 'Espoleta', active: true },
-          { id: 'ct-2', name: { es: 'Proyectil', en: 'Projectile' }, label: 'Proyectil', active: true },
+          {
+            id: 'ct-1',
+            name: { es: 'Espoleta', en: 'Fuse' },
+            label: 'Espoleta',
+            category: 'MUNITION_COMPONENT',
+            active: true,
+            observations: '',
+          },
+          {
+            id: 'ct-2',
+            name: { es: 'Proyectil', en: 'Projectile' },
+            label: 'Proyectil',
+            category: 'MUNITION_COMPONENT',
+            active: true,
+            observations: '',
+          },
         ]);
       });
 

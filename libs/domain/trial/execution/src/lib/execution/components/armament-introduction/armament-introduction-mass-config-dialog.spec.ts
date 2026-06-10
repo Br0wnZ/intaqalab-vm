@@ -3,11 +3,14 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
 
-import { ArmamentIntroductionMassConfigDialog, type ArmamentIntroductionMassConfigDialogData } from './armament-introduction-mass-config-dialog';
+import {
+  ArmamentIntroductionMassConfigDialog,
+  type ArmamentIntroductionMassConfigDialogData,
+} from './armament-introduction-mass-config-dialog';
 
 const mockData: ArmamentIntroductionMassConfigDialogData = {
   serieOptions: [

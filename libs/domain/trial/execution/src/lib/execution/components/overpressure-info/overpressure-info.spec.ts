@@ -1,12 +1,13 @@
-import { TestBed } from '@angular/core/testing';
-import { render, screen } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TranslateModule } from '@ngx-translate/core';
+import { render, screen } from '@testing-library/angular';
+import { describe, expect, it } from 'vitest';
+
 import { ExecutionStore } from '../../../+state/execution.store';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { OverpressureInfoWidget } from './overpressure-info';
@@ -45,14 +46,14 @@ describe('OverpressureInfoWidget', () => {
 
   it('formState becomes dirty when presionMaxima changes', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['formModel'].update(m => ({ ...m, presionMaxima: '999' }));
+    fixture.componentInstance['formModel'].update((m) => ({ ...m, presionMaxima: '999' }));
     fixture.detectChanges();
     expect(fixture.componentInstance.formState().dirty).toBe(true);
   });
 
   it('saveForm persists changes to the store', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['formModel'].update(m => ({ ...m, presionMaxima: '300', presionMinima: '250' }));
+    fixture.componentInstance['formModel'].update((m) => ({ ...m, presionMaxima: '300', presionMinima: '250' }));
     await fixture.componentInstance.saveForm();
     const store = TestBed.inject(ExecutionStore);
     expect(store.overpressureInfo().presionMaxima).toBe(300);
@@ -61,7 +62,7 @@ describe('OverpressureInfoWidget', () => {
 
   it('saveForm updates overpressurePresionBuscada computed', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['formModel'].update(m => ({ ...m, presionMaxima: '300', presionMinima: '200' }));
+    fixture.componentInstance['formModel'].update((m) => ({ ...m, presionMaxima: '300', presionMinima: '200' }));
     await fixture.componentInstance.saveForm();
     const store = TestBed.inject(ExecutionStore);
     expect(store.overpressurePresionBuscada()).toBe(250);
@@ -69,11 +70,11 @@ describe('OverpressureInfoWidget', () => {
 
   it('resetForm restores values from the store', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['formModel'].update(m => ({ ...m, presionMaxima: '999' }));
+    fixture.componentInstance['formModel'].update((m) => ({ ...m, presionMaxima: '999' }));
     fixture.componentInstance.resetForm();
     const stored = TestBed.inject(ExecutionStore).overpressureInfo();
     const formMax = fixture.componentInstance['formModel']().presionMaxima;
-    expect(formMax).toBe(stored.presionMaxima != null ? String(stored.presionMaxima) : null);
+    expect(formMax).toBe(stored.presionMaxima !== null ? String(stored.presionMaxima) : null);
   });
 
   it('formState is valid', async () => {

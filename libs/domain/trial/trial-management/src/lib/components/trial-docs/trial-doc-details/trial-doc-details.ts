@@ -186,67 +186,64 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
               </div> -->
             </div>
 
-            @if (linkedTrialsResource.hasValue() && linkedTrialsResource.value().fireTrialIds.length > 0) {
-              <!-- Quitar hidden para mostrar la tabla de pruebas vinculadas -->
-              <div class="mt-8 hidden">
-                <h4 class="text-sm font-medium text-gray-900 mb-4">
-                  {{ 'TRIAL_DOCS.DOC_DETAILS.VINCULATED_TRIALS' | translate }}
-                </h4>
+            <div class="mt-8">
+              <h4 class="text-sm font-medium text-gray-900 mb-4">
+                {{ 'TRIAL_DOCS.DOC_DETAILS.VINCULATED_TRIALS' | translate }}
+              </h4>
 
-                <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                  <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value().fireTrialIds">
-                    <!-- Columna Número de prueba -->
-                    <ng-container matColumnDef="trialNumber">
-                      <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                      >
-                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.TRIAL_NUMBER' | translate }}
-                      </th>
-                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                        {{ trial.trialNumber }}
-                      </td>
-                    </ng-container>
+              <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value()?.fireTrialIds || []">
+                  <!-- Columna Número de prueba -->
+                  <ng-container matColumnDef="trialNumber">
+                    <th
+                      *matHeaderCellDef
+                      mat-header-cell
+                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                    >
+                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.TRIAL_NUMBER' | translate }}
+                    </th>
+                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                      {{ trial.trialNumber }}
+                    </td>
+                  </ng-container>
 
-                    <!-- Columna Usuario vinculación -->
-                    <ng-container matColumnDef="linkedUser">
-                      <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                      >
-                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
-                      </th>
-                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                        {{ trial.linkedUser }}
-                      </td>
-                    </ng-container>
+                  <!-- Columna Usuario vinculación -->
+                  <ng-container matColumnDef="linkedUser">
+                    <th
+                      *matHeaderCellDef
+                      mat-header-cell
+                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                    >
+                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
+                    </th>
+                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                      {{ trial.linkedUser }}
+                    </td>
+                  </ng-container>
 
-                    <!-- Columna Fecha vinculación -->
-                    <ng-container matColumnDef="linkDate">
-                      <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
-                      >
-                        {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
-                      </th>
-                      <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                        {{ trial.linkDate }}
-                      </td>
-                    </ng-container>
+                  <!-- Columna Fecha vinculación -->
+                  <ng-container matColumnDef="linkDate">
+                    <th
+                      *matHeaderCellDef
+                      mat-header-cell
+                      class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+                    >
+                      {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
+                    </th>
+                    <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                      {{ trial.linkDate }}
+                    </td>
+                  </ng-container>
 
-                    <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-                    <tr
-                      *matRowDef="let row; columns: displayedColumns"
-                      mat-row
-                      class="hover:!bg-gray-50 !border-b !border-gray-100"
-                    ></tr>
-                  </table>
-                </div>
+                  <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+                  <tr
+                    *matRowDef="let row; columns: displayedColumns"
+                    mat-row
+                    class="hover:!bg-gray-50 !border-b !border-gray-100"
+                  ></tr>
+                </table>
               </div>
-            }
+            </div>
           </div>
         </mat-tab>
 

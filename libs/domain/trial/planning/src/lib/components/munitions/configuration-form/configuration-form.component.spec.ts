@@ -48,9 +48,27 @@ const mockDenominationsRaw = signal([
 ]);
 
 const mockComponentTypes = signal([
-  { id: '1', label: 'Espoleta', name: { es: 'Espoleta', en: 'Fuze' }, active: true },
-  { id: '2', label: 'Detonador', name: { es: 'Detonador', en: 'Detonator' }, active: true },
-  { id: '3', label: 'Proyectil', name: { es: 'Proyectil', en: 'Projectile' }, active: true },
+  {
+    id: '1',
+    label: 'Espoleta',
+    name: { es: 'Espoleta', en: 'Fuze' },
+    active: true,
+    category: 'MUNITION_COMPONENT' as const,
+  },
+  {
+    id: '2',
+    label: 'Detonador',
+    name: { es: 'Detonador', en: 'Detonator' },
+    active: true,
+    category: 'MUNITION_COMPONENT' as const,
+  },
+  {
+    id: '3',
+    label: 'Proyectil',
+    name: { es: 'Proyectil', en: 'Projectile' },
+    active: true,
+    category: 'MUNITION_COMPONENT' as const,
+  },
 ]);
 
 const mockMunitionsStore = {

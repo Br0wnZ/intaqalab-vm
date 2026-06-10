@@ -16,7 +16,7 @@ const mockWidgetStateService = {
   updateWidgetFormState: () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   addWidget: () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   placedWidgets: () => [],
 };
 

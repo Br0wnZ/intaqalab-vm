@@ -6,6 +6,9 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
+import { MunitionsStore } from '../../../+state/munitions.store';
+import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
+import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog';
 
 describe('MassiveMunitionsConfigurationDialog Placeholder', () => {
@@ -14,7 +17,41 @@ describe('MassiveMunitionsConfigurationDialog Placeholder', () => {
   });
 });
 
-describe.skip('MassiveMunitionsConfigurationDialog', () => {
+const mockStore = {
+  series: () => [
+    { id: 'serie-1', name: 'Serie 1' },
+    { id: 'serie-2', name: 'Serie 2' },
+  ],
+};
+
+const mockSeriesAndShotsStore = {
+  series: () => [
+    {
+      id: 'serie-1',
+      name: 'Serie 1',
+      shots: [
+        { id: 'shot-1', globalNumber: 1 },
+        { id: 'shot-2', globalNumber: 2 },
+      ],
+    },
+  ],
+};
+
+const mockMunitionsStore = {
+  componentTypes: () => [
+    { id: 'type-fuze', label: 'Espoleta', category: 'MUNITION_COMPONENT' },
+    { id: 'type-detonator', label: 'Estopín', category: 'MUNITION_COMPONENT' },
+  ],
+  munitionTypes: () => [{ id: 'type-1', label: 'Tipo 1' }],
+  denominationsRaw: () => [{ id: 'option1', name: 'Opción 1', munitionType: { id: 'type-1' } }],
+  denominations: () => [{ id: 'option1', label: 'Opción 1' }],
+  updateMunitionsStatus: () => 'idle',
+  loadAllCatalogs: vi.fn(),
+  updateMunitions: vi.fn(),
+  resetUpdateMunitions: vi.fn(),
+};
+
+describe('MassiveMunitionsConfigurationDialog', () => {
   function createFullMockDialogRef() {
     return {
       close: vi.fn(),
@@ -35,6 +72,11 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
       ],
       componentInputs: {},
       componentProperties: {},
+      componentProviders: [
+        { provide: PlanningGeneralDataStore, useValue: mockStore },
+        { provide: MunitionsStore, useValue: mockMunitionsStore },
+        { provide: SeriesAndShotsStore, useValue: mockSeriesAndShotsStore },
+      ],
     });
   };
 
@@ -43,19 +85,19 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
 
     expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.TITLE')).toBeInTheDocument();
 
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.DENOMINATION_LABEL')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.LOT_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.DENOMINATION_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.LOT_LABEL')).toBeInTheDocument();
     expect(
-      screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.ASSOCIATED_SHOTS_LABEL'),
+      screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.ASSOCIATED_SHOTS_LABEL'),
     ).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.MAX_FAILURES_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.MAX_FAILURES_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CLIENT_NUMBER_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.OBSERVATIONS_LABEL')).toBeInTheDocument();
     expect(
-      screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CLIENT_NUMBER_LABEL'),
+      screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX'),
     ).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.OBSERVATIONS_LABEL')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL')).toBeInTheDocument();
     expect(
-      screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR.LABEL'),
+      screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.COMPONENT_SELECTOR_LABEL'),
     ).toBeInTheDocument();
   });
 
@@ -99,8 +141,8 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     const clientNumberInput = document.querySelector('#clientNumber') as HTMLInputElement;
     expect(clientNumberInput).toBeInTheDocument();
 
-    await user.type(clientNumberInput, 'CLI-12345');
-    expect(clientNumberInput.value).toBe('CLI-12345');
+    await user.type(clientNumberInput, '12345');
+    expect(clientNumberInput.value).toBe('12345');
   });
 
   it('should allow entering text in observations field', async () => {
@@ -119,18 +161,18 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     expect(
-      screen.queryByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label'),
+      screen.queryByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.TEMPERATURE_LABEL'),
     ).not.toBeInTheDocument();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.tolerance_label')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.min_time_label')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.max_time_label')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.TEMPERATURE_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.TOLERANCE_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MIN_TIME_LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MAX_TIME_LABEL')).toBeInTheDocument();
   });
 
   it('should allow entering conditioning temperature', async () => {
@@ -138,7 +180,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
@@ -154,7 +196,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
@@ -170,7 +212,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
@@ -186,7 +228,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
@@ -202,7 +244,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await renderDialog();
 
     const checkbox = screen.getByRole('checkbox', {
-      name: /TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.FORM.CONDITIONING_LABEL/i,
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.CONDITIONING_CHECKBOX/i,
     });
     await user.click(checkbox);
 
@@ -227,7 +269,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
 
     const chipSet = document.querySelector('mat-chip-set');
     expect(chipSet).toBeInTheDocument();
-    expect(chipSet).toHaveTextContent('Estopín');
+    expect(chipSet).toHaveTextContent(/estopín/i);
   });
 
   it('should display tabs when components are selected', async () => {
@@ -254,7 +296,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
 
     const chipSet = document.querySelector('mat-chip-set');
     expect(chipSet).toBeInTheDocument();
-    expect(chipSet).toHaveTextContent('Estopín');
+    expect(chipSet).toHaveTextContent(/estopín/i);
 
     const chip = chipSet?.querySelector('mat-chip');
     const removeButton = chip?.querySelector('button[matChipRemove]');
@@ -280,8 +322,16 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
   it('should close dialog with form data when clicking Aplicar with valid data', async () => {
     const user = userEvent.setup();
     const dialogRefMock = createFullMockDialogRef();
-    await renderDialog(dialogRefMock);
+    const { fixture } = await renderDialog(dialogRefMock);
 
+    // 1. Select Munition Type first to enable Denomination Select
+    const munitionTypeSelect = screen.getByTestId('munition-type-select');
+    await user.click(munitionTypeSelect);
+    const typeOption = await screen.findByRole('option', { name: 'Tipo 1' });
+    await user.click(typeOption);
+    fixture.detectChanges();
+
+    // 2. Select Denomination
     const denominationSelect = document.querySelector('#denomination') as HTMLElement;
     await user.click(denominationSelect);
     const option1 = await screen.findByRole('option', { name: /opción 1/i });
@@ -294,10 +344,15 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
       name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i,
     });
     await user.click(applyButton);
-    expect(dialogRefMock.close).toHaveBeenCalledWith(
+
+    expect(mockMunitionsStore.updateMunitions).toHaveBeenCalledWith(
       expect.objectContaining({
-        denomination: 'option1',
-        batch: 'Lote-001',
+        configurations: expect.arrayContaining([
+          expect.objectContaining({
+            denominationId: 'option1',
+            batch: 'Lote-001',
+          }),
+        ]),
       }),
     );
   });
@@ -305,8 +360,16 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
   it('should update form model when entering multiple fields', async () => {
     const user = userEvent.setup();
     const dialogRefMock = createFullMockDialogRef();
-    await renderDialog(dialogRefMock);
+    const { fixture } = await renderDialog(dialogRefMock);
 
+    // 1. Select Munition Type first to enable Denomination Select
+    const munitionTypeSelect = screen.getByTestId('munition-type-select');
+    await user.click(munitionTypeSelect);
+    const typeOption = await screen.findByRole('option', { name: 'Tipo 1' });
+    await user.click(typeOption);
+    fixture.detectChanges();
+
+    // 2. Select Denomination
     const denominationSelect = document.querySelector('#denomination') as HTMLElement;
     await user.click(denominationSelect);
     const option1 = await screen.findByRole('option', { name: /opción 1/i });
@@ -319,7 +382,7 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
     await user.type(maxFailuresInput, '3');
 
     const clientNumberInput = document.querySelector('#clientNumber') as HTMLInputElement;
-    await user.type(clientNumberInput, 'CLI-999');
+    await user.type(clientNumberInput, '999');
 
     const observationsTextarea = document.querySelector('#observations') as HTMLTextAreaElement;
     await user.type(observationsTextarea, 'Test observation');
@@ -328,12 +391,17 @@ describe.skip('MassiveMunitionsConfigurationDialog', () => {
       name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i,
     });
     await user.click(applyButton);
-    expect(dialogRefMock.close).toHaveBeenCalledWith(
+
+    expect(mockMunitionsStore.updateMunitions).toHaveBeenCalledWith(
       expect.objectContaining({
-        denomination: 'option1',
-        batch: 'Lote-2024',
-        maxAllowedErrors: 3,
-        observations: 'Test observation',
+        configurations: expect.arrayContaining([
+          expect.objectContaining({
+            denominationId: 'option1',
+            batch: 'Lote-2024',
+            maxAllowedErrors: 3,
+            observations: 'Test observation',
+          }),
+        ]),
       }),
     );
   });

@@ -87,7 +87,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
           <label for="specimen" class="block text-sm font-medium text-gray-700 mb-2">
             {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_LABEL' | translate }}
           </label>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-[2rem]">
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <input
                 id="specimen"
@@ -97,6 +97,11 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                 [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_PLACEHOLDER' | translate"
                 [value]="specimenSummary()"
               />
+              @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
+                @for (error of generalDataForm.specimen().errors(); track error) {
+                  <mat-error class="text-sm mt-[8px]">{{ error.message | translate }}</mat-error>
+                }
+              }
             </mat-form-field>
             <button
               mat-flat-button
@@ -108,28 +113,21 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MANAGE_SPECIMEN_BUTTON' | translate }}
             </button>
           </div>
-          <input type="hidden" aria-hidden="true" />
-          @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
-            <div class="text-sm text-red-600 mt-1 space-y-1">
-              @for (error of generalDataForm.specimen().errors(); track error) {
-                <p>{{ error.message }}</p>
-              }
-            </div>
-          }
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Usuario planificación -->
-          <ui-inta-signal-select
-            appearance="outline"
-            [id]="'planningUser'"
-            [valueKey]="'id'"
-            [labelKey]="'fullname'"
-            [formField]="generalDataForm.planningUser"
-            [label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
-            [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate"
-            [options]="store.users()"
-          />
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate }}</mat-label>
+            <mat-select
+              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
+              [formField]="generalDataForm.planningUser"
+            >
+              @for (opt of store.users(); track opt.id) {
+                <mat-option [value]="opt.id">{{ opt.fullname }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
           <!-- Fechas programadas (solo lectura) -->
           <inta-planning-scheduled-dates [trialId]="store.fireTrialId()!" />
@@ -384,6 +382,7 @@ export class PlanningGeneralDataFormComponent {
     Array<{ id: string; label?: string; name?: { es?: string; en?: string } | string; type?: string }>
   >([]);
   readonly dialog = inject(MatDialog);
+  #specimenSynced = false;
 
   readonly isSaving = computed(() => this.store.isLoadingPlanningInfo());
 
@@ -410,9 +409,13 @@ export class PlanningGeneralDataFormComponent {
 
   readonly generalDataForm = form(this.formModel, (f) => {
     required(f.goal);
-    // validate(f.specimen, ({ value }) => (value().length === 0 ? { kind: 'required', message: 'Requerido' } : null));
+    validate(f.specimen, ({ value }) =>
+      value().length === 0
+        ? { kind: 'required', message: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_REQUIRED' }
+        : null,
+    );
     required(f.planningUser);
-    // disabled(f.specimen, () => this.store.isLoadingSpecimens());
+    disabled(f.specimen, () => this.store.isLoadingSpecimens());
     disabled(f.planningUser, () => this.store.isLoadingUsers());
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
@@ -492,6 +495,22 @@ export class PlanningGeneralDataFormComponent {
       this.#calendarStore.scheduleChangeTrigger();
       untracked(() => {
         this.store.reloadPlanningInfo();
+      });
+    });
+
+    // Sync selectedSpecimens from store → formModel.specimen + mark touched
+    // This keeps Signal Forms validation reactive when the dialog adds/removes specimens
+    effect(() => {
+      const selected = this.store.selectedSpecimens() ?? [];
+      const mapped = selected.map((s) => ({ specimenId: s.specimenId, batch: s.batch ?? '' }));
+      untracked(() => {
+        this.formModel.update((m) => ({ ...m, specimen: mapped }));
+        if (this.#specimenSynced) {
+          // Only mark touched after the first sync — avoids showing error on initial load
+          this.generalDataForm.specimen().markAsTouched();
+        } else {
+          this.#specimenSynced = true;
+        }
       });
     });
   }

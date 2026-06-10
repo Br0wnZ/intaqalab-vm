@@ -235,7 +235,7 @@ describe('DenominationsListComponent', () => {
           id: mockItem.id,
           active: expect.any(Boolean),
           munitionTypeId: mockItem.munitionType.id,
-        })
+        }),
       );
     });
   });

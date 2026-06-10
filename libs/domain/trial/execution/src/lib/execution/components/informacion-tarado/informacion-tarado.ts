@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   ViewEncapsulation,
   computed,
   inject,
@@ -9,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { Signal } from '@angular/core';
+import type { ElementRef, Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,10 +17,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { InformacionTaradoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface InformacionTaradoForm {
   velocidadUnit: string;
@@ -30,17 +29,9 @@ interface InformacionTaradoForm {
 @Component({
   selector: 'inta-informacion-tarado',
   standalone: true,
-  imports: [
-    FormField,
-    ReadonlyContentDirective,
-    MatFormFieldModule,
-    MatIconModule,
-    MatSelectModule,
-    TranslateModule,
-  ],
+  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
-
       <!-- Header: Icon + Title + Velocity unit selector -->
       <div class="flex items-center gap-2 shrink-0">
         <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -60,18 +51,17 @@ interface InformacionTaradoForm {
 
       <!-- Body: carousel + dots -->
       <div intaReadonlyContent class="flex-1 flex flex-col gap-1.5 min-h-0">
-
         <!-- Scrollable series cards -->
         <div
-          #carouselEl
-          class="flex gap-3 overflow-x-auto flex-1 min-h-0"
           style="scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;"
+          class="flex gap-3 overflow-x-auto flex-1 min-h-0"
           (scroll)="onScroll($event)"
+          #carouselEl
         >
           @for (serie of seriesData(); track serie.numero) {
             <div
-              class="shrink-0 border border-slate-100 rounded-xl bg-slate-50 p-2.5 flex flex-col gap-1.5 justify-between"
               style="scroll-snap-align: start; min-width: 240px; max-width: 320px;"
+              class="shrink-0 border border-slate-100 rounded-xl bg-slate-50 p-2.5 flex flex-col gap-1.5 justify-between"
             >
               <!-- Card title: numero – nombre -->
               <p class="text-[11px] font-semibold text-slate-700 truncate">
@@ -97,13 +87,21 @@ interface InformacionTaradoForm {
                 <!-- Data values -->
                 <span class="text-slate-700 font-medium mt-0.5">{{ serie.zona ?? '&mdash;' }}</span>
                 <span class="text-slate-700 font-medium mt-0.5 text-right">
-                  {{ serie.velocidadNominal !== null ? (serie.velocidadNominal + ' ' + formModel().velocidadUnit) : '&mdash;' }}
+                  {{
+                    serie.velocidadNominal !== null
+                      ? serie.velocidadNominal + ' ' + formModel().velocidadUnit
+                      : '&mdash;'
+                  }}
                 </span>
                 <span class="text-slate-700 font-medium mt-0.5 text-right">
-                  {{ serie.desviacionVelocidadMax !== null ? (serie.desviacionVelocidadMax + ' ' + formModel().velocidadUnit) : '&mdash;' }}
+                  {{
+                    serie.desviacionVelocidadMax !== null
+                      ? serie.desviacionVelocidadMax + ' ' + formModel().velocidadUnit
+                      : '&mdash;'
+                  }}
                 </span>
                 <span class="text-slate-700 font-medium mt-0.5 text-right">
-                  {{ serie.pesoPolvora !== null ? (serie.pesoPolvora + ' g') : '&mdash;' }}
+                  {{ serie.pesoPolvora !== null ? serie.pesoPolvora + ' g' : '&mdash;' }}
                 </span>
               </div>
             </div>
@@ -117,11 +115,13 @@ interface InformacionTaradoForm {
               <button
                 type="button"
                 class="rounded-full transition-all duration-200"
-                [class]="i === currentDotIndex()
-                  ? 'w-2 h-2 bg-violet-600'
-                  : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'"
+                [class]="
+                  i === currentDotIndex() ? 'w-2 h-2 bg-violet-600' : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                "
                 (click)="scrollToCard(i)"
-              ></button>
+              >
+                ''
+              </button>
             }
           </div>
         }
@@ -137,7 +137,7 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
 
-  private readonly carouselEl = viewChild<ElementRef<HTMLDivElement>>('carouselEl');
+  readonly carouselEl = viewChild<ElementRef<HTMLDivElement>>('carouselEl');
 
   protected readonly currentDotIndex = signal(0);
 
