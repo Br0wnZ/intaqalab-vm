@@ -34,8 +34,11 @@ import { ExecutionStore } from '../../+state/execution.store';
  * ## Principios SOLID
  * - **SRP**: Solo gestiona el modo de solo lectura del área de contenido.
  * - **OCP**: Los nuevos widgets se integran añadiendo un único atributo.
- * - **DIP**: Lee el estado de `ExecutionStore`, no de la implementación concreta
- *   de cada widget.
+ *   Los diálogos reutilizan la directiva sin configuración extra.
+ * - **DIP**: El store es una dependencia **opcional**. Cuando la directiva se
+ *   renderiza fuera del árbol de providers del store (p.ej. en un MatDialog
+ *   abierto sin injector contextual), el store es `null` y la directiva
+ *   permanece inactiva (modo editable) en lugar de lanzar NG0201.
  */
 @Directive({
   selector: '[intaReadonlyContent]',
@@ -46,8 +49,13 @@ import { ExecutionStore } from '../../+state/execution.store';
   },
 })
 export class ReadonlyContentDirective {
-  readonly #store = inject(ExecutionStore, { skipSelf: true });
+  /**
+   * Store opcional: null cuando la directiva vive en un MatDialog abierto
+   * sin un injector que provea ExecutionStore (p.ej. diálogos de configuración
+   * masiva). En ese caso `isReadOnly` devuelve `false` de forma segura.
+   */
+  readonly #store = inject(ExecutionStore, { skipSelf: true, optional: true });
 
-  /** `true` cuando la prueba está en estado de solo lectura. */
-  protected readonly isReadOnly = computed(() => this.#store.isTrialReadOnly());
+  /** `true` solo cuando el store está presente y la prueba es de solo lectura. */
+  protected readonly isReadOnly = computed(() => this.#store?.isTrialReadOnly() ?? false);
 }
