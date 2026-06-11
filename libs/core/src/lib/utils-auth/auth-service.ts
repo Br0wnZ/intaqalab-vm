@@ -4,7 +4,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
 import { Role } from './models/role.model';
-import type { User, UserData } from './models/user.model';
+import type { ReadonlyUserData, User, UserData } from './models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +13,7 @@ export class AuthService {
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);
 
-  #userData = signal<UserData | undefined>(undefined);
+  #userData = signal<ReadonlyUserData | undefined>(undefined);
   user = computed<User>(() => {
     const userData = this.#userData();
     return {
@@ -23,6 +23,10 @@ export class AuthService {
 
   setUserData(userData: UserData) {
     this.#userData.set(userData);
+  }
+
+  getUserData() {
+    return this.#userData();
   }
 
   userRoles = signal<Role[]>([]);
@@ -102,6 +106,14 @@ function parseRol(value: string): Role | null {
     console.warn(`Unknown role: ${value}, skipping it`);
     return null;
   }
+}
+
+export function injectCurrentUser(): UserData {
+  const userData = inject(AuthService).getUserData();
+  if (!userData) {
+    throw new Error('User data not found');
+  }
+  return userData;
 }
 
 export function injectCurrentUserRole() {

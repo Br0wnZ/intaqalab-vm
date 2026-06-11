@@ -231,10 +231,10 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <textarea
-                placeholder="XXXXXXXX"
                 id="observations"
                 matInput
                 rows="2"
+                [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.OBSERVATIONS_PLACEHOLDER' | translate"
                 [(ngModel)]="formData.observations"
               ></textarea>
             </mat-form-field>
@@ -260,7 +260,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 </label>
                 <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                   <input
-                    placeholder="XX"
+                    placeholder="0"
                     id="temperature"
                     matInput
                     type="number"
@@ -279,7 +279,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 </label>
                 <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                   <input
-                    placeholder="XX"
+                    placeholder="0"
                     id="tolerance"
                     matInput
                     type="number"
@@ -298,7 +298,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 </label>
                 <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                   <input
-                    placeholder="XX"
+                    placeholder="0"
                     id="timeMin"
                     matInput
                     type="number"
@@ -317,7 +317,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 </label>
                 <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                   <input
-                    placeholder="XX"
+                    placeholder="0"
                     id="timeMax"
                     matInput
                     type="number"
@@ -337,7 +337,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <textarea
-                  placeholder="XX"
+                  placeholder="{{
+                    'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.OBSERVATIONS_PLACEHOLDER' | translate
+                  }}"
                   id="reconditioningObservations"
                   matInput
                   rows="2"

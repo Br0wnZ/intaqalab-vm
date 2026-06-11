@@ -88,6 +88,11 @@
         "CONFIRM": "Pausieren",
         "CANCEL": "Abbrechen",
         "TRIAL_NAME_PREFIX": "Versuch:"
+      },
+      "TRIAL_SELECTOR": {
+        "TITLE": "Versuch auswählen",
+        "SEARCH_PLACEHOLDER": "Nach Beschreibung suchen",
+        "CANCEL": "Abbrechen"
       }
     },
     "WIDGETS": {

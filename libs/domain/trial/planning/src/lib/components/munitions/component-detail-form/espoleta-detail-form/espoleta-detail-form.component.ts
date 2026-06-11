@@ -39,6 +39,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     FormField,
     NoLeadingZerosDirective,
     NoNegativeValuesDirective,
+    NoNegativeValuesDirective,
     TranslateModule,
   ],
   template: `

@@ -267,7 +267,8 @@
       "ACTIONS": "Acciones",
       "OBSERVATIONS": "Observaciones",
       "REQUESTED_DATE": "Fecha solicitada por el cliente",
-      "SCHEDULED_DATE": "Fecha(s) programada(s): {{date}}"
+      "SCHEDULED_DATE": "Fecha(s) programada(s): {{date}}",
+      "SCHEDULED_DATES": "Fechas programadas"
     }
   },
   "TAPS_TOP": {
@@ -593,6 +594,9 @@
           "ALL": "Todos",
           "SOME": "Algunos",
           "SELECT": "Selecciona"
+        },
+        "VALIDATION": {
+          "MUNITION_TYPE_REQUIRED": "El tipo de munición es requerido"
         }
       },
       "COMPONENT_DETAIL_FORM": {
@@ -642,6 +646,7 @@
         "MAX_FAILURES_LABEL": "Nº máx. fallos permitido",
         "CLIENT_NUMBER_LABEL": "Nº de cliente",
         "OBSERVATIONS_LABEL": "Observaciones",
+        "OBSERVATIONS_PLACEHOLDER": "Escribe aquí las observaciones",
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
         "COMPONENT_SELECTOR_LABEL": "Selector de componentes",
         "COMPONENT_SELECTOR_PLACEHOLDER": "Selecciona tipos de componentes",
@@ -2328,6 +2333,11 @@
         "SHOTS_PLACEHOLDER": "Todos los disparos de la serie",
         "SAVE": "Guardar",
         "BACK": "Volver"
+      },
+      "TRIAL_SELECTOR": {
+        "TITLE": "Seleccionar prueba",
+        "SEARCH_PLACEHOLDER": "Buscar por descripción",
+        "CANCEL": "Cancelar"
       }
     }
   },

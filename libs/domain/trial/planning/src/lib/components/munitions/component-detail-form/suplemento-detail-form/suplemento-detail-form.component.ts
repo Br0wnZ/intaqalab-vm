@@ -17,7 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type {
@@ -36,6 +36,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatSelectModule,
     FormField,
     NoLeadingZerosDirective,
+    NoNegativeValuesDirective,
     TranslateModule,
   ],
   template: `
@@ -114,6 +115,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             matInput
             type="number"
             libNoLeadingZeros
+            libNoNegativeValues
             [formField]="detailForm.maxAllowedErrors"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"
             (blur)="emitChanges()"

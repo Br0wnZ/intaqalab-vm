@@ -209,9 +209,44 @@ export class Munitions {
     applyEach(formPath, (seriePath) => {
       required(seriePath.seriesName);
       required(seriePath.seriesId);
-
       applyEach(seriePath.configurations, (configPath) => {
-        required(configPath.denomination);
+        validate(configPath.denomination, ({ value, valueOf }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const selected: string[] = valueOf(configPath.selectedComponents as any) ?? [];
+          const components: ComponentDetail[] = valueOf(configPath.components) ?? [];
+          const shots: string[] = valueOf(configPath.assignedShotIds) ?? [];
+
+          // Component forms are valid when all non-powder selected components have
+          // a denomination and a correctly formatted clientNumber.
+          // When this condition holds, denomination and munition-type are not required.
+          const componentFormsAreValid =
+            selected.length > 0 &&
+            selected.every((selType) => {
+              const normType = selType.toLowerCase().normalize('NFD').replace(new RegExp('[\\u0300-\\u036f]', 'g'), '');
+
+              // All powder types (pólvora, polvora-1, polvora-2, …) are exempt
+              if (normType === 'polvora' || normType.startsWith('polvora-')) return true;
+
+              const comp = components.find((c) => c.type.type.toLowerCase() === selType.toLowerCase());
+              if (!comp?.denomination?.id) return false;
+
+              const clientNumber = String(comp.clientNumber ?? '').trim();
+              if (clientNumber) {
+                if (clientNumber.endsWith(',')) return false;
+                const parts = clientNumber.split(',').filter((x) => x.trim().length > 0);
+                if (parts.length > shots.length) return false;
+              }
+
+              return true;
+            });
+
+          if (componentFormsAreValid) return undefined;
+
+          return !value()
+            ? { kind: 'required', message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.DENOMINATION_REQUIRED' }
+            : undefined;
+        });
+
         validate(configPath.assignedShotIds, ({ value }) => {
           const shots = value();
           return !shots || shots.length === 0
@@ -240,7 +275,7 @@ export class Munitions {
   }
 
   isFormValid(): boolean {
-    return this.seriesForm().valid();
+    return this.seriesForm().touched() && this.seriesForm().valid();
   }
 
   getFormValues(): Serie[] {

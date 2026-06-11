@@ -20,7 +20,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type {
@@ -51,6 +51,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
     EspoletaDetailFormComponent,
     SuplementoDetailFormComponent,
     CargaDetailFormComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
     <div class="p-4 sm:p-6 bg-gray-100">
@@ -169,6 +170,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
                   matInput
                   type="number"
                   libNoLeadingZeros
+                  libNoNegativeValues
                   [formField]="detailForm.maxAllowedErrors"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"
                   (blur)="emitChanges()"

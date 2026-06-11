@@ -20,7 +20,11 @@ import { PlanningGeneralDataStore } from '../../+state/planning-general-data.sto
 import { MunitionsService } from '../../services/munitions-service';
 import { SeriesAndShotsService } from '../../services/series-and-shots-service';
 import type { Serie } from '../../utils-models/munitions.model';
-import { createEmptyConfiguration, createEmptySerie } from '../../utils-models/munitions.model';
+import {
+  createEmptyComponentDetail,
+  createEmptyConfiguration,
+  createEmptySerie,
+} from '../../utils-models/munitions.model';
 import { Munitions } from './munitions';
 
 // Helpers
@@ -159,6 +163,62 @@ describe('Munitions', () => {
           ...createEmptySerie('Serie 1'),
           configurations: [
             { ...createEmptyConfiguration(), denomination: '', batch: 'LOT', assignedShotIds: ['shot-1'] },
+          ],
+        },
+      ]);
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+    });
+
+    it('should report the form as valid when denomination is empty but valid components are selected', async () => {
+      const { component, view } = await runSetup();
+
+      component.seriesSignal.set([
+        {
+          ...createEmptySerie('Serie 1'),
+          configurations: [
+            {
+              ...createEmptyConfiguration(),
+              denomination: '',
+              batch: 'LOT',
+              assignedShotIds: ['shot-1'],
+              selectedComponents: ['espoleta'],
+              components: [
+                {
+                  ...createEmptyComponentDetail('espoleta'),
+                  denomination: { id: 'denom-123', name: 'Espoleta 1' },
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(true);
+    });
+
+    it('should report the form as invalid when denomination is empty and components are selected but invalid (e.g. missing denomination)', async () => {
+      const { component, view } = await runSetup();
+
+      component.seriesSignal.set([
+        {
+          ...createEmptySerie('Serie 1'),
+          configurations: [
+            {
+              ...createEmptyConfiguration(),
+              denomination: '',
+              batch: 'LOT',
+              assignedShotIds: ['shot-1'],
+              selectedComponents: ['espoleta'],
+              components: [
+                {
+                  ...createEmptyComponentDetail('espoleta'),
+                  denomination: { id: '', name: '' },
+                },
+              ],
+            },
           ],
         },
       ]);

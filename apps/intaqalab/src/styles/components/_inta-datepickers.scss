@@ -434,6 +434,12 @@ html body .inta-calendar--inline {
     border-color: #6b7280 !important;
   }
 
+  .mat-calendar-body-cell.busy-date > .mat-calendar-body-cell-content {
+    background: #fecdca !important;
+    border-color: transparent !important;
+    color: var(--inta-neutral-900) !important;
+  }
+
   .mat-calendar-body-cell.special-date > .mat-calendar-body-cell-content {
     background: #e9d7fe !important;
     color: var(--inta-neutral-900) !important;
@@ -441,12 +447,6 @@ html body .inta-calendar--inline {
 
   .mat-calendar-body-cell.no-notam-date > .mat-calendar-body-cell-content {
     background: #d1e9ff !important;
-    border-color: transparent !important;
-    color: var(--inta-neutral-900) !important;
-  }
-
-  .mat-calendar-body-cell.busy-date > .mat-calendar-body-cell-content {
-    background: #fecdca !important;
     border-color: transparent !important;
     color: var(--inta-neutral-900) !important;
   }

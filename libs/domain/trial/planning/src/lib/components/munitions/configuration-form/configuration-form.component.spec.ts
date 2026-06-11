@@ -580,5 +580,41 @@ describe('ConfigurationFormComponent', () => {
         expect(lastEmitted.assignedShotIds).toEqual(['shot-1']);
       });
     });
+
+    it('should deselect all shots when Select All is unchecked', async () => {
+      const user = userEvent.setup();
+      const configChangeSpy = vi.fn();
+      const shots = [
+        { id: 'shot-1', globalNumber: 1, observation: '' },
+        { id: 'shot-2', globalNumber: 2, observation: '' },
+      ];
+
+      const { fixture } = await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          config: defaultConfig,
+          configIndex: 0,
+          shots,
+          excludeShotIds: ['shot-2'],
+        },
+        on: { configChange: configChangeSpy },
+      });
+
+      const select = screen.getByTestId('assigned-shots-select');
+      await user.click(select);
+      await fixture.whenStable();
+
+      const selectAllCheckbox = screen.getByTestId('select-all-shots-checkbox');
+      const checkboxInput = within(selectAllCheckbox).getByRole('checkbox');
+      // Click once to unselect (since it auto-selects eligible shots on init)
+      await user.click(checkboxInput);
+
+      await waitFor(() => {
+        expect(configChangeSpy).toHaveBeenCalled();
+        const lastEmitted = configChangeSpy.mock.calls[configChangeSpy.mock.calls.length - 1][0];
+        expect(lastEmitted.assignedShotIds).toEqual([]);
+      });
+    });
   });
 });

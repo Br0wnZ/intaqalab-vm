@@ -19,7 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ShootingConditionsService } from '../../../../services/shooting-conditions.service';
@@ -32,7 +32,16 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
 
 @Component({
   selector: 'inta-carga-detail-form',
-  imports: [TitleCasePipe, MatFormFieldModule, MatInputModule, MatSelectModule, FormField, TranslateModule],
+  imports: [
+    TitleCasePipe,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    FormField,
+    TranslateModule,
+    NoLeadingZerosDirective,
+    NoNegativeValuesDirective,
+  ],
   template: `
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       <div class="w-full">
@@ -109,6 +118,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             matInput
             type="number"
             libNoLeadingZeros
+            libNoNegativeValues
             [formField]="detailForm.maxAllowedErrors"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"
             (blur)="emitChanges()"
@@ -166,10 +176,10 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
       </label>
       <mat-form-field appearance="outline" class="w-full">
         <textarea
-          placeholder="XX"
           id="cp-observations"
           matInput
           rows="2"
+          [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.OBSERVATIONS_PLACEHOLDER' | translate"
           [formField]="detailForm.observations"
           (blur)="emitChanges()"
         ></textarea>

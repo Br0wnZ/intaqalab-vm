@@ -265,9 +265,10 @@
       "ASSIGNED_USERS": "Usuarios asignados",
       "OTHER_DATA": "Other data",
       "ACTIONS": "Actions",
-      "OBSERVATIONS": "Notes",
+      "OBSERVATIONS": "Observations",
       "REQUESTED_DATE": "Fecha solicitada por el cliente",
-      "SCHEDULED_DATE": "Scheduled date(s): {{date}}"
+      "SCHEDULED_DATE": "Scheduled date(s): {{date}}",
+      "SCHEDULED_DATES": "Scheduled dates"
     }
   },
   "TAPS_TOP": {
@@ -593,6 +594,9 @@
           "ALL": "All",
           "SOME": "Some",
           "SELECT": "Select"
+        },
+        "VALIDATION": {
+          "MUNITION_TYPE_REQUIRED": "Munition type is required"
         }
       },
       "COMPONENT_DETAIL_FORM": {
@@ -642,6 +646,7 @@
         "MAX_FAILURES_LABEL": "Max. allowed failures",
         "CLIENT_NUMBER_LABEL": "Client No.",
         "OBSERVATIONS_LABEL": "Notes",
+        "OBSERVATIONS_PLACEHOLDER": "Write your notes here",
         "CONDITIONING_CHECKBOX": "Conditioning",
         "COMPONENT_SELECTOR_LABEL": "Component selector",
         "COMPONENT_SELECTOR_PLACEHOLDER": "Select component types",
@@ -2672,6 +2677,11 @@
         "SHOTS_PLACEHOLDER": "All shots in the series",
         "SAVE": "Keep",
         "BACK": "Return"
+      },
+      "TRIAL_SELECTOR": {
+        "TITLE": "Select trial",
+        "SEARCH_PLACEHOLDER": "Search by description",
+        "CANCEL": "Cancel"
       }
     }
   },

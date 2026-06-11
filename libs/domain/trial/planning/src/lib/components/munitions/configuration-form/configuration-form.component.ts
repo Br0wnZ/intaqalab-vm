@@ -14,7 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { ElementRef } from '@angular/core';
-import { FormField, disabled, form, min, required } from '@angular/forms/signals';
+import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
@@ -55,7 +55,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
   ],
   template: `
     <div class="bg-gray-200 p-6 space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <!-- Tipo de munición -->
         <div>
           <label class="block text-xs font-medium text-gray-600 mb-2" [for]="'munitionType-' + configIndex()">
@@ -344,7 +344,24 @@ export class ConfigurationFormComponent {
   readonly munitionTypes = this.#munitionsStore.munitionTypes;
   readonly denominationsRaw = this.#munitionsStore.denominationsRaw;
 
-  readonly selectedMunitionTypeId = signal<string>('');
+  readonly selectedMunitionTypeId = linkedSignal<Configuration, string>({
+    source: () => this.config(),
+    computation: (config, previous) => {
+      // Different config entity → always derive from denomination
+      if (!previous || config.id !== previous.source.id) {
+        if (!config.denomination) return '';
+        const denom = this.denominationsRaw().find((d) => d.id === config.denomination);
+        return denom?.munitionType?.id ?? '';
+      }
+      // Same config: if denomination exists, derive type from it (e.g. loaded from backend)
+      if (config.denomination) {
+        const denom = this.denominationsRaw().find((d) => d.id === config.denomination);
+        return denom?.munitionType?.id ?? previous.value;
+      }
+      // Same config, denomination was cleared (e.g. after type change) → preserve selection
+      return previous.value;
+    },
+  });
   readonly formModel = linkedSignal(() => this.config());
   readonly denominationSearchTerm = signal('');
 
@@ -420,16 +437,44 @@ export class ConfigurationFormComponent {
     return this.formModel().reconditioning ?? {};
   });
 
+  /**
+   * True when every non-powder selected component has a denomination and a
+   * well-formed clientNumber.  When this holds, denomination and
+   * munition-type are no longer required at the configuration level.
+   */
+  readonly hasValidComponents = computed(() => {
+    const selected = this.formModel().selectedComponents ?? [];
+    const components = this.formModel().components ?? [];
+
+    if (selected.length === 0) return false;
+
+    return selected.every((selType) => {
+      const normType = selType
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      // All powder types are always considered valid
+      if (normType === 'polvora' || normType.startsWith('polvora-')) return true;
+
+      const comp = components.find((c) => c.type.type.toLowerCase() === selType.toLowerCase());
+      return !!comp?.denomination?.id;
+    });
+  });
+
+  /** True when munition type must be selected (no component path available). */
+  readonly isMunitionTypeRequired = computed(() => !this.hasValidComponents() && !this.selectedMunitionTypeId());
+
   constructor() {
     effect(() => {
       const config = this.config();
       const shots = this.shots();
-      if (shots.length > 0 && (!config.assignedShotIds || config.assignedShotIds.length === 0)) {
+      if (shots.length > 0 && config.assignedShotIds === null) {
         untracked(() => {
           const eligibleIds = this.eligibleShots().map((s) => s.id);
           this.formModel.update((current) => ({
             ...current,
-            assignedShotIds: eligibleIds.length > 0 ? eligibleIds : null,
+            assignedShotIds: eligibleIds,
           }));
           this.emitChanges();
         });
@@ -439,7 +484,22 @@ export class ConfigurationFormComponent {
 
   readonly configForm = form(this.formModel, (f) => {
     required(f.batch);
-    disabled(f.denomination, () => !this.selectedMunitionTypeId());
+    // Denomination disabled when no munition-type is selected AND no component
+    // path is available (prevents interacting with an empty dropdown).
+    disabled(f.denomination, () => !this.selectedMunitionTypeId() && !this.hasValidComponents());
+    // When the component path is not valid, denomination (and implicitly
+    // munition-type) are required.  Also catches stale denomination values
+    // left over when munition-type is not selected.
+    validate(f.denomination, ({ value }) => {
+      if (this.hasValidComponents()) return undefined;
+      // No munitionType selected → denomination irrelevant until user picks type;
+      // signal-form validity is covered by isMunitionTypeRequired in the UI.
+      // Still return a required error so the parent seriesForm is invalid.
+      if (!this.selectedMunitionTypeId() || !value()) {
+        return { kind: 'required', message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.DENOMINATION_REQUIRED' };
+      }
+      return undefined;
+    });
     min(f.maxAllowedErrors, 0);
   });
 
@@ -465,6 +525,10 @@ export class ConfigurationFormComponent {
 
   onMunitionTypeChange(munitionTypeId: string): void {
     this.selectedMunitionTypeId.set(munitionTypeId);
+    // Clear denomination when type changes: old denomination would not belong
+    // to the new type, keeping it would make the parent form falsely valid.
+    this.formModel.update((c) => ({ ...c, denomination: '' }));
+    this.emitChanges();
   }
 
   #normalizeText(value: string): string {
@@ -479,7 +543,7 @@ export class ConfigurationFormComponent {
     const ids = checked ? this.eligibleShots().map((s) => s.id) : [];
     this.formModel.update((current) => ({
       ...current,
-      assignedShotIds: ids.length > 0 ? ids : null,
+      assignedShotIds: ids,
     }));
     this.emitChanges();
   }
@@ -487,7 +551,7 @@ export class ConfigurationFormComponent {
   onAssignedShotsSelectChange(ids: string[]): void {
     this.formModel.update((current) => ({
       ...current,
-      assignedShotIds: ids.length > 0 ? ids : null,
+      assignedShotIds: ids,
     }));
     this.emitChanges();
   }

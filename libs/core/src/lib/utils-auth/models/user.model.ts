@@ -11,3 +11,5 @@ export interface UserData {
   family_name: string;
   email: string;
 }
+
+export type ReadonlyUserData = Readonly<UserData>;

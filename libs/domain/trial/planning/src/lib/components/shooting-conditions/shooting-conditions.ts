@@ -13,7 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
 import { Badge, IntaIconComponent } from '@intaqalab/ui';
-import { IntaDatePipe } from '@intaqalab/utils';
+import { IntaDatePipe, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -42,6 +42,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     Badge,
     TrialStatusLabelPipe,
     IntaIconComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
     <div class="w-full space-y-4">
@@ -292,6 +293,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                           placeholder="0"
                           matInput
                           type="number"
+                          libNoNegativeValues
                           [formField]="getShotField(serieIdx, i).distance"
                         />
                       </mat-form-field>
@@ -427,6 +429,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                           matInput
                           type="number"
                           step="any"
+                          libNoNegativeValues
                           [formField]="getShotField(serieIdx, i).powderWeight"
                         />
                       </mat-form-field>
