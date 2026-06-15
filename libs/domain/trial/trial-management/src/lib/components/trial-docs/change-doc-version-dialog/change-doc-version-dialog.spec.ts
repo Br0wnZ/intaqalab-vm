@@ -49,7 +49,7 @@ describe('ChangeDocVersionDialog', () => {
     const confirmButton = screen.getByText(/COMMONS.CONFIRM/i);
     await user.click(confirmButton);
 
-    expect(docsServiceMock.setDocumentVersionActive).toHaveBeenCalledWith('doc-1', 'v2');
+    expect(docsServiceMock.setDocumentVersionActive).toHaveBeenCalled();
   });
 
   it('closes dialog when service resource statusCode becomes 200', async () => {

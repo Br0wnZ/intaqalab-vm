@@ -709,5 +709,10 @@
         "ROW_ESTOPIN": "Zündhütchen"
       }
     }
+  },
+  "UTILS_TRIALS": {
+    "TRIAL_ACTIONS": {
+      "EXECUTION": "Ausführung"
+    }
   }
 }

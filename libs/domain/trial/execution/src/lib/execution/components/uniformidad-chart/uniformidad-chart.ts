@@ -13,7 +13,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { ChartDirective } from '@intaqalab/ui';
+import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -40,23 +40,22 @@ interface UniformidadForm {
     MatSelectModule,
     TranslateModule,
     ChartDirective,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
+    <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
 
       <!-- Header: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">bar_chart</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate">
+      <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
+        <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Selectors row: Config | Serie | Disparo -->
-      <div class="flex gap-1.5 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[1rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.CONFIG_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.CONFIG_PLACEHOLDER' | translate"
@@ -67,7 +66,7 @@ interface UniformidadForm {
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[1rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.SERIE_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.SERIE_PLACEHOLDER' | translate"
@@ -78,7 +77,7 @@ interface UniformidadForm {
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[1rem] grow"> 
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DISPARO_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -93,7 +92,7 @@ interface UniformidadForm {
       </div>
 
       <!-- Chart: full width -->
-      <div class="flex-1 relative min-h-0">
+      <div class="flex-1 relative min-h-40 w-full">
         <canvas
           uiChart
           aria-label="Gráfica Uniformidad"
@@ -103,30 +102,30 @@ interface UniformidadForm {
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->
-      <div class="shrink-0 flex gap-3 border border-slate-100 rounded-xl p-2">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] items-start gap-2">
         <!-- Legend: 4 metrics -->
-        <div class="flex flex-col gap-1 justify-center">
+        <div class="border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between">
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-indigo-700 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.LEGEND_NOMINAL' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.LEGEND_MEDIA' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-indigo-300 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.LEGEND_MIN' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-orange-400 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.LEGEND_MAX' | translate }}
             </span>
           </div>
@@ -134,36 +133,36 @@ interface UniformidadForm {
 
         <!-- Stats: Pendiente | Wc/g / Ordenada | Desviación -->
         @if (selectedConfigData()) {
-          <div class="ml-auto grid grid-cols-2 gap-x-4 gap-y-1 content-center">
+          <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">
+              <p class="text-xs font-regular text-gray-500">
                 {{ selectedConfigData()!.pendiente | number: '1.5-5' }}
               </p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">
+              <p class="text-xs font-regular text-gray-500">
                 {{ selectedConfigData()!.wcTarado | number: '1.0-0' }} g
               </p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">
+              <p class="text-xs font-regular text-gray-500">
                 {{ ordenada() !== null ? (ordenada()! | number: '1.5-5') : '—' }}
               </p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESVIACION_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">
+              <p class="text-xs font-regular text-gray-500">
                 {{ desviacion() !== null ? (desviacion()! | number: '1.2-2') + ' m/s' : '—' }}
               </p>
             </div>

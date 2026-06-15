@@ -9,6 +9,7 @@ import type {
   WidgetType,
   WidgetWidth,
 } from '../models/execution-grid.models';
+import type { WidgetId } from '../models/widget-id.enum';
 
 /**
  * 🎯 Servicio para gestionar el estado de los widgets en el grid
@@ -63,7 +64,13 @@ export class WidgetStateService {
   /**
    * ➕ Añadir widget al grid
    */
-  addWidget(type: WidgetType, width: WidgetWidth, position?: GridPosition, techProfile?: TechProfile, height: WidgetHeight = 1): string {
+  addWidget(
+    type: WidgetType,
+    width: WidgetWidth,
+    position?: GridPosition,
+    techProfile?: TechProfile,
+    height: WidgetHeight = 1,
+  ): string {
     const id = this.#generateWidgetId();
     const finalPosition = position || this.#findNextAvailablePosition(width, height);
 
@@ -171,8 +178,18 @@ export class WidgetStateService {
       }
 
       // Validar si ambos caben en sus nuevas posiciones (para swaps no-W3)
-      const canSourceFit = this.#isPositionValid(newSourcePos, sourceWidget.width, [widgetId, targetWidget.id], sourceWidget.height);
-      const canTargetFit = this.#isPositionValid(newTargetPos, targetWidget.width, [widgetId, targetWidget.id], targetWidget.height);
+      const canSourceFit = this.#isPositionValid(
+        newSourcePos,
+        sourceWidget.width,
+        [widgetId, targetWidget.id],
+        sourceWidget.height,
+      );
+      const canTargetFit = this.#isPositionValid(
+        newTargetPos,
+        targetWidget.width,
+        [widgetId, targetWidget.id],
+        targetWidget.height,
+      );
 
       if (canSourceFit && canTargetFit) {
         this.#placedWidgets.update((list) =>
@@ -217,7 +234,12 @@ export class WidgetStateService {
   /**
    * 🔍 Verificar si una posición es válida
    */
-  #isPositionValid(position: GridPosition, width: WidgetWidth, excludeWidgetIds: string | string[] = [], height: WidgetHeight = 1): boolean {
+  #isPositionValid(
+    position: GridPosition,
+    width: WidgetWidth,
+    excludeWidgetIds: string | string[] = [],
+    height: WidgetHeight = 1,
+  ): boolean {
     const { row, col } = position;
     const excludes = Array.isArray(excludeWidgetIds) ? excludeWidgetIds : [excludeWidgetIds];
 

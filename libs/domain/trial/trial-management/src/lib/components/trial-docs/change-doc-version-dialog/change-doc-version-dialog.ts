@@ -38,7 +38,7 @@ import type { DocumentVersion } from '../../../utils-models/documents-service.mo
 })
 export class ChangeDocVersionDialog {
   readonly dialogRef = inject(MatDialogRef<ChangeDocVersionDialog>);
-  readonly data = inject<{ version: DocumentVersion }>(MAT_DIALOG_DATA);
+  readonly data = inject<{ documentId: string; version: DocumentVersion }>(MAT_DIALOG_DATA);
   readonly #docsService = inject(TrialDocsService);
 
   constructor() {
@@ -51,8 +51,8 @@ export class ChangeDocVersionDialog {
   }
 
   onConfirm(): void {
-    const { id, versionTag } = this.data.version;
-    this.#docsService.setDocumentVersionActive(id, versionTag);
+    const { id } = this.data.version;
+    this.#docsService.setDocumentVersionActive(this.data.documentId, id);
   }
 
   onCancel(): void {

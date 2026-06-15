@@ -60,4 +60,10 @@ export const config: ButtonTrialActionsConfiguration = [
     status: [TrialStatus.CANCELLED, TrialStatus.VOIDED],
     roles: [Role.INTAQALAB_ADMIN],
   },
+  // Ejecutar (En Estudio → Ejecutada)
+  {
+    label: 'UTILS_TRIALS.TRIAL_ACTIONS.EXECUTION',
+    option: 'EXECUTION',
+    status: [TrialStatus.PLANNED, TrialStatus.STARTED, TrialStatus.IN_PROGRESS, TrialStatus.INTERRUPTED],
+  },
 ];

@@ -48,6 +48,15 @@ const SCHEDULER_COLUMNS = [
   'actions',
 ] as const;
 
+const EXECUTION_SELECTOR_COLUMNS = [
+  'trialNumber',
+  'description',
+  'status',
+  'fireTrialType',
+  'client',
+  'scheduledDates',
+] as const;
+
 @Component({
   selector: 'inta-trial-list',
   imports: [
@@ -82,6 +91,10 @@ const SCHEDULER_COLUMNS = [
             <td *matCellDef="let trial" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
               @if (scheduler()) {
                 <span>{{ trial.trialNumber }}</span>
+              } @else if (executionSelector()) {
+                <button class="inta-link" (click)="scheduleTrial.emit(trial)">
+                  {{ trial.trialNumber }}
+                </button>
               } @else {
                 <button class="inta-link" (click)="goTrialDetail.emit(trial)">
                   {{ trial.trialNumber }}
@@ -231,6 +244,16 @@ const SCHEDULER_COLUMNS = [
             </td>
           </ng-container>
 
+          <!-- Scheduled Dates Column (Execution Selector) -->
+          <ng-container matColumnDef="scheduledDates">
+            <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
+              {{ 'TRIALS_LIST.TABLE.SCHEDULED_DATES' | translate }}
+            </th>
+            <td *matCellDef="let trial" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
+              {{ getSchudeledDate(trial) }}
+            </td>
+          </ng-container>
+
           <tr *matHeaderRowDef="displayedColumns()" mat-header-row></tr>
           <tr *matRowDef="let row; columns: displayedColumns()" mat-row class="hover:bg-gray-50 transition-colors"></tr>
         </table>
@@ -261,13 +284,18 @@ export class TrialListComponent {
 
   readonly filters = input<Partial<TrialSearchFilters>>();
   readonly scheduler = input(false);
+  readonly executionSelector = input(false);
 
   readonly goTrialDetail = output<{ id: FireTrial['id'] }>();
   readonly scheduleTrial = output<FireTrial>();
 
   readonly #filtersSignal = signal<Partial<TrialSearchFilters>>({});
 
-  readonly displayedColumns = computed(() => (this.scheduler() ? [...SCHEDULER_COLUMNS] : [...DEFAULT_COLUMNS]));
+  readonly displayedColumns = computed(() => {
+    if (this.scheduler()) return [...SCHEDULER_COLUMNS];
+    if (this.executionSelector()) return [...EXECUTION_SELECTOR_COLUMNS];
+    return [...DEFAULT_COLUMNS];
+  });
 
   readonly pageIndex = computed(() => (this.store.currentSearch().page ?? 1) - 1);
   readonly pageSize = computed(() => this.store.currentSearch().pageSize ?? 10);

@@ -3,6 +3,8 @@ import { Injectable, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
+import type { WidgetId } from '../execution/models';
+
 // ============= Types =============
 
 export type ExecutionStatus =
@@ -25,15 +27,15 @@ export interface ExecutionStateResponse {
 }
 
 export interface ExecutionSeriesProgress {
-  serieId: string;
+  seriesId: string;
   sequenceNumber: number;
-  shoots: ExecutionShotProgress[];
+  shots: ExecutionShotProgress[];
 }
 
 export interface ExecutionShotProgress {
-  shootId: string;
+  shotId: string;
   sequenceNumber: number;
-  status: 'PENDING' | 'IN_PROGRESS' | 'EXECUTED';
+  status: 'PENDING' | 'ACTIVE' | 'FIRED';
   updatedAt: string;
 }
 
@@ -106,7 +108,7 @@ export interface PlanningRequest {
 
 export interface PlanningStateResponse {
   version: number;
-  isAprovedByClient: boolean;
+  isApprovedByClient: boolean;
   updatedAt: string;
 }
 
@@ -134,10 +136,46 @@ interface ExecutionPlanningParams extends ExecutionParams {
   body: PlanningRequest | PlanningApprovalRequest;
 }
 
+export type ExecutionTechnicalProfile =
+  | 'VELOCITIES'
+  | 'PRESSURES'
+  | 'VIDEO'
+  | 'TRAJECTOGRAPHY'
+  | 'MUNITIONS'
+  | 'ARMAMENT';
+
+export type ExecutionWidgetLayout = {
+  widgetsLayout: string[];
+};
+
+export type SeriesReadinessItem = {
+  seriesId: string;
+  isReady: boolean;
+  observations?: string;
+};
+
+export type ProfileReadinessItem = {
+  profile: ExecutionTechnicalProfile;
+  seriesReadiness: SeriesReadinessItem[];
+};
+
+export type ProfilesReadinessResponse = {
+  profilesReadiness: ProfileReadinessItem[];
+};
+
+export type ProfileReadinessRequest = {
+  seriesReadiness: SeriesReadinessItem[];
+};
+
 interface PreferencesParams extends ExecutionParams {
   roleName?: string;
   username?: string;
-  body?: Record<string, unknown>;
+  widgetsLayout?: WidgetId[];
+}
+
+interface ReadinessProfileParams extends ExecutionParams {
+  profile: ExecutionTechnicalProfile;
+  body: ProfileReadinessRequest;
 }
 
 // ============= Service =============
@@ -416,12 +454,12 @@ export class ExecutionService {
     return {
       url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/roles/${params.roleName}`,
       method: 'PUT',
-      body: params.body,
+      body: params.widgetsLayout,
     };
   });
 
-  updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, body: Record<string, unknown>): void {
-    this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, body, _t: Date.now() });
+  updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, widgetsLayout: WidgetId[]): void {
+    this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, widgetsLayout, _t: Date.now() });
   }
 
   // ── WIDGET PREFERENCES: BY USER ─────────────────────────────────────────
@@ -449,11 +487,54 @@ export class ExecutionService {
     return {
       url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/users/${params.username}`,
       method: 'PUT',
+      body: params.widgetsLayout,
+    };
+  });
+
+  updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, widgetsLayout: WidgetId[]): void {
+    this.#updatePreferencesByUserParams.set({ fireTrialId, username, widgetsLayout, _t: Date.now() });
+  }
+
+  // ── EXECUTION READINESS: GET ALL ────────────────────────────────────────
+
+  readonly #getReadinessParams = signal<ExecutionParams | null>(null);
+
+  readonly profilesReadinessResource = httpResource<ProfilesReadinessResponse>(() => {
+    const params = this.#getReadinessParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/readiness`,
+      method: 'GET',
+    };
+  });
+
+  getProfilesReadiness(fireTrialId: FireTrial['id']): void {
+    this.#getReadinessParams.set({ fireTrialId, _t: Date.now() });
+  }
+
+  // ── EXECUTION READINESS: SET BY PROFILE ────────────────────────────────
+
+  readonly #setReadinessProfileParams = signal<ReadinessProfileParams | null>(null);
+
+  readonly setProfileReadinessResource = httpResource<ProfileReadinessItem>(() => {
+    const params = this.#setReadinessProfileParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/readiness/profiles/${params.profile}`,
+      method: 'PUT',
       body: params.body,
     };
   });
 
-  updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, body: Record<string, unknown>): void {
-    this.#updatePreferencesByUserParams.set({ fireTrialId, username, body, _t: Date.now() });
+  setProfileReadiness(
+    fireTrialId: FireTrial['id'],
+    profile: ExecutionTechnicalProfile,
+    body: ProfileReadinessRequest,
+  ): void {
+    this.#setReadinessProfileParams.set({ fireTrialId, profile, body, _t: Date.now() });
+  }
+
+  resetSetProfileReadiness(): void {
+    this.#setReadinessProfileParams.set(null);
   }
 }

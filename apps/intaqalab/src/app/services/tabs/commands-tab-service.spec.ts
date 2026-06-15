@@ -122,6 +122,13 @@ describe('CommandsTabService', () => {
       }
     });
 
+    it('command "EXECUTION" → should navigate by url to execution page', () => {
+      const { service, routerSpy } = setup(true);
+
+      service.executeCommand({ command: 'EXECUTION' as any, argument: 'trial-123' });
+      expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/execution/trial-123');
+    });
+
     it('should not delegate for unknown commands', () => {
       const { service } = setup(true);
       const spies = (['addTrialView', 'addTrialList', 'addDocumentTrial'] as const).map((m) =>

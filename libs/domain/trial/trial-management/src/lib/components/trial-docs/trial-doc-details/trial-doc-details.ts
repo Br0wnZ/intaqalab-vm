@@ -249,7 +249,10 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
 
         <mat-tab label="{{ 'TRIAL_DOCS.DOC_DETAILS.VERSIONS_MAT_LABEL' | translate }}">
           @if (documentVersionsResource.hasValue() && documentVersionsResource.value().length > 0) {
-            <inta-trial-doc-versions [documentVersions]="documentVersionsResource.value()" />
+            <inta-trial-doc-versions
+              [documentId]="documentId()!"
+              [documentVersions]="documentVersionsResource.value()"
+            />
           }
         </mat-tab>
         <!-- Descomentar par ver la parte de Admin -->

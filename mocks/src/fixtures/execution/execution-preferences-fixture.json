@@ -1,30 +1,54 @@
 {
+  "centerId": "center-001",
+  "fireTrialId": "trial-001",
   "widgets": [
     {
-      "id": "disparo",
-      "x": 0,
-      "y": 0,
-      "width": 3,
-      "height": 2,
-      "visible": true
-    },
-    {
-      "id": "seguimiento-general",
-      "x": 3,
-      "y": 0,
-      "width": 2,
-      "height": 2,
-      "visible": true
-    },
-    {
-      "id": "preparacion-ejecucion",
-      "x": 5,
-      "y": 0,
+      "widgetId": "shot",
+      "position": {
+        "row": 1,
+        "col": 1
+      },
       "width": 1,
-      "height": 2,
-      "visible": false
+      "height": 1
+    },
+    {
+      "widgetId": "execution-prep-tech",
+      "position": {
+        "row": 1,
+        "col": 2
+      },
+      "width": 2,
+      "height": 1,
+      "techProfile": "velocidades"
+    },
+    {
+      "widgetId": "execution-prep-jlt",
+      "position": {
+        "row": 2,
+        "col": 1
+      },
+      "width": 3,
+      "height": 1
+    },
+    {
+      "widgetId": "jlt-mao",
+      "position": {
+        "row": 3,
+        "col": 1
+      },
+      "width": 2,
+      "height": 1
+    },
+    {
+      "widgetId": "mao-topography",
+      "position": {
+        "row": 3,
+        "col": 3
+      },
+      "width": 1,
+      "height": 1
     }
   ],
-  "layout": "grid",
-  "refreshInterval": 5000
+  "createdAt": "2026-06-11T10:00:00Z",
+  "updatedAt": "2026-06-11T10:00:00Z"
 }

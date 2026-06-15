@@ -44,4 +44,5 @@ export interface HasStatus {
   [key: string]: any;
 }
 
-export type TrialActions = 'MODIFY' | 'CANCEL' | 'ANNUL' | 'REACTIVATE' | 'CLOSE' | 'REOPEN' | 'REMOVE';
+export type TrialActions = 'MODIFY' | 'CANCEL' | 'ANNUL' | 'REACTIVATE' | 'CLOSE' | 'REOPEN' | 'REMOVE' | 'EXECUTION';
+

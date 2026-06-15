@@ -559,7 +559,9 @@ export class ConfigurationFormComponent {
   onConditioningToggle(enabled: boolean): void {
     this.formModel.update((current) => ({
       ...current,
-      reconditioning: enabled ? { temperature: 21, tolerance: 2, timeMin: 4, timeMax: 24 } : undefined,
+      reconditioning: enabled
+        ? { temperature: undefined, tolerance: undefined, timeMin: undefined, timeMax: undefined }
+        : undefined,
     }));
     this.emitChanges();
   }

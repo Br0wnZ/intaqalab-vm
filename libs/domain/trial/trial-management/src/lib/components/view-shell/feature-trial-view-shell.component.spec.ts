@@ -277,6 +277,14 @@ describe('FeatureTrialViewShellComponent', () => {
     });
   });
 
+  describe('handleClickTrialAction() with EXECUTION', () => {
+    it('should call onAction with TRIAL_EXECUTION command and trialId', async () => {
+      const { component } = await setup();
+      component.handleClickTrialAction('EXECUTION');
+      expect(mockTabCommand).toHaveBeenCalledWith({ command: 'EXECUTION', argument: 'someId' });
+    });
+  });
+
   describe('Trial actions — dialogs', () => {
     it('should call transitionsService.cancel with reason after CANCEL action', async () => {
       const { component } = await setup();

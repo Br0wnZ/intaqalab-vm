@@ -46,13 +46,19 @@ export class ConfirmDeleteDialogComponent {
   readonly data = inject<ConfirmDeleteDocDialogData>(MAT_DIALOG_DATA);
   protected readonly deleteService = inject(TrialDocsService);
   readonly #deleteConfirmed = signal(false);
+  readonly #deleteInFlight = signal(false);
 
   constructor() {
     effect(() => {
       const status = this.deleteService.deleteDocumentResource.status();
-      if (this.#deleteConfirmed() && status === 'resolved') {
-        this.deleteService.resetDelete();
-        this.dialogRef.close(true);
+      if (this.#deleteConfirmed()) {
+        if (status === 'loading') {
+          this.#deleteInFlight.set(true);
+        }
+        if (this.#deleteInFlight() && status === 'resolved') {
+          this.deleteService.resetDelete();
+          this.dialogRef.close(true);
+        }
       }
     });
   }
@@ -65,6 +71,7 @@ export class ConfirmDeleteDialogComponent {
     const fireTrialId = this.deleteService.fireTrialId();
     if (!fireTrialId) return;
     this.#deleteConfirmed.set(true);
+    this.#deleteInFlight.set(false);
     this.deleteService.deleteDocument(fireTrialId, this.data.documentId);
   }
 

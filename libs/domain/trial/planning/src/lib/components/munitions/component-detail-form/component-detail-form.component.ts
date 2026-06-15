@@ -236,7 +236,11 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
 
       @if (isConditioningEnabled()) {
         <div class="mt-4">
-          <inta-conditioning-fields [data]="conditioningData()" (dataChange)="onConditioningChange($event)" />
+          <inta-conditioning-fields
+            [data]="conditioningData()"
+            [showErrors]="!conditioningValid()"
+            (dataChange)="onConditioningChange($event)"
+          />
         </div>
       }
     </div>
@@ -318,6 +322,18 @@ export class ComponentDetailFormComponent {
     return this.formModel().reconditioning ?? {};
   });
 
+  /**
+   * True when conditioning is disabled OR all 4 required numeric fields are filled.
+   * This computed is separate from `detailForm` to avoid breaking existing form validations.
+   */
+  readonly conditioningValid = computed(() => {
+    if (!this.isConditioningEnabled()) return true;
+    const r = this.formModel().reconditioning;
+    if (!r) return false;
+    const isValidNum = (v: number | undefined | null): boolean => v !== undefined && v !== null && !isNaN(v);
+    return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin) && isValidNum(r.timeMax);
+  });
+
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
     validate(f.clientNumber, ({ value }) => {
@@ -341,6 +357,9 @@ export class ComponentDetailFormComponent {
       return null;
     });
   });
+
+  /** Combined validity: Signal Form fields + conditioning required fields */
+  readonly isValid = computed(() => this.detailForm().valid() && this.conditioningValid());
 
   emitChanges(): void {
     const value = this.detailForm().value();
@@ -392,7 +411,9 @@ export class ComponentDetailFormComponent {
   onConditioningToggle(enabled: boolean): void {
     this.formModel.update((current) => ({
       ...current,
-      reconditioning: enabled ? { temperature: 21, tolerance: 2, timeMin: 4, timeMax: 24 } : undefined,
+      reconditioning: enabled
+        ? { temperature: undefined, tolerance: undefined, timeMin: undefined, timeMax: undefined }
+        : undefined,
     }));
     this.emitChanges();
   }

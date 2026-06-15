@@ -254,7 +254,24 @@
   },
   {
     "id": "b0000001-0000-0000-0000-000000000012",
-    "date": "2026-05-18",
+    "date": "2026-06-18",
+    "eventType": "FIRE_TRIAL",
+    "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+    "lineOfShootId": "2",
+    "fireTrial": {
+      "id": "e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f",
+      "trialNumber": "0044-26",
+      "status": "UNDER_REVIEW",
+      "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
+      "client": {
+        "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd091f",
+        "name": "RHEINMETALL EXPAL MUNITIONS"
+      }
+    }
+  },
+  {
+    "id": "b0000001-0000-0000-0000-000000000012",
+    "date": "2026-06-19",
     "eventType": "FIRE_TRIAL",
     "description": "Prueba de espoletas MT M565, lote 39-RHG-25.",
     "lineOfShootId": "2",

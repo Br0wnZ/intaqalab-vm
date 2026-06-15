@@ -1,5 +1,7 @@
 import type { Signal } from '@angular/core';
 
+import type { WidgetId } from './widget-id.enum';
+
 /**
  * 📐 Tamaño de un widget en el grid
  */
@@ -19,7 +21,7 @@ export interface GridPosition {
  */
 export interface PlacedWidget {
   id: string;
-  type: WidgetType;
+  type: WidgetId;
   position: GridPosition;
   width: WidgetWidth;
   height: WidgetHeight;
@@ -29,51 +31,15 @@ export interface PlacedWidget {
 }
 
 /**
- * 🎨 Tipos de widgets disponibles
+ * ⚠️ DEPRECATED: Usa `WidgetId` enum en su lugar
+ * 🎨 Tipos de widgets disponibles (mantenido para compatibilidad)
  */
-export type WidgetType =
-  | 'shot'
-  | 'execution-prep-tech'
-  | 'execution-prep-jlt'
-  | 'video-camera-orientation'
-  | 'radar-trayectography-orientation'
-  | 'mao-topography'
-  | 'jlt-mao'
-  | 'armament-introduction'
-  | 'jlt-shot-data'
-  | 'munition-introduction'
-  | 'radar-metcmq'
-  | 'tarado-velocidad-chart'
-  | 'velocity-introduction'
-  | 'piezo-pressure-introduction'
-  | 'manometer-introduction'
-  | 'seguimiento'
-  | 'informacion-tarado'
-  | 'tarado-presion-chart'
-  | 'uniformidad-chart'
-  | 'stanag-criterios'
-  | 'trayectografia-introduction'
-  | 'overpressure-info'
-  | 'overpressure-chart'
-  | 'pass-coords'
-  | 'grubbs-criterion'
-  | 'topography-introduction'
-  | 'target-data'
-  | 'acoustic-level-introduction'
-  | 'vigilancia'
-  | 'datos-blanco-bola'
-  | 'seguridad';
+export type WidgetType = WidgetId;
 
 /**
  * 🎭 Perfiles técnicos para el widget Preparación ejecución – Unidades técnicas
  */
-export type TechProfile =
-  | 'velocidades'
-  | 'presiones'
-  | 'video'
-  | 'trayectografia'
-  | 'municiones'
-  | 'armamento';
+export type TechProfile = 'velocidades' | 'presiones' | 'video' | 'trayectografia' | 'municiones' | 'armamento';
 
 /**
  * 📊 Estado del formulario de un widget
@@ -110,4 +76,22 @@ export interface FormWidget {
 
   /** Guardar cambios del formulario */
   saveForm(): Promise<void>;
+}
+
+/**
+ * 🧩 Widget en la librería/panel lateral
+ * Configuración de widget disponible para añadir al grid
+ */
+export interface Widget {
+  id: string;
+  widgetId: WidgetId;
+  title: string;
+  description: string;
+  category: string;
+  badge?: string;
+  badgeColor?: 'purple' | 'blue';
+  defaultWidth: WidgetWidth;
+  defaultHeight?: WidgetHeight;
+  /** 🎭 Perfil técnico (sólo para type 'execution-prep-tech') */
+  techProfile?: TechProfile;
 }

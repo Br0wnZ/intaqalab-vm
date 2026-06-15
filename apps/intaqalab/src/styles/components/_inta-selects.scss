@@ -115,4 +115,13 @@
   html body .mat-mdc-menu-panel {
     background-color: var(--inta-bg-white) !important;
   }
+
+  html body .mdc-floating-label.mat-mdc-floating-label{
+    font-size: var(--text-sm) !important;
+  }
+
+}
+
+html body .mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label{
+  line-height: 1.5rem;
 }

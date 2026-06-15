@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ChartDirective } from '@intaqalab/ui';
+import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -39,22 +39,21 @@ interface TaradoVelocidadForm {
     MatTooltipModule,
     TranslateModule,
     ChartDirective,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
+    <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header row 1: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">bar_chart</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate">
+      <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
+        <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Header row 2: Serie + Disparo + Velocidad nominal -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[4rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.SERIE_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -67,7 +66,7 @@ interface TaradoVelocidadForm {
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-24">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[4rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.DISPARO_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -80,7 +79,7 @@ interface TaradoVelocidadForm {
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 min-w-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[8rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.VELOCIDAD_NOMINAL_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.VELOCIDAD_NOMINAL_PLACEHOLDER' | translate"
@@ -94,8 +93,8 @@ interface TaradoVelocidadForm {
       </div>
 
       <!-- Header row 3: Configuracion select + save button -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[12rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.CONFIG_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.CONFIG_PLACEHOLDER' | translate"
@@ -110,72 +109,73 @@ interface TaradoVelocidadForm {
         <button
           mat-flat-button
           type="button"
-          class="!bg-violet-600 !text-white !rounded-xl !h-10 !px-4 shrink-0 flex items-center gap-1.5"
+          color="primary"
+          class="grow basis-[10rem] max-w-lg"
           (click)="saveForm()"
         >
-          <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">save</mat-icon>
+          <ui-inta-icon name="save" class="mr-2" />
           {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.CONFIG_BTN' | translate }}
         </button>
       </div>
 
       <!-- Chart canvas -->
-      <div intaReadonlyContent class="flex-1 min-h-0 relative">
+      <div intaReadonlyContent class="flex-1 relative min-h-40 w-full">
         <canvas uiChart aria-label="Tarado Velocidad Chart" role="img" [config]="chartConfig()"></canvas>
       </div>
 
       <!-- Bottom: legend + stats -->
-      <div class="shrink-0 flex gap-2">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] items-start gap-2">
         <!-- Legend + R² -->
-        <div class="flex-1 border border-slate-100 rounded-xl p-2 flex flex-col gap-1 justify-between">
+        <div class="border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between">
           <div class="flex items-center gap-1.5">
             <div class="w-6 h-px bg-violet-600"></div>
-            <span class="text-[11px] text-slate-600">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.LEGEND_LINE' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-3 h-3 rounded-full bg-cyan-400"></div>
-            <span class="text-[11px] text-slate-600">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.LEGEND_RECTA' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-3 h-3 rounded-full bg-orange-400"></div>
-            <span class="text-[11px] text-slate-600">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.LEGEND_PUNTO' | translate }}
             </span>
           </div>
           @if (r2()) {
-            <span class="text-[11px] font-semibold text-slate-700 mt-1">R² = {{ r2()! | number: '1.4-4' }}</span>
+            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2()! | number: '1.4-4' }}</span>
           }
         </div>
 
         <!-- Stats grid -->
-        <div class="border border-slate-100 rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
+        <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
           @if (regression()) {
             <div>
-              <p class="text-[10px] font-semibold text-slate-500">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-xs font-medium text-slate-800">{{ regression()!.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.pendiente | number: '1.5-5' }}</p>
             </div>
             <div>
-              <p class="text-[10px] font-semibold text-slate-500">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.PESO_TARADO_LABEL' | translate }}
               </p>
-              <p class="text-xs font-medium text-slate-800">{{ regression()!.pesoTarado }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.pesoTarado }} g</p>
             </div>
             <div>
-              <p class="text-[10px] font-semibold text-slate-500">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-xs font-medium text-slate-800">{{ regression()!.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.ordenada | number: '1.5-5' }}</p>
             </div>
             <div>
-              <p class="text-[10px] font-semibold text-slate-500">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-medium text-slate-800">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
             </div>
           }
         </div>

@@ -108,6 +108,20 @@
   cursor: pointer;
 }
 
+.calendar-month-event__execution {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
 .calendar-week-event {
   height: 100%;
   border-radius: 0.5rem;
@@ -137,6 +151,22 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.calendar-week-event__execution {
+  position: absolute;
+  top: 0.5rem;
+  right: 2.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -203,6 +233,22 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.calendar-day-event__execution {
+  position: absolute;
+  top: 0.5rem;
+  right: 2.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;

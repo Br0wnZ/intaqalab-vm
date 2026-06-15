@@ -80,6 +80,8 @@ export const routes: Routes = [
           return (command: CommandTab) => {
             if (command.command === 'TRIAL_LIST') {
               router.navigateByUrl('/trial/list');
+            } else if (command.command === 'EXECUTION') {
+              router.navigateByUrl(`/execution/${command.argument}`);
             } else {
               router.navigateByUrl(`/trial/document/${command.argument}`);
             }

@@ -163,7 +163,9 @@ export class FeatureTrialViewShellComponent {
   }
 
   handleClickTrialAction(action: TrialActions) {
-    if (action === 'MODIFY') {
+    if (action === 'EXECUTION') {
+      this.onAction({ command: 'EXECUTION', argument: this.id });
+    } else if (action === 'MODIFY') {
       this.editable.set(true);
     } else if (action === 'CANCEL') {
       this.#cancelTrial();

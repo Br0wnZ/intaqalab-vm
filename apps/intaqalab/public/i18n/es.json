@@ -290,7 +290,8 @@
       "REACTIVATE": "Reactivar",
       "CLOSE": "Cerrar",
       "REOPEN": "Reabrir",
-      "REMOVE": "Eliminar"
+      "REMOVE": "Eliminar",
+      "EXECUTION": "Ejecución"
     },
     "TRIAL_STATUS": {
       "UNDER_REVIEW": "En estudio",
@@ -634,7 +635,8 @@
         "MIN_TIME_LABEL": "Tiempo mínimo (h)",
         "MAX_TIME_LABEL": "Tiempo máximo (h)",
         "OBSERVATIONS_LABEL": "Observaciones",
-        "OBSERVATIONS_PLACEHOLDER": "Observaciones del acondicionamiento"
+        "OBSERVATIONS_PLACEHOLDER": "Observaciones del acondicionamiento",
+        "REQUIRED_ERROR": "Este campo es obligatorio"
       },
       "MASSIVE_CONFIG_DIALOG": {
         "TITLE": "Configuración masiva de munición",

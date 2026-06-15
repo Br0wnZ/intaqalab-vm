@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -150,6 +151,7 @@ describe('Munitions', () => {
       const { component, view } = await runSetup();
 
       component.seriesSignal.set([createValidSerie('Serie 1')]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(true);
@@ -166,6 +168,7 @@ describe('Munitions', () => {
           ],
         },
       ]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(false);
@@ -194,6 +197,7 @@ describe('Munitions', () => {
           ],
         },
       ]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(true);
@@ -222,6 +226,7 @@ describe('Munitions', () => {
           ],
         },
       ]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(false);
@@ -238,6 +243,7 @@ describe('Munitions', () => {
           ],
         },
       ]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       // The form validates: denomination (required), assignedShotIds (non-empty). batch is NOT required.
@@ -255,6 +261,7 @@ describe('Munitions', () => {
           ],
         },
       ]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(false);
@@ -265,6 +272,7 @@ describe('Munitions', () => {
 
       // An empty configuration (denomination='', batch='') triggers required validators
       component.seriesSignal.set([{ ...createEmptySerie('Serie 1'), configurations: [createEmptyConfiguration()] }]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
@@ -275,10 +283,168 @@ describe('Munitions', () => {
       const { component, view } = await runSetup();
 
       component.seriesSignal.set([createValidSerie('Serie 1')]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
       expect(saveButton).not.toBeDisabled();
+    });
+
+    describe('Reconditioning validation', () => {
+      it('should report the form as invalid when config-level reconditioning is enabled but numeric fields are undefined', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                reconditioning: {
+                  temperature: undefined as any,
+                  tolerance: undefined as any,
+                  timeMin: undefined as any,
+                  timeMax: undefined as any,
+                },
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(false);
+      });
+
+      it('should report the form as valid when config-level reconditioning is enabled and all numeric fields are filled', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                reconditioning: {
+                  temperature: 20,
+                  tolerance: 2,
+                  timeMin: 12,
+                  timeMax: 24,
+                },
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(true);
+      });
+
+      it('should report the form as invalid when component-level reconditioning is enabled but numeric fields are undefined', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                selectedComponents: ['espoleta'],
+                components: [
+                  {
+                    ...createEmptyComponentDetail('espoleta'),
+                    denomination: { id: 'denom-1', name: 'Espoleta 1' },
+                    reconditioning: {
+                      temperature: undefined as any,
+                      tolerance: undefined as any,
+                      timeMin: undefined as any,
+                      timeMax: undefined as any,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(false);
+      });
+
+      it('should report the form as valid when component-level reconditioning is enabled and all numeric fields are filled', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                selectedComponents: ['espoleta'],
+                components: [
+                  {
+                    ...createEmptyComponentDetail('espoleta'),
+                    denomination: { id: 'denom-1', name: 'Espoleta 1' },
+                    reconditioning: {
+                      temperature: 20,
+                      tolerance: 2,
+                      timeMin: 12,
+                      timeMax: 24,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(true);
+      });
+
+      it('should disable save button when reconditioning fields are invalid', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                reconditioning: {
+                  temperature: undefined as any,
+                  tolerance: undefined as any,
+                  timeMin: undefined as any,
+                  timeMax: undefined as any,
+                },
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
+        expect(saveButton).toBeDisabled();
+      });
     });
   });
 
@@ -327,6 +493,7 @@ describe('Munitions', () => {
       const { component, view } = await runSetup();
 
       component.seriesSignal.set([createValidSerie('Serie 1')]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.isFormValid()).toBe(true);
@@ -339,6 +506,7 @@ describe('Munitions', () => {
 
       // An empty configuration (denomination='', batch='') triggers required validators
       component.seriesSignal.set([{ ...createEmptySerie('Serie 1'), configurations: [createEmptyConfiguration()] }]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       component.saveForm();
@@ -448,6 +616,7 @@ describe('Munitions', () => {
       const { component, view } = await runSetup();
 
       component.seriesSignal.set([createValidSerie('Serie 1')]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.validateConfiguration()).toBe(true);
@@ -458,6 +627,7 @@ describe('Munitions', () => {
 
       // An empty configuration (denomination='', batch='') triggers required validators
       component.seriesSignal.set([{ ...createEmptySerie('Serie 1'), configurations: [createEmptyConfiguration()] }]);
+      component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
       expect(component.validateConfiguration()).toBe(false);

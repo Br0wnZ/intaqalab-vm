@@ -290,7 +290,8 @@
       "REACTIVATE": "Reactivate",
       "CLOSE": "Close",
       "REOPEN": "Reopen",
-      "REMOVE": "Delete"
+      "REMOVE": "Delete",
+      "EXECUTION": "Execution"
     },
     "TRIAL_STATUS": {
       "UNDER_REVIEW": "Under review",
@@ -634,7 +635,8 @@
         "MIN_TIME_LABEL": "Minimum time (h)",
         "MAX_TIME_LABEL": "Maximum time (h)",
         "OBSERVATIONS_LABEL": "Notes",
-        "OBSERVATIONS_PLACEHOLDER": "Conditioning notes"
+        "OBSERVATIONS_PLACEHOLDER": "Conditioning notes",
+        "REQUIRED_ERROR": "This field is required"
       },
       "MASSIVE_CONFIG_DIALOG": {
         "TITLE": "Bulk ammunition configuration",

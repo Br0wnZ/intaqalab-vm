@@ -2,6 +2,7 @@ import { computed, inject } from '@angular/core';
 import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import type { WidgetId } from '../execution/models';
 import { ExecutionService } from '../services/execution.service';
 
 interface ExecutionState {
@@ -170,16 +171,16 @@ export const ExecutionGeneralDataStore = signalStore(
       executionService.getPreferencesByRole(fireTrialId, roleName);
     },
 
-    updatePreferencesByRole(fireTrialId: string, roleName: string, body: Record<string, unknown>): void {
-      executionService.updatePreferencesByRole(fireTrialId, roleName, body);
+    updatePreferencesByRole(fireTrialId: string, roleName: string, widgetsLayout: WidgetId[]): void {
+      executionService.updatePreferencesByRole(fireTrialId, roleName, widgetsLayout);
     },
 
     loadPreferencesByUser(fireTrialId: string, username: string): void {
       executionService.getPreferencesByUser(fireTrialId, username);
     },
 
-    updatePreferencesByUser(fireTrialId: string, username: string, body: Record<string, unknown>): void {
-      executionService.updatePreferencesByUser(fireTrialId, username, body);
+    updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetId[]): void {
+      executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
     },
   })),
 

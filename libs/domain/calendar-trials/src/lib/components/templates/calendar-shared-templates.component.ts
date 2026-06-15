@@ -7,7 +7,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import type { CalendarTrialApiResponse, TrialStatus } from '@intaqalab/models';
+import { Router } from '@angular/router';
+import { TrialStatus } from '@intaqalab/models';
+import type { CalendarTrialApiResponse } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
@@ -106,6 +108,15 @@ import { DayActionsComponent } from './day-actions.component';
                 </span>
               </button>
 
+              @if (event.meta.fireTrial.status === TrialStatus.PLANNED) {
+                <button
+                  type="button"
+                  class="calendar-month-event__execution"
+                  (click)="handleExecution(event.meta.fireTrial.id, $event)"
+                >
+                  <ui-inta-icon name="eventLog" size="md" />
+                </button>
+              }
               @if (canSchedule(event.meta.fireTrial.status)) {
                 <button type="button" class="calendar-month-event__delete" (click)="unprogram(event.meta, $event)">
                   <ui-inta-icon name="remove" size="md" />
@@ -164,6 +175,15 @@ import { DayActionsComponent } from './day-actions.component';
         (keyup.enter)="$event.stopPropagation(); eventClicked.emit({ event: weekEvent })"
       >
         <div class="calendar-week-event__content">
+          @if (weekEvent.event.meta.fireTrial.status === TrialStatus.PLANNED) {
+            <button
+              type="button"
+              class="calendar-week-event__execution"
+              (click)="handleExecution(weekEvent.event.meta.fireTrial.id, $event)"
+            >
+              <ui-inta-icon name="execution" size="md" />
+            </button>
+          }
           @if (canSchedule(weekEvent.event.meta.fireTrial.status)) {
             <button type="button" class="calendar-week-event__delete" (click)="unprogram(weekEvent.event.meta, $event)">
               <ui-inta-icon name="remove" size="md" />
@@ -208,6 +228,15 @@ import { DayActionsComponent } from './day-actions.component';
         (keyup.enter)="$event.stopPropagation(); eventClicked.emit({ event: weekEvent })"
       >
         <div class="calendar-day-event__content">
+          @if (weekEvent.event.meta.fireTrial.status === TrialStatus.PLANNED) {
+            <button
+              type="button"
+              class="calendar-day-event__execution"
+              (click)="handleExecution(weekEvent.event.meta.fireTrial.id, $event)"
+            >
+              <ui-inta-icon name="execution" size="md" />
+            </button>
+          }
           @if (canSchedule(weekEvent.event.meta.fireTrial.status)) {
             <button type="button" class="calendar-day-event__delete" (click)="unprogram(weekEvent.event.meta, $event)">
               <ui-inta-icon name="remove" size="md" />
@@ -271,8 +300,10 @@ import { DayActionsComponent } from './day-actions.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarSharedTemplatesComponent {
+  protected readonly TrialStatus = TrialStatus;
   store = inject(CalendarTrialStore);
   #trialPersmissionsService = inject(TrialPersmissionsService);
+  #router = inject(Router);
 
   canSchedule(trialStatus: TrialStatus) {
     return this.#trialPersmissionsService.canSchedule(trialStatus);
@@ -307,5 +338,10 @@ export class CalendarSharedTemplatesComponent {
 
   handleViewTrial(trial: string) {
     this.viewTrial.emit(trial);
+  }
+
+  handleExecution(trialId: string, event: MouseEvent) {
+    event.stopPropagation();
+    this.#router.navigateByUrl(`/execution/${trialId}`);
   }
 }

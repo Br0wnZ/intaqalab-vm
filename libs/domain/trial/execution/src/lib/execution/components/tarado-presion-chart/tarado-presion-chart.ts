@@ -13,7 +13,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { ChartDirective } from '@intaqalab/ui';
+import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -41,23 +41,22 @@ interface TaradoPresionForm {
     MatSelectModule,
     TranslateModule,
     ChartDirective,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
+    <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
 
       <!-- Header: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">bar_chart</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate">
+      <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
+        <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Selectors row -->
-      <div class="flex gap-2 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[2rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.SERIE_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -69,7 +68,7 @@ interface TaradoPresionForm {
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[2rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.DISPARO_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -84,7 +83,7 @@ interface TaradoPresionForm {
       </div>
 
       <!-- Chart: full width -->
-      <div intaReadonlyContent class="flex-1 relative min-h-0">
+      <div intaReadonlyContent class="flex-1 relative min-h-40 w-full">
         <canvas
           uiChart
           aria-label="Tarado Presión Chart"
@@ -94,58 +93,58 @@ interface TaradoPresionForm {
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->
-      <div class="shrink-0 flex gap-3 border border-slate-100 rounded-xl p-2">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] items-start gap-2">
         <!-- Legend + R² -->
-        <div class="flex flex-col gap-1 justify-center">
+        <div class="border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between">
           <div class="flex items-center gap-1.5">
             <div class="w-6 h-px bg-violet-600 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.LEGEND_LINE' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.LEGEND_RECTA' | translate }}
             </span>
           </div>
           <div class="flex items-center gap-1.5">
             <div class="w-2.5 h-2.5 rounded-full bg-orange-400 shrink-0"></div>
-            <span class="text-[10px] text-slate-600 leading-tight">
+            <span class="text-xs text-slate-600 flex-1">
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.LEGEND_PUNTO' | translate }}
             </span>
           </div>
           @if (r2()) {
-            <span class="text-[10px] font-semibold text-slate-700 mt-0.5">R² = {{ r2()! | number: '1.4-4' }}</span>
+            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2()! | number: '1.4-4' }}</span>
           }
         </div>
 
         <!-- Stats: Pendiente / Peso tarado / Ordenada / Wc/g -->
         @if (regression()) {
-          <div class="ml-auto grid grid-cols-2 gap-x-4 gap-y-1 content-center">
+          <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">{{ regression()!.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.pendiente | number: '1.5-5' }}</p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.PESO_TARADO_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">{{ regression()!.pesoTarado }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.pesoTarado }} g</p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">{{ regression()!.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.ordenada | number: '1.5-5' }}</p>
             </div>
             <div>
-              <p class="text-[9px] font-semibold text-slate-500 leading-tight">
+              <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.WC_LABEL' | translate }}
               </p>
-              <p class="text-[11px] font-medium text-slate-800">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
             </div>
           </div>
         }

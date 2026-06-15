@@ -15,3 +15,5 @@ export { TrialGeneralDataStore } from '../src/lib/components/shared/+state/trial
 
 export { TrialTransitionsService } from './lib/services/trial-transitions.service';
 export { TrialTypeService } from './lib/services/trial-type.service';
+export { TrialListComponent } from './lib/components/list/components/trial-list/trial-list.component';
+export { TrialStore } from './lib/components/list/+state/trial-list.store';

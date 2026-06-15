@@ -14,6 +14,23 @@ type ExecutionStatus =
 
 type CountdownAction = 'START' | 'PAUSE' | 'RESUME' | 'UPDATE_DURATION';
 
+type ExecutionProfile = 'VELOCITIES' | 'PRESSURES' | 'VIDEO' | 'TRAJECTOGRAPHY' | 'MUNITIONS' | 'ARMAMENT';
+
+interface SeriesReadinessItem {
+  seriesId: string;
+  isReady: boolean;
+  observations?: string;
+}
+
+interface ProfileReadinessItem {
+  profile: ExecutionProfile;
+  seriesReadiness: SeriesReadinessItem[];
+}
+
+interface ProfilesReadinessState {
+  profilesReadiness: ProfileReadinessItem[];
+}
+
 interface ExecutionState {
   status: ExecutionStatus;
   activeSeriesId: string | null;
@@ -29,13 +46,14 @@ interface SecurityCountdownState {
 
 interface PlanningState {
   version: number;
-  isAprovedByClient: boolean;
+  isApprovedByClient: boolean;
   updatedAt: string;
 }
 
 const executionStateMap = new Map<string, ExecutionState>();
 const countdownStateMap = new Map<string, SecurityCountdownState>();
 const planningStateMap = new Map<string, PlanningState>();
+const readinessStateMap = new Map<string, ProfilesReadinessState>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -47,6 +65,10 @@ function defaultCountdownState(): SecurityCountdownState {
 
 function defaultPlanningState(): PlanningState {
   return getFixture<PlanningState>('fixtures/execution', 'execution-planning-state-fixture.json');
+}
+
+function defaultReadinessState(): ProfilesReadinessState {
+  return getFixture<ProfilesReadinessState>('fixtures/execution', 'execution-readiness-fixture.json');
 }
 
 export function getExecutionState(fireTrialId: string): ExecutionState {
@@ -120,7 +142,7 @@ export function approvePlanning(fireTrialId: string, approved: boolean): void {
   const current = getPlanningState(fireTrialId);
   planningStateMap.set(fireTrialId, {
     ...current,
-    isAprovedByClient: approved,
+    isApprovedByClient: approved,
     version: current.version + 1,
     updatedAt: new Date().toISOString(),
   });
@@ -130,8 +152,32 @@ export function bumpPlanningVersion(fireTrialId: string): void {
   const current = getPlanningState(fireTrialId);
   planningStateMap.set(fireTrialId, {
     ...current,
-    isAprovedByClient: false,
+    isApprovedByClient: false,
     version: current.version + 1,
     updatedAt: new Date().toISOString(),
   });
+}
+
+export function getReadiness(fireTrialId: string): ProfilesReadinessState {
+  if (!readinessStateMap.has(fireTrialId)) {
+    readinessStateMap.set(fireTrialId, JSON.parse(JSON.stringify(defaultReadinessState())));
+  }
+  return readinessStateMap.get(fireTrialId) ?? defaultReadinessState();
+}
+
+export function setProfileReadiness(
+  fireTrialId: string,
+  profile: ExecutionProfile,
+  seriesReadiness: SeriesReadinessItem[],
+): ProfileReadinessItem {
+  const state = getReadiness(fireTrialId);
+  const idx = state.profilesReadiness.findIndex((p) => p.profile === profile);
+  const updated: ProfileReadinessItem = { profile, seriesReadiness };
+  if (idx >= 0) {
+    state.profilesReadiness[idx] = updated;
+  } else {
+    state.profilesReadiness.push(updated);
+  }
+  readinessStateMap.set(fireTrialId, state);
+  return updated;
 }

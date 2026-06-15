@@ -3,6 +3,7 @@ import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import type { WidgetId } from '../execution/models';
 import { ExecutionService } from '../services/execution.service';
 
 export interface TechUnitStatus {
@@ -1050,12 +1051,42 @@ const initialState: ExecutionState = {
   fireTrialId: null,
   fireTrial: null,
   techUnits: [
-    { id: 'velocidades', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.VELOCIDADES', ready: true, observations: 'Aquí las observaciones que han hecho' },
-    { id: 'trayectografia', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.TRAYECTOGRAFIA', ready: true, observations: 'Aquí las observaciones que han hecho' },
-    { id: 'presiones', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.PRESIONES', ready: true, observations: 'Aquí las observaciones que han hecho' },
-    { id: 'municiones', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.MUNICIONES', ready: true, observations: 'Aquí las observaciones que han hecho' },
-    { id: 'video', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.VIDEO', ready: true, observations: 'Aquí las observaciones que han hecho' },
-    { id: 'armamento', labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.ARMAMENTO', ready: true, observations: 'Aquí las observaciones que han hecho' },
+    {
+      id: 'velocidades',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.VELOCIDADES',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
+    {
+      id: 'trayectografia',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.TRAYECTOGRAFIA',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
+    {
+      id: 'presiones',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.PRESIONES',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
+    {
+      id: 'municiones',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.MUNICIONES',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
+    {
+      id: 'video',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.VIDEO',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
+    {
+      id: 'armamento',
+      labelKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.PROFILES.ARMAMENTO',
+      ready: true,
+      observations: 'Aquí las observaciones que han hecho',
+    },
   ],
   jltStatus: {
     sanitary: false,
@@ -1072,7 +1103,7 @@ const initialState: ExecutionState = {
     operatingRange: null,
     cameraOptions: [
       { value: 'cam-01', label: 'Cámara 01', x: 120.5, y: 340.2 },
-      { value: 'cam-02', label: 'Cámara 02', x: 95.0,  y: 410.8 },
+      { value: 'cam-02', label: 'Cámara 02', x: 95.0, y: 410.8 },
       { value: 'cam-03', label: 'Cámara 03', x: 200.3, y: 280.0 },
     ],
   },
@@ -1145,12 +1176,8 @@ const initialState: ExecutionState = {
       { value: '13', label: 'Disparo 13' },
       { value: '14', label: 'Disparo 14' },
     ],
-    velocidadNominalOptions: [
-      { value: '445', label: '445 m/s' },
-    ],
-    configuracionOptions: [
-      { value: 'tarado-z1', label: 'Tarado Z1' },
-    ],
+    velocidadNominalOptions: [{ value: '445', label: '445 m/s' }],
+    configuracionOptions: [{ value: 'tarado-z1', label: 'Tarado Z1' }],
   },
   taradoPresionChart: {
     selectedSerie: null,
@@ -1249,9 +1276,30 @@ const initialState: ExecutionState = {
     serie: null,
     disparo: null,
     estadoDisparo: 'EN_CURSO',
-    cierre: { captador: null, amplificador: null, registrador: null, presionMaxima: null, tiempoAccion: null, tiempoRetardo: null },
-    intermedio: { captador: null, amplificador: null, registrador: null, presionMaxima: null, tiempoAccion: null, tiempoRetardo: null },
-    culote: { captador: null, amplificador: null, registrador: null, presionMaxima: null, tiempoAccion: null, tiempoRetardo: null },
+    cierre: {
+      captador: null,
+      amplificador: null,
+      registrador: null,
+      presionMaxima: null,
+      tiempoAccion: null,
+      tiempoRetardo: null,
+    },
+    intermedio: {
+      captador: null,
+      amplificador: null,
+      registrador: null,
+      presionMaxima: null,
+      tiempoAccion: null,
+      tiempoRetardo: null,
+    },
+    culote: {
+      captador: null,
+      amplificador: null,
+      registrador: null,
+      presionMaxima: null,
+      tiempoAccion: null,
+      tiempoRetardo: null,
+    },
     serieOptions: [
       { value: 'funcionamiento-1', label: 'Funcionamiento I' },
       { value: 'funcionamiento-2', label: 'Funcionamiento II' },
@@ -1573,10 +1621,38 @@ const initialState: ExecutionState = {
   informacionTarado: {
     velocidadUnit: 'm/s',
     series: [
-      { numero: 'S1', nombre: 'Tarado pólvora tipo A Zona 1 (baja)', zona: '1', velocidadNominal: 260, desviacionVelocidadMax: 2.5, pesoPolvora: 400 },
-      { numero: 'S2', nombre: 'Tarado pólvora tipo A Zona 1 (alta)', zona: '1', velocidadNominal: 285, desviacionVelocidadMax: 2.5, pesoPolvora: 450 },
-      { numero: 'S3', nombre: 'Tarado pólvora tipo B Zona 3 (baja)', zona: '3', velocidadNominal: 310, desviacionVelocidadMax: 3.0, pesoPolvora: 810 },
-      { numero: 'S4', nombre: 'Tarado pólvora tipo B Zona 3 (alta)', zona: '3', velocidadNominal: 340, desviacionVelocidadMax: 3.0, pesoPolvora: 910 },
+      {
+        numero: 'S1',
+        nombre: 'Tarado pólvora tipo A Zona 1 (baja)',
+        zona: '1',
+        velocidadNominal: 260,
+        desviacionVelocidadMax: 2.5,
+        pesoPolvora: 400,
+      },
+      {
+        numero: 'S2',
+        nombre: 'Tarado pólvora tipo A Zona 1 (alta)',
+        zona: '1',
+        velocidadNominal: 285,
+        desviacionVelocidadMax: 2.5,
+        pesoPolvora: 450,
+      },
+      {
+        numero: 'S3',
+        nombre: 'Tarado pólvora tipo B Zona 3 (baja)',
+        zona: '3',
+        velocidadNominal: 310,
+        desviacionVelocidadMax: 3.0,
+        pesoPolvora: 810,
+      },
+      {
+        numero: 'S4',
+        nombre: 'Tarado pólvora tipo B Zona 3 (alta)',
+        zona: '3',
+        velocidadNominal: 340,
+        desviacionVelocidadMax: 3.0,
+        pesoPolvora: 910,
+      },
     ],
   } satisfies InformacionTaradoState,
   uniformidadChart: {
@@ -1667,12 +1743,38 @@ const initialState: ExecutionState = {
   stanagCriterios: {
     lastChecked: null,
     criterios: [
-      { id: 'c1', texto: 'Velocidad inicial V0 dentro del ±2\u202f% de la velocidad nominal especificada en el contrato.', cumple: true },
-      { id: 'c2', texto: 'Dispersión D50 inferior al límite establecido en la tabla de requisitos del pliego de prescripciones técnicas.', cumple: false },
-      { id: 'c3', texto: 'Presión de recámara máxima Pm ≤ 530\u202fMPa en todas las mediciones efectuadas.', cumple: true },
-      { id: 'c4', texto: 'Variación de velocidad entre disparos σV ≤ desviación máxima especificada en planificación.', cumple: null },
-      { id: 'c5', texto: 'Funcionamiento correcto del elemento impulsor en el 100\u202f% de los disparos del ensayo.', cumple: true },
-      { id: 'c6', texto: 'Temperatura ambiente dentro del rango operativo −20\u202f°C a +52\u202f°C durante toda la sesión de fuego.', cumple: true },
+      {
+        id: 'c1',
+        texto: 'Velocidad inicial V0 dentro del ±2\u202f% de la velocidad nominal especificada en el contrato.',
+        cumple: true,
+      },
+      {
+        id: 'c2',
+        texto:
+          'Dispersión D50 inferior al límite establecido en la tabla de requisitos del pliego de prescripciones técnicas.',
+        cumple: false,
+      },
+      {
+        id: 'c3',
+        texto: 'Presión de recámara máxima Pm ≤ 530\u202fMPa en todas las mediciones efectuadas.',
+        cumple: true,
+      },
+      {
+        id: 'c4',
+        texto: 'Variación de velocidad entre disparos σV ≤ desviación máxima especificada en planificación.',
+        cumple: null,
+      },
+      {
+        id: 'c5',
+        texto: 'Funcionamiento correcto del elemento impulsor en el 100\u202f% de los disparos del ensayo.',
+        cumple: true,
+      },
+      {
+        id: 'c6',
+        texto:
+          'Temperatura ambiente dentro del rango operativo −20\u202f°C a +52\u202f°C durante toda la sesión de fuego.',
+        cumple: true,
+      },
     ],
   } satisfies StanagCriteriosState,
   seguimiento: {
@@ -1689,18 +1791,84 @@ const initialState: ExecutionState = {
         serieId: 'funcionamiento-1',
         serieLabel: 'Serie 1',
         rows: [
-          { disparo: 1, wcValues: [120, 16130], wpValues: [261.48, null], v0Values: [261.48, 261.48], v0c: 261.48, pManomValues: [261.48, 261.48, 261.48], pManomMean: 261.48, pMaxCierre: [261.48], pMaxIntermedio: [261.48], pMaxCulote: [261.48] },
-          { disparo: 2, wcValues: [120, null], wpValues: [261.48, null], v0Values: [261.48, 261.48], v0c: 261.48, pManomValues: [261.48, 261.48, 261.48], pManomMean: 261.48, pMaxCierre: [261.48], pMaxIntermedio: [261.48], pMaxCulote: [261.48] },
-          { disparo: 3, wcValues: [125, 16130], wpValues: [261.48, null], v0Values: [261.48, 261.48], v0c: 261.48, pManomValues: [261.48, 261.48, 261.48], pManomMean: 261.48, pMaxCierre: [261.48], pMaxIntermedio: [261.48], pMaxCulote: [261.48] },
-          { disparo: 4, wcValues: [125, 16130], wpValues: [261.48, null], v0Values: [261.48, 261.48], v0c: 261.48, pManomValues: [261.48, 261.48, 261.48], pManomMean: 261.48, pMaxCierre: [261.48], pMaxIntermedio: [261.48], pMaxCulote: [261.48] },
+          {
+            disparo: 1,
+            wcValues: [120, 16130],
+            wpValues: [261.48, null],
+            v0Values: [261.48, 261.48],
+            v0c: 261.48,
+            pManomValues: [261.48, 261.48, 261.48],
+            pManomMean: 261.48,
+            pMaxCierre: [261.48],
+            pMaxIntermedio: [261.48],
+            pMaxCulote: [261.48],
+          },
+          {
+            disparo: 2,
+            wcValues: [120, null],
+            wpValues: [261.48, null],
+            v0Values: [261.48, 261.48],
+            v0c: 261.48,
+            pManomValues: [261.48, 261.48, 261.48],
+            pManomMean: 261.48,
+            pMaxCierre: [261.48],
+            pMaxIntermedio: [261.48],
+            pMaxCulote: [261.48],
+          },
+          {
+            disparo: 3,
+            wcValues: [125, 16130],
+            wpValues: [261.48, null],
+            v0Values: [261.48, 261.48],
+            v0c: 261.48,
+            pManomValues: [261.48, 261.48, 261.48],
+            pManomMean: 261.48,
+            pMaxCierre: [261.48],
+            pMaxIntermedio: [261.48],
+            pMaxCulote: [261.48],
+          },
+          {
+            disparo: 4,
+            wcValues: [125, 16130],
+            wpValues: [261.48, null],
+            v0Values: [261.48, 261.48],
+            v0c: 261.48,
+            pManomValues: [261.48, 261.48, 261.48],
+            pManomMean: 261.48,
+            pMaxCierre: [261.48],
+            pMaxIntermedio: [261.48],
+            pMaxCulote: [261.48],
+          },
         ],
       },
       {
         serieId: 'funcionamiento-2',
         serieLabel: 'Serie 2',
         rows: [
-          { disparo: 1, wcValues: [122, 16200], wpValues: [263.10, null], v0Values: [263.10, 262.90], v0c: 263.00, pManomValues: [268.50, 267.80, 269.10], pManomMean: 268.47, pMaxCierre: [268.50], pMaxIntermedio: [267.80], pMaxCulote: [269.10] },
-          { disparo: 2, wcValues: [122, 16200], wpValues: [263.10, null], v0Values: [262.80, 263.20], v0c: 263.00, pManomValues: [268.10, 267.50, 268.90], pManomMean: 268.17, pMaxCierre: [268.10], pMaxIntermedio: [267.50], pMaxCulote: [268.90] },
+          {
+            disparo: 1,
+            wcValues: [122, 16200],
+            wpValues: [263.1, null],
+            v0Values: [263.1, 262.9],
+            v0c: 263.0,
+            pManomValues: [268.5, 267.8, 269.1],
+            pManomMean: 268.47,
+            pMaxCierre: [268.5],
+            pMaxIntermedio: [267.8],
+            pMaxCulote: [269.1],
+          },
+          {
+            disparo: 2,
+            wcValues: [122, 16200],
+            wpValues: [263.1, null],
+            v0Values: [262.8, 263.2],
+            v0c: 263.0,
+            pManomValues: [268.1, 267.5, 268.9],
+            pManomMean: 268.17,
+            pMaxCierre: [268.1],
+            pMaxIntermedio: [267.5],
+            pMaxCulote: [268.9],
+          },
         ],
       },
     ],
@@ -1710,31 +1878,129 @@ const initialState: ExecutionState = {
     presionMinima: 262.05,
     presionRef: 233.97,
     unidadPresion: 'MPa',
-    presionSeguridad: 379.00,
+    presionSeguridad: 379.0,
   } satisfies OverpressureInfoState,
   overpressureChart: {
     selectedSerie: null,
-    presionSeguridad: 379.00,
+    presionSeguridad: 379.0,
     presionMaxima: 273.75,
     presionMinima: 262.05,
     dataPoints: [
-      { wc: 120, rectaPresion: 261.59435, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie A', disparo: 1 },
-      { wc: 120, rectaPresion: 267.7424,  desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie A', disparo: 2 },
-      { wc: 125, rectaPresion: 269.17735, desviacionMax: 311.8796835, desviacionMin: 255.1275651, serie: 'Serie A', disparo: 3 },
-      { wc: 125, rectaPresion: 268.17225, desviacionMax: 311.8796835, desviacionMin: 255.1275651, serie: 'Serie A', disparo: 4 },
-      { wc: 125, rectaPresion: 300.93165, desviacionMax: 311.8796835, desviacionMin: 255.1275651, serie: 'Serie A', disparo: 5 },
-      { wc: 125, rectaPresion: 273.0324,  desviacionMax: 311.8796835, desviacionMin: 255.1275651, serie: 'Serie A', disparo: 6 },
-      { wc: 120, rectaPresion: 260.88365, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 7 },
-      { wc: 120, rectaPresion: 278.2398,  desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 8 },
-      { wc: 120, rectaPresion: 274.41675, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 9 },
-      { wc: 120, rectaPresion: 277.07555, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 10 },
-      { wc: 120, rectaPresion: 270.29795, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 11 },
-      { wc: 120, rectaPresion: 245.86525, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 12 },
-      { wc: 120, rectaPresion: 265.59345, desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 13 },
-      { wc: 120, rectaPresion: 270.4705,  desviacionMax: 301.269236, desviacionMin: 244.5171176, serie: 'Serie B', disparo: 14 },
+      {
+        wc: 120,
+        rectaPresion: 261.59435,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie A',
+        disparo: 1,
+      },
+      {
+        wc: 120,
+        rectaPresion: 267.7424,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie A',
+        disparo: 2,
+      },
+      {
+        wc: 125,
+        rectaPresion: 269.17735,
+        desviacionMax: 311.8796835,
+        desviacionMin: 255.1275651,
+        serie: 'Serie A',
+        disparo: 3,
+      },
+      {
+        wc: 125,
+        rectaPresion: 268.17225,
+        desviacionMax: 311.8796835,
+        desviacionMin: 255.1275651,
+        serie: 'Serie A',
+        disparo: 4,
+      },
+      {
+        wc: 125,
+        rectaPresion: 300.93165,
+        desviacionMax: 311.8796835,
+        desviacionMin: 255.1275651,
+        serie: 'Serie A',
+        disparo: 5,
+      },
+      {
+        wc: 125,
+        rectaPresion: 273.0324,
+        desviacionMax: 311.8796835,
+        desviacionMin: 255.1275651,
+        serie: 'Serie A',
+        disparo: 6,
+      },
+      {
+        wc: 120,
+        rectaPresion: 260.88365,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 7,
+      },
+      {
+        wc: 120,
+        rectaPresion: 278.2398,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 8,
+      },
+      {
+        wc: 120,
+        rectaPresion: 274.41675,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 9,
+      },
+      {
+        wc: 120,
+        rectaPresion: 277.07555,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 10,
+      },
+      {
+        wc: 120,
+        rectaPresion: 270.29795,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 11,
+      },
+      {
+        wc: 120,
+        rectaPresion: 245.86525,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 12,
+      },
+      {
+        wc: 120,
+        rectaPresion: 265.59345,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 13,
+      },
+      {
+        wc: 120,
+        rectaPresion: 270.4705,
+        desviacionMax: 301.269236,
+        desviacionMin: 244.5171176,
+        serie: 'Serie B',
+        disparo: 14,
+      },
     ],
     regression: {
-      pendiente: 2.07680,
+      pendiente: 2.0768,
       ordenada: 12.10195,
       correlacion: 0.41,
     },
@@ -1865,14 +2131,14 @@ const initialState: ExecutionState = {
     velocidadUnit: 'm/s',
     presionUnit: 'bar',
     lastChecked: null,
-    v0c:       { util1min: null,  util1max: null,   inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    v0cMedia:  { util1min: 818,   util1max: 828,    inutilmin: 806.5,  inutilmax: 839.5,  value: null, calificacion: null },
-    sigmaV0c:  { util1min: null,  util1max: 5,      inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    presion:   { util1min: null,  util1max: 2680,   inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    presionMedia: { util1min: null, util1max: null, inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    proyectil: { util1min: null,  util1max: 0,      inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    espoleta:  { util1min: null,  util1max: 2,      inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
-    estopin:   { util1min: null,  util1max: 1,      inutilmin: null,   inutilmax: null,   value: null, calificacion: null },
+    v0c: { util1min: null, util1max: null, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    v0cMedia: { util1min: 818, util1max: 828, inutilmin: 806.5, inutilmax: 839.5, value: null, calificacion: null },
+    sigmaV0c: { util1min: null, util1max: 5, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    presion: { util1min: null, util1max: 2680, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    presionMedia: { util1min: null, util1max: null, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    proyectil: { util1min: null, util1max: 0, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    espoleta: { util1min: null, util1max: 2, inutilmin: null, inutilmax: null, value: null, calificacion: null },
+    estopin: { util1min: null, util1max: 1, inutilmin: null, inutilmax: null, value: null, calificacion: null },
   } satisfies VigilanciaState,
   datosBlancoBola: {
     serie: 'funcionamiento-1',
@@ -1934,9 +2200,9 @@ const initialState: ExecutionState = {
     ],
     prueba: { camara: null, grabador: null, canal: null, texto: null },
     blanco: { camara: null, grabador: null, canal: null, texto: null },
-    boca:   { camara: null, grabador: null, canal: null, texto: null },
+    boca: { camara: null, grabador: null, canal: null, texto: null },
     cierre: { camara: null, grabador: null, canal: null, texto: null },
-    pique:  { camara: null, grabador: null, canal: null, texto: null },
+    pique: { camara: null, grabador: null, canal: null, texto: null },
   } satisfies SeguridadState,
 };
 
@@ -1992,7 +2258,6 @@ export const ExecutionStore = signalStore(
     cancelingExecutionStatus: computed(() => executionService.cancelResource.status()),
     finishingExecutionStatus: computed(() => executionService.finishResource.status()),
 
-
     // Execution Planning
     planning: computed(() => executionService.planningResource.value()),
     isLoadingPlanning: computed(() => executionService.planningResource.isLoading()),
@@ -2013,9 +2278,9 @@ export const ExecutionStore = signalStore(
     // Video Camera Orientation — diferencia angular calculada
     videoCameraAngularDifference: computed((): number | null => {
       const vco = store.videoCameraOrientation();
-      const cam = vco.cameraOptions.find(c => c.value === vco.camera) ?? null;
+      const cam = vco.cameraOptions.find((c) => c.value === vco.camera) ?? null;
       const height = vco.operatingHeight;
-      const range  = vco.operatingRange;
+      const range = vco.operatingRange;
 
       if (!cam || height === null || range === null || range === 0) return null;
 
@@ -2028,7 +2293,7 @@ export const ExecutionStore = signalStore(
       if (horizontalDist === 0) return null;
 
       const angleCameraRad = Math.atan2(height, horizontalDist);
-      const angleRangeRad  = Math.atan2(height, range);
+      const angleRangeRad = Math.atan2(height, range);
       return (angleCameraRad - angleRangeRad) * (180 / Math.PI);
     }),
 
@@ -2047,10 +2312,11 @@ export const ExecutionStore = signalStore(
     /** X P. Caída = xPieza + alcance·sin(OLT) + deriva·cos(OLT) */
     radarTrayectographyXPCaida: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
-      if (s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null || s.alcancePrevistoPique === null) return null;
+      if (s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null || s.alcancePrevistoPique === null)
+        return null;
       const b4 = { x: 0, y: 0 };
       const thetaDeg = Math.atan2(b4.y - s.yPieza, b4.x - s.xPieza) * (180 / Math.PI);
-      const oltRad = (s.difAngularTopografia + thetaDeg) * Math.PI / 180;
+      const oltRad = ((s.difAngularTopografia + thetaDeg) * Math.PI) / 180;
       const deriva = s.derivaTabular ?? 0;
       return s.xPieza + s.alcancePrevistoPique * Math.sin(oltRad) + deriva * Math.cos(oltRad);
     }),
@@ -2058,10 +2324,11 @@ export const ExecutionStore = signalStore(
     /** Y P. Caída = yPieza + alcance·cos(OLT) − deriva·sin(OLT) */
     radarTrayectographyYPCaida: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
-      if (s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null || s.alcancePrevistoPique === null) return null;
+      if (s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null || s.alcancePrevistoPique === null)
+        return null;
       const b4 = { x: 0, y: 0 };
       const thetaDeg = Math.atan2(b4.y - s.yPieza, b4.x - s.xPieza) * (180 / Math.PI);
-      const oltRad = (s.difAngularTopografia + thetaDeg) * Math.PI / 180;
+      const oltRad = ((s.difAngularTopografia + thetaDeg) * Math.PI) / 180;
       const deriva = s.derivaTabular ?? 0;
       return s.yPieza + s.alcancePrevistoPique * Math.cos(oltRad) - deriva * Math.sin(oltRad);
     }),
@@ -2069,7 +2336,7 @@ export const ExecutionStore = signalStore(
     /** Diferencia angular radar = atan2(radar.y − B4.y, radar.x − B4.x) */
     radarTrayectographyDifAngularRadar: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
-      const radar = s.radarOptions.find(r => r.value === s.radar) ?? null;
+      const radar = s.radarOptions.find((r) => r.value === s.radar) ?? null;
       if (!radar) return null;
       const b4 = { x: 0, y: 0 };
       return Math.atan2(radar.y - b4.y, radar.x - b4.x) * (180 / Math.PI);
@@ -2078,11 +2345,11 @@ export const ExecutionStore = signalStore(
     /** I. Transversal = componente perpendicular de (radar−arma) respecto al eje OLT */
     radarTrayectographyITransversal: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
-      const radar = s.radarOptions.find(r => r.value === s.radar) ?? null;
+      const radar = s.radarOptions.find((r) => r.value === s.radar) ?? null;
       if (!radar || s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null) return null;
       const b4 = { x: 0, y: 0 };
       const thetaDeg = Math.atan2(b4.y - s.yPieza, b4.x - s.xPieza) * (180 / Math.PI);
-      const oltRad = (s.difAngularTopografia + thetaDeg) * Math.PI / 180;
+      const oltRad = ((s.difAngularTopografia + thetaDeg) * Math.PI) / 180;
       const dx = radar.x - s.xPieza;
       const dy = radar.y - s.yPieza;
       return dx * Math.cos(oltRad) - dy * Math.sin(oltRad);
@@ -2091,26 +2358,30 @@ export const ExecutionStore = signalStore(
     /** I. Longitudinal = componente paralela de (radar−arma) respecto al eje OLT */
     radarTrayectographyILongitudinal: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
-      const radar = s.radarOptions.find(r => r.value === s.radar) ?? null;
+      const radar = s.radarOptions.find((r) => r.value === s.radar) ?? null;
       if (!radar || s.xPieza === null || s.yPieza === null || s.difAngularTopografia === null) return null;
       const b4 = { x: 0, y: 0 };
       const thetaDeg = Math.atan2(b4.y - s.yPieza, b4.x - s.xPieza) * (180 / Math.PI);
-      const oltRad = (s.difAngularTopografia + thetaDeg) * Math.PI / 180;
+      const oltRad = ((s.difAngularTopografia + thetaDeg) * Math.PI) / 180;
       const dx = radar.x - s.xPieza;
       const dy = radar.y - s.yPieza;
       return dx * Math.sin(oltRad) + dy * Math.cos(oltRad);
     }),
 
     /** Distancia boca-blanco = sqrt((xB−xP)² + (yB−yP)² + (zB−zP)²) — salida de topografía */
-    maoTopographyDistanciaBocaBlanco: computed((): number | null => {      const s = store.maoTopography();
+    maoTopographyDistanciaBocaBlanco: computed((): number | null => {
+      const s = store.maoTopography();
       if (
-        s.xPieza === null || s.yPieza === null || s.zPieza === null ||
-        s.xBlanco === null || s.yBlanco === null || s.zBlanco === null
-      ) return null;
+        s.xPieza === null ||
+        s.yPieza === null ||
+        s.zPieza === null ||
+        s.xBlanco === null ||
+        s.yBlanco === null ||
+        s.zBlanco === null
+      )
+        return null;
       return Math.sqrt(
-        Math.pow(s.xBlanco - s.xPieza, 2) +
-        Math.pow(s.yBlanco - s.yPieza, 2) +
-        Math.pow(s.zBlanco - s.zPieza, 2),
+        Math.pow(s.xBlanco - s.xPieza, 2) + Math.pow(s.yBlanco - s.yPieza, 2) + Math.pow(s.zBlanco - s.zPieza, 2),
       );
     }),
 
@@ -2118,7 +2389,7 @@ export const ExecutionStore = signalStore(
     jltMaoComputedOlt: computed((): number | null => {
       const s = store.jltMao();
       const maoTopo = store.maoTopography();
-      const piqueta = s.piquetaOptions.find(p => p.value === s.piqueta) ?? null;
+      const piqueta = s.piquetaOptions.find((p) => p.value === s.piqueta) ?? null;
       if (!piqueta || maoTopo.xPieza === null || maoTopo.yPieza === null || s.diferenciaAngular === null) {
         return s.olt;
       }
@@ -2131,13 +2402,13 @@ export const ExecutionStore = signalStore(
     radarTrayectographyAlturaBoca: computed((): number | null => {
       const s = store.radarTrayectographyOrientation();
       if (s.zPieza === null || s.anguloTiro === null || s.longitudTubo === null) return null;
-      return s.zPieza + Math.sin(s.anguloTiro * Math.PI / 180) * s.longitudTubo;
+      return s.zPieza + Math.sin((s.anguloTiro * Math.PI) / 180) * s.longitudTubo;
     }),
 
     // Global Readiness (JLT + Tech)
     isReadyForExecution: computed(() => {
       const jlt = store.jltStatus();
-      const techReady = store.techUnits().every(u => u.ready);
+      const techReady = store.techUnits().every((u) => u.ready);
       return jlt.sanitary && jlt.security && jlt.boat && techReady;
     }),
 
@@ -2233,28 +2504,28 @@ export const ExecutionStore = signalStore(
       executionService.getPreferencesByRole(fireTrialId, roleName);
     },
 
-    updatePreferencesByRole(fireTrialId: string, roleName: string, body: Record<string, unknown>): void {
-      executionService.updatePreferencesByRole(fireTrialId, roleName, body);
+    updatePreferencesByRole(fireTrialId: string, roleName: string, widgetsLayout: WidgetId[]): void {
+      executionService.updatePreferencesByRole(fireTrialId, roleName, widgetsLayout);
     },
 
     loadPreferencesByUser(fireTrialId: string, username: string): void {
       executionService.getPreferencesByUser(fireTrialId, username);
     },
 
-    updatePreferencesByUser(fireTrialId: string, username: string, body: Record<string, unknown>): void {
-      executionService.updatePreferencesByUser(fireTrialId, username, body);
+    updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetId[]): void {
+      executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
     },
 
     // --- Widgets Local State Methods ---
     updateTechUnit(id: string, updates: Partial<TechUnitStatus>): void {
       patchState(store, (state) => ({
-        techUnits: state.techUnits.map(u => u.id === id ? { ...u, ...updates } : u)
+        techUnits: state.techUnits.map((u) => (u.id === id ? { ...u, ...updates } : u)),
       }));
     },
 
     updateJltStatus(updates: Partial<JltStatus>): void {
       patchState(store, (state) => ({
-        jltStatus: { ...state.jltStatus, ...updates }
+        jltStatus: { ...state.jltStatus, ...updates },
       }));
     },
 
@@ -2269,7 +2540,9 @@ export const ExecutionStore = signalStore(
     // --- Video Camera Orientation ---
 
     /** Actualiza la selección de cámara, serie y/o disparo del widget */
-    updateVideoCameraSelection(updates: Partial<Pick<VideoCameraOrientationState, 'camera' | 'serie' | 'disparo'>>): void {
+    updateVideoCameraSelection(
+      updates: Partial<Pick<VideoCameraOrientationState, 'camera' | 'serie' | 'disparo'>>,
+    ): void {
       patchState(store, (state) => ({
         videoCameraOrientation: { ...state.videoCameraOrientation, ...updates },
       }));
@@ -2279,7 +2552,11 @@ export const ExecutionStore = signalStore(
      * Actualiza los campos de salida procedentes del widget MAO.
      * Llamar cuando el widget MAO persiste sus datos.
      */
-    updateMaoOutputs(outputs: Partial<Pick<VideoCameraOrientationState, 'estimatedDistancePique' | 'operatingHeight' | 'operatingRange'>>): void {
+    updateMaoOutputs(
+      outputs: Partial<
+        Pick<VideoCameraOrientationState, 'estimatedDistancePique' | 'operatingHeight' | 'operatingRange'>
+      >,
+    ): void {
       patchState(store, (state) => ({
         videoCameraOrientation: { ...state.videoCameraOrientation, ...outputs },
       }));
@@ -2295,7 +2572,8 @@ export const ExecutionStore = signalStore(
     // --- MAO Topografía ---
 
     /** Actualiza los campos de entrada del widget MAO Topografía */
-    updateMaoTopography(updates: Partial<MaoTopographyState>): void {      patchState(store, (state) => ({
+    updateMaoTopography(updates: Partial<MaoTopographyState>): void {
+      patchState(store, (state) => ({
         maoTopography: { ...state.maoTopography, ...updates },
       }));
     },
@@ -2371,7 +2649,6 @@ export const ExecutionStore = signalStore(
         armamentIntroduction: { ...state.armamentIntroduction, equipoRetrocesoOptions: options },
       }));
     },
-
 
     /** Actualiza los filtros de selección del widget (serie, disparo, radar) */
     updateRadarTrayectographySelection(
@@ -2492,7 +2769,10 @@ export const ExecutionStore = signalStore(
     },
 
     /** Actualiza los datos de una posición piezoeléctrica concreta */
-    updatePiezoPressurePosicion(posicion: 'cierre' | 'intermedio' | 'culote', updates: Partial<PiezoPosicionState>): void {
+    updatePiezoPressurePosicion(
+      posicion: 'cierre' | 'intermedio' | 'culote',
+      updates: Partial<PiezoPosicionState>,
+    ): void {
       patchState(store, (state) => ({
         piezoPressureIntroduction: {
           ...state.piezoPressureIntroduction,
@@ -2533,7 +2813,9 @@ export const ExecutionStore = signalStore(
     },
 
     /** Actualiza el selector (serie/disparo/equipo) del widget Introducción datos trayectografía */
-    updateTrayectografiaSelector(updates: Partial<Pick<TrayectografiaIntroductionState, 'serie' | 'disparo' | 'equipo' | 'estadoDisparo'>>): void {
+    updateTrayectografiaSelector(
+      updates: Partial<Pick<TrayectografiaIntroductionState, 'serie' | 'disparo' | 'equipo' | 'estadoDisparo'>>,
+    ): void {
       patchState(store, (state) => ({
         trayectografiaIntroduction: { ...state.trayectografiaIntroduction, ...updates },
       }));
@@ -2644,9 +2926,7 @@ export const ExecutionStore = signalStore(
       patchState(store, (state) => ({
         grubbsCriterion: {
           ...state.grubbsCriterion,
-          outliers: state.grubbsCriterion.outliers.map((o) =>
-            o.shotId === shotId ? { ...o, excluded } : o,
-          ),
+          outliers: state.grubbsCriterion.outliers.map((o) => (o.shotId === shotId ? { ...o, excluded } : o)),
         },
       }));
     },

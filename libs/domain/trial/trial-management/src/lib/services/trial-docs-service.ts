@@ -1,4 +1,4 @@
-import { HttpClient, HttpContext, HttpRequest, type HttpStatusCode, httpResource } from '@angular/common/http';
+import { HttpClient, HttpContext, type HttpStatusCode, httpResource } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -42,7 +42,8 @@ export class TrialDocsService {
 
   readonly #documentsParams = signal<GetDocumentsParams | null>(null);
   readonly #uploadParams = signal<UploadDocumentParams | null>(null);
-  readonly #deleteParams = signal<DeleteDocumentParams | null>(null);
+  readonly #deleteParams = signal<(DeleteDocumentParams & { _version: number }) | null>(null);
+  #deleteVersion = 0;
   readonly #deleteAssociatedDocumentParams = signal<GetDocumentDetailParams | null>(null);
   readonly #documentDetailParams = signal<GetDocumentDetailParams | null>(null);
   readonly #documentObservationsParams = signal<GetDocumentDetailParams | null>(null);
@@ -432,7 +433,7 @@ export class TrialDocsService {
   }
 
   deleteDocument(fireTrialId: string, documentId: string): void {
-    this.#deleteParams.set({ fireTrialId, documentId });
+    this.#deleteParams.set({ fireTrialId, documentId, _version: ++this.#deleteVersion });
   }
 
   deleteAssociatedDocument(documentId: string): void {

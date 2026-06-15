@@ -6,7 +6,9 @@ import {
   getCountdownState,
   getExecutionState,
   getPlanningState,
+  getReadiness,
   setExecutionStatus,
+  setProfileReadiness,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
@@ -146,4 +148,34 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/preferences/u
 // Actualizar preferencias de widgets por usuario
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/preferences/users/:username', (req, res) => {
   res.status(200).json(req.body);
+});
+
+// ==========================================
+// EXECUTION READINESS
+// ==========================================
+
+// Obtener readiness de todos los perfiles
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/readiness', (req, res) => {
+  const readiness = getReadiness(req.params['fireTrialId']);
+  res.status(200).json(readiness);
+});
+
+// Registrar readiness de un perfil
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/profiles/:profile', (req, res) => {
+  const { profile, fireTrialId } = req.params as { profile: string; fireTrialId: string };
+  const { seriesReadiness } = req.body as { seriesReadiness?: unknown[] };
+
+  if (!seriesReadiness || !Array.isArray(seriesReadiness)) {
+    res
+      .status(400)
+      .json({
+        title: 'Bad Request',
+        status: 400,
+        detail: "El campo 'seriesReadiness' es obligatorio y debe ser un array",
+      });
+    return;
+  }
+
+  const updated = setProfileReadiness(fireTrialId, profile as never, seriesReadiness as never);
+  res.status(200).json(updated);
 });

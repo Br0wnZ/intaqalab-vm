@@ -14,6 +14,7 @@ import type { TechProfile } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 /**
  * 🎯 Modelo de estado por serie
@@ -94,16 +95,17 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
     ReadonlyContentDirective,
     MatIconModule,
     MatTooltipModule,
-  ],
+    IntaIconComponent
+],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-hidden">
       <!-- 🔝 Header -->
-      <mat-card-header class="!px-3 !pt-2 !pb-1 shrink-0">
-        <mat-card-title class="!text-[11px] !font-bold flex items-center gap-2 text-slate-700 w-full">
-          <div class="truncate flex-1 flex align-center items-baseline gap-1">
-            <mat-icon class="!size-4 !text-[16px] text-purple-500 shrink-0">task_alt</mat-icon>
+      <mat-card-header class="!px-4.5 !py-2 shrink-0">
+        <mat-card-title class="!text-sm !font-semibold flex items-center gap-2 text-slate-700 w-full">
+          <div class="truncate flex-1 flex items-center items-baseline gap-1">
+            <ui-inta-icon name="checkSquare" color="var(--inta-button)" class="mr-1" />
             <span class="truncate">{{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.TITLE' | translate }}</span>
-            <span class="text-[9px] font-normal text-slate-400 uppercase tracking-tighter shrink-0">
+            <span class="text-[.625rem] font-normal text-slate-400 uppercase shrink-0">
               | {{ profileConfig().titleKey | translate }}
             </span>
           </div>
@@ -114,7 +116,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
       </mat-card-header>
 
       <!-- 📋 Content -->
-      <mat-card-content intaReadonlyContent class="flex-1 px-3 pb-1 overflow-hidden flex flex-col">
+      <mat-card-content intaReadonlyContent class="flex-1 !pt-3 overflow-auto flex flex-col">
         <!-- Seleccionar todas -->
         <div class="flex items-center h-7 mb-1 border-b border-slate-50 shrink-0">
           <mat-checkbox
@@ -132,11 +134,11 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
         </div>
 
         <!-- Lista de series -->
-        <div class="flex-1 flex flex-col justify-between py-1 overflow-hidden">
+        <div class="flex-1 flex flex-col gap-2 justify-between py-1 overflow-hidden">
           @for (serie of seriesReadiness(); track serie.serieId; let i = $index) {
-            <div class="flex items-center gap-2 h-7 overflow-hidden">
+            <div class="flex items-center gap-2">
               <!-- Checkbox y Nombre -->
-              <div class="shrink-0 w-[110px] flex items-center">
+              <div class="shrink-0 w-34 flex items-center">
                 <mat-checkbox
                   color="primary"
                   class="ultra-compact-checkbox"
@@ -145,7 +147,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
                   (change)="toggleSerie(i, $event.checked)"
                 >
                   <span
-                    class="text-[10px] font-semibold text-slate-600 truncate block w-full"
+                    class="text-xs font-semibold text-slate-600 truncate block w-full"
                     [class.text-purple-600]="serie.ready"
                   >
                     {{ serie.serieName }}
@@ -154,7 +156,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
               </div>
 
               <!-- Input Observaciones -->
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 ultra-compact-field">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
                 <input
                   matInput
                   [id]="'obs-' + widgetId() + '-' + i"

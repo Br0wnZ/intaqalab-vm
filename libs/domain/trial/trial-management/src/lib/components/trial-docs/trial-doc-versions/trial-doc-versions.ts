@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
+import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { DocumentVersion } from '../../../utils-models/documents-service.model';
@@ -10,7 +11,7 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
 
 @Component({
   selector: 'inta-trial-doc-versions',
-  imports: [TranslateModule, MatRadioModule, MatTableModule, MatTabsModule],
+  imports: [TranslateModule, MatRadioModule, MatTableModule, MatTabsModule, IntaDatePipe],
   template: `
     <div class="w-full bg-white rounded-lg border border-gray-200 mt-6">
       <div class="px-6 py-4 border-b border-gray-200">
@@ -54,7 +55,7 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
               {{ 'TRIAL_DOCS.VERSIONS.TABLE_COLUMNS.UPLOAD_DATE' | translate }}
             </th>
             <td *matCellDef="let version" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-              {{ version.createdAt }}
+              {{ version.createdAt | intaDate }}
             </td>
           </ng-container>
 
@@ -145,6 +146,7 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
 export class TrialDocVersions {
   readonly #dialog = inject(MatDialog);
   readonly documentVersions = input.required<DocumentVersion[]>();
+  readonly documentId = input.required<string>();
   displayedColumns = ['select', 'versionNumber', 'uploadDate', 'uploadedBy'];
 
   readonly selectedVersionId = signal<string | undefined>(undefined);
@@ -165,6 +167,7 @@ export class TrialDocVersions {
     const dialogRef = this.#dialog.open(ChangeDocVersionDialog, {
       width: '30rem',
       data: {
+        documentId: this.documentId(),
         version,
       },
     });

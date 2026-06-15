@@ -65,18 +65,29 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
             <mat-expansion-panel-header
               class="!h-14 !bg-gray-200 [&>.mat-content]:border-b [&>.mat-content]:border-gray-700 [&>.mat-content]:-mr-3 [&>.mat-content]:pb-2"
             >
-              <div class="flex items-center justify-between w-full pr-2">
+              <div class="flex items-center w-full justify-between py-1">
                 <span class="text-sm font-semibold text-gray-900">
                   {{ 'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.CONFIG_TITLE' | translate: { index: configIdx + 1 } }}
                 </span>
-                <button
+                <!-- <button
                   mat-icon-button
                   class="!h-7 !w-7 !min-h-0 text-red-500 hover:text-red-700 mr-8"
                   [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
                   (click)="onDeleteConfiguration(configIdx); $event.stopPropagation()"
                 >
                   <mat-icon class="!text-base !text-red-500">delete</mat-icon>
-                </button>
+                </button> -->
+                <div class="flex items-center mr-4 mt-2">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="!text-gray-500 hover:!text-red-500"
+                    [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
+                    (click)="onDeleteConfiguration(configIdx); $event.stopPropagation()"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
               </div>
             </mat-expansion-panel-header>
 

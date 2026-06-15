@@ -58,6 +58,7 @@ describe('TrialDocVersions', () => {
     await render(TrialDocVersions, {
       imports: [TranslateModule.forRoot()],
       componentInputs: {
+        documentId: '1',
         documentVersions: mockDocumentVersions,
       },
       providers: [{ provide: MatDialog, useValue: { open: openSpy } }],

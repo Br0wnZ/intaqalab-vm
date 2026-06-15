@@ -69,12 +69,18 @@ export const INTA_ICONS = {
       />
     `,
   ),
+  chart: createSvg(
+    '0 0 24 24',
+    `
+      <path d="M18 20V10M12 20V4M6 20V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    `,
+  ),
   chevronDown: createSvg(
     '0 0 24 24',
     `
       <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
-    `
+    `,
   ),
   chevronLeftSquare: createSvg(
     '0 0 24 24',
@@ -102,11 +108,11 @@ export const INTA_ICONS = {
       />
     `,
   ),
-  checkSquare: createSvg (
+  checkSquare: createSvg(
     '0 0 21 20',
     `
       <path d="M7 9L10 12L20 2M19 10V17C19 17.5304 18.7893 18.0391 18.4142 18.4142C18.0391 18.7893 17.5304 19 17 19H3C2.46957 19 1.96086 18.7893 1.58579 18.4142C1.21071 18.0391 1 17.5304 1 17V3C1 2.46957 1.21071 1.96086 1.58579 1.58579C1.96086 1.21071 2.46957 1 3 1H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
   document: createSvg(
     '0 0 20 20',
@@ -137,7 +143,7 @@ export const INTA_ICONS = {
     `
       <path
         d="M21 10H17L14 19L8 1L5 10H1"
-        stroke="#181D27"
+        stroke="currentColor"
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -293,13 +299,13 @@ export const INTA_ICONS = {
       <path d="M13.3333 10.834C13.7936 10.834 14.1667 10.4609 14.1667 10.0007C14.1667 9.54041 13.7936 9.16732 13.3333 9.16732C12.8731 9.16732 12.5 9.54041 12.5 10.0007C12.5 10.4609 12.8731 10.834 13.3333 10.834Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M13.3333 5.00065C13.7936 5.00065 14.1667 4.62755 14.1667 4.16732C14.1667 3.70708 13.7936 3.33398 13.3333 3.33398C12.8731 3.33398 12.5 3.70708 12.5 4.16732C12.5 4.62755 12.8731 5.00065 13.3333 5.00065Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M13.3333 16.6673C13.7936 16.6673 14.1667 16.2942 14.1667 15.834C14.1667 15.3737 13.7936 15.0007 13.3333 15.0007C12.8731 15.0007 12.5 15.3737 12.5 15.834C12.5 16.2942 12.8731 16.6673 13.3333 16.6673Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
-  plus: createSvg (
+  plus: createSvg(
     '0 0 14 14',
     `
       <path d="M6.83333 1V12.6667M1 6.83333H12.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
   plusCircle: createSvg(
     '0 0 19 19',
@@ -348,11 +354,11 @@ export const INTA_ICONS = {
       />
     `,
   ),
-  save: createSvg (
+  save: createSvg(
     '0 0 17 17',
     `
       <path d="M12.4167 15.75V9.08333H4.08333V15.75M4.08333 0.75V4.91667H10.75M14.0833 15.75H2.41667C1.97464 15.75 1.55072 15.5744 1.23816 15.2618C0.925595 14.9493 0.75 14.5254 0.75 14.0833V2.41667C0.75 1.97464 0.925595 1.55072 1.23816 1.23816C1.55072 0.925595 1.97464 0.75 2.41667 0.75H11.5833L15.75 4.91667V14.0833C15.75 14.5254 15.5744 14.9493 15.2618 15.2618C14.9493 15.5744 14.5254 15.75 14.0833 15.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
   search: createSvg(
     '0 0 17 17',

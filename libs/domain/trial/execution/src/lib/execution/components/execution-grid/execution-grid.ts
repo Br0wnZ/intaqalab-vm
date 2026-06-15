@@ -3,43 +3,78 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { GridPosition, PlacedWidget } from '../../models/execution-grid.models';
+import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
+import { AcousticLevelIntroduction } from '../acoustic-level-introduction/acoustic-level-introduction';
 import { ArmamentIntroductionComponent } from '../armament-introduction/armament-introduction';
+import { DatosBlancoBola } from '../datos-blanco-bola/datos-blanco-bola';
 import { ExecutionPrepJltWidgetComponent } from '../execution-prep-jlt-widget/execution-prep-jlt-widget';
 import { ExecutionPrepTechWidgetComponent } from '../execution-prep-tech-widget/execution-prep-tech-widget';
+import { GrubbsCriterionWidget } from '../grubbs-criterion/grubbs-criterion';
+import { InformacionTaradoWidget } from '../informacion-tarado/informacion-tarado';
 import { JltMao } from '../jlt-mao/jlt-mao';
 import { JltShotData } from '../jlt-shot-data/jlt-shot-data';
-import { MunitionIntroduction } from '../munition-introduction/munition-introduction';
-import { MaoTopography } from '../mao-topography/mao-topography';
-import { RadarTrayectographyOrientation } from '../radar-trayectography-orientation/radar-trayectography-orientation';
-import { RadarMetcmq } from '../radar-metcmq/radar-metcmq';
-import { TaradoVelocidadChartWidget } from '../tarado-velocidad-chart/tarado-velocidad-chart';
-import { ShotWidgetComponent } from '../shot-widget/shot-widget';
 import { ManometerIntroduction } from '../manometer-introduction/manometer-introduction';
+import { MaoTopography } from '../mao-topography/mao-topography';
+import { MunitionIntroduction } from '../munition-introduction/munition-introduction';
+import { OverpressureChartWidget } from '../overpressure-chart/overpressure-chart';
+import { OverpressureInfoWidget } from '../overpressure-info/overpressure-info';
+import { PassCoordsWidget } from '../pass-coords/pass-coords';
 import { PiezoPressureIntroduction } from '../piezo-pressure-introduction/piezo-pressure-introduction';
+import { RadarMetcmq } from '../radar-metcmq/radar-metcmq';
+import { RadarTrayectographyOrientation } from '../radar-trayectography-orientation/radar-trayectography-orientation';
 import { SeguimientoWidget } from '../seguimiento/seguimiento';
-import { VelocityIntroduction } from '../velocity-introduction/velocity-introduction';
-import { VideoCameraOrientation } from '../video-camera-orientation/video-camera-orientation';
-import { InformacionTaradoWidget } from '../informacion-tarado/informacion-tarado';
-import { TaradoPresionChartWidget } from '../tarado-presion-chart/tarado-presion-chart';
+import { SeguridadWidget } from '../seguridad/seguridad';
+import { ShotWidgetComponent } from '../shot-widget/shot-widget';
 import { StanagCriteriosWidget } from '../stanag-criterios/stanag-criterios';
+import { TaradoPresionChartWidget } from '../tarado-presion-chart/tarado-presion-chart';
+import { TaradoVelocidadChartWidget } from '../tarado-velocidad-chart/tarado-velocidad-chart';
+import { TargetDataWidget } from '../target-data/target-data';
+import { TopographyIntroductionWidget } from '../topography-introduction/topography-introduction';
 import { TrayectografiaIntroductionWidget } from '../trayectografia-introduction/trayectografia-introduction';
 import { UniformidadChartWidget } from '../uniformidad-chart/uniformidad-chart';
-import { OverpressureInfoWidget } from '../overpressure-info/overpressure-info';
-import { OverpressureChartWidget } from '../overpressure-chart/overpressure-chart';
-import { PassCoordsWidget } from '../pass-coords/pass-coords';
-import { GrubbsCriterionWidget } from '../grubbs-criterion/grubbs-criterion';
-import { TopographyIntroductionWidget } from '../topography-introduction/topography-introduction';
-import { TargetDataWidget } from '../target-data/target-data';
-import { AcousticLevelIntroduction } from '../acoustic-level-introduction/acoustic-level-introduction';
+import { VelocityIntroduction } from '../velocity-introduction/velocity-introduction';
+import { VideoCameraOrientation } from '../video-camera-orientation/video-camera-orientation';
 import { VigilanciaWidget } from '../vigilancia/vigilancia';
-import { DatosBlancoBola } from '../datos-blanco-bola/datos-blanco-bola';
-import { SeguridadWidget } from '../seguridad/seguridad';
 
 @Component({
   selector: 'inta-execution-grid',
   standalone: true,
-  imports: [DragDropModule, TranslateModule, ShotWidgetComponent, ExecutionPrepTechWidgetComponent, ExecutionPrepJltWidgetComponent, VideoCameraOrientation, RadarTrayectographyOrientation, MaoTopography, JltMao, ArmamentIntroductionComponent, JltShotData, MunitionIntroduction, RadarMetcmq, TaradoVelocidadChartWidget, VelocityIntroduction, PiezoPressureIntroduction, ManometerIntroduction, SeguimientoWidget, InformacionTaradoWidget, TaradoPresionChartWidget, UniformidadChartWidget, StanagCriteriosWidget, TrayectografiaIntroductionWidget, OverpressureInfoWidget, OverpressureChartWidget, PassCoordsWidget, GrubbsCriterionWidget, TopographyIntroductionWidget, TargetDataWidget, AcousticLevelIntroduction, VigilanciaWidget, DatosBlancoBola, SeguridadWidget],
+  imports: [
+    DragDropModule,
+    TranslateModule,
+    ShotWidgetComponent,
+    ExecutionPrepTechWidgetComponent,
+    ExecutionPrepJltWidgetComponent,
+    VideoCameraOrientation,
+    RadarTrayectographyOrientation,
+    MaoTopography,
+    JltMao,
+    ArmamentIntroductionComponent,
+    JltShotData,
+    MunitionIntroduction,
+    RadarMetcmq,
+    TaradoVelocidadChartWidget,
+    VelocityIntroduction,
+    PiezoPressureIntroduction,
+    ManometerIntroduction,
+    SeguimientoWidget,
+    InformacionTaradoWidget,
+    TaradoPresionChartWidget,
+    UniformidadChartWidget,
+    StanagCriteriosWidget,
+    TrayectografiaIntroductionWidget,
+    OverpressureInfoWidget,
+    OverpressureChartWidget,
+    PassCoordsWidget,
+    GrubbsCriterionWidget,
+    TopographyIntroductionWidget,
+    TargetDataWidget,
+    AcousticLevelIntroduction,
+    VigilanciaWidget,
+    DatosBlancoBola,
+    SeguridadWidget,
+  ],
   providers: [],
   host: { class: 'block h-full' },
   template: `
@@ -67,7 +102,9 @@ import { SeguridadWidget } from '../seguridad/seguridad';
               [style.grid-row]="block.row + ' / span ' + block.rowSpan"
               [style.grid-column]="block.col + ' / span ' + block.colSpan"
             >
-              <p class="text-gray-700 text-lg font-semibold mb-1">{{ 'TRIAL_EXECUTION.FREE_SPACE_TITLE' | translate }}</p>
+              <p class="text-gray-700 text-lg font-semibold mb-1">
+                {{ 'TRIAL_EXECUTION.FREE_SPACE_TITLE' | translate }}
+              </p>
               <p class="text-gray-400 text-sm">
                 {{ 'TRIAL_EXECUTION.FREE_SPACE_DESC_1' | translate }}
                 <button
@@ -97,100 +134,100 @@ import { SeguridadWidget } from '../seguridad/seguridad';
             (dragend)="onDragEnd($event)"
           >
             @switch (widget.type) {
-              @case ('shot') {
+              @case (WidgetId.SHOT) {
                 <inta-shot-widget [widgetId]="widget.id" />
               }
-              @case ('execution-prep-tech') {
+              @case (WidgetId.EXECUTION_PREP_TECH) {
                 <inta-execution-prep-tech-widget
                   [widgetId]="widget.id"
                   [profile]="widget.techProfile ?? 'velocidades'"
                 />
               }
-              @case ('execution-prep-jlt') {
+              @case (WidgetId.EXECUTION_PREP_JLT) {
                 <inta-execution-prep-jlt-widget [widgetId]="widget.id" />
               }
-              @case ('video-camera-orientation') {
+              @case (WidgetId.VIDEO_CAMERA_ORIENTATION) {
                 <inta-video-camera-orientation [widgetId]="widget.id" />
               }
-              @case ('radar-trayectography-orientation') {
+              @case (WidgetId.RADAR_TRAYECTOGRAPHY_ORIENTATION) {
                 <inta-radar-trayectography-orientation [widgetId]="widget.id" />
               }
-              @case ('mao-topography') {
+              @case (WidgetId.MAO_TOPOGRAPHY) {
                 <inta-mao-topography [widgetId]="widget.id" />
               }
-              @case ('jlt-mao') {
+              @case (WidgetId.JLT_MAO) {
                 <inta-jlt-mao [widgetId]="widget.id" />
               }
-              @case ('armament-introduction') {
+              @case (WidgetId.ARMAMENT_INTRODUCTION) {
                 <inta-armament-introduction [widgetId]="widget.id" />
               }
-              @case ('jlt-shot-data') {
+              @case (WidgetId.JLT_SHOT_DATA) {
                 <inta-jlt-shot-data [widgetId]="widget.id" />
               }
-              @case ('munition-introduction') {
+              @case (WidgetId.MUNITION_INTRODUCTION) {
                 <inta-munition-introduction [widgetId]="widget.id" />
               }
-              @case ('radar-metcmq') {
+              @case (WidgetId.RADAR_METCMQ) {
                 <inta-radar-metcmq [widgetId]="widget.id" />
               }
-              @case ('tarado-velocidad-chart') {
+              @case (WidgetId.TARADO_VELOCIDAD_CHART) {
                 <inta-tarado-velocidad-chart [widgetId]="widget.id" />
               }
-              @case ('velocity-introduction') {
+              @case (WidgetId.VELOCITY_INTRODUCTION) {
                 <inta-velocity-introduction [widgetId]="widget.id" />
               }
-              @case ('piezo-pressure-introduction') {
+              @case (WidgetId.PIEZO_PRESSURE_INTRODUCTION) {
                 <inta-piezo-pressure-introduction [widgetId]="widget.id" />
               }
-              @case ('manometer-introduction') {
+              @case (WidgetId.MANOMETER_INTRODUCTION) {
                 <inta-manometer-introduction [widgetId]="widget.id" />
               }
-              @case ('seguimiento') {
+              @case (WidgetId.SEGUIMIENTO) {
                 <inta-seguimiento [widgetId]="widget.id" />
               }
-              @case ('informacion-tarado') {
+              @case (WidgetId.INFORMACION_TARADO) {
                 <inta-informacion-tarado [widgetId]="widget.id" />
               }
-              @case ('tarado-presion-chart') {
+              @case (WidgetId.TARADO_PRESION_CHART) {
                 <inta-tarado-presion-chart [widgetId]="widget.id" />
               }
-              @case ('uniformidad-chart') {
+              @case (WidgetId.UNIFORMIDAD_CHART) {
                 <inta-uniformidad-chart [widgetId]="widget.id" />
               }
-              @case ('stanag-criterios') {
+              @case (WidgetId.STANAG_CRITERIOS) {
                 <inta-stanag-criterios [widgetId]="widget.id" />
               }
-              @case ('trayectografia-introduction') {
+              @case (WidgetId.TRAYECTOGRAFIA_INTRODUCTION) {
                 <inta-trayectografia-introduction [widgetId]="widget.id" />
               }
-              @case ('overpressure-info') {
+              @case (WidgetId.OVERPRESSURE_INFO) {
                 <inta-overpressure-info [widgetId]="widget.id" />
               }
-              @case ('overpressure-chart') {
+              @case (WidgetId.OVERPRESSURE_CHART) {
                 <inta-overpressure-chart [widgetId]="widget.id" />
               }
-              @case ('pass-coords') {
+              @case (WidgetId.PASS_COORDS) {
                 <inta-pass-coords [widgetId]="widget.id" />
               }
-              @case ('grubbs-criterion') {
+              @case (WidgetId.GRUBBS_CRITERION) {
                 <inta-grubbs-criterion [widgetId]="widget.id" />
               }
-              @case ('topography-introduction') {
+              @case (WidgetId.TOPOGRAPHY_INTRODUCTION) {
                 <inta-topography-introduction [widgetId]="widget.id" />
               }
-              @case ('target-data') {
+              @case (WidgetId.TARGET_DATA) {
                 <inta-target-data [widgetId]="widget.id" />
               }
-              @case ('acoustic-level-introduction') {
+              @case (WidgetId.ACOUSTIC_LEVEL_INTRODUCTION) {
                 <inta-acoustic-level-introduction [widgetId]="widget.id" />
               }
-              @case ('vigilancia') {
+              @case (WidgetId.VIGILANCIA) {
                 <inta-vigilancia [widgetId]="widget.id" />
               }
-              @case ('datos-blanco-bola') {
+              @case (WidgetId.DATOS_BLANCO_BOLA) {
                 <inta-datos-blanco-bola [widgetId]="widget.id" />
               }
-              @case ('seguridad') {
+              @case (WidgetId.SEGURIDAD) {
                 <inta-seguridad [widgetId]="widget.id" />
               }
               @default {
@@ -249,7 +286,7 @@ import { SeguridadWidget } from '../seguridad/seguridad';
       position: relative;
       height: 100%;
       min-height: 0;
-      border-radius: 0.5rem;
+      border-radius: 1rem;
       overflow: hidden;
     }
 
@@ -290,6 +327,8 @@ export class ExecutionGridComponent {
   readonly widgetStateService = inject(WidgetStateService);
 
   readonly editMode = input<boolean>(false);
+
+  readonly WidgetId = WidgetId; // Para usar el enum en el template
 
   /** Calcula los bloques rectangulares libres (sin widget) del grid 3×3. */
   readonly freePlaceholderBlocks = computed(() => {

@@ -1,4 +1,4 @@
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, Location, NgClass } from '@angular/common';
 import type { OnInit } from '@angular/core';
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,6 +12,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ActivatedRoute, Router } from '@angular/router';
+import { injectCurrentUser } from '@intaqalab/core';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../+state/execution.store';
@@ -21,29 +24,17 @@ import type { EquipmentSelectorDialogResult } from './dialogs/equipment-selector
 import { EquipmentSelectorDialog } from './dialogs/equipment-selector-dialog';
 import { InterruptExecutionDialog } from './dialogs/interrupt-execution-dialog';
 import { PauseExecutionDialog } from './dialogs/pause-execution-dialog';
-import type { TechProfile, WidgetType } from './models/execution-grid.models';
+import type { TrialSelectorDialogResult } from './dialogs/trial-selector-dialog';
+import { TrialSelectorDialog } from './dialogs/trial-selector-dialog';
+import type { Widget } from './models/execution-grid.models';
 import { WidgetStateService } from './services/widget-state.service';
-import { IntaIconComponent } from "@intaqalab/ui";
+import { injectWidgets } from './utils/inject-widgets';
 
 // ID de demo mientras la ruta no expose :fireTrialId como parámetro
 const DEMO_FIRE_TRIAL_ID = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
 
 /** ⚡ Polling interval in ms for execution state refresh */
 const EXECUTION_STATE_POLLING_MS = 5_000;
-
-interface Widget {
-  id: string;
-  type: WidgetType;
-  title: string;
-  description: string;
-  category: string;
-  badge?: string;
-  badgeColor?: 'purple' | 'blue';
-  defaultWidth: 1 | 2 | 3;
-  defaultHeight?: 1 | 2;
-  /** 🎭 Perfil técnico (sólo para type 'execution-prep-tech') */
-  techProfile?: TechProfile;
-}
 
 @Component({
   selector: 'inta-execution',
@@ -61,14 +52,13 @@ interface Widget {
     MatTooltipModule,
     TranslateModule,
     ExecutionGridComponent,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   providers: [WidgetStateService],
   template: `
     <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
       <!-- Header -->
-      <div class="flex flex-col gap-4"
-      >
+      <div class="flex flex-col gap-4">
         <!-- Fila 1: Datos de ejecución principales -->
         <div class="flex gap-4 flex-wrap items-center justify-between">
           <div class="flex items-center gap-2 flex-wrap">
@@ -83,13 +73,12 @@ interface Widget {
             </span>
 
             <!-- Botón de Avance (Trigger de historial) -->
-            <button
-              mat-flat-button
-              color="primary"
-              [matMenuTriggerFor]="shotHistoryMenu"
-            >
+            <button mat-flat-button color="primary" [matMenuTriggerFor]="shotHistoryMenu">
               <ui-inta-icon name="info" class="mr-2" />
-              <span class="font-normal">% avance prueba: <b>{{ shotInfo().actual.percentaje }}%</b></span>
+              <span class="font-normal">
+                % avance prueba:
+                <b>{{ shotInfo().actual.percentaje }}%</b>
+              </span>
             </button>
 
             <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700 ml-1">
@@ -97,11 +86,7 @@ interface Widget {
             </span>
           </div>
 
-          <button
-            mat-flat-button
-            color="primary"
-            [matMenuTriggerFor]="actionsMenu"
-          >
+          <button mat-flat-button color="primary" [matMenuTriggerFor]="actionsMenu">
             {{ 'TRIAL_EXECUTION.ACTIONS' | translate }}
             <mat-icon iconPositionEnd>expand_more</mat-icon>
           </button>
@@ -120,11 +105,7 @@ interface Widget {
 
           <div class="flex items-center gap-4">
             <!-- Botón Selector Equipos -->
-            <button
-              mat-flat-button
-              color="primary"
-              (click)="openEquipmentSelectorDialog()"
-            >
+            <button mat-flat-button color="primary" (click)="openEquipmentSelectorDialog()">
               {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.BTN_LABEL' | translate }}
             </button>
 
@@ -199,7 +180,9 @@ interface Widget {
       >
         <div class="flex flex-col gap-4 justify-between p-5 border-b border-gray-200 shrink-0">
           <div class="flex flex-column items-center justify-between gap-4">
-            <h2 class="text-lg font-semibold text-gray-800">{{ 'TRIAL_EXECUTION.WIDGET_LIBRARY_TITLE' | translate }}</h2>
+            <h2 class="text-lg font-semibold text-gray-800">
+              {{ 'TRIAL_EXECUTION.WIDGET_LIBRARY_TITLE' | translate }}
+            </h2>
             <button mat-icon-button (click)="closeWidgetsPanel()">
               <ui-inta-icon name="close" size="xxl" />
             </button>
@@ -207,7 +190,7 @@ interface Widget {
           <!-- Search -->
           <div class="flex items-center">
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <ui-inta-icon matPrefix name="search" size="md" class="mx-3" color="var(--inta-button)" />
+              <ui-inta-icon matPrefix name="search" size="md" color="var(--inta-button)" class="mx-3" />
               <input
                 matInput
                 type="text"
@@ -216,14 +199,11 @@ interface Widget {
                 [value]="searchTerm()"
                 (input)="onSearchChange($event)"
               />
-              </mat-form-field>
+            </mat-form-field>
           </div>
         </div>
 
         <div class="flex-1 overflow-y-auto overflow-x-hidden p-6">
-
-
-
           <!-- Widgets List -->
           <div class="flex flex-col gap-6">
             @for (category of getCategoryKeys(); track category) {
@@ -251,12 +231,7 @@ interface Widget {
                       </div>
                     </div>
                     <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ widget.description | translate }}</p>
-                    <button
-                      mat-flat-button
-                      color="primary"
-                      class="w-full"
-                      (click)="addWidget(widget.id)"
-                    >
+                    <button mat-flat-button color="primary" class="w-full" (click)="addWidget(widget.id)">
                       {{ 'TRIAL_EXECUTION.ADD' | translate }}
                     </button>
                   </div>
@@ -368,12 +343,16 @@ interface Widget {
 export class Execution implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #location = inject(Location);
+  readonly #route = inject(ActivatedRoute);
+  readonly #router = inject(Router);
   //readonly #transitionsService = inject(ExecutionTransitionsService);
   readonly #store = inject(ExecutionStore);
   readonly widgetStateService = inject(WidgetStateService);
   readonly #translate = inject(TranslateService);
+  readonly #currentUser = injectCurrentUser();
 
-  readonly #fireTrialId = DEMO_FIRE_TRIAL_ID;
+  readonly #fireTrialId = signal(DEMO_FIRE_TRIAL_ID);
   isWidgetsPanelOpen = signal(false);
   isEditMode = signal(false);
   searchTerm = signal('');
@@ -430,421 +409,57 @@ export class Execution implements OnInit {
     }
   }
 
-  widgets = signal<Widget[]>([
-    {
-      id: 'disparo',
-      type: 'shot',
-      title: 'Disparo',
-      description: 'Introducción de datos del disparo seleccionado',
-      category: 'Genéricos',
-      badge: 'L',
-      defaultWidth: 3,
-    },
-    // 🛡️ Preparación ejecución – Unidades técnicas (6 perfiles)
-    {
-      id: 'prep-tech-velocidades',
-      type: 'execution-prep-tech',
-      techProfile: 'velocidades',
-      title: 'Preparación ejecución – Velocidades',
-      description: 'Indicar preparación del técnico de balistíca (velocidades) para el inicio de series',
-      category: 'Balistíca',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-tech-presiones',
-      type: 'execution-prep-tech',
-      techProfile: 'presiones',
-      title: 'Preparación ejecución – Presiones',
-      description: 'Indicar preparación del técnico de balistíca (presiones) para el inicio de series',
-      category: 'Balistíca',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-tech-video',
-      type: 'execution-prep-tech',
-      techProfile: 'video',
-      title: 'Preparación ejecución – Vídeo',
-      description: 'Indicar preparación del técnico de balistíca (cámaras de vídeo) para el inicio de series',
-      category: 'Balistíca',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-tech-trayectografia',
-      type: 'execution-prep-tech',
-      techProfile: 'trayectografia',
-      title: 'Preparación ejecución – Trayectografía',
-      description: 'Indicar preparación del técnico de balistíca (radar) para el inicio de series',
-      category: 'Balistíca',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-tech-municiones',
-      type: 'execution-prep-tech',
-      techProfile: 'municiones',
-      title: 'Preparación ejecución – Municiones',
-      description: 'Indicar preparación del técnico de municiones para el inicio de series',
-      category: 'Municiones',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-tech-armamento',
-      type: 'execution-prep-tech',
-      techProfile: 'armamento',
-      title: 'Preparación ejecución – Armamento',
-      description: 'Indicar preparación del técnico de armamento para el inicio de series',
-      category: 'Armamento',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-    },
-    {
-      id: 'prep-jlt',
-      type: 'execution-prep-jlt',
-      title: 'Preparación ejecución – JLT',
-      description: 'Control de preparación de series y disparos para el Jefe de Línea de Tiro',
-      category: 'Jefe línea de tiro',
-      badge: 'L',
-      defaultWidth: 3,
-    },
-    {
-      id: 'orientacion-camaras-video',
-      type: 'video-camera-orientation',
-      title: 'Orientación cámaras de vídeo',
-      description: 'Configuración de cámara, distancia, altura, alcance y diferencia angular',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'orientacion-radar-trayectografia',
-      type: 'radar-trayectography-orientation',
-      title: 'Orientación radar de trayectografía',
-      description: 'Coordenadas pieza, puntos de caída calculados, OLT geográfico y diferencia angular del radar',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-topografia-mao',
-      type: 'mao-topography',
-      title: 'Introducción de datos Topografía MAO',
-      description: 'OLT, coordenadas de pieza y blanco, observador',
-      category: 'Topografía',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-jlt-mao',
-      type: 'jlt-mao',
-      title: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DESCRIPTION',
-      category: 'Jefe línea de tiro',
-      badge: 'J',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-armamento',
-      type: 'armament-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.DESCRIPTION',
-      category: 'Municiones',
-      badge: 'M',
-      badgeColor: 'blue',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-municion',
-      type: 'munition-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DESCRIPTION',
-      category: 'Municiones',
-      badge: 'M',
-      badgeColor: 'blue',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'radar-trayectografia-metcmq',
-      type: 'radar-metcmq',
-      title: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.DESCRIPTION',
-      category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-jlt',
-      type: 'jlt-shot-data',
-      title: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.DESCRIPTION',
-      category: 'Jefe línea de tiro',
-      badge: 'J',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-presion-manometros',
-      type: 'manometer-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-presion-piezo',
-      type: 'piezo-pressure-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'blue',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-velocidades',
-      type: 'velocity-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'tarado-velocidad-chart',
-      type: 'tarado-velocidad-chart',
-      title: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'tarado-presion-chart',
-      type: 'tarado-presion-chart',
-      title: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'trayectografia-introduction',
-      type: 'trayectografia-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.DESCRIPTION',
-      category: 'Trayectografía',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'stanag-criterios',
-      type: 'stanag-criterios',
-      title: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.DESCRIPTION',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'uniformidad-chart',
-      type: 'uniformidad-chart',
-      title: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESCRIPTION',
-      category: 'Balística',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'seguimiento',
-      type: 'seguimiento',
-      title: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.DESCRIPTION',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'informacion-tarado',
-      type: 'informacion-tarado',
-      title: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.DESCRIPTION',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'overpressure-info',
-      type: 'overpressure-info',
-      title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.DESCRIPTION',
-      category: 'Presiones',
-      badge: 'P',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 1,
-    },
-    {
-      id: 'overpressure-chart',
-      type: 'overpressure-chart',
-      title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.DESCRIPTION',
-      category: 'Presiones',
-      badge: 'P',
-      badgeColor: 'purple',
-      defaultWidth: 2,
-      defaultHeight: 1,
-    },
-    {
-      id: 'calculo-coordenadas-paso',
-      type: 'pass-coords',
-      title: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DESCRIPTION',
-      category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
-      badge: 'B',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'criterio-grubbs',
-      type: 'grubbs-criterion',
-      title: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.DESCRIPTION',
-      category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
-      badge: 'E',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-topografia',
-      type: 'topography-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.DESCRIPTION',
-      category: 'Topografía',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'datos-del-blanco',
-      type: 'target-data',
-      title: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DESCRIPTION',
-      category: 'Armamento',
-      badge: 'A',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'introduccion-datos-nivel-acustico',
-      type: 'acoustic-level-introduction',
-      title: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DESCRIPTION',
-      category: 'Balística',
-      badge: 'A',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'vigilancia',
-      type: 'vigilancia',
-      title: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.DESCRIPTION',
-      category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
-      badge: 'V',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-    {
-      id: 'datos-blanco-bola',
-      type: 'datos-blanco-bola',
-      title: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DESCRIPTION',
-      category: 'Topografía',
-      badge: 'T',
-      badgeColor: 'purple',
-      defaultWidth: 3,
-      defaultHeight: 1,
-    },
-    {
-      id: 'seguridad',
-      type: 'seguridad',
-      title: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE',
-      description: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.DESCRIPTION',
-      category: 'Balística',
-      badge: 'S',
-      badgeColor: 'purple',
-      defaultWidth: 1,
-      defaultHeight: 2,
-    },
-  ]);
+  widgets = signal<Widget[]>(injectWidgets());
 
   filteredWidgets = signal<Widget[]>([]);
   groupedWidgets = signal<{ [key: string]: Widget[] }>({});
 
   ngOnInit(): void {
-    this.#filterWidgets();
-    // Initialize store with demo fire trial ID
-    this.#store.setFireTrialId(this.#fireTrialId);
-    this.#startExecutionStatePolling();
+    const fireTrialIdFromRoute = this.#route.snapshot.paramMap.get('fireTrialId');
+    if (fireTrialIdFromRoute) {
+      // Arrived via URL with :fireTrialId — skip dialog, load directly
+      this.#fireTrialId.set(fireTrialIdFromRoute);
+      this.#initExecution();
+    } else {
+      // No ID in URL — show trial selector dialog
+      this.#openTrialSelectorDialog();
+    }
   }
 
-  /**
-   * 🔄 Sets up periodic polling for execution state.
-   * Uses `setInterval` + `DestroyRef.onDestroy` — the idiomatic Angular 21
-   * zoneless lifecycle pattern. The interval is automatically cleared when
-   * the component is destroyed, preventing memory leaks.
-   */
+  /** ⚡ Opens trial selector dialog before loading the execution view. */
+  #openTrialSelectorDialog(): void {
+    const dialogRef = this.#dialog.open<TrialSelectorDialog, void, TrialSelectorDialogResult>(TrialSelectorDialog, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      disableClose: true,
+    });
+
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe((result) => {
+        if (!result || result.action === 'cancel') {
+          this.#location.back();
+          return;
+        }
+        // Navigate to parameterized URL — triggers a fresh route load with the trial ID
+        this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
+      });
+  }
+
+  /** ⚙️ Initializes store and polling after trial is selected. */
+  #initExecution(): void {
+    this.#filterWidgets();
+    this.#store.setFireTrialId(this.#fireTrialId());
+    this.#startExecutionStatePolling();
+    this.#store.loadPreferencesByUser(this.#fireTrialId(), this.#currentUser.preferred_username);
+  }
+
+  /** 🔄 Sets up periodic polling for execution state. */
   #startExecutionStatePolling(): void {
     const intervalId = setInterval(() => {
-      this.#store.loadExecutionState(this.#fireTrialId);
+      this.#store.loadExecutionState(this.#fireTrialId());
     }, EXECUTION_STATE_POLLING_MS);
 
     this.#destroyRef.onDestroy(() => clearInterval(intervalId));
@@ -912,7 +527,7 @@ export class Execution implements OnInit {
   }
 
   startExecution(): void {
-    this.#store.startExecution(this.#fireTrialId);
+    this.#store.startExecution(this.#fireTrialId());
   }
 
   pauseExecution(): void {
@@ -930,11 +545,11 @@ export class Execution implements OnInit {
   }
 
   resumeExecution(): void {
-    this.#store.resumeExecution(this.#fireTrialId);
+    this.#store.resumeExecution(this.#fireTrialId());
   }
 
   finishExecution(): void {
-    this.#store.finishExecution(this.#fireTrialId);
+    this.#store.finishExecution(this.#fireTrialId());
   }
 
   openInterruptDialog(): void {
@@ -947,7 +562,7 @@ export class Execution implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe((result) => {
         if (!result || result.action === 'back') return;
-        this.#store.interruptExecution(this.#fireTrialId, result.reason);
+        this.#store.interruptExecution(this.#fireTrialId(), result.reason);
       });
   }
 
@@ -961,7 +576,7 @@ export class Execution implements OnInit {
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe((result) => {
         if (!result || result.action === 'back') return;
-        this.#store.cancelExecution(this.#fireTrialId, result.reason);
+        this.#store.cancelExecution(this.#fireTrialId(), result.reason);
       });
   }
 
@@ -970,7 +585,7 @@ export class Execution implements OnInit {
     if (!widget) return;
 
     this.widgetStateService.addWidget(
-      widget.type,
+      widget.widgetId,
       widget.defaultWidth,
       undefined,
       widget.techProfile,

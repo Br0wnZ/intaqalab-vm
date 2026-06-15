@@ -4,7 +4,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { ChartDirective } from '@intaqalab/ui';
+import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -22,43 +22,42 @@ interface OverpressureChartForm {
 @Component({
   selector: 'inta-overpressure-chart',
   standalone: true,
-  imports: [FormField, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, ChartDirective],
+  imports: [FormField, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, ChartDirective, IntaIconComponent],
   template: `
-    <div class="h-full rounded-2xl border border-orange-200 bg-white p-3 flex flex-col gap-1.5">
+    <div class="h-full overflow-auto rounded-2xl border border-orange-200 bg-white p-3 flex flex-col gap-4">
       <!-- Header: misma grid que el body para alinear selector con leyenda -->
-      <div class="grid grid-cols-4 gap-2 items-center shrink-0 h-9">
-        <div class="col-span-3 flex items-center gap-1.5 min-w-0">
-          <div class="flex items-center justify-center w-5 h-5 rounded-md bg-orange-100 shrink-0">
-            <mat-icon class="text-orange-500 !text-[13px] !w-[13px] !h-[13px]">show_chart</mat-icon>
+      <div class="grid grid-cols-4 gap-2 items-center shrink-0 h-9 sticky -top-4 z-2 bg-white min-h-8">
+        <div class="col-span-12 flex items-center gap-1.5 shrink-0">
+          <div class="flex items-center gap-1.5 flex-1 self-start">
+            <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
+            <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+              {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE' | translate }}
+            </h3>
           </div>
-          <h3 class="text-[11px] font-semibold text-slate-800 leading-none truncate">
-            {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE' | translate }}
-          </h3>
-        </div>
-
-        <!-- Serie multi-select (compact density) — col-span-1, alineado con la leyenda -->
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="col-span-1 w-full [&_.mat-mdc-text-field-wrapper]:!py-0 [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-floating-label]:!top-[50%] [&_.mdc-notched-outline]:!h-9"
-        >
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_LABEL' | translate }}</mat-label>
-          <mat-select
-            multiple
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_PLACEHOLDER' | translate"
-            [formField]="chartForm.selectedSerie"
+          <!-- Serie multi-select (compact density) — col-span-1, alineado con la leyenda -->
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            class="mt-1"
           >
-            @for (opt of serieOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_LABEL' | translate }}</mat-label>
+            <mat-select
+              multiple
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_PLACEHOLDER' | translate"
+              [formField]="chartForm.selectedSerie"
+            >
+              @for (opt of serieOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
 
       <!-- Body: 3 columns (col-span-2 = chart, col-span-1 = selector + legend) -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-2 min-h-0">
+      <div intaReadonlyContent class="flex-1 flex flex-wrap gap-2 min-h-0">
         <!-- Chart canvas (2 of 3 columns) -->
-        <div class="col-span-3 relative w-full h-full min-h-0">
+        <div class="flex-[2_1_0%] min-w-[280px] relative h-full min-h-0">
           <canvas
             uiChart
             aria-label="Gráfica Sobrepresión"
@@ -69,42 +68,42 @@ interface OverpressureChartForm {
         </div>
 
         <!-- Right panel: serie selector + legend (1 of 3 columns) -->
-        <div class="col-span-1 flex flex-col gap-2 min-h-0 overflow-hidden">
+        <div class="flex-[1_1_12rem] max-w-48 min-w-40 border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between">
           <!-- Custom legend -->
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-0.5 bg-[#f97316] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_SEGURIDAD' | translate }}
               </span>
             </div>
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-px border-t-2 border-dashed border-[#a78bfa] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_DESV_MAX' | translate }}
               </span>
             </div>
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-0.5 bg-[#22d3ee] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_PRES_MAX' | translate }}
               </span>
             </div>
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-0.5 bg-[#4ade80] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_RECTA' | translate }}
               </span>
             </div>
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-0.5 bg-[#1e3a5f] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_PRES_MIN' | translate }}
               </span>
             </div>
             <div class="flex items-center gap-1.5">
               <div class="w-5 h-px border-t-2 border-dashed border-[#818cf8] shrink-0"></div>
-              <span class="text-[10px] text-slate-600 leading-tight truncate">
+              <span class="text-xs text-slate-600 flex-1">
                 {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.LEGEND_DESV_MIN' | translate }}
               </span>
             </div>

@@ -1,0 +1,80 @@
+{
+  "profilesReadiness": [
+    {
+      "profile": "VELOCITIES",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2", "isReady": true },
+        {
+          "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3",
+          "isReady": false,
+          "observations": "Sensor de velocidad V3 en calibración"
+        },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4", "isReady": false },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5", "isReady": false }
+      ]
+    },
+    {
+      "profile": "PRESSURES",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3", "isReady": true },
+        {
+          "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4",
+          "isReady": false,
+          "observations": "Transductor P4 pendiente de montaje"
+        },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5", "isReady": false }
+      ]
+    },
+    {
+      "profile": "VIDEO",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5", "isReady": true }
+      ]
+    },
+    {
+      "profile": "TRAJECTOGRAPHY",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        {
+          "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2",
+          "isReady": false,
+          "observations": "Radar no alineado con línea de tiro"
+        },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3", "isReady": false },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4", "isReady": false },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5", "isReady": false }
+      ]
+    },
+    {
+      "profile": "MUNITIONS",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4", "isReady": true },
+        {
+          "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
+          "isReady": false,
+          "observations": "Lote pendiente de verificación pirotécnica"
+        }
+      ]
+    },
+    {
+      "profile": "ARMAMENT",
+      "seriesReadiness": [
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa4", "isReady": true },
+        { "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa5", "isReady": true }
+      ]
+    }
+  ]
+}

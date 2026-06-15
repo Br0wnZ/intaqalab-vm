@@ -28,6 +28,7 @@ import type {
   Denomination,
   FuseWorkingMode,
   MunitionConfigRequest,
+  ReconditioningData,
   Serie,
   SeriesMunitionsData,
 } from '../../utils-models/munitions.model';
@@ -253,6 +254,47 @@ export class Munitions {
             ? { kind: 'required-shots', message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.ASSIGNED_SHOTS_REQUIRED' }
             : undefined;
         });
+
+        // Validate config-level reconditioning via configPath
+        validate(configPath, ({ value }) => {
+          const config = value();
+          const reconditioning = config.reconditioning;
+          if (!reconditioning) return undefined; // conditioning not enabled
+          const isValidNum = (v: number | undefined | null): boolean =>
+            v !== undefined && v !== null && !isNaN(v as number);
+          const valid =
+            isValidNum(reconditioning.temperature) &&
+            isValidNum(reconditioning.tolerance) &&
+            isValidNum(reconditioning.timeMin) &&
+            isValidNum(reconditioning.timeMax);
+          return valid
+            ? undefined
+            : {
+                kind: 'reconditioning-required',
+                message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.RECONDITIONING_REQUIRED',
+              };
+        });
+
+        // Validate component-level reconditioning: each component's reconditioning if present
+        validate(configPath, ({ value }) => {
+          const config = value();
+          const components = config.components ?? [];
+          const isValidNum = (v: number | undefined | null): boolean =>
+            v !== undefined && v !== null && !isNaN(v as number);
+          const allValid = components.every((comp) => {
+            const r = comp.reconditioning;
+            if (!r) return true; // not enabled
+            return (
+              isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin) && isValidNum(r.timeMax)
+            );
+          });
+          return allValid
+            ? undefined
+            : {
+                kind: 'component-reconditioning-required',
+                message: 'TRIAL_PLANNING.MUNITIONS.VALIDATION.RECONDITIONING_REQUIRED',
+              };
+        });
       });
     });
   });
@@ -275,7 +317,9 @@ export class Munitions {
   }
 
   isFormValid(): boolean {
-    return this.seriesForm().touched() && this.seriesForm().valid();
+    const series = this.seriesSignal();
+    const allSeriesHaveConfigurations = series.length > 0 && series.some((s) => s.configurations.length > 0);
+    return allSeriesHaveConfigurations && this.seriesForm().valid();
   }
 
   getFormValues(): Serie[] {
