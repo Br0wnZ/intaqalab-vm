@@ -249,10 +249,14 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
 
         <mat-tab label="{{ 'TRIAL_DOCS.DOC_DETAILS.VERSIONS_MAT_LABEL' | translate }}">
           @if (documentVersionsResource.hasValue() && documentVersionsResource.value().length > 0) {
-            <inta-trial-doc-versions
-              [documentId]="documentId()!"
-              [documentVersions]="documentVersionsResource.value()"
-            />
+            @defer (on idle) {
+              <inta-trial-doc-versions
+                [documentId]="documentId()!"
+                [documentVersions]="documentVersionsResource.value()"
+              />
+            } @placeholder {
+              <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
+            }
           }
         </mat-tab>
         <!-- Descomentar par ver la parte de Admin -->

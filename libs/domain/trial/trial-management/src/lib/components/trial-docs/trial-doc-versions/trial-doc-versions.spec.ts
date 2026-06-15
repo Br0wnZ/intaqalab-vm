@@ -30,6 +30,7 @@ describe('TrialDocVersions', () => {
     await render(TrialDocVersions, {
       imports: [TranslateModule.forRoot()],
       componentInputs: {
+        documentId: '1',
         documentVersions: mockDocumentVersions,
       },
       providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }],
@@ -43,6 +44,7 @@ describe('TrialDocVersions', () => {
     await render(TrialDocVersions, {
       imports: [TranslateModule.forRoot()],
       componentInputs: {
+        documentId: '1',
         documentVersions: mockDocumentVersions,
       },
       providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }],
@@ -75,6 +77,7 @@ describe('TrialDocVersions', () => {
     await render(TrialDocVersions, {
       imports: [TranslateModule.forRoot()],
       componentInputs: {
+        documentId: '1',
         documentVersions: mockDocumentVersions,
       },
       providers: [{ provide: MatDialog, useValue: { open: openSpy } }],
@@ -91,6 +94,7 @@ describe('TrialDocVersions', () => {
     await render(TrialDocVersions, {
       imports: [TranslateModule.forRoot()],
       componentInputs: {
+        documentId: '1',
         documentVersions: mockDocumentVersions,
       },
       providers: [{ provide: MatDialog, useValue: { open: openSpy } }],

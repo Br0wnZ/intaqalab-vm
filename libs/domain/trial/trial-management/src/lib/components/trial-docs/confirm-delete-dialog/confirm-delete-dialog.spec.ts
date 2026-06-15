@@ -22,12 +22,18 @@ describe('ConfirmDeleteDialogComponent', () => {
     documentId: 'doc-1',
   };
 
-  const createMockService = () => ({
-    deleteDocumentResource: createMockResource(),
-    fireTrialId: vi.fn(() => defaultData.trialId),
-    deleteDocument: vi.fn(),
-    resetDelete: vi.fn(),
-  });
+  const createMockService = () => {
+    const service = {
+      deleteDocumentResource: createMockResource(),
+      fireTrialId: vi.fn(() => defaultData.trialId),
+      deleteDocument: vi.fn(),
+      resetDelete: vi.fn(),
+    };
+    service.deleteDocument.mockImplementation(() => {
+      service.deleteDocumentResource._setStatus('loading');
+    });
+    return service;
+  };
 
   const setup = async (data: Partial<DialogData> = {}) => {
     const user = userEvent.setup();

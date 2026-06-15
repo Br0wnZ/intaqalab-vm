@@ -45,4 +45,3 @@ export interface HasStatus {
 }
 
 export type TrialActions = 'MODIFY' | 'CANCEL' | 'ANNUL' | 'REACTIVATE' | 'CLOSE' | 'REOPEN' | 'REMOVE' | 'EXECUTION';
-

@@ -34,7 +34,13 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
         [disabled]="disableSeriesTab()"
       >
         <ng-template matTabContent>
-          <inta-series-and-shots />
+          @defer (on idle) {
+            <inta-series-and-shots />
+          } @placeholder {
+            <div class="h-40 flex items-center justify-center">
+              <span class="text-sm text-gray-400">Cargando...</span>
+            </div>
+          }
         </ng-template>
       </mat-tab>
       <mat-tab
@@ -42,22 +48,46 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
         [disabled]="disableShootingConditionsTab()"
       >
         <ng-template matTabContent>
-          <inta-shooting-conditions />
+          @defer (on idle) {
+            <inta-shooting-conditions />
+          } @placeholder {
+            <div class="h-40 flex items-center justify-center">
+              <span class="text-sm text-gray-400">Cargando...</span>
+            </div>
+          }
         </ng-template>
       </mat-tab>
       <mat-tab label="{{ 'TRIAL_PLANNING.MUNITIONS.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
         <ng-template matTabContent>
-          <inta-munitions />
+          @defer (on idle) {
+            <inta-munitions />
+          } @placeholder {
+            <div class="h-40 flex items-center justify-center">
+              <span class="text-sm text-gray-400">Cargando...</span>
+            </div>
+          }
         </ng-template>
       </mat-tab>
       <mat-tab label="{{ 'TRIAL_PLANNING.ARMAMENT.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
         <ng-template matTabContent>
-          <inta-armament />
+          @defer (on idle) {
+            <inta-armament />
+          } @placeholder {
+            <div class="h-40 flex items-center justify-center">
+              <span class="text-sm text-gray-400">Cargando...</span>
+            </div>
+          }
         </ng-template>
       </mat-tab>
       <mat-tab label="Medidas" [disabled]="disableSeriesDependentTab()">
         <ng-template matTabContent>
-          <inta-measures />
+          @defer (on idle) {
+            <inta-measures />
+          } @placeholder {
+            <div class="h-40 flex items-center justify-center">
+              <span class="text-sm text-gray-400">Cargando...</span>
+            </div>
+          }
         </ng-template>
       </mat-tab>
     </mat-tab-group>

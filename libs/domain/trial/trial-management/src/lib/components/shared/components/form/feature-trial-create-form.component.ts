@@ -207,11 +207,15 @@ import type { TrialCreateModifyForm } from './trial-create.model';
       </div>
       @if (trialId()) {
         <div class="w-full mb-6">
-          <inta-trial-scheduler-inline
-            [trialId]="trialId()!"
-            [trialNumber]="upsertTrialModel().code"
-            [trialStatus]="trialStatus()"
-          ></inta-trial-scheduler-inline>
+          @defer (on idle) {
+            <inta-trial-scheduler-inline
+              [trialId]="trialId()!"
+              [trialNumber]="upsertTrialModel().code"
+              [trialStatus]="trialStatus()"
+            ></inta-trial-scheduler-inline>
+          } @placeholder {
+            <div class="h-10 bg-gray-100 rounded animate-pulse"></div>
+          }
         </div>
       }
       <div>
@@ -232,7 +236,11 @@ import type { TrialCreateModifyForm } from './trial-create.model';
         </div>
       </div>
       @if (trialId()) {
-        <inta-trial-docs [trialId]="trialId()!" (viewDocument)="viewDocument.emit($event)" />
+        @defer (on idle) {
+          <inta-trial-docs [trialId]="trialId()!" (viewDocument)="viewDocument.emit($event)" />
+        } @placeholder {
+          <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
+        }
       }
     </div>
   `,
