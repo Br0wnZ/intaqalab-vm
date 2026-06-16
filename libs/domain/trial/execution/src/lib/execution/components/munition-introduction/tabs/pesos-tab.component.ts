@@ -12,7 +12,6 @@ import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
 
 @Component({
   selector: 'inta-munition-pesos-tab',
-  standalone: true,
   imports: [
     FormField,
     MatButtonModule,

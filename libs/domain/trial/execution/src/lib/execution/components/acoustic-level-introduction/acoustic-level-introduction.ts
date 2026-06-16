@@ -36,7 +36,6 @@ interface DataFormModel {
 
 @Component({
   selector: 'inta-acoustic-level-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

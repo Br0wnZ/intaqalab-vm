@@ -29,7 +29,6 @@ interface ArmamentIntroductionSelectForm {
 
 @Component({
   selector: 'inta-armament-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

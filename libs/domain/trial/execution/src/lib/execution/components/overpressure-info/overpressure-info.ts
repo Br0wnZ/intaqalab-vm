@@ -29,7 +29,6 @@ interface OverpressureFormModel {
 
 @Component({
   selector: 'inta-overpressure-info',
-  standalone: true,
   imports: [
     MatFormFieldModule,
     MatIconModule,

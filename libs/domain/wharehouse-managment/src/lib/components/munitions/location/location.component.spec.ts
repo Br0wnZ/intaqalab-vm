@@ -16,7 +16,6 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 import { MunitionLocationComponent } from './location.component';
 
 @Component({
-  standalone: true,
   imports: [MunitionLocationComponent],
   template: `
     <inta-munition-location [form]="componentForm" />

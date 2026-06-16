@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-font-demo',
-  standalone: true,
   template: `
     <div class="p-8 space-y-8">
       <h1 class="text-3xl font-bold text-center mb-8">Fuentes custom</h1>

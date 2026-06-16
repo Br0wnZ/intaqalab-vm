@@ -9,7 +9,6 @@ import { DayActionsComponent } from './day-actions.component';
 
 @Component({
   selector: 'lib-week-calendar-header',
-  standalone: true,
   imports: [CommonModule, MatTooltipModule, DayActionsComponent, IntaIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

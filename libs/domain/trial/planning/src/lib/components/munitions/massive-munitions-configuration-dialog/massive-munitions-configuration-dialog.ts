@@ -27,6 +27,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
+import type { MasterDataI18nItem } from '../../../utils-models/catalog.model';
 import type {
   ComponentDetail,
   MassiveConfigDialogData,
@@ -466,10 +467,10 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                                   #denominationSearchInput
                                 />
                               </div>
-                              @for (denom of filteredComponentDenominations(); track denom.id) {
+                              @for (denom of filteredComponentDenominations(component); track denom.id) {
                                 <mat-option [value]="denom.id">{{ denom.label }}</mat-option>
                               }
-                              @if (filteredComponentDenominations().length === 0) {
+                              @if (filteredComponentDenominations(component).length === 0) {
                                 <mat-option disabled>
                                   {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
                                 </mat-option>
@@ -749,12 +750,24 @@ export class MassiveMunitionsConfigurationDialog {
       .map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
   });
 
-  readonly filteredComponentDenominations = computed(() => {
+  filteredComponentDenominations(component: string): MasterDataI18nItem[] {
     const term = this.#normalizeText(this.denominationSearchTerm());
-    const all = this.munitionsStore.denominations();
-    if (!term) return all;
-    return all.filter((d) => this.#normalizeText(d.label).includes(term));
-  });
+    const allDenoms = this.denominationsRaw();
+    const typeId = this.getComponentData(component).type.id;
+
+    const byType = allDenoms.filter((d) => d.munitionType?.id === typeId);
+
+    const mapped = byType.map((d) => ({
+      id: d.id,
+      label: d.name,
+      name: { es: d.name, en: d.name },
+      active: d.active,
+    }));
+
+    if (!term) return mapped;
+
+    return mapped.filter((d) => this.#normalizeText(d.label).includes(term));
+  }
 
   #normalizeText(value: string): string {
     return value

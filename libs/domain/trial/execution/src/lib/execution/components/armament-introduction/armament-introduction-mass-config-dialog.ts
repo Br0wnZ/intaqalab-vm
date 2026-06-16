@@ -61,7 +61,6 @@ interface MassConfigForm {
 
 @Component({
   selector: 'inta-armament-introduction-mass-config-dialog',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

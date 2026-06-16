@@ -30,7 +30,6 @@ interface RadarMetcmqForm {
 
 @Component({
   selector: 'inta-radar-metcmq',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

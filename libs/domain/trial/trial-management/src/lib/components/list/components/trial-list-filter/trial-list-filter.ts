@@ -32,7 +32,6 @@ function toISODateTime(value: string | Date): string | undefined {
 
 @Component({
   selector: 'inta-trial-list-filter',
-  standalone: true,
   imports: [
     TranslateModule,
     MatInputModule,

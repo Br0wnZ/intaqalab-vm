@@ -46,7 +46,6 @@ export type EquipmentSelectorDialogResult =
 
 @Component({
   selector: 'inta-equipment-selector-dialog',
-  standalone: true,
   imports: [
     NgClass,
     MatDialogModule,

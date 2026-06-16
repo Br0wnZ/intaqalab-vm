@@ -35,7 +35,6 @@ interface SelectorFormModel {
 
 @Component({
   selector: 'inta-trayectografia-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

@@ -58,7 +58,6 @@ interface MassConfigForm {
 
 @Component({
   selector: 'inta-jlt-mao-mass-config-dialog',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

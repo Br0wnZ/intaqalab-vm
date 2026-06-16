@@ -42,7 +42,6 @@ export type AplicarConfigMasivaDialogResult =
 
 @Component({
   selector: 'inta-aplicar-config-masiva-dialog',
-  standalone: true,
   imports: [
     MatDialogModule,
     MatButtonModule,

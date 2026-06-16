@@ -35,7 +35,6 @@ interface JltShotDataSelectForm {
 
 @Component({
   selector: 'inta-jlt-shot-data',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

@@ -39,7 +39,6 @@ import { VigilanciaWidget } from '../vigilancia/vigilancia';
 
 @Component({
   selector: 'inta-execution-grid',
-  standalone: true,
   imports: [
     DragDropModule,
     TranslateModule,

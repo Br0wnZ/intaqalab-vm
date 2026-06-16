@@ -34,7 +34,6 @@ interface TopographyFormModel {
 
 @Component({
   selector: 'inta-topography-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

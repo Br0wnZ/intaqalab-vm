@@ -36,7 +36,6 @@ interface MaoTopographySelectForm {
 
 @Component({
   selector: 'inta-mao-topography',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-theme-provider',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <ng-content></ng-content>

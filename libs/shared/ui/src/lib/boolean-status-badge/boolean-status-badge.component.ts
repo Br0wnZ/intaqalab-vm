@@ -3,7 +3,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'ui-boolean-status-badge, [uiBooleanStatusBadge]',
-  standalone: true,
   imports: [TranslateModule],
   template: `
     @if (label() === '') {

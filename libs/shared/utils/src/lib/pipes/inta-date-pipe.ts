@@ -4,7 +4,6 @@ import { format, parseISO } from 'date-fns';
 
 @Pipe({
   name: 'intaDate',
-  standalone: true,
 })
 export class IntaDatePipe implements PipeTransform {
   transform(value: string | Date | null | undefined, outputFormat = 'dd/MM/yyyy'): string {

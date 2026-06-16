@@ -25,7 +25,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
  */
 @Component({
   selector: 'inta-execution-prep-jlt-widget',
-  standalone: true,
   imports: [
     TranslateModule,
     MatCardModule,

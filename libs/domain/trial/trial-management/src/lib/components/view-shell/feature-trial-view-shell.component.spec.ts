@@ -40,7 +40,6 @@ vi.mock('ng2-pdf-viewer', async () => {
   template: `
     <div data-testid="mock-trial-form"></div>
   `,
-  standalone: true,
 })
 class MockTrialCreateFormComponent {
   readonly editable = input.required<boolean>();
@@ -64,7 +63,6 @@ class MockTrialCreateFormComponent {
   template: `
     <div data-testid="mock-planning-shell"></div>
   `,
-  standalone: true,
 })
 class MockPlanningShellComponent {
   readonly trial = input<Record<string, unknown>>();
@@ -76,7 +74,6 @@ class MockPlanningShellComponent {
   template: `
     <button data-testid="trial-actions-btn" (click)="clicked.emit('MODIFY')">Actions</button>
   `,
-  standalone: true,
 })
 class MockButtonTrialActionsImplComponent {
   readonly trial = input.required<Record<string, unknown>>();

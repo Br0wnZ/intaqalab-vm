@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NoNegativeValuesDirective } from './no-negative-values.directive';
 
 @Component({
-  standalone: true,
   imports: [NoNegativeValuesDirective],
   template: `
     <input type="text" libNoNegativeValues />
@@ -16,7 +15,6 @@ import { NoNegativeValuesDirective } from './no-negative-values.directive';
 class TestComponent {}
 
 @Component({
-  standalone: true,
   imports: [NoNegativeValuesDirective],
   template: `
     <input id="num-default" type="number" libNoNegativeValues />

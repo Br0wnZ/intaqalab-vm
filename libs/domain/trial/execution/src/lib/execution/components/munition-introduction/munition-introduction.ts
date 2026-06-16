@@ -56,7 +56,6 @@ export interface AcondFormModel {
 
 @Component({
   selector: 'inta-munition-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

@@ -10,7 +10,6 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 
 @Component({
   selector: 'inta-munition-identificacion-tab',
-  standalone: true,
   imports: [
     FormField,
     MatFormFieldModule,

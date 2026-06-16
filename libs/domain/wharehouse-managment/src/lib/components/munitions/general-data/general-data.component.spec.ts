@@ -16,7 +16,6 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
 import { MunitionGeneralDataComponent } from './general-data.component';
 
 @Component({
-  standalone: true,
   imports: [MunitionGeneralDataComponent],
   template: `
     <inta-general-data [form]="componentForm" [associatedTrials]="associatedTrials" />

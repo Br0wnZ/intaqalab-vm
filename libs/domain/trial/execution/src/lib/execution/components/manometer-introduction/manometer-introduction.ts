@@ -37,7 +37,6 @@ interface DataFormModel {
 
 @Component({
   selector: 'inta-manometer-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

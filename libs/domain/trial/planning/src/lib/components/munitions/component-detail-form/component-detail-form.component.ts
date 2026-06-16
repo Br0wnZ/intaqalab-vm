@@ -277,16 +277,20 @@ export class ComponentDetailFormComponent {
 
   readonly denominations = computed<MasterDataI18nItem[]>(() => {
     const response = this.#denominationsResource.value();
-    return (
-      response?.items.map(
+    const typeId = this.detail().type.id;
+
+    if (!response?.items) return [];
+
+    return response.items
+      .filter((item: WarehouseDenominationItem) => item.munitionType?.id === typeId)
+      .map(
         (item: WarehouseDenominationItem): MasterDataI18nItem => ({
           id: item.id,
           name: { es: item.name, en: item.name },
           label: item.name,
           active: item.active,
         }),
-      ) ?? []
-    );
+      );
   });
 
   readonly formModel = linkedSignal(() => this.detail());

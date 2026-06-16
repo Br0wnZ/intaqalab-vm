@@ -28,7 +28,6 @@ interface InformacionTaradoForm {
 
 @Component({
   selector: 'inta-informacion-tarado',
-  standalone: true,
   imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">

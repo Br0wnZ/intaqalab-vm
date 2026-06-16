@@ -32,7 +32,6 @@ interface TargetDataFormModel {
 
 @Component({
   selector: 'inta-target-data',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

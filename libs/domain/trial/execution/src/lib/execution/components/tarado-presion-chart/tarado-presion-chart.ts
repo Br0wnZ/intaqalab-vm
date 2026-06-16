@@ -23,7 +23,6 @@ interface TaradoPresionForm {
 
 @Component({
   selector: 'inta-tarado-presion-chart',
-  standalone: true,
   imports: [
     DecimalPipe,
     FormField,

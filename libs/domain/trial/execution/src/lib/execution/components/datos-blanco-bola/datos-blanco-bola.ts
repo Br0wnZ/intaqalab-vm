@@ -37,7 +37,6 @@ interface SelectorFormModel {
 
 @Component({
   selector: 'inta-datos-blanco-bola',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

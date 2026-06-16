@@ -22,7 +22,6 @@ interface Serie {
 
 @Component({
   selector: 'lib-ordered-table',
-  standalone: true,
   imports: [
     CommonModule,
     DragDropModule,

@@ -84,7 +84,6 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
  */
 @Component({
   selector: 'inta-execution-prep-tech-widget',
-  standalone: true,
   imports: [
     TranslateModule,
     MatCardModule,

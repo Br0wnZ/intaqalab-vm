@@ -11,7 +11,6 @@ import type { AcondFormModel } from '../munition-introduction';
 
 @Component({
   selector: 'inta-munition-acondicionamiento-tab',
-  standalone: true,
   imports: [
     FormField,
     MatButtonModule,

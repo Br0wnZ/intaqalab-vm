@@ -6,7 +6,6 @@ import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'ui-signal-checkbox',
-  standalone: true,
   imports: [MatCheckboxModule, MatIconModule, MatHint, MatError],
   template: `
     <div class="flex flex-col gap-1">

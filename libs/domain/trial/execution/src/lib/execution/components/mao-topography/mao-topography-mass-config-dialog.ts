@@ -54,7 +54,6 @@ type InputFieldValue = { value: string; unit: string } | null;
 
 @Component({
   selector: 'inta-mao-topography-mass-config-dialog',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

@@ -29,7 +29,6 @@ interface JltMaoSelectForm {
 
 @Component({
   selector: 'inta-jlt-mao',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

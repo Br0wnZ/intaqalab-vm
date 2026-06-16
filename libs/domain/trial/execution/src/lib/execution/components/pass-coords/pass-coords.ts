@@ -19,7 +19,6 @@ interface PassCoordsSelectForm {
 
 @Component({
   selector: 'inta-pass-coords',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

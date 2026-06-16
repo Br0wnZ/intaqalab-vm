@@ -33,7 +33,6 @@ export interface MassiveConfigDialogResult {
 
 @Component({
   selector: 'inta-massive-config-dialog',
-  standalone: true,
   imports: [
     MatDialogModule,
     MatButtonModule,

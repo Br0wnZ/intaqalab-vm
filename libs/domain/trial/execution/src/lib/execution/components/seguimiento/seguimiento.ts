@@ -45,7 +45,6 @@ interface ComputedSerie {
 
 @Component({
   selector: 'inta-seguimiento',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

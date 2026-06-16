@@ -17,7 +17,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
  */
 @Component({
   selector: 'inta-shot-widget',
-  standalone: true,
   imports: [
     TranslateModule,
     MatFormFieldModule,

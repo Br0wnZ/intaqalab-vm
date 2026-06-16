@@ -59,7 +59,6 @@ function createMockDialog(defaultResult: unknown = null) {
 
 @Component({
   selector: 'inta-wharehouse-filter',
-  standalone: true,
   template: '',
 })
 class MockWharehouseFilterComponent {

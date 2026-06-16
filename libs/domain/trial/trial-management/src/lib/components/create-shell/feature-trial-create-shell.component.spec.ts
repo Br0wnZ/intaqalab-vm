@@ -41,7 +41,6 @@ vi.mock('ng2-pdf-viewer', async () => {
   template: `
     <div data-testid="mock-form">Mock Form</div>
   `,
-  standalone: true,
 })
 class MockFeatureTrialCreateFormComponent {
   readonly editable = input.required<boolean>();

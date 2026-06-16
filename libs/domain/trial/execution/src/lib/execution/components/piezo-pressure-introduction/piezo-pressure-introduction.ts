@@ -40,7 +40,6 @@ interface PiezoFormModel {
 
 @Component({
   selector: 'inta-piezo-pressure-introduction',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

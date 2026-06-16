@@ -22,7 +22,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 
 @Component({
   selector: 'inta-stanag-criterios',
-  standalone: true,
   imports: [
     DatePipe,
     MatButtonModule,

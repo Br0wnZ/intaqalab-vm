@@ -27,7 +27,6 @@ interface TaradoVelocidadForm {
 
 @Component({
   selector: 'inta-tarado-velocidad-chart',
-  standalone: true,
   imports: [
     DecimalPipe,
     FormField,

@@ -46,7 +46,6 @@ interface SeguridadSelectsModel {
 
 @Component({
   selector: 'inta-seguridad',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

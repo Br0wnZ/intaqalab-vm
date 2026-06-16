@@ -61,7 +61,6 @@ interface VigilanciaTableRow {
 
 @Component({
   selector: 'inta-vigilancia',
-  standalone: true,
   imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">

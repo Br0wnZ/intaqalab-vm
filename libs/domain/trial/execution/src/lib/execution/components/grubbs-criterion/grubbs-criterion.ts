@@ -29,7 +29,6 @@ interface GrubbsFilterForm {
 
 @Component({
   selector: 'inta-grubbs-criterion',
-  standalone: true,
   imports: [
     FormField,
     ReadonlyContentDirective,

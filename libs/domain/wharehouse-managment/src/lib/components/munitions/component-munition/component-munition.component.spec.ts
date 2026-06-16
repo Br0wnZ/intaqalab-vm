@@ -18,7 +18,6 @@ import type { MunitionIdentificationForm } from '../../../models/munition-stock.
 import { ComponentMunitionComponent } from './component-munition.component';
 
 @Component({
-  standalone: true,
   imports: [ComponentMunitionComponent],
   template: `
     <inta-component-munition [form]="componentForm" [hasQuantity]="hasQuantity" />

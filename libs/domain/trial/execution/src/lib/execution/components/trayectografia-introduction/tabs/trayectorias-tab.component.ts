@@ -21,7 +21,6 @@ type InputFieldValue = { value: string; unit: string } | null;
 
 @Component({
   selector: 'inta-trayectografia-trayectorias-tab',
-  standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-7 gap-x-2 gap-y-1 min-h-0 content-start">

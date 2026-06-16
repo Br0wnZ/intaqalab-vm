@@ -17,7 +17,6 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
 @Component({
   selector: 'inta-trayectografia-funcionamientos-tab',
-  standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule],
   template: `
     <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">

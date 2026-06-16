@@ -23,7 +23,6 @@ interface UniformidadForm {
 
 @Component({
   selector: 'inta-uniformidad-chart',
-  standalone: true,
   imports: [
     DecimalPipe,
     FormField,

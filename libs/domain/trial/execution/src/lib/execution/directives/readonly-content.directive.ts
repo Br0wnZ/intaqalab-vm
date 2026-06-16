@@ -42,7 +42,6 @@ import { ExecutionStore } from '../../+state/execution.store';
  */
 @Directive({
   selector: '[intaReadonlyContent]',
-  standalone: true,
   host: {
     '[attr.inert]': 'isReadOnly() ? "" : null',
     '[class.inta-readonly-content]': 'isReadOnly()',

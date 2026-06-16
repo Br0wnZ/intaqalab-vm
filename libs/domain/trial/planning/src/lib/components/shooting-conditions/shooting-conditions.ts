@@ -25,7 +25,6 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
 
 @Component({
   selector: 'inta-shooting-conditions',
-  standalone: true,
   imports: [
     TranslateModule,
     FormsModule,

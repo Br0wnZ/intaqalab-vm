@@ -10,7 +10,6 @@ import { Directive, HostListener } from '@angular/core';
  */
 @Directive({
   selector: 'input[libNoLeadingZeros]',
-  standalone: true,
 })
 export class NoLeadingZerosDirective {
   @HostListener('input', ['$event'])

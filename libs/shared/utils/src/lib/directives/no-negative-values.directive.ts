@@ -10,7 +10,6 @@ import { Directive, ElementRef, HostListener, inject } from '@angular/core';
  */
 @Directive({
   selector: 'input[libNoNegativeValues]',
-  standalone: true,
 })
 export class NoNegativeValuesDirective implements OnInit {
   readonly #el = inject(ElementRef<HTMLInputElement>);

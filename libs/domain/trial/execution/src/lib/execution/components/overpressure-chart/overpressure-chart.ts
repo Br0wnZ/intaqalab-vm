@@ -21,7 +21,6 @@ interface OverpressureChartForm {
 
 @Component({
   selector: 'inta-overpressure-chart',
-  standalone: true,
   imports: [
     FormField,
     MatFormFieldModule,

@@ -3,7 +3,6 @@ import type { TrialStatus } from '@intaqalab/models';
 
 @Component({
   selector: 'ui-badge, [uiBadge]',
-  standalone: true,
   template: `
     <ng-content />
   `,
