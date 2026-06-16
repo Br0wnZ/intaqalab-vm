@@ -1,4 +1,5 @@
 import type { DenominationModel } from './denominations.model';
+import type { WarehouseMunitionCategoryType } from './munition-components.model';
 
 // forms
 
@@ -6,7 +7,7 @@ export interface MunitionIdentificationForm {
   munitionTypeId: string;
   denominationId: string | DenominationModel;
   batch: string;
-  quantity: number | null;
+  quantity?: number | null;
 }
 
 export interface MunitionLocationForm {
@@ -31,6 +32,26 @@ export interface MunitionGeneralDataForm {
   observations: string;
 }
 
+export interface MunitionStockFormModel {
+  category: WarehouseMunitionCategoryType | null;
+  munitionTypeId: string;
+  denominationId: string;
+  batch: string;
+  quantity: number | null;
+  generalData: {
+    clientId: string;
+    entryDate: string;
+    plannedFireTrialId: string;
+    observations: string;
+  };
+  location: {
+    munitionDumpId: string;
+    cellName: string;
+  };
+  associatedComponents: MunitionIdentificationForm[];
+  multipleComponentsData: MunitionIdentificationForm[];
+}
+
 // munition
 
 export interface MunitionStockPostModel {
@@ -49,7 +70,7 @@ export interface MunitionStockPostModel {
     munitionDumpId: string;
     cellName: string;
   };
-  associatedComponents: MunitionStockAssociadtedComponentPost[];
+  associatedComponents: MunitionIdentificationForm[];
 }
 export interface MunitionStockAssociadtedComponentPost {
   munitionTypeId: string;

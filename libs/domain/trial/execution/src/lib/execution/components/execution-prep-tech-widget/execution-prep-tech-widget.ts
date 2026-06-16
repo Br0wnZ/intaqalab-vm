@@ -6,15 +6,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { TechProfile } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 /**
  * 🎯 Modelo de estado por serie
@@ -95,8 +95,8 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
     ReadonlyContentDirective,
     MatIconModule,
     MatTooltipModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-hidden">
       <!-- 🔝 Header -->

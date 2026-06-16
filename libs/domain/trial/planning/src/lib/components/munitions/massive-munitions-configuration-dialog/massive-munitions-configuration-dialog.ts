@@ -103,6 +103,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
                   id="denomination"
+                  data-testid="denomination-select"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
                   [disabled]="!selectedMunitionTypeId()"
                   [(ngModel)]="formData.denomination"
@@ -112,6 +113,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     <input
                       matInput
                       type="text"
+                      data-testid="denomination-search-input"
                       [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
                       [value]="denominationSearchTerm()"
                       (input)="onDenominationSearchInput($event)"
@@ -440,14 +442,37 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           <!-- Denominación -->
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <mat-select
+                              data-testid="denomination-select"
                               [placeholder]="
                                 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate
                               "
                               [(ngModel)]="getComponentData(component).denomination.id"
                               (selectionChange)="onComponentDenominationChange(component, $event.value)"
+                              (openedChange)="onDenominationPanelToggle($event)"
                             >
-                              @for (denom of munitionsStore.denominations(); track denom.id) {
+                              <div class="px-3 py-2">
+                                <input
+                                  matInput
+                                  type="text"
+                                  data-testid="denomination-search-input"
+                                  [placeholder]="
+                                    'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate
+                                  "
+                                  [value]="denominationSearchTerm()"
+                                  (input)="onDenominationSearchInput($event)"
+                                  (keydown)="$event.stopPropagation()"
+                                  (click)="$event.stopPropagation()"
+                                  (mousedown)="$event.stopPropagation()"
+                                  #denominationSearchInput
+                                />
+                              </div>
+                              @for (denom of filteredComponentDenominations(); track denom.id) {
                                 <mat-option [value]="denom.id">{{ denom.label }}</mat-option>
+                              }
+                              @if (filteredComponentDenominations().length === 0) {
+                                <mat-option disabled>
+                                  {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
+                                </mat-option>
                               }
                             </mat-select>
                           </mat-form-field>
@@ -513,7 +538,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <textarea
-                              placeholder="XX"
+                              placeholder="{{
+                                'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OBSERVATIONS_PLACEHOLDER' | translate
+                              }}"
                               matInput
                               rows="2"
                               [id]="'component-observations-' + component"
@@ -545,7 +572,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="XX"
+                              placeholder="00"
                               matInput
                               type="number"
                               libNoLeadingZeros
@@ -572,7 +599,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="XX"
+                              placeholder="00"
                               matInput
                               type="number"
                               libNoLeadingZeros
@@ -599,7 +626,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="XX"
+                              placeholder="00"
                               matInput
                               type="number"
                               libNoLeadingZeros
@@ -622,7 +649,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="XX"
+                              placeholder="00"
                               matInput
                               type="number"
                               libNoLeadingZeros
@@ -720,6 +747,13 @@ export class MassiveMunitionsConfigurationDialog {
     return byType
       .filter((d) => this.#normalizeText(d.name).includes(term))
       .map((d) => ({ id: d.id, label: d.name, name: { es: d.name, en: d.name }, active: d.active }));
+  });
+
+  readonly filteredComponentDenominations = computed(() => {
+    const term = this.#normalizeText(this.denominationSearchTerm());
+    const all = this.munitionsStore.denominations();
+    if (!term) return all;
+    return all.filter((d) => this.#normalizeText(d.label).includes(term));
   });
 
   #normalizeText(value: string): string {

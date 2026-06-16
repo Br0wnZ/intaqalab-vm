@@ -60,6 +60,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
             id="supl-denomination"
+            data-testid="denomination-select"
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
             (selectionChange)="onDenominationChange($event.value)"
@@ -69,6 +70,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
               <input
                 matInput
                 type="text"
+                data-testid="denomination-search-input"
                 [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
                 [value]="denominationSearchTerm()"
                 (input)="onDenominationSearchInput($event)"
@@ -151,7 +153,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <input
-            placeholder="XX"
+            placeholder="00"
             id="supl-quantity"
             matInput
             type="number"
@@ -169,7 +171,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
       </label>
       <mat-form-field appearance="outline" class="w-full">
         <textarea
-          placeholder="XX"
+          placeholder="{{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OBSERVATIONS_PLACEHOLDER' | translate }}"
           id="supl-observations"
           matInput
           rows="2"

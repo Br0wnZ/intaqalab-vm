@@ -1,20 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { form } from '@angular/forms/signals';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
-import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
 import { MunitionGeneralDataComponent } from './general-data.component';
 
-// // Factories
-//
+@Component({
+  standalone: true,
+  imports: [MunitionGeneralDataComponent],
+  template: `
+    <inta-general-data [form]="componentForm" [associatedTrials]="associatedTrials" />
+  `,
+})
+class TestWrapperComponent {
+  formModel = signal<MunitionStockFormModel>({
+    category: null,
+    munitionTypeId: '',
+    denominationId: '',
+    batch: '',
+    quantity: null,
+    generalData: {
+      clientId: '',
+      entryDate: '',
+      plannedFireTrialId: '',
+      observations: '',
+    },
+    location: {
+      munitionDumpId: '',
+      cellName: '',
+    },
+    associatedComponents: [],
+    multipleComponentsData: [],
+  });
+
+  componentForm = form(this.formModel);
+  associatedTrials: { id: string; label: string }[] = [];
+}
 
 function makeClientsDataService() {
   return {
@@ -25,22 +56,22 @@ function makeClientsDataService() {
   };
 }
 
-function makeTrialsDataService(sourceValue: any = undefined) {
+function makeTrialsDataService() {
   return {
-    source: createMockResource(sourceValue),
     search: vi.fn(),
   };
 }
 
-// // Setup
-//
-
-async function setup(opts: { trialsSource?: any } = {}) {
+async function setup(
+  opts: {
+    associatedTrials?: { id: string; label: string }[];
+  } = {},
+) {
   const user = userEvent.setup();
-  const trialsService = makeTrialsDataService(opts.trialsSource);
+  const trialsService = makeTrialsDataService();
   const clientsService = makeClientsDataService();
 
-  const view = await render(MunitionGeneralDataComponent, {
+  const view = await render(TestWrapperComponent, {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
       provideHttpClient(),
@@ -52,12 +83,16 @@ async function setup(opts: { trialsSource?: any } = {}) {
   });
 
   const fixture = view.fixture;
+  if (opts.associatedTrials) {
+    fixture.componentInstance.associatedTrials = opts.associatedTrials;
+  }
   fixture.detectChanges();
-  const component = fixture.componentInstance;
-  return { fixture, user, component, trialsService, clientsService };
-}
 
-// Tests
+  const componentDebug = fixture.debugElement.query(By.directive(MunitionGeneralDataComponent));
+  const component = componentDebug.componentInstance as MunitionGeneralDataComponent;
+
+  return { fixture, user, component, trialsService, clientsService, wrapper: fixture.componentInstance };
+}
 
 describe('MunitionGeneralDataComponent', () => {
   beforeEach(() => {
@@ -68,160 +103,35 @@ describe('MunitionGeneralDataComponent', () => {
     vi.restoreAllMocks();
   });
 
-  // Initialization
   describe('Initialization', () => {
     it('should render the section title', async () => {
       await setup();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_GENERAL_DATA')).toBeTruthy();
     });
 
-    it('should render the entry date input', async () => {
+    it('should render the entry date input placeholder', async () => {
       await setup();
       expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ENTRY_DATE_PLACEHOLDER')).toBeTruthy();
     });
 
-    it('should render the observations input', async () => {
+    it('should render the observations input placeholder', async () => {
       await setup();
       expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.OBSERVATIONS_PLACEHOLDER')).toBeTruthy();
     });
 
-    it('should have touched signal set to false initially', async () => {
-      const { component } = await setup();
-      expect(component.touched()).toBe(false);
+    it('should render client label and placeholder', async () => {
+      await setup();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_LABEL')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_PLACEHOLDER')).toBeTruthy();
+    });
+
+    it('should render planned trial label and placeholder', async () => {
+      await setup();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_LABEL')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_PLACEHOLDER')).toBeTruthy();
     });
   });
 
-  // errors() computed
-  describe('errors() computed', () => {
-    it('should return true when the form is empty (required fields missing)', async () => {
-      const { component } = await setup();
-      expect(component.errors()).toBe(true);
-    });
-
-    it('should return false when all required fields are filled via setControlValue', async () => {
-      const { component, fixture } = await setup();
-      component.form.client().setControlValue('client-1');
-      component.form.entryDate().setControlValue('2025-01-01');
-      component.form.plannedFireTrialId().setControlValue('trial-1');
-      fixture.detectChanges();
-      expect(component.errors()).toBe(false);
-    });
-
-    it('should return false when all required fields are filled via formModel', async () => {
-      const { component, fixture } = await setup();
-      component.formModel.set({
-        client: 'client-1',
-        entryDate: '2025-01-01',
-        observations: '',
-        plannedFireTrialId: 'trial-1',
-      });
-      fixture.detectChanges();
-      expect(component.errors()).toBe(false);
-    });
-  });
-
-  // value() computed
-  describe('value() computed', () => {
-    it('should return false when the form has errors', async () => {
-      const { component } = await setup();
-      expect(component.value()).toBe(false);
-    });
-
-    it('should return the full form value when there are no errors', async () => {
-      const { component, fixture } = await setup();
-      const expected = {
-        client: 'client-1',
-        entryDate: '2025-01-01',
-        observations: 'some notes',
-        plannedFireTrialId: 'trial-1',
-      };
-      component.formModel.set(expected);
-      fixture.detectChanges();
-      expect(component.value()).toEqual(expected);
-    });
-  });
-
-  // markAsTouched()
-  describe('markAsTouched()', () => {
-    it('should set touched signal to true', async () => {
-      const { component } = await setup();
-      expect(component.touched()).toBe(false);
-      component.markAsTouched();
-      expect(component.touched()).toBe(true);
-    });
-
-    it('should show required validation errors in the template when touched and form is empty', async () => {
-      const { component, fixture } = await setup();
-      component.markAsTouched();
-      fixture.detectChanges();
-      expect(screen.getAllByText('COMMONS.REQUIRED_FIELD').length).toBeGreaterThan(0);
-    });
-  });
-
-  // reset()
-  describe('reset()', () => {
-    it('should clear all form fields back to empty strings', async () => {
-      const { component, fixture } = await setup();
-      component.formModel.set({
-        client: 'client-1',
-        entryDate: new Date('2025-01-01'),
-        observations: 'some notes',
-        plannedFireTrialId: 'trial-1',
-      });
-      fixture.detectChanges();
-
-      component.reset();
-      fixture.detectChanges();
-
-      expect(component.formModel()).toEqual({
-        client: '',
-        entryDate: expect.any(Date),
-        observations: '',
-        plannedFireTrialId: '',
-      });
-    });
-
-    it('should have errors after reset because required fields become empty', async () => {
-      const { component, fixture } = await setup();
-      component.formModel.set({
-        client: 'c',
-        entryDate: new Date(),
-        observations: '',
-        plannedFireTrialId: 'p',
-      });
-      fixture.detectChanges();
-      expect(component.errors()).toBe(false);
-
-      component.reset();
-      fixture.detectChanges();
-      expect(component.errors()).toBe(true);
-    });
-  });
-
-  // optionsTrialCombo() computed
-  describe('optionsTrialCombo()', () => {
-    it('should return empty array when trials source value is undefined', async () => {
-      const { component } = await setup();
-      expect(component.optionsTrialCombo()).toEqual([]);
-    });
-
-    it('should return mapped label/id options when trials source has items', async () => {
-      const { component } = await setup({
-        trialsSource: {
-          items: [
-            { id: 'trial-1', trialNumber: '0001/25', description: 'Trial Alpha' },
-            { id: 'trial-2', trialNumber: '0002/25', description: '' },
-          ],
-        },
-      });
-      const options = component.optionsTrialCombo();
-      expect(options).toHaveLength(2);
-      expect(options[0]).toEqual({ id: 'trial-1', label: '0001/25 - Trial Alpha' });
-      expect(options[1]).toEqual({ id: 'trial-2', label: '0002/25 - ' });
-    });
-  });
-
-  // onClientChangeHandler()
   describe('onClientChangeHandler()', () => {
     it('should call trialsDataService.search with clientId and PLANNED/UNDER_REVIEW statuses', async () => {
       const { component, trialsService } = await setup();
@@ -229,17 +139,6 @@ describe('MunitionGeneralDataComponent', () => {
       expect(trialsService.search).toHaveBeenCalledOnce();
       expect(trialsService.search).toHaveBeenCalledWith({
         clientId: 'client-1',
-        status: [TrialStatus.PLANNED, TrialStatus.UNDER_REVIEW],
-      });
-    });
-
-    it('should call trialsDataService.search again when a different client is selected', async () => {
-      const { component, trialsService } = await setup();
-      component.onClientChangeHandler({ value: 'client-1' } as any);
-      component.onClientChangeHandler({ value: 'client-2' } as any);
-      expect(trialsService.search).toHaveBeenCalledTimes(2);
-      expect(trialsService.search).toHaveBeenLastCalledWith({
-        clientId: 'client-2',
         status: [TrialStatus.PLANNED, TrialStatus.UNDER_REVIEW],
       });
     });

@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
@@ -143,7 +143,7 @@ describe('MunitionsShellComponent', () => {
   });
 
   it('should clear batch inputs after reset', async () => {
-    const { user } = await setup();
+    const { user, fixture } = await setup();
     const categorySelect = screen.getByRole('combobox');
     await user.click(categorySelect);
     await user.click(screen.getByText('WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION'));
@@ -156,9 +156,8 @@ describe('MunitionsShellComponent', () => {
     const resetBtn = screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.RESET').closest('button')!;
     await user.click(resetBtn);
 
-    const clearedInputs = screen.getAllByPlaceholderText(/WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL/i);
-    for (const input of clearedInputs) {
-      expect((input as HTMLInputElement).value).toBe('');
-    }
+    expect(screen.queryByTestId('identificationForm')).not.toBeInTheDocument();
+    expect(fixture.componentInstance.formModel().batch).toBe('');
+    expect(fixture.componentInstance.formModel().category).toBeNull();
   });
 });

@@ -1,67 +1,53 @@
 import { Router } from 'express';
-import * as path from 'path';
 
-import { trialsDocAssociatedTrialsDispatch } from '../fixtures/trials-docs/doc-associated-trials-dispatcher';
 import { trialsDocDetailsDispatch } from '../fixtures/trials-docs/doc-details-dispatcher';
-import { trialsDocVersionsDispatch } from '../fixtures/trials-docs/doc-versions-dispatcher';
+import {
+  addDocObservation,
+  addDocVersion,
+  centerDocumentsDispatch,
+  deleteDocObservation,
+  deleteMockDocument,
+  getDocAssociations,
+  getDocObservations,
+  getDocVersions,
+  setActiveDocVersion,
+  setDocAssociations,
+  updateDocObservation,
+  updateMockDocument,
+} from '../fixtures/trials-docs/trials-docs-dispatcher';
 
 export const documentsRouter = Router();
+
+// Listar documentos de un centro
+documentsRouter.get('/:centerId/documents', (req, res) => {
+  res.status(200).send(centerDocumentsDispatch(req));
+});
 
 // Obtener datos de un documento
 documentsRouter.get('/:centerId/documents/:documentId', (req, res) => {
   res.send(trialsDocDetailsDispatch(req));
 });
 
-// Obtener observaciones de un documento
-documentsRouter.get('/:centerId/documents/:documentId/observations', (req, res) => {
-  res.send([
-    {
-      id: '019a2ad8-f9cc-7c55-b18b-f075b2dd091f',
-      description: 'Revisar sección 4.2 para cumplimiento de normativas.',
-      createdBy: 'username',
-      createdAt: '2025-12-02T10:15:00Z',
-    },
-  ]);
-});
-
-// Añadir una observación a un documento
-documentsRouter.post('/:centerId/documents/:documentId/observations', (req, res) => {
-  res.status(201).send({
-    id: '019a2ad8-f9cc-7c55-b18b-f075b2dd0000',
-    ...req.body,
-    createdBy: 'username',
-    createdAt: new Date().toISOString(),
+// Modificar datos de un documento
+documentsRouter.put('/:centerId/documents/:documentId', (req, res) => {
+  const { name, category, typeId } = req.body || {};
+  const docId = req.params['documentId'];
+  const updated = updateMockDocument(docId, {
+    name,
+    category,
+    type: typeId ? { id: typeId, name: 'Tipo de Documento' } : undefined,
   });
+  if (updated) {
+    res.send(trialsDocDetailsDispatch(req));
+  } else {
+    res.status(404).json({ title: 'Not Found', status: 404, detail: 'Document not found' });
+  }
 });
 
-// Modificar una observación de un documento
-documentsRouter.put('/:centerId/documents/:documentId/observations/:observationId', (req, res) => {
-  res.status(200).send({
-    id: req.params['observationId'],
-    ...req.body,
-    createdBy: 'username',
-    createdAt: '2025-12-02T10:15:00Z',
-  });
-});
-
-// Eliminar una observación de un documento
-documentsRouter.delete('/:centerId/documents/:documentId/observations/:observationId', (req, res) => {
+// Eliminar un documento del sistema
+documentsRouter.delete('/:centerId/documents/:documentId', (req, res) => {
+  deleteMockDocument(req.params['documentId']);
   res.status(204).send();
-});
-
-// Obtener versiones de un documento
-documentsRouter.get('/:centerId/documents/:documentId/versions', (req, res) => {
-  res.send(trialsDocVersionsDispatch(req));
-});
-
-// Obtener pruebas de fuego asociadas a un documento
-documentsRouter.get('/:centerId/documents/:documentId/fire-trials', (req, res) => {
-  res.send(trialsDocAssociatedTrialsDispatch(req));
-});
-
-// Sincronizar asocianoes de un documento a las pruebas de fuego
-documentsRouter.put('/:centerId/documents/:documentId/fire-trials', (req, res) => {
-  res.send({});
 });
 
 // Descargar archivo de un documento
@@ -75,37 +61,76 @@ documentsRouter.get('/:centerId/documents/:documentId/file', (req, res) => {
   res.send(dummyPdf);
 });
 
-// Listar documentos de un centro
-documentsRouter.get('/:centerId/documents', (req, res) => {
-  res.status(200).send({
-    page: 1,
-    pageSize: 25,
-    totalElements: 0,
-    items: [],
-  });
+// Obtener observaciones de un documento
+documentsRouter.get('/:centerId/documents/:documentId/observations', (req, res) => {
+  res.send(getDocObservations(req.params['documentId']));
 });
 
-// Subir un documento a una prueba de fuego (también montado en trialsRouter, pero aquí para el flow documents-api)
-documentsRouter.post('/:centerId/documents', (req, res) => {
-  res.status(200).send(req.body);
+// Añadir una observación a un documento
+documentsRouter.post('/:centerId/documents/:documentId/observations', (req, res) => {
+  const { description } = req.body || {};
+  if (!description) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'description' es obligatorio" });
+    return;
+  }
+  const newObs = addDocObservation(req.params['documentId'], description);
+  res.status(201).send(newObs);
 });
 
-// Modificar datos de un documento
-documentsRouter.put('/:centerId/documents/:documentId', (req, res) => {
-  res.status(200).send(req.body);
+// Modificar una observación de un documento
+documentsRouter.put('/:centerId/documents/:documentId/observations/:observationId', (req, res) => {
+  const { description } = req.body || {};
+  if (!description) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'description' es obligatorio" });
+    return;
+  }
+  const updated = updateDocObservation(req.params['documentId'], req.params['observationId'], description);
+  if (updated) {
+    res.status(200).send(updated);
+  } else {
+    res.status(404).json({ title: 'Not Found', status: 404, detail: 'Observation not found' });
+  }
 });
 
-// Eliminar un documento del sistema
-documentsRouter.delete('/:centerId/documents/:documentId', (req, res) => {
-  res.status(204).send({});
+// Eliminar una observación de un documento
+documentsRouter.delete('/:centerId/documents/:documentId/observations/:observationId', (req, res) => {
+  deleteDocObservation(req.params['documentId'], req.params['observationId']);
+  res.status(204).send();
 });
 
-// Establecer una versión como activa
-documentsRouter.post('/:centerId/documents/:documentId/versions/:versionId/set-active', (req, res) => {
-  res.status(200).send({});
+// Obtener versiones de un documento
+documentsRouter.get('/:centerId/documents/:documentId/versions', (req, res) => {
+  res.send(getDocVersions(req.params['documentId']));
 });
 
 // Crear una nueva versión de un documento
 documentsRouter.post('/:centerId/documents/:documentId/versions', (req, res) => {
-  res.status(201).send({});
+  const newVersion = addDocVersion(req.params['documentId']);
+  res.status(201).send(newVersion);
+});
+
+// Establecer una versión como activa
+documentsRouter.post('/:centerId/documents/:documentId/versions/:versionId/set-active', (req, res) => {
+  const updated = setActiveDocVersion(req.params['documentId'], req.params['versionId']);
+  if (updated) {
+    res.status(200).send(updated);
+  } else {
+    res.status(404).json({ title: 'Not Found', status: 404, detail: 'Version not found' });
+  }
+});
+
+// Obtener pruebas de fuego asociadas a un documento
+documentsRouter.get('/:centerId/documents/:documentId/fire-trials', (req, res) => {
+  res.send({ fireTrialIds: getDocAssociations(req.params['documentId']) });
+});
+
+// Sincronizar asociaciones de un documento a las pruebas de fuego
+documentsRouter.put('/:centerId/documents/:documentId/fire-trials', (req, res) => {
+  const { fireTrialIds } = req.body || {};
+  if (!fireTrialIds || !Array.isArray(fireTrialIds)) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid fireTrialIds list' });
+    return;
+  }
+  setDocAssociations(req.params['documentId'], fireTrialIds);
+  res.status(200).send({ fireTrialIds: getDocAssociations(req.params['documentId']) });
 });

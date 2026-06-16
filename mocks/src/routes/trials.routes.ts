@@ -7,7 +7,12 @@ import { specimensDispatcher } from '../fixtures/trial-planning/specimens-dispat
 import { trialPlanningInfoDispatcher } from '../fixtures/trial-planning/trial-planning-info-dispatcher';
 import { usersDispatcher } from '../fixtures/trial-planning/users-dispatcher';
 import { setTrialSchedule, trialScheduleDispatchById } from '../fixtures/trial-schedule/trial-schedule-dispatcher';
-import { trialsDocumentsDispatch } from '../fixtures/trials-docs/trials-docs-dispatcher';
+import {
+  TrialDocsStatus,
+  addMockDocument,
+  detachDocFromTrial,
+  trialsDocumentsDispatch,
+} from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';
 import { trialsGenerator } from '../fixtures/trials/trials-generator';
@@ -132,12 +137,50 @@ trialsRouter.get('/:centerId/fire-trials/:fireTrialId/documents', (req, res) => 
 
 // Subir un documento a una prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/documents', (req, res) => {
-  res.status(201).send({});
+  const { name, category, documentTypeId } = req.body || {};
+  const newDoc = {
+    id: `019a2ad8-f9cc-7c55-b18b-f075b2dd${Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0')}`,
+    name: name || 'Mock Uploaded Document',
+    category: category || 'GENERAL',
+    type: {
+      id: documentTypeId || '019a2ad8-f9cc-7c55-b18b-f075b2dd091f',
+      name: 'Tipo de Documento',
+    },
+    version: 'v1',
+    status: TrialDocsStatus.ACTIVE,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  addMockDocument(newDoc);
+
+  res.status(201).send({
+    id: newDoc.id,
+    centerId: req.params['centerId'],
+    name: newDoc.name,
+    category: newDoc.category,
+    type: newDoc.type,
+    versions: [
+      {
+        id: `ver-${newDoc.id}`,
+        versionTag: 'v1',
+        isActive: true,
+        createdBy: 'username',
+        createdAt: newDoc.createdAt,
+      },
+    ],
+    createdBy: 'username',
+    createdAt: newDoc.createdAt,
+    updatedAt: newDoc.updatedAt,
+  });
 });
 
 // Desvincular un documento de una prueba de fuego
 trialsRouter.delete('/:centerId/fire-trials/:fireTrialId/documents/:documentId', (req, res) => {
-  res.status(200).send({});
+  const { documentId, fireTrialId } = req.params;
+  detachDocFromTrial(documentId, fireTrialId);
+  res.status(204).send();
 });
 
 // Obtener condiciones de disparos

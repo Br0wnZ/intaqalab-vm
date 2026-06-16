@@ -1,97 +1,54 @@
-import type {
-  ComponentListMunitionForm,
-  MunitionComponentPostModel,
-  MunitionComponentStockPostModel,
-  MunitionGeneralDataForm,
-  MunitionIdentificationForm,
-  MunitionLocationForm,
-  MunitionStockAssociadtedComponentPost,
-  MunitionStockPostModel,
-} from '../models/munition-stock.model';
+import type { DenominationModel } from '../models/denominations.model';
+import type { MunitionComponentPostModel, MunitionStockFormModel } from '../models/munition-stock.model';
 
-export function getPayloadMunition(
-  locationForm: MunitionLocationForm | undefined,
-  itentificationForm: MunitionIdentificationForm | undefined,
-  generalDataForm: MunitionGeneralDataForm | undefined,
-  componentValues: ComponentListMunitionForm[],
-): MunitionStockPostModel | undefined {
-  if (locationForm === undefined || itentificationForm === undefined || generalDataForm === undefined) {
-    return;
-  } else {
-    const associatedComponents: MunitionStockAssociadtedComponentPost[] = [];
-    for (const componentType of componentValues || []) {
-      const denomination = componentType.denominationId;
-      if (typeof denomination === 'string') {
-        return;
-      }
-      const componentValue: MunitionStockAssociadtedComponentPost = {
-        batch: componentType.batch,
-        denominationId: denomination.id,
-        munitionTypeId: componentType.munitionTypeId,
-      };
-      associatedComponents.push(componentValue);
-    }
-    const denomination = itentificationForm.denominationId;
-    if (typeof denomination === 'string') {
-      return;
-    } else {
-      const result: MunitionStockPostModel = {
-        associatedComponents,
-        batch: itentificationForm.batch,
-        denominationId: denomination.id,
-        generalData: {
-          clientId: generalDataForm.client,
-          entryDate: generalDataForm.entryDate.toISOString(),
-          observations: generalDataForm.observations,
-          plannedFireTrialId: generalDataForm.plannedFireTrialId,
-        },
-        location: locationForm,
-        munitionTypeId: itentificationForm.munitionTypeId,
-        quantity: itentificationForm.quantity,
-      };
-      return result;
-    }
-  }
+export function getPayloadMunition(form: MunitionStockFormModel) {
+  const associatedComponents = form.associatedComponents.map((component) => ({
+    ...component,
+    denominationId: (component.denominationId as DenominationModel).id.toString(),
+  }));
+
+  return {
+    batch: form.batch,
+    denominationId: (form.denominationId as unknown as DenominationModel).id.toString(),
+    generalData: {
+      clientId: form.generalData.clientId,
+      entryDate: form.generalData.entryDate,
+      observations: form.generalData.observations,
+      plannedFireTrialId: form.generalData.plannedFireTrialId,
+    },
+    location: {
+      cellName: form.location.cellName,
+      munitionDumpId: form.location.munitionDumpId,
+    },
+    munitionTypeId: form.munitionTypeId,
+    quantity: form.quantity || 1,
+    associatedComponents,
+  };
 }
 
-export function getPayloadMunitionComponents(
-  locationForm: MunitionLocationForm | undefined,
-  generalDataForm: MunitionGeneralDataForm | undefined,
-  componentValues: ComponentListMunitionForm[],
-): MunitionComponentStockPostModel | undefined {
-  if (locationForm === undefined || generalDataForm === undefined || componentValues === undefined) {
-    return;
-  } else {
-    const result: MunitionComponentStockPostModel = [];
+export function getPayloadMunitionComponents(form: MunitionStockFormModel) {
+  const result: MunitionComponentPostModel[] = [];
 
-    for (const component of componentValues) {
-      const denomination = component.denominationId;
-      if (typeof denomination === 'string') {
-        return;
-      }
+  for (const component of form.multipleComponentsData) {
+    const valueToAdd: MunitionComponentPostModel = {
+      batch: component.batch,
+      denominationId: (component.denominationId as DenominationModel).id.toString(),
+      generalData: {
+        clientId: form.generalData.clientId,
+        entryDate: form.generalData.entryDate,
+        observations: form.generalData.observations,
+        plannedFireTrialId: form.generalData.plannedFireTrialId,
+      },
+      location: {
+        cellName: form.location.cellName,
+        munitionDumpId: form.location.munitionDumpId,
+      },
+      munitionTypeId: component.munitionTypeId,
+      quantity: component.quantity || 1,
+    };
 
-      const valueToAdd: MunitionComponentPostModel = {
-        batch: component.batch,
-        denominationId: denomination.id,
-        generalData: {
-          clientId: generalDataForm.client,
-          entryDate: generalDataForm.entryDate.toISOString(),
-          observations: generalDataForm.observations,
-          plannedFireTrialId: generalDataForm.plannedFireTrialId,
-        },
-        location: {
-          cellName: locationForm.cellName,
-          munitionDumpId: locationForm.munitionDumpId,
-        },
-        munitionTypeId: component.munitionTypeId,
-        quantity: component.quantity,
-      };
-      if (component.munitionDumpId === '' || component.cellName === '') {
-        valueToAdd.location.munitionDumpId = locationForm.munitionDumpId;
-        valueToAdd.location.cellName = locationForm.cellName;
-      }
-      result.push(valueToAdd);
-    }
-    return result;
+    result.push(valueToAdd);
   }
+
+  return result;
 }

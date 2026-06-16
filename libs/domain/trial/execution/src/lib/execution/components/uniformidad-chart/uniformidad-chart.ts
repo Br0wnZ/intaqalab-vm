@@ -1,13 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,11 +32,10 @@ interface UniformidadForm {
     MatSelectModule,
     TranslateModule,
     ChartDirective,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
-
       <!-- Header: icon + title -->
       <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
         <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
@@ -77,7 +68,7 @@ interface UniformidadForm {
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[1rem] grow"> 
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="basis-[1rem] grow">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DISPARO_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
@@ -93,12 +84,7 @@ interface UniformidadForm {
 
       <!-- Chart: full width -->
       <div class="flex-1 relative min-h-40 w-full">
-        <canvas
-          uiChart
-          aria-label="Gráfica Uniformidad"
-          role="img"
-          [config]="chartConfig()"
-        ></canvas>
+        <canvas uiChart aria-label="Gráfica Uniformidad" role="img" [config]="chartConfig()"></canvas>
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->
@@ -146,9 +132,7 @@ interface UniformidadForm {
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">
-                {{ selectedConfigData()!.wcTarado | number: '1.0-0' }} g
-              </p>
+              <p class="text-xs font-regular text-gray-500">{{ selectedConfigData()!.wcTarado | number: '1.0-0' }} g</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
@@ -256,7 +240,7 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
     const media = this.velocidadMedia();
     const min = this.velocidadMin();
     const max = this.velocidadMax();
-    const wcX = config?.wcTarado ?? (pts[0]?.wc ?? 0);
+    const wcX = config?.wcTarado ?? pts[0]?.wc ?? 0;
 
     const makePoint = (y: number | null, color: string, label: string) => ({
       label,

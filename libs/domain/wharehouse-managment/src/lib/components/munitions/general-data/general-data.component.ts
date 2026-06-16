@@ -1,18 +1,18 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input } from '@angular/core';
+import type { FieldTree } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import type { MatSelectChange } from '@angular/material/select';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
 
-import type { MunitionGeneralDataForm } from '../../../models/munition-stock.model';
+import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
 
 @Component({
   selector: 'inta-general-data',
@@ -38,15 +38,15 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
           [id]="'trial-status'"
           [valueKey]="'id'"
           [labelKey]="'name'"
-          [formField]="form.client"
+          [formField]="form().generalData.clientId"
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_PLACEHOLDER' | translate"
           [options]="clientsService.clients()"
           (selectionChange)="onClientChangeHandler($event)"
         />
-        @if (form.client().errors().length) {
+        @if (form().generalData.clientId().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.client().errors(); track error) {
+            @for (error of form().generalData.clientId().errors(); track error.kind) {
               <p>{{ error.message | translate }}</p>
             }
           </div>
@@ -61,7 +61,7 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
           <input
             id="requested-date"
             matInput
-            [formField]="form.entryDate"
+            [formField]="form().generalData.entryDate"
             [matDatepicker]="picker"
             [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ENTRY_DATE_PLACEHOLDER' | translate"
             (click)="picker.open()"
@@ -71,8 +71,8 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
           <mat-datepicker (closed)="dateInput.blur()" #picker></mat-datepicker>
         </mat-form-field>
 
-        @if (touched() && form.entryDate().errors()) {
-          @for (error of form.entryDate().errors(); track error) {
+        @if (form().generalData.entryDate().touched() && form().generalData.entryDate().errors()) {
+          @for (error of form().generalData.entryDate().errors(); track error.kind) {
             @if (error.kind === 'required') {
               <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
             }
@@ -85,13 +85,13 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
           [id]="'trial-status'"
           [valueKey]="'id'"
           [labelKey]="'label'"
-          [formField]="form.plannedFireTrialId"
+          [formField]="form().generalData.plannedFireTrialId"
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_PLACEHOLDER' | translate"
-          [options]="optionsTrialCombo()"
+          [options]="associatedTrials()"
         />
 
-        @if (touched() && form.plannedFireTrialId().errors().length) {
+        @if (form().generalData.entryDate().touched() && form().generalData.plannedFireTrialId().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -105,7 +105,7 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
           <input
             id="observations"
             matInput
-            [formField]="form.observations"
+            [formField]="form().generalData.observations"
             [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.OBSERVATIONS_PLACEHOLDER' | translate"
           />
         </mat-form-field>
@@ -118,88 +118,12 @@ import type { MunitionGeneralDataForm } from '../../../models/munition-stock.mod
 })
 export class MunitionGeneralDataComponent {
   protected readonly clientsService = inject(ClientsDataService);
+  readonly #trialsDataService = inject(TrialsDataService);
 
-  readonly formModel = signal<MunitionGeneralDataForm>({
-    client: '',
-    entryDate: new Date(),
-    observations: '',
-    plannedFireTrialId: '',
-  });
-
-  #trialsDataService = inject(TrialsDataService);
-
-  optionsTrialCombo = computed(() => {
-    const trialResponse = this.#trialsDataService.source.value();
-    if (trialResponse !== undefined) {
-      return trialResponse.items.map((e) => {
-        return {
-          id: e.id,
-          label: `${e.trialNumber} - ${e.description || ''}`,
-        };
-      });
-    } else {
-      return [];
-    }
-  });
+  readonly form = input.required<FieldTree<MunitionStockFormModel>>();
+  readonly associatedTrials = input.required<{ id: string; label: string }[]>();
 
   onClientChangeHandler(data: MatSelectChange) {
     this.#trialsDataService.search({ clientId: data.value, status: [TrialStatus.PLANNED, TrialStatus.UNDER_REVIEW] });
   }
-
-  urlTrialSearch = injectFireTrialsEndpoint();
-
-  readonly form = form(this.formModel, (schemaPath) => {
-    required(schemaPath.client);
-    required(schemaPath.entryDate);
-    validate(schemaPath.client, ({ value }) => {
-      const client = value();
-      const associatedTrials = this.optionsTrialCombo();
-      const plannedTrialId = this.formModel().plannedFireTrialId;
-
-      if (client && !associatedTrials.length && !plannedTrialId)
-        return { kind: 'emptyList', message: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_NO_TRIAL_ERROR' };
-
-      if (!client && this.form.client().touched()) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
-
-      return null;
-    });
-    disabled(
-      schemaPath.plannedFireTrialId,
-      () =>
-        !!this.form
-          .client()
-          .errors()
-          .find((e) => e.kind === 'emptyList'),
-    );
-  });
-
-  value = computed(() => {
-    if (this.errors()) {
-      return false;
-    } else {
-      return this.form().controlValue();
-    }
-  });
-
-  touched = signal(false); // munitiontypeId denominationId doesn't respond to markAsTouched.
-  markAsTouched() {
-    this.form.client().markAsTouched();
-    this.form.plannedFireTrialId().markAsTouched();
-    this.form.entryDate().markAsTouched();
-    this.touched.set(true);
-  }
-
-  reset() {
-    this.formModel.set({
-      client: '',
-      entryDate: new Date(),
-      observations: '',
-      plannedFireTrialId: '',
-    });
-  }
-
-  errors = computed(() => {
-    const errors = this.form().errorSummary();
-    return errors.length > 0;
-  });
 }

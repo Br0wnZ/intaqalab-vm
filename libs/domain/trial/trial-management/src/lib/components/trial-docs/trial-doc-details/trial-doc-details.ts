@@ -400,10 +400,13 @@ export class TrialDocDetails {
         }));
       }
       if (detail) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawName = detail.type?.name as any;
+        const typeNameString = typeof rawName === 'string' ? rawName : (rawName?.es ?? '');
         this.deoDetailsModel.update((current) => ({
           ...current,
           documentCategory: detail.category,
-          documentType: detail.type.label,
+          documentType: detail.type?.label ?? typeNameString,
           responsibleUser: detail.createdBy,
           documentTitle: detail.name,
         }));

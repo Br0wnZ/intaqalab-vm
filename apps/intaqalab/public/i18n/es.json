@@ -1462,6 +1462,7 @@
       "DAY_UTILIZATION": "Fecha prevista utilización",
       "STATUS_AVAILABLE": "Disponible",
       "STATUS_RETIRE": "Retirado",
+      "STATUS_RETIRED": "Retirado",
       "ACTION_RETIRE": "Baja munición",
       "ACTION_TRANSFER": "Trasladar a otro polvorín",
       "ACTION_MOVEMENTS": "Histórico de movimientos"

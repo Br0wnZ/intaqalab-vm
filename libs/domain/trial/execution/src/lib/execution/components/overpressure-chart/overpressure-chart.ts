@@ -10,10 +10,10 @@ import type { ChartConfiguration } from 'chart.js';
 
 import type { OverpressureChartState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface OverpressureChartForm {
   selectedSerie: string[] | null;
@@ -22,7 +22,15 @@ interface OverpressureChartForm {
 @Component({
   selector: 'inta-overpressure-chart',
   standalone: true,
-  imports: [FormField, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, ChartDirective, IntaIconComponent],
+  imports: [
+    FormField,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    TranslateModule,
+    ChartDirective,
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-orange-200 bg-white p-3 flex flex-col gap-4">
       <!-- Header: misma grid que el body para alinear selector con leyenda -->
@@ -35,11 +43,7 @@ interface OverpressureChartForm {
             </h3>
           </div>
           <!-- Serie multi-select (compact density) — col-span-1, alineado con la leyenda -->
-          <mat-form-field
-            appearance="outline"
-            subscriptSizing="dynamic"
-            class="mt-1"
-          >
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_LABEL' | translate }}</mat-label>
             <mat-select
               multiple
@@ -68,7 +72,9 @@ interface OverpressureChartForm {
         </div>
 
         <!-- Right panel: serie selector + legend (1 of 3 columns) -->
-        <div class="flex-[1_1_12rem] max-w-48 min-w-40 border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between">
+        <div
+          class="flex-[1_1_12rem] max-w-48 min-w-40 border bg-gray-50 border-gray-50 rounded-xl p-2 flex flex-col gap-1 justify-between"
+        >
           <!-- Custom legend -->
           <div class="flex flex-col gap-1.5">
             <div class="flex items-center gap-1.5">

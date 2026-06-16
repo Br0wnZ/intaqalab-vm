@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FormField, form, required } from '@angular/forms/signals';
+import type { FieldTree } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +20,7 @@ import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
-import type { MunitionLocationForm } from '../../../models/munition-stock.model';
+import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
 import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 
 @Component({
@@ -37,12 +47,12 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
           [id]="'munitionType'"
           [valueKey]="'id'"
           [labelKey]="'munitionDumpId'"
-          [formField]="form.munitionDumpId"
+          [formField]="form().location.munitionDumpId"
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_ARRIVAL_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_ARRIVAL_PLACEHOLDER' | translate"
           [options]="munitionsDumpList()"
         />
-        @if (touched() && form.munitionDumpId().errors().length) {
+        @if (form().location.munitionDumpId().touched() && form().location.munitionDumpId().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -54,12 +64,12 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
           [id]="'munitionType'"
           [valueKey]="'id'"
           [labelKey]="'id'"
-          [formField]="form.cellName"
+          [formField]="form().location.cellName"
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_CELL_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_CELL_PLACEHOLDER' | translate"
           [options]="cellOptions()"
         />
-        @if (touched() && form.cellName().errors().length) {
+        @if (form().location.cellName().touched() && form().location.cellName().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -74,54 +84,19 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 export class MunitionLocationComponent {
   readonly #munitionsDumpsStore = inject(MunitionsDumpsStore);
 
+  form = input.required<FieldTree<MunitionStockFormModel>>();
+
   readonly munitionsDumpList = computed(() => this.#munitionsDumpsStore.items() as MunitionsDumpModel[]);
-  readonly formModel = signal<MunitionLocationForm>({
-    cellName: '',
-    munitionDumpId: '',
-  });
 
-  readonly form = form(this.formModel, (f) => {
-    required(f.cellName);
-    required(f.munitionDumpId);
-  });
-
-  cellOptions = computed(() => {
+  readonly cellOptions = computed(() => {
     const result: { id: string }[] = [];
-    const selected = this.form.munitionDumpId().controlValue();
-    if (selected === '') {
-      return result;
-    }
+    const munitionDumpSelected = this.form().location.munitionDumpId().value();
+
+    if (!munitionDumpSelected) return result;
+
     const records = this.munitionsDumpList();
-    const munitionDump = records.find((e) => e.id === selected);
-    if (munitionDump === undefined) {
-      return result;
-    } else {
-      return munitionDump.cells.map((e) => ({ id: e.name }));
-    }
-  });
+    const munitionDump = records.find((e) => e.id === munitionDumpSelected);
 
-  value = computed(() => {
-    if (this.errors()) {
-      return false;
-    } else {
-      return this.form().controlValue();
-    }
-  });
-
-  touched = signal(false); // munitionDumpId cellName doesn't respond to markAsTouched.
-  markAsTouched() {
-    this.form.munitionDumpId().markAsTouched();
-    this.form.cellName().markAsTouched();
-    this.touched.set(true);
-  }
-
-  reset() {
-    this.formModel.set({ cellName: '', munitionDumpId: '' });
-  }
-
-  errors = computed(() => {
-    const error1 = this.form.munitionDumpId().errors().length > 0;
-    const error2 = this.form.cellName().errors().length > 0;
-    return error1 || error2;
+    return !munitionDump ? result : munitionDump.cells.map((e) => ({ id: e.name }));
   });
 }

@@ -1,7 +1,7 @@
 import { HttpParams } from '@angular/common/http';
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 
-import type { MunitionComponentsModel, WarehouseMunitionCategoryType } from './munition-components.model';
+import type { MunitionComponentsModel } from './munition-components.model';
 
 export const setParamsAsHttpParams = (params: PaginatedSortedViewRequest) => {
   let result = new HttpParams();
@@ -37,3 +37,6 @@ export const getMunitionsPartitionedByCategory = (
 
   return result[category] ?? result['DEFAULT'];
 };
+
+export const WarehouseMunitionCategory = { MUNITION: 'MUNITION', MUNITION_COMPONENT: 'MUNITION_COMPONENT' } as const;
+export type WarehouseMunitionCategoryType = typeof WarehouseMunitionCategory[keyof typeof WarehouseMunitionCategory];

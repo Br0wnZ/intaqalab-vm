@@ -13,10 +13,10 @@ import type { ChartConfiguration } from 'chart.js';
 
 import type { TaradoVelocidadChartState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface TaradoVelocidadForm {
   selectedSerie: string[] | null;
@@ -39,8 +39,8 @@ interface TaradoVelocidadForm {
     MatTooltipModule,
     TranslateModule,
     ChartDirective,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header row 1: icon + title -->
@@ -106,13 +106,7 @@ interface TaradoVelocidadForm {
           </mat-select>
         </mat-form-field>
 
-        <button
-          mat-flat-button
-          type="button"
-          color="primary"
-          class="grow basis-[10rem] max-w-lg"
-          (click)="saveForm()"
-        >
+        <button mat-flat-button type="button" color="primary" class="grow basis-[10rem] max-w-lg" (click)="saveForm()">
           <ui-inta-icon name="save" class="mr-2" />
           {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.CONFIG_BTN' | translate }}
         </button>

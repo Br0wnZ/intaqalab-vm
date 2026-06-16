@@ -8,7 +8,8 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
+import type { FieldTree } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,8 +22,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import type { DenominationModel } from '../../../models/denominations.model';
-import type { WarehouseMunitionCategoryType } from '../../../models/munition-components.model';
-import type { MunitionIdentificationForm } from '../../../models/munition-stock.model';
+import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
+import type { WarehouseMunitionCategoryType } from '../../../models/utils.model';
 
 type RepositoryDenominations = Record<string, DenominationModel[]>;
 
@@ -47,14 +48,13 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
           [id]="'munitionType'"
           [valueKey]="'id'"
           [labelKey]="'label'"
-          [formField]="form.munitionTypeId"
+          [formField]="form().munitionTypeId"
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_PLACEHOLDER' | translate"
           [options]="munitionTypeOptions()"
-          (selectionChange)="munitionTypeChangeHandler()"
         />
 
-        @if (touched() && form.munitionTypeId().errors().length) {
+        @if (form().munitionTypeId().touched() && form().munitionTypeId().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -71,7 +71,7 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
             type="text"
             matInput
             [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER' | translate"
-            [formField]="form.denominationId"
+            [formField]="form().denominationId"
             [matAutocomplete]="auto"
           />
           <mat-autocomplete [displayWith]="displayFn" #auto="matAutocomplete">
@@ -81,7 +81,10 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
           </mat-autocomplete>
         </mat-form-field>
 
-        @if (touched() && (form.denominationId().disabled() || form.denominationId().errors().length)) {
+        @if (
+          form().denominationId().touched() &&
+          (form().denominationId().disabled() || form().denominationId().errors().length)
+        ) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -95,11 +98,11 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
           <input
             id="batch"
             matInput
-            [formField]="form.batch"
+            [formField]="form().batch"
             [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL' | translate"
           />
         </mat-form-field>
-        @if (touched() && form.batch().errors().length) {
+        @if (form().batch().touched() && form().batch().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
             <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
           </div>
@@ -110,15 +113,12 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
           {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate }}
         </label>
         <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input id="quantity" type="number" matInput [formField]="form.quantity" />
+          <input id="quantity" type="number" matInput [formField]="form().quantity" />
         </mat-form-field>
-        @if (touched() && form.quantity().errors().length) {
-          @for (error of form.quantity().errors(); track error.kind) {
-            @if (error.kind === 'min') {
+        @if (form().quantity().touched() && form().quantity().errors().length) {
+          @for (error of form().quantity().errors(); track error.kind) {
+            @if (error.kind === 'greater_than_zero') {
               <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' | translate }}</mat-error>
-            }
-            @if (error.kind === 'required') {
-              <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
             }
           }
         }
@@ -132,7 +132,10 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
 export class MunitionIdentificationComponent {
   readonly #denominationStore = inject(DenominationsStore);
   readonly #munitionComponentStore = inject(MunitionComponentStore);
+  readonly #repositoryDenominations = signal<RepositoryDenominations>({});
+
   readonly category = input.required<WarehouseMunitionCategoryType | null>();
+  form = input.required<FieldTree<MunitionStockFormModel>>();
 
   munitionTypeOptions = computed(() => {
     const isMunitionComponent = this.category() === 'MUNITION_COMPONENT';
@@ -141,32 +144,9 @@ export class MunitionIdentificationComponent {
     return isMunitionComponent ? items : items.filter((item) => item.category === 'MUNITION');
   });
 
-  readonly formModel = signal<MunitionIdentificationForm>({
-    batch: '',
-    denominationId: '',
-    munitionTypeId: '',
-    quantity: null,
-  });
-
-  readonly form = form(this.formModel, (f) => {
-    required(f.batch);
-    validate(f.denominationId, ({ value }) => {
-      if (typeof value() === 'string') {
-        return { kind: 'not_selected', message: 'Seleccione' };
-      }
-      return null;
-    });
-    required(f.munitionTypeId);
-    required(f.quantity);
-    min(f.quantity, 1);
-    disabled(f.denominationId, ({ valueOf }) => !valueOf(f.munitionTypeId));
-  });
-
-  readonly #repositoryDenominations = signal<RepositoryDenominations>({});
-
   readonly filteredOptions = computed<DenominationModel[]>(() => {
-    const denominationValue = this.formModel().denominationId;
-    const munitionTypeId = this.formModel().munitionTypeId;
+    const denominationValue = this.form().denominationId().value();
+    const munitionTypeId = this.form().munitionTypeId().value();
 
     if (typeof denominationValue !== 'string') {
       return [denominationValue];
@@ -189,22 +169,7 @@ export class MunitionIdentificationComponent {
     }
   }
 
-  readonly #initialized: string[] = [];
-
   constructor() {
-    effect(() => {
-      const munitionTypeId = this.formModel().munitionTypeId;
-
-      if (!this.#initialized.includes(munitionTypeId)) {
-        this.#initialized.push(munitionTypeId);
-        this.#denominationStore.search({
-          munitionTypeId,
-          pageSize: 500,
-          active: true,
-        });
-      }
-    });
-
     effect(() => {
       const newData = this.#denominationStore.items();
       if (newData?.length) {
@@ -216,35 +181,4 @@ export class MunitionIdentificationComponent {
       }
     });
   }
-
-  munitionTypeChangeHandler() {
-    this.formModel.update((m) => ({ ...m, denominationId: '' }));
-  }
-
-  value = computed(() => {
-    if (this.errors()) {
-      return false;
-    } else {
-      return this.formModel();
-    }
-  });
-
-  touched = signal(false); // munitiontypeId denominationId doesn't respond to markAsTouched.
-  markAsTouched() {
-    this.form.batch().markAsTouched();
-    this.form.quantity().markAsTouched();
-    this.touched.set(true);
-  }
-
-  reset() {
-    this.formModel.set({ batch: '', denominationId: '', munitionTypeId: '', quantity: 0 });
-  }
-
-  errors = computed(() => {
-    const errorDenomination = this.form.denominationId().errors().length > 0;
-    const errorMunition = this.form.munitionTypeId().errors().length > 0;
-    const errorBatch = this.form.batch().errors().length > 0;
-    const errorQuantity = this.form.quantity().errors().length > 0;
-    return errorDenomination || errorMunition || errorBatch || errorQuantity;
-  });
 }

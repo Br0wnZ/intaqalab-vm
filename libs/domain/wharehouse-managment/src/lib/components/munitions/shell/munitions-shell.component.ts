@@ -1,4 +1,3 @@
-import type { OnDestroy } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,21 +7,23 @@ import {
   inject,
   signal,
   untracked,
-  viewChild,
-  viewChildren,
 } from '@angular/core';
+import { FormField, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
-import { UiDialogService } from '@intaqalab/ui';
+import { TrialsDataService } from '@intaqalab/data-access';
+import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
 import type { UIDialogConfirm } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
-import type { WarehouseMunitionCategoryType } from '../../../models/munition-components.model';
+import type { MunitionIdentificationForm, MunitionStockFormModel } from '../../../models/munition-stock.model';
+import { WarehouseMunitionCategory } from '../../../models/utils.model';
 import { MunitionsStockService } from '../../../services/munitions-stock.service';
 import { getPayloadMunition, getPayloadMunitionComponents } from '../../../utils/munitions-utils';
 import { ComponentMunitionComponent } from '../component-munition/component-munition.component';
@@ -36,11 +37,13 @@ import { MunitionLocationComponent } from '../location/location.component';
     TranslateModule,
     MatFormFieldModule,
     MatSelectModule,
+    IntaSignalSelectComponent,
     MatCardModule,
     MunitionGeneralDataComponent,
     MunitionLocationComponent,
     MunitionIdentificationComponent,
     ComponentMunitionComponent,
+    FormField,
   ],
   template: `
     <div>
@@ -51,70 +54,76 @@ import { MunitionLocationComponent } from '../location/location.component';
         {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_IDENTIFICATION' | translate }}
       </h3>
       <div class="flex flex-col gap-6">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 align-center">
-          <div class="w-full">
-            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CATEGORY' | translate }}
-            </label>
-            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <mat-select
-                id="category"
-                [value]="null"
-                [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CATEGORY_PLACEHOLDER' | translate"
-                [disabled]="category() !== null"
-                (selectionChange)="onCategory($event.value)"
-              >
-                <mat-option value="MUNITION">
-                  {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION' | translate }}
-                </mat-option>
-                <mat-option value="MUNITION_COMPONENT">
-                  {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION_COMPONENT' | translate }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-        @if (category() !== null) {
-          <inta-munition-identification
-            data-testid="identificationForm"
-            [category]="category()"
-            #identificationForm
-          ></inta-munition-identification>
+        <div class="w-full">
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'category'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form.category"
+            [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CATEGORY' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CATEGORY_PLACEHOLDER' | translate"
+            [options]="categoryOptions"
+          />
+          @if (formModel().category) {
+            @if (formModel().category === 'MUNITION_COMPONENT') {
+              <div class="flex justify-between gap-4 border-b border-gray-600 pb-1 mb-4 mt-4 items-end">
+                <h3 class="font-semibold text-base">
+                  {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_COMPONENTS' | translate }}
+                </h3>
+                <button mat-flat-button type="button" class="mb-1" (click)="addMultipleComponentData()">
+                  {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ADD_COMPONENT' | translate }}
+                </button>
+              </div>
+              @for (component of form.multipleComponentsData; track $index) {
+                <inta-component-munition data-testid="munitionComponent" [form]="component"></inta-component-munition>
+                @if (!$last) {
+                  <div class="w-full border-b border-gray-200 pb-1 my-2 font-semibold text-base"></div>
+                }
+              }
+            } @else if (formModel().category === 'MUNITION') {
+              <inta-munition-identification
+                data-testid="identificationForm"
+                [category]="formModel().category"
+                [form]="form"
+              ></inta-munition-identification>
+            }
 
-          <inta-general-data #generalDataForm></inta-general-data>
+            <inta-general-data [form]="form" [associatedTrials]="associatedTrials()" />
 
-          <inta-munition-location #locationForm></inta-munition-location>
+            <inta-munition-location [form]="form"></inta-munition-location>
 
-          @if (category() === 'MUNITION') {
-            <div class="flex justify-between gap-4 border-b border-gray-600 pb-1 mb-4 items-end">
-              <h3 class="font-semibold text-base">
-                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_COMPONENTS' | translate }}
-              </h3>
-              <button mat-flat-button type="button" class="mb-1" (click)="addComponent()">
-                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ADD_COMPONENT' | translate }}
-              </button>
-            </div>
-            @for (item of items; track item) {
-              <inta-component-munition
-                data-testid="munitionComponent"
-                [enterUbications]="isMunitionComponent()"
-                [enterQuantity]="isMunitionComponent()"
-              ></inta-component-munition>
-              @if (!$last) {
-                <div class="w-full border-b border-gray-200 pb-1 my-2 font-semibold text-base"></div>
+            @if (formModel().category === 'MUNITION') {
+              <div class="flex justify-between gap-4 border-b border-gray-600 pb-1 mb-4 items-end">
+                <h3 class="font-semibold text-base">
+                  {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_COMPONENTS' | translate }}
+                </h3>
+                <button mat-flat-button type="button" class="mb-1" (click)="addAssociatedComponents()">
+                  {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ADD_COMPONENT' | translate }}
+                </button>
+              </div>
+              @for (component of form.associatedComponents; track $index) {
+                <inta-component-munition
+                  data-testid="munitionComponent"
+                  [form]="component"
+                  [hasQuantity]="false"
+                ></inta-component-munition>
+                @if (!$last) {
+                  <div class="w-full border-b border-gray-200 pb-1 my-2 font-semibold text-base"></div>
+                }
               }
             }
-          }
 
-          <mat-card-actions class="flex justify-end gap-4 mt-6">
-            <button mat-flat-button type="button" [disabled]="disabledRegister()" (click)="register()">
-              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SAVE' | translate }}
-            </button>
-            <button mat-stroked-button type="button" (click)="reset()">
-              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.RESET' | translate }}
-            </button>
-          </mat-card-actions>
-        }
+            <mat-card-actions class="flex justify-end gap-4 mt-6">
+              <button mat-flat-button type="button" [disabled]="form().invalid()" (click)="register()">
+                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SAVE' | translate }}
+              </button>
+              <button mat-stroked-button type="button" (click)="reset()">
+                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.RESET' | translate }}
+              </button>
+            </mat-card-actions>
+          }
+        </div>
       </div>
     </div>
   `,
@@ -122,36 +131,143 @@ import { MunitionLocationComponent } from '../location/location.component';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MunitionsShellComponent implements OnDestroy {
-  readonly #munitionComponentStore = inject(MunitionComponentStore);
-  readonly #munitionDumpsStore = inject(MunitionsDumpsStore);
-
-  category = signal<WarehouseMunitionCategoryType | null>(null);
-  onCategory(categoryId: string) {
-    this.category.set(categoryId as WarehouseMunitionCategoryType);
-
-    if (categoryId === 'MUNITION_COMPONENT') {
-      this.addComponent();
-      this.#munitionComponentStore.search({ category: this.category(), active: true });
-    } else {
-      this.#munitionComponentStore.search({ pageSize: 500, active: true });
-    }
-  }
-
-  isMunitionComponent = computed(() => {
-    return this.category() === 'MUNITION_COMPONENT';
-  });
-
-  #counter = 0;
-  items: number[] = [];
-  addComponent() {
-    this.items.push(++this.#counter);
-  }
-
+export class MunitionsShellComponent {
   readonly #router = inject(Router);
   readonly #uiDialogs = inject(UiDialogService);
+  readonly #munitionComponentStore = inject(MunitionComponentStore);
+  readonly #munitionDumpsStore = inject(MunitionsDumpsStore);
+  readonly #trialsDataService = inject(TrialsDataService);
+  readonly #denominationStore = inject(DenominationsStore);
+  readonly #translate = inject(TranslateService);
+
+  readonly categoryOptions = [
+    {
+      id: WarehouseMunitionCategory.MUNITION,
+      label: this.#translate.instant('WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION'),
+    },
+    {
+      id: WarehouseMunitionCategory.MUNITION_COMPONENT,
+      label: this.#translate.instant('WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION_COMPONENT'),
+    },
+  ];
+
+  isMunitionComponent = computed(() => {
+    const category = this.formModel().category;
+
+    return category === 'MUNITION_COMPONENT';
+  });
+
+  readonly associatedTrials = computed(() => {
+    const response = this.#trialsDataService.source.value();
+
+    if (!response) return [];
+
+    return response.items.map((e) => {
+      return {
+        id: e.id,
+        label: `${e.trialNumber} - ${e.description || ''}`,
+      };
+    });
+  });
+
+  readonly associatedComponents = computed(() => {
+    const associatedComponents = this.formModel().associatedComponents;
+
+    if (!associatedComponents) return [];
+
+    return associatedComponents;
+  });
+
+  readonly multipleComponentsData = computed(() => {
+    const multipleComponentsData = this.formModel().multipleComponentsData;
+
+    if (!multipleComponentsData) return [];
+
+    return multipleComponentsData;
+  });
+
   constructor() {
     this.#munitionDumpsStore.search({ pageSize: 500, active: true });
+
+    effect(() => {
+      const category = this.form.category().value();
+
+      if (!category) return;
+
+      let params: Record<string, unknown> = { pageSize: 500, active: true };
+
+      if (category === WarehouseMunitionCategory.MUNITION_COMPONENT)
+        params = { ...params, category: WarehouseMunitionCategory.MUNITION_COMPONENT };
+
+      this.#munitionComponentStore.search(params);
+    });
+
+    effect(() => {
+      const munitionTypeId = this.form.munitionTypeId().value();
+
+      if (!munitionTypeId) return;
+
+      untracked(() => {
+        this.formModel.update((current) => {
+          return {
+            ...current,
+            denominationId: this.#defaultFormModel.denominationId,
+          };
+        });
+      });
+
+      this.#denominationStore.search({
+        munitionTypeId,
+        pageSize: 500,
+        active: true,
+      });
+    });
+
+    // effect(() => {
+    //   const multipleComponentsData = this.form.multipleComponentsData().value();
+
+    //   if (!multipleComponentsData.length) return;
+
+    //   multipleComponentsData.forEach((component, index) => {
+    //     const munitionTypeId = component.munitionTypeId;
+    //     console.log(munitionTypeId)
+    //     console.log(this.formModel().multipleComponentsData[index])
+
+    //   })
+
+    //   untracked(() => {
+    //     this.formModel.update((current) => {
+    //       return {
+    //         ...current,
+    //         denominationId: this.#defaultFormModel.denominationId,
+    //       };
+    //     });
+    //   });
+
+    //   // this.#denominationStore.search({
+    //   //   munitionTypeId,
+    //   //   pageSize: 500,
+    //   //   active: true,
+    //   // });
+    // });
+
+    effect(() => {
+      const munitionDumpId = this.form.location.munitionDumpId().value();
+
+      if (!munitionDumpId) return;
+
+      untracked(() => {
+        this.formModel.update((current) => {
+          return {
+            ...current,
+            location: {
+              munitionDumpId: current.location.munitionDumpId,
+              cellName: this.#defaultFormModel.location.cellName,
+            },
+          };
+        });
+      });
+    });
 
     effect(async () => {
       const saveStatusCode = this.munitionsStockDataService.saveMunitionResource.statusCode();
@@ -196,100 +312,211 @@ export class MunitionsShellComponent implements OnDestroy {
     });
   }
 
-  locationComponent = viewChild<MunitionLocationComponent>('locationForm');
-  locationValue = computed(() => this.locationComponent()?.value() || undefined);
-  locationErrors = computed(() => this.locationComponent()?.errors() || false);
+  #defaultFormModel = {
+    category: null,
+    munitionTypeId: '',
+    denominationId: '',
+    batch: '',
+    quantity: null,
+    generalData: {
+      clientId: '',
+      entryDate: new Date().toISOString(),
+      plannedFireTrialId: '',
+      observations: '',
+    },
+    location: {
+      munitionDumpId: '',
+      cellName: '',
+    },
+    associatedComponents: [],
+    multipleComponentsData: [
+      {
+        munitionTypeId: '',
+        denominationId: '',
+        batch: '',
+        quantity: null,
+      },
+    ],
+  };
 
-  identificationComponent = viewChild<MunitionIdentificationComponent>('identificationForm');
-  identificationValue = computed(() => this.identificationComponent()?.value() || undefined);
-  identificationErrors = computed(() => this.identificationComponent()?.errors() || false);
+  formModel = signal<MunitionStockFormModel>(this.#defaultFormModel);
 
-  generalDataComponent = viewChild<MunitionGeneralDataComponent>('generalDataForm');
-  generalDataValue = computed(() => this.generalDataComponent()?.value() || undefined);
-  generalDataErrors = computed(() => this.generalDataComponent()?.errors() || false);
+  form = form(this.formModel, (schemaPath) => {
+    disabled(schemaPath.category, () => !!this.formModel().category);
 
-  components = viewChildren(ComponentMunitionComponent);
-  componentsValue = computed(() => {
-    const result = [];
-    for (const component of this.components()) {
-      result.push(component.value());
-    }
-    return result;
-  });
+    required(schemaPath.munitionTypeId, {
+      when: () => {
+        return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+      },
+    });
+    required(schemaPath.denominationId, {
+      when: () => {
+        return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+      },
+    });
+    required(schemaPath.batch, {
+      when: () => {
+        return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+      },
+    });
+    required(schemaPath.quantity, {
+      when: () => {
+        return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+      },
+    });
+    validate(schemaPath.quantity, ({ value }) => {
+      const quantity = value();
 
-  disabledRegister = computed(() => {
-    return this.category() === null;
-  });
-
-  hasErrors() {
-    const category = this.category();
-    if (category === null) {
-      return true;
-    } else if (category === 'MUNITION') {
-      const errors = [this.locationErrors(), this.identificationErrors(), this.generalDataErrors()];
-      const someError = errors.some((e) => e);
-      return someError;
-    } else {
-      const values = this.componentsValue();
-      const someEmptyLocation = values.some((e) => e.munitionDumpId === '' || e.cellName === '');
-      const requiredSections = [this.identificationErrors(), this.generalDataErrors()];
-      if (someEmptyLocation) {
-        requiredSections.push(this.locationErrors());
+      if (quantity !== null && +quantity <= 0) {
+        return { kind: 'greater_than_zero', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
       }
-      const someError = requiredSections.some((e) => e);
-      return someError;
-    }
-  }
+
+      return null;
+    });
+
+    required(schemaPath.generalData.clientId);
+    required(schemaPath.generalData.entryDate);
+    validate(schemaPath.generalData.clientId, ({ value }) => {
+      const client = value();
+      const associatedTrials = this.associatedTrials();
+      const plannedTrialId = this.formModel().generalData.plannedFireTrialId;
+
+      if (client && !associatedTrials.length && !plannedTrialId)
+        return { kind: 'emptyList', message: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_NO_TRIAL_ERROR' };
+
+      if (!client && this.form.generalData.clientId().touched())
+        return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+
+      return null;
+    });
+    disabled(
+      schemaPath.generalData.plannedFireTrialId,
+      () =>
+        !!this.form.generalData
+          .clientId()
+          .errors()
+          .find((e) => e.kind === 'emptyList'),
+    );
+
+    required(schemaPath.location.munitionDumpId);
+    required(schemaPath.location.cellName);
+
+    applyEach(schemaPath.multipleComponentsData, (component) => {
+      required(component.munitionTypeId, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+        },
+      });
+      required(component.denominationId, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+        },
+      });
+      required(component.batch, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+        },
+      });
+      required(component.quantity!, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+        },
+      });
+      validate(component.quantity!, ({ value }) => {
+        const quantity = value();
+        const isMunitionComponent = this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+
+        if (isMunitionComponent && quantity !== null && +quantity <= 0) {
+          return { kind: 'greater_than_zero', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
+        }
+
+        return null;
+      });
+    });
+
+    applyEach(schemaPath.associatedComponents, (component) => {
+      required(component.munitionTypeId, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+        },
+      });
+      required(component.denominationId, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+        },
+      });
+      required(component.batch, {
+        when: () => {
+          return this.formModel().category === WarehouseMunitionCategory.MUNITION;
+        },
+      });
+    });
+  });
 
   register() {
-    this.identificationComponent()?.markAsTouched();
-    this.generalDataComponent()?.markAsTouched();
-    this.locationComponent()?.markAsTouched();
-    for (const comp of this.components()) {
-      comp.markAsTouched();
-    }
+    const category = this.formModel().category;
 
-    if (this.hasErrors()) {
-      return;
-    }
-    const category = this.category();
-    if (category === 'MUNITION') {
-      this.#registerMunitionStock();
-    } else if (category === 'MUNITION_COMPONENT') {
-      this.#registerMunitionComponentsStock();
-    }
+    if (!category) return;
+
+    const callbacks = {
+      MUNITION: () => this.#registerMunitionStock(),
+      MUNITION_COMPONENT: () => this.#registerMunitionComponentsStock(),
+    };
+
+    callbacks[category]();
   }
 
   readonly munitionsStockDataService = inject(MunitionsStockService);
   #registerMunitionStock() {
-    const payload = getPayloadMunition(
-      this.locationValue(),
-      this.identificationValue(),
-      this.generalDataValue(),
-      this.componentsValue(),
-    );
-    if (payload !== undefined) {
+    const form = this.formModel();
+    const payload = getPayloadMunition(form);
+
+    if (payload) {
       this.munitionsStockDataService.munition.set({ itemToSave: payload });
     }
   }
 
   #registerMunitionComponentsStock() {
-    const payload = getPayloadMunitionComponents(this.locationValue(), this.generalDataValue(), this.componentsValue());
-    if (payload !== undefined) {
+    const form = this.formModel();
+    const payload = getPayloadMunitionComponents(form);
+
+    if (payload.length) {
       this.munitionsStockDataService.munitionComponents.set(payload);
     }
   }
 
-  reset() {
-    this.generalDataComponent()?.reset();
-    this.locationComponent()?.reset();
-    this.identificationComponent()?.reset();
-    this.components()[0]?.reset();
-    this.items = [0];
+  addAssociatedComponents() {
+    const defaultItemToPushModel = signal<MunitionIdentificationForm>({
+      munitionTypeId: '',
+      denominationId: '',
+      batch: '',
+    });
+
+    this.formModel.update((current) => {
+      return {
+        ...current,
+        associatedComponents: [...current.associatedComponents, defaultItemToPushModel()],
+      };
+    });
   }
 
-  ngOnDestroy(): void {
-    this.category.set(null);
-    this.munitionsStockDataService.clear();
+  addMultipleComponentData() {
+    const defaultItemToPushModel = signal<MunitionIdentificationForm>({
+      munitionTypeId: '',
+      denominationId: '',
+      batch: '',
+      quantity: null,
+    });
+
+    this.formModel.update((current) => {
+      return {
+        ...current,
+        multipleComponentsData: [...current.multipleComponentsData, defaultItemToPushModel()],
+      };
+    });
+  }
+
+  reset() {
+    this.formModel.set(this.#defaultFormModel);
   }
 }

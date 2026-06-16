@@ -24,14 +24,12 @@ export class MunitionsStockService {
     if (munitionParams.force) {
       params = { force: true };
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...rest } = munitionParams.itemToSave;
+
+    const { id, ...payload } = munitionParams.itemToSave;
     return {
       url: `${this.#whareHouseUrl}/stock/munitions`,
       method: 'POST',
-      body: {
-        ...rest,
-      },
+      body: payload,
       params,
     };
   });

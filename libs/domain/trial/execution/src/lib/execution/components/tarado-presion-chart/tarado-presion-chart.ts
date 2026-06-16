@@ -1,13 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,10 +11,10 @@ import type { ChartConfiguration } from 'chart.js';
 
 import type { TaradoPresionChartState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface TaradoPresionForm {
   selectedSerie: string[] | null;
@@ -41,11 +33,10 @@ interface TaradoPresionForm {
     MatSelectModule,
     TranslateModule,
     ChartDirective,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
-
       <!-- Header: icon + title -->
       <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
         <ui-inta-icon name="chart" size="xl" color="var(--inta-button)" />
@@ -84,12 +75,7 @@ interface TaradoPresionForm {
 
       <!-- Chart: full width -->
       <div intaReadonlyContent class="flex-1 relative min-h-40 w-full">
-        <canvas
-          uiChart
-          aria-label="Tarado Presión Chart"
-          role="img"
-          [config]="chartConfig()"
-        ></canvas>
+        <canvas uiChart aria-label="Tarado Presión Chart" role="img" [config]="chartConfig()"></canvas>
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->
@@ -311,9 +297,8 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
       { x: maxWc, y: reg.pendiente * maxWc + reg.ordenada },
     ];
 
-    const puntoTarado = state.presionBuscada !== null
-      ? { x: reg.wcTarado, y: reg.pendiente * reg.wcTarado + reg.ordenada }
-      : null;
+    const puntoTarado =
+      state.presionBuscada !== null ? { x: reg.wcTarado, y: reg.pendiente * reg.wcTarado + reg.ordenada } : null;
 
     return { scatterData, regressionLine, puntoTarado };
   }

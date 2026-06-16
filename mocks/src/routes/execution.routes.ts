@@ -166,13 +166,11 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/pro
   const { seriesReadiness } = req.body as { seriesReadiness?: unknown[] };
 
   if (!seriesReadiness || !Array.isArray(seriesReadiness)) {
-    res
-      .status(400)
-      .json({
-        title: 'Bad Request',
-        status: 400,
-        detail: "El campo 'seriesReadiness' es obligatorio y debe ser un array",
-      });
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "El campo 'seriesReadiness' es obligatorio y debe ser un array",
+    });
     return;
   }
 

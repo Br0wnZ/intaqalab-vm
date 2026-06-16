@@ -109,6 +109,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
               <mat-form-field appearance="outline" class="w-full">
                 <mat-select
                   id="component-denomination"
+                  data-testid="denomination-select"
                   [value]="denominationId()"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
                   (selectionChange)="onDenominationChange($event.value)"
@@ -118,6 +119,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
                     <input
                       matInput
                       type="text"
+                      data-testid="denomination-search-input"
                       [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.SEARCH_PLACEHOLDER' | translate"
                       [value]="denominationSearchTerm()"
                       (input)="onDenominationSearchInput($event)"

@@ -124,7 +124,7 @@ const DEFAULT_COLUMNS = [
                 {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.COLUMNS.RISK_GROUP' | translate }}
               </th>
               <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
-                <span>{{ item.riskGroup }}</span>
+                <span>{{ item.riskGroups }}</span>
               </td>
             </ng-container>
             <ng-container matColumnDef="compatibility">
