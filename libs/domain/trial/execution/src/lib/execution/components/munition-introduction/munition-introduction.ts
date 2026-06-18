@@ -19,15 +19,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { MassiveConfigDialogData } from './massive-config-dialog';
 import { MassiveConfigDialog } from './massive-config-dialog';
 import { MunitionAcondicionamientoTabComponent } from './tabs/acondicionamiento-tab.component';
 import { MunitionIdentificacionTabComponent } from './tabs/identificacion-tab.component';
 import { MunitionPesosTabComponent } from './tabs/pesos-tab.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 export type TabType = 'identificacion' | 'pesos' | 'acondicionamiento';
 export type InputFieldValue = { value: string; unit: string } | null;
@@ -68,24 +69,22 @@ export interface AcondFormModel {
     MunitionIdentificacionTabComponent,
     MunitionPesosTabComponent,
     MunitionAcondicionamientoTabComponent,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-amber-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-2 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-100 shrink-0">
-            <mat-icon class="text-amber-600 !text-[16px] !w-[16px] !h-[16px]">inventory_2</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
             [formField]="selectorForm.serie"
@@ -97,7 +96,7 @@ export interface AcondFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectorForm.disparo"
@@ -109,12 +108,17 @@ export interface AcondFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 
         <!-- Aplicar configuración masiva -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="applyMassiveConfig()">
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="applyMassiveConfig()"
+        >
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MASSIVE_CONFIG_BTN' | translate }}
         </button>
 
@@ -124,30 +128,36 @@ export interface AcondFormModel {
         <div class="flex items-center gap-1 shrink-0">
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'identificacion'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
+            [class]="
+              activeTab() === 'identificacion'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('identificacion')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TAB_IDENTIFICACION' | translate }}
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'pesos'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
+            [class]="
+              activeTab() === 'pesos'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('pesos')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TAB_PESOS' | translate }}
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'acondicionamiento'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
+            [class]="
+              activeTab() === 'acondicionamiento'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('acondicionamiento')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TAB_ACONDICIONAMIENTO' | translate }}
@@ -155,13 +165,10 @@ export interface AcondFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
-
-      <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- Se utiliza [class.hidden] en lugar de @switch para preservar el estado interno de las tabs -->
@@ -170,7 +177,6 @@ export interface AcondFormModel {
         <inta-munition-pesos-tab [class.hidden]="activeTab() !== 'pesos'" />
         <inta-munition-acondicionamiento-tab [class.hidden]="activeTab() !== 'acondicionamiento'" />
       </div>
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -224,21 +230,26 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   });
 
   protected readonly isDirty = computed(() => {
-    const localDirty = this.selectorForm().dirty() || 
-                       this.selectorFormModel().serie !== this.#savedSnapshot().serie ||
-                       this.selectorFormModel().disparo !== this.#savedSnapshot().disparo;
-    
-    return localDirty || 
-           (this.identTab()?.isDirty() ?? false) || 
-           (this.pesosTab()?.isDirty() ?? false) || 
-           (this.acondTab()?.isDirty() ?? false);
+    const localDirty =
+      this.selectorForm().dirty() ||
+      this.selectorFormModel().serie !== this.#savedSnapshot().serie ||
+      this.selectorFormModel().disparo !== this.#savedSnapshot().disparo;
+
+    return (
+      localDirty ||
+      (this.identTab()?.isDirty() ?? false) ||
+      (this.pesosTab()?.isDirty() ?? false) ||
+      (this.acondTab()?.isDirty() ?? false)
+    );
   });
 
   protected readonly isValid = computed(() => {
-    return this.selectorForm().valid() &&
-           (this.identTab()?.isValid() ?? true) &&
-           (this.pesosTab()?.isValid() ?? true) &&
-           (this.acondTab()?.isValid() ?? true);
+    return (
+      this.selectorForm().valid() &&
+      (this.identTab()?.isValid() ?? true) &&
+      (this.pesosTab()?.isValid() ?? true) &&
+      (this.acondTab()?.isValid() ?? true)
+    );
   });
 
   // ── FormWidget implementation ──────────────────────────────────────────────
@@ -252,12 +263,15 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   applyMassiveConfig(): void {
     const stored = this.#store.munitionIntroduction();
-    
+
     // Obtenemos el modelo actual del tab (aún si no se ha guardado) para mantener la experiencia de usuario.
     // Si la tab aún no fue montada o no existe, usamos los valores del store.
-    const acondModel = this.acondTab()?.getFormModel() ?? { camara: stored.acondicionamiento.camara, componente: stored.acondicionamiento.componente };
-    const camaraLabel = stored.camaraOptions.find(c => c.value === acondModel.camara)?.label ?? '';
-    
+    const acondModel = this.acondTab()?.getFormModel() ?? {
+      camara: stored.acondicionamiento.camara,
+      componente: stored.acondicionamiento.componente,
+    };
+    const camaraLabel = stored.camaraOptions.find((c) => c.value === acondModel.camara)?.label ?? '';
+
     const data: MassiveConfigDialogData = {
       camaraLabel,
       componente: acondModel.componente,
@@ -271,7 +285,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   }
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,
@@ -282,7 +296,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const stored = this.#store.munitionIntroduction();
     this.selectorFormModel.set({ serie: stored.serie, disparo: stored.disparo });
     this.#syncSnapshot();
-    
+
     // Delegar reset
     this.identTab()?.reset();
     this.pesosTab()?.reset();

@@ -5,7 +5,7 @@ import type { TrialDocsStatus } from './trial-docs-status.enum';
 export type TrialDocsFilter = {
   category: string;
   status: TrialDocsStatus;
-  type: DocumentSubtype['id'];
+  typeId: DocumentSubtype['id'];
 };
 
 export type TrialDocsFilterFormControls = ControlsOf<Partial<TrialDocsFilter>>;

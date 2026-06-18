@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,10 +9,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
 
@@ -57,8 +49,7 @@ interface SeguridadSelectsModel {
     TranslateModule,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center justify-between shrink-0">
         <div class="flex items-center gap-1.5">
@@ -69,7 +60,7 @@ interface SeguridadSelectsModel {
             {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
           </h3>
         </div>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
@@ -99,7 +90,6 @@ interface SeguridadSelectsModel {
         <button
           mat-flat-button
           type="button"
-          class="!text-xs !h-8 !px-3 !bg-violet-600 !text-white shrink-0"
           (click)="setCurrentShot()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CURRENT_SHOT_BTN' | translate }}
@@ -108,7 +98,11 @@ interface SeguridadSelectsModel {
           <button
             type="button"
             class="text-xs font-medium px-3 py-1 rounded-full transition-colors whitespace-nowrap cursor-pointer"
-            [class]="activeTab() === 'alta-velocidad' ? 'bg-violet-600 text-white' : 'text-violet-600 border border-violet-300 bg-transparent'"
+            [class]="
+              activeTab() === 'alta-velocidad'
+                ? 'bg-violet-600 text-white'
+                : 'text-violet-600 border border-violet-300 bg-transparent'
+            "
             (click)="setTab('alta-velocidad')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TAB_ALTA_VELOCIDAD' | translate }}
@@ -116,7 +110,11 @@ interface SeguridadSelectsModel {
           <button
             type="button"
             class="text-xs font-medium px-3 py-1 rounded-full transition-colors whitespace-nowrap cursor-pointer"
-            [class]="activeTab() === 'convencional' ? 'bg-violet-600 text-white' : 'text-violet-600 border border-violet-300 bg-transparent'"
+            [class]="
+              activeTab() === 'convencional'
+                ? 'bg-violet-600 text-white'
+                : 'text-violet-600 border border-violet-300 bg-transparent'
+            "
             (click)="setTab('convencional')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TAB_CONVENCIONAL' | translate }}
@@ -125,11 +123,10 @@ interface SeguridadSelectsModel {
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Scrollable content ──────────────────────────────────────────── -->
       <div intaReadonlyContent class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5">
-
         @if (activeTab() === 'convencional') {
           <!-- ── Prueba block ──────────────────────────────────────────── -->
           <div class="flex flex-col gap-1.5">
@@ -213,7 +210,7 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class="h-px bg-slate-100 shrink-0"></div>
+          <div class=""></div>
 
           <!-- ── Boca block ────────────────────────────────────────────── -->
           <div class="flex flex-col gap-1.5">
@@ -255,7 +252,7 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class="h-px bg-slate-100 shrink-0"></div>
+          <div class=""></div>
 
           <!-- ── Cierre block ──────────────────────────────────────────── -->
           <div class="flex flex-col gap-1.5">
@@ -297,7 +294,7 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class="h-px bg-slate-100 shrink-0"></div>
+          <div class=""></div>
 
           <!-- ── Pique block ───────────────────────────────────────────── -->
           <div class="flex flex-col gap-1.5">
@@ -363,19 +360,27 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
   // ── Estado del disparo ────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.seguridad().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.seguridad().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -438,9 +443,9 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
       disparo: m.disparo,
       prueba: { camara: m.pruebaCamara, grabador: m.pruebaGrabador, canal: m.pruebaCanal, texto: this.pruebaTexto() },
       blanco: { camara: m.blancoCamara, grabador: m.blancoGrabador, canal: m.blancoCanal, texto: this.blancoTexto() },
-      boca:   { camara: m.bocaCamara,   grabador: m.bocaGrabador,   canal: m.bocaCanal,   texto: this.bocaTexto() },
+      boca: { camara: m.bocaCamara, grabador: m.bocaGrabador, canal: m.bocaCanal, texto: this.bocaTexto() },
       cierre: { camara: m.cierreCamara, grabador: m.cierreGrabador, canal: m.cierreCanal, texto: this.cierreTexto() },
-      pique:  { camara: m.piqueCamara,  grabador: m.piqueGrabador,  canal: m.piqueCanal,  texto: this.piqueTexto() },
+      pique: { camara: m.piqueCamara, grabador: m.piqueGrabador, canal: m.piqueCanal, texto: this.piqueTexto() },
     });
     this.#savedSnapshot.set(this.#currentSnapshot());
   }

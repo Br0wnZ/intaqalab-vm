@@ -124,3 +124,24 @@
 html body .mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label {
   line-height: 1.5rem;
 }
+
+html body .mat-mdc-form-field.small-select{
+  .mat-mdc-form-field-flex{
+    height: 28px;
+    min-height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--inta-ui-border-default);
+  }
+  .mat-mdc-text-field-wrapper{
+    padding: 0;
+  }
+  .mat-mdc-form-field-infix {
+    padding: 0;
+  }
+  .mat-mdc-select-min-line{
+    font-size: 12px;
+  }
+  .mdc-notched-outline {
+    display: none;
+  }
+} 

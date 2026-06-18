@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,10 +7,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { OverpressureInfoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface OverpressureFormModel {
   presionMaxima: string | null;
@@ -29,15 +21,9 @@ interface OverpressureFormModel {
 
 @Component({
   selector: 'inta-overpressure-info',
-  imports: [
-    MatFormFieldModule,
-    MatIconModule,
-    MatSelectModule,
-    TranslateModule,
-  ],
+  imports: [MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-2.5 flex flex-col gap-2 overflow-hidden">
-
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0">
         <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -48,10 +34,7 @@ interface OverpressureFormModel {
         </h3>
         <!-- Global unit selector -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!w-20 shrink-0">
-          <mat-select
-            [value]="formModel().unidadPresion"
-            (selectionChange)="onUnitChange($event.value)"
-          >
+          <mat-select [value]="formModel().unidadPresion" (selectionChange)="onUnitChange($event.value)">
             @for (opt of pressureUnitOptions; track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -60,14 +43,12 @@ interface OverpressureFormModel {
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Fields ─────────────────────────────────────────────────────── -->
       <div intaReadonlyContent class="flex-1 flex flex-col gap-1.5 min-h-0 justify-between">
-
         <!-- Row 1: Editable input fields -->
         <div class="grid grid-cols-3 gap-1.5">
-
           <!-- Presión Máxima -->
           <div class="flex flex-col rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5">
             <span class="text-[10px] text-slate-400 leading-none truncate">
@@ -116,7 +97,6 @@ interface OverpressureFormModel {
 
         <!-- Row 2: Read-only computed/Calibry outputs -->
         <div class="grid grid-cols-2 gap-1.5">
-
           <!-- Presión Seguridad (from Calibry) -->
           <div class="flex flex-col rounded-lg border border-violet-200 bg-violet-50/40 px-2 py-1.5 gap-0.5">
             <span class="text-[10px] text-violet-500 leading-none truncate">
@@ -147,7 +127,6 @@ interface OverpressureFormModel {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   `,
@@ -168,15 +147,16 @@ export class OverpressureInfoWidget extends BaseFormWidgetComponent {
   ];
 
   protected readonly formModel = signal<OverpressureFormModel>({
-    presionMaxima: this.#store.overpressureInfo().presionMaxima !== null
-      ? String(this.#store.overpressureInfo().presionMaxima)
-      : null,
-    presionMinima: this.#store.overpressureInfo().presionMinima !== null
-      ? String(this.#store.overpressureInfo().presionMinima)
-      : null,
-    presionRef: this.#store.overpressureInfo().presionRef !== null
-      ? String(this.#store.overpressureInfo().presionRef)
-      : null,
+    presionMaxima:
+      this.#store.overpressureInfo().presionMaxima !== null
+        ? String(this.#store.overpressureInfo().presionMaxima)
+        : null,
+    presionMinima:
+      this.#store.overpressureInfo().presionMinima !== null
+        ? String(this.#store.overpressureInfo().presionMinima)
+        : null,
+    presionRef:
+      this.#store.overpressureInfo().presionRef !== null ? String(this.#store.overpressureInfo().presionRef) : null,
     unidadPresion: this.#store.overpressureInfo().unidadPresion,
   });
 
@@ -240,21 +220,21 @@ export class OverpressureInfoWidget extends BaseFormWidgetComponent {
   }
 
   protected onUnitChange(unit: string): void {
-    this.formModel.update(m => ({ ...m, unidadPresion: unit }));
+    this.formModel.update((m) => ({ ...m, unidadPresion: unit }));
   }
 
   protected onPresionMaximaInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value || null;
-    this.formModel.update(m => ({ ...m, presionMaxima: value }));
+    this.formModel.update((m) => ({ ...m, presionMaxima: value }));
   }
 
   protected onPresionMinimaInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value || null;
-    this.formModel.update(m => ({ ...m, presionMinima: value }));
+    this.formModel.update((m) => ({ ...m, presionMinima: value }));
   }
 
   protected onPresionRefInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value || null;
-    this.formModel.update(m => ({ ...m, presionRef: value }));
+    this.formModel.update((m) => ({ ...m, presionRef: value }));
   }
 }

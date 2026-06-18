@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -15,12 +7,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoState, SeguimientoTab } from '../../../+state/execution.store';
+import type {
+  SeguimientoSerieData,
+  SeguimientoShotRow,
+  SeguimientoState,
+  SeguimientoTab,
+} from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface SeguimientoFormModel {
   presionVelocidadUnit: string;
@@ -56,7 +53,6 @@ interface ComputedSerie {
   ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5 overflow-hidden">
-
       <!-- Header: Icon + Title -->
       <div class="flex items-center gap-1.5 shrink-0">
         <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-violet-100 shrink-0">
@@ -73,9 +69,11 @@ interface ComputedSerie {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors border shrink-0"
-            [class]="activeTab() === tab
-              ? 'bg-violet-600 text-white border-violet-600'
-              : 'bg-white text-violet-700 border-violet-200 hover:bg-violet-50'"
+            [class]="
+              activeTab() === tab
+                ? 'bg-violet-600 text-white border-violet-600'
+                : 'bg-white text-violet-700 border-violet-200 hover:bg-violet-50'
+            "
             (click)="setActiveTab(tab)"
           >
             {{ tabLabelKey(tab) | translate }}
@@ -109,8 +107,8 @@ interface ComputedSerie {
         <mat-accordion multi>
           @for (serie of tableData(); track serie.serieId) {
             <mat-expansion-panel
-              [expanded]="true"
               class="!shadow-none !rounded-xl border border-slate-100 mb-1.5 !bg-white"
+              [expanded]="true"
             >
               <mat-expansion-panel-header class="!px-3 !min-h-8 !h-8">
                 <mat-panel-title class="text-[11px] font-semibold text-slate-700">
@@ -218,30 +216,39 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
-            key: `pmax_cie_${i}`,
-            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-          })),
+          ...Array.from(
+            { length: numPiezo },
+            (_, i): ColumnDef => ({
+              key: `pmax_cie_${i}`,
+              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+            }),
+          ),
         ];
 
       case 'p-pz-int':
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
-            key: `pmax_int_${i}`,
-            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-          })),
+          ...Array.from(
+            { length: numPiezo },
+            (_, i): ColumnDef => ({
+              key: `pmax_int_${i}`,
+              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+            }),
+          ),
         ];
 
       case 'p-pz-cul':
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
-            key: `pmax_cul_${i}`,
-            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-          })),
+          ...Array.from(
+            { length: numPiezo },
+            (_, i): ColumnDef => ({
+              key: `pmax_cul_${i}`,
+              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+            }),
+          ),
         ];
 
       case 'p-ipg':
@@ -293,7 +300,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
 
   protected tabLabelKey(tab: SeguimientoTab): string {
     const keys: Record<SeguimientoTab, string> = {
-      'velocidades': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_VELOCIDADES',
+      velocidades: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_VELOCIDADES',
       'p-manom': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_MANOM',
       'p-pz-cie': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CIE',
       'p-pz-int': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_INT',

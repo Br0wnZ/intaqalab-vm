@@ -22,7 +22,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
@@ -65,15 +65,16 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
     EspoletaDetailFormComponent,
     SuplementoDetailFormComponent,
     CargaDetailFormComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
-    <div>
+    <div class="flex flex-col h-full">
       <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
         <ui-inta-icon name="edit" size="xxl" />
         {{ 'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.TITLE' | translate }}
       </h2>
 
-      <mat-dialog-content class="!px-6 !py-6">
+      <mat-dialog-content class="!p-6 flex-1">
         <div class="space-y-6">
           <div class="grid grid-cols-6 gap-4">
             <!-- Tipo de munición -->
@@ -193,6 +194,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                   type="number"
                   min="0"
                   libNoLeadingZeros
+                  libNoNegativeValues
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_PLACEHOLDER' | translate"
                   [(ngModel)]="formData.maxAllowedErrors"
                   (keydown)="
@@ -287,6 +289,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     matInput
                     type="number"
                     libNoLeadingZeros
+                    libNoNegativeValues
                     [value]="formData.reconditioning?.tolerance ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('tolerance', $any($event.target).valueAsNumber)"
@@ -304,8 +307,10 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     placeholder="0"
                     id="timeMin"
                     matInput
+                    libNoNegativeValues
                     type="number"
                     libNoLeadingZeros
+                    libNoNegativeValues
                     [value]="formData.reconditioning?.timeMin ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('timeMin', $any($event.target).valueAsNumber)"
@@ -323,6 +328,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     placeholder="0"
                     id="timeMax"
                     matInput
+                    libNoNegativeValues
                     type="number"
                     libNoLeadingZeros
                     [value]="formData.reconditioning?.timeMax ?? ''"
@@ -378,7 +384,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                 <mat-chip-set>
                   @for (component of formData.selectedComponents; track component) {
                     <mat-chip [removable]="true" (removed)="removeComponent(component)">
-                      {{ getComponentLabel(component) }}
+                      {{ getComponentLabel(component) | titlecase }}
                       <button matChipRemove>
                         <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
                       </button>
@@ -392,7 +398,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
           @if (formData.selectedComponents.length > 0) {
             <mat-tab-group class="inta-tabs-2">
               @for (component of formData.selectedComponents; track component) {
-                <mat-tab [label]="getComponentLabel(component)">
+                <mat-tab [label]="getComponentLabel(component) | titlecase">
                   <div class="mt-4">
                     @switch (component) {
                       @case ('espoleta') {
@@ -437,7 +443,12 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
 
                         <div class="grid grid-cols-[150px_200px_150px_200px_150px] gap-4 items-start mb-4">
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                            <input matInput readonly class="!bg-gray-50" [value]="getComponentLabel(component)" />
+                            <input
+                              matInput
+                              readonly
+                              class="!bg-gray-50"
+                              [value]="getComponentLabel(component) | titlecase"
+                            />
                           </mat-form-field>
 
                           <!-- Denominación -->
@@ -496,6 +507,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               type="number"
                               min="0"
                               libNoLeadingZeros
+                              libNoNegativeValues
                               [placeholder]="
                                 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate
                               "
@@ -573,7 +585,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="00"
+                              placeholder="0"
                               matInput
                               type="number"
                               libNoLeadingZeros
@@ -600,10 +612,11 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="00"
+                              placeholder="0"
                               matInput
                               type="number"
                               libNoLeadingZeros
+                              libNoNegativeValues
                               [id]="'component-tolerance-' + component"
                               [value]="getComponentData(component).reconditioning?.tolerance ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -627,10 +640,11 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="00"
+                              placeholder="0"
                               matInput
                               type="number"
                               libNoLeadingZeros
+                              libNoNegativeValues
                               [id]="'component-timeMin-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMin ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -650,10 +664,11 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           </label>
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <input
-                              placeholder="00"
+                              placeholder="0"
                               matInput
                               type="number"
                               libNoLeadingZeros
+                              libNoNegativeValues
                               [id]="'component-timeMax-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMax ?? ''"
                               (keydown)="onDecimalKeydown($event)"

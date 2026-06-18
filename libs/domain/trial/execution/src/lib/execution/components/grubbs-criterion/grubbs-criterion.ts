@@ -17,10 +17,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface GrubbsFilterForm {
   serie: string | null;
@@ -29,14 +29,7 @@ interface GrubbsFilterForm {
 
 @Component({
   selector: 'inta-grubbs-criterion',
-  imports: [
-    FormField,
-    ReadonlyContentDirective,
-    MatFormFieldModule,
-    MatIconModule,
-    MatSelectModule,
-    TranslateModule,
-  ],
+  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header: icon + title -->
@@ -82,7 +75,9 @@ interface GrubbsFilterForm {
         } @else if (!hasOutliers()) {
           <!-- State 3: no outliers detected -->
           <div class="flex-1 flex items-center justify-center rounded-xl bg-slate-50 min-h-[80px]">
-            <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100">
+            <span
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100"
+            >
               <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">check</mat-icon>
               {{ 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.NO_OUTLIERS_MSG' | translate }}
             </span>

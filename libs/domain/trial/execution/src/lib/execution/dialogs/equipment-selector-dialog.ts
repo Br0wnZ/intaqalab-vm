@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -61,20 +62,18 @@ export type EquipmentSelectorDialogResult =
   encapsulation: ViewEncapsulation.None,
   template: `
     <!-- Header -->
-    <h2 mat-dialog-title class="text-xl font-bold text-gray-900 !m-0 !justify-start !align-items-start">
+    <h2 mat-dialog-title class="!text-sm !font-semibold !text-gray-700 !m-0 !mb-4 !justify-start !align-items-start [&:before]:!hidden">
       {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.TITLE' | translate }}
     </h2>
 
-    <mat-dialog-content intaReadonlyContent class="flex flex-col gap-4 !px-4 min-h-[420px]">
+    <mat-dialog-content intaReadonlyContent class="flex flex-col gap-4 !px-5 min-h-[420px]">
       <!-- Category tabs -->
       <div class="flex gap-2 my-2 flex-wrap">
         @for (cat of data.categories; track cat.id) {
           <button
             class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors cursor-pointer border-none"
             [ngClass]="
-              activeCategoryId() === cat.id
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              activeCategoryId() === cat.id ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             "
             (click)="setActiveCategory(cat.id)"
           >
@@ -93,8 +92,7 @@ export type EquipmentSelectorDialogResult =
           </h3>
           <span class="text-sm text-gray-400">
             {{
-              'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SELECTION_LIMIT'
-                | translate: { max: activeMaxSelection() }
+              'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SELECTION_LIMIT' | translate: { max: activeMaxSelection() }
             }}
           </span>
         </div>
@@ -182,7 +180,7 @@ export type EquipmentSelectorDialogResult =
       <button mat-stroked-button [mat-dialog-close]="{ action: 'back' }">
         {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.BACK' | translate }}
       </button>
-      <button mat-flat-button class="!bg-purple-600 !text-white" (click)="save()">
+      <button mat-flat-button (click)="save()">
         {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SAVE' | translate }}
       </button>
     </mat-dialog-actions>
@@ -202,11 +200,17 @@ export class EquipmentSelectorDialog {
 
   readonly activeCategoryId = this.#activeCategoryId.asReadonly();
 
-  readonly activeCategoryLabel = computed(() => this.data.categories.find((c) => c.id === this.#activeCategoryId())?.label ?? '');
+  readonly activeCategoryLabel = computed(
+    () => this.data.categories.find((c) => c.id === this.#activeCategoryId())?.label ?? '',
+  );
 
-  readonly activeMaxSelection = computed(() => this.data.categories.find((c) => c.id === this.#activeCategoryId())?.maxSelection ?? 0);
+  readonly activeMaxSelection = computed(
+    () => this.data.categories.find((c) => c.id === this.#activeCategoryId())?.maxSelection ?? 0,
+  );
 
-  readonly activeCategoryItems = computed(() => this.data.items.filter((i) => i.categoryId === this.#activeCategoryId()));
+  readonly activeCategoryItems = computed(() =>
+    this.data.items.filter((i) => i.categoryId === this.#activeCategoryId()),
+  );
 
   readonly activeCategorySelectedItems = computed(() => {
     const checkedIds = this.#checkedIds();

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,10 +10,10 @@ import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -48,8 +40,7 @@ interface DataFormModel {
     InputSelect,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -64,7 +55,9 @@ interface DataFormModel {
 
         <!-- Serie -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}
+          </mat-label>
           <mat-select [formField]="selectorForm.serie">
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -74,7 +67,9 @@ interface DataFormModel {
 
         <!-- Disparo -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}
+          </mat-label>
           <mat-select [formField]="selectorForm.disparo">
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -90,17 +85,16 @@ interface DataFormModel {
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
       <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
-
         <!-- Row 1 -->
 
         <!-- Equipo (Sonómetro) -->
@@ -123,6 +117,7 @@ interface DataFormModel {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISTANCIA_BOCA_PLACEHOLDER' | translate"
           [value]="distanciaBocaField()"
           (valueChange)="distanciaBocaField.set($event)"
+          subscriptSizing="dynamic"
         />
 
         <!-- Nivel acústico -->
@@ -136,7 +131,9 @@ interface DataFormModel {
 
         <!-- Observaciones (spans 2 rows) -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}
+          </mat-label>
           <textarea
             matInput
             rows="4"
@@ -151,7 +148,9 @@ interface DataFormModel {
 
         <!-- Sonómetro X -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.X_SONOMETRO_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.X_SONOMETRO_LABEL' | translate }}
+          </mat-label>
           <input
             matInput
             type="number"
@@ -164,7 +163,9 @@ interface DataFormModel {
 
         <!-- Sonómetro Y -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.Y_SONOMETRO_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.Y_SONOMETRO_LABEL' | translate }}
+          </mat-label>
           <input
             matInput
             type="number"
@@ -177,7 +178,9 @@ interface DataFormModel {
 
         <!-- Sonómetro Z -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.Z_SONOMETRO_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.Z_SONOMETRO_LABEL' | translate }}
+          </mat-label>
           <input
             matInput
             type="number"
@@ -187,7 +190,6 @@ interface DataFormModel {
           />
           <span matSuffix class="pr-1 text-sm text-gray-500">m</span>
         </mat-form-field>
-
       </div>
     </div>
   `,
@@ -211,19 +213,27 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.acousticLevelIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.acousticLevelIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -246,18 +256,10 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   protected readonly nivelAcusticoField = signal<InputFieldValue>(
     this.#numToField(this.#store.acousticLevelIntroduction().nivelAcustico, 'db'),
   );
-  protected readonly xSonometroField = signal<number | null>(
-    this.#store.acousticLevelIntroduction().xSonometro,
-  );
-  protected readonly ySonometroField = signal<number | null>(
-    this.#store.acousticLevelIntroduction().ySonometro,
-  );
-  protected readonly zSonometroField = signal<number | null>(
-    this.#store.acousticLevelIntroduction().zSonometro,
-  );
-  protected readonly observacionesField = signal<string | null>(
-    this.#store.acousticLevelIntroduction().observaciones,
-  );
+  protected readonly xSonometroField = signal<number | null>(this.#store.acousticLevelIntroduction().xSonometro);
+  protected readonly ySonometroField = signal<number | null>(this.#store.acousticLevelIntroduction().ySonometro);
+  protected readonly zSonometroField = signal<number | null>(this.#store.acousticLevelIntroduction().zSonometro);
+  protected readonly observacionesField = signal<string | null>(this.#store.acousticLevelIntroduction().observaciones);
 
   // ── Snapshot for dirty tracking ────────────────────────────────────────────
   readonly #savedSnapshot = signal({
@@ -292,7 +294,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   }));
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,

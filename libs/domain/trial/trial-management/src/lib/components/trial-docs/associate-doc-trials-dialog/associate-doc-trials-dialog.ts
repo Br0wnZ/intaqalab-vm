@@ -127,7 +127,7 @@ export class AssociateDocTrialsDialog {
   readonly #associateDocResource = this.#docsService.associateDocResource;
   readonly #dialogRef = inject(MatDialogRef<AssociateDocTrialsDialog>);
   readonly #fireTrialsEndpoint = injectFireTrialsEndpoint();
-  public data = inject<{ documentId: string }>(MAT_DIALOG_DATA);
+  public data = inject<{ documentId: string; trialId: string }>(MAT_DIALOG_DATA);
 
   readonly searchTerm = signal('');
   readonly selectedTrials = signal<FireTrial[]>([]);
@@ -178,7 +178,7 @@ export class AssociateDocTrialsDialog {
   onAssociate(): void {
     this.#docsService.associateDocToTrial({
       documentId: this.data.documentId,
-      fireTrialIds: this.selectedTrials().map((trial) => trial.id),
+      fireTrialIds: [...this.selectedTrials().map((trial) => trial.id), this.data.trialId],
     });
   }
 }

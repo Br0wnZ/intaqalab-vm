@@ -153,10 +153,11 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <input
-            placeholder="00"
+            placeholder="0"
             id="supl-quantity"
             matInput
             type="number"
+            libNoNegativeValues
             libNoLeadingZeros
             [formField]="detailForm.quantity!"
             (blur)="emitChanges()"

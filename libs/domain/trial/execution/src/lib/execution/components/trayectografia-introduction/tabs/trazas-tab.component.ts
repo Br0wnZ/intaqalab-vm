@@ -11,9 +11,9 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { InputSelect } from '@intaqalab/ui';
 import { ExecutionStore } from '../../../../+state/execution.store';
 
 type InputFieldValue = { value: string; unit: string } | null;
@@ -23,14 +23,10 @@ type InputFieldValue = { value: string; unit: string } | null;
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
-
       <!-- Equipo -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="equipo()"
-          (selectionChange)="equipoChange.emit($event.value)"
-        >
+        <mat-select [value]="equipo()" (selectionChange)="equipoChange.emit($event.value)">
           @for (opt of equipoOptions(); track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -47,11 +43,10 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Existencia traza radar -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EXISTENCIA_TRAZA_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="existenciaTrazaField()"
-          (selectionChange)="existenciaTrazaField.set($event.value)"
-        >
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EXISTENCIA_TRAZA_LABEL' | translate }}
+        </mat-label>
+        <mat-select [value]="existenciaTrazaField()" (selectionChange)="existenciaTrazaField.set($event.value)">
           @for (opt of existenciaTrazaOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -60,7 +55,9 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Observaciones (row-span-2) -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}
+        </mat-label>
         <textarea
           matInput
           rows="3"
@@ -70,7 +67,6 @@ type InputFieldValue = { value: string; unit: string } | null;
           (input)="observacionesField.set($any($event.target).value || null)"
         ></textarea>
       </mat-form-field>
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -157,5 +153,3 @@ export class TrayectografiaTrazasTabComponent {
     return isNaN(parsed) ? null : parsed;
   }
 }
-
-

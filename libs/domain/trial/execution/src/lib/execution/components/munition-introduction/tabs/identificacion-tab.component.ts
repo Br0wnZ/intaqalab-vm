@@ -1,25 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { form, FormField } from '@angular/forms/signals';
+import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
 import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 
 @Component({
   selector: 'inta-munition-identificacion-tab',
-  imports: [
-    FormField,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
-    TranslateModule,
-    InputSelect,
-  ],
+  imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslateModule, InputSelect],
   template: `
-    <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
       <!-- Componente -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
@@ -96,7 +90,9 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
       <!-- Modo funcionamiento espoleta -->
       @if (isEspoleta()) {
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL' | translate }}
+          </mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_PLACEHOLDER' | translate"
             [formField]="identForm.modoFuncionamiento"
@@ -133,11 +129,11 @@ export class MunitionIdentificacionTabComponent {
 
   readonly observacionesField = signal<string | null>(this.#store.munitionIntroduction().identificacion.observaciones);
   readonly numeroClienteField = signal<string | null>(this.#store.munitionIntroduction().identificacion.numeroCliente);
-  
+
   #numToField(value: number | null, unit: string): InputFieldValue {
     return value !== null ? { value: value.toString(), unit } : null;
   }
-  
+
   #parseNum(field: InputFieldValue): number | null {
     if (!field) return null;
     const n = parseFloat(field.value);
@@ -145,7 +141,7 @@ export class MunitionIdentificacionTabComponent {
   }
 
   readonly graduacionEspoletaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.munitionIntroduction().identificacion.graduacionEspoleta, 's')
+    this.#numToField(this.#store.munitionIntroduction().identificacion.graduacionEspoleta, 's'),
   );
 
   readonly #savedSnapshot = signal({
@@ -170,25 +166,25 @@ export class MunitionIdentificacionTabComponent {
 
   readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
   readonly modoFuncionamientoOptions = computed(() => this.#store.munitionIntroduction().modoFuncionamientoOptions);
-  
+
   readonly denominacionError = computed(() => this.#store.munitionIntroduction().identificacion.denominacionNotInStock);
   readonly loteError = computed(() => this.#store.munitionIntroduction().identificacion.loteNotInStock);
 
   readonly filteredDenominacionOptions = computed(() => {
     const componente = this.identFormModel().componente;
     const opts = this.#store.munitionIntroduction().denominacionOptions;
-    return componente ? opts.filter(d => d.componenteId === componente) : opts;
+    return componente ? opts.filter((d) => d.componenteId === componente) : opts;
   });
 
   readonly filteredLoteOptions = computed(() => {
     const denominacion = this.identFormModel().denominacion;
     const opts = this.#store.munitionIntroduction().loteOptions;
-    return denominacion ? opts.filter(l => l.denominacionId === denominacion) : opts;
+    return denominacion ? opts.filter((l) => l.denominacionId === denominacion) : opts;
   });
 
   readonly isEspoleta = computed(() => {
     const componente = this.identFormModel().componente;
-    return this.componenteOptions().find(c => c.value === componente)?.category === 'espoleta';
+    return this.componenteOptions().find((c) => c.value === componente)?.category === 'espoleta';
   });
 
   constructor() {
@@ -197,7 +193,7 @@ export class MunitionIdentificacionTabComponent {
       if (opts.length === 1) {
         const onlyLote = opts[0].value;
         if (this.identFormModel().lote !== onlyLote) {
-          this.identFormModel.update(m => ({ ...m, lote: onlyLote }));
+          this.identFormModel.update((m) => ({ ...m, lote: onlyLote }));
         }
       }
     });
@@ -215,7 +211,7 @@ export class MunitionIdentificacionTabComponent {
       graduacionEspoleta: this.#parseNum(this.graduacionEspoletaField()),
     };
     this.#store.updateMunitionIntroductionIdentification(identUpdates);
-    
+
     this.#savedSnapshot.set({
       observaciones: this.observacionesField(),
       numeroCliente: this.numeroClienteField(),

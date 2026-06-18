@@ -41,9 +41,10 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     NoNegativeValuesDirective,
     NoNegativeValuesDirective,
     TranslateModule,
+    NoNegativeValuesDirective,
   ],
   template: `
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="w-full">
         <label for="component-type" class="block text-xs font-medium text-gray-600 mb-2 min-h-[2.25rem] flex items-end">
           {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.TYPE' | translate }}
@@ -171,6 +172,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             matInput
             type="number"
             libNoLeadingZeros
+            libNoNegativeValues
             [formField]="detailForm.fuseMeasurement"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FUZE_GRADUATION' | translate"
             (blur)="emitChanges()"

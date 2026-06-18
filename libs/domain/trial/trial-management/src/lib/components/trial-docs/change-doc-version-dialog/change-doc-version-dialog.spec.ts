@@ -26,6 +26,8 @@ describe('ChangeDocVersionDialog', () => {
       setDocumentVersionActiveResource: {
         statusCode: signal<number | null>(null),
       },
+      resetDocumentVersionActive: vi.fn(),
+      getDocumentVersions: vi.fn(),
     };
 
     const result = await render(ChangeDocVersionDialog, {

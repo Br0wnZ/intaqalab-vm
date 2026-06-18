@@ -155,7 +155,7 @@ enum TrialDocsViewState {
                 [id]="'trial-status'"
                 [valueKey]="'id'"
                 [labelKey]="'label'"
-                [formField]="docsForm.type"
+                [formField]="docsForm.typeId"
                 [label]="'TRIAL_DOCS.FILTERS.TYPE' | translate"
                 [placeholder]="'TRIAL_DOCS.FILTERS.TYPE_PLACEHOLDER' | translate"
                 [options]="filteredDocumentsTypes()"
@@ -404,7 +404,7 @@ export class TrialDocs {
   readonly formModel = signal<TrialDocsFilter>({
     category: '',
     status: '' as TrialDocsStatus,
-    type: '',
+    typeId: '',
   });
 
   readonly docsForm = form(this.formModel);
@@ -448,7 +448,7 @@ export class TrialDocs {
 
     effect(() => {
       const value = this.docsForm().value();
-      const hasActiveFilter = (['category', 'status', 'type'] as Array<keyof TrialDocsFilter>).some(
+      const hasActiveFilter = (['category', 'status', 'typeId'] as Array<keyof TrialDocsFilter>).some(
         (k) => !!value[k] && value[k] !== 'ALL',
       );
       if (!!hasActiveFilter && this.showOnlyActive()) {
@@ -458,7 +458,7 @@ export class TrialDocs {
 
     effect(() => {
       if (this.showOnlyActive()) {
-        this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, type: '' });
+        this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, typeId: '' });
         if (this.trialId()) {
           this.#documentsService.getDocuments(this.trialId() as string, { status: TrialDocsStatus.ACTIVE });
           this.hasLoadedOnce.set(true);
@@ -521,7 +521,7 @@ export class TrialDocs {
   onToggleShowOnlyActive(checked: boolean): void {
     const wasActive = this.showOnlyActive();
     this.showOnlyActive.set(checked);
-    this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, type: '' });
+    this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, typeId: '' });
     if (checked) {
       if (this.trialId()) {
         this.#documentsService.getDocuments(this.trialId() as string, { status: TrialDocsStatus.ACTIVE });
@@ -540,7 +540,7 @@ export class TrialDocs {
     return (
       (!!form.category && form.category !== 'ALL') ||
       (!!form.status && form.status !== 'ALL') ||
-      (!!form.type && form.type !== 'ALL')
+      (!!form.typeId && form.typeId !== 'ALL')
     );
   }
 
@@ -652,6 +652,6 @@ export class TrialDocs {
   }
 
   resetForm() {
-    this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, type: '' });
+    this.docsForm().reset({ category: '', status: '' as TrialDocsStatus, typeId: '' });
   }
 }

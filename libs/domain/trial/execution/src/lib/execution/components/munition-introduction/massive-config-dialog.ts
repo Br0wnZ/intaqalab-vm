@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 export interface MassiveConfigDialogData {
   camaraLabel: string;
@@ -42,21 +38,24 @@ export interface MassiveConfigDialogResult {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
     <!-- Header -->
-    <h2 mat-dialog-title class="flex items-center gap-2 text-xl font-bold text-slate-900 !mb-4">
-      <mat-icon class="text-slate-600">edit</mat-icon>
+    <h2 mat-dialog-title>
+      <ui-inta-icon name="edit" size="xxl" />
       {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.TITLE' | translate }}
     </h2>
 
     <!-- Content -->
     <mat-dialog-content intaReadonlyContent class="!px-0 !overflow-visible">
       <div class="flex flex-col gap-3 w-full">
-
         <!-- Series (full width, multi-select) -->
+        <div>
+        <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+          {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_LABEL' | translate }}
+        </mat-label>
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_LABEL' | translate }}</mat-label>
           <mat-select
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_PLACEHOLDER' | translate"
@@ -68,10 +67,10 @@ export interface MassiveConfigDialogResult {
             }
           </mat-select>
         </mat-form-field>
+        </div>
 
         <!-- Componente + Equipo -->
         <div class="grid grid-cols-2 gap-3">
-
           <!-- Componente (editable) -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
@@ -90,31 +89,35 @@ export interface MassiveConfigDialogResult {
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
             <input matInput readonly [value]="data.camaraLabel" />
-            <mat-icon matSuffix class="!text-violet-500 !text-[20px]">settings</mat-icon>
+            <ui-inta-icon matSuffix name="settings" color="var(--inta-button)" size="xl" class="mr-2" />
           </mat-form-field>
         </div>
 
         <!-- Temperatura programada + Fecha y hora entrada -->
         <div class="grid grid-cols-2 gap-3">
-
           <!-- Temperatura programada (read-only con mat-form-field) -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL' | translate }}</mat-label>
+            <mat-label>
+              {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL' | translate }}
+            </mat-label>
             <input matInput readonly [value]="data.temperaturaCorregida ?? ''" />
             <span matSuffix class="text-sm font-medium text-slate-600 pr-1">°C</span>
           </mat-form-field>
 
           <!-- Fecha y hora entrada (input readonly + ▶) -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}</mat-label>
-            <input
-              matInput
-              readonly
-              class="cursor-pointer"
-              [value]="fechaHoraEntrada() ?? ''"
-            />
-            <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-9 !h-9" (click)="captureEntrada()">
-              <mat-icon class="!text-[20px]">play_circle_outline</mat-icon>
+            <mat-label>
+              {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}
+            </mat-label>
+            <input matInput readonly class="cursor-pointer" [value]="fechaHoraEntrada() ?? ''" />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              class="!text-[var(--inta-button)]"
+              (click)="captureEntrada()"
+            >
+              <mat-icon>play_circle_outline</mat-icon>
             </button>
           </mat-form-field>
         </div>
@@ -122,19 +125,21 @@ export interface MassiveConfigDialogResult {
         <!-- Fecha y hora salida -->
         <div class="grid grid-cols-2 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}</mat-label>
-            <input
-              matInput
-              readonly
-              class="cursor-pointer"
-              [value]="fechaHoraSalida() ?? ''"
-            />
-            <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-9 !h-9" (click)="captureSalida()">
-              <mat-icon class="!text-[20px]">stop_circle</mat-icon>
+            <mat-label>
+              {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}
+            </mat-label>
+            <input matInput readonly class="cursor-pointer" [value]="fechaHoraSalida() ?? ''" />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              class="!text-[var(--inta-button)]"
+              (click)="captureSalida()"
+            >
+              <mat-icon>stop_circle</mat-icon>
             </button>
           </mat-form-field>
         </div>
-
       </div>
     </mat-dialog-content>
 

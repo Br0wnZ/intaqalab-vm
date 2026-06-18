@@ -205,13 +205,13 @@ describe('TrialDocs', () => {
     const debugEl = fixture.debugElement.query(By.directive(TrialDocs as any));
     const compInstance = debugEl.componentInstance as any;
 
-    compInstance.docsForm().reset({ status: 'Obsoleto', category: 'Otros', type: 'type-2' });
+    compInstance.docsForm().reset({ status: 'Obsoleto', category: 'Otros', typeId: 'type-2' });
 
     fixture.detectChanges();
 
     expect(mockTrialDocsService.getDocuments).toHaveBeenCalledWith(
       'TRIAL-123',
-      expect.objectContaining({ status: 'Obsoleto', category: 'Otros', type: 'type-2' }),
+      expect.objectContaining({ status: 'Obsoleto', category: 'Otros', typeId: 'type-2' }),
     );
   });
 

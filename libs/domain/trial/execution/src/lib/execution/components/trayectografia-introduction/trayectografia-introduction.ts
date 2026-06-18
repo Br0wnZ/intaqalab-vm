@@ -18,10 +18,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
@@ -49,11 +49,9 @@ interface SelectorFormModel {
     TrayectografiaTrazasTabComponent,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
-
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
           <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -106,9 +104,11 @@ interface SelectorFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'trayectorias'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            [class]="
+              activeTab() === 'trayectorias'
+                ? 'bg-violet-600 text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('trayectorias')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TAB_TRAYECTORIAS' | translate }}
@@ -116,9 +116,11 @@ interface SelectorFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'funcionamientos'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            [class]="
+              activeTab() === 'funcionamientos'
+                ? 'bg-violet-600 text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('funcionamientos')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TAB_FUNCIONAMIENTOS' | translate }}
@@ -126,9 +128,11 @@ interface SelectorFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
-            [class]="activeTab() === 'trazas'
-              ? 'bg-violet-600 text-white'
-              : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
+            [class]="
+              activeTab() === 'trazas'
+                ? 'bg-violet-600 text-white'
+                : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
+            "
             (click)="activeTab.set('trazas')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TAB_TRAZAS' | translate }}
@@ -136,13 +140,13 @@ interface SelectorFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- [class.hidden] preserva el estado interno de cada tab -->
@@ -163,7 +167,6 @@ interface SelectorFormModel {
           (equipoChange)="onEquipoChange($event)"
         />
       </div>
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -189,19 +192,27 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.trayectografiaIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.trayectografiaIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -213,14 +224,10 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   protected readonly selectorForm = form(this.selectorFormModel);
 
   // ── Equipo — managed separately (cross-tab shared field) ──────────────────
-  protected readonly equipoField = signal<string | null>(
-    this.#store.trayectografiaIntroduction().equipo,
-  );
+  protected readonly equipoField = signal<string | null>(this.#store.trayectografiaIntroduction().equipo);
 
   // ── Snapshot for equipo dirty tracking ────────────────────────────────────
-  readonly #equipoSnapshot = signal<string | null>(
-    this.#store.trayectografiaIntroduction().equipo,
-  );
+  readonly #equipoSnapshot = signal<string | null>(this.#store.trayectografiaIntroduction().equipo);
 
   // ── Dirty / Valid aggregate ────────────────────────────────────────────────
   protected readonly isDirty = computed(() => {
@@ -256,7 +263,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   }
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,

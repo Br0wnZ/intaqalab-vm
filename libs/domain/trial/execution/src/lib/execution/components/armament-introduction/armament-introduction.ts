@@ -9,12 +9,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ArmamentIntroductionMassConfigDialogResult } from './armament-introduction-mass-config-dialog';
 import { ArmamentIntroductionMassConfigDialog } from './armament-introduction-mass-config-dialog';
+import { IntaIconComponent } from '@intaqalab/ui';
 
 interface ArmamentIntroductionSelectForm {
   serie: string | null;
@@ -36,24 +37,25 @@ interface ArmamentIntroductionSelectForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslateModule,    
+    IntaIconComponent,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-blue-200 bg-white p-2 flex flex-col gap-1.5">
+    <div class="h-full rounded-2xl bg-white px-4 py-2 flex flex-col gap-5 overflow-auto">
       <!-- Header: Filtros -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-100 shrink-0">
-            <mat-icon class="text-blue-600 !text-[16px] !w-[16px] !h-[16px]">settings</mat-icon>
+          <div class="flex items-center gap-1.5 flex-1 self-start">
+            <ui-inta-icon name="settings" color="var(--inta-button)" />
+            <h3 class="text-sm font-semibold text-gray-700 leading-tight truncat">
+              {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE' | translate }}
+            </h3>
           </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
-            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE' | translate }}
-          </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
             [formField]="selectForm.serie"
@@ -77,24 +79,20 @@ interface ArmamentIntroductionSelectForm {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 
         <div class="flex-1"></div>
 
         <!-- Aplicar configuración masiva -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="openMassConfig()">
+        <button mat-flat-button color="primary" type="button" (click)="openMassConfig()">
           {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_BTN' | translate }}
         </button>
       </div>
 
-      <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
-
       <!-- Fields: 4 columns × 2 rows -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
-
+      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-4 min-h-0 content-start">
         <!-- Arma -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}</mat-label>
@@ -162,7 +160,9 @@ interface ArmamentIntroductionSelectForm {
 
         <!-- Equipo Retroceso -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.EQUIPO_RETROCESO_LABEL' | translate }}</mat-label>
+          <mat-label>
+            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.EQUIPO_RETROCESO_LABEL' | translate }}
+          </mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.EQUIPO_RETROCESO_PLACEHOLDER' | translate"
             [formField]="selectForm.equipoRetroceso"
@@ -172,9 +172,7 @@ interface ArmamentIntroductionSelectForm {
             }
           </mat-select>
         </mat-form-field>
-
       </div>
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -195,9 +193,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   protected readonly tuboOptions = computed(() => this.#store.armamentIntroduction().tuboOptions);
   protected readonly serieTuboOptions = computed(() => this.#store.armamentIntroduction().serieTuboOptions);
   protected readonly equipoAtacadoOptions = computed(() => this.#store.armamentIntroduction().equipoAtacadoOptions);
-  protected readonly equipoRetrocesoOptions = computed(() =>
-    this.#store.armamentIntroduction().equipoRetrocesoOptions,
-  );
+  protected readonly equipoRetrocesoOptions = computed(() => this.#store.armamentIntroduction().equipoRetrocesoOptions);
 
   // ── Signal Form ──────────────────────────────────────────────────────────
   protected readonly formModel = signal<ArmamentIntroductionSelectForm>({

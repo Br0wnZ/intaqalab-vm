@@ -1,29 +1,21 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { form } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { MatDialog } from '@angular/material/dialog';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
-import { form } from '@angular/forms/signals';
-import { FormField } from '@angular/forms/signals';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import type { InputFieldValue } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import {
   AplicarConfigMasivaDialog,
   type AplicarConfigMasivaDialogData,
@@ -46,24 +38,22 @@ interface SelectorFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">my_location</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.SERIE_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -73,7 +63,7 @@ interface SelectorFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DISPARO_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.disparo">
             @for (opt of disparoOptions(); track opt.value) {
@@ -83,7 +73,12 @@ interface SelectorFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button type="button" class="!text-xs !h-8 !px-3 !bg-violet-600 !text-white" (click)="setCurrentShot()">
+        <button
+          mat-flat-button
+          type="button"
+          
+          (click)="setCurrentShot()"
+        >
           {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CURRENT_SHOT_BTN' | translate }}
         </button>
 
@@ -93,24 +88,19 @@ interface SelectorFormModel {
         <button
           mat-flat-button
           type="button"
-          class="!text-xs !h-8 !px-3 !bg-violet-600 !text-white shrink-0"
           (click)="openMasivaDialog()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_BTN' | translate }}
         </button>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
-      <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
-
       <!-- ── Body ────────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-8 gap-x-2 gap-y-1 min-h-0 content-start">
-
+      <div intaReadonlyContent class="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-8 gap-x-2 gap-y-1 min-h-0 content-start">
         <!-- ── Fila 1 ───────────────────────────────────────────────────── -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_X_LABEL' | translate"
@@ -248,19 +238,27 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   // ── Estado del disparo ────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.datosBlancoBola().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.datosBlancoBola().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -280,7 +278,9 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   protected readonly bocaPiezaZ = signal<InputFieldValue>(this.#store.datosBlancoBola().bocaPiezaZ);
   protected readonly diametroBola = signal<InputFieldValue>(this.#store.datosBlancoBola().diametroBola);
   protected readonly alturaBola = signal<InputFieldValue>(this.#store.datosBlancoBola().alturaBola);
-  protected readonly altTripodeCamTransversal = signal<InputFieldValue>(this.#store.datosBlancoBola().altTripodeCamTransversal);
+  protected readonly altTripodeCamTransversal = signal<InputFieldValue>(
+    this.#store.datosBlancoBola().altTripodeCamTransversal,
+  );
   protected readonly camaraFrontalX = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalX);
   protected readonly camaraFrontalY = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalY);
   protected readonly camaraFrontalZ = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalZ);
@@ -308,7 +308,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   }));
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,

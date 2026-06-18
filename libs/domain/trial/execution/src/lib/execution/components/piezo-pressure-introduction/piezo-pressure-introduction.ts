@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,14 +8,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
-import {
-  ExecutionStore,
-  type PiezoPosicionState,
-} from '../../../+state/execution.store';
+import { ExecutionStore, type PiezoPosicionState } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type PiezoTab = 'cierre' | 'intermedio' | 'culote';
 
@@ -52,7 +41,6 @@ interface PiezoFormModel {
   ],
   template: `
     <div class="h-full rounded-2xl border border-blue-200 bg-white p-2 flex flex-col gap-1.5">
-
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -101,7 +89,9 @@ interface PiezoFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
-            [class]="activeTab() === 'cierre' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+            [class]="
+              activeTab() === 'cierre' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            "
             (click)="activeTab.set('cierre')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CIERRE' | translate }}
@@ -109,7 +99,9 @@ interface PiezoFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
-            [class]="activeTab() === 'intermedio' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+            [class]="
+              activeTab() === 'intermedio' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            "
             (click)="activeTab.set('intermedio')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_INTERMEDIO' | translate }}
@@ -117,7 +109,9 @@ interface PiezoFormModel {
           <button
             type="button"
             class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
-            [class]="activeTab() === 'culote' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+            [class]="
+              activeTab() === 'culote' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            "
             (click)="activeTab.set('culote')"
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CULOTE' | translate }}
@@ -125,185 +119,239 @@ interface PiezoFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Body ───────────────────────────────────────────────────────── -->
       <div intaReadonlyContent class="flex-1 flex flex-col min-h-0">
-      @switch (activeTab()) {
-        @case ('cierre') {
-          <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
-            <!-- Row 1: Selects -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate" [formField]="cierreForm.captador">
-                @for (opt of captadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate" [formField]="cierreForm.amplificador">
-                @for (opt of amplificadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate" [formField]="cierreForm.registrador">
-                @for (opt of registradorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <!-- Row 2: Numerics -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
-                [value]="cierrePresionMaxima() ?? ''"
-                (input)="cierrePresionMaxima.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
-                [value]="cierreAccion() ?? ''"
-                (input)="cierreAccion.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
-                [value]="cierreRetardo() ?? ''"
-                (input)="cierreRetardo.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-          </div>
+        @switch (activeTab()) {
+          @case ('cierre') {
+            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+              <!-- Row 1: Selects -->
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate"
+                  [formField]="cierreForm.captador"
+                >
+                  @for (opt of captadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate"
+                  [formField]="cierreForm.amplificador"
+                >
+                  @for (opt of amplificadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate"
+                  [formField]="cierreForm.registrador"
+                >
+                  @for (opt of registradorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <!-- Row 2: Numerics -->
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
+                  [value]="cierrePresionMaxima() ?? ''"
+                  (input)="cierrePresionMaxima.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
+                  [value]="cierreAccion() ?? ''"
+                  (input)="cierreAccion.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
+                  [value]="cierreRetardo() ?? ''"
+                  (input)="cierreRetardo.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+            </div>
+          }
+          @case ('intermedio') {
+            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate"
+                  [formField]="intermedioForm.captador"
+                >
+                  @for (opt of captadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate"
+                  [formField]="intermedioForm.amplificador"
+                >
+                  @for (opt of amplificadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate"
+                  [formField]="intermedioForm.registrador"
+                >
+                  @for (opt of registradorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
+                  [value]="intermedioPresionMaxima() ?? ''"
+                  (input)="intermedioPresionMaxima.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
+                  [value]="intermedioAccion() ?? ''"
+                  (input)="intermedioAccion.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
+                  [value]="intermedioRetardo() ?? ''"
+                  (input)="intermedioRetardo.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+            </div>
+          }
+          @case ('culote') {
+            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate"
+                  [formField]="culoteForm.captador"
+                >
+                  @for (opt of captadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate"
+                  [formField]="culoteForm.amplificador"
+                >
+                  @for (opt of amplificadorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate"
+                  [formField]="culoteForm.registrador"
+                >
+                  @for (opt of registradorOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
+                  [value]="culotePresionMaxima() ?? ''"
+                  (input)="culotePresionMaxima.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
+                  [value]="culoteAccion() ?? ''"
+                  (input)="culoteAccion.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
+                  [value]="culoteRetardo() ?? ''"
+                  (input)="culoteRetardo.set(parseNumber($any($event.target).value))"
+                />
+                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+              </mat-form-field>
+            </div>
+          }
         }
-        @case ('intermedio') {
-          <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate" [formField]="intermedioForm.captador">
-                @for (opt of captadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate" [formField]="intermedioForm.amplificador">
-                @for (opt of amplificadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate" [formField]="intermedioForm.registrador">
-                @for (opt of registradorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
-                [value]="intermedioPresionMaxima() ?? ''"
-                (input)="intermedioPresionMaxima.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
-                [value]="intermedioAccion() ?? ''"
-                (input)="intermedioAccion.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
-                [value]="intermedioRetardo() ?? ''"
-                (input)="intermedioRetardo.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-          </div>
-        }
-        @case ('culote') {
-          <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate" [formField]="culoteForm.captador">
-                @for (opt of captadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate" [formField]="culoteForm.amplificador">
-                @for (opt of amplificadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
-              <mat-select [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate" [formField]="culoteForm.registrador">
-                @for (opt of registradorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
-                [value]="culotePresionMaxima() ?? ''"
-                (input)="culotePresionMaxima.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
-                [value]="culoteAccion() ?? ''"
-                (input)="culoteAccion.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
-              <input matInput type="number" min="0"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
-                [value]="culoteRetardo() ?? ''"
-                (input)="culoteRetardo.set(parseNumber($any($event.target).value))"
-              />
-              <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
-            </mat-form-field>
-          </div>
-        }
-      }
       </div>
     </div>
   `,
@@ -328,19 +376,27 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.piezoPressureIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.piezoPressureIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -374,15 +430,29 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   protected readonly culoteForm = form(this.culoteFormModel);
 
   // ── Numeric plain signals (fixed units) ───────────────────────────────────
-  protected readonly cierrePresionMaxima = signal<number | null>(this.#store.piezoPressureIntroduction().cierre.presionMaxima);
+  protected readonly cierrePresionMaxima = signal<number | null>(
+    this.#store.piezoPressureIntroduction().cierre.presionMaxima,
+  );
   protected readonly cierreAccion = signal<number | null>(this.#store.piezoPressureIntroduction().cierre.tiempoAccion);
-  protected readonly cierreRetardo = signal<number | null>(this.#store.piezoPressureIntroduction().cierre.tiempoRetardo);
-  protected readonly intermedioPresionMaxima = signal<number | null>(this.#store.piezoPressureIntroduction().intermedio.presionMaxima);
-  protected readonly intermedioAccion = signal<number | null>(this.#store.piezoPressureIntroduction().intermedio.tiempoAccion);
-  protected readonly intermedioRetardo = signal<number | null>(this.#store.piezoPressureIntroduction().intermedio.tiempoRetardo);
-  protected readonly culotePresionMaxima = signal<number | null>(this.#store.piezoPressureIntroduction().culote.presionMaxima);
+  protected readonly cierreRetardo = signal<number | null>(
+    this.#store.piezoPressureIntroduction().cierre.tiempoRetardo,
+  );
+  protected readonly intermedioPresionMaxima = signal<number | null>(
+    this.#store.piezoPressureIntroduction().intermedio.presionMaxima,
+  );
+  protected readonly intermedioAccion = signal<number | null>(
+    this.#store.piezoPressureIntroduction().intermedio.tiempoAccion,
+  );
+  protected readonly intermedioRetardo = signal<number | null>(
+    this.#store.piezoPressureIntroduction().intermedio.tiempoRetardo,
+  );
+  protected readonly culotePresionMaxima = signal<number | null>(
+    this.#store.piezoPressureIntroduction().culote.presionMaxima,
+  );
   protected readonly culoteAccion = signal<number | null>(this.#store.piezoPressureIntroduction().culote.tiempoAccion);
-  protected readonly culoteRetardo = signal<number | null>(this.#store.piezoPressureIntroduction().culote.tiempoRetardo);
+  protected readonly culoteRetardo = signal<number | null>(
+    this.#store.piezoPressureIntroduction().culote.tiempoRetardo,
+  );
 
   // ── Snapshot for dirty tracking ────────────────────────────────────────────
   readonly #savedSnapshot = signal({
@@ -403,7 +473,8 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       this.cierreForm().dirty() ||
       this.intermedioForm().dirty() ||
       this.culoteForm().dirty()
-    ) return true;
+    )
+      return true;
     const snap = this.#savedSnapshot();
     return (
       this.cierrePresionMaxima() !== snap.cierrePresionMaxima ||
@@ -432,7 +503,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   }));
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,
@@ -486,17 +557,29 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       registrador: stored.registrador,
     });
     if (tab === 'cierre') {
-      this.cierreFormModel.set({ captador: stored.captador, amplificador: stored.amplificador, registrador: stored.registrador });
+      this.cierreFormModel.set({
+        captador: stored.captador,
+        amplificador: stored.amplificador,
+        registrador: stored.registrador,
+      });
       this.cierrePresionMaxima.set(stored.presionMaxima);
       this.cierreAccion.set(stored.tiempoAccion);
       this.cierreRetardo.set(stored.tiempoRetardo);
     } else if (tab === 'intermedio') {
-      this.intermedioFormModel.set({ captador: stored.captador, amplificador: stored.amplificador, registrador: stored.registrador });
+      this.intermedioFormModel.set({
+        captador: stored.captador,
+        amplificador: stored.amplificador,
+        registrador: stored.registrador,
+      });
       this.intermedioPresionMaxima.set(stored.presionMaxima);
       this.intermedioAccion.set(stored.tiempoAccion);
       this.intermedioRetardo.set(stored.tiempoRetardo);
     } else {
-      this.culoteFormModel.set({ captador: stored.captador, amplificador: stored.amplificador, registrador: stored.registrador });
+      this.culoteFormModel.set({
+        captador: stored.captador,
+        amplificador: stored.amplificador,
+        registrador: stored.registrador,
+      });
       this.culotePresionMaxima.set(stored.presionMaxima);
       this.culoteAccion.set(stored.tiempoAccion);
       this.culoteRetardo.set(stored.tiempoRetardo);

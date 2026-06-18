@@ -247,7 +247,7 @@ export class TrialDocsService {
     if (trigger === 0) return undefined;
 
     return {
-      url: `${this.#documentsUrl}/document-types?pageSize=100`,
+      url: `${this.#documentsUrl}/document-types?pageSize=100&active=true`,
       context: new HttpContext().set(SKIP_CENTER_INTERCEPTOR, true),
     };
   });

@@ -74,9 +74,6 @@ interface RadarTrayectographyFilters {
         </mat-form-field>
       </div>
 
-      <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
-
       <!-- Campos de datos en dos filas de 8 -->
       <div intaReadonlyContent class="flex-1 flex flex-col justify-between min-h-0">
         <!-- Fila 1: Pieza X/Y/Z, Alcance previsto, X/Y P. Caída, OLT geográfico, Dif. angular radar -->

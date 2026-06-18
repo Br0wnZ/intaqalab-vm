@@ -1,13 +1,5 @@
 import { DatePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,23 +7,16 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { StanagCriteriosState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 @Component({
   selector: 'inta-stanag-criterios',
-  imports: [
-    DatePipe,
-    MatButtonModule,
-    ReadonlyContentDirective,
-    MatIconModule,
-    TranslateModule,
-  ],
+  imports: [DatePipe, MatButtonModule, ReadonlyContentDirective, MatIconModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
-
       <!-- Header: icon + title -->
       <div class="flex items-center gap-1.5 shrink-0">
         <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -56,10 +41,10 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
         }
         <button
           mat-mini-fab
+          aria-label="Actualizar criterios"
           class="!bg-purple-600 !text-white !shadow-none !rounded-xl !flex !items-center !justify-center shrink-0"
           [disabled]="checking()"
           (click)="onActualizar()"
-          aria-label="Actualizar criterios"
         >
           @if (checking()) {
             <span class="block size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -74,26 +59,29 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
         @for (criterio of criterios(); track criterio.id) {
           <div
             class="flex items-start gap-2 rounded-lg border p-2 shrink-0"
-            [class]="criterio.cumple === true
-              ? 'bg-green-50 border-green-200'
-              : criterio.cumple === false
-                ? 'bg-red-50 border-red-200'
-                : 'bg-slate-50 border-slate-200'"
+            [class]="
+              criterio.cumple === true
+                ? 'bg-green-50 border-green-200'
+                : criterio.cumple === false
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-slate-50 border-slate-200'
+            "
           >
             <mat-icon
               class="shrink-0 !text-[16px] !w-[16px] !h-[16px] mt-0.5"
-              [class]="criterio.cumple === true
-                ? 'text-green-600'
-                : criterio.cumple === false
-                  ? 'text-red-500'
-                  : 'text-slate-400'"
+              [class]="
+                criterio.cumple === true
+                  ? 'text-green-600'
+                  : criterio.cumple === false
+                    ? 'text-red-500'
+                    : 'text-slate-400'
+              "
             >
               {{ criterio.cumple === true ? 'check_circle' : criterio.cumple === false ? 'cancel' : 'help_outline' }}
             </mat-icon>
             <p class="text-[11px] text-slate-700 leading-snug">{{ criterio.texto }}</p>
           </div>
-        }
-        @empty {
+        } @empty {
           <p class="text-[11px] text-slate-400 text-center py-4">
             {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.NO_CRITERIOS' | translate }}
           </p>

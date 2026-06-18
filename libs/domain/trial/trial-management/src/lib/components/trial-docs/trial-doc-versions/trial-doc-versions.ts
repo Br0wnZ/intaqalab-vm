@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import type { DocumentVersion } from '../../../utils-models/documents-service.model';
 import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-version-dialog';
@@ -55,7 +56,7 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
               {{ 'TRIAL_DOCS.VERSIONS.TABLE_COLUMNS.UPLOAD_DATE' | translate }}
             </th>
             <td *matCellDef="let version" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-              {{ version.createdAt | intaDate }}
+              {{ version.createdAt | intaDate: 'dd-MM-yyyy HH:mm:ss' }}
             </td>
           </ng-container>
 
@@ -160,7 +161,7 @@ export class TrialDocVersions {
     return activeVersion ? activeVersion.id : '';
   });
 
-  onVersionSelect(version: DocumentVersion): void {
+  protected async onVersionSelect(version: DocumentVersion) {
     if (version.isActive) return;
 
     this.selectedVersionId.set(version.id);
@@ -171,11 +172,12 @@ export class TrialDocVersions {
         version,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (!result) {
-        const activeVersion = this.documentVersions().find((v) => v.isActive);
-        this.selectedVersionId.set(activeVersion ? activeVersion.id : undefined);
-      }
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result) {
+      const activeVersion = this.documentVersions().find((v) => v.isActive);
+      this.selectedVersionId.set(activeVersion ? activeVersion.id : undefined);
+    }
   }
 }

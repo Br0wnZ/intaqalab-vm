@@ -2,6 +2,10 @@ import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatPaginatorHarness } from '@angular/material/paginator/testing';
+import { MatTableHarness } from '@angular/material/table/testing';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -103,13 +107,18 @@ describe('MasterDataListComponent', () => {
     it('should render a table with the provided data rows', async () => {
       const { view } = await setup();
       view.fixture.detectChanges();
-      const rows = view.fixture.nativeElement.querySelectorAll('tr[mat-row]');
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const table = await loader.getHarness(MatTableHarness);
+      const rows = await table.getRows();
       expect(rows.length).toBe(MOCK_ITEMS.length);
     });
 
     it('should render paginator', async () => {
-      await setup();
-      expect((view) => view.nativeElement.querySelector('mat-paginator')).toBeTruthy();
+      const { view } = await setup();
+      view.fixture.detectChanges();
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const paginator = await loader.getHarnessOrNull(MatPaginatorHarness);
+      expect(paginator).toBeTruthy();
     });
   });
 
@@ -148,18 +157,21 @@ describe('MasterDataListComponent', () => {
     });
 
     it('should open edit dialog when edit button is clicked', async () => {
-      const { user, view } = await setup();
+      const { view } = await setup();
       view.fixture.detectChanges();
-      const editBtns = view.fixture.nativeElement.querySelectorAll('button[mat-icon-button]');
-      // Find the edit button (mat-icon = edit)
-      const editBtn = Array.from(editBtns).find((btn) =>
-        (btn as HTMLElement).textContent?.includes('edit'),
-      ) as HTMLButtonElement;
-
-      if (editBtn) {
-        await user.click(editBtn);
-        expect(mockMatDialog.open).toHaveBeenCalled();
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const buttons = await loader.getAllHarnesses(MatButtonHarness);
+      
+      // Encontrar el botón de editar por su contenido interno de icono
+      for (const btn of buttons) {
+        const host = await btn.host();
+        const text = await host.text();
+        if (text.includes('edit')) {
+          await btn.click();
+          break;
+        }
       }
+      expect(mockMatDialog.open).toHaveBeenCalled();
     });
   });
 });

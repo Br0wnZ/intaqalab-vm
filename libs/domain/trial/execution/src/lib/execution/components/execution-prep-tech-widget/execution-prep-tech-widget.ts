@@ -97,7 +97,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
     IntaIconComponent,
   ],
   template: `
-    <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-hidden">
+    <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-auto">
       <!-- 🔝 Header -->
       <mat-card-header class="!px-4.5 !py-2 shrink-0">
         <mat-card-title class="!text-sm !font-semibold flex items-center gap-2 text-slate-700 w-full">
@@ -155,7 +155,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
               </div>
 
               <!-- Input Observaciones -->
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-input">
                 <input
                   matInput
                   [id]="'obs-' + widgetId() + '-' + i"
@@ -169,7 +169,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
         </div>
 
         <!-- Indicador -->
-        <div class="flex justify-center gap-1.5 py-1 shrink-0">
+        <div class="flex justify-center gap-1.5 py-1 shrink-0 hidden">
           <span class="size-1 rounded-full bg-purple-500"></span>
           <span class="size-1 rounded-full bg-slate-200"></span>
           <span class="size-1 rounded-full bg-slate-200"></span>

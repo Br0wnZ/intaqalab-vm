@@ -11,9 +11,9 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { InputSelect } from '@intaqalab/ui';
 import { ExecutionStore } from '../../../../+state/execution.store';
 import type { TrayectografiaTrayectoriaState } from '../../../../+state/execution.store';
 
@@ -24,14 +24,10 @@ type InputFieldValue = { value: string; unit: string } | null;
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-7 gap-x-2 gap-y-1 min-h-0 content-start">
-
       <!-- Equipo -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="equipo()"
-          (selectionChange)="equipoChange.emit($event.value)"
-        >
+        <mat-select [value]="equipo()" (selectionChange)="equipoChange.emit($event.value)">
           @for (opt of equipoOptions(); track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -80,7 +76,9 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Observaciones (row-span-2) -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}
+        </mat-label>
         <textarea
           matInput
           rows="3"
@@ -111,11 +109,10 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Calificación vuelo -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.CALIFICACION_VUELO_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="calificacionVueloField()"
-          (selectionChange)="calificacionVueloField.set($event.value)"
-        >
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.CALIFICACION_VUELO_LABEL' | translate }}
+        </mat-label>
+        <mat-select [value]="calificacionVueloField()" (selectionChange)="calificacionVueloField.set($event.value)">
           @for (opt of correctoIncorrectoOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -124,11 +121,15 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Coef. aerodinámico -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_LABEL' | translate }}</mat-label>
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_LABEL' | translate }}
+        </mat-label>
         <input
           matInput
           type="number"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_PLACEHOLDER' | translate"
+          [placeholder]="
+            'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_PLACEHOLDER' | translate
+          "
           [value]="coefAerodinamicoField() ?? ''"
           (input)="coefAerodinamicoField.set(+$any($event.target).value || null)"
         />
@@ -141,7 +142,6 @@ type InputFieldValue = { value: string; unit: string } | null;
         [value]="tiempoEyecBotesFumField()"
         (valueChange)="tiempoEyecBotesFumField.set($event)"
       />
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
@@ -164,25 +164,46 @@ export class TrayectografiasTrayectoriasTabComponent {
 
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly alcanceField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.alcance, this.#store.trayectografiaIntroduction().trayectorias.alcanceUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.alcance,
+      this.#store.trayectografiaIntroduction().trayectorias.alcanceUnit,
+    ),
   );
   protected readonly derivaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.deriva, this.#store.trayectografiaIntroduction().trayectorias.derivaUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.deriva,
+      this.#store.trayectografiaIntroduction().trayectorias.derivaUnit,
+    ),
   );
   protected readonly tiempoVueloField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.tiempoVuelo, this.#store.trayectografiaIntroduction().trayectorias.tiempoVueloUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoVuelo,
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoVueloUnit,
+    ),
   );
   protected readonly tiempoFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoleta, this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoletaUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoleta,
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoletaUnit,
+    ),
   );
   protected readonly altFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoleta, this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoletaUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoleta,
+      this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoletaUnit,
+    ),
   );
   protected readonly alcFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoleta, this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoletaUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoleta,
+      this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoletaUnit,
+    ),
   );
   protected readonly flechaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.flecha, this.#store.trayectografiaIntroduction().trayectorias.flechaUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.flecha,
+      this.#store.trayectografiaIntroduction().trayectorias.flechaUnit,
+    ),
   );
   protected readonly calificacionVueloField = signal<string | null>(
     this.#store.trayectografiaIntroduction().trayectorias.calificacionVuelo,
@@ -191,7 +212,10 @@ export class TrayectografiasTrayectoriasTabComponent {
     this.#store.trayectografiaIntroduction().trayectorias.coeficienteAerodinamico,
   );
   protected readonly tiempoEyecBotesFumField = signal<InputFieldValue>(
-    this.#numToField(this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenos, this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenosUnit),
+    this.#numToField(
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenos,
+      this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenosUnit,
+    ),
   );
   protected readonly observacionesField = signal<string | null>(
     this.#store.trayectografiaIntroduction().trayectorias.observaciones,
@@ -239,13 +263,21 @@ export class TrayectografiasTrayectoriasTabComponent {
     this.alcanceField.set(this.#numToField(tray.alcance, tray.alcanceUnit));
     this.derivaField.set(this.#numToField(tray.deriva, tray.derivaUnit));
     this.tiempoVueloField.set(this.#numToField(tray.tiempoVuelo, tray.tiempoVueloUnit));
-    this.tiempoFuncEspoletaField.set(this.#numToField(tray.tiempoFuncionamientoEspoleta, tray.tiempoFuncionamientoEspoletaUnit));
-    this.altFuncEspoletaField.set(this.#numToField(tray.alturaFuncionamientoEspoleta, tray.alturaFuncionamientoEspoletaUnit));
-    this.alcFuncEspoletaField.set(this.#numToField(tray.alcanceFuncionamientoEspoleta, tray.alcanceFuncionamientoEspoletaUnit));
+    this.tiempoFuncEspoletaField.set(
+      this.#numToField(tray.tiempoFuncionamientoEspoleta, tray.tiempoFuncionamientoEspoletaUnit),
+    );
+    this.altFuncEspoletaField.set(
+      this.#numToField(tray.alturaFuncionamientoEspoleta, tray.alturaFuncionamientoEspoletaUnit),
+    );
+    this.alcFuncEspoletaField.set(
+      this.#numToField(tray.alcanceFuncionamientoEspoleta, tray.alcanceFuncionamientoEspoletaUnit),
+    );
     this.flechaField.set(this.#numToField(tray.flecha, tray.flechaUnit));
     this.calificacionVueloField.set(tray.calificacionVuelo);
     this.coefAerodinamicoField.set(tray.coeficienteAerodinamico);
-    this.tiempoEyecBotesFumField.set(this.#numToField(tray.tiempoEyeccionBotesFumigenos, tray.tiempoEyeccionBotesFumigenosUnit));
+    this.tiempoEyecBotesFumField.set(
+      this.#numToField(tray.tiempoEyeccionBotesFumigenos, tray.tiempoEyeccionBotesFumigenosUnit),
+    );
     this.observacionesField.set(tray.observaciones);
     this.#syncSnapshot();
   }

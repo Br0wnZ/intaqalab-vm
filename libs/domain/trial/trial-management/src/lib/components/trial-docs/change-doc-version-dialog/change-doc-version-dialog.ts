@@ -46,6 +46,8 @@ export class ChangeDocVersionDialog {
       const result = this.#docsService.setDocumentVersionActiveResource.statusCode();
       if (result === 200) {
         this.dialogRef.close(true);
+        this.#docsService.resetDocumentVersionActive();
+        this.#docsService.getDocumentVersions(this.data.documentId);
       }
     });
   }

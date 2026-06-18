@@ -7,10 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 /**
  * 🎯 Widget de Disparo con formulario
@@ -26,26 +27,31 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
     MatIconModule,
     FormField,
     ReadonlyContentDirective,
-  ],
+    IntaIconComponent
+],
   host: { class: 'block h-full' },
   template: `
     <mat-card class="h-full !shadow-none border border-gray-100 flex flex-col bg-white">
       <mat-card-header class="!p-3 shrink-0">
-        <mat-card-title class="!text-[13px] !font-bold flex items-center gap-2 text-gray-800">
-          <mat-icon class="scale-75 text-purple-600">settings_input_component</mat-icon>
-          {{ 'WIDGETS.SHOT.TITLE' | translate }}
-          @if (formState().dirty) {
-            <span class="w-2 h-2 rounded-full bg-orange-500 ml-1"></span>
-          }
+        <mat-card-title class="!text-sm !font-semibold flex items-center gap-2 text-slate-700 w-full">
+          <div class="flex items-center gap-1.5 flex-1 self-start">
+            <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+            <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+              {{ 'WIDGETS.SHOT.TITLE' | translate }}
+            </h3>
+            @if (formState().dirty) {
+              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            }
+          </div>
         </mat-card-title>
       </mat-card-header>
 
-      <mat-card-content intaReadonlyContent class="flex-1 px-4 pb-4 overflow-hidden">
+      <mat-card-content intaReadonlyContent class="flex-1 !px-2 !py-1 overflow-hidden">
         <!-- Layout dinámico basado en el ancho -->
         <div [class]="width() === 1 ? 'flex flex-col gap-2' : 'grid grid-cols-12 gap-x-4 gap-y-1'">
           <!-- Número de Disparo -->
           <div [class]="width() === 1 ? '' : 'col-span-6 lg:col-span-4'">
-            <label for="shot-number" class="text-[10px] font-bold text-gray-400 uppercase mb-0.5 block tracking-wider">
+            <label for="shot-number" class="block font-medium text-gray-700 mb-1">
               {{ 'WIDGETS.SHOT.NUMBER' | translate }}
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
@@ -57,7 +63,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
           <div [class]="width() === 1 ? '' : 'col-span-6 lg:col-span-4'">
             <label
               for="shot-velocity"
-              class="text-[10px] font-bold text-gray-400 uppercase mb-0.5 block tracking-wider"
+              class="block font-medium text-gray-700 mb-1"
             >
               {{ 'WIDGETS.SHOT.VELOCITY' | translate }} (m/s)
             </label>
@@ -70,7 +76,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
           <div [class]="width() === 1 ? '' : 'col-span-12 lg:col-span-4'">
             <label
               for="shot-observations"
-              class="text-[10px] font-bold text-gray-400 uppercase mb-0.5 block tracking-wider"
+              class="block font-medium text-gray-700 mb-1"
             >
               {{ 'WIDGETS.SHOT.OBSERVATIONS' | translate }}
             </label>

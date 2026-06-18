@@ -1,13 +1,5 @@
 import { DatePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,31 +9,26 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { VigilanciaRow, VigilanciaState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 /** Computes the qualification string from a VigilanciaRow */
 function computeCalificacion(row: VigilanciaRow): string | null {
   const { util1min, util1max, inutilmin, inutilmax, value } = row;
-  const hasCriteria =
-    util1min !== null || util1max !== null || inutilmin !== null || inutilmax !== null;
+  const hasCriteria = util1min !== null || util1max !== null || inutilmin !== null || inutilmax !== null;
   if (!hasCriteria || value === null) return null;
 
   const hasUtil1 = util1min !== null || util1max !== null;
   if (hasUtil1) {
-    const inUtil1 =
-      (util1min === null || value >= util1min) &&
-      (util1max === null || value <= util1max);
+    const inUtil1 = (util1min === null || value >= util1min) && (util1max === null || value <= util1max);
     if (inUtil1) return 'Útil-1';
   }
 
   const hasInutilBounds = inutilmin !== null || inutilmax !== null;
   if (hasInutilBounds) {
-    const inInutilBounds =
-      (inutilmin === null || value >= inutilmin) &&
-      (inutilmax === null || value <= inutilmax);
+    const inInutilBounds = (inutilmin === null || value >= inutilmin) && (inutilmax === null || value <= inutilmax);
     if (!inInutilBounds) return 'Inútil';
     return 'Útil-2';
   }
@@ -64,7 +51,6 @@ interface VigilanciaTableRow {
   imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
-
       <!-- Header -->
       <div class="flex items-center gap-1.5 shrink-0">
         <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -81,8 +67,8 @@ interface VigilanciaTableRow {
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.SERIE_LABEL' | translate }}</mat-label>
           <mat-select
             [value]="serie()"
-            (valueChange)="onSerieChange($event)"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.SERIE_PLACEHOLDER' | translate"
+            (valueChange)="onSerieChange($event)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -92,10 +78,7 @@ interface VigilanciaTableRow {
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 shrink-0">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.VELOCIDAD_UNIT_LABEL' | translate }}</mat-label>
-          <mat-select
-            [value]="velocidadUnit()"
-            (valueChange)="onVelocidadUnitChange($event)"
-          >
+          <mat-select [value]="velocidadUnit()" (valueChange)="onVelocidadUnitChange($event)">
             @for (opt of velocidadUnitOptions; track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -104,10 +87,7 @@ interface VigilanciaTableRow {
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 shrink-0">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.PRESION_UNIT_LABEL' | translate }}</mat-label>
-          <mat-select
-            [value]="presionUnit()"
-            (valueChange)="onPresionUnitChange($event)"
-          >
+          <mat-select [value]="presionUnit()" (valueChange)="onPresionUnitChange($event)">
             @for (opt of presionUnitOptions; track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -118,8 +98,8 @@ interface VigilanciaTableRow {
           mat-mini-fab
           class="!bg-purple-600 !text-white !shadow-none !rounded-xl !flex !items-center !justify-center shrink-0"
           [disabled]="refreshing()"
-          (click)="onActualizar()"
           [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ACTUALIZAR_BTN' | translate"
+          (click)="onActualizar()"
         >
           @if (refreshing()) {
             <span class="block size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -252,14 +232,14 @@ export class VigilanciaWidget extends BaseFormWidgetComponent {
       calificacion: computeCalificacion(row),
     });
     return [
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_V0C',          s.v0c),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_V0C_MEDIA',    s.v0cMedia),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_SIGMA_V0C',    s.sigmaV0c),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PRESION',      s.presion),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PRESION_MEDIA',s.presionMedia),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PROYECTIL',    s.proyectil),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_ESPOLETA',     s.espoleta),
-      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_ESTOPIN',      s.estopin),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_V0C', s.v0c),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_V0C_MEDIA', s.v0cMedia),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_SIGMA_V0C', s.sigmaV0c),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PRESION', s.presion),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PRESION_MEDIA', s.presionMedia),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_PROYECTIL', s.proyectil),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_ESPOLETA', s.espoleta),
+      toRow('TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ROW_ESTOPIN', s.estopin),
     ];
   });
 

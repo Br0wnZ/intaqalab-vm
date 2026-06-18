@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,10 +10,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { RadarMetcmqState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface RadarMetcmqForm {
   serie: string | null;
@@ -42,7 +34,6 @@ interface RadarMetcmqForm {
   ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
-
       <!-- Header: Icon + Title -->
       <div class="flex items-center gap-1.5 shrink-0">
         <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -81,11 +72,13 @@ interface RadarMetcmqForm {
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- Text output + Copy + Generar -->
       <div intaReadonlyContent class="flex-1 flex items-center gap-1.5 min-h-0">
-        <div class="flex-1 flex items-center border border-slate-200 rounded-lg bg-slate-50 h-10 px-3 min-w-0 overflow-hidden">
+        <div
+          class="flex-1 flex items-center border border-slate-200 rounded-lg bg-slate-50 h-10 px-3 min-w-0 overflow-hidden"
+        >
           <span class="flex-1 text-sm text-slate-700 truncate">
             @if (texto()) {
               {{ texto() }}
@@ -163,8 +156,8 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
     this.#store.updateRadarMetcmq({ serie, disparo });
 
     // Generate mock bulletin text for the selected shot's time block
-    const serieLabel = this.serieOptions().find(o => o.value === serie)?.label ?? serie ?? '—';
-    const disparoLabel = this.disparoOptions().find(o => o.value === disparo)?.label ?? disparo ?? '—';
+    const serieLabel = this.serieOptions().find((o) => o.value === serie)?.label ?? serie ?? '—';
+    const disparoLabel = this.disparoOptions().find((o) => o.value === disparo)?.label ?? disparo ?? '—';
     const now = new Date();
     const hhmm = now.toTimeString().slice(0, 5);
     const mockTexto =

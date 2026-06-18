@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,15 +6,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { InputSelect } from '@intaqalab/ui';
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -46,11 +38,9 @@ interface TopographyFormModel {
     InputSelect,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
-
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
           <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
@@ -88,8 +78,8 @@ interface TopographyFormModel {
         <!-- Disparo actual -->
         <button
           mat-flat-button
-          class="!bg-violet-600 !text-white !text-xs !h-8 !px-3 !rounded-xl"
           type="button"
+          class="!bg-violet-600 !text-white !text-xs !h-8 !px-3 !rounded-xl"
           (click)="setCurrentShot()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
@@ -98,17 +88,16 @@ interface TopographyFormModel {
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Fields ───────────────────────────────────────────────────────── -->
       <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-3 gap-y-1 min-h-0 content-start">
-
         <!-- Row 1 -->
 
         <!-- Equipo -->
@@ -166,7 +155,6 @@ interface TopographyFormModel {
             (input)="numeroEstelaHumoField.set(+$any($event.target).value || null)"
           />
         </mat-form-field>
-
       </div>
     </div>
   `,
@@ -209,9 +197,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   protected readonly numeroEstelaHumoField = signal<number | null>(
     this.#store.topographyIntroduction().numeroEstelaHumo,
   );
-  protected readonly observacionesField = signal<string | null>(
-    this.#store.topographyIntroduction().observaciones,
-  );
+  protected readonly observacionesField = signal<string | null>(this.#store.topographyIntroduction().observaciones);
 
   // ── Snapshot for dirty tracking ────────────────────────────────────────────
   readonly #savedSnapshot = signal({
@@ -251,18 +237,18 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   // ── FormWidget implementation ──────────────────────────────────────────────
   readonly formState: Signal<WidgetFormState> = computed(() => ({
-    widgetId:   this.widgetId(),
-    dirty:      this.isDirty(),
-    touched:    this.isDirty(),
-    valid:      this.selectForm().valid(),
+    widgetId: this.widgetId(),
+    dirty: this.isDirty(),
+    touched: this.isDirty(),
+    valid: this.selectForm().valid(),
     hasChanges: this.isDirty(),
   }));
 
   setCurrentShot(): void {
     const { activeSerieId, activeShotId } = this.#store;
-    this.formModel.update(m => ({
+    this.formModel.update((m) => ({
       ...m,
-      serie:   activeSerieId() ?? m.serie,
+      serie: activeSerieId() ?? m.serie,
       disparo: activeShotId() ?? m.disparo,
     }));
   }
@@ -270,9 +256,9 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   resetForm(): void {
     const stored = this.#store.topographyIntroduction();
     this.formModel.set({
-      serie:   stored.serie,
+      serie: stored.serie,
       disparo: stored.disparo,
-      equipo:  stored.equipo,
+      equipo: stored.equipo,
     });
     this.tiempoVueloField.set(this.#numToField(stored.tiempoVuelo, stored.tiempoVueloUnit));
     this.tiempoIluminacionField.set(this.#numToField(stored.tiempoIluminacion, stored.tiempoIluminacionUnit));
@@ -311,10 +297,10 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   #syncSnapshot(): void {
     this.#savedSnapshot.set({
-      tiempoVuelo:      this.tiempoVueloField(),
+      tiempoVuelo: this.tiempoVueloField(),
       tiempoIluminacion: this.tiempoIluminacionField(),
       numeroEstelaHumo: this.numeroEstelaHumoField(),
-      observaciones:    this.observacionesField(),
+      observaciones: this.observacionesField(),
     });
   }
 }

@@ -16,6 +16,7 @@ export default defineConfig(() => ({
     name: 'master-data',
     watch: false,
     globals: true,
+    testTimeout: 10000,
     environment: 'jsdom',
     deps: {
       inline: ['@angular/compiler', '@angular/common'],

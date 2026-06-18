@@ -1,21 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
-import { InputSelect } from '@intaqalab/ui';
 import type { CalibryObserverOption } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 export interface MaoTopographyMassConfigDialogData {
   serieOptions: { value: string; label: string }[];
@@ -27,7 +21,7 @@ export interface MaoTopographyMassConfigDialogData {
     xBlanco: { value: string; unit: string } | null;
     yBlanco: { value: string; unit: string } | null;
     zBlanco: { value: string; unit: string } | null;
-    olt:    { value: string; unit: string } | null;
+    olt: { value: string; unit: string } | null;
     observador: string | null;
   };
 }
@@ -41,7 +35,7 @@ export interface MaoTopographyMassConfigDialogResult {
   xBlanco?: { value: string; unit: string } | null;
   yBlanco?: { value: string; unit: string } | null;
   zBlanco?: { value: string; unit: string } | null;
-  olt?:    { value: string; unit: string } | null;
+  olt?: { value: string; unit: string } | null;
   observador?: string | null;
 }
 
@@ -64,17 +58,17 @@ type InputFieldValue = { value: string; unit: string } | null;
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
     <!-- Header -->
-    <h2 mat-dialog-title class="!flex items-center justify-center gap-2 text-lg font-bold text-gray-900">
-      <mat-icon class="text-gray-600">edit</mat-icon>
+    <h2 mat-dialog-title>
+      <ui-inta-icon name="edit" size="xxl" />
       {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_TITLE' | translate }}
     </h2>
 
     <!-- Content -->
-    <mat-dialog-content intaReadonlyContent class="flex flex-col gap-4 !pt-2">
-
+    <mat-dialog-content intaReadonlyContent>
       <!-- Series multi-select -->
       <div class="flex flex-col gap-1">
         <span class="text-sm text-gray-700">
@@ -95,7 +89,6 @@ type InputFieldValue = { value: string; unit: string } | null;
 
       <!-- Fields 2-column grid -->
       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-
         <!-- Pieza X -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_PIEZA_LABEL' | translate"
@@ -171,7 +164,6 @@ type InputFieldValue = { value: string; unit: string } | null;
             }
           </mat-select>
         </mat-form-field>
-
       </div>
     </mat-dialog-content>
 
@@ -189,7 +181,8 @@ type InputFieldValue = { value: string; unit: string } | null;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MaoTopographyMassConfigDialog {
-  readonly #dialogRef = inject<MatDialogRef<MaoTopographyMassConfigDialog, MaoTopographyMassConfigDialogResult>>(MatDialogRef);
+  readonly #dialogRef =
+    inject<MatDialogRef<MaoTopographyMassConfigDialog, MaoTopographyMassConfigDialogResult>>(MatDialogRef);
   readonly data = inject<MaoTopographyMassConfigDialogData>(MAT_DIALOG_DATA);
 
   // ── Unit options ─────────────────────────────────────────────────────────
@@ -198,7 +191,7 @@ export class MaoTopographyMassConfigDialog {
 
   // ── Select form ──────────────────────────────────────────────────────────
   readonly formModel = signal<MassConfigForm>({
-    series:     [],
+    series: [],
     observador: this.data.current.observador,
   });
   readonly massForm = form(this.formModel);
@@ -215,15 +208,15 @@ export class MaoTopographyMassConfigDialog {
   apply(): void {
     this.#dialogRef.close({
       action: 'apply',
-      series:     this.formModel().series,
+      series: this.formModel().series,
       observador: this.formModel().observador,
-      xPieza:  this.xPiezaField(),
-      yPieza:  this.yPiezaField(),
-      zPieza:  this.zPiezaField(),
+      xPieza: this.xPiezaField(),
+      yPieza: this.yPiezaField(),
+      zPieza: this.zPiezaField(),
       xBlanco: this.xBlancoField(),
       yBlanco: this.yBlancoField(),
       zBlanco: this.zBlancoField(),
-      olt:     this.oltField(),
+      olt: this.oltField(),
     });
   }
 }

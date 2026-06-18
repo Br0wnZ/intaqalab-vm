@@ -77,7 +77,7 @@ import { VigilanciaWidget } from '../vigilancia/vigilancia';
   providers: [],
   host: { class: 'block h-full' },
   template: `
-    <div class="grid-container" [class.edit-mode]="editMode()">
+    <div class="grid-container overflow-auto" [class.edit-mode]="editMode()">
       <!-- Grid 3x3 -->
       <div class="execution-grid">
         <!-- Background: Celdas vacías para el drop -->

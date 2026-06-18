@@ -1,13 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { form, FormField } from '@angular/forms/signals';
+import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { ExecutionStore, type MunitionIntroAcondicionamientoState } from '../../../../+state/execution.store';
 import type { AcondFormModel } from '../munition-introduction';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 @Component({
   selector: 'inta-munition-acondicionamiento-tab',
@@ -19,11 +21,12 @@ import type { AcondFormModel } from '../munition-introduction';
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="flex-1 grid grid-cols-5 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-2 lg:grid-cols-5 gap-x-2 gap-y-1 min-h-0 content-start">
       <!-- Componente -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
         <mat-select
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_PLACEHOLDER' | translate"
@@ -36,17 +39,17 @@ import type { AcondFormModel } from '../munition-introduction';
       </mat-form-field>
 
       <!-- Tiempo en cámara -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 self-end">
         <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TIEMPO_CAMARA_LABEL' | translate }}
         </span>
-        <div class="flex items-center h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+        <div class="flex items-center h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
           <span class="text-sm text-slate-700 font-medium tabular-nums">{{ tiempoEnCamara() ?? '—' }}</span>
         </div>
       </div>
 
       <!-- Equipo (Cámara) -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
         <mat-select
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.CAMARA_PLACEHOLDER' | translate"
@@ -56,23 +59,31 @@ import type { AcondFormModel } from '../munition-introduction';
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
         </mat-select>
-        <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-8 !h-8" (click)="$event.stopPropagation()">
-          <mat-icon class="!text-[18px]">settings</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          class="flex items-center justify-center"
+          (click)="$event.stopPropagation()"
+        >
+          <ui-inta-icon name="settings" color="var(--inta-button)" class="!h-full !w-full scale-80" />
         </button>
       </mat-form-field>
 
       <!-- Temperatura -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 self-end">
         <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_LABEL' | translate }}
         </span>
-        <div class="flex h-9 rounded-lg border border-slate-200 overflow-hidden">
+        <div class="flex h-[44px] rounded-lg border border-slate-200 overflow-hidden">
           <div class="flex-1 flex items-center px-3 bg-white">
             <span class="text-sm font-semibold text-green-600 tabular-nums">
               {{ temperaturaFromCamara() ?? '—' }}
             </span>
           </div>
-          <div class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-w-[52px] justify-center">
+          <div
+            class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-w-[52px] justify-center"
+          >
             °C
             <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">expand_more</mat-icon>
           </div>
@@ -95,17 +106,19 @@ import type { AcondFormModel } from '../munition-introduction';
       <!-- Row 2 -->
 
       <!-- Temperatura programada -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 self-end">
         <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL' | translate }}
         </span>
-        <div class="flex h-9 rounded-lg border border-slate-200 overflow-hidden">
+        <div class="flex h-[44px] rounded-lg border border-slate-200 overflow-hidden">
           <div class="flex-1 flex items-center px-3 bg-white">
             <span class="text-sm font-semibold text-slate-700 tabular-nums">
               {{ temperaturaCorregidaDisplay() ?? '—' }}
             </span>
           </div>
-          <div class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-w-[52px] justify-center">
+          <div
+            class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-w-[52px] justify-center"
+          >
             °C
             <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">expand_more</mat-icon>
           </div>
@@ -116,8 +129,10 @@ import type { AcondFormModel } from '../munition-introduction';
       <div></div>
 
       <!-- Fecha y hora entrada -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}</mat-label>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}
+        </mat-label>
         <input
           matInput
           readonly
@@ -125,13 +140,19 @@ import type { AcondFormModel } from '../munition-introduction';
           [value]="fechaHoraEntradaField() ?? ''"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
         />
-        <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-8 !h-8" (click)="captureFechaHoraEntrada()">
-          <mat-icon class="!text-[18px]">play_circle_outline</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          class="!text-[var(--inta-button)]"
+          (click)="captureFechaHoraEntrada()"
+        >
+          <mat-icon>play_circle_outline</mat-icon>
         </button>
       </mat-form-field>
 
       <!-- Fecha y hora salida -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}</mat-label>
         <input
           matInput
@@ -140,8 +161,14 @@ import type { AcondFormModel } from '../munition-introduction';
           [value]="fechaHoraSalidaField() ?? ''"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
         />
-        <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-8 !h-8" (click)="captureFechaHoraSalida()">
-          <mat-icon class="!text-[18px]">stop_circle</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          class="!text-[var(--inta-button)]"
+          (click)="captureFechaHoraSalida()"
+        >
+          <mat-icon>stop_circle</mat-icon>
         </button>
       </mat-form-field>
     </div>
@@ -156,10 +183,16 @@ export class MunitionAcondicionamientoTabComponent {
     componente: this.#store.munitionIntroduction().acondicionamiento.componente,
   });
   readonly acondForm = form(this.acondFormModel);
-  
-  readonly observacionesField = signal<string | null>(this.#store.munitionIntroduction().acondicionamiento.observaciones);
-  readonly fechaHoraEntradaField = signal<string | null>(this.#store.munitionIntroduction().acondicionamiento.fechaHoraEntrada);
-  readonly fechaHoraSalidaField = signal<string | null>(this.#store.munitionIntroduction().acondicionamiento.fechaHoraSalida);
+
+  readonly observacionesField = signal<string | null>(
+    this.#store.munitionIntroduction().acondicionamiento.observaciones,
+  );
+  readonly fechaHoraEntradaField = signal<string | null>(
+    this.#store.munitionIntroduction().acondicionamiento.fechaHoraEntrada,
+  );
+  readonly fechaHoraSalidaField = signal<string | null>(
+    this.#store.munitionIntroduction().acondicionamiento.fechaHoraSalida,
+  );
 
   readonly #savedSnapshot = signal({
     observaciones: this.observacionesField(),
@@ -181,7 +214,7 @@ export class MunitionAcondicionamientoTabComponent {
 
   readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
   readonly camaraOptions = computed(() => this.#store.munitionIntroduction().camaraOptions);
-  
+
   readonly temperaturaCorregidaDisplay = computed(() => {
     const t = this.#store.munitionIntroduction().acondicionamiento.temperaturaCorregida;
     return t !== null ? t.toString() : null;
@@ -189,7 +222,7 @@ export class MunitionAcondicionamientoTabComponent {
 
   readonly temperaturaFromCamara = computed(() => {
     const camara = this.acondFormModel().camara;
-    return this.camaraOptions().find(c => c.value === camara)?.temperatura ?? null;
+    return this.camaraOptions().find((c) => c.value === camara)?.temperatura ?? null;
   });
 
   readonly tiempoEnCamara = computed(() => {
@@ -198,9 +231,15 @@ export class MunitionAcondicionamientoTabComponent {
     if (!entrada || !salida) return null;
     const diffMs = new Date(salida).getTime() - new Date(entrada).getTime();
     if (diffMs < 0) return null;
-    const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0');
-    const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0');
-    const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0');
+    const h = Math.floor(diffMs / 3600000)
+      .toString()
+      .padStart(2, '0');
+    const m = Math.floor((diffMs % 3600000) / 60000)
+      .toString()
+      .padStart(2, '0');
+    const s = Math.floor((diffMs % 60000) / 1000)
+      .toString()
+      .padStart(2, '0');
     return `${h}:${m}:${s}`;
   });
 
@@ -222,7 +261,7 @@ export class MunitionAcondicionamientoTabComponent {
       observaciones: this.observacionesField(),
     };
     this.#store.updateMunitionIntroductionAcondicionamiento(acondUpdates);
-    
+
     this.#savedSnapshot.set({
       observaciones: this.observacionesField(),
       fechaHoraEntrada: this.fechaHoraEntradaField(),

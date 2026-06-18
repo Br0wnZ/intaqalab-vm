@@ -13,7 +13,7 @@ import { HeaderComponent } from './header.component';
 
 // Stub with correct selector to replace HeaderToolsComponent (lib-header-tools)
 // eslint-disable-next-line @angular-eslint/component-selector
-@Component({ selector: 'lib-header-tools', template: '',})
+@Component({ selector: 'lib-header-tools', template: '' })
 class HeaderToolsStub {}
 
 type MockUser = { name: string };

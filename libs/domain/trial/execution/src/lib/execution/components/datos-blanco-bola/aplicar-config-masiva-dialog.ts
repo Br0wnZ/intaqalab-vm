@@ -1,33 +1,36 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  inject,
-  signal,
-} from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import { InputSelect } from '@intaqalab/ui';
 
 import type { DatosBlancoBolasState, InputFieldValue } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 export interface AplicarConfigMasivaDialogData {
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];
   currentData: Pick<
     DatosBlancoBolasState,
-    | 'blancoBolax' | 'blancoBolay' | 'blancoBolaz'
-    | 'bocaPiezaX' | 'bocaPiezaY' | 'bocaPiezaZ'
-    | 'diametroBola' | 'alturaBola'
+    | 'blancoBolax'
+    | 'blancoBolay'
+    | 'blancoBolaz'
+    | 'bocaPiezaX'
+    | 'bocaPiezaY'
+    | 'bocaPiezaZ'
+    | 'diametroBola'
+    | 'alturaBola'
     | 'altTripodeCamTransversal'
-    | 'camaraFrontalX' | 'camaraFrontalY' | 'camaraFrontalZ'
+    | 'camaraFrontalX'
+    | 'camaraFrontalY'
+    | 'camaraFrontalZ'
     | 'altTripodeCamFrontal'
-    | 'camTransversalX' | 'camTransversalY' | 'camTransversalZ'
+    | 'camTransversalX'
+    | 'camTransversalY'
+    | 'camTransversalZ'
   >;
 }
 
@@ -51,42 +54,48 @@ export type AplicarConfigMasivaDialogResult =
     MatIconModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
     <!-- Header -->
-    <h2 mat-dialog-title class="flex items-center gap-2 text-base font-semibold m-0">
-      <mat-icon class="text-violet-600">tune</mat-icon>
+    <h2 mat-dialog-title>
+      <ui-inta-icon name="edit" size="xxl"  />
       {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DIALOG_TITLE' | translate }}
     </h2>
 
     <!-- Content -->
-    <mat-dialog-content intaReadonlyContent class="flex flex-col gap-4 !pt-4" style="min-width: 700px; max-width: 95vw;">
-
+    <mat-dialog-content
+      intaReadonlyContent
+      style="min-width: 700px; max-width: 95vw;"
+      class="flex flex-col gap-4 !pt-4"
+    >
       <!-- Selección de series y disparos -->
-      <div class="flex gap-3">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_SERIES_LABEL' | translate }}</mat-label>
-          <mat-select [multiple]="true" [(value)]="selectedSeries">
-            @for (opt of data.serieOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+      <div class="flex gap-3 mb-3">
+        <div class="flex-1">
+          <mat-label class="block text-sm font-medium text-gray-700 mb-1">{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_SERIES_LABEL' | translate }}</mat-label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-select [multiple]="true" [(value)]="selectedSeries">
+              @for (opt of data.serieOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DISPAROS_LABEL' | translate }}</mat-label>
-          <mat-select [multiple]="true" [(value)]="selectedDisparos">
-            @for (opt of data.disparoOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <div class="flex-1">
+          <mat-label class="block text-sm font-medium text-gray-700 mb-1">{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DISPAROS_LABEL' | translate }}</mat-label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-select [multiple]="true" [(value)]="selectedDisparos">
+              @for (opt of data.disparoOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
 
-      <div class="h-px bg-slate-100"></div>
-
       <!-- Campos — Fila 1 -->
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 gap-3">
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_X_LABEL' | translate"
           [opciones]="mOptions"
@@ -138,7 +147,7 @@ export type AplicarConfigMasivaDialogResult =
       </div>
 
       <!-- Campos — Fila 2 -->
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 gap-3">
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_TRANS_LABEL' | translate"
           [opciones]="mOptions"

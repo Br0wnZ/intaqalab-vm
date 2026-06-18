@@ -210,6 +210,7 @@ export class MunitionsService {
     const queryParams = this.#buildQueryParams({
       page: 1,
       pageSize: 10,
+      active: true,
       ...restParams,
     });
     return {

@@ -19,6 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
 import { BooleanStatusBadge } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { MasterDataStore } from '../../+state/master-data.store';
 import { MASTERS_ACTIONS } from '../../data/master-data.constants';
@@ -160,65 +161,57 @@ export class MasterDataListComponent {
     });
   }
 
-  protected createRecord() {
-    this.#dialog
-      .open(this.modalComponent, { ...this.#dialogStylesConfig, data: null })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          const payloadContent = { ...result, active: true };
-          this.store.createItem(payloadContent);
-        }
-      });
+  protected async createRecord() {
+    const dialogRef = this.#dialog.open(this.modalComponent, { ...this.#dialogStylesConfig, data: null });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    
+    if (result) {
+      const payloadContent = { ...result, active: true };
+      this.store.createItem(payloadContent);
+    }
   }
 
-  protected onClickEdit(itemToEdit: MasterDataResponseType) {
-    this.#dialog
-      .open(this.modalComponent, { ...this.#dialogStylesConfig, data: itemToEdit })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          this.store.updateItem(result);
-        }
-      });
+  protected async onClickEdit(itemToEdit: MasterDataResponseType) {
+    const dialogRef = this.#dialog.open(this.modalComponent, { ...this.#dialogStylesConfig, data: itemToEdit });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (result) {
+      this.store.updateItem(result);
+    }
   }
 
-  protected onClickSwitchStatus(itemToEdit: MasterDataResponseType) {
+  protected async onClickSwitchStatus(itemToEdit: MasterDataResponseType) {
     const switchStatusItem: MasterDataSwitchStatusDialog = {
       title: this.masterView().dialogs[this.ACTIONS.SWITCH_STATUS].title,
       description: this.masterView().dialogs[this.ACTIONS.SWITCH_STATUS].description,
       item: itemToEdit,
     };
 
-    this.#dialog
-      .open(MasterDataSwitchStatusDialogComponent, { ...this.#dialogStylesConfig, data: switchStatusItem })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          const itemNew = {
-            ...itemToEdit,
-            active: !itemToEdit.active,
-          };
-          this.store.updateItem(itemNew);
-        }
-      });
+    const dialogRef = this.#dialog.open(MasterDataSwitchStatusDialogComponent, { ...this.#dialogStylesConfig, data: switchStatusItem });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (result) {
+      const itemNew = {
+        ...itemToEdit,
+        active: !itemToEdit.active,
+      };
+      this.store.updateItem(itemNew);
+    }
   }
 
-  protected onClickDelete(id: string): void {
+  protected async onClickDelete(id: string): Promise<void> {
     const deleteMasterItem: MasterDataRemoveDialog = {
       title: this.masterView().dialogs[this.ACTIONS.DELETE].title,
       description: this.masterView().dialogs[this.ACTIONS.DELETE].description,
       data: { id, masterServiceRef: this.store },
     };
 
-    this.#dialog
-      .open(MasterDataRemoveDialogComponent, { ...this.#dialogStylesConfig, data: deleteMasterItem })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          this.store.deleteItem(id);
-        }
-      });
+    const dialogRef = this.#dialog.open(MasterDataRemoveDialogComponent, { ...this.#dialogStylesConfig, data: deleteMasterItem });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (result) {
+      this.store.deleteItem(id);
+    }
   }
 
   onPage(event: PageEvent): void {

@@ -168,7 +168,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadTargetTypes()) return undefined;
       return {
-        url: `${this.#planningUrl}/target-types?pageSize=100`,
+        url: `${this.#planningUrl}/target-types?pageSize=100&active=true`,
         method: 'GET',
       };
     },
@@ -182,7 +182,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadTargetMaterials()) return undefined;
       return {
-        url: `${this.#planningUrl}/target-materials?pageSize=100`,
+        url: `${this.#planningUrl}/target-materials?pageSize=100&active=true`,
         method: 'GET',
       };
     },
@@ -196,7 +196,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadTargetDimensions()) return undefined;
       return {
-        url: `${this.#planningUrl}/target-dimensions?pageSize=100`,
+        url: `${this.#planningUrl}/target-dimensions?pageSize=100&active=true`,
         method: 'GET',
       };
     },
@@ -210,7 +210,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadTargetThicknesses()) return undefined;
       return {
-        url: `${this.#planningUrl}/target-thicknesses?pageSize=100`,
+        url: `${this.#planningUrl}/target-thicknesses?pageSize=100&active=true`,
         method: 'GET',
       };
     },
@@ -224,7 +224,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadImpactZones()) return undefined;
       return {
-        url: `${this.#planningUrl}/impact-zones?pageSize=100`,
+        url: `${this.#planningUrl}/impact-zones?pageSize=100&active=true`,
         method: 'GET',
       };
     },
@@ -238,7 +238,7 @@ export class ShootingConditionsService {
     () => {
       if (!this.#shouldLoadLoadingZones()) return undefined;
       return {
-        url: `${this.#planningUrl}/loading-zone?pageSize=1000`,
+        url: `${this.#planningUrl}/loading-zone?pageSize=1000&active=true`,
         method: 'GET',
       };
     },

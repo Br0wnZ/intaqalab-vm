@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
       <span
         class="absolute left-3 bg-white px-1 pointer-events-none transition-all duration-200 z-10 leading-none select-none"
         [class]="labelFloating()
-          ? (isComputed() ? 'top-0 -translate-y-1/2 text-xs text-violet-500' : 'top-0 -translate-y-1/2 text-xs text-slate-500')
+          ? (isComputed() ? 'top-0 -translate-y-1/2 text-[11px] text-violet-500' : 'top-0 -translate-y-1/2 text-[11px] text-violet-500')
           : 'top-1/2 -translate-y-1/2 text-sm text-slate-400'"
       >{{ label() }}</span>
 
@@ -18,12 +18,13 @@ import { MatSelectModule } from '@angular/material/select';
       <div
         class="flex items-center rounded-md transition-colors h-full border overflow-hidden"
         [class]="containerClass()"
+        [class.border-red-500]="focused()"
       >
         <!-- Input numérico -->
         <input
           type="text"
           inputmode="decimal"
-          class="flex-1 px-1.5 h-full text-[11px] outline-none bg-transparent"
+          class="flex-1 px-4 h-full text-md outline-none bg-transparent w-full"
           [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
           [style.color]="textColor() ?? null"
           [value]="inputValue()"
@@ -36,13 +37,13 @@ import { MatSelectModule } from '@angular/material/select';
         />
 
         <!-- Divider -->
-        <span class="w-px h-4 flex-shrink-0" [class]="isComputed() ? 'bg-violet-200' : 'bg-slate-200'"></span>
+        <span class="w-px h-4 flex-shrink-0" [class]="isComputed() ? 'bg-violet-500' : 'bg-slate-300'"></span>
 
         <!-- Select inline -->
         <mat-select
           panelClass="input-select-panel"
           disableRipple
-          class="shrink-0 !w-max px-2 text-[11px] bg-transparent"
+          class="shrink-0 !w-max px-4 text-md bg-transparent"
           [class]="isComputed() ? 'text-violet-600' : 'text-slate-500'"
           [value]="selectedUnit()"
           [attr.aria-label]="label() + ' unidad'"
@@ -109,7 +110,7 @@ export class InputSelect {
   readonly isComputed = computed(() => this.variant() === 'computed');
   readonly containerClass = computed(() => {
     if (this.isComputed()) return 'bg-violet-50/40 border-violet-200';
-    return this.focused() ? 'bg-white border-slate-400' : 'bg-white border-slate-200';
+    return this.focused() ? 'border-[2px] bg-white border-violet-500' : 'bg-white border-slate-200';
   });
 
   // ── Panel width (full host element width for dropdown) ────────────────────

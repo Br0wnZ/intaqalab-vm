@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { form, FormField } from '@angular/forms/signals';
+import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
+
 import { ExecutionStore, type MunitionIntroPesosState } from '../../../../+state/execution.store';
 import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
 
@@ -21,9 +22,10 @@ import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
     MatSelectModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-x-2 gap-y-1 min-h-0 content-start">
       <!-- Componente -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
@@ -48,8 +50,14 @@ import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
         </mat-select>
-        <button mat-icon-button matSuffix type="button" class="!text-violet-500 !w-8 !h-8" (click)="$event.stopPropagation()">
-          <mat-icon class="!text-[18px]">settings</mat-icon>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          class="flex items-center justify-center"
+          (click)="$event.stopPropagation()"
+        >
+          <ui-inta-icon name="settings" color="var(--inta-button)" class="!h-full !w-full scale-80" />
         </button>
       </mat-form-field>
 
@@ -88,7 +96,7 @@ import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
       <!-- Row 2 -->
 
       <!-- Fecha y hora -->
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_LABEL' | translate }}</mat-label>
         <input
           matInput
@@ -103,16 +111,18 @@ import type { InputFieldValue, PesosFormModel } from '../munition-introduction';
 
       <!-- Rango pesada -->
       <div class="flex flex-col gap-1">
-        <span class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+        <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.RANGO_PESADA_LABEL' | translate }}
         </span>
-        <div class="flex h-9 rounded-lg border border-slate-200 overflow-hidden">
+        <div class="flex h-[44px] rounded-lg border border-slate-200 overflow-hidden">
           <div class="flex-1 flex items-center px-3 bg-white">
             <span class="text-sm font-semibold text-green-600 tabular-nums">
               {{ rangoPesadaValue() ?? '—' }}
             </span>
           </div>
-          <div class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-w-[44px] justify-center">
+          <div
+            class="flex items-center gap-0.5 px-2 border-l border-slate-200 bg-slate-50 text-xs font-medium text-slate-600 min-h-[44px] justify-center"
+          >
             {{ rangoPesadaUnit() ?? '—' }}
             <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">expand_more</mat-icon>
           </div>
@@ -141,11 +151,11 @@ export class MunitionPesosTabComponent {
     balanza: this.#store.munitionIntroduction().pesos.balanza,
   });
   readonly pesosForm = form(this.pesosFormModel);
-  
+
   #numToField(value: number | null, unit: string): InputFieldValue {
     return value !== null ? { value: value.toString(), unit } : null;
   }
-  
+
   #parseNum(field: InputFieldValue): number | null {
     if (!field) return null;
     const n = parseFloat(field.value);
@@ -153,9 +163,13 @@ export class MunitionPesosTabComponent {
   }
 
   readonly pesoField = signal<InputFieldValue>(this.#numToField(this.#store.munitionIntroduction().pesos.peso, 'g'));
-  readonly pesoAnadidoField = signal<InputFieldValue>(this.#numToField(this.#store.munitionIntroduction().pesos.pesoAnadido, 'g'));
-  readonly pesoRetiradoField = signal<InputFieldValue>(this.#numToField(this.#store.munitionIntroduction().pesos.pesoRetirado, 'g'));
-  
+  readonly pesoAnadidoField = signal<InputFieldValue>(
+    this.#numToField(this.#store.munitionIntroduction().pesos.pesoAnadido, 'g'),
+  );
+  readonly pesoRetiradoField = signal<InputFieldValue>(
+    this.#numToField(this.#store.munitionIntroduction().pesos.pesoRetirado, 'g'),
+  );
+
   readonly observacionesField = signal<string | null>(this.#store.munitionIntroduction().pesos.observaciones);
   readonly fechaHoraPesosField = signal<string | null>(this.#store.munitionIntroduction().pesos.fechaHora);
 
@@ -191,19 +205,19 @@ export class MunitionPesosTabComponent {
 
   readonly isPolvo = computed(() => {
     const componente = this.pesosFormModel().componente;
-    return this.componenteOptions().find(c => c.value === componente)?.category === 'polvo';
+    return this.componenteOptions().find((c) => c.value === componente)?.category === 'polvo';
   });
 
   readonly rangoPesadaValue = computed(() => {
     const balanza = this.pesosFormModel().balanza;
-    const opt = this.balanzaOptions().find(b => b.value === balanza);
+    const opt = this.balanzaOptions().find((b) => b.value === balanza);
     if (!opt || opt.rangoMin === undefined || opt.rangoMax === undefined) return null;
     return `${opt.rangoMin} - ${opt.rangoMax}`;
   });
 
   readonly rangoPesadaUnit = computed(() => {
     const balanza = this.pesosFormModel().balanza;
-    return this.balanzaOptions().find(b => b.value === balanza)?.unit ?? null;
+    return this.balanzaOptions().find((b) => b.value === balanza)?.unit ?? null;
   });
 
   captureFechaHoraPesos(): void {
@@ -222,7 +236,7 @@ export class MunitionPesosTabComponent {
       observaciones: this.observacionesField(),
     };
     this.#store.updateMunitionIntroductionPesos(pesosUpdates);
-    
+
     this.#savedSnapshot.set({
       observaciones: this.observacionesField(),
       fechaHoraPesos: this.fechaHoraPesosField(),

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,10 +9,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -48,8 +40,7 @@ interface DataFormModel {
     TranslateModule,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
-
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -90,23 +81,20 @@ interface DataFormModel {
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- ── Body: flex container (data grid + observaciones) ──────────────── -->
       <div intaReadonlyContent class="flex-1 flex gap-2 min-h-0">
-
         <!-- Data grid: two explicit rows inside a flex column -->
         <div class="flex-1 flex flex-col gap-1">
-
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
           <div class="grid grid-cols-6 gap-x-2">
-
             <!-- Manómetro -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MANOMETRO_LABEL' | translate }}</mat-label>
@@ -149,26 +137,30 @@ interface DataFormModel {
             <!-- Presión (read-only output) -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.PRESION_LABEL' | translate }}</mat-label>
-              <input matInput readonly [value]="presionDisplay()" class="tabular-nums italic text-slate-400" />
+              <input matInput readonly class="tabular-nums italic text-slate-400" [value]="presionDisplay()" />
               <span matSuffix class="pr-1 text-sm text-gray-700">{{ presionUnit() }}</span>
             </mat-form-field>
 
             <!-- Cols 5-6 intentionally empty -->
-
           </div>
 
           <!-- Row 2: H1 | H2 | H3 | H4 | H5 | Altura media -->
           <div class="grid grid-cols-6 gap-x-2">
-
             <!-- H1 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H1_LABEL' | translate }}</mat-label>
-              <input matInput inputmode="decimal"
+              <input
+                matInput
+                inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h1Field()?.value ?? ''"
                 (input)="h1Field.set({ value: $any($event.target).value, unit: h1Field()?.unit ?? 'μm' })"
               />
-              <mat-select matSuffix [value]="h1Field()?.unit ?? 'μm'" (selectionChange)="h1Field.set({ value: h1Field()?.value ?? '', unit: $event.value })">
+              <mat-select
+                matSuffix
+                [value]="h1Field()?.unit ?? 'μm'"
+                (selectionChange)="h1Field.set({ value: h1Field()?.value ?? '', unit: $event.value })"
+              >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -178,12 +170,18 @@ interface DataFormModel {
             <!-- H2 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H2_LABEL' | translate }}</mat-label>
-              <input matInput inputmode="decimal"
+              <input
+                matInput
+                inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h2Field()?.value ?? ''"
                 (input)="h2Field.set({ value: $any($event.target).value, unit: h2Field()?.unit ?? 'μm' })"
               />
-              <mat-select matSuffix [value]="h2Field()?.unit ?? 'μm'" (selectionChange)="h2Field.set({ value: h2Field()?.value ?? '', unit: $event.value })">
+              <mat-select
+                matSuffix
+                [value]="h2Field()?.unit ?? 'μm'"
+                (selectionChange)="h2Field.set({ value: h2Field()?.value ?? '', unit: $event.value })"
+              >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -193,12 +191,18 @@ interface DataFormModel {
             <!-- H3 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H3_LABEL' | translate }}</mat-label>
-              <input matInput inputmode="decimal"
+              <input
+                matInput
+                inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h3Field()?.value ?? ''"
                 (input)="h3Field.set({ value: $any($event.target).value, unit: h3Field()?.unit ?? 'μm' })"
               />
-              <mat-select matSuffix [value]="h3Field()?.unit ?? 'μm'" (selectionChange)="h3Field.set({ value: h3Field()?.value ?? '', unit: $event.value })">
+              <mat-select
+                matSuffix
+                [value]="h3Field()?.unit ?? 'μm'"
+                (selectionChange)="h3Field.set({ value: h3Field()?.value ?? '', unit: $event.value })"
+              >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -208,12 +212,18 @@ interface DataFormModel {
             <!-- H4 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H4_LABEL' | translate }}</mat-label>
-              <input matInput inputmode="decimal"
+              <input
+                matInput
+                inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h4Field()?.value ?? ''"
                 (input)="h4Field.set({ value: $any($event.target).value, unit: h4Field()?.unit ?? 'μm' })"
               />
-              <mat-select matSuffix [value]="h4Field()?.unit ?? 'μm'" (selectionChange)="h4Field.set({ value: h4Field()?.value ?? '', unit: $event.value })">
+              <mat-select
+                matSuffix
+                [value]="h4Field()?.unit ?? 'μm'"
+                (selectionChange)="h4Field.set({ value: h4Field()?.value ?? '', unit: $event.value })"
+              >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -223,12 +233,18 @@ interface DataFormModel {
             <!-- H5 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H5_LABEL' | translate }}</mat-label>
-              <input matInput inputmode="decimal"
+              <input
+                matInput
+                inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h5Field()?.value ?? ''"
                 (input)="h5Field.set({ value: $any($event.target).value, unit: h5Field()?.unit ?? 'μm' })"
               />
-              <mat-select matSuffix [value]="h5Field()?.unit ?? 'μm'" (selectionChange)="h5Field.set({ value: h5Field()?.value ?? '', unit: $event.value })">
+              <mat-select
+                matSuffix
+                [value]="h5Field()?.unit ?? 'μm'"
+                (selectionChange)="h5Field.set({ value: h5Field()?.value ?? '', unit: $event.value })"
+              >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -237,13 +253,13 @@ interface DataFormModel {
 
             <!-- Altura media (read-only computed) -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.ALTURA_MEDIA_LABEL' | translate }}</mat-label>
-              <input matInput readonly [value]="alturaMediaDisplay()" class="tabular-nums italic text-slate-400" />
+              <mat-label>
+                {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.ALTURA_MEDIA_LABEL' | translate }}
+              </mat-label>
+              <input matInput readonly class="tabular-nums italic text-slate-400" [value]="alturaMediaDisplay()" />
               <span matSuffix class="pr-1 text-sm text-gray-700">μm</span>
             </mat-form-field>
-
           </div>
-
         </div>
 
         <!-- Observaciones (fixed width, full height) -->
@@ -258,7 +274,6 @@ interface DataFormModel {
             (input)="observacionesField.set($any($event.target).value || null)"
           ></textarea>
         </mat-form-field>
-
       </div>
     </div>
   `,
@@ -281,7 +296,9 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   protected readonly disparoOptions = computed(() => this.#store.manometerIntroduction().disparoOptions);
   protected readonly manometroOptions = computed(() => this.#store.manometerIntroduction().manometroOptions);
   protected readonly crusherOptions = computed(() => this.#store.manometerIntroduction().crusherOptions);
-  protected readonly micrometroPalpadorOptions = computed(() => this.#store.manometerIntroduction().micrometroPalpadorOptions);
+  protected readonly micrometroPalpadorOptions = computed(
+    () => this.#store.manometerIntroduction().micrometroPalpadorOptions,
+  );
 
   // ── Read-only outputs ──────────────────────────────────────────────────────
   protected readonly presionUnit = computed(() => this.#store.manometerIntroduction().presionUnit);
@@ -293,19 +310,27 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
     switch (this.#store.manometerIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'En curso';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EJECUTADA': return 'Ejecutada';
-      default: return '—';
+      case 'EN_CURSO':
+        return 'En curso';
+      case 'PENDIENTE':
+        return 'Pendiente';
+      case 'EJECUTADA':
+        return 'Ejecutada';
+      default:
+        return '—';
     }
   });
 
   protected readonly estadoClass = computed(() => {
     switch (this.#store.manometerIntroduction().estadoDisparo) {
-      case 'EN_CURSO': return 'bg-green-100 text-green-700';
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-500';
+      case 'EN_CURSO':
+        return 'bg-green-100 text-green-700';
+      case 'PENDIENTE':
+        return 'bg-amber-100 text-amber-700';
+      case 'EJECUTADA':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
     }
   });
 
@@ -340,14 +365,12 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     this.#numToField(this.#store.manometerIntroduction().h5, this.#store.manometerIntroduction().h5Unit),
   );
 
-  protected readonly observacionesField = signal<string | null>(
-    this.#store.manometerIntroduction().observaciones,
-  );
+  protected readonly observacionesField = signal<string | null>(this.#store.manometerIntroduction().observaciones);
 
   // ── Altura media (computed from H1–H5) ────────────────────────────────────
   protected readonly alturaMedia = computed<number | null>(() => {
     const vals = [this.h1Field(), this.h2Field(), this.h3Field(), this.h4Field(), this.h5Field()]
-      .map(f => (f ? parseFloat(f.value) : null))
+      .map((f) => (f ? parseFloat(f.value) : null))
       .filter((v): v is number => v !== null && !isNaN(v));
     if (vals.length === 0) return null;
     return vals.reduce((a, b) => a + b, 0) / vals.length;
@@ -391,7 +414,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   }));
 
   setCurrentShot(): void {
-    this.selectorFormModel.update(m => ({
+    this.selectorFormModel.update((m) => ({
       ...m,
       serie: this.#store.activeSerieId() ?? m.serie,
       disparo: this.#store.activeShotId() ?? m.disparo,

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,15 +6,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -45,23 +37,24 @@ interface JltShotDataSelectForm {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5">
+    <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- Header -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">edit</mat-icon>
+          <div class="flex items-center justify-center shrink-0">
+            <ui-inta-icon name="edit_line" color="var(--inta-button)" />
           </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncat">
             {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.SERIE_PLACEHOLDER' | translate"
             [formField]="selectForm.serie"
@@ -73,7 +66,7 @@ interface JltShotDataSelectForm {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectForm.disparo"
@@ -85,24 +78,23 @@ interface JltShotDataSelectForm {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.CURRENT_SHOT_BTN' | translate }}
         </button>
 
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
 
       <!-- Divider -->
-      <div class="h-px bg-slate-100 shrink-0"></div>
+      <div class=""></div>
 
       <!-- Fields grid: 4 cols, 2 rows (last col = Observaciones spanning 2 rows) -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
-
+      <div intaReadonlyContent class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
         <!-- ── Row 1 ──────────────────────────────────────────────── -->
 
         <!-- JET -->
@@ -185,7 +177,6 @@ interface JltShotDataSelectForm {
           [value]="retrocesoField()"
           (valueChange)="retrocesoField.set($event)"
         />
-
       </div>
     </div>
   `,
@@ -234,9 +225,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   });
 
   // ── Numeric fields with units (ui-input-select) ────────────────────────────
-  protected readonly atacadoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.jltShotData().atacado, 'mm'),
-  );
+  protected readonly atacadoField = signal<InputFieldValue>(this.#numToField(this.#store.jltShotData().atacado, 'mm'));
   protected readonly retrocesoField = signal<InputFieldValue>(
     this.#numToField(this.#store.jltShotData().retroceso, 'mm'),
   );

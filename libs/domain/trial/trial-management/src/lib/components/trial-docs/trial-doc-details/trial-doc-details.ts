@@ -485,6 +485,7 @@ export class TrialDocDetails {
       width: '1024px',
       data: {
         documentId: this.documentDetailResource.value()?.id,
+        trialId: this.#docsService.fireTrialId(),
       },
     });
     dialogRef.afterClosed().subscribe((result) => {

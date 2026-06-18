@@ -20,14 +20,10 @@ import { ExecutionStore } from '../../../../+state/execution.store';
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule],
   template: `
     <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
-
       <!-- Equipo -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="equipo()"
-          (selectionChange)="equipoChange.emit($event.value)"
-        >
+        <mat-select [value]="equipo()" (selectionChange)="equipoChange.emit($event.value)">
           @for (opt of equipoOptions(); track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -36,11 +32,10 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
       <!-- Funcionamiento espoletas trayectografía -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_ESPOLETAS_TRAY_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="funcEspoletasTrayField()"
-          (selectionChange)="funcEspoletasTrayField.set($event.value)"
-        >
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_ESPOLETAS_TRAY_LABEL' | translate }}
+        </mat-label>
+        <mat-select [value]="funcEspoletasTrayField()" (selectionChange)="funcEspoletasTrayField.set($event.value)">
           @for (opt of funcEspoletasTrayOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -49,11 +44,10 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
       <!-- Funcionamiento munición fumígena radar -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_MUN_FUMIGENA_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="funcMunFumigenaField()"
-          (selectionChange)="funcMunFumigenaField.set($event.value)"
-        >
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_MUN_FUMIGENA_LABEL' | translate }}
+        </mat-label>
+        <mat-select [value]="funcMunFumigenaField()" (selectionChange)="funcMunFumigenaField.set($event.value)">
           @for (opt of correctoIncorrectoOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -62,7 +56,9 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
       <!-- Observaciones (row-span-2) -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}
+        </mat-label>
         <textarea
           matInput
           rows="3"
@@ -77,11 +73,10 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
       <!-- Funcionamiento munición iluminante radar -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_MUN_ILUMINANTE_LABEL' | translate }}</mat-label>
-        <mat-select
-          [value]="funcMunIluminanteField()"
-          (selectionChange)="funcMunIluminanteField.set($event.value)"
-        >
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.FUNC_MUN_ILUMINANTE_LABEL' | translate }}
+        </mat-label>
+        <mat-select [value]="funcMunIluminanteField()" (selectionChange)="funcMunIluminanteField.set($event.value)">
           @for (opt of correctoIncorrectoOptions; track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
           }
@@ -90,16 +85,19 @@ import { ExecutionStore } from '../../../../+state/execution.store';
 
       <!-- Número de botes eyectados -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-        <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_LABEL' | translate }}</mat-label>
+        <mat-label>
+          {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_LABEL' | translate }}
+        </mat-label>
         <input
           matInput
           type="number"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_PLACEHOLDER' | translate"
+          [placeholder]="
+            'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_PLACEHOLDER' | translate
+          "
           [value]="numeroBotesEyectadosField() ?? ''"
           (input)="numeroBotesEyectadosField.set(+$any($event.target).value || null)"
         />
       </mat-form-field>
-
     </div>
   `,
   encapsulation: ViewEncapsulation.None,

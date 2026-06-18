@@ -260,7 +260,7 @@ describe('TrialDocsService', () => {
       service.loadDocumentTypes();
       appRef.tick();
 
-      const req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100`);
+      const req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100&active=true`);
       expect(req.request.method).toBe('GET');
 
       req.flush(mockTypesResponse);
@@ -274,7 +274,7 @@ describe('TrialDocsService', () => {
       service.loadDocumentTypes();
       appRef.tick();
 
-      const req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100`);
+      const req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100&active=true`);
       req.flush('Error', { status: 500, statusText: 'Server Error' });
       await appRef.whenStable();
 
@@ -284,7 +284,7 @@ describe('TrialDocsService', () => {
 
     it('should not fetch types before calling loadDocumentTypes', () => {
       expect(service.documentTypesResource.status()).toBe('idle');
-      httpTesting.expectNone(`${baseUrl}/documents/document-types?pageSize=100`);
+      httpTesting.expectNone(`${baseUrl}/documents/document-types?pageSize=100&active=true`);
     });
   });
 
@@ -370,7 +370,7 @@ describe('TrialDocsService', () => {
       service.loadDocumentTypes();
       appRef.tick();
 
-      let req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100`);
+      let req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100&active=true`);
       req.flush(mockTypesResponse);
       await appRef.whenStable();
 
@@ -380,7 +380,7 @@ describe('TrialDocsService', () => {
       service.refreshDocumentTypes();
       appRef.tick();
 
-      req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100`);
+      req = httpTesting.expectOne(`${baseUrl}/documents/document-types?pageSize=100&active=true`);
       expect(req.request.method).toBe('GET');
       req.flush(mockTypesResponse);
       await appRef.whenStable();
