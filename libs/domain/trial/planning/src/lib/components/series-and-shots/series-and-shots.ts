@@ -8,6 +8,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -247,6 +248,9 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriesAndShots {
+  /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
+  readonly readonly = input<boolean>(false);
+
   readonly #translate = inject(TranslateService);
   readonly dialog = inject(MatDialog);
   protected readonly store = inject(PlanningGeneralDataStore);

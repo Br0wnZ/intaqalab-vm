@@ -1,5 +1,12 @@
 import type { Route } from '@angular/router';
-import { Role, canMatchRole } from '@intaqalab/core';
+import {
+  ALL_ROLES_EXCEPT_VIEWER,
+  MENU_EVENT_LOG_ROLES,
+  MENU_EXECUTION_ROLES,
+  MENU_TRIAL_LIST_ROLES,
+  MENU_WAREHOUSE_ROLES,
+  canMatchRole,
+} from '@intaqalab/core';
 
 import { resolveLazyModule } from './lazy-utils';
 
@@ -20,82 +27,62 @@ export const appRoutes: Route[] = [
     data: { breadcrumb: 'BREADCRUMB.PLANNING' },
   },
   {
+    // Calendario: todos excepto Viewer
     path: 'calendar-trials',
     loadChildren: () => resolveLazyModule(import('@intaqalab/calendar-trials')),
     data: {
       breadcrumb: 'BREADCRUMB.CALENDAR_TRIALS',
-      roles: Object.values(Role),
+      roles: [...ALL_ROLES_EXCEPT_VIEWER],
     },
     canMatch: [canMatchRole],
   },
   {
+    // Pruebas de fuego (lista + detalle): todos incluido Viewer (verá sus pruebas)
     path: 'trial',
     loadChildren: () => resolveLazyModule(import('@intaqalab/trial-management')),
     data: {
       breadcrumb: 'BREADCRUMB.TRIALS',
-      roles: Object.values(Role),
+      roles: [...MENU_TRIAL_LIST_ROLES],
     },
     canMatch: [canMatchRole],
   },
   {
+    // Maestros de almacén: solo Admin + Municiones
     path: 'master-data',
     loadChildren: () => resolveLazyModule(import('@intaqalab/master-data')),
     data: {
       breadcrumb: 'BREADCRUMB.CATALOG',
-      roles: [
-        Role.INTAQALAB_ADMIN,
-        Role.HEAD_ARMAMENT_TRIALS,
-        Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-        Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-        Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-        Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-        Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-        Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-        Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-        Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-      ],
+      roles: [...MENU_WAREHOUSE_ROLES],
     },
     canMatch: [canMatchRole],
   },
   {
+    // Alta de munición / Stock: solo Admin + Municiones
     path: 'wharehouse-managment',
     loadChildren: () => resolveLazyModule(import('@intaqalab/wharehouse-managment')),
     data: {
       breadcrumb: 'BREADCRUMB.WAREHOUSE',
-      roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
+      roles: [...MENU_WAREHOUSE_ROLES],
     },
     canMatch: [canMatchRole],
   },
   {
+    // Event log: todos excepto Viewer y Municiones
     path: 'event-log',
     loadChildren: () => resolveLazyModule(import('@intaqalab/event-log')),
     data: {
       breadcrumb: 'BREADCRUMB.EVENT_LOG',
-      roles: [Role.INTAQALAB_ADMIN, Role.HEAD_ARMAMENT_TRIALS, Role.INTAQALAB_TRIAL_CONSULTANT],
+      roles: [...MENU_EVENT_LOG_ROLES],
     },
     canMatch: [canMatchRole],
   },
   {
+    // Ejecución: todos los roles incluido Viewer
     path: 'execution',
     loadChildren: () => resolveLazyModule(import('@intaqalab/execution')),
     data: {
       breadcrumb: 'BREADCRUMB.EXECUTION',
-      roles: [
-        Role.INTAQALAB_ADMIN,
-        Role.INTAQALAB_VIEWER,
-        Role.INTAQALAB_TRIAL_CONSULTANT,
-        Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-        Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-        Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-        Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-        Role.UNIT_TECHNICIAN,
-        Role.INTAQALAB_SHOOTING_LINE_HEAD,
-        Role.INTAQALAB_TRIAL_ENGINEER,
-        Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-        Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-        Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-        Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-      ],
+      roles: [...MENU_EXECUTION_ROLES],
     },
     canMatch: [canMatchRole],
   },

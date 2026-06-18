@@ -5,6 +5,7 @@ Guía para testear componentes que se abren como diálogos de Angular Material (
 ## Anatomía de un Test de Diálogo
 
 Los componentes de diálogo requieren:
+
 1. **`MAT_DIALOG_DATA`** — Datos inyectados al diálogo.
 2. **`MatDialogRef`** — Referencia para cerrar el diálogo (se mockea con `close: vi.fn()`).
 3. Opcionalmente: **`MatDialog`** — Si el componente abre sub-diálogos.
@@ -83,9 +84,7 @@ const setup = async (data = {}) => {
       { provide: MatDialogRef, useValue: mockDialogRef },
       { provide: MAT_DIALOG_DATA, useValue: data },
     ],
-    componentProviders: [
-      { provide: MatDialog, useValue: mockDialog },
-    ],
+    componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
   });
 
   return { user, view, mockDialog };

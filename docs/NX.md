@@ -1,6 +1,6 @@
 # 🛠️ Nx: Tags & Code Generation
 
-INTAQALAB depende de las capacidades del CLI de Nx para generar código estructurado que cumpla con las reglas estáticas y el *module boundary definition* del linter.
+INTAQALAB depende de las capacidades del CLI de Nx para generar código estructurado que cumpla con las reglas estáticas y el _module boundary definition_ del linter.
 
 ## 1. Importancia Crítica de los Tags
 
@@ -13,6 +13,7 @@ Nx pre-inyecta configuraciones de dependencias basadas en "Tags". Estas etiqueta
 Usa siempre Nx Console o el CLI. No crees las carpetas "a mano".
 
 ### Capas Base (`type`)
+
 - **Feature** (Componentes Inteligentes e integración de Stores):
   ```bash
   nx g @nx/angular:library feature-[feature-name] --directory="libs/domain/[domain-name]/feature-[feature-name]" --tags="scope:[domain-name],type:feature"
@@ -31,7 +32,9 @@ Usa siempre Nx Console o el CLI. No crees las carpetas "a mano".
   ```
 
 ## 3. Elementos Aislados (Configurados vía nx.json)
+
 Los esquemas de Nx ya heredan de forma predeterminada Standalone Components, Inline Styles/Templates, ChangeDetection OnPush y Signal inputs.
+
 ```bash
 nx g @nx/angular:component [component-name] --project=[project-name-in-workspace]
 nx g @nx/angular:service [service-name] --project=[project-name-in-workspace]

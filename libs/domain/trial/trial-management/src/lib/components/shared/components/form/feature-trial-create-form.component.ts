@@ -94,7 +94,7 @@ import type { TrialCreateModifyForm } from './trial-create.model';
               </div>
             }
           </div>
-          <!-- <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4">
             <ui-signal-checkbox
               [formField]="upsertTrialForm.hasLinkedTrial"
               [label]="'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' | translate"
@@ -113,16 +113,12 @@ import type { TrialCreateModifyForm } from './trial-create.model';
                     class="!absolute right-0 top-0 bottom-0 m-auto !text-gray-500"
                     (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.LINKED_TITLE', 'linkedTrial')"
                   >
-                    <mat-icon
-                      matSuffix
-                    >
-                      add
-                    </mat-icon>
+                    <mat-icon matSuffix>add</mat-icon>
                   </button>
                 </mat-form-field>
               </div>
-            } 
-          </div>-->
+            }
+          </div>
         </div>
       </div>
 

@@ -118,12 +118,12 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
     </table>
 
     <mat-paginator
+      class="!bg-white"
       [length]="store.totalElements()"
       [pageIndex]="pageIndex()"
       [pageSize]="pageSize()"
       [pageSizeOptions]="[5, 10, 25, 50]"
       (page)="onPage($event)"
-      class="!bg-white"
     />
   `,
   styles: ``,
@@ -164,7 +164,7 @@ export class MasterDataListComponent {
   protected async createRecord() {
     const dialogRef = this.#dialog.open(this.modalComponent, { ...this.#dialogStylesConfig, data: null });
     const result = await firstValueFrom(dialogRef.afterClosed());
-    
+
     if (result) {
       const payloadContent = { ...result, active: true };
       this.store.createItem(payloadContent);
@@ -187,7 +187,10 @@ export class MasterDataListComponent {
       item: itemToEdit,
     };
 
-    const dialogRef = this.#dialog.open(MasterDataSwitchStatusDialogComponent, { ...this.#dialogStylesConfig, data: switchStatusItem });
+    const dialogRef = this.#dialog.open(MasterDataSwitchStatusDialogComponent, {
+      ...this.#dialogStylesConfig,
+      data: switchStatusItem,
+    });
     const result = await firstValueFrom(dialogRef.afterClosed());
 
     if (result) {
@@ -206,7 +209,10 @@ export class MasterDataListComponent {
       data: { id, masterServiceRef: this.store },
     };
 
-    const dialogRef = this.#dialog.open(MasterDataRemoveDialogComponent, { ...this.#dialogStylesConfig, data: deleteMasterItem });
+    const dialogRef = this.#dialog.open(MasterDataRemoveDialogComponent, {
+      ...this.#dialogStylesConfig,
+      data: deleteMasterItem,
+    });
     const result = await firstValueFrom(dialogRef.afterClosed());
 
     if (result) {

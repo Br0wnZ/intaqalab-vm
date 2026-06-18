@@ -1,5 +1,5 @@
 import type { OnInit } from '@angular/core';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormField, applyEach, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -552,6 +552,9 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
   styleUrl: './shooting-conditions.scss',
 })
 export class ShootingConditionsComponent implements OnInit {
+  /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
+  readonly readonly = input<boolean>(false);
+
   readonly #dialog = inject(MatDialog);
   protected readonly store = inject(PlanningGeneralDataStore);
   readonly shootingConditionsService = inject(ShootingConditionsService);

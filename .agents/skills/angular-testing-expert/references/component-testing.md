@@ -6,13 +6,13 @@ Guía para testear componentes Angular con Angular Testing Library (ATL). Centra
 
 Usa queries en este orden de preferencia:
 
-| Prioridad | Query | Cuándo usar |
-|-----------|-------|-------------|
-| 1️⃣ | `getByRole` | Botones, links, comboboxes, textboxes |
-| 2️⃣ | `getByLabelText` | Inputs con label asociado |
-| 3️⃣ | `getByText` | Textos visibles, títulos, claves de traducción |
-| 4️⃣ | `getByPlaceholderText` | Inputs sin label (usar con moderación) |
-| 5️⃣ | `getByTestId` | Último recurso cuando no hay alternativa semántica |
+| Prioridad | Query                  | Cuándo usar                                        |
+| --------- | ---------------------- | -------------------------------------------------- |
+| 1️⃣        | `getByRole`            | Botones, links, comboboxes, textboxes              |
+| 2️⃣        | `getByLabelText`       | Inputs con label asociado                          |
+| 3️⃣        | `getByText`            | Textos visibles, títulos, claves de traducción     |
+| 4️⃣        | `getByPlaceholderText` | Inputs sin label (usar con moderación)             |
+| 5️⃣        | `getByTestId`          | Último recurso cuando no hay alternativa semántica |
 
 ### Ejemplo: Queries Accesibles
 
@@ -108,9 +108,7 @@ it('should emit save event with form data', async () => {
   const submitBtn = screen.getByRole('button', { name: /SAVE/i });
   await user.click(submitBtn);
 
-  expect(saveSpy).toHaveBeenCalledWith(
-    expect.objectContaining({ name: 'Test Value' })
-  );
+  expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Test Value' }));
 });
 ```
 
@@ -196,17 +194,27 @@ describe('MyComponent', () => {
   // setup...
 
   describe('Initial rendering', () => {
-    it('should render the title', async () => { /* ... */ });
-    it('should render the table', async () => { /* ... */ });
+    it('should render the title', async () => {
+      /* ... */
+    });
+    it('should render the table', async () => {
+      /* ... */
+    });
   });
 
   describe('User interactions', () => {
-    it('should enable button on valid form', async () => { /* ... */ });
-    it('should call service on submit', async () => { /* ... */ });
+    it('should enable button on valid form', async () => {
+      /* ... */
+    });
+    it('should call service on submit', async () => {
+      /* ... */
+    });
   });
 
   describe('Edge cases', () => {
-    it('should show empty state when no data', async () => { /* ... */ });
+    it('should show empty state when no data', async () => {
+      /* ... */
+    });
   });
 });
 ```

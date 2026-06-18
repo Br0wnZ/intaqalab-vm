@@ -15,6 +15,7 @@ Esta guía establece los estándares de desarrollo para todo el monorepo. Nuestr
 7. [Convenciones Generales y Checklist PR](#7-convenciones-generales-y-checklist-pr)
 
 > **Nota para Agentes IA y Desarrolladores:** Gran parte de la arquitectura del repositorio se ha modularizado. Por favor, consulta la carpeta `docs/` para detalles de:
+>
 > - Arquitectura y Capas (`docs/ARCHITECTURE.md`)
 > - SignalStore y HTTP (`docs/STATE_MANAGEMENT.md`)
 > - Testing con Vitest y ATL (`docs/TESTING.md`)

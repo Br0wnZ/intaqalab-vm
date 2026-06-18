@@ -1,12 +1,16 @@
 {
   "hooks": {
-    "Stop": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash tools/verify/verify.sh",
-        "timeout": 120,
-        "statusMessage": "Verifying lint..."
-      }]
-    }]
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash tools/verify/verify.sh",
+            "timeout": 120,
+            "statusMessage": "Verifying lint..."
+          }
+        ]
+      }
+    ]
   }
 }

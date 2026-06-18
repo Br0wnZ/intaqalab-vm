@@ -39,10 +39,7 @@ describe('MyStore', () => {
     mockService = createMockMyDataService();
 
     TestBed.configureTestingModule({
-      providers: [
-        MyStore,
-        { provide: MyDataService, useValue: mockService },
-      ],
+      providers: [MyStore, { provide: MyDataService, useValue: mockService }],
     });
 
     store = TestBed.inject(MyStore);

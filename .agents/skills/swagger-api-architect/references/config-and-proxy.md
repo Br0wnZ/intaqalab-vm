@@ -1,7 +1,3 @@
-
-
-
-
 ## Endpoints Existentes
 
 Archivo: `libs/shared/config/src/lib/environment.types.ts`
@@ -74,7 +70,7 @@ export function injectFireTrialsEndpoint(): string {
 ```typescript
 export const Endpoints = {
   // ... existentes
-  NewApi: 'newApi',  // ← Añadir aquí
+  NewApi: 'newApi', // ← Añadir aquí
 } as const;
 ```
 
@@ -127,14 +123,11 @@ const PLANNING_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/planning-api/1.0.0`;
 proxyConfig['^/api/centers/[^/]+/planning-api'] = buildProxyRule({
   remotePathRewrite: {
     // fire-trials-scoped (3+ segments after version)
-    '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/([^/]+)/(.+)': 
-      `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3/$4`,
+    '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/([^/]+)/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3/$4`,
     // 2 segments after version
-    '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/(.+)': 
-      `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3`,
+    '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3`,
     // 1 segment (center-scoped catalogs)
-    '^/api/centers/([^/]+)/planning-api/[^/]+/(.+)': 
-      `${PLANNING_API_BASE_PATH}/centers/$1/$2`,
+    '^/api/centers/([^/]+)/planning-api/[^/]+/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/$2`,
   },
   mockPathRewrite: {
     '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/([^/]+)/(.+)': '/api/centers/$1/fire-trials/$2/$3/$4',

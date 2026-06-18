@@ -1,9 +1,11 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AuthService } from '@intaqalab/core';
 import {
   TEST_CONSTANTS,
   createMockPlanningGeneralDataStore,
@@ -61,6 +63,7 @@ const setup = async () => {
       provideAnimationsAsync(),
       provideTestingEnvironment(),
       { provide: PlanningGeneralDataStore, useValue: mockStore },
+      { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } },
     ],
   });
 
@@ -142,6 +145,7 @@ describe('PlanningGeneralDataFormComponent', () => {
           provideAnimationsAsync(),
           provideTestingEnvironment(),
           { provide: PlanningGeneralDataStore, useValue: mockStore },
+          { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } },
         ],
       });
 
@@ -202,7 +206,9 @@ describe('PlanningGeneralDataFormComponent', () => {
 
     it('should prevent negative values on percentageEndTrial field', async () => {
       const { user } = await setup();
-      const endInput = screen.getByLabelText(/TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL/i) as HTMLInputElement;
+      const endInput = screen.getByLabelText(
+        /TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL/i,
+      ) as HTMLInputElement;
 
       const event = new KeyboardEvent('keydown', { key: '-' });
       const preventDefaultSpy = vi.spyOn(event, 'preventDefault');

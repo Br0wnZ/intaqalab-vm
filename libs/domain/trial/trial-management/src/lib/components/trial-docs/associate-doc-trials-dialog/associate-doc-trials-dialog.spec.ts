@@ -23,7 +23,7 @@ describe('AssociateDocTrialsDialog', () => {
 
   const mockData = {
     documentId: 'doc-123',
-    fireTrialId: 'TRIAL-004',
+    trialId: 'TRIAL-004',
   };
 
   const mockFireTrialIds = ['TRIAL-001', 'TRIAL-002', 'TRIAL-003'];
@@ -109,7 +109,7 @@ describe('AssociateDocTrialsDialog', () => {
     expect(button).toBeEnabled();
   });
 
-  it.skip('should call associateDocToTrial when Associate button is clicked', async () => {
+  it('should call associateDocToTrial when Associate button is clicked', async () => {
     const user = userEvent.setup();
     component.selectedTrials.set([mockFireTrials[0], mockFireTrials[1]]);
     fixture.detectChanges();
@@ -119,7 +119,7 @@ describe('AssociateDocTrialsDialog', () => {
 
     expect(docsServiceMock.associateDocToTrial).toHaveBeenCalledWith({
       documentId: mockData.documentId,
-      fireTrialIds: ['TRIAL-001', 'TRIAL-002'],
+      fireTrialIds: ['TRIAL-001', 'TRIAL-002', mockData.trialId],
     });
   });
 

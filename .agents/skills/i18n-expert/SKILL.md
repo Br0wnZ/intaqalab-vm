@@ -1,6 +1,6 @@
 ---
 name: i18n-expert
-description: "Especialista en internacionalización con @ngx-translate. Úsalo para añadir, actualizar o auditar claves de traducción en los 3 idiomas del proyecto (es/en/de), generar namespaces nuevos o traducir literales de un componente."
+description: 'Especialista en internacionalización con @ngx-translate. Úsalo para añadir, actualizar o auditar claves de traducción en los 3 idiomas del proyecto (es/en/de), generar namespaces nuevos o traducir literales de un componente.'
 argument-hint: "Ej: 'Añade las claves i18n para el componente de alta de munición' o 'Crea el namespace WAREHOUSE.AMMUNITION_NEW con estas claves...'."
 user-invocable: true
 ---
@@ -26,19 +26,21 @@ DOMAIN.SECTION.ELEMENT.PROPERTY
 
 ### Niveles estándar
 
-| Nivel | Ejemplos | Descripción |
-|-------|----------|-------------|
+| Nivel          | Ejemplos                                                                                                 | Descripción                         |
+| -------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Root (dominio) | `TRIAL_MANAGEMENT`, `WAREHOUSE`, `MASTER_DATA`, `TRIAL_EXECUTION`, `MENU_LEFT`, `COMMONS`, `VALIDATIONS` | Dominio funcional o contexto global |
-| Section | `DIALOGS`, `FIELDS`, `ACTIONS`, `MESSAGES`, `OPTIONS` | Sección dentro del dominio |
-| Element | `CONFIRM_DELETE`, `CREATE_FORM`, `DETAIL_CARD` | Componente o elemento específico |
-| Property | `TITLE`, `DESCRIPTION`, `PLACEHOLDER`, `ERROR`, `LABEL` | Propiedad visual |
+| Section        | `DIALOGS`, `FIELDS`, `ACTIONS`, `MESSAGES`, `OPTIONS`                                                    | Sección dentro del dominio          |
+| Element        | `CONFIRM_DELETE`, `CREATE_FORM`, `DETAIL_CARD`                                                           | Componente o elemento específico    |
+| Property       | `TITLE`, `DESCRIPTION`, `PLACEHOLDER`, `ERROR`, `LABEL`                                                  | Propiedad visual                    |
 
 ### Ejemplos reales del proyecto:
+
 - `TRIAL_EXECUTION.DIALOGS.PAUSE_EXECUTION.TITLE`
 - `MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_NEW`
 - `COMMONS.ACCEPT`
 
 ### Reglas de naming:
+
 - Todo en **SCREAMING_SNAKE_CASE**.
 - El primer nivel es el dominio funcional (`TRIAL_MANAGEMENT`, `WAREHOUSE`, `MASTER_DATA`, `COMMONS`, `VALIDATIONS`, `MENU_LEFT`).
 - Los namespaces comunes reutilizables (`COMMONS.ACCEPT`, `COMMONS.CANCEL`) NO se duplican en namespaces específicos; se referencian directamente.
@@ -51,9 +53,8 @@ DOMAIN.SECTION.ELEMENT.PROPERTY
 {{ 'NAMESPACE.SECTION.KEY' | translate }}
 
 <!-- Binding a propiedad -->
-[placeholder]="'NAMESPACE.KEY' | translate"
-[aria-label]="'NAMESPACE.KEY' | translate"
-[matTooltip]="'NAMESPACE.KEY' | translate"
+[placeholder]="'NAMESPACE.KEY' | translate" [aria-label]="'NAMESPACE.KEY' | translate" [matTooltip]="'NAMESPACE.KEY' |
+translate"
 
 <!-- Con parámetros de interpolación -->
 {{ 'NAMESPACE.KEY' | translate: { name: entity.name, count: total() } }}
@@ -101,6 +102,7 @@ Cuando el usuario pida añadir claves para un componente o feature:
 ## Auditoría de Claves Faltantes
 
 Para verificar sincronía entre idiomas puedes usar este script manual:
+
 ```bash
 node -e "
 const es = require('./apps/intaqalab/public/i18n/es.json');

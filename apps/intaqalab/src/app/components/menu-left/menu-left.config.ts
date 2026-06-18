@@ -1,4 +1,12 @@
-import { Role } from '@intaqalab/core';
+import {
+  ALL_ROLES_EXCEPT_VIEWER,
+  MENU_EVENT_LOG_ROLES,
+  MENU_EXECUTION_ROLES,
+  MENU_NEW_TRIAL_ROLES,
+  MENU_TRIAL_LIST_ROLES,
+  MENU_WAREHOUSE_ROLES,
+  Role,
+} from '@intaqalab/core';
 import type { IntaIconName } from '@intaqalab/ui';
 
 export type MenuAction =
@@ -69,206 +77,102 @@ export const URL_ACTION_MAP: ReadonlyArray<{ startsWith: string; action: MenuAct
 const TRIAL_CHILD_SVG = 'rocket';
 
 export const MENU_TREE: MenuNode[] = [
+  // ─── Gestión de Pruebas ─────────────────────────────────────────────────────
   {
     name: 'MENU_LEFT.GESTION_TRIALS',
     iconName: 'file',
-    roles: [
-      Role.INTAQALAB_ADMIN,
-      Role.INTAQALAB_TRIAL_ENGINEER,
-      Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-      Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-      Role.INTAQALAB_TRIAL_CONSULTANT,
-      Role.INTAQALAB_SHOOTING_LINE_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-      Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-      Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-      Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-      Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-    ],
+    // Visible si el usuario tiene acceso a al menos uno de los submenús
+    roles: [...MENU_TRIAL_LIST_ROLES],
     children: [
       {
+        // Nueva Prueba: solo 5 roles administrativos
         name: 'MENU_LEFT.GESTION_TRIALS_NEW',
         iconName: TRIAL_CHILD_SVG,
         id: 'TRIAL_NEW',
-        roles: [
-          Role.INTAQALAB_ADMIN,
-          Role.INTAQALAB_TRIAL_ENGINEER,
-          Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-          Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-          Role.INTAQALAB_TRIAL_CONSULTANT,
-        ],
+        roles: [...MENU_NEW_TRIAL_ROLES],
       },
       {
+        // Pruebas de fuego: todos (incl. Viewer — verá solo sus pruebas)
         name: 'MENU_LEFT.GESTION_TRIALS_LIST',
         iconName: TRIAL_CHILD_SVG,
         id: 'TRIAL_LIST',
-        roles: [
-          Role.INTAQALAB_ADMIN,
-          Role.INTAQALAB_TRIAL_ENGINEER,
-          Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-          Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-          Role.INTAQALAB_TRIAL_CONSULTANT,
-          Role.INTAQALAB_SHOOTING_LINE_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-          Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-          Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-          Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-          Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-        ],
+        roles: [...MENU_TRIAL_LIST_ROLES],
       },
     ],
   },
+
+  // ─── Calendario ─────────────────────────────────────────────────────────────
   {
+    // Todos excepto Viewer
     name: 'MENU_LEFT.CALENDAR_TRIALS',
     id: 'CALENDAR_TRIALS',
     iconName: 'calendar',
-    roles: [
-      Role.INTAQALAB_ADMIN,
-      Role.INTAQALAB_TRIAL_ENGINEER,
-      Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-      Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-      Role.INTAQALAB_TRIAL_CONSULTANT,
-      Role.INTAQALAB_SHOOTING_LINE_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-      Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-      Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-      Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-      Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-    ],
+    roles: [...ALL_ROLES_EXCEPT_VIEWER],
   },
+
+  // ─── Almacén de Municiones ──────────────────────────────────────────────────
   {
+    // Solo Admin + Municiones (Head + Tech)
     name: 'MENU_LEFT.WHAREHOUSE.TITLE',
     iconName: 'truck',
-    roles: [
-      Role.INTAQALAB_ADMIN,
-      Role.INTAQALAB_TRIAL_ENGINEER,
-      Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-      Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-      Role.INTAQALAB_TRIAL_CONSULTANT,
-      Role.INTAQALAB_SHOOTING_LINE_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-      Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-      Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-      Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-      Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-    ],
+    roles: [...MENU_WAREHOUSE_ROLES],
     children: [
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_NEW',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITION_NEW',
-        roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
+        roles: [...MENU_WAREHOUSE_ROLES],
       },
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_STOCK',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITION_STOCK',
-        roles: [
-          Role.INTAQALAB_ADMIN,
-          Role.INTAQALAB_TRIAL_ENGINEER,
-          Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-          Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-          Role.INTAQALAB_TRIAL_CONSULTANT,
-          Role.INTAQALAB_SHOOTING_LINE_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-          Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-          Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-          Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-          Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-        ],
+        roles: [...MENU_WAREHOUSE_ROLES],
       },
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITIONS_DUMPS',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITIONS_DUMPS',
-        roles: [
-          Role.INTAQALAB_ADMIN,
-          Role.INTAQALAB_TRIAL_ENGINEER,
-          Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-          Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-          Role.INTAQALAB_TRIAL_CONSULTANT,
-          Role.INTAQALAB_SHOOTING_LINE_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-          Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-          Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-          Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-          Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-          Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-          Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-        ],
+        roles: [...MENU_WAREHOUSE_ROLES],
       },
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.DENOMINATIONS',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_DENOMINATIONS',
-        roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
+        roles: [...MENU_WAREHOUSE_ROLES],
       },
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITIONS_COMPONENTS',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITIONS_COMPONENTS',
-        roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
+        roles: [...MENU_WAREHOUSE_ROLES],
       },
     ],
   },
+
+  // ─── Event Log ──────────────────────────────────────────────────────────────
   {
+    // Todos excepto Viewer y Municiones
     name: 'MENU_LEFT.EVENT_LOG',
     id: 'EVENT_LOG',
     iconName: 'eventLog',
-    roles: [
-      Role.INTAQALAB_ADMIN,
-      Role.INTAQALAB_TRIAL_ENGINEER,
-      Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
-      Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-      Role.INTAQALAB_TRIAL_CONSULTANT,
-      Role.INTAQALAB_SHOOTING_LINE_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-      Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-      Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-      Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-      Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-    ],
+    roles: [...MENU_EVENT_LOG_ROLES],
   },
+
+  // ─── Ejecución ──────────────────────────────────────────────────────────────
   {
+    // Todos los roles incluido Viewer
     name: 'MENU_LEFT.EXECUTION',
     id: 'EXECUTION',
     iconName: 'eventLog',
-    roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_ADMIN],
+    roles: [...MENU_EXECUTION_ROLES],
   },
+
+  // ─── Maestros de Almacén ────────────────────────────────────────────────────
   {
     name: 'MENU_LEFT.CATALOG.TITLE',
     iconName: 'catalog',
-    roles: [
-      Role.INTAQALAB_ADMIN,
-      Role.HEAD_ARMAMENT_TRIALS,
-      Role.INTAQALAB_ARMAMENT_UNIT_HEAD,
-      Role.INTAQALAB_ARMAMENT_UNIT_TECHNICIAN,
-      Role.INTAQALAB_MUNITIONS_UNIT_HEAD,
-      Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_BALLISTICS_UNIT_HEAD,
-      Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
-      Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
-      Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
-    ],
+    roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
     children: [
       { name: 'MENU_LEFT.CATALOG.OPTIONS.TRIAL_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_TRIAL_TYPE' },
       { name: 'MENU_LEFT.CATALOG.OPTIONS.DOCUMENT_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_DOCUMENT_TYPE' },

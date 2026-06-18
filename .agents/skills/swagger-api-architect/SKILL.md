@@ -71,15 +71,15 @@ Adicionalmente, genera en paralelo la capa de mocks:
 
 Cada capa tiene documentación detallada con ejemplos reales del proyecto. **Lee la referencia correspondiente antes de generar código:**
 
-| Capa | Referencia | Contenido |
-|------|-----------|----------|
-| Swagger Parsing | [swagger-parsing.md](references/swagger-parsing.md) | Mapeo de paths, schemas, params y responses |
-| Modelos | [models-layer.md](references/models-layer.md) | Types TS desde Swagger schemas con ejemplos reales |
-| Servicios | [service-layer.md](references/service-layer.md) | httpResource + signal triggers (4 ejemplos) |
-| Stores | [store-layer.md](references/store-layer.md) | signalStore con computed, methods, hooks (2 ejemplos) |
-| Mock Routes | [mock-routes.md](references/mock-routes.md) | Express routers con CRUD y dispatchers (3 ejemplos) |
-| Mock Fixtures | [mock-fixtures.md](references/mock-fixtures.md) | JSON fixtures, dispatchers simples y mutables |
-| Config & Proxy | [config-and-proxy.md](references/config-and-proxy.md) | Endpoints, inject functions, proxy rules |
+| Capa            | Referencia                                            | Contenido                                             |
+| --------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| Swagger Parsing | [swagger-parsing.md](references/swagger-parsing.md)   | Mapeo de paths, schemas, params y responses           |
+| Modelos         | [models-layer.md](references/models-layer.md)         | Types TS desde Swagger schemas con ejemplos reales    |
+| Servicios       | [service-layer.md](references/service-layer.md)       | httpResource + signal triggers (4 ejemplos)           |
+| Stores          | [store-layer.md](references/store-layer.md)           | signalStore con computed, methods, hooks (2 ejemplos) |
+| Mock Routes     | [mock-routes.md](references/mock-routes.md)           | Express routers con CRUD y dispatchers (3 ejemplos)   |
+| Mock Fixtures   | [mock-fixtures.md](references/mock-fixtures.md)       | JSON fixtures, dispatchers simples y mutables         |
+| Config & Proxy  | [config-and-proxy.md](references/config-and-proxy.md) | Endpoints, inject functions, proxy rules              |
 
 ---
 
@@ -92,27 +92,29 @@ Cada capa tiene documentación detallada con ejemplos reales del proyecto. **Lee
 **Entrada:** Sección `components.schemas` del Swagger.
 
 **Reglas:**
+
 - Usa `type` para DTOs y responses. Usa `interface` solo si hay herencia.
 - Exporta SIEMPRE con `export type`.
 - Nombra los archivos en **kebab-case**: `{entity}.model.ts`.
 - Mapea los tipos Swagger a TypeScript así:
 
-| Swagger Type          | TypeScript Type |
-|-----------------------|-----------------|
-| `string`              | `string`        |
-| `string` + `uuid`     | `string`        |
-| `string` + `date`     | `string`        |
-| `integer`             | `number`        |
-| `number`              | `number`        |
-| `boolean`             | `boolean`       |
-| `array` + `items`     | `T[]`           |
-| `object` + `additionalProperties` | `Record<string, string>` |
-| `$ref`                | Referencia al tipo importado |
+| Swagger Type                      | TypeScript Type              |
+| --------------------------------- | ---------------------------- |
+| `string`                          | `string`                     |
+| `string` + `uuid`                 | `string`                     |
+| `string` + `date`                 | `string`                     |
+| `integer`                         | `number`                     |
+| `number`                          | `number`                     |
+| `boolean`                         | `boolean`                    |
+| `array` + `items`                 | `T[]`                        |
+| `object` + `additionalProperties` | `Record<string, string>`     |
+| `$ref`                            | Referencia al tipo importado |
 
 - Agrupa Request y Response del mismo recurso en el mismo archivo `.model.ts`.
 - Los campos `required` del Swagger son propiedades normales; los NO required son `?` (optional).
 
 **Ejemplo de entrada Swagger:**
+
 ```json
 {
   "PlanningResponse": {
@@ -126,6 +128,7 @@ Cada capa tiene documentación detallada con ejemplos reales del proyecto. **Lee
 ```
 
 **Ejemplo de salida:**
+
 ```typescript
 // planning-info.model.ts
 import type { SpecimenItem } from './specimen.model';
@@ -215,6 +218,7 @@ export class <Entity>Service {
 ```
 
 **Reglas clave:**
+
 - Un `signal<ParamType | null>(null)` privado por cada operación HTTP.
 - Un `httpResource<ResponseType>` readonly por cada operación.
 - El httpResource retorna `undefined` cuando el signal es `null` (= no disparar petición).
@@ -296,6 +300,7 @@ export type <Entity>StoreType = InstanceType<typeof <Entity>Store>;
 ```
 
 **Reglas clave:**
+
 - El Store NUNCA hace peticiones HTTP directamente. Siempre delega al Service.
 - Usa `withComputed` para exponer signals derivados del `.value()`, `.isLoading()`, `.error()` y `.status()` del httpResource del servicio.
 - Usa `withMethods` para exponer acciones que llaman a los métodos públicos del servicio.
@@ -361,6 +366,7 @@ export const <entity>Router = Router({ mergeParams: true });
 ```
 
 **Reglas clave:**
+
 - Usa `Router({ mergeParams: true })` si se monta bajo un path con params (ej: `/centers/:centerId`).
 - Usa las utilidades de `mocks/src/utils.ts`: `getFixture`, `getPagination`, `paginate`, `searchableByName`.
 - Los fixtures JSON van en `mocks/src/fixtures/<entity>/` o `mocks/src/fixtures/<domain>/`.
@@ -375,6 +381,7 @@ export const <entity>Router = Router({ mergeParams: true });
 > Para detalles completos con patrones de dispatcher, read [mock-fixtures.md](references/mock-fixtures.md)
 
 **Reglas:**
+
 - Genera datos realistas basados en los `examples` del Swagger si los hay.
 - Usa UUIDs v4 reales generados (`crypto.randomUUID()` o hardcoded).
 - Para listas paginadas, genera al menos 3-5 items.
@@ -390,18 +397,23 @@ export const <entity>Router = Router({ mergeParams: true });
 Después de generar el código, el agente DEBE verificar y actualizar:
 
 #### a) **Router index** (`mocks/src/routes/index.ts`)
+
 Añadir el import y el `router.use()` del nuevo router al índice central.
 
 #### b) **Endpoint config** (`libs/shared/config/src/lib/environment.types.ts`)
+
 Si la API usa un endpoint base diferente a los existentes, añadir la nueva key al enum `Endpoints`.
 
 #### c) **Endpoint injection function** (`libs/shared/config/src/lib/config.functions.ts`)
+
 Si se añadió un nuevo endpoint, crear la función `inject<API>Endpoint()`.
 
 #### d) **Proxy config** (`apps/intaqalab/proxy.conf.js`)
+
 Si la API usa un basePath diferente, añadir la regla de proxy correspondiente.
 
 #### e) **Barrel exports**
+
 Si la librería tiene un `index.ts` barrel, exportar los nuevos archivos.
 
 ---
@@ -446,33 +458,33 @@ flowchart TD
 
 ## ⚠️ Errores Comunes a Evitar
 
-| ❌ Error | ✅ Correcto |
-|---------|------------|
-| Usar `HttpClient` directamente | Usar `httpResource` del servicio |
-| Crear un `BehaviorSubject` para estado | Usar `signal()` como trigger |
-| Hacer HTTP en el Store | Delegar SIEMPRE al Service |
-| Usar `subscribe()` | Usar `computed()` y signals |
-| Olvidar métodos `reset*()` | Crear un `reset` por cada operación de mutación |
-| Mock sin paginación | Siempre devolver `{ page, pageSize, totalElements, items }` para listas |
-| Fixture con datos hardcoded irreales | Generar datos coherentes con el dominio |
-| No registrar route en index.ts | Siempre añadir al router central |
+| ❌ Error                               | ✅ Correcto                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------- |
+| Usar `HttpClient` directamente         | Usar `httpResource` del servicio                                        |
+| Crear un `BehaviorSubject` para estado | Usar `signal()` como trigger                                            |
+| Hacer HTTP en el Store                 | Delegar SIEMPRE al Service                                              |
+| Usar `subscribe()`                     | Usar `computed()` y signals                                             |
+| Olvidar métodos `reset*()`             | Crear un `reset` por cada operación de mutación                         |
+| Mock sin paginación                    | Siempre devolver `{ page, pageSize, totalElements, items }` para listas |
+| Fixture con datos hardcoded irreales   | Generar datos coherentes con el dominio                                 |
+| No registrar route en index.ts         | Siempre añadir al router central                                        |
 
 ---
 
 ## 🧩 Mapeo Swagger → Patrón de Código
 
-| Swagger Concept | Genera |
-|----------------|--------|
-| `GET /entities` (list) | `listResource` httpResource + `getEntities()` method |
-| `GET /entities/{id}` | `detailResource` httpResource + `getEntity(id)` method |
-| `POST /entities` | `createResource` httpResource + `createEntity(body)` method + `resetCreate()` |
-| `PUT /entities/{id}` | `updateResource` httpResource + `updateEntity(id, body)` method + `resetUpdate()` |
-| `DELETE /entities/{id}` | `deleteResource` httpResource + `deleteEntity(id)` method + `resetDelete()` |
-| `PUT /entities` (bulk) | `bulkUpdateResource` httpResource + especial body handling |
-| Path parameter `{centerId}` | Primer segmento de URL fijo (viene del config/interceptor) |
-| Path parameter `{fireTrialId}` | Parámetro dinámico en el signal trigger |
-| Query params (page, name, etc.) | `URLSearchParams` builder en el service |
-| `$ref` a schema | Import del type correspondiente |
+| Swagger Concept                 | Genera                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `GET /entities` (list)          | `listResource` httpResource + `getEntities()` method                              |
+| `GET /entities/{id}`            | `detailResource` httpResource + `getEntity(id)` method                            |
+| `POST /entities`                | `createResource` httpResource + `createEntity(body)` method + `resetCreate()`     |
+| `PUT /entities/{id}`            | `updateResource` httpResource + `updateEntity(id, body)` method + `resetUpdate()` |
+| `DELETE /entities/{id}`         | `deleteResource` httpResource + `deleteEntity(id)` method + `resetDelete()`       |
+| `PUT /entities` (bulk)          | `bulkUpdateResource` httpResource + especial body handling                        |
+| Path parameter `{centerId}`     | Primer segmento de URL fijo (viene del config/interceptor)                        |
+| Path parameter `{fireTrialId}`  | Parámetro dinámico en el signal trigger                                           |
+| Query params (page, name, etc.) | `URLSearchParams` builder en el service                                           |
+| `$ref` a schema                 | Import del type correspondiente                                                   |
 
 ---
 
@@ -528,15 +540,21 @@ nx test <nombre-de-la-lib>
 4. **Genera fixtures realistas.** Usa los `examples` del Swagger como base.
 5. **Si un endpoint ya está implementado**, no lo sobrescribas. Informa al usuario.
 6. **Mantén la consistencia** en naming: si otros servicios usan `*-service.ts`, usa ese sufijo.
+
 ## ⚡ Prompt Ligero (Modo Rápido)
+
 ---
+
 name: swagger-api-mock-prompt
 description: "Prompt ligero para generar Mocks, Modelos y Servicios httpResource desde un JSON de Swagger."
+
 ---
+
 Implementa este endpoint a partir del JSON/Swagger proporcionado.
 
 SALIDA ESPERADA:
+
 1. TypeScript Models (interfaces exactas).
 2. Angular Data-Access Service usando `httpResource` (no Observables).
 3. ExpressJS Route mockeado + Fixtures (JSON realista).
-Genera directamente el código de las tres partes, sin teoría ni adornos.
+   Genera directamente el código de las tres partes, sin teoría ni adornos.

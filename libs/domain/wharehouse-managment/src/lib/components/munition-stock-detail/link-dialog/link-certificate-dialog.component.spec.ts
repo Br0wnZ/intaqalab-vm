@@ -1,7 +1,9 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -100,7 +102,8 @@ async function setup(options?: { items?: any[] }) {
 
   const fixture = renderResult.fixture;
   fixture.detectChanges();
-  return { fixture, component: fixture.componentInstance };
+  const loader = TestbedHarnessEnvironment.loader(fixture);
+  return { fixture, component: fixture.componentInstance, loader };
 }
 
 // // Tests
@@ -211,12 +214,11 @@ describe('LinkCertificatesDialogComponent', () => {
 
   describe('Selection (checkboxes)', () => {
     it('should toggle selection when clicking a checkbox', async () => {
-      const { component } = await setup();
-      const rows = screen.getAllByRole('row').slice(1);
-      const checkbox = within(rows[0]).getByRole('checkbox');
+      const { component, loader } = await setup();
+      const checkbox = await loader.getHarness(MatCheckboxHarness);
 
       expect(component.selection.selected).toHaveLength(0);
-      await userEvent.click(checkbox);
+      await checkbox.toggle();
       expect(component.selection.selected).toHaveLength(1);
     });
   });

@@ -11,18 +11,9 @@ Patrón canónico para todos los diálogos del proyecto basado en `@angular/mate
 
 ```typescript
 // libs/domain/<domain>/feature-<name>/src/lib/dialogs/<action>-dialog.ts
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  inject,
-} from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -33,9 +24,7 @@ export type ConfirmDeleteDialogData = {
 };
 
 // 2. Tipado explícito del resultado
-export type ConfirmDeleteDialogResult =
-  | { action: 'confirm'; id: string }
-  | { action: 'cancel' };
+export type ConfirmDeleteDialogResult = { action: 'confirm'; id: string } | { action: 'cancel' };
 
 @Component({
   selector: 'inta-confirm-delete-dialog',
@@ -61,12 +50,7 @@ export type ConfirmDeleteDialogResult =
       <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
         {{ 'COMMONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-flat-button
-        class="bg-client-error text-white"
-        aria-label="Confirmar eliminación"
-        (click)="confirm()"
-      >
+      <button mat-flat-button aria-label="Confirmar eliminación" class="bg-client-error text-white" (click)="confirm()">
         {{ 'COMMONS.DELETE_DATA' | translate }}
       </button>
     </mat-dialog-actions>
@@ -137,14 +121,14 @@ export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto 
 
 @Component({
   selector: 'inta-create-entity-dialog',
-  imports: [MatDialogModule, MatButtonModule, ReactiveFormsModule, /* Signal Forms */],
+  imports: [MatDialogModule, MatButtonModule, ReactiveFormsModule /* Signal Forms */],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>{{ 'DOMAIN.DIALOGS.CREATE.TITLE' | translate }}</h2>
 
     <mat-dialog-content>
       <!-- Signal Form fields -->
-      <mat-form-field class="w-full" floatLabel="always">
+      <mat-form-field floatLabel="always" class="w-full">
         <mat-label>{{ 'DOMAIN.FIELDS.NAME' | translate }}</mat-label>
         <input matInput [formControl]="form.controls.name" />
         @if (form.controls.name.errors?.['required']) {

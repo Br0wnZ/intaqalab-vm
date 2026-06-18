@@ -11,7 +11,6 @@ signal<Params | null>(null)  →  httpResource<Response>(() => { ... })
    .set(params)                   .value() / .isLoading() / .error()
 ```
 
-
 ## Ejemplo Real: Servicio Simple (GET + PUT)
 
 Archivo: `libs/domain/trial/planning/src/lib/services/armament-service.ts`
@@ -238,7 +237,9 @@ export class MeasuresService {
   updateMeasures(trialId: FireTrial['id'], body: MeasuresBulkUpdateRequest) {
     this.#updateMeasuresParams.set({ trialId, body });
   }
-  resetUpdateMeasures() { this.#updateMeasuresParams.set(null); }
+  resetUpdateMeasures() {
+    this.#updateMeasuresParams.set(null);
+  }
 
   getMeasuresCatalog(params: CatalogQueryParams = {}) {
     this.#getMeasuresCatalogParams.set(params);
@@ -249,11 +250,19 @@ export class MeasuresService {
   updateMeasure(id: string, body: MasterDataIItemUpdateRequest) {
     this.#updateMeasureParams.set({ id, body });
   }
-  deleteMeasure(id: string) { this.#deleteMeasureParams.set({ id }); }
+  deleteMeasure(id: string) {
+    this.#deleteMeasureParams.set({ id });
+  }
 
-  resetCreateMeasure() { this.#createMeasureParams.set(null); }
-  resetUpdateMeasure() { this.#updateMeasureParams.set(null); }
-  resetDeleteMeasure() { this.#deleteMeasureParams.set(null); }
+  resetCreateMeasure() {
+    this.#createMeasureParams.set(null);
+  }
+  resetUpdateMeasure() {
+    this.#updateMeasureParams.set(null);
+  }
+  resetDeleteMeasure() {
+    this.#deleteMeasureParams.set(null);
+  }
 
   #buildQueryParams = (p: CatalogQueryParams) =>
     `?${new URLSearchParams(
@@ -352,13 +361,27 @@ export class SeriesAndShotsService {
 
   // --- Public Methods ---
 
-  getSeriesAndShots(trialId: FireTrial['id']) { this.#getSeriesParams.set({ trialId }); }
-  addNewSerie(request: AddNewSerieRequest) { this.#addNewSerieParams.set(request); }
-  updateSerie(request: UpsertTrialSerieRequest) { this.#updateSerieParams.set(request); }
-  deleteSerie(serieId: string) { this.#deleteSerieParams.set({ serieId }); }
-  addShotToSerie(request: AddShotToSerieRequest) { this.#addShotToSerieParams.set(request); }
-  resetAddNewSerie() { this.#addNewSerieParams.set(null); }
-  resetUpdateSerie() { this.#updateSerieParams.set(null); }
+  getSeriesAndShots(trialId: FireTrial['id']) {
+    this.#getSeriesParams.set({ trialId });
+  }
+  addNewSerie(request: AddNewSerieRequest) {
+    this.#addNewSerieParams.set(request);
+  }
+  updateSerie(request: UpsertTrialSerieRequest) {
+    this.#updateSerieParams.set(request);
+  }
+  deleteSerie(serieId: string) {
+    this.#deleteSerieParams.set({ serieId });
+  }
+  addShotToSerie(request: AddShotToSerieRequest) {
+    this.#addShotToSerieParams.set(request);
+  }
+  resetAddNewSerie() {
+    this.#addNewSerieParams.set(null);
+  }
+  resetUpdateSerie() {
+    this.#updateSerieParams.set(null);
+  }
 }
 ```
 
@@ -416,9 +439,15 @@ export class DenominationsService {
     };
   });
 
-  createItem(item: DenominationUpSertModel) { this.#saveItem.set(item); }
-  updateItem(item: DenominationUpSertModel) { this.#updateItem.set(item); }
-  deleteItem(item: DenominationModel) { this.#deleteItem.set(item); }
+  createItem(item: DenominationUpSertModel) {
+    this.#saveItem.set(item);
+  }
+  updateItem(item: DenominationUpSertModel) {
+    this.#updateItem.set(item);
+  }
+  deleteItem(item: DenominationModel) {
+    this.#deleteItem.set(item);
+  }
 }
 ```
 
@@ -446,4 +475,3 @@ export function injectWharehouseEndpoint(): string {
 5. **Query params** — Usar `URLSearchParams` o `HttpParams` según la complejidad
 6. **`providedIn: 'root'`** — Siempre singleton
 7. **Re-export de types** — Usar `export type { ... }` para re-exportar modelos que usan los consumidores
-

@@ -1,13 +1,17 @@
 {
   "hooks": {
-    "Stop": [{
-      "matcher": "",
-      "hooks": [{
-        "type": "command",
-        "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && bash tools/verify/verify.sh",
-        "timeout": 120,
-        "statusMessage": "Verifying lint..."
-      }]
-    }]
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && bash tools/verify/verify.sh",
+            "timeout": 120,
+            "statusMessage": "Verifying lint..."
+          }
+        ]
+      }
+    ]
   }
 }

@@ -20,12 +20,7 @@ describe('MyService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideTestingEnvironment(),
-        MyService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), MyService],
     });
     service = TestBed.inject(MyService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -141,11 +136,11 @@ Los interceptores funcionales se testean envolviendo la función en `TestBed.run
 ```typescript
 import type { HttpInterceptorFn } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+
 import { myInterceptor } from './my-interceptor';
 
 describe('myInterceptor', () => {
-  const interceptor: HttpInterceptorFn = (req, next) =>
-    TestBed.runInInjectionContext(() => myInterceptor(req, next));
+  const interceptor: HttpInterceptorFn = (req, next) => TestBed.runInInjectionContext(() => myInterceptor(req, next));
 
   beforeEach(() => {
     TestBed.configureTestingModule({});

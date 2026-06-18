@@ -6,6 +6,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { applyEach, form, required, validate } from '@angular/forms/signals';
@@ -112,6 +113,9 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Munitions {
+  /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
+  readonly readonly = input<boolean>(false);
+
   readonly #munitionsStore = inject(MunitionsStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly #dialog = inject(MatDialog);

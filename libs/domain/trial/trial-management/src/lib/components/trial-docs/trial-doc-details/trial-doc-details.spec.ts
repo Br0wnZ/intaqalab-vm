@@ -1,6 +1,7 @@
-﻿import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialog } from '@angular/material/dialog';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog, createMockResource } from '@intaqalab/utils';
@@ -92,6 +93,7 @@ async function setup(options: { documentId?: string; mockDialog?: ReturnType<typ
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
+      provideAnimationsAsync(),
       { provide: TrialDocsService, useValue: mockService },
       { provide: Router, useValue: { navigateByUrl: vi.fn() } },
     ],

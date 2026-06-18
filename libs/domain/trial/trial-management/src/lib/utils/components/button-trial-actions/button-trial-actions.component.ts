@@ -12,23 +12,30 @@ import { filterTrialActions } from './button-trial-actions.utils';
   selector: 'inta-trial-actions',
   imports: [MatButtonModule, MatMenuModule, MatIconModule, TranslatePipe],
   template: `
-    <button mat-flat-button [matMenuTriggerFor]="menu" (menuOpened)="opened.set(true)" (menuClosed)="opened.set(false)">
-      {{ label() | translate }}
-      <mat-icon>
-        @if (opened()) {
-          expand_less
-        } @else {
-          expand_more
+    @if (list().length > 0) {
+      <button
+        mat-flat-button
+        [matMenuTriggerFor]="menu"
+        (menuOpened)="opened.set(true)"
+        (menuClosed)="opened.set(false)"
+      >
+        {{ label() | translate }}
+        <mat-icon>
+          @if (opened()) {
+            expand_less
+          } @else {
+            expand_more
+          }
+        </mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        @for (item of list(); track item; let idx = $index) {
+          <button mat-menu-item (click)="clicked.emit(item.option)">
+            {{ item.label | translate }}
+          </button>
         }
-      </mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      @for (item of list(); track item; let idx = $index) {
-        <button mat-menu-item (click)="clicked.emit(item.option)">
-          {{ item.label | translate }}
-        </button>
-      }
-    </mat-menu>
+      </mat-menu>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

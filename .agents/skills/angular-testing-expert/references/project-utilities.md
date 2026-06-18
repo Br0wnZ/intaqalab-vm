@@ -6,37 +6,45 @@ Documentación de las utilidades de testing propias del proyecto disponibles en 
 
 ```typescript
 // Core testing utilities
-import { createMockResource, simulateResourceLifecycle } from '@intaqalab/utils/testing/core';
-import type { MockResource } from '@intaqalab/utils/testing/core';
-import { waitForSignal, waitForSignalValue, waitForSignalChange, trackSignalChanges } from '@intaqalab/utils/testing/core';
-import { createMockTranslateService, createMockHttpClient, createMockRouter, createMockActivatedRoute } from '@intaqalab/utils/testing/core';
-
+// Environment provider
+import { provideTestingEnvironment } from '@intaqalab/config';
 // Testing helpers (factories y mocks de dominio)
 import {
+  createMockDataPlanningService,
   createMockMatDialog,
   createMockMatDialogRef,
-  createSpecimens,
-  createUsers,
-  createSeries,
-  createShootingConditions,
-  createTrial,
-  createTrialPlanningInfo,
-  createMockDataPlanningService,
-  createMockSeriesAndShotsService,
-  createMockShootingConditionsService,
-  createMockSeriesAndShotsStore,
+  createMockMunitionsService,
   createMockPlanningGeneralDataStore,
+  createMockSeriesAndShotsService,
+  createMockSeriesAndShotsStore,
+  createMockShootingConditionsService,
   createMockTrialGeneralDataStore,
   createMockTrialsDataService,
-  createMockMunitionsService,
-  createMunitionsTestData,
   createMunitionsCatalogTestData,
+  createMunitionsTestData,
+  createSeries,
+  createShootingConditions,
+  createSpecimens,
+  createTrial,
+  createTrialPlanningInfo,
+  createUsers,
   setupTestEnvironment,
   waitForElement,
 } from '@intaqalab/utils';
-
-// Environment provider
-import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource, simulateResourceLifecycle } from '@intaqalab/utils/testing/core';
+import type { MockResource } from '@intaqalab/utils/testing/core';
+import {
+  trackSignalChanges,
+  waitForSignal,
+  waitForSignalChange,
+  waitForSignalValue,
+} from '@intaqalab/utils/testing/core';
+import {
+  createMockActivatedRoute,
+  createMockHttpClient,
+  createMockRouter,
+  createMockTranslateService,
+} from '@intaqalab/utils/testing/core';
 ```
 
 ## `createMockResource<T>(initialValue?)`
@@ -236,10 +244,11 @@ Provider que inyecta la configuración de entorno de testing. **Incluir SIEMPRE*
 ```typescript
 import { provideTestingEnvironment } from '@intaqalab/config';
 
-providers: [provideTestingEnvironment()]
+providers: [provideTestingEnvironment()];
 ```
 
 Proporciona:
+
 - `apiUrl: 'http://localhost:3000/api'`
 - Todos los endpoints configurados (fireTrials, users, clients, etc.)
 - Features habilitadas para testing
@@ -248,29 +257,29 @@ Proporciona:
 
 Funciones que generan datos de prueba consistentes:
 
-| Factory | Descripción |
-|---------|-------------|
-| `createSpecimens(count?)` | Especímenes con estructura paginada |
-| `createUsers(count?)` | Usuarios con nombre y id |
-| `createSeries(count?, shotsPerSerie?)` | Series con disparos |
-| `createShootingConditions(count?, shotsPerSerie?)` | Condiciones de disparo |
-| `createTrial(overrides?)` | Datos de un trial |
-| `createTrialPlanningInfo(overrides?)` | Info de planificación |
-| `createMunitionsTestData(overrides?)` | Datos de municiones |
-| `createMunitionsCatalogTestData()` | Catálogos (componentTypes, denominations, etc.) |
+| Factory                                            | Descripción                                     |
+| -------------------------------------------------- | ----------------------------------------------- |
+| `createSpecimens(count?)`                          | Especímenes con estructura paginada             |
+| `createUsers(count?)`                              | Usuarios con nombre y id                        |
+| `createSeries(count?, shotsPerSerie?)`             | Series con disparos                             |
+| `createShootingConditions(count?, shotsPerSerie?)` | Condiciones de disparo                          |
+| `createTrial(overrides?)`                          | Datos de un trial                               |
+| `createTrialPlanningInfo(overrides?)`              | Info de planificación                           |
+| `createMunitionsTestData(overrides?)`              | Datos de municiones                             |
+| `createMunitionsCatalogTestData()`                 | Catálogos (componentTypes, denominations, etc.) |
 
 ## Mocks de Stores y Servicios de Dominio
 
-| Mock Factory | Servicio/Store que mockea |
-|-------------|--------------------------|
-| `createMockDataPlanningService(initialData?)` | `DataPlanningService` |
-| `createMockSeriesAndShotsService(initialData?)` | `SeriesAndShotsService` |
+| Mock Factory                                        | Servicio/Store que mockea   |
+| --------------------------------------------------- | --------------------------- |
+| `createMockDataPlanningService(initialData?)`       | `DataPlanningService`       |
+| `createMockSeriesAndShotsService(initialData?)`     | `SeriesAndShotsService`     |
 | `createMockShootingConditionsService(initialData?)` | `ShootingConditionsService` |
-| `createMockSeriesAndShotsStore(initialData?)` | `SeriesAndShotsStore` |
-| `createMockPlanningGeneralDataStore(initialData?)` | `PlanningGeneralDataStore` |
-| `createMockTrialGeneralDataStore(initialData?)` | `TrialGeneralDataStore` |
-| `createMockTrialsDataService()` | `TrialsDataService` |
-| `createMockMunitionsService(initialData?)` | `MunitionsService` |
+| `createMockSeriesAndShotsStore(initialData?)`       | `SeriesAndShotsStore`       |
+| `createMockPlanningGeneralDataStore(initialData?)`  | `PlanningGeneralDataStore`  |
+| `createMockTrialGeneralDataStore(initialData?)`     | `TrialGeneralDataStore`     |
+| `createMockTrialsDataService()`                     | `TrialsDataService`         |
+| `createMockMunitionsService(initialData?)`          | `MunitionsService`          |
 
 Todos los mock factories exponen sus resources internos con prefijo `_` para manipulación en tests:
 

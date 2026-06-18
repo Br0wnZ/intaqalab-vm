@@ -19,22 +19,22 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 ## Tabla de Harnesses Disponibles
 
-| Componente | Harness | Import |
-|------------|---------|--------|
-| `mat-expansion-panel` | `MatExpansionPanelHarness` | `@angular/material/expansion/testing` |
-| `mat-select` | `MatSelectHarness` | `@angular/material/select/testing` |
-| `matInput` | `MatInputHarness` | `@angular/material/input/testing` |
-| `mat-checkbox` | `MatCheckboxHarness` | `@angular/material/checkbox/testing` |
-| `mat-dialog` | `MatDialogHarness` | `@angular/material/dialog/testing` |
-| `mat-button` / `button[mat-button]` | `MatButtonHarness` | `@angular/material/button/testing` |
-| `mat-accordion` | `MatAccordionHarness` | `@angular/material/expansion/testing` |
-| `mat-tab-group` | `MatTabGroupHarness` | `@angular/material/tabs/testing` |
-| `mat-menu` | `MatMenuHarness` | `@angular/material/menu/testing` |
-| `mat-slide-toggle` | `MatSlideToggleHarness` | `@angular/material/slide-toggle/testing` |
-| `mat-table` | `MatTableHarness` | `@angular/material/table/testing` |
-| `mat-paginator` | `MatPaginatorHarness` | `@angular/material/paginator/testing` |
-| `mat-sort-header` | `MatSortHeaderHarness` | `@angular/material/sort/testing` |
-| `mat-datepicker` | `MatDatepickerInputHarness` | `@angular/material/datepicker/testing` |
+| Componente                          | Harness                     | Import                                   |
+| ----------------------------------- | --------------------------- | ---------------------------------------- |
+| `mat-expansion-panel`               | `MatExpansionPanelHarness`  | `@angular/material/expansion/testing`    |
+| `mat-select`                        | `MatSelectHarness`          | `@angular/material/select/testing`       |
+| `matInput`                          | `MatInputHarness`           | `@angular/material/input/testing`        |
+| `mat-checkbox`                      | `MatCheckboxHarness`        | `@angular/material/checkbox/testing`     |
+| `mat-dialog`                        | `MatDialogHarness`          | `@angular/material/dialog/testing`       |
+| `mat-button` / `button[mat-button]` | `MatButtonHarness`          | `@angular/material/button/testing`       |
+| `mat-accordion`                     | `MatAccordionHarness`       | `@angular/material/expansion/testing`    |
+| `mat-tab-group`                     | `MatTabGroupHarness`        | `@angular/material/tabs/testing`         |
+| `mat-menu`                          | `MatMenuHarness`            | `@angular/material/menu/testing`         |
+| `mat-slide-toggle`                  | `MatSlideToggleHarness`     | `@angular/material/slide-toggle/testing` |
+| `mat-table`                         | `MatTableHarness`           | `@angular/material/table/testing`        |
+| `mat-paginator`                     | `MatPaginatorHarness`       | `@angular/material/paginator/testing`    |
+| `mat-sort-header`                   | `MatSortHeaderHarness`      | `@angular/material/sort/testing`         |
+| `mat-datepicker`                    | `MatDatepickerInputHarness` | `@angular/material/datepicker/testing`   |
 
 ## Ejemplo: MatSelect con Harness
 
@@ -92,9 +92,7 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 it('should find submit button and verify it is not disabled', async () => {
   const { loader } = await runSetup();
 
-  const submitButton = await loader.getHarness(
-    MatButtonHarness.with({ text: 'Submit' })
-  );
+  const submitButton = await loader.getHarness(MatButtonHarness.with({ text: 'Submit' }));
   expect(await submitButton.isDisabled()).toBe(false);
   await submitButton.click();
 });

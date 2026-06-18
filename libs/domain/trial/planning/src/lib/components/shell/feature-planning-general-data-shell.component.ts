@@ -1,9 +1,11 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import type { FireTrial, TrialCreateModifyForm } from '@intaqalab/models';
+import { TrialStatus } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import { PlanningPermissionsService } from '../../planning-permissions.service';
 import { Armament } from '../armament/armament';
 import { Measures } from '../measures/measures';
 import { Munitions } from '../munitions/munitions';
@@ -25,72 +27,78 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
   ],
   providers: [PlanningGeneralDataStore],
   template: `
-    <mat-tab-group class="mt-4">
-      <mat-tab label="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TAB_TITLE' | translate }}">
-        <inta-planning-general-data-form />
-      </mat-tab>
-      <mat-tab
-        label="{{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.TAB_TITLE' | translate }}"
-        [disabled]="disableSeriesTab()"
-      >
-        <ng-template matTabContent>
-          @defer (on idle) {
-            <inta-series-and-shots />
-          } @placeholder {
-            <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando...</span>
-            </div>
-          }
-        </ng-template>
-      </mat-tab>
-      <mat-tab
-        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE' | translate }}"
-        [disabled]="disableShootingConditionsTab()"
-      >
-        <ng-template matTabContent>
-          @defer (on idle) {
-            <inta-shooting-conditions />
-          } @placeholder {
-            <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando...</span>
-            </div>
-          }
-        </ng-template>
-      </mat-tab>
-      <mat-tab label="{{ 'TRIAL_PLANNING.MUNITIONS.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
-        <ng-template matTabContent>
-          @defer (on idle) {
-            <inta-munitions />
-          } @placeholder {
-            <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando...</span>
-            </div>
-          }
-        </ng-template>
-      </mat-tab>
-      <mat-tab label="{{ 'TRIAL_PLANNING.ARMAMENT.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
-        <ng-template matTabContent>
-          @defer (on idle) {
-            <inta-armament />
-          } @placeholder {
-            <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando...</span>
-            </div>
-          }
-        </ng-template>
-      </mat-tab>
-      <mat-tab label="Medidas" [disabled]="disableSeriesDependentTab()">
-        <ng-template matTabContent>
-          @defer (on idle) {
-            <inta-measures />
-          } @placeholder {
-            <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando...</span>
-            </div>
-          }
-        </ng-template>
-      </mat-tab>
-    </mat-tab-group>
+    @if (canAccessPlanning()) {
+      <mat-tab-group class="mt-4">
+        <mat-tab label="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TAB_TITLE' | translate }}">
+          <inta-planning-general-data-form [readonly]="isReadonly()" />
+        </mat-tab>
+        <mat-tab
+          label="{{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.TAB_TITLE' | translate }}"
+          [disabled]="disableSeriesTab()"
+        >
+          <ng-template matTabContent>
+            @defer (on idle) {
+              <inta-series-and-shots [readonly]="isReadonly()" />
+            } @placeholder {
+              <div class="h-40 flex items-center justify-center">
+                <span class="text-sm text-gray-400">Cargando...</span>
+              </div>
+            }
+          </ng-template>
+        </mat-tab>
+        <mat-tab
+          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE' | translate }}"
+          [disabled]="disableShootingConditionsTab()"
+        >
+          <ng-template matTabContent>
+            @defer (on idle) {
+              <inta-shooting-conditions [readonly]="isReadonly()" />
+            } @placeholder {
+              <div class="h-40 flex items-center justify-center">
+                <span class="text-sm text-gray-400">Cargando...</span>
+              </div>
+            }
+          </ng-template>
+        </mat-tab>
+        <mat-tab label="{{ 'TRIAL_PLANNING.MUNITIONS.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
+          <ng-template matTabContent>
+            @defer (on idle) {
+              <inta-munitions [readonly]="isReadonly()" />
+            } @placeholder {
+              <div class="h-40 flex items-center justify-center">
+                <span class="text-sm text-gray-400">Cargando...</span>
+              </div>
+            }
+          </ng-template>
+        </mat-tab>
+        <mat-tab label="{{ 'TRIAL_PLANNING.ARMAMENT.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
+          <ng-template matTabContent>
+            @defer (on idle) {
+              <inta-armament [readonly]="isReadonly()" />
+            } @placeholder {
+              <div class="h-40 flex items-center justify-center">
+                <span class="text-sm text-gray-400">Cargando...</span>
+              </div>
+            }
+          </ng-template>
+        </mat-tab>
+        <mat-tab label="Medidas" [disabled]="disableSeriesDependentTab()">
+          <ng-template matTabContent>
+            @defer (on idle) {
+              <inta-measures [readonly]="isReadonly()" />
+            } @placeholder {
+              <div class="h-40 flex items-center justify-center">
+                <span class="text-sm text-gray-400">Cargando...</span>
+              </div>
+            }
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+    } @else {
+      <div class="flex items-center justify-center h-40 text-gray-400 text-sm">
+        {{ 'TRIAL_PLANNING.ACCESS_DENIED' | translate }}
+      </div>
+    }
   `,
   styles: ``,
 })
@@ -99,6 +107,23 @@ export class FeaturePlanningGeneralDataShellComponent {
   readonly trialId = input<FireTrial['id']>();
 
   readonly #store = inject(PlanningGeneralDataStore);
+  readonly #planningPermissions = inject(PlanningPermissionsService);
+
+  /**
+   * True si el usuario puede VER la pestaña de planificación para este estado de prueba.
+   * - UNDER_REVIEW: solo Admin, PlanningHead, Consultant
+   * - PLANNED+: todos excepto Viewer
+   */
+  protected readonly canAccessPlanning = computed(() => {
+    const trialStatus = this.trial()?.status ?? TrialStatus.UNDER_REVIEW;
+    return this.#planningPermissions.canAccessPlanningTab(trialStatus);
+  });
+
+  /**
+   * True si el usuario es solo "viewer" de la planificación (no puede editar).
+   * = tiene acceso pero NO pertenece a los roles de edición.
+   */
+  protected readonly isReadonly = computed(() => !this.#planningPermissions.canEditPlanning());
 
   // Tabs 2 (series & shots) require general info to exist.
   protected readonly disableSeriesTab = computed(() => !this.#store.hasPlanningInfo());

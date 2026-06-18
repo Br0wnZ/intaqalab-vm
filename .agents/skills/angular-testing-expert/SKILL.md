@@ -24,7 +24,7 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 - **Usuario Primero:** Simula interacciones reales usando `userEvent` (siempre asíncrono).
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
 - **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material.
-- **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, *non-null assertions*) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
+- **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
 - **Clean Code:** Tests descriptivos (`it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
 ### 2. Zonaless & Signals ⚡
@@ -120,7 +120,9 @@ Documentación completa de `@intaqalab/utils/testing`: `createMockResource`, sig
 Errores recurrentes detectados en tests del proyecto: Signal Forms, mocks incompletos, JSDOM + Angular Material, effects que no se disparan. Read [known-issues.md](references/known-issues.md)
 
 ## ⚡ Prompt Ligero (Modo Rápido)
+
 Si el usuario solicita una generación rápida sin explicaciones (prompt ligero), aplica estas reglas estrictas extraídas de `vitest-angular-testing-prompt`:
+
 - Frameworks: Vitest + Angular Testing Library (ATL).
 - Usa comportamiento-driven tests (`screen.getByRole`, `userEvent`).
 - Usa Angular Material Component Harnesses.

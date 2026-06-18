@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, disabled, form, required, submit, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/util
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import { PlanningPermissionsService } from '../../planning-permissions.service';
 import type { TrialPlanningInfo, UpsertTrialPlanningInfo } from '../../utils-models/trial-planing-info.model';
 import { PlanningScheduledDatesComponent } from '../planning-scheduled-dates/planning-scheduled-dates.component';
 import { SpecimensManagmentDialog } from '../specimens-managment-dialog/specimens-managment-dialog';
@@ -60,9 +61,11 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             {{ store.fireTrial()!.status | trialStatusLabel }}
           </ui-badge>
         </div>
-        <button mat-flat-button [disabled]="generalDataForm().invalid()" (click)="onValidate()">
-          {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
-        </button>
+        @if (!readonly() && canValidate()) {
+          <button mat-flat-button [disabled]="generalDataForm().invalid()" (click)="onValidate()">
+            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
+          </button>
+        }
       </div>
       <div class="space-y-6">
         <!-- Objeto de la prueba -->
@@ -358,31 +361,40 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
           </div>
         </div>
       </div>
-      <div class="flex justify-end gap-3 mt-6">
-        <button mat-flat-button [disabled]="isSaving() || !generalDataForm().valid()" (click)="saveDraft()">
-          @if (isSaving()) {
-            <ng-container>
-              <mat-icon class="animate-spin mr-2">sync</mat-icon>
-            </ng-container>
-          }
-          {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT' | translate }}
-        </button>
-        <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">
-          {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL' | translate }}
-        </button>
-      </div>
+      @if (!readonly()) {
+        <div class="flex justify-end gap-3 mt-6">
+          <button mat-flat-button [disabled]="isSaving() || !generalDataForm().valid()" (click)="saveDraft()">
+            @if (isSaving()) {
+              <ng-container>
+                <mat-icon class="animate-spin mr-2">sync</mat-icon>
+              </ng-container>
+            }
+            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT' | translate }}
+          </button>
+          <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">
+            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL' | translate }}
+          </button>
+        </div>
+      }
     </div>
   `,
   styles: ``,
 })
 export class PlanningGeneralDataFormComponent {
+  /** Propagado desde el shell: true cuando el usuario no tiene permisos de edición */
+  readonly readonly = input<boolean>(false);
+
   protected readonly store = inject(PlanningGeneralDataStore);
   readonly #calendarStore = inject(CalendarTrialScheduleStore);
+  readonly #planningPermissions = inject(PlanningPermissionsService);
   readonly #cachedSpecimens = signal<
     Array<{ id: string; label?: string; name?: { es?: string; en?: string } | string; type?: string }>
   >([]);
   readonly dialog = inject(MatDialog);
   #specimenSynced = false;
+
+  /** Puede validar planificación (pasar a PLANNED) */
+  readonly canValidate = computed(() => this.#planningPermissions.canValidatePlanning());
 
   readonly isSaving = computed(() => this.store.isLoadingPlanningInfo());
 
@@ -415,8 +427,17 @@ export class PlanningGeneralDataFormComponent {
         : null,
     );
     required(f.planningUser);
-    disabled(f.specimen, () => this.store.isLoadingSpecimens());
-    disabled(f.planningUser, () => this.store.isLoadingUsers());
+    // En modo readonly o cargando, todos los campos se deshabilitan
+    disabled(f.goal, () => this.readonly() || false);
+    disabled(f.observations, () => this.readonly() || false);
+    disabled(f.requeriments, () => this.readonly() || false);
+    disabled(f.additionalInfo, () => this.readonly() || false);
+    disabled(f.maxEmissionDates, () => this.readonly() || false);
+    disabled(f.percentageTechnicalUnits, () => this.readonly() || false);
+    disabled(f.percentageEndTrial, () => this.readonly() || false);
+    disabled(f.daysSignReport, () => this.readonly() || false);
+    disabled(f.specimen, () => this.readonly() || this.store.isLoadingSpecimens());
+    disabled(f.planningUser, () => this.readonly() || this.store.isLoadingUsers());
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
       return !isNaN(sum) && sum !== 100

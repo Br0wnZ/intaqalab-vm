@@ -6,6 +6,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   linkedSignal,
   signal,
 } from '@angular/core';
@@ -367,6 +368,9 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Measures {
+  /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
+  readonly readonly = input<boolean>(false);
+
   readonly #measuresStore = inject(MeasuresStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly #seriesStore = inject(SeriesAndShotsStore);

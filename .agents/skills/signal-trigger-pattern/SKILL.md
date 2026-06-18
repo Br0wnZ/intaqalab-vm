@@ -23,8 +23,8 @@ El patrón canónico para data-fetching en el proyecto. Toda carga de datos remo
 
 ```typescript
 // libs/domain/<domain>/data-access/src/lib/<entity>.service.ts
-import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/core';
 import { AppConfigService } from '@intaqalab/config';
 import { EntityListResponse, EntityParams } from '@intaqalab/models/<domain>';
@@ -77,9 +77,9 @@ export class EntityService {
 ```typescript
 // libs/domain/<domain>/feature-<name>/src/lib/+state/<entity>.store.ts
 import { computed } from '@angular/core';
-import { signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { inject } from '@angular/core';
 import { EntityService } from '@intaqalab/data-access/<domain>';
+import { signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 
 export const EntityStore = signalStore(
   { providedIn: 'root' }, // o en el componente Shell
@@ -107,7 +107,7 @@ export const EntityStore = signalStore(
     selectItem(id: string): void {
       patchState(store, { selectedId: id });
     },
-  }))
+  })),
 );
 ```
 
@@ -133,9 +133,12 @@ export class EntityShellComponent {
 
   constructor() {
     // Dispara la carga inicial en el constructor
-    effect(() => {
-      this.store.load({ page: 1, size: 20 });
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        this.store.load({ page: 1, size: 20 });
+      },
+      { allowSignalWrites: true },
+    );
   }
 }
 ```
@@ -153,7 +156,7 @@ withMethods((store, service = inject(EntityService)) => ({
     patchState(store, { currentPage: page });
     service.load({ page, size: store.pageSize() });
   },
-}))
+}));
 ```
 
 ### Refresco tras mutación
@@ -170,7 +173,7 @@ withMethods((store, service = inject(EntityService)) => ({
       }
     });
   },
-}))
+}));
 ```
 
 ---

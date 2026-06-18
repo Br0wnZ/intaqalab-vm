@@ -66,6 +66,7 @@ Archivo: `mocks/src/fixtures/trial-planning/specimens-dispatcher.ts`
 
 ```typescript
 import type { Request } from 'express';
+
 import { getFixture } from '../../utils';
 
 type Specimen = {
@@ -94,6 +95,7 @@ Archivo: `mocks/src/fixtures/armament/catalog-dispatcher.ts`
 
 ```typescript
 import type { Request } from 'express';
+
 import { getFixture } from '../../utils';
 
 interface SpecimenItem {
@@ -153,6 +155,7 @@ Archivo: `mocks/src/fixtures/armament/trial-armament-dispatcher.ts`
 
 ```typescript
 import type { Request } from 'express';
+
 import { getFixture } from '../../utils';
 
 interface TrialArmamentResponse {
@@ -236,12 +239,12 @@ Archivo: `mocks/src/fixtures/armament/trial-armament-fixture.json`
 
 ## Cuándo Usar Cada Patrón
 
-| Necesidad | Patrón | Ejemplo |
-|-----------|--------|---------|
-| Datos estáticos sin búsqueda | `getFixture()` directo en la route | Target types, dimensions |
-| Datos con paginación/filtrado | Dispatcher con `parseQueryParams` | Weapons catalog, measures |
-| Datos mutables (PUT/POST) | Map in-memory + JSON.parse(JSON.stringify) para clonar | Trial armament |
-| Datos con lista exportada | Export de array TS (no JSON) | `MEASURES_CATALOG` |
+| Necesidad                     | Patrón                                                 | Ejemplo                   |
+| ----------------------------- | ------------------------------------------------------ | ------------------------- |
+| Datos estáticos sin búsqueda  | `getFixture()` directo en la route                     | Target types, dimensions  |
+| Datos con paginación/filtrado | Dispatcher con `parseQueryParams`                      | Weapons catalog, measures |
+| Datos mutables (PUT/POST)     | Map in-memory + JSON.parse(JSON.stringify) para clonar | Trial armament            |
+| Datos con lista exportada     | Export de array TS (no JSON)                           | `MEASURES_CATALOG`        |
 
 ## Reglas Clave
 
@@ -250,4 +253,3 @@ Archivo: `mocks/src/fixtures/armament/trial-armament-fixture.json`
 3. **Clonar antes de mutar** — `JSON.parse(JSON.stringify(fixture))` para evitar corromper el original
 4. **Datos realistas** — Usar ejemplos del Swagger y UUIDs reales
 5. **Mínimo 3-5 items** — En listas paginadas
-

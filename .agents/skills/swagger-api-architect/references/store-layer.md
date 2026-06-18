@@ -231,12 +231,12 @@ export type StockListStoreType = InstanceType<typeof StockListStore>;
 
 Para cada httpResource del servicio, el store debe exponer:
 
-| Resource Signal | Store Computed | Uso |
-|----------------|---------------|-----|
-| `resource.value()` | `items`, `data`, etc. | Datos procesados para el template |
-| `resource.isLoading()` | `isLoading` | Spinners, skeleton loaders |
-| `resource.error()` | `error`, `hasError` | Mensajes de error |
-| `resource.status()` | `createStatus`, `updateStatus` | Reaccionar a completado/fallido |
+| Resource Signal        | Store Computed                 | Uso                               |
+| ---------------------- | ------------------------------ | --------------------------------- |
+| `resource.value()`     | `items`, `data`, etc.          | Datos procesados para el template |
+| `resource.isLoading()` | `isLoading`                    | Spinners, skeleton loaders        |
+| `resource.error()`     | `error`, `hasError`            | Mensajes de error                 |
+| `resource.status()`    | `createStatus`, `updateStatus` | Reaccionar a completado/fallido   |
 
 ## Reglas Clave
 

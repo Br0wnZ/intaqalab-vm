@@ -1,8 +1,8 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,8 +14,7 @@ import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import { StockListFilterComponent } from './stock-list-filter.component';
 
-// // Factories
-//
+// Factories
 
 function makeStockListStore() {
   return {
@@ -61,8 +60,7 @@ function makeClientsDataService() {
   };
 }
 
-// // Setup
-//
+//  Setup
 
 async function setup() {
   const stockListStore = makeStockListStore();
@@ -71,8 +69,9 @@ async function setup() {
   const clientsDataService = makeClientsDataService();
 
   const view = await render(StockListFilterComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [TranslateModule.forRoot()],
     providers: [
+      provideAnimationsAsync(),
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
@@ -90,8 +89,7 @@ async function setup() {
   return { fixture, component, container, stockListStore, munitionComponentStore, munitionsDumpsStore };
 }
 
-// // Tests
-//
+// Tests
 
 describe('StockListFilterComponent', () => {
   beforeEach(() => {

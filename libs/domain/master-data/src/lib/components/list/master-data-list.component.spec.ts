@@ -1,11 +1,11 @@
-import { signal } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideTestingEnvironment } from '@intaqalab/config';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 import { MatTableHarness } from '@angular/material/table/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -161,7 +161,7 @@ describe('MasterDataListComponent', () => {
       view.fixture.detectChanges();
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
-      
+
       // Encontrar el botón de editar por su contenido interno de icono
       for (const btn of buttons) {
         const host = await btn.host();

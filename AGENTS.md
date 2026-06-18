@@ -36,6 +36,7 @@
 # 🤖 Central AI Orchestrator Routing
 
 Act as the **Central AI Orchestrator** to route tasks to specialized skills located in `.agents/skills/`:
+
 - **Signals Audit/Improvement:** Load `angular-architect` skill.
 - **Vitest/ATL Testing:** Load `angular-testing-expert` skill.
 - **Swagger API integration:** Load `swagger-api-architect` skill.
@@ -51,7 +52,9 @@ Act as the **Central AI Orchestrator** to route tasks to specialized skills loca
 - **Task Delegation to Subagents:** Load `cavecrew` skill.
 
 ## 🚀 Skills Optimizados (Prompts Ligeros)
+
 Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes completos cuando sea posible para ahorrar contexto:
+
 - `angular-signals-refactor-prompt`: Para refactorizar a Angular 21 y Signals.
 - `generate-ui-widget-prompt`: Para generar widgets UI con Material + Tailwind.
 - `swagger-api-mock-prompt`: Para generar Mocks, Modelos y Servicios httpResource desde un JSON de Swagger.
@@ -67,11 +70,11 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 
 > [!IMPORTANT]
 > La carpeta `libs/domain/master-data` es el **Golden Path** del repositorio INTAQALAB.
-> 
+>
 > Todo agente que vaya a generar un nuevo dominio, construir features asíncronas, implementar `httpResource` o definir un `SignalStore`, **DEBE OBLIGATORIAMENTE** usar el código de `libs/domain/master-data` como plantilla y leer su `README.md` antes de empezar. No importes código legacy como referencia.
 
-
 ## Stack Tecnológico 🛠️
+
 - **Angular 21:** `signals`, `httpResource` para peticiones asíncronas, y `signal-forms`. Angular 21 usa standalone por defecto (NO especificar `standalone: true`).
 - **Nx Monorepo:** Estructura modular basada en librerías (`data-access`, `feature`, `ui`, `util`). Mantén la lógica de negocio en `data-access`.
 - **Tailwind CSS 4.1:** Configuración CSS-first usando `@theme` y colores OKLCH. Utiliza clases inline y Angular Material (Aria/Headless).
@@ -79,8 +82,9 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 - **Backend:** API ExpressJS limpia con validación estricta (Zod).
 
 ## Diseño de Componentes 🧩
+
 - **Componentizar al máximo.** Componentes pequeños, cohesivos y legibles (Clean Code & SOLID, cero sobreingeniería).
-- **Convención de Nombres (2025 Style Guide):** 
+- **Convención de Nombres (2025 Style Guide):**
   - **Archivos:** Formato conciso sin sufijos técnicos para componentes/directivas/pipes (ej: `user-profile.ts` en vez de `user-profile.component.ts`). Los **servicios** deben mantener el sufijo `.service.ts` (ej: `user-profile.service.ts`).
   - **Clases:** Omitir sufijos técnicos en componentes/directivas/pipes (ej: `UserProfile` en lugar de `UserProfileComponent`). Los **servicios** deben mantener el sufijo `Service` (ej: `UserProfileService`). Combina con componentes sin selector (selector-less components) para etiquetas limpias.
 - **El estado viene de la Store, no de @Input().** Evita cadenas de `@Input()`/`@Output()`. El componente hijo inyecta su propio `SignalStore` directamente.
@@ -91,8 +95,9 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
   4. `input()` + `output()` — Exclusivo para componentes UI puros o librerías sin contexto de negocio.
 
 ## Patrones Avanzados de Signals 🔬
+
 - **Estado derivado writable:** Usa `linkedSignal()` en lugar de signal+effect. Ejemplo: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
-- **RxJS (Uso Restringido):** 
+- **RxJS (Uso Restringido):**
   - ✅ Permitido interop: `toSignal(observable$)`, `firstValueFrom(observable$)`.
   - ❌ **PROHIBIDO:** `.subscribe()` en componentes sin `takeUntilDestroyed()`.
 - **Formularios Signal Forms:** Usa la API `form()`. **ELIMINA** `ReactiveFormsModule` y `FormBuilder`.
@@ -104,10 +109,11 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 ## 🏛️ Architecture Decision Records (ADRs)
 
 > [!IMPORTANT]
-> Cuando ocurra algún cambio o se tome una decisión a nivel de arquitectura, **DEBE** quedar reflejado automáticamente creando o actualizando un documento en la carpeta `docs/adrs/`. 
-> 
+> Cuando ocurra algún cambio o se tome una decisión a nivel de arquitectura, **DEBE** quedar reflejado automáticamente creando o actualizando un documento en la carpeta `docs/adrs/`.
+>
 > **Reglas:**
+>
 > - Comprueba si existe un ADR aplicable antes de proponer la decisión.
-> - Registra un ADR solo cuando la decisión sea difícil de revertir, requiera contexto o implique un *trade-off* real.
+> - Registra un ADR solo cuando la decisión sea difícil de revertir, requiera contexto o implique un _trade-off_ real.
 > - Si la discusión contradice un ADR aceptado, propón actualizar el ADR en lugar de divergir en silencio.
 > - Si tienes acceso en tu contexto a un repositorio de referencia con un ADR equivalente, utiliza **exactamente el mismo nombre de fichero y la misma estructura de contenido** para mantener la consistencia.

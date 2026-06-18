@@ -15,13 +15,13 @@ nx-intaqalab/
 │   ├── demos/                  # Componentes de demostración y prototipado
 │   ├── pruebas/                # Librería de pruebas experimentales
 │   ├── domain/                 # Lógica de negocio por dominio
-│   │   ├── admin/              
-│   │   ├── calendar-trials/    
+│   │   ├── admin/
+│   │   ├── calendar-trials/
 │   │   ├── master-data/        # GOLDEN PATH (Implementación de referencia)
 │   │   ├── trial/
-│   │   │   ├── planning/       
-│   │   │   └── trial-management/ 
-│   │   └── wharehouse-managment/ 
+│   │   │   ├── planning/
+│   │   │   └── trial-management/
+│   │   └── wharehouse-managment/
 │   └── shared/                 # Código compartido transversal
 │       ├── config/             # Configuración de entorno y tokens
 │       ├── data-access/        # Servicios HTTP compartidos
@@ -47,6 +47,7 @@ El sistema de tags de Nx (`scope:*`, `type:*`) previene acoplamientos indeseados
 ## 3. Configuración Global (`app.config.ts`)
 
 La aplicación es **standalone** y **Zoneless**:
+
 - **Zoneless:** Detección de cambios puramente reactiva (`provideZoneChangeDetection({ eventCoalescing: true })`). No se usa `zone.js`.
 - **Routing:** `provideRouter()` con `withComponentInputBinding()`. Todas las rutas usan **lazy loading** (`loadChildren()`).
 - **HTTP:** Pipeline funcional con interceptores clave: `loaderInterceptor`, `centerInterceptor`, `authInterceptor`, `languageInterceptor`, `globalHttpErrorInterceptor`, `successToastInterceptor`.
@@ -54,6 +55,7 @@ La aplicación es **standalone** y **Zoneless**:
 ## 4. Inyección de URLs Base y Entorno
 
 Nunca se hardcodean URLs de API en los dominios. Se resuelven dinámicamente inyectando funciones de `@intaqalab/config`:
+
 - `injectApiUrl()` → `environment.apiUrl`
 - `injectApiUrlWithCenter()` → `environment.apiUrl` + cabecera de centro INTA
 - `injectFireTrialsEndpoint()` → `environment.apiUrl` + `/fire-trials`
@@ -63,6 +65,7 @@ Nunca se hardcodean URLs de API en los dominios. Se resuelven dinámicamente iny
 El mock server local corre sobre **Express** (`mocks/main.ts`) respondiendo con fixtures JSON alojadas en `mocks/src/fixtures/`. Está modelado de forma idéntica a los contratos de la API real (Swagger/OpenAPI).
 
 ### Scripts Core
+
 ```bash
 npm start                  # Serve de la aplicación
 npm run start:dev          # Serve aplicación + mock server

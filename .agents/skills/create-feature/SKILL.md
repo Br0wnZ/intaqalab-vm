@@ -1,6 +1,6 @@
 ---
 description: Reemplazo moderno del antiguo flujo /new-feature. Genera el comando Nx y el código base inicial para una Feature completa usando Angular 21 y Zoneless.
-argument-hint: "Dominio: [nombre], Feature: [nombre], Tipo: [CRUD | Dashboard | Form]"
+argument-hint: 'Dominio: [nombre], Feature: [nombre], Tipo: [CRUD | Dashboard | Form]'
 ---
 
 # Create Feature

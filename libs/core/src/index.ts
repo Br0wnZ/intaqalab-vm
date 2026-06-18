@@ -27,6 +27,7 @@ export { HeaderToolsComponent } from './lib/utils-auth/header-tools/header-tools
 export * from './lib/utils-auth/auth-service';
 export * from './lib/utils-auth/directives/has-role/has-role.directive';
 export * from './lib/utils-auth/models/role.model';
+export * from './lib/utils-auth/models/role-groups.constants';
 export * from './lib/utils-auth/guards/role.guard';
 export * from './lib/utils-auth/components/button-role-actions/button-role-actions.component';
 

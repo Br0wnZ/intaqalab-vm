@@ -59,7 +59,7 @@ describe('MyComponent', () => {
 ```typescript
 import { provideTestingEnvironment } from '@intaqalab/config';
 
-providers: [provideTestingEnvironment()]
+providers: [provideTestingEnvironment()];
 ```
 
 ### `TranslateModule.forRoot()`
@@ -67,7 +67,7 @@ providers: [provideTestingEnvironment()]
 Incluir siempre que el componente use traducciones (`translate` pipe o `TranslateService`). Las claves de traducción se renderizan tal cual en los tests (no se traduce), lo que es ideal para buscarlas con `screen.getByText()`.
 
 ```typescript
-imports: [TranslateModule.forRoot()]
+imports: [TranslateModule.forRoot()];
 ```
 
 ### HTTP Testing
@@ -78,11 +78,7 @@ Cuando el componente o servicio hace llamadas HTTP reales (no mockeadas):
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-providers: [
-  provideHttpClient(),
-  provideHttpClientTesting(),
-  provideTestingEnvironment(),
-]
+providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()];
 ```
 
 ### Animaciones
@@ -92,7 +88,7 @@ Si el componente usa animaciones de Angular Material:
 ```typescript
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-imports: [TranslateModule.forRoot(), NoopAnimationsModule]
+imports: [TranslateModule.forRoot(), NoopAnimationsModule];
 ```
 
 ## Setup con Parámetros Configurables
@@ -110,10 +106,7 @@ const runSetup = async (isEmptyResponse = false) => {
 
   const view = await render(MyComponent, {
     imports: [TranslateModule.forRoot()],
-    providers: [
-      provideTestingEnvironment(),
-      { provide: MyService, useValue: mockService },
-    ],
+    providers: [provideTestingEnvironment(), { provide: MyService, useValue: mockService }],
   });
 
   return { view, mockService };

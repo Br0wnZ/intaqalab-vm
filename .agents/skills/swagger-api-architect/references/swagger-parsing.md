@@ -31,17 +31,18 @@ Guía para extraer y mapear la información del Swagger/OpenAPI 3.x a los artefa
 
 ## Mapeo: Swagger Path → Service Method
 
-| Swagger | Service |
-|---------|---------|
-| `GET /path` | `httpResource<Response>` + `getXxx()` method |
-| `POST /path` | `httpResource<Response>` + `createXxx(body)` method + `resetCreate()` |
-| `PUT /path/{id}` | `httpResource<void>` + `updateXxx(id, body)` method + `resetUpdate()` |
-| `DELETE /path/{id}` | `httpResource<void>` + `deleteXxx(id)` method + `resetDelete()` |
-| `PUT /path` (bulk) | `httpResource<void>` + `updateXxx(body)` method + `resetUpdate()` |
+| Swagger             | Service                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `GET /path`         | `httpResource<Response>` + `getXxx()` method                          |
+| `POST /path`        | `httpResource<Response>` + `createXxx(body)` method + `resetCreate()` |
+| `PUT /path/{id}`    | `httpResource<void>` + `updateXxx(id, body)` method + `resetUpdate()` |
+| `DELETE /path/{id}` | `httpResource<void>` + `deleteXxx(id)` method + `resetDelete()`       |
+| `PUT /path` (bulk)  | `httpResource<void>` + `updateXxx(body)` method + `resetUpdate()`     |
 
 ## Mapeo: Path Parameters → Signal Shape
 
 ### Ejemplo Swagger:
+
 ```json
 "/centers/{centerId}/fire-trials/{fireTrialId}/planning/info": {
   "parameters": [
@@ -52,6 +53,7 @@ Guía para extraer y mapear la información del Swagger/OpenAPI 3.x a los artefa
 ```
 
 ### Resultado en el Service:
+
 ```typescript
 // centerId se obtiene de la URL base (interceptor lo inyecta automáticamente)
 // fireTrialId es el parámetro dinámico en el signal
@@ -72,6 +74,7 @@ readonly resource = httpResource<Response>(() => {
 ## Mapeo: Query Parameters → URLSearchParams
 
 ### Ejemplo Swagger:
+
 ```json
 "parameters": [
   { "name": "name", "in": "query", "required": false, "schema": { "type": "string" } },
@@ -83,6 +86,7 @@ readonly resource = httpResource<Response>(() => {
 ```
 
 ### Resultado:
+
 ```typescript
 // 1. Tipo para los params
 export type CatalogQueryParams = {
@@ -111,6 +115,7 @@ export type CatalogQueryParams = {
 ## Mapeo: Request Body → Service Signal
 
 ### Ejemplo Swagger:
+
 ```json
 "put": {
   "requestBody": {
@@ -125,6 +130,7 @@ export type CatalogQueryParams = {
 ```
 
 ### Resultado:
+
 ```typescript
 readonly #updateParams = signal<{ trialId: string; body: ArmamentBulkUpdateRequest } | null>(null);
 
@@ -145,12 +151,12 @@ updateEntity(trialId: string, body: ArmamentBulkUpdateRequest) {
 
 ## Mapeo: Response Schema → httpResource Generic
 
-| Swagger Response | httpResource Type |
-|-----------------|-------------------|
-| `{ "$ref": "#/components/schemas/X" }` | `httpResource<X>` |
-| `{ "type": "array", "items": { "$ref": "#/components/schemas/X" } }` | `httpResource<X[]>` |
-| Sin body (204) | `httpResource<void>` |
-| `200` sin schema específico | `httpResource<void>` |
+| Swagger Response                                                     | httpResource Type    |
+| -------------------------------------------------------------------- | -------------------- |
+| `{ "$ref": "#/components/schemas/X" }`                               | `httpResource<X>`    |
+| `{ "type": "array", "items": { "$ref": "#/components/schemas/X" } }` | `httpResource<X[]>`  |
+| Sin body (204)                                                       | `httpResource<void>` |
+| `200` sin schema específico                                          | `httpResource<void>` |
 
 ## Agrupación por Tags
 
@@ -174,6 +180,7 @@ Cada tag → un Service + un Store (normalmente).
 ```
 
 Extraer el nombre del schema (`PlanningResponse`) y:
+
 1. Buscar en `components.schemas.PlanningResponse`
 2. Generar el type TypeScript
 3. Importarlo donde se necesite
@@ -195,6 +202,7 @@ Extraer el nombre del schema (`PlanningResponse`) y:
 ```
 
 ### Resultado:
+
 ```typescript
 import type { ShotConditionsData } from './shot-conditions-data.model';
 

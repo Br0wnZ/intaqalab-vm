@@ -139,8 +139,7 @@ async function setup(opts: SetupOptions = {}) {
   return { fixture, component, container, stockListStore, mockDialog, mockRouter, munitionsDumpsStore };
 }
 
-// // Tests
-//
+// Tests
 
 describe('StockListComponent', () => {
   beforeEach(() => {

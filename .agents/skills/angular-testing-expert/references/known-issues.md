@@ -35,7 +35,7 @@ mockStore = {
 ```typescript
 createMockPlanningGeneralDataStore({
   fireTrial: { ...createTrial(), status: 'PLANNED' },
-})
+});
 ```
 
 ---
@@ -56,8 +56,8 @@ function createFullConditions(count = 2, shots = 2) {
     ...serie,
     shots: serie.shots.map((shot) => ({
       ...shot,
-      inclination: 0,       // ← campo ausente en la factory
-      nominalVelocity: 0,   // ← campo ausente en la factory
+      inclination: 0, // ← campo ausente en la factory
+      nominalVelocity: 0, // ← campo ausente en la factory
     })),
   }));
 }
@@ -79,16 +79,16 @@ Usar `createFullConditions()` en todos los tests que llamen a `seriesSignal.set(
 
 ```typescript
 // ❌ Falla en JSDOM con botones Angular Material
-screen.getByRole('button', { name: 'LABEL_KEY' })
+screen.getByRole('button', { name: 'LABEL_KEY' });
 
 // ✅ Para verificar existencia
-screen.getByText('LABEL_KEY')
+screen.getByText('LABEL_KEY');
 
 // ✅ Para verificar estado (disabled, etc.)
-screen.getByText('LABEL_KEY').closest('button')
+screen.getByText('LABEL_KEY').closest('button');
 
 // ✅ Alternativa si hay varios botones sin texto único
-screen.getAllByRole('button')[0]
+screen.getAllByRole('button')[0];
 ```
 
 ---
@@ -127,11 +127,11 @@ Siempre incluir en los `providers` de `render()` cuando el componente usa Angula
 
 ```typescript
 providers: [
-  provideAnimationsAsync(),   // ← requerido por Angular Material en tests
+  provideAnimationsAsync(), // ← requerido por Angular Material en tests
   provideTestingEnvironment(), // ← requerido para tokens de config (endpoints)
   { provide: MyStore, useValue: mockStore },
   { provide: MyService, useValue: mockService },
-]
+];
 ```
 
 > **Nota:** `provideAnimations()` puede causar el error de selector inválido (#4). Preferir `provideAnimationsAsync()`.
@@ -155,9 +155,11 @@ NG0201: No provider found for `SignalStore`. Source: Standalone[MyComponent]
 ```typescript
 // component.ts
 @Component({
-  providers: [MyStore],  // ← store declarada aquí
+  providers: [MyStore], // ← store declarada aquí
 })
-export class MyComponent { store = inject(MyStore); }
+export class MyComponent {
+  store = inject(MyStore);
+}
 ```
 
 ➡️ Usar `componentProviders` en el `render()`:
@@ -173,7 +175,9 @@ await render(MyComponent, {
 ```typescript
 // component.ts
 @Component({ template: '' })
-export class MyComponent { store = inject(MyStore); }  // sin providers[]
+export class MyComponent {
+  store = inject(MyStore);
+} // sin providers[]
 ```
 
 ➡️ Usar `providers` (nivel raíz del test) en el `render()`:
@@ -227,7 +231,7 @@ function makeMyStoreMock() {
 // ❌ No funciona — queda eclipsado por el injector del componente
 await render(MyComponent, {
   providers: [
-    { provide: MatDialog, useValue: mockDialog },  // ignorado
+    { provide: MatDialog, useValue: mockDialog }, // ignorado
   ],
 });
 
@@ -238,7 +242,7 @@ await render(MyComponent, {
     // resto de providers globales...
   ],
   componentProviders: [
-    { provide: MatDialog, useValue: mockDialog },  // sí funciona
+    { provide: MatDialog, useValue: mockDialog }, // sí funciona
   ],
 });
 ```
@@ -277,6 +281,7 @@ try {
 **Síntoma:** `TestingLibraryElementError: Unable to find an element with the text: ...` o `Unable to find an accessible element with the role "button" and name "..."`.
 
 **Solución:**
+
 1. Leer el template actual del componente antes de escribir/corregir tests.
 2. Eliminar o actualizar los tests que referencian UI ya no presente.
 3. Reemplazar selectores CSS (`container.querySelector('.clase')`) por queries accesibles (`getByText`, `getByRole`) más resistentes a cambios de estilo.
@@ -290,10 +295,12 @@ try {
 **Causa:** `LoaderService.show()` tiene un debounce interno de **150ms** implementado con `setTimeout`. `tick()` sin argumento avanza 0ms — el timer nunca dispara y `isLoading` permanece `false`.
 
 **Síntoma característico:**
+
 ```
 expected: true
 received: false
 ```
+
 en la línea `expect(service.isLoading()).toBe(true)` justo después de `tick()`.
 
 **Solución:** Usar `tick(150)` (o una constante `SHOW_DEBOUNCE_MS = 150`) siempre que se espere que `isLoading` sea `true` después de `show()`. Los métodos `hide()` y `reset()` son **síncronos** → `tick()` sin argumento es correcto tras ellos.
@@ -330,6 +337,7 @@ expect(service.isLoading()).toBe(false); // true ✓
 **Causa frecuente del test que falla primero:** Issue #10 — `tick()` en lugar de `tick(SHOW_DEBOUNCE_MS)`.
 
 **Solución:**
+
 1. Corregir el test que falla primero (suele ser el Issue #10).
 2. **No** intentar añadir `httpTesting.cancelPendingRequests()` — ese método **no existe** en `HttpTestingController` (ver Issue #12).
 
@@ -348,10 +356,12 @@ expect(service.isLoading()).toBe(false); // true ✓
 **Contexto:** Specs de componentes que importan (directa o transitivamente) `UiDialogService` de `@intaqalab/ui`. La cadena de importación: `EventsActionsService` → `UiDialogService` → `doc-viewer.ts` → `ng2-pdf-viewer`.
 
 **Síntoma:**
+
 ```
 TypeError: Cannot add property verbosity, object is not extensible
  → ng2-pdf-viewer/fesm2022/ng2-pdf-viewer.mjs:155
 ```
+
 El spec no ejecuta ni un solo test (`0 tests`).
 
 **Solución Preferida:** Agregar la importación del mock global en el archivo `test-setup.ts` de la librería en la que se está trabajando:
@@ -363,13 +373,13 @@ import '@intaqalab/utils/testing/pdf-mock';
 **Solución Alternativa (Inline):** Si se requiere mocking local específico o la solución preferida no está disponible, añadir `vi.mock('ng2-pdf-viewer', ...)` **antes** de cualquier import del spec. Usar factory **síncrona** (no `async`):
 
 ```typescript
+// Imports dinámicos o de componente DESPUÉS del mock
+import { MyComponent } from './my.component';
+
 // ✅ Factory SÍNCRONA — funciona en todos los libs
 vi.mock('ng2-pdf-viewer', () => ({
   PdfViewerModule: class PdfViewerModule {},
 }));
-
-// Imports dinámicos o de componente DESPUÉS del mock
-import { MyComponent } from './my.component';
 ```
 
 **Por qué no async:** En libs compiladas con `@analogjs/vite-plugin-angular` + `importHelpers: true`, el helper `__async` de `tslib` no está disponible en el contexto de `vi.mock`. La factory asíncrona lanza `TypeError: __async is not a function`.
@@ -394,7 +404,6 @@ interface SetupInputs {
 }
 ```
 
-
 **Síntoma:** `TypeError: (0 , provideTestingEnvironment) is not a function` en cualquier spec de la lib `core`.
 
 **Causa:** La función importa `angular-auth-oidc-client` transitivamente, que no se resuelve correctamente en el contexto de test de `core`.
@@ -408,6 +417,7 @@ interface SetupInputs {
 **Contexto:** Un subcomponente o componente presentacional tiene un input requerido de tipo `FieldTree` (`form = input.required<FieldTree<...>>()`) y su template accede a campos del formulario en el renderizado inicial. Al intentar renderizarlo directamente con `render(MyComponent)` o al inicializar `form(...)` fuera de un contexto de inyección en la suite de pruebas, la prueba lanza `NG0950` o `NG0203`.
 
 **Causa:**
+
 1. Angular 21 lanza `NG0950` si el input requerido no se ha proveído al momento de evaluar el template (primer ciclo de detección de cambios).
 2. La función `form()` de `@angular/forms/signals` requiere ejecutarse en un contexto de inyección (injection context), por lo que no puede ser llamada libremente en la raíz de la función `setup()`.
 
@@ -440,4 +450,24 @@ async function setup() {
 }
 ```
 
+---
 
+## 17. `TestBed.tick()` no válido en Angular 21 Zoneless (httpResource no dispara)
+
+**Contexto:** Un test usa `TestBed.tick()` para intentar avanzar el tiempo y procesar peticiones HTTP generadas por un `httpResource`.
+
+**Causa:** `TestBed.tick()` dependía de `zone.js` (`fakeAsync`) y no es válido en tests Zoneless de Angular 21. Además, el API de `httpResource` funciona usando _Signals_ y _Effects_ internamente para disparar las peticiones cuando cambian sus parámetros.
+
+**Solución:** Reemplazar `TestBed.tick()` por `TestBed.flushEffects()`. Esto fuerza la ejecución síncrona de los _effects_ pendientes en la cola, disparando así la petición reactiva del `httpResource` de manera segura y sin temporizadores falsos.
+
+```typescript
+// ❌ Incorrecto en Angular 21 Zoneless
+service.getShootingConditions(trialId);
+TestBed.tick();
+
+// ✅ Correcto para procesar triggers de httpResource
+service.getShootingConditions(trialId);
+TestBed.flushEffects();
+```
+
+---

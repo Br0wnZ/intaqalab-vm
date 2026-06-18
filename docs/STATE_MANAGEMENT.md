@@ -17,6 +17,7 @@ Cada feature debe tener su propio Signal Store proveyéndolo a nivel del compone
   4. `withHooks(...)`: Limpia o recetea el store en el `onDestroy`.
 
 Ejemplo:
+
 ```typescript
 export const FeatureStore = signalStore(
   withState({ entityId: null }),
@@ -31,7 +32,7 @@ export const FeatureStore = signalStore(
       patchState(store, { entityId: id });
       service.setFetchParams(id); // Dispara la petición HTTP
     },
-  }))
+  })),
 );
 ```
 
@@ -66,6 +67,7 @@ export class FeatureHttpService {
 ```
 
 ### 2.1 Feedback al Usuario
+
 El éxito o el fracaso de una mutación API se monitorea desde el componente usando un `effect()` reactivo al `status` del recurso (`'resolved'` / `'rejected'`).
 
 ```typescript

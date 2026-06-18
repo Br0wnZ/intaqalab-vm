@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormField, applyEach, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -234,6 +243,9 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Armament {
+  /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
+  readonly readonly = input<boolean>(false);
+
   readonly #armamentStore = inject(ArmamentStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly dialog = inject(MatDialog);

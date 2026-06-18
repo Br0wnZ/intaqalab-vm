@@ -4,20 +4,19 @@ Los modelos TypeScript se generan a partir de la sección `components.schemas` d
 
 ## Convenciones de Nomenclatura
 
-
 ## Mapeo de Tipos Swagger → TypeScript
 
-| Swagger Type                         | TypeScript Type            |
-|--------------------------------------|----------------------------|
-| `string`                             | `string`                   |
-| `string` + `format: uuid`           | `string`                   |
-| `string` + `format: date`           | `string`                   |
-| `integer`                            | `number`                   |
-| `number`                             | `number`                   |
-| `boolean`                            | `boolean`                  |
-| `array` + `items`                    | `T[]`                      |
-| `object` + `additionalProperties`   | `Record<string, string>`   |
-| `$ref`                               | Import del tipo referenciado |
+| Swagger Type                      | TypeScript Type              |
+| --------------------------------- | ---------------------------- |
+| `string`                          | `string`                     |
+| `string` + `format: uuid`         | `string`                     |
+| `string` + `format: date`         | `string`                     |
+| `integer`                         | `number`                     |
+| `number`                          | `number`                     |
+| `boolean`                         | `boolean`                    |
+| `array` + `items`                 | `T[]`                        |
+| `object` + `additionalProperties` | `Record<string, string>`     |
+| `$ref`                            | Import del tipo referenciado |
 
 ## Ejemplo Real: Armament Models
 
@@ -167,4 +166,3 @@ export type MeasuresBulkUpdateRequest = {
 3. Si un schema usa `$ref`, importar el tipo del archivo correspondiente
 4. Si un schema usa `allOf`, hacer merge de propiedades en un solo type
 5. No generar tipos para `ProblemDetail` (es transversal y ya existe)
-

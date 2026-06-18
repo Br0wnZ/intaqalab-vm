@@ -64,14 +64,14 @@ describe('ShootingConditionsService', () => {
       ];
 
       service.getShootingConditions(MOCK_IDS.TRIAL);
-      TestBed.tick();
+      TestBed.flushEffects();
 
       expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions`, 'GET', mockResponse);
     });
 
     it('should handle error when fetching shooting conditions', async () => {
       service.getShootingConditions(MOCK_IDS.TRIAL);
-      TestBed.tick();
+      TestBed.flushEffects();
 
       const req = httpTestingController.expectOne(
         `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions`,
@@ -110,7 +110,7 @@ describe('ShootingConditionsService', () => {
       };
 
       service.updateShootingConditions(request);
-      TestBed.tick();
+      TestBed.flushEffects();
 
       const expectedBody = {
         shots: request.shots,
@@ -127,7 +127,7 @@ describe('ShootingConditionsService', () => {
 
   describe('Resource States & Edge Cases', () => {
     it('should not make request when params are null', () => {
-      TestBed.tick();
+      TestBed.flushEffects();
       httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions`);
       expect(service.conditionsResource.value()).toEqual({
         units: {
@@ -151,9 +151,11 @@ describe('ShootingConditionsService', () => {
       expect(service.getTargetTypesResource.value()).toEqual([]);
 
       service.getTargetTypes();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-types?pageSize=100`, 'GET', [{ id: '1', label: 'Type 1' }]);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-types?pageSize=100&active=true`, 'GET', [
+        { id: '1', label: 'Type 1' },
+      ]);
       expect(service.getTargetTypesResource.value()).toBeDefined();
     });
 
@@ -161,45 +163,45 @@ describe('ShootingConditionsService', () => {
       expect(service.getTargetMaterialsResource.value()).toEqual([]);
 
       service.getTargetMaterials();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-materials?pageSize=100`, 'GET', []);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-materials?pageSize=100&active=true`, 'GET', []);
     });
 
     it('should lazy load target dimensions', async () => {
       expect(service.getTargetDimensionsResource.value()).toEqual([]);
 
       service.getTargetDimensions();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-dimensions?pageSize=100`, 'GET', []);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-dimensions?pageSize=100&active=true`, 'GET', []);
     });
 
     it('should lazy load target thicknesses', async () => {
       expect(service.getTargetThicknessesResource.value()).toEqual([]);
 
       service.getTargetThicknesses();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-thicknesses?pageSize=100`, 'GET', []);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/target-thicknesses?pageSize=100&active=true`, 'GET', []);
     });
 
     it('should lazy load impact zones', async () => {
       expect(service.getImpactZonesResource.value()).toEqual([]);
 
       service.getImpactZones();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/impact-zones?pageSize=100`, 'GET', []);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/impact-zones?pageSize=100&active=true`, 'GET', []);
     });
 
     it('should lazy load loading zones', async () => {
       expect(service.getLoadingZonesResource.value()).toEqual([]);
 
       service.getLoadingZones();
-      TestBed.tick();
+      TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/loading-zone?pageSize=1000`, 'GET', []);
+      expectHttpRequest(`${MOCK_URLS.PLANNING}/loading-zone?pageSize=1000&active=true`, 'GET', []);
     });
   });
 
@@ -211,13 +213,13 @@ describe('ShootingConditionsService', () => {
       ];
 
       service.getTrialSchedules(MOCK_IDS.TRIAL);
-      TestBed.tick();
+      TestBed.flushEffects();
 
       expectHttpRequest(`${MOCK_URLS.FIRE_TRIALS}/${MOCK_IDS.TRIAL}/schedule`, 'GET', mockSchedules);
     });
 
     it('should not make schedule request when params are null', () => {
-      TestBed.tick();
+      TestBed.flushEffects();
       httpTestingController.expectNone(`${MOCK_URLS.FIRE_TRIALS}/${MOCK_IDS.TRIAL}/schedule`);
       expect(service.getTrialSchedulesResource.value()).toEqual([]);
     });

@@ -449,7 +449,7 @@ Esto permite acceder a `fireTrialId()` del store padre sin duplicar estado:
 
 ```typescript
 // ArmamentStore
-withComputed((store, armamentService = inject(ArmamentService), planningStore = inject(PlanningGeneralDataStore)) => ({
+(withComputed((store, armamentService = inject(ArmamentService), planningStore = inject(PlanningGeneralDataStore)) => ({
   fireTrialId: computed(() => planningStore.fireTrialId()),
   seriesArmament: computed(() => armamentService.armamentResource.value()?.series),
   // ...
@@ -462,7 +462,7 @@ withComputed((store, armamentService = inject(ArmamentService), planningStore = 
         patchState(store, { isInitialized: true });
       }
     },
-  }));
+  })));
 ```
 
 **`MunitionsStore`** además mantiene estado local para configuraciones editables:
