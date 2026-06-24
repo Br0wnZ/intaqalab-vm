@@ -23,6 +23,7 @@ interface SeriesMunitionsData {
 interface MunitionConfigResponse {
   id: string;
   seriesId: string;
+  munitionTypeId?: string;
   denomination: string;
   batch?: string;
   reconditioning?: ReconditioningData;
@@ -42,6 +43,7 @@ interface ReconditioningData {
 
 interface MunitionComponent {
   id: string;
+  munitionTypeId?: string;
   type: MunitionComponentType;
   denomination: MunitionDenomination;
   batch?: string;
@@ -172,6 +174,7 @@ function transformConfigRequest(config: MunitionConfigRequest): MunitionConfigRe
   return {
     id: config.id || generateUuid(),
     seriesId: config.seriesId,
+    munitionTypeId: undefined,
     denomination: config.denominationId || config.denomination || 'Unknown Denomination',
     batch: config.batch,
     reconditioning: config.reconditioning,

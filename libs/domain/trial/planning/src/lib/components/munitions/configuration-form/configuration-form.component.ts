@@ -347,12 +347,16 @@ export class ConfigurationFormComponent {
   readonly selectedMunitionTypeId = linkedSignal<Configuration, string>({
     source: () => this.config(),
     computation: (config, previous) => {
+      const backendMunitionTypeId = config.munitionTypeId?.trim() ?? '';
+
       // Different config entity → always derive from denomination
       if (!previous || config.id !== previous.source.id) {
+        if (backendMunitionTypeId) return backendMunitionTypeId;
         if (!config.denomination) return '';
         const denom = this.denominationsRaw().find((d) => d.id === config.denomination);
         return denom?.munitionType?.id ?? '';
       }
+      if (backendMunitionTypeId) return backendMunitionTypeId;
       // Same config: if denomination exists, derive type from it (e.g. loaded from backend)
       if (config.denomination) {
         const denom = this.denominationsRaw().find((d) => d.id === config.denomination);

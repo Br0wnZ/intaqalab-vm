@@ -45,7 +45,12 @@ export const MunitionsStore = signalStore(
       allConfigurations: computed<MunitionConfigResponse[]>(() => {
         const response = munitionsService.munitionsResource.value();
         if (!response?.series) return [];
-        return response.series.flatMap((serie) => serie.configurations);
+        return response.series.flatMap((serie) =>
+          serie.configurations.map((config) => ({
+            ...config,
+            munitionTypeId: config.munitionTypeId ?? null,
+          })),
+        );
       }),
 
       isLoadingMunitions: computed(() => munitionsService.munitionsResource.isLoading()),

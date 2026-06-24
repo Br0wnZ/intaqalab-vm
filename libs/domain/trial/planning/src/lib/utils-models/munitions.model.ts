@@ -55,6 +55,7 @@ export type BackendDenominationRef = {
  */
 export type BackendMunitionComponent = {
   id?: string;
+  munitionTypeId?: string | null;
   // Hydrated references
   type?: MunitionComponentType | null;
   denomination?: MunitionDenomination | null;
@@ -86,6 +87,7 @@ export type MunitionComponentRequest = {
 export type MunitionConfigResponse = {
   id: string;
   seriesId: string;
+  munitionTypeId?: string | null;
   denomination: MunitionDenomination | null;
   batch?: string;
   reconditioning?: ReconditioningData | null;
@@ -166,6 +168,7 @@ export type ComponentDetail = {
 export type Configuration = {
   id: string;
   seriesId: string;
+  munitionTypeId?: string;
   denomination: string;
   batch: string;
   reconditioning?: ReconditioningData;
@@ -236,6 +239,7 @@ export function createEmptyConfiguration(seriesId = ''): Configuration {
   return {
     id: generateId(),
     seriesId,
+    munitionTypeId: '',
     denomination: '',
     batch: '',
     maxAllowedErrors: 0,

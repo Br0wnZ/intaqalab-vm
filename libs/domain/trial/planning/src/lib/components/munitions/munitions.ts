@@ -29,7 +29,6 @@ import type {
   Denomination,
   FuseWorkingMode,
   MunitionConfigRequest,
-  ReconditioningData,
   Serie,
   SeriesMunitionsData,
 } from '../../utils-models/munitions.model';
@@ -469,6 +468,7 @@ export class Munitions {
         return {
           id: config.id,
           seriesId: config.seriesId,
+          munitionTypeId: config.munitionTypeId ?? '',
           denomination,
           batch: config.batch ?? '',
           reconditioning: config.reconditioning ?? undefined,
@@ -479,6 +479,7 @@ export class Munitions {
           selectedComponents: getSelectedComponentTypes({
             id: config.id,
             seriesId: config.seriesId,
+            munitionTypeId: config.munitionTypeId ?? '',
             denomination,
             batch: config.batch ?? '',
             maxAllowedErrors: config.maxAllowedErrors ?? 0,

@@ -7,6 +7,7 @@
         {
           "id": "cfg-001",
           "seriesId": "ser-001",
+          "munitionTypeId": "GRANADA_MORTERO",
           "denomination": "M107 HE",
           "batch": "LOT-2025-001",
           "reconditioning": {
@@ -21,6 +22,7 @@
           "components": [
             {
               "id": "comp-001",
+              "munitionTypeId": "GRANADA_MORTERO",
               "type": {
                 "id": "Proyectil",
                 "type": "Proyectil",
@@ -37,6 +39,7 @@
             },
             {
               "id": "comp-002",
+              "munitionTypeId": "MUNITION_HE",
               "type": {
                 "id": "Espoleta",
                 "type": "Espoleta",
@@ -69,6 +72,7 @@
         {
           "id": "cfg-002",
           "seriesId": "ser-002",
+          "munitionTypeId": "DISPARO_COMPLETO",
           "denomination": "M116 SMK",
           "batch": "LOT-2025-002",
           "reconditioning": {
@@ -82,6 +86,7 @@
           "components": [
             {
               "id": "comp-003",
+              "munitionTypeId": "DISPARO_COMPLETO",
               "type": {
                 "id": "Proyectil",
                 "type": "Proyectil",

@@ -99,12 +99,26 @@ export class MunitionsService {
     {
       defaultValue: { series: [] },
       parse: (raw): TrialMunitionsResponse => {
+        const normalizeSeries = (series: SeriesMunitionsData[]): SeriesMunitionsData[] =>
+          series.map((serie) => ({
+            ...serie,
+            configurations: (serie.configurations ?? []).map((config) => ({
+              ...config,
+              munitionTypeId: config.munitionTypeId ?? null,
+              components: (config.components ?? []).map((component) => ({
+                ...component,
+                munitionTypeId: component.munitionTypeId ?? null,
+              })),
+            })),
+          }));
+
         if (Array.isArray(raw)) {
           const allSeries = (raw as TrialMunitionsRawItem[]).flatMap((item) => item.series ?? []);
-          return { series: allSeries };
+          return { series: normalizeSeries(allSeries) };
         }
         if (raw && typeof raw === 'object' && 'series' in raw) {
-          return raw as TrialMunitionsResponse;
+          const parsed = raw as TrialMunitionsResponse;
+          return { series: normalizeSeries(parsed.series ?? []) };
         }
         return { series: [] };
       },
