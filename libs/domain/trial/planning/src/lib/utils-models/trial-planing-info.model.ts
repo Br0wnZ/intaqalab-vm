@@ -9,12 +9,18 @@ export type TrialPlanningInfo = {
   additionalInfo: string;
   dateControl: DateControl;
   stanagCriteria?: StanagCriterionRef[];
+  ratingCriteriaUnits?: RatingCriteriaUnits;
   ratingCriteria?: RatingCriteria;
 };
 
 type StanagCriterionRef = {
   id: string;
   name: string;
+};
+
+export type RatingCriteriaUnits = {
+  speedUnit?: 'M_S' | 'KM_H' | string | null;
+  pressureUnit?: 'BAR' | 'MPA' | 'KG_CM2' | string | null;
 };
 
 type RatingCriteriaRow = {
@@ -31,7 +37,7 @@ type RatingCriteriaRowInt = {
   uselessMax?: number | null;
 };
 
-type RatingCriteria = {
+export type RatingCriteria = {
   v0c?: RatingCriteriaRow;
   v0cMean?: RatingCriteriaRow;
   v0cStdDev?: RatingCriteriaRow;
@@ -71,5 +77,6 @@ export type UpsertTrialPlanningInfo = {
   additionalInfo: string;
   dateControl: DateControl;
   stanagCriteriaIds?: string[];
+  ratingCriteriaUnits?: RatingCriteriaUnits;
   ratingCriteria?: RatingCriteria;
 };

@@ -78,6 +78,8 @@ export type MeasuresMasterDataIItemListResponse = {
   items: MeasuresMasterDataIItem[];
 };
 
+export * from './measures-catalog.model';
+
 export type WarehouseMunitionTypeItem = {
   id: string;
   category: 'MUNITION' | 'MUNITION_COMPONENT';

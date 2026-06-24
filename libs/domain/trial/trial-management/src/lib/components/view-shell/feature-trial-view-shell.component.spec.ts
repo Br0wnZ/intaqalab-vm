@@ -26,13 +26,11 @@ import { TrialTransitionsService } from '../../services/trial-transitions.servic
 import { TrialGeneralDataStore } from '../shared/+state/trial-general-data.store';
 import { FeatureTrialViewShellComponent, injectionTokenTrialViewComponent } from './feature-trial-view-shell.component';
 
-// Must be hoisted: ng2-pdf-viewer is transitively imported via FeatureTrialCreateFormComponent → TrialDocs → DocViewer
-vi.mock('ng2-pdf-viewer', async () => {
-  const { NgModule, CUSTOM_ELEMENTS_SCHEMA } = await import('@angular/core');
-  class PdfViewerModule {}
-  NgModule({ schemas: [CUSTOM_ELEMENTS_SCHEMA] })(PdfViewerModule);
-  return { PdfViewerModule };
-});
+// Must be hoisted: ng2-pdf-viewer is transitively imported via FeatureTrialCreateFormComponent → TrialDocs → DocViewer.
+// Use synchronous factory to avoid Vitest async hoisting errors.
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
 
 // Stub components
 @Component({

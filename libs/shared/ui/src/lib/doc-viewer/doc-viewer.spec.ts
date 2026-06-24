@@ -1,5 +1,5 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule, signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { render, screen, waitFor } from '@testing-library/angular';
@@ -12,13 +12,12 @@ import { DOC_VIEWER_SERVICE } from './doc-viewer.contract';
 
 // Mock ng2-pdf-viewer para evitar errores de PDF.js en JSDOM
 // Debe ir antes de importar DocViewer ya que este importa PdfViewerModule
-vi.mock('ng2-pdf-viewer', async () => {
-  const { NgModule, CUSTOM_ELEMENTS_SCHEMA } = await import('@angular/core');
-
-  class PdfViewerModule {}
-  NgModule({ schemas: [CUSTOM_ELEMENTS_SCHEMA] })(PdfViewerModule);
-
-  return { PdfViewerModule };
+vi.mock('ng2-pdf-viewer', () => {
+  @NgModule({})
+  class MockPdfViewerModule {}
+  return {
+    PdfViewerModule: MockPdfViewerModule,
+  };
 });
 
 describe('DocViewer', () => {

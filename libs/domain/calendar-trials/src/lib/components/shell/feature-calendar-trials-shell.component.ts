@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Injector, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
 import { HasRoleDirective, Role, injectionTokenTabCommand } from '@intaqalab/core';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
@@ -22,7 +21,6 @@ import { CalendarSharedTemplatesComponent } from '../templates/calendar-shared-t
     CalendarTrialsWeekComponent,
     CalendarTrialsDayComponent,
     MatButtonModule,
-    MatIcon,
     TranslateModule,
     HasRoleDirective,
     CalendarSharedTemplatesComponent,

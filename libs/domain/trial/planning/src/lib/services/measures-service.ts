@@ -7,6 +7,9 @@ import type {
   CatalogQueryParams,
   MasterDataIItem,
   MasterDataIItemUpdateRequest,
+  MasterDataMeasureItem,
+  MasterDataMeasureListResponse,
+  MeasuresCatalogQueryParams,
   MeasuresMasterDataIItem,
   MeasuresMasterDataIItemListResponse,
 } from '../utils-models/catalog.model';
@@ -20,6 +23,9 @@ export type {
   MeasuresMasterDataIItem,
   MeasuresMasterDataIItemListResponse,
   TrialMeasuresResponse,
+  MasterDataMeasureItem,
+  MasterDataMeasureListResponse,
+  MeasuresCatalogQueryParams,
 };
 
 @Injectable({
@@ -29,7 +35,8 @@ export class MeasuresService {
   readonly #getMeasuresParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateMeasuresParams = signal<{ trialId: FireTrial['id']; body: MeasuresBulkUpdateRequest } | null>(null);
 
-  readonly #getMeasuresCatalogParams = signal<CatalogQueryParams | null>(null);
+  readonly #getMeasuresCatalogParams = signal<MeasuresCatalogQueryParams | null>(null);
+
   readonly #createMeasureParams = signal<MasterDataIItemUpdateRequest | null>(null);
   readonly #updateMeasureParams = signal<{ id: string; body: MasterDataIItemUpdateRequest } | null>(null);
   readonly #deleteMeasureParams = signal<{ id: string } | null>(null);
@@ -64,7 +71,7 @@ export class MeasuresService {
 
   // --- Catalog Endpoints ---
 
-  readonly measuresCatalogResource = httpResource<MeasuresMasterDataIItemListResponse>(() => {
+  readonly measuresCatalogResource = httpResource<MasterDataMeasureListResponse>(() => {
     const params = this.#getMeasuresCatalogParams();
     if (!params) return undefined;
 
@@ -142,7 +149,7 @@ export class MeasuresService {
     this.#updateMeasuresParams.set(null);
   }
 
-  getMeasuresCatalog(params: CatalogQueryParams = {}) {
+  getMeasuresCatalog(params: MeasuresCatalogQueryParams = {}) {
     this.#getMeasuresCatalogParams.set(params);
   }
 
@@ -186,10 +193,10 @@ export class MeasuresService {
     this.#removeFavoriteParams.set(null);
   }
 
-  #buildQueryParams = (p: CatalogQueryParams) =>
+  #buildQueryParams = (p: MeasuresCatalogQueryParams) =>
     `?${new URLSearchParams(
       Object.entries({ ...p, pageSize: 100 }).flatMap(([k, v]) =>
-        Array.isArray(v) ? v.map((i) => [k, i]) : v !== null ? [[k, String(v)]] : [],
+        Array.isArray(v) ? v.map((i) => [k, i]) : v !== null && v !== undefined ? [[k, String(v)]] : [],
       ) as [string, string][],
     ).toString()}`;
 }

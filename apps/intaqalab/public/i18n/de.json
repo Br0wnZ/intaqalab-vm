@@ -34,6 +34,31 @@
         "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
         "POWDER_INDEX": "Pulver {{index}}"
       }
+    },
+    "GENERAL_DATA_SECTION": {
+      "SHOW_RATING_CRITERIA": "Qualifikationskriterien anzeigen"
+    },
+    "RATING_CRITERIA": {
+      "TITLE": "Qualifikationskriterien",
+      "VELOCITY_LABEL": "Geschwindigkeit",
+      "PRESSURE_LABEL": "Druck",
+      "COLUMNS": {
+        "PROPERTY": "Eigenschaft",
+        "USEFUL_1_MIN": "Nützlich-1 min",
+        "USEFUL_1_MAX": "Nützlich-1 max",
+        "USELESS_MIN": "Nutzlos min",
+        "USELESS_MAX": "Nutzlos max"
+      },
+      "PROPERTIES": {
+        "V0C": "V0c",
+        "V0C_MEAN": "V̄0c",
+        "V0C_STD_DEV": "σV0c",
+        "P": "P",
+        "P_MEAN": "P̄",
+        "PROJECTILE": "Projektil",
+        "PRIMER": "Zündhütchen",
+        "FUSE": "Zünder"
+      }
     }
   },
   "TRIAL_EXECUTION": {
@@ -72,15 +97,54 @@
       "EQUIPMENT_SELECTOR": {
         "TITLE": "Geräteauswahl",
         "BTN_LABEL": "Geräte auswählen",
-        "SAVE": "Speichern",
-        "BACK": "Zurück",
-        "EQUIPMENT_HEADING": "Verfügbare Geräte",
-        "SELECTION_LIMIT": "Auswahllimit",
+        "SELECT_TAG": "Messung/Gerät auswählen",
+        "EQUIPMENT_HEADING": "Geräte",
+        "SELECTION_LIMIT": "Auswahl ({{max}} max)",
         "COL_EQUIPMENT": "Gerät",
         "COL_SERIES": "Serien",
         "COL_SHOTS": "Schüsse",
         "SERIES_PLACEHOLDER": "Serie auswählen",
-        "SHOTS_PLACEHOLDER": "Schuss auswählen"
+        "SHOTS_PLACEHOLDER": "Alle Schüsse in der Serie",
+        "ADD_EQUIPMENT": "Gerät hinzufügen",
+        "DELETE": "Löschen",
+        "SAVE": "Speichern",
+        "BACK": "Zurück",
+        "TAGS": {
+          "VELOCIDAD_INICIAL": "Anfangsgeschwindigkeit",
+          "PRESION_PIEZOELECTRICOS": "Piezoelektrischer Druck",
+          "TRAYECTOGRAFIA": "Trajektorie",
+          "VIDEO_AV": "AV-Video",
+          "VIDEO_C": "C-Video",
+          "LONGITUD": "Länge",
+          "PRESION_MANOMETROS": "Manometerdruck",
+          "PRESION_IPG": "IPG-Druck",
+          "PESOS": "Gewichte",
+          "ACONDICIONAMIENTO": "Konditionierung",
+          "TIEMPO": "Zeit"
+        },
+        "FIELDS": {
+          "RADAR_DOPPLER": "Doppler-Radar",
+          "ANTENA": "Antenne",
+          "SENSOR_PIEZOELECTRICO": "Piezoelektrischer Sensor",
+          "AMPLIFICADOR": "Verstärker",
+          "RADAR_TRAYECTOGRAFIA": "Trajektorie-Radar",
+          "CAMARA_AV": "AV-Kamera",
+          "CAMARA_C": "C-Kamera",
+          "GRABADOR": "Recorder",
+          "CANAL": "Kanal",
+          "MAGNITUD": "Größe",
+          "REGLA_TRAZOS": "Strichlineal",
+          "MANOMETRO": "Manometer",
+          "CRUSHER": "Crusher",
+          "PALPADOR": "Tastkopf",
+          "SENSOR_IPG": "IPG-Sensor",
+          "MICROMÓDULO": "Mikromodul",
+          "BALANZA": "Waage",
+          "MUNICION": "Munition",
+          "CRONOMETRO": "Stoppuhr",
+          "SERIES": "Serien",
+          "DISPAROS": "Schüsse"
+        }
       },
       "PAUSE_EXECUTION": {
         "TITLE": "Ausführung pausieren",

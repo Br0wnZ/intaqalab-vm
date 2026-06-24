@@ -5,7 +5,7 @@
     { "specimenId": "550e8400-e29b-41d4-a716-446655440011", "batch": "" }
   ],
   "planningUser": { "id": "b01a0e23-da71-3a08-9893-11b8b2dfb069", "name": "Usuario CET 1" },
-  "hypochelometricReviewBefore": false,
+  "hypochelometricReviewBefore": true,
   "hypochelometricReviewAfter": false,
   "observations": "Se requiere control de humedad antes del ensayo.",
   "requirements": "",

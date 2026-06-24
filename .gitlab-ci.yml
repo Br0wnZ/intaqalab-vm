@@ -127,9 +127,9 @@ unit-test-des:
 unit-test-pre:
   stage: unit-tests
   image: registry.tools.inta.es/builders/node:22.14.0
-  tags: [k8s-pre]
+  tags: [k8s-des]
   before_script:
-    - git fetch origin develop --depth=1  
+    - git fetch origin preprod --depth=1  
   script:
     - npm install --cache .npm --prefer-offline
     - npm run build:pre
@@ -139,6 +139,22 @@ unit-test-pre:
       - dist/
   rules:
     - if: $CI_COMMIT_BRANCH == "preprod"
+
+unit-test-pro:
+  stage: unit-tests
+  image: registry.tools.inta.es/builders/node:22.14.0
+  tags: [k8s-des]
+  before_script:
+    - git fetch origin master --depth=1  
+  script:
+    - npm install --cache .npm --prefer-offline
+    - npm run build:des
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - dist/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"    
 
 build-des:
   stage: build
@@ -161,7 +177,7 @@ build-des:
 
 build-pre:
   stage: build
-  tags: [k8s-pre]    
+  tags: [k8s-des]    
   image: registry.tools.inta.es/builders/node:22.14.0
   script:
       - npm install --cache .npm --prefer-offline
@@ -176,7 +192,26 @@ build-pre:
       paths:
       - .npm/  
   rules:
-    - if: $CI_COMMIT_BRANCH == "preprod"          
+    - if: $CI_COMMIT_BRANCH == "preprod"     
+
+build-pro:
+  stage: build
+  tags: [k8s-des]    
+  image: registry.tools.inta.es/builders/node:22.14.0
+  script:
+      - npm install --cache .npm --prefer-offline
+      - npm run build -- --configuration pro
+      - find dist/ -type f | head -30
+  artifacts:
+      paths:
+      - dist/
+      expire_in: 1 hour
+  cache:
+      key: ${CI_COMMIT_REF_SLUG}
+      paths:
+      - .npm/  
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"         
 
 .kaniko-package-image-job:
   stage: compile
@@ -225,7 +260,17 @@ image-package-pre:
     INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
   extends: .kaniko-package-image-job
   rules:
-    - if: $CI_COMMIT_BRANCH == "preprod"    
+    - if: $CI_COMMIT_BRANCH == "preprod"  
+
+image-package-pro:
+  environment: pro
+  tags: [k8s-pro]  
+  variables:
+    ENV: "pro"
+    INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+  extends: .kaniko-package-image-job
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"      
 
 deploy-des:
   stage: deploy
@@ -250,3 +295,15 @@ deploy-pre:
   variables:
     IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
     SERVICE_NAME: "${CI_PROJECT_NAME}"
+
+deploy-pro:
+  stage: deploy
+  trigger:
+    project: "iac/intaqalab/intaqalab-pro"
+    branch: main
+    strategy: depend
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  variables:
+    IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    SERVICE_NAME: "${CI_PROJECT_NAME}"    

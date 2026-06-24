@@ -1,18 +1,18 @@
 import { computed, inject } from '@angular/core';
-import { injectApiUrl, injectFireTrialsEndpoint } from '@intaqalab/config';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import { MeasuresService } from '../services/measures-service';
 import type {
   CatalogQueryParams,
-  MasterDataI18nItem,
   MasterDataIItemUpdateRequest,
+  MasterDataMeasureItem,
+  MeasuresCatalogQueryParams,
   MeasuresMasterDataIItem,
 } from '../utils-models/catalog.model';
 import type { MeasuresBulkUpdateRequest, SeriesMeasuresData } from '../utils-models/measures.model';
 import { PlanningGeneralDataStore } from './planning-general-data.store';
 
-export type { CatalogQueryParams, MeasuresMasterDataIItem };
+export type { CatalogQueryParams, MeasuresMasterDataIItem, MasterDataMeasureItem, MeasuresCatalogQueryParams };
 
 interface MeasuresState {
   isInitialized: boolean;
@@ -44,7 +44,7 @@ export const MeasuresStore = signalStore(
       isUpdatingMeasures: computed(() => measuresService.updateMeasuresResource.isLoading()),
       updateMeasuresError: computed(() => measuresService.updateMeasuresResource.error()),
 
-      measuresCatalog: computed<MeasuresMasterDataIItem[]>(() => {
+      measuresCatalog: computed<MasterDataMeasureItem[]>(() => {
         const response = measuresService.measuresCatalogResource.value();
         return response?.items ?? [];
       }),
@@ -110,7 +110,7 @@ export const MeasuresStore = signalStore(
       measuresService.resetUpdateMeasures();
     },
 
-    loadMeasuresCatalog(params: CatalogQueryParams = {}): void {
+    loadMeasuresCatalog(params: MeasuresCatalogQueryParams = {}): void {
       measuresService.getMeasuresCatalog(params);
     },
 

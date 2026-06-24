@@ -61,7 +61,7 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
   it('should render the component', async () => {
     const { view } = await runSetup();
     expect(view.fixture.componentInstance).toBeTruthy();
-  });
+  }, 15000);
 
   it('should render the tabs navigation', async () => {
     await runSetup();

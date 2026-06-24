@@ -13,8 +13,13 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
 import { Badge, IntaIconComponent } from '@intaqalab/ui';
-import { IntaDatePipe, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import {
+  IntaDatePipe,
+  IntaDecimalPipe,
+  LocaleDecimalInputDirective,
+  NoNegativeValuesDirective,
+  TrialStatusLabelPipe,
+} from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -42,6 +47,8 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     TrialStatusLabelPipe,
     IntaIconComponent,
     NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
+    IntaDecimalPipe,
   ],
   template: `
     <div class="w-full space-y-4">
@@ -385,7 +392,13 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <input placeholder="0" matInput type="number" [formField]="getShotField(serieIdx, i).angle" />
+                        <input
+                          placeholder="0"
+                          matInput
+                          type="number"
+                          libLocalDecimal
+                          [formField]="getShotField(serieIdx, i).angle"
+                        />
                       </mat-form-field>
                     </td>
                   </ng-container>

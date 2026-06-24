@@ -14,14 +14,11 @@ import { ConfirmDeleteDialogComponent } from './confirm-delete-dialog/confirm-de
 import { TrialDocs } from './trial-docs';
 import { TrialDocsFilePicker } from './trial-docs-file-picker/trial-docs-file-picker';
 
-// Mock ng2-pdf-viewer to avoid PDF.js JSDOM incompatibility
-// vi.mock is hoisted by Vitest so this intercepts the import in the full module graph
-vi.mock('ng2-pdf-viewer', async () => {
-  const { NgModule, CUSTOM_ELEMENTS_SCHEMA } = await import('@angular/core');
-  class PdfViewerModule {}
-  NgModule({ schemas: [CUSTOM_ELEMENTS_SCHEMA] })(PdfViewerModule);
-  return { PdfViewerModule };
-});
+// Mock ng2-pdf-viewer to avoid PDF.js JSDOM incompatibility.
+// Use synchronous factory to avoid Vitest async hoisting errors.
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

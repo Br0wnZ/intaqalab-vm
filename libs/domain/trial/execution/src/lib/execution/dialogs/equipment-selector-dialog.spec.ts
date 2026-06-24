@@ -1,26 +1,42 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import {
   EquipmentSelectorDialog,
   type EquipmentSelectorDialogData,
-  type EquipmentItemSelectionEntry,
+  type EquipmentTagMapping,
 } from './equipment-selector-dialog';
 
+const mockTagMappings: EquipmentTagMapping[] = [
+  {
+    tag: 'velocidad_inicial',
+    label: 'Velocidad Inicial',
+    fields: [
+      { key: 'radar_doppler', label: 'Radar Doppler', type: 'select', options: [{ value: 'rd1', label: 'RD-001' }] },
+      { key: 'antena', label: 'Antena', type: 'select', options: [{ value: 'a1', label: 'Antena 1' }] },
+    ],
+  },
+  {
+    tag: 'tiempo',
+    label: 'Tiempo',
+    fields: [
+      { key: 'cronometro', label: 'Cronómetro', type: 'select', options: [{ value: 'c1', label: 'Cronómetro 1' }] },
+    ],
+  },
+];
+
 const mockData: EquipmentSelectorDialogData = {
-  categories: [
-    { id: 'radar', label: 'Radar Doppler', maxSelection: 2 },
-    { id: 'camera', label: 'Cámara', maxSelection: 1 },
-  ],
+  tags: ['velocidad_inicial', 'tiempo'],
+  tagMappings: mockTagMappings,
   items: [
-    { id: 'rd-001', label: 'RD-001', categoryId: 'radar' },
-    { id: 'rd-002', label: 'RD-002', categoryId: 'radar' },
-    { id: 'rd-003', label: 'RD-003', categoryId: 'radar' },
-    { id: 'cam-001', label: 'CAM-001', categoryId: 'camera' },
+    { id: 'rd-001', label: 'RD-001', tag: 'velocidad_inicial' },
+    { id: 'rd-002', label: 'RD-002', tag: 'velocidad_inicial' },
+    { id: 'timer-001', label: 'TIMER-001', tag: 'tiempo' },
   ],
   serieOptions: [
     { value: 's1', label: 'Serie 1' },
@@ -30,14 +46,12 @@ const mockData: EquipmentSelectorDialogData = {
     { value: 'd1', label: 'Disparo 1' },
     { value: 'd2', label: 'Disparo 2' },
   ],
+  dynamicFieldOptions: {
+    radar_doppler: [{ value: 'rd1', label: 'RD-001' }],
+    antena: [{ value: 'a1', label: 'Antena 1' }],
+    cronometro: [{ value: 'c1', label: 'Cronómetro 1' }],
+  } as any,
   initialSelections: [],
-};
-
-const mockDataWithSelections: EquipmentSelectorDialogData = {
-  ...mockData,
-  initialSelections: [
-    { itemId: 'rd-001', categoryId: 'radar', series: ['s1'], disparos: ['d1', 'd2'] },
-  ],
 };
 
 describe('EquipmentSelectorDialog', () => {
@@ -55,47 +69,70 @@ describe('EquipmentSelectorDialog', () => {
     });
   };
 
-  it('renders without errors', async () => {
+  it('renders dialog without errors', async () => {
     await setup();
     expect(document.querySelector('[mat-dialog-title]')).toBeTruthy();
   });
 
-  it('shows category tab buttons', async () => {
+  it('shows tag select field', async () => {
     await setup();
-    // Buttons show "label maxSel/total" format — use exact chip text to avoid h3 ambiguity
-    expect(screen.getByText(/Radar Doppler 2\/3/)).toBeInTheDocument();
-    expect(screen.getByText(/Cámara 1\/1/)).toBeInTheDocument();
-  });
-
-  it('tab chip shows maxSelection/totalAvailable', async () => {
-    await setup();
-    // Radar Doppler has maxSelection=2 and 3 items → "Radar Doppler 2/3"
-    expect(screen.getByText(/Radar Doppler 2\/3/)).toBeInTheDocument();
-    // Cámara has maxSelection=1 and 1 item → "Cámara 1/1"
-    expect(screen.getByText(/Cámara 1\/1/)).toBeInTheDocument();
-  });
-
-  it('renders items of active category (radar by default)', async () => {
-    await setup();
-    expect(screen.getByText('RD-001')).toBeInTheDocument();
-    expect(screen.getByText('RD-002')).toBeInTheDocument();
-    expect(screen.getByText('RD-003')).toBeInTheDocument();
-  });
-
-  it('switches to camera category when tab clicked', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await setup();
-    const cameraTab = screen.getByText(/Cámara/);
-    await user.click(cameraTab);
-    fixture.detectChanges();
-    expect(screen.getByText('CAM-001')).toBeInTheDocument();
+    const selectField = screen.getByRole('combobox');
+    expect(selectField).toBeInTheDocument();
   });
 
   it('renders back and save action buttons', async () => {
     await setup();
-    const buttons = screen.getAllByRole('button');
-    // At least 2 action buttons (back + save) plus category tabs + potential checkboxes
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/guardar|Save/i)).toBeInTheDocument();
+    expect(screen.getByText(/volver|Back|Return/i)).toBeInTheDocument();
+  });
+
+  it('displays equipment table when tag is selected', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await setup();
+
+    // Select a tag
+    const select = screen.getByRole('combobox');
+    await user.click(select);
+    fixture.detectChanges();
+
+    const option = screen.getAllByRole('option')[0];
+    await user.click(option);
+    fixture.detectChanges();
+
+    // Table should be visible
+    expect(screen.getByText(/Equipo|Equipment/i)).toBeInTheDocument();
+  });
+
+  it('allows adding equipment rows', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await setup();
+
+    // Select a tag first
+    const select = screen.getByRole('combobox');
+    await user.click(select);
+    fixture.detectChanges();
+
+    const option = screen.getAllByRole('option')[0];
+    await user.click(option);
+    fixture.detectChanges();
+
+    // Click add equipment button
+    const addBtn = screen.getByRole('button', { name: /añadir|add/i });
+    await user.click(addBtn);
+    fixture.detectChanges();
+
+    // Check that we have more rows
+    expect(screen.getAllByRole('option', { name: /Disparo|Disparo/i }).length).toBeGreaterThan(0);
+  });
+
+  it('closes dialog on back button click', async () => {
+    const user = userEvent.setup();
+    await setup();
+
+    const backBtn = screen.getByText(/volver|Back|Return/i);
+    await user.click(backBtn);
+
+    expect(closeMock).toHaveBeenCalledWith({ action: 'back' });
   });
 
   it('closes with { action: "save", selections: [] } on save with no selections', async () => {

@@ -23,7 +23,7 @@ import { Badge } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { MeasuresStore } from '../../+state/measures.store';
+import { type MasterDataMeasureItem, MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import type { MagnitudesOptions, MeasureSelectionData, SerieData } from '../../utils-models/measure-serie.model';
@@ -325,7 +325,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
               </button>
             </div>
           </div>
-          @if (measure.expanded) {
+          @if (measure.expanded && isQuantitative(measure.id)) {
             <div class="grid grid-cols-3 gap-4">
               <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Límite máximo</mat-label>
@@ -407,17 +407,22 @@ export class Measures {
     const catalog = this.#measuresStore.measuresCatalog();
 
     if (catalog.length > 0) {
-      const options = catalog.map((item) => ({
+      const mapItem = (item: MasterDataMeasureItem) => ({
         id: item.id,
-        name: item.label ?? (typeof item.name === 'string' ? item.name : ''),
+        name:
+          item.label ??
+          (typeof item.magnitude === 'object'
+            ? item.magnitude['es'] || item.magnitude['en'] || ''
+            : item.magnitude || ''),
         active: item.active,
         favorite: item.favorite,
-      }));
+      });
+
       return {
-        topografia: options,
-        municiones: options,
-        armamento: options,
-        balistica: options,
+        topografia: catalog.filter((item) => item.unit === 'TOPOGRAPHY').map(mapItem),
+        municiones: catalog.filter((item) => item.unit === 'MUNITIONS').map(mapItem),
+        armamento: catalog.filter((item) => item.unit === 'ARMAMENT').map(mapItem),
+        balistica: catalog.filter((item) => item.unit === 'BALLISTICS').map(mapItem),
       };
     }
 
@@ -494,6 +499,11 @@ export class Measures {
 
   getMeasureName(id: string, options: { id: string; name: string }[]): string {
     return options.find((o) => o.id === id)?.name ?? id;
+  }
+
+  isQuantitative(measureId: string): boolean {
+    const catalogItem = this.#measuresStore.measuresCatalog().find((item) => item.id === measureId);
+    return catalogItem?.qualificationType === 'QUANTITATIVE';
   }
 
   toggleMeasureExpanded(

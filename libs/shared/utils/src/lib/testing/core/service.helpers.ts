@@ -1,5 +1,48 @@
+import { signal } from '@angular/core';
 import { delay, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
+
+import { LOCALE_SIGNAL } from '../../tokens/locale-signal.token';
+import type { AppLocale } from '../../tokens/locale-signal.token';
+
+/**
+ * 🌍 Crear mock de LanguageService con signal reactivo
+ *
+ * @example
+ * const mock = createMockLanguageService('en');
+ * mock.currentLanguage.set('es'); // change language in tests
+ */
+export function createMockLanguageService(initialLang: 'es' | 'en' = 'es') {
+  const currentLanguage = signal<'es' | 'en'>(initialLang);
+  return {
+    currentLanguage,
+    getCurrentLanguage: vi.fn(() => currentLanguage()),
+    setLanguage: vi.fn(async (lang: 'es' | 'en') => {
+      currentLanguage.set(lang);
+    }),
+    supportedLanguages: ['es', 'en'] as const,
+    isLanguageSupported: vi.fn((lang: string) => ['es', 'en'].includes(lang)),
+    getTranslation: vi.fn((key: string) => key),
+  };
+}
+
+/**
+ * 🌍 Provider helper for `LOCALE_SIGNAL` token in tests.
+ *
+ * Use in components that import `IntaDecimalPipe` or `LocaleDecimalInputDirective`.
+ *
+ * @example
+ * const { provider, localeSignal } = createLocaleSignalProvider('es-ES');
+ * TestBed.configureTestingModule({ providers: [provider] });
+ * localeSignal.set('en-US'); // change locale during test
+ */
+export function createLocaleSignalProvider(initialLocale: AppLocale = 'es-ES') {
+  const localeSignal = signal<AppLocale>(initialLocale);
+  return {
+    localeSignal,
+    provider: { provide: LOCALE_SIGNAL, useValue: localeSignal },
+  };
+}
 
 /**
  * 🎭 Crear mock de TranslateService (i18n)

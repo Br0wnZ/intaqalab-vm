@@ -1,4 +1,3 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormField, disabled, form, min, schema, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -48,7 +47,6 @@ type FilterForm = {
     MatCheckboxModule,
     MatDatepickerModule,
     MatTimepickerModule,
-    JsonPipe,
   ],
   template: `
     <h2 class="text-base font-semibold text-gray-900 my-6">{{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.TITLE' | translate }}</h2>

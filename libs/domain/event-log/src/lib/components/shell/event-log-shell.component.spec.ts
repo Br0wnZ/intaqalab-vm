@@ -1,4 +1,7 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
+import { MatTabGroupHarness } from '@angular/material/tabs/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -57,7 +60,7 @@ async function setup() {
   const events = userEvent.setup();
 
   const view = await render(EventLogShellComponent, {
-    imports: [TranslateModule.forRoot()],
+    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: DocumentsService, useValue: makeMockDocumentsService() },
@@ -71,7 +74,8 @@ async function setup() {
 
   view.fixture.detectChanges();
   const container = view.fixture.nativeElement as HTMLElement;
-  return { view, container, events }; // view exposed for detectChanges in navigation tests
+  const loader = TestbedHarnessEnvironment.loader(view.fixture);
+  return { view, container, events, loader };
 }
 
 describe('EventLogShellComponent', () => {
@@ -93,8 +97,9 @@ describe('EventLogShellComponent', () => {
     });
 
     it('should render the mat-tab-group', async () => {
-      const { container } = await setup();
-      expect(container.querySelector('mat-tab-group')).not.toBeNull();
+      const { loader } = await setup();
+      const tabGroup = await loader.getHarness(MatTabGroupHarness);
+      expect(tabGroup).toBeTruthy();
     });
 
     it('should render the documents tab content by default (first tab active)', async () => {
@@ -105,40 +110,38 @@ describe('EventLogShellComponent', () => {
 
   describe('tab navigation', () => {
     it('should mark the General Data tab as selected on click', async () => {
-      const { events, view } = await setup();
+      const { loader } = await setup();
+      const tabGroup = await loader.getHarness(MatTabGroupHarness);
+      await tabGroup.selectTab({ label: 'EVENT_LOG.TABS.GENERAL_DATA' });
 
-      const tabs = screen.getAllByRole('tab');
-      await events.click(tabs[1]);
-      view.fixture.detectChanges();
-
-      expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+      const tabs = await tabGroup.getTabs();
+      expect(await tabs[1].isSelected()).toBe(true);
     });
 
     it('should mark the Series and Shoots tab as selected on click', async () => {
-      const { events, view } = await setup();
+      const { loader } = await setup();
+      const tabGroup = await loader.getHarness(MatTabGroupHarness);
+      await tabGroup.selectTab({ label: 'EVENT_LOG.TABS.SERIES_AND_SHOOTS' });
 
-      const tabs = screen.getAllByRole('tab');
-      await events.click(tabs[2]);
-      view.fixture.detectChanges();
-
-      expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+      const tabs = await tabGroup.getTabs();
+      expect(await tabs[2].isSelected()).toBe(true);
     });
 
     it('should mark the Measures tab as selected on click', async () => {
-      const { events, view } = await setup();
+      const { loader } = await setup();
+      const tabGroup = await loader.getHarness(MatTabGroupHarness);
+      await tabGroup.selectTab({ label: 'EVENT_LOG.TABS.MEASURES' });
 
-      const tabs = screen.getAllByRole('tab');
-      await events.click(tabs[3]);
-      view.fixture.detectChanges();
-
-      expect(tabs[3].getAttribute('aria-selected')).toBe('true');
+      const tabs = await tabGroup.getTabs();
+      expect(await tabs[3].isSelected()).toBe(true);
     });
 
     it('should have the Documents tab selected by default', async () => {
-      await setup();
+      const { loader } = await setup();
+      const tabGroup = await loader.getHarness(MatTabGroupHarness);
 
-      const tabs = screen.getAllByRole('tab');
-      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+      const tabs = await tabGroup.getTabs();
+      expect(await tabs[0].isSelected()).toBe(true);
     });
   });
 });

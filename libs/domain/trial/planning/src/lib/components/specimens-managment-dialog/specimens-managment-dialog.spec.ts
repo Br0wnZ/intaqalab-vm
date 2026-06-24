@@ -7,7 +7,13 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import { SpecimenType } from '../../utils-models/specimen.model';
 import { SpecimensManagmentDialog } from './specimens-managment-dialog';
+
+type MockResourceControls = {
+  _setLoading: (loading: boolean) => void;
+  _setError: (error: unknown) => void;
+};
 
 describe('SpecimensManagmentDialog', () => {
   let fixture: ComponentFixture<SpecimensManagmentDialog>;
@@ -70,6 +76,10 @@ describe('SpecimensManagmentDialog', () => {
       expect(screen.getByPlaceholderText(/SPECIMENS_MANAGMENT_DIALOG.SPECIMEN_PLACEHOLDER/i)).toBeInTheDocument();
     });
 
+    it('should render specimen type select field', () => {
+      expect(screen.getByText(/SPECIMENS_MANAGMENT_DIALOG.TYPE_LABEL/i)).toBeInTheDocument();
+    });
+
     it('should render save and cancel buttons', () => {
       expect(screen.getByRole('button', { name: /SPECIMENS_MANAGMENT_DIALOG.SAVE/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /SPECIMENS_MANAGMENT_DIALOG.CANCEL/i })).toBeInTheDocument();
@@ -89,6 +99,9 @@ describe('SpecimensManagmentDialog', () => {
 
   describe('Autocomplete Behavior', () => {
     it('should filter specimens when typing in search', async () => {
+      component.onSpecimenTypeChange(SpecimenType.Munition);
+      fixture.detectChanges();
+
       const input = screen.getByPlaceholderText(/SPECIMENS_MANAGMENT_DIALOG.SPECIMEN_PLACEHOLDER/i);
       const user = userEvent.setup();
 
@@ -97,11 +110,14 @@ describe('SpecimensManagmentDialog', () => {
 
       fixture.detectChanges();
 
-      const denominationOptions = component.filteredDenominationOptions();
-      expect(denominationOptions.some((s) => s.label?.includes('Munición inerte 105mm'))).toBe(true);
+      const options = component.filteredSpecimenOptions();
+      expect(options.some((s) => s.label?.includes('Munición inerte 105mm'))).toBe(true);
     });
 
     it('should update search term when typing', async () => {
+      component.onSpecimenTypeChange(SpecimenType.Munition);
+      fixture.detectChanges();
+
       const input = screen.getByPlaceholderText(/SPECIMENS_MANAGMENT_DIALOG.SPECIMEN_PLACEHOLDER/i);
       const user = userEvent.setup();
 
@@ -112,6 +128,9 @@ describe('SpecimensManagmentDialog', () => {
     });
 
     it('should enable autocomplete after search', async () => {
+      component.onSpecimenTypeChange(SpecimenType.Munition);
+      fixture.detectChanges();
+
       const input = screen.getByPlaceholderText(/SPECIMENS_MANAGMENT_DIALOG.SPECIMEN_PLACEHOLDER/i);
       const user = userEvent.setup();
 
@@ -121,6 +140,28 @@ describe('SpecimensManagmentDialog', () => {
       await user.type(input, 'T');
 
       expect(component.autocompleteEnabled()).toBe(true);
+    });
+
+    it('should keep specimen input disabled when type is not selected', () => {
+      expect(component.isSpecimenInputDisabled()).toBe(true);
+    });
+
+    it('should disable specimen input while typed specimens are loading', () => {
+      component.onSpecimenTypeChange(SpecimenType.Weapon);
+
+      const resource = mockStore._specimensResource as unknown as MockResourceControls;
+      resource._setLoading(true);
+
+      expect(component.isSpecimenInputDisabled()).toBe(true);
+    });
+
+    it('should disable specimen input when typed specimens request fails', () => {
+      component.onSpecimenTypeChange(SpecimenType.Tube);
+
+      const resource = mockStore._specimensResource as unknown as MockResourceControls;
+      resource._setError(new Error('Request failed'));
+
+      expect(component.isSpecimenInputDisabled()).toBe(true);
     });
   });
 
@@ -149,8 +190,9 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Store Interaction', () => {
-    it('should call loadSpecimens on initialization', () => {
-      expect(mockStore.loadSpecimens).toHaveBeenCalled();
+    it('should call loadSpecimensByType when specimen type changes', () => {
+      component.onSpecimenTypeChange(SpecimenType.Weapon);
+      expect(mockStore.loadSpecimensByType).toHaveBeenCalledWith(SpecimenType.Weapon);
     });
 
     it('should get specimens from store', () => {
@@ -188,8 +230,8 @@ describe('SpecimensManagmentDialog', () => {
 
     it('should remove specimen from selection', () => {
       component.selectedSpecimens.set([
-        { id: 'specimen-1', label: 'Specimen 1', type: 'denomination' },
-        { id: 'specimen-2', label: 'Specimen 2', type: 'weapon' },
+        { id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition },
+        { id: 'specimen-2', label: 'Specimen 2', type: SpecimenType.Weapon },
       ]);
 
       component.removeSelection('specimen-1');
@@ -265,28 +307,29 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Filtered Options', () => {
-    it('should filter weapon and tube options by search term', () => {
+    it('should filter weapon options by search term', () => {
+      component.onSpecimenTypeChange(SpecimenType.Weapon);
       component.searchTerm.set('cañón');
 
-      const filtered = component.filteredWeaponAndTubeOptions();
+      const filtered = component.filteredSpecimenOptions();
       expect(filtered.every((s) => s.label?.toLowerCase().includes('cañón'))).toBe(true);
     });
 
     it('should filter denomination options by search term', () => {
+      component.onSpecimenTypeChange(SpecimenType.Munition);
       component.searchTerm.set('munición');
 
-      const filtered = component.filteredDenominationOptions();
+      const filtered = component.filteredSpecimenOptions();
       expect(filtered.every((s) => s.label?.toLowerCase().includes('munición'))).toBe(true);
     });
 
-    it('should separate specimens by type in filtered options', () => {
+    it('should show only selected type in filtered options', () => {
+      component.onSpecimenTypeChange(SpecimenType.Tube);
       component.searchTerm.set('');
 
-      const weaponAndTube = component.filteredWeaponAndTubeOptions();
-      const denominations = component.filteredDenominationOptions();
+      const filtered = component.filteredSpecimenOptions();
 
-      expect(weaponAndTube.every((s) => s.type === 'weapon' || s.type === 'tube')).toBe(true);
-      expect(denominations.every((s) => s.type === 'denomination')).toBe(true);
+      expect(filtered.every((s) => s.type === SpecimenType.Tube)).toBe(true);
     });
   });
 
@@ -298,15 +341,15 @@ describe('SpecimensManagmentDialog', () => {
     it('should detect changes when a specimen is added', () => {
       expect(component.hasChanges()).toBe(false);
 
-      component.selectedSpecimens.set([{ id: 'specimen-1', label: 'Specimen 1', type: 'denomination' }]);
+      component.selectedSpecimens.set([{ id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition }]);
 
       expect(component.hasChanges()).toBe(true);
     });
 
     it('should detect changes when a specimen is removed', () => {
       const initial = [
-        { id: 'specimen-1', label: 'Specimen 1', type: 'denomination' as const },
-        { id: 'specimen-2', label: 'Specimen 2', type: 'weapon' as const },
+        { id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition },
+        { id: 'specimen-2', label: 'Specimen 2', type: SpecimenType.Weapon },
       ];
       component.selectedSpecimens.set(initial);
       fixture.detectChanges();
@@ -317,11 +360,13 @@ describe('SpecimensManagmentDialog', () => {
     });
 
     it('should detect changes when lot/serialNumber is modified', () => {
-      const initial = [{ id: 'specimen-1', label: 'Specimen 1', type: 'denomination' as const, lot: 'LOT001' }];
+      const initial = [{ id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition, lot: 'LOT001' }];
       component.selectedSpecimens.set(initial);
       fixture.detectChanges();
 
-      component.selectedSpecimens.set([{ id: 'specimen-1', label: 'Specimen 1', type: 'denomination', lot: 'LOT002' }]);
+      component.selectedSpecimens.set([
+        { id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition, lot: 'LOT002' },
+      ]);
 
       expect(component.hasChanges()).toBe(true);
     });
@@ -332,13 +377,15 @@ describe('SpecimensManagmentDialog', () => {
       const specimens = component.specimens();
       const specimen = specimens[0];
 
-      component.selectedSpecimens.set([{ id: specimen.id, label: 'Specimen', type: 'denomination', lot: 'LOT001' }]);
+      component.selectedSpecimens.set([
+        { id: specimen.id, label: 'Specimen', type: SpecimenType.Munition, lot: 'LOT001' },
+      ]);
 
       expect(component.selectedSpecimens()).toHaveLength(1);
       expect(component.selectedSpecimens()[0].lot).toBe('LOT001');
 
       component.selectedSpecimens.update((list) => {
-        const entry = { id: specimen.id, label: 'Specimen', type: 'denomination' as const, lot: 'LOT002' };
+        const entry = { id: specimen.id, label: 'Specimen', type: SpecimenType.Munition, lot: 'LOT002' };
         const filtered = list.filter((i) => i.id !== entry.id);
         return [...filtered, entry];
       });

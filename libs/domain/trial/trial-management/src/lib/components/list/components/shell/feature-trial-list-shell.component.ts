@@ -1,8 +1,6 @@
 import { Component, Injector, inject, signal } from '@angular/core';
-import { MatAnchor } from '@angular/material/button';
 import { injectionTokenTabCommand } from '@intaqalab/core';
 import type { TrialSearchFilters } from '@intaqalab/models';
-import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { TrialListFilter } from '../trial-list-filter/trial-list-filter';
@@ -10,7 +8,7 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
 
 @Component({
   selector: 'inta-feature-trial-list-shell',
-  imports: [TrialListComponent, TrialListFilter, TranslateModule, MatAnchor, IntaIconComponent],
+  imports: [TrialListComponent, TrialListFilter, TranslateModule],
   template: `
     <div class="flex flex-wrap items-center justify-between gap-x-4 my-6">
       <h2 class="text-base font-semibold text-gray-900">{{ 'MENU_LEFT.GESTION_TRIALS_LIST' | translate }}</h2>

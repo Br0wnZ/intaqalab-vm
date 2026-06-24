@@ -24,8 +24,8 @@ import { Measures } from './measures';
 const defaultImports = [TranslateModule.forRoot()];
 
 const defaultCatalogData = [
-  { id: 'cat-1', name: 'Presión', active: true },
-  { id: 'cat-2', name: 'Velocidad', active: true },
+  { id: 'cat-1', label: 'Presión', active: true, unit: 'TOPOGRAPHY', magnitude: 'Presión', favorite: true },
+  { id: 'cat-2', label: 'Velocidad', active: true, unit: 'MUNITIONS', magnitude: 'Velocidad', favorite: false },
 ];
 
 describe('Measures', () => {

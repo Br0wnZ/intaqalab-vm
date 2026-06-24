@@ -10,13 +10,18 @@ const measuresRouter = Router({ mergeParams: true });
 
 measuresRouter.get('/measures', (req: Request, res: Response) => {
   const { page, pageSize } = getPagination(req);
-  const { name, active } = req.query;
+  const { magnitude, name, unit, active } = req.query;
 
   let filtered = [...MEASURES_CATALOG];
 
-  if (name) {
-    const term = (name as string).toLowerCase();
+  const searchVal = magnitude || name;
+  if (searchVal) {
+    const term = (searchVal as string).toLowerCase();
     filtered = filtered.filter((m) => m.label.toLowerCase().includes(term));
+  }
+
+  if (unit) {
+    filtered = filtered.filter((m) => m.unit === unit);
   }
 
   if (active !== undefined && active !== null) {

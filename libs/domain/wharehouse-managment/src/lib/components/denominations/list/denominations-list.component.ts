@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -56,7 +55,6 @@ const DEFAULT_COLUMNS = [
     MatSlideToggleModule,
     BooleanStatusBadge,
     WharehouseFilterComponent,
-    FormField,
     IntaIconComponent,
   ],
   template: `

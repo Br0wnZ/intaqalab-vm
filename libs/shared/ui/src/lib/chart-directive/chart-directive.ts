@@ -1,9 +1,8 @@
 import type { OnDestroy } from '@angular/core';
-import { ElementRef } from '@angular/core';
-import { Directive, effect, inject, input } from '@angular/core';
+import { Directive, ElementRef, effect, inject, input } from '@angular/core';
 // ⚡ Tip de Arquitecto: Para tree-shaking real en producción, no importes 'registerables'.
 // Importa solo los elementos que necesites (ej: BarController, CategoryScale, LinearScale).
-import type { ChartConfiguration} from 'chart.js';
+import type { ChartConfiguration } from 'chart.js';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);

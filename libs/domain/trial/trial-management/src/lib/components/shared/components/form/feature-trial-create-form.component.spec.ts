@@ -6,22 +6,23 @@ import { TestBed } from '@angular/core/testing';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService, provideTestingEnvironment } from '@intaqalab/core';
+import { ClientsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { createMockMatDialog } from '@intaqalab/utils';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
+import { TrialTypeService } from '../../../../services/trial-type.service';
 import { FeatureTrialCreateFormComponent } from './feature-trial-create-form.component';
 
-// Debe hoistarse antes de que los módulos de TrialDocs → DocViewer importen ng2-pdf-viewer
-vi.mock('ng2-pdf-viewer', async () => {
-  const { NgModule, CUSTOM_ELEMENTS_SCHEMA } = await import('@angular/core');
-  class PdfViewerModule {}
-  NgModule({ schemas: [CUSTOM_ELEMENTS_SCHEMA] })(PdfViewerModule);
-  return { PdfViewerModule };
-});
+// Debe hoistarse antes de que los módulos de TrialDocs → DocViewer importen ng2-pdf-viewer.
+// Usar factory síncrona para evitar errores de transpilación/hoisting de Vitest.
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
 
 describe('FeatureTrialCreateFormComponent', () => {
   const defaultFormData = {
@@ -48,6 +49,25 @@ describe('FeatureTrialCreateFormComponent', () => {
   async function setup(options: { inputs?: Record<string, unknown>; dialogResult?: unknown } = {}) {
     const mockDialog = createMockMatDialog({ defaultResult: options.dialogResult ?? null });
     const user = userEvent.setup();
+
+    const mockClientsResource = createMockResource([{ id: 'c-001', name: 'Client 1' }]);
+    const mockClientsService = {
+      clients: mockClientsResource.value,
+      hasError: signal(false),
+    };
+
+    const mockTrialTypesResource = createMockResource({
+      items: [{ id: 't-type-001', label: 'Type 1' }],
+      page: 1,
+      pageSize: 10,
+      totalElements: 1,
+    });
+    mockTrialTypesResource._setStatus('resolved');
+
+    const mockTrialTypeService = {
+      fireTrialTypesResource: mockTrialTypesResource,
+    };
+
     const view = await render(FeatureTrialCreateFormComponent, {
       inputs: { ...defaultInputs, ...options.inputs },
       imports: [TranslateModule.forRoot()],
@@ -57,6 +77,8 @@ describe('FeatureTrialCreateFormComponent', () => {
         provideTestingEnvironment(),
         { provide: AuthService, useValue: { userRoles: signal([]) } },
         { provide: MatDialog, useValue: mockDialog },
+        { provide: ClientsDataService, useValue: mockClientsService },
+        { provide: TrialTypeService, useValue: mockTrialTypeService },
       ],
     });
     const loader = TestbedHarnessEnvironment.loader(view.fixture);

@@ -468,7 +468,30 @@
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
       "VALIDATE": "Validate",
       "SAVE_DRAFT": "Save draft",
-      "CANCEL": "Cancel"
+      "CANCEL": "Cancel",
+      "SHOW_RATING_CRITERIA": "Show rating criteria"
+    },
+    "RATING_CRITERIA": {
+      "TITLE": "Rating criteria",
+      "VELOCITY_LABEL": "Velocity",
+      "PRESSURE_LABEL": "Pressure",
+      "COLUMNS": {
+        "PROPERTY": "Property",
+        "USEFUL_1_MIN": "Useful-1 min",
+        "USEFUL_1_MAX": "Useful-1 max",
+        "USELESS_MIN": "Useless min",
+        "USELESS_MAX": "Useless max"
+      },
+      "PROPERTIES": {
+        "V0C": "V0c",
+        "V0C_MEAN": "V̄0c",
+        "V0C_STD_DEV": "σV0c",
+        "P": "P",
+        "P_MEAN": "P̄",
+        "PROJECTILE": "Projectile",
+        "PRIMER": "Primer",
+        "FUSE": "Fuse"
+      }
     },
     "SERIES_AND_SHOTS_SECTION": {
       "TAB_TITLE": "Series and shots",
@@ -2668,17 +2691,56 @@
         "CANCEL": "Cancel"
       },
       "EQUIPMENT_SELECTOR": {
-        "TITLE": "Teams",
+        "TITLE": "Equipment",
         "BTN_LABEL": "Equipment selector",
+        "SELECT_TAG": "Select measurement/equipment",
         "EQUIPMENT_HEADING": "Equipment",
         "SELECTION_LIMIT": "Selection ({{max}} max)",
-        "COL_EQUIPMENT": "Teams",
-        "COL_SERIES": "series",
-        "COL_SHOTS": "Shooting",
+        "COL_EQUIPMENT": "Equipment",
+        "COL_SERIES": "Series",
+        "COL_SHOTS": "Shots",
         "SERIES_PLACEHOLDER": "Select a series",
         "SHOTS_PLACEHOLDER": "All shots in the series",
-        "SAVE": "Keep",
-        "BACK": "Return"
+        "ADD_EQUIPMENT": "Add equipment",
+        "DELETE": "Delete",
+        "SAVE": "Save",
+        "BACK": "Back",
+        "TAGS": {
+          "VELOCIDAD_INICIAL": "Initial Velocity",
+          "PRESION_PIEZOELECTRICOS": "Piezoelectric Pressure",
+          "TRAYECTOGRAFIA": "Trajectory",
+          "VIDEO_AV": "AV Video",
+          "VIDEO_C": "C Video",
+          "LONGITUD": "Length",
+          "PRESION_MANOMETROS": "Manometer Pressure",
+          "PRESION_IPG": "IPG Pressure",
+          "PESOS": "Weights",
+          "ACONDICIONAMIENTO": "Conditioning",
+          "TIEMPO": "Time"
+        },
+        "FIELDS": {
+          "RADAR_DOPPLER": "Doppler Radar",
+          "ANTENA": "Antenna",
+          "SENSOR_PIEZOELECTRICO": "Piezoelectric Sensor",
+          "AMPLIFICADOR": "Amplifier",
+          "RADAR_TRAYECTOGRAFIA": "Trajectory Radar",
+          "CAMARA_AV": "AV Camera",
+          "CAMARA_C": "C Camera",
+          "GRABADOR": "Recorder",
+          "CANAL": "Channel",
+          "MAGNITUD": "Magnitude",
+          "REGLA_TRAZOS": "Stroke Ruler",
+          "MANOMETRO": "Manometer",
+          "CRUSHER": "Crusher",
+          "PALPADOR": "Probe",
+          "SENSOR_IPG": "IPG Sensor",
+          "MICROMÓDULO": "Micromodule",
+          "BALANZA": "Scale",
+          "MUNICION": "Munition",
+          "CRONOMETRO": "Stopwatch",
+          "SERIES": "Series",
+          "DISPAROS": "Shots"
+        }
       },
       "TRIAL_SELECTOR": {
         "TITLE": "Select trial",

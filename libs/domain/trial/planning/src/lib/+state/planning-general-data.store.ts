@@ -16,6 +16,7 @@ import type {
   Serie,
   Shot,
 } from '../utils-models/series-and-shots.model';
+import { SpecimenType } from '../utils-models/specimen.model';
 import type { UpsertTrialPlanningInfo } from '../utils-models/trial-planing-info.model';
 import type { UpdateShotRequest } from '../utils-models/update-shot-request.model';
 import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie-info.model';
@@ -76,9 +77,43 @@ export const PlanningGeneralDataStore = signalStore(
           return response.items;
         }),
 
+        typedSpecimens: computed(() => {
+          const weapons = (dataPlanningService.weaponsResource.value()?.items ?? []).map((item) => ({
+            ...item,
+            type: SpecimenType.Weapon,
+          }));
+          const tubes = (dataPlanningService.tubesResource.value()?.items ?? []).map((item) => ({
+            ...item,
+            type: SpecimenType.Tube,
+          }));
+          const denominations = (dataPlanningService.denominationsResource.value()?.items ?? []).map((item) => ({
+            id: item.id,
+            name: { es: item.name, en: item.name },
+            label: item.name,
+            type: SpecimenType.Munition,
+            active: item.active,
+          }));
+
+          return [...weapons, ...tubes, ...denominations];
+        }),
+
         isLoadingSpecimens: computed(() => dataPlanningService.specimenResource.isLoading()),
 
         specimensError: computed(() => dataPlanningService.specimenResource.error()),
+
+        isLoadingTypedSpecimens: computed(
+          () =>
+            dataPlanningService.weaponsResource.isLoading() ||
+            dataPlanningService.tubesResource.isLoading() ||
+            dataPlanningService.denominationsResource.isLoading(),
+        ),
+
+        typedSpecimensError: computed(
+          () =>
+            dataPlanningService.weaponsResource.error() ||
+            dataPlanningService.tubesResource.error() ||
+            dataPlanningService.denominationsResource.error(),
+        ),
 
         users: computed(() => {
           return usersService.users().map((u) => ({
@@ -224,6 +259,10 @@ export const PlanningGeneralDataStore = signalStore(
 
       loadSpecimens(): void {
         dataPlanningService.getSpecimens();
+      },
+
+      loadSpecimensByType(specimenType: SpecimenType): void {
+        dataPlanningService.getSpecimensByType(specimenType, { active: true });
       },
 
       loadUsers(): void {

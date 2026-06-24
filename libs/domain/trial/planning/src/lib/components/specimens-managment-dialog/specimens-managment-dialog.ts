@@ -15,11 +15,12 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import type { SpecimenOption, SpecimenSelection, SpecimenType } from '../../utils-models/specimen.model';
+import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../../utils-models/specimen.model';
 
 @Component({
   selector: 'inta-specimens-managment-dialog',
@@ -30,6 +31,7 @@ import type { SpecimenOption, SpecimenSelection, SpecimenType } from '../../util
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     FormField,
     TranslateModule,
     IntaIconComponent,
@@ -43,6 +45,24 @@ import type { SpecimenOption, SpecimenSelection, SpecimenType } from '../../util
 
     <mat-dialog-content class="!p-4">
       <form class="space-y-4">
+        <div class="flex flex-col">
+          <label for="specimenType" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'SPECIMENS_MANAGMENT_DIALOG.TYPE_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-select
+              id="specimenType"
+              [value]="selectedSpecimenType()"
+              [placeholder]="'SPECIMENS_MANAGMENT_DIALOG.TYPE_PLACEHOLDER' | translate"
+              (valueChange)="onSpecimenTypeChange($event)"
+            >
+              @for (type of specimenTypes; track type.value) {
+                <mat-option [value]="type.value">{{ type.label | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <!-- Espécimen -->
         <div class="flex flex-col">
           <label for="specimenInput" class="block text-sm font-medium text-gray-700 mb-2">
@@ -55,6 +75,7 @@ import type { SpecimenOption, SpecimenSelection, SpecimenType } from '../../util
               matInput
               [value]="searchTerm()"
               [matAutocomplete]="specimenAutocomplete"
+              [disabled]="isSpecimenInputDisabled()"
               [matAutocompleteDisabled]="!autocompleteEnabled()"
               (click)="openAutocomplete()"
               (input)="onSearchChange($event)"
@@ -63,21 +84,12 @@ import type { SpecimenOption, SpecimenSelection, SpecimenType } from '../../util
               (optionSelected)="onSelectOption($event.option.value)"
               #specimenAutocomplete="matAutocomplete"
             >
-              @if (filteredWeaponAndTubeOptions().length > 0) {
-                <mat-optgroup [label]="'SPECIMENS_MANAGMENT_DIALOG.GROUP_WEAPONS_TUBES' | translate">
-                  @for (specimen of filteredWeaponAndTubeOptions(); track specimen.id) {
-                    <mat-option [value]="specimen.id">{{ getSpecimenLabel(specimen) }}</mat-option>
-                  }
-                </mat-optgroup>
+              @if (filteredSpecimenOptions().length > 0) {
+                @for (specimen of filteredSpecimenOptions(); track specimen.id) {
+                  <mat-option [value]="specimen.id">{{ getSpecimenLabel(specimen) }}</mat-option>
+                }
               }
-              @if (filteredDenominationOptions().length > 0) {
-                <mat-optgroup [label]="'SPECIMENS_MANAGMENT_DIALOG.GROUP_DENOMINATIONS' | translate">
-                  @for (specimen of filteredDenominationOptions(); track specimen.id) {
-                    <mat-option [value]="specimen.id">{{ getSpecimenLabel(specimen) }}</mat-option>
-                  }
-                </mat-optgroup>
-              }
-              @if (filteredWeaponAndTubeOptions().length === 0 && filteredDenominationOptions().length === 0) {
+              @if (filteredSpecimenOptions().length === 0) {
                 <mat-option disabled>{{ 'SPECIMENS_MANAGMENT_DIALOG.NO_RESULTS' | translate }}</mat-option>
               }
             </mat-autocomplete>
@@ -174,13 +186,19 @@ export class SpecimensManagmentDialog {
   } | null>(MAT_DIALOG_DATA, { optional: true });
   readonly store = inject(PlanningGeneralDataStore);
 
-  readonly specimens = computed(() => this.store.specimens());
+  readonly specimens = computed(() => this.store.typedSpecimens());
+
+  readonly specimenTypes = [
+    { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
+    { value: SpecimenType.Tube, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_TUBE' },
+    { value: SpecimenType.Munition, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MUNITION' },
+  ] as const;
 
   constructor() {
-    this.store.loadSpecimens();
     this.#watchInitialData();
   }
 
+  readonly selectedSpecimenType = signal<SpecimenType | null>(null);
   readonly formModel = signal({ specimenId: '', serialNumber: '', lot: '' });
 
   readonly specimenForm = form(this.formModel, (f) => {
@@ -195,24 +213,26 @@ export class SpecimensManagmentDialog {
   readonly #initialSpecimens = signal<SpecimenSelection[]>([]);
   readonly #initialized = signal(false);
 
+  readonly isSpecimenInputDisabled = computed(
+    () =>
+      this.selectedSpecimenType() === null ||
+      this.store.isLoadingTypedSpecimens() ||
+      Boolean(this.store.typedSpecimensError()),
+  );
+
   readonly selectedOption = computed(() => {
     const id = this.formModel().specimenId;
     return this.specimens().find((s) => s.id === id) ?? null;
   });
 
-  readonly filteredWeaponAndTubeOptions = computed(() => {
+  readonly filteredSpecimenOptions = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    return this.specimens().filter((s) => {
-      const type = this.#getUiType(s);
-      return (type === 'weapon' || type === 'tube') && this.getSpecimenLabel(s).toLowerCase().includes(term);
-    });
-  });
+    const selectedType = this.selectedSpecimenType();
+    if (!selectedType) return [];
 
-  readonly filteredDenominationOptions = computed(() => {
-    const term = this.searchTerm().toLowerCase().trim();
     return this.specimens().filter((s) => {
       const type = this.#getUiType(s);
-      return type === 'denomination' && this.getSpecimenLabel(s).toLowerCase().includes(term);
+      return type === selectedType && this.getSpecimenLabel(s).toLowerCase().includes(term);
     });
   });
 
@@ -244,7 +264,7 @@ export class SpecimensManagmentDialog {
       const entry: SpecimenSelection = {
         id: selected.id,
         label: this.getSpecimenLabel(selected),
-        type: selected.type ?? 'denomination',
+        type: selected.type ?? SpecimenType.Munition,
         serialNumber: this.formModel().serialNumber.trim() || undefined,
         lot: this.formModel().lot.trim() || undefined,
       };
@@ -264,9 +284,17 @@ export class SpecimensManagmentDialog {
   }
 
   onSearchChange(event: Event): void {
+    if (this.isSpecimenInputDisabled()) return;
     this.searchTerm.set((event.target as HTMLInputElement).value);
     this.autocompleteEnabled.set(true);
     this.formModel.update((c) => ({ ...c, specimenId: '', serialNumber: '', lot: '' }));
+  }
+
+  onSpecimenTypeChange(specimenType: SpecimenType | null): void {
+    this.selectedSpecimenType.set(specimenType);
+    this.resetSelection();
+    if (!specimenType) return;
+    this.store.loadSpecimensByType(specimenType);
   }
 
   onSelectOption(specimenId: string): void {
@@ -288,6 +316,7 @@ export class SpecimensManagmentDialog {
   }
 
   openAutocomplete(): void {
+    if (this.isSpecimenInputDisabled()) return;
     this.autocompleteEnabled.set(true);
     queueMicrotask(() => this.autocompleteTrigger()?.openPanel());
   }
@@ -309,11 +338,11 @@ export class SpecimensManagmentDialog {
   }
 
   #getUiType(specimen: SpecimenOption | null | undefined): SpecimenType {
-    if (!specimen) return 'denomination';
+    if (!specimen) return SpecimenType.Munition;
     const normalized = (specimen.type ?? 'denomination').toString().toUpperCase();
-    if (normalized === 'WEAPON') return 'weapon';
-    if (normalized === 'TUBE') return 'tube';
-    return 'denomination';
+    if (normalized === 'WEAPON') return SpecimenType.Weapon;
+    if (normalized === 'TUBE') return SpecimenType.Tube;
+    return SpecimenType.Munition;
   }
 
   #watchInitialData(): void {
@@ -339,7 +368,7 @@ export class SpecimensManagmentDialog {
           return {
             id: specimen.id,
             label: this.getSpecimenLabel(specimen),
-            type: specimen.type ?? 'denomination',
+            type: specimen.type ?? SpecimenType.Munition,
             ...(batch && (type === 'denomination' ? { lot: batch } : { serialNumber: batch })),
           } as SpecimenSelection;
         })

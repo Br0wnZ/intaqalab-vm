@@ -14,7 +14,7 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BooleanStatusBadge, IntaIconComponent, UiDialogService } from '@intaqalab/ui';
+import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
@@ -38,7 +38,6 @@ const DEFAULT_COLUMNS = ['munitionDumpId', 'cellsCount', 'maxNeq', 'maxRiskGroup
     MatIconModule,
     MatTooltipModule,
     MatSelectModule,
-    BooleanStatusBadge,
     MatSlideToggleModule,
     IntaIconComponent,
   ],

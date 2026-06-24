@@ -28,13 +28,11 @@ import {
   injectionTokenComponentCreateModifyShell,
 } from './feature-trial-create-shell.component';
 
-// Must be hoisted: shell → FeatureTrialCreateFormComponent → TrialDocs → DocViewer → ng2-pdf-viewer
-vi.mock('ng2-pdf-viewer', async () => {
-  const { NgModule, CUSTOM_ELEMENTS_SCHEMA } = await import('@angular/core');
-  class PdfViewerModule {}
-  NgModule({ schemas: [CUSTOM_ELEMENTS_SCHEMA] })(PdfViewerModule);
-  return { PdfViewerModule };
-});
+// Must be hoisted: shell → FeatureTrialCreateFormComponent → TrialDocs → DocViewer → ng2-pdf-viewer.
+// Use synchronous factory to avoid Vitest async hoisting errors.
+vi.mock('ng2-pdf-viewer', () => ({
+  PdfViewerModule: class PdfViewerModule {},
+}));
 
 @Component({
   selector: 'inta-feature-trial-create-form',

@@ -1,6 +1,10 @@
 import type { TrialPlanningInfo } from './trial-planing-info.model';
 
-export type SpecimenType = 'weapon' | 'tube' | 'denomination';
+export enum SpecimenType {
+  Weapon = 'weapon',
+  Tube = 'tube',
+  Munition = 'denomination',
+}
 
 export type SpecimenOption = {
   id: string;

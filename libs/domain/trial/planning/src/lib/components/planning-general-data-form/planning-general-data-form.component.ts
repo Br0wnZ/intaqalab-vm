@@ -1,20 +1,27 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, disabled, form, required, submit, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
-import { Badge, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { Badge } from '@intaqalab/ui';
 import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
-import type { TrialPlanningInfo, UpsertTrialPlanningInfo } from '../../utils-models/trial-planing-info.model';
+import type {
+  RatingCriteria as RatingCriteriaModel,
+  RatingCriteriaUnits,
+  TrialPlanningInfo,
+  UpsertTrialPlanningInfo,
+} from '../../utils-models/trial-planing-info.model';
 import { PlanningScheduledDatesComponent } from '../planning-scheduled-dates/planning-scheduled-dates.component';
+import { RatingCriteria } from '../rating-criteria/rating-criteria';
 import { SpecimensManagmentDialog } from '../specimens-managment-dialog/specimens-managment-dialog';
 
 export type PlanningGeneralData = {
@@ -28,6 +35,8 @@ export type PlanningGeneralData = {
   percentageTechnicalUnits: number | string;
   percentageEndTrial: number | string;
   daysSignReport: number | string;
+  hypochelometricReviewBefore: boolean;
+  hypochelometricReviewAfter: boolean;
 };
 
 const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
@@ -43,12 +52,13 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatCheckboxModule,
     FormField,
-    IntaSignalSelectComponent,
     Badge,
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
     NoNegativeValuesDirective,
+    RatingCriteria,
   ],
   template: `
     <div class="py-6">
@@ -137,16 +147,18 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
         </div>
 
         <!-- TODO -->
-        <!-- <div class="flex flex-wrap gap-4 mb-8">
-          <ui-signal-checkbox
-            [formField]="generalDataForm.mockCheckbox"
-            [label]="'Revisión hipocelométrica antes de la prueba'"
-          /> -->
-        <!-- <ui-signal-checkbox
-            [formField]="generalDataForm.mockCheckbox"
-            [label]="'Revisión hipocelométrica después de la prueba'"
-          />
-        </div> -->
+        <div class="flex flex-wrap gap-4 mb-8">
+          <mat-checkbox [formField]="generalDataForm.hypochelometricReviewBefore">
+            <span>
+              {{ 'Revisión hipocelométrica antes de la prueba' }}
+            </span>
+          </mat-checkbox>
+          <mat-checkbox [formField]="generalDataForm.hypochelometricReviewAfter">
+            <span>
+              {{ 'Revisión hipocelométrica después de la prueba' }}
+            </span>
+          </mat-checkbox>
+        </div>
 
         <!-- Observaciones -->
         <div>
@@ -182,9 +194,23 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
           </mat-form-field>
         </div>
 
+        <!-- Checkbox para mostrar criterios de calificación -->
+        <div>
+          <mat-checkbox [checked]="showRatingCriteria()" (change)="showRatingCriteria.set(!showRatingCriteria())">
+            <span>
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SHOW_RATING_CRITERIA' | translate }}
+            </span>
+          </mat-checkbox>
+        </div>
+
+        @if (showRatingCriteria()) {
+          <!-- Criterios de calificación -->
+          <inta-rating-criteria [readonly]="readonly()" [(ratingCriteria)]="ratingCriteriaState" />
+        }
+
         <!-- Información adicional del cliente -->
         <div>
-          <label for="additionalInfo" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="additionalInfo" class="block text-sm font-medium text-gray-700 my-4">
             {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
@@ -198,51 +224,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             ></textarea>
           </mat-form-field>
         </div>
-
-        <!-- <div class="mb-8"> -->
-        <!-- TODO -->
-        <!-- <ui-signal-checkbox [formField]="generalDataForm.mockCheckbox" [label]="'Velocidad nominal'" /> -->
-        <!-- </div> -->
-
-        <!-- TODO -->
-        <!-- <div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="block text-xs text-gray-600 mb-2">Zona 1</label>
-              <mat-form-field appearance="outline" class="w-full">
-                <input placeholder="Zona 1" matInput type="number" />
-              </mat-form-field>
-            </div>
-
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="block text-xs text-gray-600 mb-2">Zona 2</label>
-              <mat-form-field appearance="outline" class="w-full">
-                <input placeholder="Zona 2" matInput type="number" />
-              </mat-form-field>
-            </div>
-
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="block text-xs text-gray-600 mb-2">Zona 3</label>
-              <mat-form-field appearance="outline" class="w-full">
-                <input placeholder="Zona 3" matInput type="number" />
-              </mat-form-field>
-            </div>
-
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="block text-xs text-gray-600 mb-2">Zona 4</label>
-              <mat-form-field appearance="outline" class="w-full">
-                <input placeholder="Zona 4" matInput type="number" />
-              </mat-form-field>
-            </div>
-
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="block text-xs text-gray-600 mb-2">Zona 5</label>
-              <mat-form-field appearance="outline" class="w-full">
-                <input placeholder="Zona 5" matInput type="number" />
-              </mat-form-field>
-            </div>
-          </div>
-        </div> -->
 
         <!-- Parámetros de control de fechas -->
         <div>
@@ -384,6 +365,10 @@ export class PlanningGeneralDataFormComponent {
   /** Propagado desde el shell: true cuando el usuario no tiene permisos de edición */
   readonly readonly = input<boolean>(false);
 
+  readonly showRatingCriteria = signal<boolean>(false);
+  readonly ratingCriteriaState = signal<RatingCriteriaModel | undefined>(undefined);
+  readonly ratingCriteriaUnitsState = signal<RatingCriteriaUnits | undefined>(undefined);
+
   protected readonly store = inject(PlanningGeneralDataStore);
   readonly #calendarStore = inject(CalendarTrialScheduleStore);
   readonly #planningPermissions = inject(PlanningPermissionsService);
@@ -409,6 +394,8 @@ export class PlanningGeneralDataFormComponent {
     percentageTechnicalUnits: 40,
     percentageEndTrial: 60,
     daysSignReport: 1,
+    hypochelometricReviewBefore: false,
+    hypochelometricReviewAfter: false,
   });
   #initialFormModel = this.formModel();
   #initialSelectedSpecimens: { specimenId: string; batch: string }[] = [];
@@ -499,6 +486,11 @@ export class PlanningGeneralDataFormComponent {
         this.#initialFormModel = mappedModel;
         this.#initialSelectedSpecimens = structuredClone(selectedSpecimens);
         this.store.setSelectedSpecimens(selectedSpecimens);
+        this.ratingCriteriaState.set(structuredClone(planningInfo.ratingCriteria));
+        this.ratingCriteriaUnitsState.set(planningInfo.ratingCriteriaUnits);
+        if (planningInfo.ratingCriteria) {
+          this.showRatingCriteria.set(true);
+        }
         untracked(() => {
           this.generalDataForm.percentageTechnicalUnits().markAsTouched();
           this.generalDataForm.percentageEndTrial().markAsTouched();
@@ -575,6 +567,10 @@ export class PlanningGeneralDataFormComponent {
     this.store.reloadPlanningInfo();
     this.formModel.set(this.#deepClone(this.#initialFormModel));
     this.store.setSelectedSpecimens(structuredClone(this.#initialSelectedSpecimens));
+    const initialCriteria = this.store.planningInfo()?.ratingCriteria;
+    this.ratingCriteriaState.set(structuredClone(initialCriteria));
+    const initialUnits = this.store.planningInfo()?.ratingCriteriaUnits;
+    this.ratingCriteriaUnitsState.set(initialUnits);
   }
 
   saveDraft(): void {
@@ -600,6 +596,13 @@ export class PlanningGeneralDataFormComponent {
         percentageEndTrial: Number(formValue.percentageEndTrial),
         daysSignReport: Number(formValue.daysSignReport),
       },
+      hypochelometricReviewBefore: formValue.hypochelometricReviewBefore,
+      hypochelometricReviewAfter: formValue.hypochelometricReviewAfter,
+      ratingCriteria: this.ratingCriteriaState(),
+      ratingCriteriaUnits: this.ratingCriteriaUnitsState() || {
+        speedUnit: 'MS',
+        pressureUnit: 'BAR',
+      },
     };
   }
 
@@ -618,6 +621,8 @@ export class PlanningGeneralDataFormComponent {
       percentageTechnicalUnits: String(data.dateControl.percentageTechnicalUnits),
       percentageEndTrial: String(data.dateControl.percentageEndTrial),
       daysSignReport: String(data.dateControl.daysSignReport),
+      hypochelometricReviewBefore: !!data.hypochelometricReviewBefore,
+      hypochelometricReviewAfter: !!data.hypochelometricReviewAfter,
     };
   }
 }

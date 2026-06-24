@@ -468,7 +468,30 @@
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Indica los días para firma del informe",
       "VALIDATE": "Validar",
       "SAVE_DRAFT": "Guardar borrador",
-      "CANCEL": "Cancelar"
+      "CANCEL": "Cancelar",
+      "SHOW_RATING_CRITERIA": "Mostrar los Criterios de calificación"
+    },
+    "RATING_CRITERIA": {
+      "TITLE": "Criterios de calificación",
+      "VELOCITY_LABEL": "Velocidad",
+      "PRESSURE_LABEL": "Presión",
+      "COLUMNS": {
+        "PROPERTY": "Propiedad",
+        "USEFUL_1_MIN": "Útil-1 min",
+        "USEFUL_1_MAX": "Útil-1 max",
+        "USELESS_MIN": "Inútil min",
+        "USELESS_MAX": "Inútil max"
+      },
+      "PROPERTIES": {
+        "V0C": "V0c",
+        "V0C_MEAN": "V̄0c",
+        "V0C_STD_DEV": "σV0c",
+        "P": "P",
+        "P_MEAN": "P̄",
+        "PROJECTILE": "Proyectil",
+        "PRIMER": "Estopín",
+        "FUSE": "Espoleta"
+      }
     },
     "SERIES_AND_SHOTS_SECTION": {
       "TAB_TITLE": "Series y disparos",
@@ -2325,8 +2348,9 @@
         "CANCEL": "Cancelar"
       },
       "EQUIPMENT_SELECTOR": {
-        "TITLE": "Equipos",
+        "TITLE": "Medidas y equipos",
         "BTN_LABEL": "Selector equipos",
+        "SELECT_TAG": "Selecciona medida/equipo",
         "EQUIPMENT_HEADING": "Equipo",
         "SELECTION_LIMIT": "Selección ({{max}} máx)",
         "COL_EQUIPMENT": "Equipos",
@@ -2334,8 +2358,46 @@
         "COL_SHOTS": "Disparos",
         "SERIES_PLACEHOLDER": "Selecciona una serie",
         "SHOTS_PLACEHOLDER": "Todos los disparos de la serie",
+        "ADD_EQUIPMENT": "Añadir equipo",
+        "DELETE": "Eliminar",
         "SAVE": "Guardar",
-        "BACK": "Volver"
+        "BACK": "Volver",
+        "TAGS": {
+          "VELOCIDAD_INICIAL": "Velocidad Inicial",
+          "PRESION_PIEZOELECTRICOS": "Presión Piezoeléctricos",
+          "TRAYECTOGRAFIA": "Trayectografía",
+          "VIDEO_AV": "Vídeo AV",
+          "VIDEO_C": "Vídeo C",
+          "LONGITUD": "Longitud",
+          "PRESION_MANOMETROS": "Presión Manómetros",
+          "PRESION_IPG": "Presión IPG",
+          "PESOS": "Pesos",
+          "ACONDICIONAMIENTO": "Acondicionamiento",
+          "TIEMPO": "Tiempo"
+        },
+        "FIELDS": {
+          "RADAR_DOPPLER": "Radar Doppler",
+          "ANTENA": "Antena",
+          "SENSOR_PIEZOELECTRICO": "Sensor piezoeléctrico",
+          "AMPLIFICADOR": "Amplificador",
+          "RADAR_TRAYECTOGRAFIA": "Radar Trayectografía",
+          "CAMARA_AV": "Cámara AV",
+          "CAMARA_C": "Cámara C",
+          "GRABADOR": "Grabador",
+          "CANAL": "Canal",
+          "MAGNITUD": "Magnitud",
+          "REGLA_TRAZOS": "Regla Trazos",
+          "MANOMETRO": "Manómetro",
+          "CRUSHER": "Crusher",
+          "PALPADOR": "Palpador",
+          "SENSOR_IPG": "Sensor IPG",
+          "MICROMÓDULO": "Micromódulo",
+          "BALANZA": "Balanza",
+          "MUNICION": "Munición",
+          "CRONOMETRO": "Cronómetro",
+          "SERIES": "Series",
+          "DISPAROS": "Disparos"
+        }
       },
       "TRIAL_SELECTOR": {
         "TITLE": "Seleccionar prueba",

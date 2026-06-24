@@ -440,8 +440,15 @@ export function createMockPlanningGeneralDataStore(initialData?: {
       if (!response) return [];
       return response.items;
     }),
+    typedSpecimens: vi.fn(() => {
+      const response = specimensResource.value();
+      if (!response) return [];
+      return response.items;
+    }),
     isLoadingSpecimens: specimensResource.isLoading,
     specimensError: specimensResource.error,
+    isLoadingTypedSpecimens: specimensResource.isLoading,
+    typedSpecimensError: specimensResource.error,
     createSpecimenStatus: createSpecimenResource.status,
     isCreatingSpecimen: createSpecimenResource.isLoading,
     createSpecimenError: createSpecimenResource.error,
@@ -489,6 +496,7 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     setFireTrialData: vi.fn(),
     setSelectedSpecimens: vi.fn(),
     loadSpecimens: vi.fn(),
+    loadSpecimensByType: vi.fn(),
     createSpecimen: vi.fn(),
     updateSpecimen: vi.fn(),
     deleteSpecimen: vi.fn(),
@@ -1001,8 +1009,14 @@ export function createMeasuresCatalogTestData() {
     pageSize: 10,
     totalElements: 2,
     items: [
-      { id: 'measure-1', name: { es: 'Presión', en: 'Pressure' }, label: 'Presión', active: true },
-      { id: 'measure-2', name: { es: 'Velocidad', en: 'Velocity' }, label: 'Velocidad', active: true },
+      { id: 'measure-1', name: { es: 'Presión', en: 'Pressure' }, label: 'Presión', active: true, unit: 'TOPOGRAPHY' },
+      {
+        id: 'measure-2',
+        name: { es: 'Velocidad', en: 'Velocity' },
+        label: 'Velocidad',
+        active: true,
+        unit: 'MUNITIONS',
+      },
     ],
   };
 }

@@ -13,9 +13,8 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
-import { RouteReuseStrategy } from '@angular/router';
 import type { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
 import { provideAppEnvironment, provideIntaDateAdapter } from '@intaqalab/config';
 import {
   centerInterceptor,
@@ -25,8 +24,8 @@ import {
   provideHeaderWidget,
   successToastInterceptor,
 } from '@intaqalab/core';
-import { LanguageService } from '@intaqalab/data-access';
-import { TranslateService, provideTranslateService } from '@ngx-translate/core';
+import { LanguageService, provideLocaleSignal } from '@intaqalab/data-access';
+import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { authInterceptor, provideAuth } from 'angular-auth-oidc-client';
 import { provideToastr } from 'ngx-toastr';
@@ -94,6 +93,7 @@ export const Config: ApplicationConfig = {
     provideAppInitializer(() => {
       return inject(LanguageService).initializationPromise;
     }),
+    provideLocaleSignal(),
     provideAnimations(),
     provideToastr(),
     ...(!environment.production ? [provideHeaderWidget()] : []),
