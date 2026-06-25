@@ -1744,7 +1744,7 @@
       },
       "MODAL_DELETE": {
         "TITLE": "Delete denomination",
-        "CONTENT_HTML": "You are about to delete a denomination even though it is linked to registered items. <b>The denomination will no longer be available in dropdown lists.</b>"
+        "CONTENT_HTML": "You are about to delete a denomination even though it can be linked to registered items. <b>The denomination will no longer be available in dropdown lists.</b>"
       }
     },
     "MUNITIONS_DUMPS": {

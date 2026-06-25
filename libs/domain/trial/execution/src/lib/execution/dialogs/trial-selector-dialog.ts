@@ -17,13 +17,10 @@ export type TrialSelectorDialogResult = { action: 'select'; trial: FireTrial } |
 // ─── Statuses available in execution context ───────────────────────────────────
 
 const EXECUTION_SELECTOR_STATUSES: TrialStatus[] = [
-  TrialStatus.EXECUTED,
   TrialStatus.PLANNED,
+  TrialStatus.STARTED,
   TrialStatus.IN_PROGRESS,
   TrialStatus.INTERRUPTED,
-  TrialStatus.STARTED,
-  TrialStatus.CANCELLED,
-  TrialStatus.VOIDED,
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -49,20 +46,6 @@ const EXECUTION_SELECTOR_STATUSES: TrialStatus[] = [
     </h2>
 
     <mat-dialog-content class="!pt-4 !pb-2">
-      <!-- Search by description -->
-      <div class="flex justify-end mb-4">
-        <mat-form-field appearance="outline" class="!max-w-sm !min-w-[280px] !w-full" [subscriptSizing]="'dynamic'">
-          <ui-inta-icon matPrefix name="search" size="md" class="mx-2" />
-          <input
-            matInput
-            class="text-gray-700"
-            [placeholder]="'TRIAL_EXECUTION.DIALOGS.TRIAL_SELECTOR.SEARCH_PLACEHOLDER' | translate"
-            [(ngModel)]="search"
-            (ngModelChange)="updateFilters($event)"
-          />
-        </mat-form-field>
-      </div>
-
       <!-- Trial list in execution-selector mode -->
       <inta-trial-list
         [filters]="defaultFilters()"
@@ -87,13 +70,6 @@ export class TrialSelectorDialog {
   readonly defaultFilters = signal<Partial<TrialSearchFilters>>({
     status: EXECUTION_SELECTOR_STATUSES,
   });
-
-  updateFilters(searchTerm: string): void {
-    this.defaultFilters.set({
-      ...this.defaultFilters(),
-      description: searchTerm || undefined,
-    });
-  }
 
   onTrialSelected(trial: FireTrial): void {
     const result: TrialSelectorDialogResult = { action: 'select', trial };

@@ -13,6 +13,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -38,23 +39,22 @@ interface DataFormModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">edit</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -64,7 +64,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.disparo">
             @for (opt of disparoOptions(); track opt.value) {
@@ -74,7 +74,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 
@@ -90,11 +90,11 @@ interface DataFormModel {
       <div class=""></div>
 
       <!-- ── Body: flex container (data grid + observaciones) ──────────────── -->
-      <div intaReadonlyContent class="flex-1 flex gap-2 min-h-0">
+      <div intaReadonlyContent class="flex-1 flex-wrap flex gap-2 min-h-0">
         <!-- Data grid: two explicit rows inside a flex column -->
-        <div class="flex-1 flex flex-col gap-1">
+        <div class="flex-1 flex justify-end flex-col gap-4">
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
-          <div class="grid grid-cols-6 gap-x-2">
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-2">
             <!-- Manómetro -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MANOMETRO_LABEL' | translate }}</mat-label>
@@ -138,14 +138,14 @@ interface DataFormModel {
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.PRESION_LABEL' | translate }}</mat-label>
               <input matInput readonly class="tabular-nums italic text-slate-400" [value]="presionDisplay()" />
-              <span matSuffix class="pr-1 text-sm text-gray-700">{{ presionUnit() }}</span>
+              <span matSuffix class="pr-4 text-sm text-gray-700">{{ presionUnit() }}</span>
             </mat-form-field>
 
             <!-- Cols 5-6 intentionally empty -->
           </div>
 
           <!-- Row 2: H1 | H2 | H3 | H4 | H5 | Altura media -->
-          <div class="grid grid-cols-6 gap-x-2">
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-2">
             <!-- H1 -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H1_LABEL' | translate }}</mat-label>
@@ -157,6 +157,7 @@ interface DataFormModel {
                 (input)="h1Field.set({ value: $any($event.target).value, unit: h1Field()?.unit ?? 'μm' })"
               />
               <mat-select
+                class="pr-4"
                 matSuffix
                 [value]="h1Field()?.unit ?? 'μm'"
                 (selectionChange)="h1Field.set({ value: h1Field()?.value ?? '', unit: $event.value })"
@@ -179,6 +180,7 @@ interface DataFormModel {
               />
               <mat-select
                 matSuffix
+                class="pr-4"
                 [value]="h2Field()?.unit ?? 'μm'"
                 (selectionChange)="h2Field.set({ value: h2Field()?.value ?? '', unit: $event.value })"
               >
@@ -200,6 +202,7 @@ interface DataFormModel {
               />
               <mat-select
                 matSuffix
+                class="pr-4"
                 [value]="h3Field()?.unit ?? 'μm'"
                 (selectionChange)="h3Field.set({ value: h3Field()?.value ?? '', unit: $event.value })"
               >
@@ -221,6 +224,7 @@ interface DataFormModel {
               />
               <mat-select
                 matSuffix
+                class="pr-4"
                 [value]="h4Field()?.unit ?? 'μm'"
                 (selectionChange)="h4Field.set({ value: h4Field()?.value ?? '', unit: $event.value })"
               >
@@ -242,6 +246,7 @@ interface DataFormModel {
               />
               <mat-select
                 matSuffix
+                class="pr-4"
                 [value]="h5Field()?.unit ?? 'μm'"
                 (selectionChange)="h5Field.set({ value: h5Field()?.value ?? '', unit: $event.value })"
               >
@@ -257,13 +262,13 @@ interface DataFormModel {
                 {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.ALTURA_MEDIA_LABEL' | translate }}
               </mat-label>
               <input matInput readonly class="tabular-nums italic text-slate-400" [value]="alturaMediaDisplay()" />
-              <span matSuffix class="pr-1 text-sm text-gray-700">μm</span>
+              <span matSuffix class="pr-4 text-sm text-gray-700">μm</span>
             </mat-form-field>
           </div>
         </div>
 
         <!-- Observaciones (fixed width, full height) -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36 h-full">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-70 h-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
           <textarea
             matInput

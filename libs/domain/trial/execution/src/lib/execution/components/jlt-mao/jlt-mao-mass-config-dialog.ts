@@ -62,8 +62,8 @@ interface MassConfigForm {
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>

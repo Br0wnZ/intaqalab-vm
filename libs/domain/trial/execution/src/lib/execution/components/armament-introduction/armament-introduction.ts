@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -15,7 +16,6 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import type { ArmamentIntroductionMassConfigDialogResult } from './armament-introduction-mass-config-dialog';
 import { ArmamentIntroductionMassConfigDialog } from './armament-introduction-mass-config-dialog';
-import { IntaIconComponent } from '@intaqalab/ui';
 
 interface ArmamentIntroductionSelectForm {
   serie: string | null;
@@ -37,7 +37,7 @@ interface ArmamentIntroductionSelectForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,    
+    TranslateModule,
     IntaIconComponent,
   ],
   template: `

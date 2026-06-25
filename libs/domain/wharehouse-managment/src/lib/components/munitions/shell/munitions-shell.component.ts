@@ -15,8 +15,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { TrialsDataService } from '@intaqalab/data-access';
-import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
 import type { UIDialogConfirm } from '@intaqalab/ui';
+import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
@@ -303,10 +303,12 @@ export class MunitionsShellComponent {
       const saveMunitionStatus = this.munitionsStockDataService.saveMunitionResource.status();
       if (saveMunitionStatus === 'resolved') {
         const id = this.munitionsStockDataService.saveMunitionResource.value()?.id;
+        this.munitionsStockDataService.munition.set(null);
         this.#router.navigateByUrl('/wharehouse-managment/stock/munitions/' + id);
       }
       const saveComponentsStatus = this.munitionsStockDataService.saveMunitionComponentsResource.status();
       if (saveComponentsStatus === 'resolved') {
+        this.munitionsStockDataService.munitionComponents.set(null);
         this.#router.navigateByUrl('/wharehouse-managment/stock');
       }
     });

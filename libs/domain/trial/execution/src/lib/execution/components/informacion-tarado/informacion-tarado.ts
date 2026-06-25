@@ -21,6 +21,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 interface InformacionTaradoForm {
   velocidadUnit: string;
@@ -28,15 +29,13 @@ interface InformacionTaradoForm {
 
 @Component({
   selector: 'inta-informacion-tarado',
-  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
+  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header: Icon + Title + Velocity unit selector -->
       <div class="flex items-center gap-2 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-4 !h-4">speed</mat-icon>
-        </div>
-        <h3 class="text-sm font-semibold text-slate-800 leading-tight flex-1 truncate">
+        <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE' | translate }}
         </h3>
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!w-20 shrink-0">
@@ -53,53 +52,53 @@ interface InformacionTaradoForm {
         <!-- Scrollable series cards -->
         <div
           style="scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;"
-          class="flex gap-3 overflow-x-auto flex-1 min-h-0"
+          class="flex gap-3 overflow-x-auto flex-1 min-h-0 border border-gray-200 rounded-xl"
           (scroll)="onScroll($event)"
           #carouselEl
         >
           @for (serie of seriesData(); track serie.numero) {
             <div
               style="scroll-snap-align: start; min-width: 240px; max-width: 320px;"
-              class="shrink-0 border border-slate-100 rounded-xl bg-slate-50 p-2.5 flex flex-col gap-1.5 justify-between"
+              class="shrink-0 border border-slate-100 rounded-sm bg-slate-50 p-2.5 m-2 flex flex-col gap-1.5 justify-between"
             >
               <!-- Card title: numero – nombre -->
-              <p class="text-[11px] font-semibold text-slate-700 truncate">
+              <p class="text-sm font-semibold text-gray-700 truncate">
                 {{ serie.numero }} &ndash; {{ serie.nombre ?? '&mdash;' }}
               </p>
 
               <!-- Data table: 4 columns -->
-              <div class="grid grid-cols-4 gap-x-1 text-[10px]">
+              <div class="grid grid-cols-4 gap-x-1 text-xs px-4">
                 <!-- Column headers -->
-                <span class="text-slate-400 font-medium">
+                <span class="text-gray-700 font-medium">
                   {{ 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.COL_ZONA' | translate }}
                 </span>
-                <span class="text-slate-400 font-medium text-right">
+                <span class="text-gray-700 font-medium text-right">
                   {{ 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.COL_VEL_NOM' | translate }}
                 </span>
-                <span class="text-slate-400 font-medium text-right">
+                <span class="text-gray-700 font-medium text-right">
                   {{ 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.COL_SIGMA_V' | translate }}
                 </span>
-                <span class="text-slate-400 font-medium text-right">
+                <span class="text-gray-700 font-medium text-right">
                   {{ 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.COL_WC' | translate }}
                 </span>
 
                 <!-- Data values -->
-                <span class="text-slate-700 font-medium mt-0.5">{{ serie.zona ?? '&mdash;' }}</span>
-                <span class="text-slate-700 font-medium mt-0.5 text-right">
+                <span class="text-gray-500 font-medium mt-0.5">{{ serie.zona ?? '&mdash;' }}</span>
+                <span class="text-gray-500 font-medium mt-0.5 text-right">
                   {{
                     serie.velocidadNominal !== null
                       ? serie.velocidadNominal + ' ' + formModel().velocidadUnit
                       : '&mdash;'
                   }}
                 </span>
-                <span class="text-slate-700 font-medium mt-0.5 text-right">
+                <span class="text-gray-500 font-medium mt-0.5 text-right">
                   {{
                     serie.desviacionVelocidadMax !== null
                       ? serie.desviacionVelocidadMax + ' ' + formModel().velocidadUnit
                       : '&mdash;'
                   }}
                 </span>
-                <span class="text-slate-700 font-medium mt-0.5 text-right">
+                <span class="text-gray-500 font-medium mt-0.5 text-right">
                   {{ serie.pesoPolvora !== null ? serie.pesoPolvora + ' g' : '&mdash;' }}
                 </span>
               </div>
@@ -113,13 +112,13 @@ interface InformacionTaradoForm {
             @for (serie of seriesData(); track serie.numero; let i = $index) {
               <button
                 type="button"
-                class="rounded-full transition-all duration-200"
+                class="rounded-full transition-all duration-200 w-2 h-2"
                 [class]="
-                  i === currentDotIndex() ? 'w-2 h-2 bg-violet-600' : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                  i === currentDotIndex() ? 'bg-[var(--inta-button)]' : 'bg-gray-200 hover:bg-gray-400'
                 "
                 (click)="scrollToCard(i)"
               >
-                ''
+                &nbsp;
               </button>
             }
           </div>

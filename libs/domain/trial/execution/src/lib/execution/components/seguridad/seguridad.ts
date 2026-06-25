@@ -13,6 +13,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
 
@@ -47,18 +48,17 @@ interface SeguridadSelectsModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-1.5">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">security</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight">
-            {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
-          </h3>
+        <div class="flex items-center gap-2">
+        <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+          {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
+        </h3>
         </div>
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -67,7 +67,7 @@ interface SeguridadSelectsModel {
 
       <!-- ── Serie + Disparo ─────────────────────────────────────────────── -->
       <div class="flex gap-2 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.SERIE_LABEL' | translate }}</mat-label>
           <mat-select [formField]="myForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -75,7 +75,7 @@ interface SeguridadSelectsModel {
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.DISPARO_LABEL' | translate }}</mat-label>
           <mat-select [formField]="myForm.disparo">
             @for (opt of disparoOptions(); track opt.value) {
@@ -90,18 +90,19 @@ interface SeguridadSelectsModel {
         <button
           mat-flat-button
           type="button"
+          class="!p-2 !h-auto"
           (click)="setCurrentShot()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CURRENT_SHOT_BTN' | translate }}
         </button>
-        <div class="flex items-center gap-1.5 ml-auto">
+        <div class="flex items-center gap-2 ml-auto">
           <button
             type="button"
             class="text-xs font-medium px-3 py-1 rounded-full transition-colors whitespace-nowrap cursor-pointer"
             [class]="
               activeTab() === 'alta-velocidad'
-                ? 'bg-violet-600 text-white'
-                : 'text-violet-600 border border-violet-300 bg-transparent'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-[var(--inta-button)]/50 text-white'
             "
             (click)="setTab('alta-velocidad')"
           >
@@ -112,8 +113,8 @@ interface SeguridadSelectsModel {
             class="text-xs font-medium px-3 py-1 rounded-full transition-colors whitespace-nowrap cursor-pointer"
             [class]="
               activeTab() === 'convencional'
-                ? 'bg-violet-600 text-white'
-                : 'text-violet-600 border border-violet-300 bg-transparent'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-[var(--inta-button)]/50 text-white'
             "
             (click)="setTab('convencional')"
           >
@@ -123,15 +124,15 @@ interface SeguridadSelectsModel {
       </div>
 
       <!-- Divider -->
-      <div class=""></div>
+      <div class="border-t-1 border-gray-200"></div>
 
       <!-- ── Scrollable content ──────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5">
+      <div intaReadonlyContent class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5 [&>div:not(:last-child)]:border-b-1 [&>div:not(:last-child)]:border-gray-200 [&>div:not(:last-child)]:pb-3">
         @if (activeTab() === 'convencional') {
           <!-- ── Prueba block ──────────────────────────────────────────── -->
-          <div class="flex flex-col gap-1.5">
-            <div class="grid grid-cols-3 gap-1.5">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-3 gap-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CAMARA_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.pruebaCamara">
                   @for (opt of camaraOptions(); track opt.value) {
@@ -139,7 +140,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.GRABADOR_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.pruebaGrabador">
                   @for (opt of grabadorOptions(); track opt.value) {
@@ -147,7 +148,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CANAL_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.pruebaCanal">
                   @for (opt of canalOptions(); track opt.value) {
@@ -156,7 +157,7 @@ interface SeguridadSelectsModel {
                 </mat-select>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full" class="small-textarea">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.PRUEBA_LABEL' | translate }}</mat-label>
               <textarea
                 matInput
@@ -171,9 +172,9 @@ interface SeguridadSelectsModel {
 
         @if (activeTab() === 'alta-velocidad') {
           <!-- ── Blanco block ──────────────────────────────────────────── -->
-          <div class="flex flex-col gap-1.5">
-            <div class="grid grid-cols-3 gap-1.5">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-3 gap-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CAMARA_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.blancoCamara">
                   @for (opt of camaraOptions(); track opt.value) {
@@ -181,7 +182,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.GRABADOR_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.blancoGrabador">
                   @for (opt of grabadorOptions(); track opt.value) {
@@ -189,7 +190,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CANAL_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.blancoCanal">
                   @for (opt of canalOptions(); track opt.value) {
@@ -198,7 +199,7 @@ interface SeguridadSelectsModel {
                 </mat-select>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full" class="small-textarea">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.BLANCO_LABEL' | translate }}</mat-label>
               <textarea
                 matInput
@@ -210,12 +211,10 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class=""></div>
-
           <!-- ── Boca block ────────────────────────────────────────────── -->
-          <div class="flex flex-col gap-1.5">
-            <div class="grid grid-cols-3 gap-1.5">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-3 gap-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CAMARA_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.bocaCamara">
                   @for (opt of camaraOptions(); track opt.value) {
@@ -223,7 +222,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.GRABADOR_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.bocaGrabador">
                   @for (opt of grabadorOptions(); track opt.value) {
@@ -231,7 +230,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CANAL_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.bocaCanal">
                   @for (opt of canalOptions(); track opt.value) {
@@ -240,7 +239,7 @@ interface SeguridadSelectsModel {
                 </mat-select>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full" class="small-textarea">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.BOCA_LABEL' | translate }}</mat-label>
               <textarea
                 matInput
@@ -252,12 +251,10 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class=""></div>
-
           <!-- ── Cierre block ──────────────────────────────────────────── -->
-          <div class="flex flex-col gap-1.5">
-            <div class="grid grid-cols-3 gap-1.5">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-3 gap-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CAMARA_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.cierreCamara">
                   @for (opt of camaraOptions(); track opt.value) {
@@ -265,7 +262,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.GRABADOR_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.cierreGrabador">
                   @for (opt of grabadorOptions(); track opt.value) {
@@ -273,7 +270,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CANAL_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.cierreCanal">
                   @for (opt of canalOptions(); track opt.value) {
@@ -282,7 +279,7 @@ interface SeguridadSelectsModel {
                 </mat-select>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full" class="small-textarea">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CIERRE_LABEL' | translate }}</mat-label>
               <textarea
                 matInput
@@ -294,12 +291,10 @@ interface SeguridadSelectsModel {
             </mat-form-field>
           </div>
 
-          <div class=""></div>
-
           <!-- ── Pique block ───────────────────────────────────────────── -->
-          <div class="flex flex-col gap-1.5">
-            <div class="grid grid-cols-3 gap-1.5">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <div class="flex flex-col gap-2">
+            <div class="grid grid-cols-3 gap-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CAMARA_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.piqueCamara">
                   @for (opt of camaraOptions(); track opt.value) {
@@ -307,7 +302,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.GRABADOR_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.piqueGrabador">
                   @for (opt of grabadorOptions(); track opt.value) {
@@ -315,7 +310,7 @@ interface SeguridadSelectsModel {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CANAL_LABEL' | translate }}</mat-label>
                 <mat-select [formField]="myForm.piqueCanal">
                   @for (opt of canalOptions(); track opt.value) {
@@ -324,7 +319,7 @@ interface SeguridadSelectsModel {
                 </mat-select>
               </mat-form-field>
             </div>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full" class="small-textarea">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.PIQUE_LABEL' | translate }}</mat-label>
               <textarea
                 matInput

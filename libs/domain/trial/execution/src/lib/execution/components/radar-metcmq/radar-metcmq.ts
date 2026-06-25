@@ -14,6 +14,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 interface RadarMetcmqForm {
   serie: string | null;
@@ -31,15 +32,14 @@ interface RadarMetcmqForm {
     MatSelectModule,
     MatTooltipModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header: Icon + Title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">check_circle</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate">
+      <div class="flex items-center gap-1.5 shrink-0 mb-2">
+        <ui-inta-icon name="checkCircle" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE' | translate }}
         </h3>
       </div>
@@ -72,7 +72,7 @@ interface RadarMetcmqForm {
       </div>
 
       <!-- Divider -->
-      <div class=""></div>
+      <div class="border-t-1 border-gray-200 mt-4"></div>
 
       <!-- Text output + Copy + Generar -->
       <div intaReadonlyContent class="flex-1 flex items-center gap-1.5 min-h-0">
@@ -89,21 +89,18 @@ interface RadarMetcmqForm {
             }
           </span>
           <button
-            mat-icon-button
             type="button"
-            class="!w-8 !h-8 shrink-0"
             [disabled]="!texto()"
             [matTooltip]="'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.COPY_TOOLTIP' | translate"
             (click)="copyTexto()"
           >
-            <mat-icon class="!text-[16px] !w-[16px] !h-[16px] text-slate-500">content_copy</mat-icon>
+            <ui-inta-icon name="copy" size="lg" />
           </button>
         </div>
 
         <button
           mat-flat-button
           type="button"
-          class="!bg-violet-600 !text-white !rounded-xl !h-10 !px-4 shrink-0"
           (click)="generateBulletin()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.GENERATE_BTN' | translate }}

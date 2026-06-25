@@ -112,9 +112,9 @@ describe('StockListFilterComponent', () => {
       expect(screen.getByText('COMMONS.SEARCH')).toBeTruthy();
     });
 
-    it('should call MunitionComponentStore.search() on init with pageSize 100', async () => {
+    it('should call MunitionComponentStore.search() on init with pageSize 100 and active true', async () => {
       const { munitionComponentStore } = await setup();
-      expect(munitionComponentStore.search).toHaveBeenCalledWith({ pageSize: 100 });
+      expect(munitionComponentStore.search).toHaveBeenCalledWith({ pageSize: 100, active: true });
     });
 
     it('should have the search button disabled initially (form is not dirty)', async () => {
@@ -226,19 +226,19 @@ describe('StockListFilterComponent', () => {
   describe('munitionComboOptions() computed', () => {
     it('should return empty array when munitionComponentStore has no items', async () => {
       const { component } = await setup();
-      expect(component.munitionComboOptions()).toEqual([]);
+      expect(component.munitionComponentStore.items()).toEqual([]);
     });
 
-    it('should return only MUNITION_COMPONENT category items from the store', async () => {
+    it('should return MUNITION and MUNITION_COMPONENT category items from the store', async () => {
       const { component, munitionComponentStore, fixture } = await setup();
       munitionComponentStore.items.set([
         { id: 'M-1', label: 'Munition', category: 'MUNITION', active: true, name: {}, observations: '' },
         { id: 'C-1', label: 'Component', category: 'MUNITION_COMPONENT', active: true, name: {}, observations: '' },
       ]);
       fixture.detectChanges();
-      const options = component.munitionComboOptions();
-      expect(options).toHaveLength(1);
-      expect(options[0].id).toBe('C-1');
+      const options = component.munitionComponentStore.items();
+      expect(options).toHaveLength(2);
+      expect(options[0].id).toBe('M-1');
     });
   });
 });

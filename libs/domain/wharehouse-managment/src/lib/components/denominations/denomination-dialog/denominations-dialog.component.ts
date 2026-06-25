@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -39,6 +40,7 @@ interface DenominationForm {
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
+    NoNegativeValuesDirective,
   ],
   providers: [MunitionComponentStore],
   template: `
@@ -99,10 +101,16 @@ interface DenominationForm {
               id="nominalWeight"
               type="number"
               matInput
+              libNoNegativeValues
               [formField]="form.weight"
               [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_PLACEHOLDER' | translate"
             />
           </mat-form-field>
+          @if (form.weight().errors()) {
+            @for (error of form.weight().errors(); track error.kind) {
+              <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+            }
+          }
         </div>
         <div>
           <label for="neq" class="block text-sm font-medium text-gray-700 mb-2">
@@ -220,7 +228,7 @@ export class DenominationsDialogComponent {
     required(f.name);
     required(f.munitionTypeId);
     required(f.weight);
-    min(f.weight, 0);
+    min(f.weight, 0.1);
   });
 
   constructor() {

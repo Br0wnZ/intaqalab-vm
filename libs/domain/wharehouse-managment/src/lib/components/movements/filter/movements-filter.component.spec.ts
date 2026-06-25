@@ -40,6 +40,7 @@ describe('MovementsFilterComponent', () => {
         { provide: MovementsListStore, useValue: mockMovementsStore },
         { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore },
       ],
+      componentInputs: { stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d' },
     });
     view.fixture.detectChanges();
     return { user, view, component: view.fixture.componentInstance };
@@ -76,10 +77,10 @@ describe('MovementsFilterComponent', () => {
       const formValues = {
         affectedNeq: 10,
         associatedFireTrialIds: ['x'],
-        dateTimeFrom: '',
-        timeFrom: '',
-        dateTimeTo: '',
-        timeTo: '',
+        dateTimeFrom: null,
+        timeFrom: null,
+        dateTimeTo: null,
+        timeTo: null,
         destinationMunitionDumpIds: ['y'],
         movementTypes: [],
         originMunitionDumpIds: ['z'],
@@ -97,6 +98,7 @@ describe('MovementsFilterComponent', () => {
         quantityMax: formValues.quantityMax,
         quantityMin: formValues.quantityMin,
         originMunitionDumpIds: formValues.originMunitionDumpIds,
+        stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d',
       };
       expect(mockMovementsStore.search).toHaveBeenCalledWith(expectedCriteria);
     });
@@ -106,10 +108,10 @@ describe('MovementsFilterComponent', () => {
       component.formModel.set({
         affectedNeq: 0,
         associatedFireTrialIds: [],
-        dateTimeFrom: '',
-        timeFrom: '',
-        dateTimeTo: '',
-        timeTo: '',
+        dateTimeFrom: null,
+        timeFrom: null,
+        dateTimeTo: null,
+        timeTo: null,
         destinationMunitionDumpIds: [],
         movementTypes: [],
         originMunitionDumpIds: [],
@@ -118,19 +120,20 @@ describe('MovementsFilterComponent', () => {
         userId: '',
       });
       component.search();
-      expect(mockMovementsStore.search).toHaveBeenCalledWith({});
+      expect(mockMovementsStore.search).toHaveBeenCalledWith({ stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d' });
     });
 
     it('should combine dateTimeFrom with timeFrom when both are provided', async () => {
       const { component } = await setup();
       const dateFrom = '2026-02-01T00:00:00Z';
       const hourFrom = '2025-01-05T12:05:00Z';
-      component.filterForm.dateTimeFrom().setControlValue(new Date(dateFrom));
-      component.filterForm.timeFrom().setControlValue(new Date(hourFrom));
+      component.form.dateTimeFrom().setControlValue(new Date(dateFrom));
+      component.form.timeFrom().setControlValue(new Date(hourFrom));
       component.search();
 
       const expectedCriteria: MovementListSearch = {
         dateTimeFrom: '2026-02-01T12:05:00Z',
+        stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d',
       };
       expect(mockMovementsStore.search).toHaveBeenCalledWith(expectedCriteria);
     });
@@ -139,12 +142,13 @@ describe('MovementsFilterComponent', () => {
       const { component } = await setup();
       const dateTo = '2027-02-01T00:00:00Z';
       const hourTo = '2027-01-05T11:03:00Z';
-      component.filterForm.dateTimeTo().setControlValue(new Date(dateTo));
-      component.filterForm.timeTo().setControlValue(new Date(hourTo));
+      component.form.dateTimeTo().setControlValue(new Date(dateTo));
+      component.form.timeTo().setControlValue(new Date(hourTo));
       component.search();
 
       const expectedCriteria: MovementListSearch = {
         dateTimeTo: '2027-02-01T11:03:00Z',
+        stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d',
       };
       expect(mockMovementsStore.search).toHaveBeenCalledWith(expectedCriteria);
     });

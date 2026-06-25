@@ -130,17 +130,23 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Usuario planificación -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate }}</mat-label>
-            <mat-select
-              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
-              [formField]="generalDataForm.planningUser"
-            >
-              @for (opt of store.users(); track opt.id) {
-                <mat-option [value]="opt.id">{{ opt.fullname }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          <div class="flex flex-col">
+            <label for="planningUser" class="block text-sm font-medium mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-select
+                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
+                id="planningUser"
+                [aria-label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
+                [formField]="generalDataForm.planningUser"
+              >
+                @for (opt of store.users(); track opt.id) {
+                  <mat-option [value]="opt.id">{{ opt.fullname }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
 
           <!-- Fechas programadas (solo lectura) -->
           <inta-planning-scheduled-dates [trialId]="store.fireTrialId()!" />
@@ -210,7 +216,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
 
         <!-- Información adicional del cliente -->
         <div>
-          <label for="additionalInfo" class="block text-sm font-medium text-gray-700 my-4">
+          <label for="additionalInfo" class="block text-sm font-medium text-gray-700 mt-4 mb-2">
             {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
@@ -227,7 +233,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
 
         <!-- Parámetros de control de fechas -->
         <div>
-          <span class="block text-sm font-medium text-gray-700 mb-4 border-b border-gray-300 pb-2">
+          <span class="block text-sm font-medium text-gray-700 mb-2 border-b border-gray-300 pb-2">
             {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DATE_PARAMS_CONTROL' | translate }}
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

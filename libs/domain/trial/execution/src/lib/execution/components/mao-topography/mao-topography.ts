@@ -37,8 +37,8 @@ interface MaoTopographySelectForm {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-4 overflow-auto">
       <!-- Header -->

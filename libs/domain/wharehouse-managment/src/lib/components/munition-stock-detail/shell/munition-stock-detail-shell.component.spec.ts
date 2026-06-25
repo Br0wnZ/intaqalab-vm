@@ -215,7 +215,9 @@ describe('MunitionStockDetailShellComponent', () => {
     it('should navigate to movements URL when movements() is called', async () => {
       const { component } = await setup();
       component.movements();
-      expect(router.navigateByUrl).toHaveBeenCalledWith('/wharehouse-managment/movements');
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/wharehouse-managment/movements', {
+        state: { stockId: component.id() },
+      });
     });
 
     it('should toggle opened signal when actions menu is opened/closed', async () => {

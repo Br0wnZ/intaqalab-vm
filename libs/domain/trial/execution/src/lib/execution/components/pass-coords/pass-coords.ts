@@ -11,6 +11,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 interface PassCoordsSelectForm {
   serie: string | null;
@@ -19,53 +20,57 @@ interface PassCoordsSelectForm {
 
 @Component({
   selector: 'inta-pass-coords',
-  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
+  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
   template: `
-    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
+    <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2">
       <!-- Header row 1: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center size-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">grid_on</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight">
+      <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
+        <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Header row 2: selectors -->
-      <div class="grid grid-cols-2 gap-2 shrink-0 mt-4">
-        <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.SERIE_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectForm.serie">
-            @for (opt of serieOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+      <div class="shrink-0 flex flex-col gap-1.5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-2">
+          <!-- Serie -->
+          <div class="flex flex-col gap-0.5">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.SERIE_PLACEHOLDER' | translate }}</mat-label>
+              <mat-select [formField]="selectForm.serie">
+                @for (opt of serieOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-        <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISPARO_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectForm.disparo">
-            @for (opt of disparoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+          <!-- Disparo -->
+          <div class="flex flex-col gap-0.5">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISPARO_PLACEHOLDER' | translate }}</mat-label>
+              <mat-select [formField]="selectForm.disparo">
+                @for (opt of disparoOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
       </div>
 
       <!-- Divider -->
-      <div class=" my-4"></div>
+      <div class="h-px bg-slate-100 mb-2"></div>
 
       <!-- Output fields: 2 cols × 3 rows -->
       <div intaReadonlyContent class="flex-1 grid grid-cols-2 gap-x-2 gap-y-4 min-h-0 content-start">
         <!-- Altura boca-bola pieza -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.ALTURA_BOCA_BOLA_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">{{ formatValue(alturaBocaBolaPieza()) }}</span>
             <span class="text-xs font-medium text-slate-400">m</span>
           </div>
@@ -73,10 +78,10 @@ interface PassCoordsSelectForm {
 
         <!-- Distancia geométrica boca-bola -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISTANCIA_GEOMETRICA_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">{{ formatValue(distanciaGeometricaBocaBola()) }}</span>
             <span class="text-xs font-medium text-slate-400">m</span>
           </div>
@@ -84,10 +89,10 @@ interface PassCoordsSelectForm {
 
         <!-- Distancia cámara frontal bola -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISTANCIA_CAMARA_FRONTAL_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">{{ formatValue(distanciaCamaraFrontalBola()) }}</span>
             <span class="text-xs font-medium text-slate-400">m</span>
           </div>
@@ -95,10 +100,10 @@ interface PassCoordsSelectForm {
 
         <!-- Distancia cámara transversal bola -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISTANCIA_CAMARA_TRANSVERSAL_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">{{ formatValue(distanciaCamaraTransversalBola()) }}</span>
             <span class="text-xs font-medium text-slate-400">m</span>
           </div>
@@ -106,10 +111,10 @@ interface PassCoordsSelectForm {
 
         <!-- Incremento de cota cámara frontal bola -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.INCREM_COTA_FRONTAL_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">
               {{ formatValue(incrementoCotaCamaraFrontalBola()) }}
             </span>
@@ -119,10 +124,10 @@ interface PassCoordsSelectForm {
 
         <!-- Incremento de cota cámara transversal bola -->
         <div class="flex flex-col gap-0.5">
-          <span class="text-[10px] font-medium text-slate-500 leading-tight">
+          <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.INCREM_COTA_TRANSVERSAL_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-9 px-3 rounded-lg border border-slate-100 bg-slate-50">
+          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-slate-100 bg-slate-50">
             <span class="text-sm text-slate-700 tabular-nums">
               {{ formatValue(incrementoCotaCamaraTransversalBola()) }}
             </span>

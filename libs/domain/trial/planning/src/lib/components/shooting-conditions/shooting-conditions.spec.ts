@@ -279,7 +279,7 @@ describe('ShootingConditionsComponent', () => {
       expect(component.displayedColumns).toContain('range');
 
       expect(component.displayedColumns).toContain('powderWeight');
-      expect(component.displayedColumns).toContain('projectWeight');
+      expect(component.displayedColumns).toContain('projectileWeight');
       expect(component.displayedColumns).toContain('functioningHeight');
       expect(component.displayedColumns).toContain('observations');
     });

@@ -39,8 +39,8 @@ interface JltMaoSelectForm {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-purple-200 bg-white p-2 flex flex-col gap-1.5 overflow-auto">
       <!-- Header -->
@@ -120,7 +120,10 @@ interface JltMaoSelectForm {
       <div class=""></div>
 
       <!-- Fields: 5 columns × 2 rows -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 min-h-0 content-start">
+      <div
+        intaReadonlyContent
+        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 min-h-0 content-start"
+      >
         <!-- ── Row 1 ─────────────────────────────────────────────────────── -->
 
         <!-- Piqueta (selector) -->

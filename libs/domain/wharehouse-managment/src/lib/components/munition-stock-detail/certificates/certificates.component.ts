@@ -13,12 +13,13 @@ import { UiDialogService } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
 import { MunitionsStockCertificatesStore } from '../../../+state/munitions-stock-certificates.store';
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
 import { LinkCertificatesDialogComponent } from '../link-dialog/link-certificate-dialog.component';
 import { CertificatesFilePicker } from './certificates-file-picker/certificates-file-picker';
 
-const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
+const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components'];
 
 @Component({
   selector: 'inta-certificates',
@@ -48,7 +49,7 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
     <!-- <pre> {{ contextComponents() | json }}</pre> -->
 
     <div class="w-full">
-      @if (!store.totalElements()) {
+      @if (!store.totalElements() && munitionStockDetailStore.item()?.status !== 'RETIRED') {
         <div class="w-full">
           <label for="documentacion-input" class="block text-sm font-medium text-gray-700 mb-2">
             {{ 'TRIAL_DOCS.LABEL' | translate }}
@@ -87,12 +88,14 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
               <h3 class="text-base font-medium text-gray-900">
                 {{ 'WHAREHOUSE_MANAGMENT.CERTIFICATES.INTRO' | translate }}
               </h3>
-              <div class="flex items-center gap-4">
-                <button mat-flat-button (click)="openFilePickerDialog()">
-                  <mat-icon>add</mat-icon>
-                  {{ 'WHAREHOUSE_MANAGMENT.CERTIFICATES.BUTTON_ADD' | translate }}
-                </button>
-              </div>
+              @if (munitionStockDetailStore.item()?.status !== 'RETIRED') {
+                <div class="flex items-center gap-4">
+                  <button mat-flat-button (click)="openFilePickerDialog()">
+                    <mat-icon>add</mat-icon>
+                    {{ 'WHAREHOUSE_MANAGMENT.CERTIFICATES.BUTTON_ADD' | translate }}
+                  </button>
+                </div>
+              }
             </div>
           </div>
 
@@ -159,8 +162,8 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
                 </td>
               </ng-container>
 
-              <!-- Columna Acciones -->
-              <ng-container matColumnDef="acciones">
+              <!-- Columna Actions -->
+              <ng-container matColumnDef="actions">
                 <th
                   *matHeaderCellDef
                   mat-header-cell
@@ -187,9 +190,9 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
                 </td>
               </ng-container>
 
-              <tr *matHeaderRowDef="displayedColumns" mat-header-row class="bg-gray-50"></tr>
+              <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="bg-gray-50"></tr>
               <tr
-                *matRowDef="let row; columns: displayedColumns"
+                *matRowDef="let row; columns: displayedColumns()"
                 mat-row
                 class="hover:bg-gray-50 transition-colors border-b border-gray-100"
               ></tr>
@@ -205,10 +208,18 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components', 'acciones'];
 })
 export class CertificatesComponent {
   readonly store = inject(MunitionsStockCertificatesStore);
+  readonly munitionStockDetailStore = inject(MunitionsStockDetailStore);
 
   stockDetail = input.required<MunitionDetailResponseModel>();
   contextComponents = input.required<{ id: string; name: string }[]>();
-  displayedColumns = DISPLAYED_COLUMNS;
+  readonly displayedColumns = computed(() => {
+    const hasRetiredStatus = this.munitionStockDetailStore.item()?.status === 'RETIRED';
+    const columns = [...DISPLAYED_COLUMNS];
+
+    if (!hasRetiredStatus) columns.push('actions');
+
+    return columns;
+  });
   #dialog = inject(MatDialog);
 
   list = computed(() => {

@@ -13,7 +13,6 @@ let mockDialog: ReturnType<typeof createMockMatDialog>;
 let mockDialogRef: { close: ReturnType<typeof vi.fn> };
 async function setup() {
   mockDialogRef = { close: vi.fn() };
-  const sortPaginationChanges = vi.fn();
   mockDialog = createMockMatDialog({
     defaultResult: null,
   });
@@ -28,12 +27,12 @@ async function setup() {
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
-      { provide: MAT_DIALOG_DATA, useValue: { item: { denomination: { id: 1, name: 'name' }, quantity: 1000 } } },
+      { provide: MAT_DIALOG_DATA, useValue: { items: [{ denomination: { id: 1, name: 'name' }, quantity: 1000 }] } },
     ],
   });
   const fixture = renderResult.fixture;
   fixture.detectChanges();
-  return { fixture, sortPaginationChanges };
+  return { fixture };
 }
 describe('TransferDialogComponent', () => {
   afterEach(() => {

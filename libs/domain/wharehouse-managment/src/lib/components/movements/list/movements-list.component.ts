@@ -40,7 +40,7 @@ const DEFAULT_COLUMNS = [
     MatCheckboxModule,
   ],
   template: `
-    <inta-movements-filter />
+    <inta-movements-filter [stockId]="stockId" />
 
     <div class="inta-bg-white rounded-lg shadow-sm overflow-hidden rounded-t-none">
       <div class="overflow-x-auto">
@@ -185,15 +185,19 @@ export class MovementsListComponent {
   pageSize = signal(10);
   sortField = signal<string | undefined>(undefined);
   sortDirection = signal<'asc' | 'desc' | ''>('');
+  stockId = '';
 
   constructor() {
+    this.stockId = history.state.stockId;
+
     effect(() => {
       const page = this.pageIndex() + 1;
       const pageSize = this.pageSize();
       const sortDirection = this.sortDirection();
       const sortField = sortDirection ? this.sortField() : undefined;
+      const stockId = this.stockId;
 
-      this.store.search({ page, pageSize, sortDirection, sortField });
+      this.store.search({ page, pageSize, sortDirection, sortField, stockId });
     });
   }
 

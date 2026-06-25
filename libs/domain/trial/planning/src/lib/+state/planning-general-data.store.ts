@@ -65,6 +65,8 @@ export const PlanningGeneralDataStore = signalStore(
 
         shootingConditions: computed(() => shootingConditionsService.conditionsResource.value()?.series),
 
+        conditionsUnits: computed(() => shootingConditionsService.conditionsResource.value()?.units ?? null),
+
         isLoadingPlanningInfo: computed(() => dataPlanningService.getPlanningDataResource.isLoading()),
 
         planningInfoError: computed(() => dataPlanningService.getPlanningDataResource.error()),

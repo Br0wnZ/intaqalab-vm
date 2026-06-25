@@ -21,6 +21,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 interface GrubbsFilterForm {
   serie: string | null;
@@ -29,22 +30,20 @@ interface GrubbsFilterForm {
 
 @Component({
   selector: 'inta-grubbs-criterion',
-  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
+  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header: icon + title -->
       <div class="flex items-center gap-2 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">format_list_bulleted</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight">
+        <ui-inta-icon name="list" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Filters: serie + variable -->
-      <div class="grid grid-cols-2 gap-2 shrink-0">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+      <div class="grid grid-cols-2 gap-2 shrink-0 my-2">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.SERIE_LABEL' | translate }}</mat-label>
           <mat-select [formField]="filterForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -53,7 +52,7 @@ interface GrubbsFilterForm {
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.VARIABLE_LABEL' | translate }}</mat-label>
           <mat-select [formField]="filterForm.variable">
             @for (opt of variableOptions(); track opt.value) {
@@ -74,11 +73,11 @@ interface GrubbsFilterForm {
           </div>
         } @else if (!hasOutliers()) {
           <!-- State 3: no outliers detected -->
-          <div class="flex-1 flex items-center justify-center rounded-xl bg-slate-50 min-h-[80px]">
+          <div class="flex-1 flex items-center justify-center rounded-xl bg-slate-50">
             <span
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100"
+              class="inline-flex items-center gap-1.5 p-2 rounded-full bg-green-50 text-green-700 text-sm font-medium"
             >
-              <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">check</mat-icon>
+              <ui-inta-icon name="checkCircle" />
               {{ 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.NO_OUTLIERS_MSG' | translate }}
             </span>
           </div>
@@ -88,13 +87,15 @@ interface GrubbsFilterForm {
             @for (outlier of outliers(); track outlier.shotId) {
               <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
                 <!-- Icon + label -->
-                <mat-icon class="!text-[20px] !w-[20px] !h-[20px] text-rose-400 shrink-0">cancel</mat-icon>
-                <span class="text-sm font-medium text-slate-700 flex-1 truncate">{{ outlier.label }}</span>
+                <div class="rounded-full p-1 flex justify-center items-center bg-red-100">
+                  <ui-inta-icon name="closeCircle" size="md" color="var(--inta-error)" />
+                </div>
+                <span class="text-sm font-normal text-gray-600 flex-1 truncate">{{ outlier.label }}</span>
                 <!-- Mantener -->
                 <button
                   type="button"
-                  class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
-                  [class.bg-violet-600]="!outlier.excluded"
+                  class="rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+                  [class.bg-[var(--inta-button)]]="!outlier.excluded"
                   [class.text-white]="!outlier.excluded"
                   [class.bg-white]="outlier.excluded"
                   [class.text-slate-600]="outlier.excluded"
@@ -107,8 +108,8 @@ interface GrubbsFilterForm {
                 <!-- Eliminar -->
                 <button
                   type="button"
-                  class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
-                  [class.bg-violet-600]="outlier.excluded"
+                  class="rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+                  [class.bg-[var(--inta-button)]]="outlier.excluded"
                   [class.text-white]="outlier.excluded"
                   [class.bg-white]="!outlier.excluded"
                   [class.text-slate-600]="!outlier.excluded"

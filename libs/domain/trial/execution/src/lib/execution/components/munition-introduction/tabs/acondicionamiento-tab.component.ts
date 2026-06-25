@@ -5,11 +5,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroAcondicionamientoState } from '../../../../+state/execution.store';
 import type { AcondFormModel } from '../munition-introduction';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 @Component({
   selector: 'inta-munition-acondicionamiento-tab',
@@ -21,8 +21,8 @@ import { IntaIconComponent } from "@intaqalab/ui";
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="flex-1 grid grid-cols-2 lg:grid-cols-5 gap-x-2 gap-y-1 min-h-0 content-start">
       <!-- Componente -->

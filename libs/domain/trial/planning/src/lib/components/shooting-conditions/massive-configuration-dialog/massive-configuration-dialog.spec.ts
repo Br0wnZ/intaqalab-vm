@@ -54,6 +54,7 @@ describe('MassiveConfigurationDialog', () => {
       { id: 'serie-1', name: 'Serie 1' },
       { id: 'serie-2', name: 'Serie 2' },
     ],
+    conditionsUnits: () => ({ velocity: 'm/s', pressure: 'bar' }),
   };
 
   const renderDialog = async (dialogRefMock = createFullMockDialogRef()) => {

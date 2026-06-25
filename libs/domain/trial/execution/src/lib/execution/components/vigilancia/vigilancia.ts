@@ -13,6 +13,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 /** Computes the qualification string from a VigilanciaRow */
 function computeCalificacion(row: VigilanciaRow): string | null {
@@ -48,21 +49,19 @@ interface VigilanciaTableRow {
 
 @Component({
   selector: 'inta-vigilancia',
-  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule],
+  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header -->
       <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">checklist</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight flex-1 truncate">
+        <ui-inta-icon name="trello" size="xl" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Controls row -->
-      <div class="flex items-center gap-1.5 shrink-0">
+      <div class="flex items-center gap-1.5 shrink-0 my-1">
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 min-w-0">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.SERIE_LABEL' | translate }}</mat-label>
           <mat-select
@@ -95,8 +94,7 @@ interface VigilanciaTableRow {
         </mat-form-field>
 
         <button
-          mat-mini-fab
-          class="!bg-purple-600 !text-white !shadow-none !rounded-xl !flex !items-center !justify-center shrink-0"
+          mat-flat-button color="primary" class="!px-2.5 !min-w-auto"
           [disabled]="refreshing()"
           [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ACTUALIZAR_BTN' | translate"
           (click)="onActualizar()"
@@ -104,40 +102,40 @@ interface VigilanciaTableRow {
           @if (refreshing()) {
             <span class="block size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
           } @else {
-            <mat-icon>refresh</mat-icon>
+            <ui-inta-icon name="update" size="xl" />
           }
         </button>
       </div>
 
       <!-- Last checked -->
       @if (lastChecked()) {
-        <p class="text-[10px] text-slate-400 shrink-0 truncate">
+        <p class="text-xs text-slate-400 shrink-0 truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.LAST_CHECKED' | translate }}:
           {{ lastChecked() | date: 'HH:mm:ss' }}
         </p>
       }
 
       <!-- Table -->
-      <div intaReadonlyContent class="flex-1 overflow-auto min-h-0">
-        <table class="w-full text-[10px] border-collapse table-fixed">
+      <div intaReadonlyContent class="flex-1 overflow-auto min-h-0 border rounded-lg border-gray-200">
+        <table class="w-full text-xs border-collapse table-fixed">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-              <th class="text-left font-semibold text-slate-500 py-1.5 px-1.5 w-[22%]">
+              <th class="text-left font-medium text-gray-600 py-1.5 px-1.5 w-[22%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_PROPIEDAD' | translate }}
               </th>
-              <th class="text-right font-semibold text-slate-500 py-1.5 px-1 w-[14%]">
+              <th class="text-right font-medium text-gray-600 py-1.5 px-1 w-[14%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_UTIL1_MIN' | translate }}
               </th>
-              <th class="text-right font-semibold text-slate-500 py-1.5 px-1 w-[14%]">
+              <th class="text-right font-medium text-gray-600 py-1.5 px-1 w-[14%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_UTIL1_MAX' | translate }}
               </th>
-              <th class="text-right font-semibold text-slate-500 py-1.5 px-1 w-[14%]">
+              <th class="text-right font-medium text-gray-600 py-1.5 px-1 w-[14%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_INUTILMIN' | translate }}
               </th>
-              <th class="text-right font-semibold text-slate-500 py-1.5 px-1 w-[14%]">
+              <th class="text-right font-medium text-gray-600 py-1.5 px-1 w-[14%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_INUTILMAX' | translate }}
               </th>
-              <th class="text-right font-semibold text-slate-500 py-1.5 px-1 w-[22%]">
+              <th class="text-right font-medium text-gray-600 py-1.5 px-1 w-[22%]">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.COL_CALIFICACION' | translate }}
               </th>
             </tr>
@@ -145,19 +143,19 @@ interface VigilanciaTableRow {
           <tbody>
             @for (row of tableRows(); track row.labelKey) {
               <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                <td class="py-1.5 px-1.5 font-medium text-slate-700 truncate">
+                <td class="py-1.5 px-1.5 font-normal text-gray-600 text-sm truncate">
                   {{ row.labelKey | translate }}
                 </td>
-                <td class="py-1.5 px-1 text-right text-slate-600">
+                <td class="py-1.5 px-1 text-right text-gray-600">
                   {{ row.util1min !== null ? row.util1min : '–' }}
                 </td>
-                <td class="py-1.5 px-1 text-right text-slate-600">
+                <td class="py-1.5 px-1 text-right text-gray-600">
                   {{ row.util1max !== null ? row.util1max : '–' }}
                 </td>
-                <td class="py-1.5 px-1 text-right text-slate-600">
+                <td class="py-1.5 px-1 text-right text-gray-600">
                   {{ row.inutilmin !== null ? row.inutilmin : '–' }}
                 </td>
-                <td class="py-1.5 px-1 text-right text-slate-600">
+                <td class="py-1.5 px-1 text-right text-gray-600">
                   {{ row.inutilmax !== null ? row.inutilmax : '–' }}
                 </td>
                 <td class="py-1.5 px-1 text-right">

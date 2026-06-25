@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
 import {
+  getEquipmentSelectorState,
+  updateEquipmentSelectorState,
+} from '../fixtures/execution/equipment-selector-store';
+import {
   approvePlanning,
   bumpPlanningVersion,
   getCountdownState,
@@ -175,5 +179,32 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/pro
   }
 
   const updated = setProfileReadiness(fireTrialId, profile as never, seriesReadiness as never);
+  res.status(200).json(updated);
+});
+
+// ==========================================
+// EQUIPMENT SELECTOR
+// ==========================================
+
+// Contrato GET selector de equipos
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {
+  const data = getEquipmentSelectorState(req.params['fireTrialId']);
+  res.status(200).json(data);
+});
+
+// Contrato PUT selector de equipos
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {
+  const equipments = req.body?.equipments;
+
+  if (!Array.isArray(equipments)) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "El campo 'equipments' es obligatorio y debe ser un array",
+    });
+    return;
+  }
+
+  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], { equipments });
   res.status(200).json(updated);
 });

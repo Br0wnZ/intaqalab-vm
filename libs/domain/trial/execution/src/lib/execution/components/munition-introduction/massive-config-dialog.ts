@@ -5,10 +5,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 export interface MassiveConfigDialogData {
   camaraLabel: string;
@@ -38,8 +38,8 @@ export interface MassiveConfigDialogResult {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>
@@ -52,21 +52,21 @@ export interface MassiveConfigDialogResult {
       <div class="flex flex-col gap-3 w-full">
         <!-- Series (full width, multi-select) -->
         <div>
-        <mat-label class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_LABEL' | translate }}
-        </mat-label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-select
-            multiple
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_PLACEHOLDER' | translate"
-            [value]="selectedSeries()"
-            (valueChange)="selectedSeries.set($event)"
-          >
-            @for (opt of data.serieOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_LABEL' | translate }}
+          </mat-label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-select
+              multiple
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_PLACEHOLDER' | translate"
+              [value]="selectedSeries()"
+              (valueChange)="selectedSeries.set($event)"
+            >
+              @for (opt of data.serieOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
 
         <!-- Componente + Equipo -->

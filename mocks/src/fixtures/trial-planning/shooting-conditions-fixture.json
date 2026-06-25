@@ -1,4 +1,16 @@
 {
+  "units": {
+    "distance": "M",
+    "orientation": "DEGREES",
+    "targetInclination": "DEGREES",
+    "elevation": "DEGREES",
+    "angle": "DEGREES",
+    "range": "M",
+    "functioningHeight": "M",
+    "nominalSpeed": "M_S",
+    "powderWeight": "KG",
+    "projectileWeight": "KG"
+  },
   "series": [
     {
       "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",

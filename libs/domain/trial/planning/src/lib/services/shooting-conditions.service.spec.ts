@@ -103,7 +103,7 @@ describe('ShootingConditionsService', () => {
             functioningHeight: 50,
             nominalSpeed: 0,
             powderWeight: 3.5,
-            projectWeight: 0,
+            projectileWeight: 0,
             observations: 'Test observation',
           },
         ],
@@ -140,6 +140,7 @@ describe('ShootingConditionsService', () => {
           functioningHeight: null,
           nominalSpeed: null,
           powderWeight: null,
+          projectileWeight: null,
         },
         series: [],
       });

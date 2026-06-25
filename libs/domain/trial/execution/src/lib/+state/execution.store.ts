@@ -1,9 +1,10 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject } from '@angular/core';
 import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
-import type { WidgetId } from '../execution/models';
+import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup, WidgetId } from '../execution/models';
+import { EquipmentMagnitudeTagEnum, LEGACY_CATEGORY_TO_EQUIPMENT_TYPE } from '../execution/models';
 import { ExecutionService } from '../services/execution.service';
 
 export interface TechUnitStatus {
@@ -292,13 +293,7 @@ export interface MunitionIntroLoteOption {
   denominacionId: string;
 }
 
-/** Selección de un equipo en el diálogo selector de equipos */
-export interface EquipmentItemSelection {
-  itemId: string;
-  categoryId: string;
-  series: string[];
-  disparos: string[];
-}
+// EquipmentItemSelection is imported from execution/models
 
 /** Pestañas del widget Seguimiento */
 export type SeguimientoTab = 'velocidades' | 'p-manom' | 'p-pz-cie' | 'p-pz-int' | 'p-pz-cul' | 'p-ipg';
@@ -382,11 +377,13 @@ export interface InformacionTaradoState {
 
 /** Estado del diálogo selector de equipos */
 export interface EquipmentSelectorState {
-  categories: Array<{ id: string; label: string; maxSelection: number }>;
-  items: Array<{ id: string; label: string; categoryId: string }>;
+  categories: Array<{ id: string; label: string; maxSelection: number; equipmentType?: string }>;
+  items: Array<{ id: string; label: string; categoryId: string; equipmentType?: string }>;
+  equipments: EquipmentMagnitudeSelectionGroup[];
   selections: EquipmentItemSelection[];
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];
+  serieDisparoMap?: Record<string, string[]>;
 }
 
 /** Punto de datos de Tarado (X=Wc/g, Y=V0c) ordenados por Disparo */
@@ -1372,37 +1369,130 @@ const initialState: ExecutionState = {
       { id: 'antena', label: 'Antena', maxSelection: 1 },
     ],
     items: [
-      { id: 'rd-2356', label: 'Radar doppler 2356', categoryId: 'radar-dopler' },
-      { id: 'rd-9876', label: 'Radar doppler 9876', categoryId: 'radar-dopler' },
-      { id: 'rd-4321', label: 'Radar doppler 4321', categoryId: 'radar-dopler' },
-      { id: 'rd-5566', label: 'Radar doppler 5566', categoryId: 'radar-dopler' },
-      { id: 'rd-8899', label: 'Radar doppler 8899', categoryId: 'radar-dopler' },
-      { id: 'sp-01', label: 'Sensor Piezoelectrico 01', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-02', label: 'Sensor Piezoelectrico 02', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-03', label: 'Sensor Piezoelectrico 03', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-04', label: 'Sensor Piezoelectrico 04', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-05', label: 'Sensor Piezoelectrico 05', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-06', label: 'Sensor Piezoelectrico 06', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-07', label: 'Sensor Piezoelectrico 07', categoryId: 'sensor-piezoelectrico' },
-      { id: 'sp-08', label: 'Sensor Piezoelectrico 08', categoryId: 'sensor-piezoelectrico' },
-      { id: 'amp-01', label: 'Amplificador 01', categoryId: 'amplificador' },
-      { id: 'amp-02', label: 'Amplificador 02', categoryId: 'amplificador' },
-      { id: 'amp-03', label: 'Amplificador 03', categoryId: 'amplificador' },
-      { id: 'amp-04', label: 'Amplificador 04', categoryId: 'amplificador' },
-      { id: 'amp-05', label: 'Amplificador 05', categoryId: 'amplificador' },
-      { id: 'amp-06', label: 'Amplificador 06', categoryId: 'amplificador' },
-      { id: 'amp-07', label: 'Amplificador 07', categoryId: 'amplificador' },
-      { id: 'amp-08', label: 'Amplificador 08', categoryId: 'amplificador' },
-      { id: 'amp-09', label: 'Amplificador 09', categoryId: 'amplificador' },
-      { id: 'amp-10', label: 'Amplificador 10', categoryId: 'amplificador' },
-      { id: 'ant-01', label: 'Antena 01', categoryId: 'antena' },
-      { id: 'ant-02', label: 'Antena 02', categoryId: 'antena' },
-      { id: 'ant-03', label: 'Antena 03', categoryId: 'antena' },
-      { id: 'ant-04', label: 'Antena 04', categoryId: 'antena' },
-      { id: 'ant-05', label: 'Antena 05', categoryId: 'antena' },
-      { id: 'ant-06', label: 'Antena 06', categoryId: 'antena' },
-      { id: 'ant-07', label: 'Antena 07', categoryId: 'antena' },
-      { id: 'ant-08', label: 'Antena 08', categoryId: 'antena' },
+      {
+        id: 'rd-2356',
+        label: 'Radar doppler 2356',
+        categoryId: 'radar-dopler',
+        equipmentType: 'DOPPLER_RADAR',
+      },
+      {
+        id: 'rd-9876',
+        label: 'Radar doppler 9876',
+        categoryId: 'radar-dopler',
+        equipmentType: 'DOPPLER_RADAR',
+      },
+      {
+        id: 'rd-4321',
+        label: 'Radar doppler 4321',
+        categoryId: 'radar-dopler',
+        equipmentType: 'DOPPLER_RADAR',
+      },
+      {
+        id: 'rd-5566',
+        label: 'Radar doppler 5566',
+        categoryId: 'radar-dopler',
+        equipmentType: 'DOPPLER_RADAR',
+      },
+      {
+        id: 'rd-8899',
+        label: 'Radar doppler 8899',
+        categoryId: 'radar-dopler',
+        equipmentType: 'DOPPLER_RADAR',
+      },
+      {
+        id: 'sp-01',
+        label: 'Sensor Piezoelectrico 01',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-02',
+        label: 'Sensor Piezoelectrico 02',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-03',
+        label: 'Sensor Piezoelectrico 03',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-04',
+        label: 'Sensor Piezoelectrico 04',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-05',
+        label: 'Sensor Piezoelectrico 05',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-06',
+        label: 'Sensor Piezoelectrico 06',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-07',
+        label: 'Sensor Piezoelectrico 07',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      {
+        id: 'sp-08',
+        label: 'Sensor Piezoelectrico 08',
+        categoryId: 'sensor-piezoelectrico',
+        equipmentType: 'PIEZOELECTRIC_SENSOR',
+      },
+      { id: 'amp-01', label: 'Amplificador 01', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-02', label: 'Amplificador 02', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-03', label: 'Amplificador 03', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-04', label: 'Amplificador 04', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-05', label: 'Amplificador 05', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-06', label: 'Amplificador 06', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-07', label: 'Amplificador 07', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-08', label: 'Amplificador 08', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-09', label: 'Amplificador 09', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'amp-10', label: 'Amplificador 10', categoryId: 'amplificador', equipmentType: 'AMPLIFIER' },
+      { id: 'ant-01', label: 'Antena 01', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-02', label: 'Antena 02', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-03', label: 'Antena 03', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-04', label: 'Antena 04', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-05', label: 'Antena 05', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-06', label: 'Antena 06', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-07', label: 'Antena 07', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      { id: 'ant-08', label: 'Antena 08', categoryId: 'antena', equipmentType: 'ANTENNA' },
+      {
+        id: 'son-01',
+        label: 'Sonómetro Norsonic 140 / SN001',
+        categoryId: 'sonometro',
+        equipmentType: 'SOUND_LEVEL_METER',
+      },
+      {
+        id: 'son-02',
+        label: 'Sonómetro Norsonic 145 / SN002',
+        categoryId: 'sonometro',
+        equipmentType: 'SOUND_LEVEL_METER',
+      },
+      {
+        id: 'son-03',
+        label: 'Sonómetro Brüel & Kjær 2270 / SN003',
+        categoryId: 'sonometro',
+        equipmentType: 'SOUND_LEVEL_METER',
+      },
+    ],
+    equipments: [
+      {
+        id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
+        selections: [
+          { itemId: 'rd-9876', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
+          { itemId: 'rd-4321', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
+          { itemId: 'rd-8899', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
+        ],
+      },
     ],
     selections: [
       { itemId: 'rd-9876', categoryId: 'radar-dopler', series: [], disparos: [] },
@@ -1418,6 +1508,10 @@ const initialState: ExecutionState = {
       { value: 'disparo-2', label: 'Disparo 2' },
       { value: 'disparo-3', label: 'Disparo 3' },
     ],
+    serieDisparoMap: {
+      'funcionamiento-1': ['disparo-1', 'disparo-2'],
+      'funcionamiento-2': ['disparo-3'],
+    },
   },
   munitionIntroduction: {
     serie: null,
@@ -2206,6 +2300,29 @@ const initialState: ExecutionState = {
   } satisfies SeguridadState,
 };
 
+const TAG_TO_ALLOWED_EQUIPMENT_TYPES: Record<string, string[]> = {
+  [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL]: ['DOPPLER_RADAR', 'ANTENNA'],
+  [EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS]: ['PIEZOELECTRIC_SENSOR', 'AMPLIFIER'],
+  [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA]: ['TRAJECTOGRAPHY_RADAR'],
+  [EquipmentMagnitudeTagEnum.SONIDO]: ['SOUND_LEVEL_METER'],
+  [EquipmentMagnitudeTagEnum.VIDEO_AV]: ['HIGH_SPEED_CAMERA'],
+  [EquipmentMagnitudeTagEnum.VIDEO_C]: ['CONVENTIONAL_CAMERA'],
+  [EquipmentMagnitudeTagEnum.LONGITUD]: ['TRACE_RULER'],
+  [EquipmentMagnitudeTagEnum.PRESION_MANOMETROS]: ['PRESSURE_GAUGE', 'CRUSHER', 'PROBE'],
+  [EquipmentMagnitudeTagEnum.PRESION_IPG]: ['IPG_SENSOR', 'MICROMDULE'],
+  [EquipmentMagnitudeTagEnum.PESOS]: ['BALANCE'],
+  [EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO]: ['CLIMATIC_CHAMBER'],
+  [EquipmentMagnitudeTagEnum.TIEMPO]: ['CHRONOMETER'],
+};
+
+function normalizeEquipmentType(selection: EquipmentItemSelection): string {
+  return LEGACY_CATEGORY_TO_EQUIPMENT_TYPE[selection.categoryId] ?? selection.categoryId;
+}
+
+function flattenGroupedEquipments(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentItemSelection[] {
+  return equipments.flatMap((group) => group.selections ?? []);
+}
+
 export const ExecutionStore = signalStore(
   withState(initialState),
 
@@ -2274,6 +2391,11 @@ export const ExecutionStore = signalStore(
     preferencesByUser: computed(() => executionService.preferencesByUserResource.value()),
     isLoadingPreferencesByUser: computed(() => executionService.preferencesByUserResource.isLoading()),
     isUpdatingPreferencesByUser: computed(() => executionService.updatePreferencesByUserResource.isLoading()),
+
+    // Equipment Selector
+    equipmentSelectorRemote: computed(() => executionService.equipmentSelectorResource.value()),
+    isLoadingEquipmentSelector: computed(() => executionService.equipmentSelectorResource.isLoading()),
+    isUpdatingEquipmentSelector: computed(() => executionService.updateEquipmentSelectorResource.isLoading()),
 
     // Video Camera Orientation — diferencia angular calculada
     videoCameraAngularDifference: computed((): number | null => {
@@ -2494,6 +2616,10 @@ export const ExecutionStore = signalStore(
 
     loadPlanningState(fireTrialId: string): void {
       executionService.getExecutionPlanningState(fireTrialId);
+    },
+
+    loadEquipmentSelector(fireTrialId: string): void {
+      executionService.getEquipmentSelector(fireTrialId);
     },
 
     approvePlanning(fireTrialId: string, body: Parameters<typeof executionService.approveExecutionPlanning>[1]): void {
@@ -2782,9 +2908,18 @@ export const ExecutionStore = signalStore(
     },
 
     /** Persiste las selecciones del diálogo selector de equipos */
-    updateEquipmentSelections(selections: EquipmentItemSelection[]): void {
+    updateEquipmentSelections(equipments: EquipmentMagnitudeSelectionGroup[]): void {
+      const fireTrialId = store.fireTrialId();
+      const flattenedSelections = flattenGroupedEquipments(equipments);
+      if (fireTrialId) {
+        executionService.updateEquipmentSelector(fireTrialId, { equipments });
+      }
       patchState(store, (state) => ({
-        equipmentSelector: { ...state.equipmentSelector, selections },
+        equipmentSelector: {
+          ...state.equipmentSelector,
+          equipments,
+          selections: flattenedSelections,
+        },
       }));
     },
 
@@ -2941,7 +3076,31 @@ export const ExecutionStore = signalStore(
         store.loadSecurityCountdown(fireTrialId);
         store.loadPlanning(fireTrialId);
         store.loadPlanningState(fireTrialId);
+        store.loadEquipmentSelector(fireTrialId);
       }
+
+      effect(() => {
+        const remote = store.equipmentSelectorRemote();
+        if (!remote) return;
+
+        patchState(store, (state) => ({
+          equipmentSelector: {
+            ...state.equipmentSelector,
+            categories: remote.categories,
+            items: remote.items.map((item) => ({
+              id: item.id,
+              label: item.label,
+              categoryId: item.categoryId ?? item.equipmentType ?? '',
+              equipmentType: item.equipmentType,
+            })),
+            equipments: remote.equipments,
+            selections: flattenGroupedEquipments(remote.equipments),
+            serieOptions: remote.serieOptions,
+            disparoOptions: remote.disparoOptions,
+            serieDisparoMap: remote.serieDisparoMap,
+          },
+        }));
+      });
     },
   }),
 );

@@ -173,7 +173,7 @@ describe('StockListComponent', () => {
 
     it('should call MunitionsDumpsStore.search() on init', async () => {
       const { munitionsDumpsStore } = await setup();
-      expect(munitionsDumpsStore.search).toHaveBeenCalledWith({ pageSize: 500 });
+      expect(munitionsDumpsStore.search).toHaveBeenCalledWith({ pageSize: 500, active: true });
     });
 
     it('should call store.search() on init via the effect', async () => {
@@ -205,7 +205,7 @@ describe('StockListComponent', () => {
       expect(mockDialog.open).toHaveBeenCalledOnce();
     });
 
-    it('should call store.reload() when transfer dialog closes with truthy result', async () => {
+    it('should NOT call store.reload() when transfer dialog closes with truthy result', async () => {
       const item = makeStockItem();
       const { component, fixture, stockListStore } = await setup({ items: [item], dialogResult: true });
       component.selection.toggle(item);
@@ -214,7 +214,7 @@ describe('StockListComponent', () => {
       try {
         component.transfer();
         await vi.advanceTimersByTimeAsync(600);
-        expect(stockListStore.reload).toHaveBeenCalledOnce();
+        expect(stockListStore.reload).not.toHaveBeenCalledOnce();
       } finally {
         vi.useRealTimers();
       }

@@ -4,13 +4,19 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
 import { MatButtonModule, MatFormFieldModule, MatIconModule } from '@intaqalab/theme';
-import { IntaIconComponent } from '@intaqalab/ui';
-import { IntaDatePipe } from '@intaqalab/utils';
+import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import {
+  IntaDatePipe,
+  LocaleDecimalInputDirective,
+  NoLeadingZerosDirective,
+  NoNegativeValuesDirective,
+} from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { Serie } from '../../../models/shooting-conditions.model';
-import type { UpdateShot } from '../../../models/shooting-conditions.model';
+import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
+import type { Serie, ShootingConditionsUnits, UpdateShot } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 
 interface BulkConfig {
@@ -21,16 +27,16 @@ interface BulkConfig {
   impactZone: string;
   dimensions: string;
   thickness: string;
-  distance: string;
-  targetInclination: string;
-  orientation: string;
-  elevation: string;
-  angle: string;
-  range: string;
-  functioningHeight: string;
-  powderWeight: string;
-  projectWeight: string;
-  nominalSpeed: string;
+  distance: { value: string; unit: string };
+  targetInclination: { value: string; unit: string };
+  orientation: { value: string; unit: string };
+  elevation: { value: string; unit: string };
+  angle: { value: string; unit: string };
+  range: { value: string; unit: string };
+  functioningHeight: { value: string; unit: string };
+  powderWeight: { value: string; unit: string };
+  projectileWeight: { value: string; unit: string };
+  nominalSpeed: { value: string; unit: string };
 }
 
 interface DialogData {
@@ -52,7 +58,13 @@ interface DialogData {
     IntaIconComponent,
     IntaDatePipe,
     TranslateModule,
+    InputSelect,
+    InputSelectInput,
+    NoNegativeValuesDirective,
+    NoLeadingZerosDirective,
+    LocaleDecimalInputDirective,
   ],
+  providers: [PlanningGeneralDataStore],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
       <ui-inta-icon name="edit" size="xxl" />
@@ -220,72 +232,100 @@ interface DialogData {
           <label for="bulk-dist" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline">
-            <input placeholder="0" id="bulk-dist" matInput type="number" [formField]="bulkForm.distance" />
-            <mat-error>
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
-                  | translate
-              }}
-            </mat-error>
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate }}"
+            [opciones]="unitOptions.distance"
+            [showLabel]="false"
+            [value]="configModel().distance"
+            (valueChange)="onFieldChange('distance', $event)"
+          >
+            <input id="bulk-dist" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-inclination" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input
-              placeholder="0"
-              id="bulk-inclination"
-              matInput
-              type="number"
-              [formField]="bulkForm.targetInclination"
-            />
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.targetInclination"
+            [showLabel]="false"
+            [value]="configModel().targetInclination"
+            (valueChange)="onFieldChange('targetInclination', $event)"
+          >
+            <input id="bulk-inclination" inputSelectInput libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-orient" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input placeholder="0" id="bulk-orient" matInput type="number" [formField]="bulkForm.orientation" />
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.orientation"
+            [showLabel]="false"
+            [value]="configModel().orientation"
+            (valueChange)="onFieldChange('orientation', $event)"
+          >
+            <input id="bulk-orient" inputSelectInput libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-elev" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input placeholder="0" id="bulk-elev" matInput type="number" [formField]="bulkForm.elevation" />
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate }}"
+            [opciones]="unitOptions.elevation"
+            [showLabel]="false"
+            [value]="configModel().elevation"
+            (valueChange)="onFieldChange('elevation', $event)"
+          >
+            <input id="bulk-elev" inputSelectInput libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-angle" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input placeholder="0" id="bulk-angle" matInput type="number" [formField]="bulkForm.angle" />
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}"
+            [opciones]="unitOptions.angle"
+            [showLabel]="false"
+            [value]="configModel().angle"
+            (valueChange)="onFieldChange('angle', $event)"
+          >
+            <input id="bulk-angle" inputSelectInput libNoLeadingZeros libLocalDecimal />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-range" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline">
-            <input placeholder="0" id="bulk-range" matInput type="number" [formField]="bulkForm.range" />
-            <mat-error>
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
-                  | translate
-              }}
-            </mat-error>
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}"
+            [opciones]="unitOptions.range"
+            [showLabel]="false"
+            [value]="configModel().range"
+            (valueChange)="onFieldChange('range', $event)"
+          >
+            <input id="bulk-range" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -294,61 +334,72 @@ interface DialogData {
               'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
             }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <input placeholder="0" id="bulk-height" matInput type="number" [formField]="bulkForm.functioningHeight" />
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.functioningHeight"
+            [showLabel]="false"
+            [value]="configModel().functioningHeight"
+            (valueChange)="onFieldChange('functioningHeight', $event)"
+          >
+            <input id="bulk-height" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-powder" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline">
-            <input
-              placeholder="0"
-              id="bulk-powder"
-              matInput
-              type="number"
-              step="any"
-              [formField]="bulkForm.powderWeight"
-            />
-            <mat-error>
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
-                  | translate
-              }}
-            </mat-error>
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.powderWeight"
+            [showLabel]="false"
+            [value]="configModel().powderWeight"
+            (valueChange)="onFieldChange('powderWeight', $event)"
+          >
+            <input id="bulk-powder" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-proj" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline">
-            <input placeholder="0" id="bulk-proj" matInput type="number" [formField]="bulkForm.projectWeight" />
-            <mat-error>
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
-                  | translate
-              }}
-            </mat-error>
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.projectileWeight"
+            [showLabel]="false"
+            [value]="configModel().projectileWeight"
+            (valueChange)="onFieldChange('projectileWeight', $event)"
+          >
+            <input id="bulk-proj" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
 
         <div class="flex flex-col gap-1">
           <label for="bulk-speed" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline">
-            <input placeholder="0" id="bulk-speed" matInput type="number" [formField]="bulkForm.nominalSpeed" />
-            <mat-error>
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.VALIDATIONS.NEGATIVE_VALUE'
-                  | translate
-              }}
-            </mat-error>
-          </mat-form-field>
+          <ui-input-select
+            placeholder="0"
+            label="{{
+              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate
+            }}"
+            [opciones]="unitOptions.nominalSpeed"
+            [showLabel]="false"
+            [value]="configModel().nominalSpeed"
+            (valueChange)="onFieldChange('nominalSpeed', $event)"
+          >
+            <input id="bulk-speed" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+          </ui-input-select>
         </div>
       </div>
     </mat-dialog-content>
@@ -381,10 +432,13 @@ interface DialogData {
 })
 export class MassiveConfigurationDialog {
   readonly shootingConditionsService = inject(ShootingConditionsService);
+  protected readonly store = inject(PlanningGeneralDataStore);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   readonly dialogRef = inject(MatDialogRef<MassiveConfigurationDialog>);
   readonly #applyConfirmed = signal(false);
   readonly isUpdating = computed(() => this.shootingConditionsService.updateConditionsResource.isLoading());
+
+  readonly unitOptions = SHOT_CONDITIONS_UNIT_OPTIONS;
 
   readonly configModel = signal<BulkConfig>({
     series: [],
@@ -394,21 +448,19 @@ export class MassiveConfigurationDialog {
     impactZone: '',
     dimensions: '',
     thickness: '',
-    distance: '',
-    targetInclination: '',
-    orientation: '',
-    elevation: '',
-    angle: '',
-    range: '',
-    functioningHeight: '',
-    powderWeight: '',
-    projectWeight: '',
-    nominalSpeed: '',
+    distance: { value: '', unit: '' },
+    targetInclination: { value: '', unit: '' },
+    orientation: { value: '', unit: '' },
+    elevation: { value: '', unit: '' },
+    angle: { value: '', unit: '' },
+    range: { value: '', unit: '' },
+    functioningHeight: { value: '', unit: '' },
+    powderWeight: { value: '', unit: '' },
+    projectileWeight: { value: '', unit: '' },
+    nominalSpeed: { value: '', unit: '' },
   });
 
   readonly bulkForm = form(this.configModel, (f) => {
-    const notNegative = (v: string) =>
-      v !== '' && Number(v) < 0 ? { kind: 'min' as const, message: 'El valor no puede ser negativo' } : undefined;
     validate(f.series, ({ value }) => {
       const selected = value();
       return !selected || selected.length === 0
@@ -416,20 +468,44 @@ export class MassiveConfigurationDialog {
         : undefined;
     });
     required(f.impactZone);
-    validate(f.distance, ({ value }) => notNegative(value()));
-    validate(f.range, ({ value }) => notNegative(value()));
-    validate(f.powderWeight, ({ value }) => notNegative(value()));
-    validate(f.projectWeight, ({ value }) => notNegative(value()));
-    validate(f.nominalSpeed, ({ value }) => notNegative(value()));
   });
 
   constructor() {
+    const units = this.store.conditionsUnits();
+    this.configModel.set({
+      series: [],
+      date: '',
+      targetType: '',
+      material: '',
+      impactZone: '',
+      dimensions: '',
+      thickness: '',
+      distance: { value: '', unit: units?.distance ?? 'M' },
+      targetInclination: { value: '', unit: units?.targetInclination ?? 'DEGREES' },
+      orientation: { value: '', unit: units?.orientation ?? 'DEGREES' },
+      elevation: { value: '', unit: units?.elevation ?? 'DEGREES' },
+      angle: { value: '', unit: units?.angle ?? 'DEGREES' },
+      range: { value: '', unit: units?.range ?? 'M' },
+      functioningHeight: { value: '', unit: units?.functioningHeight ?? 'M' },
+      powderWeight: { value: '', unit: units?.powderWeight ?? 'KG' },
+      projectileWeight: { value: '', unit: units?.projectileWeight ?? 'KG' },
+      nominalSpeed: { value: '', unit: units?.nominalSpeed ?? 'M_S' },
+    });
+
     effect(() => {
       const status = this.shootingConditionsService.updateConditionsResource.status();
       if (this.#applyConfirmed() && status === 'resolved') {
         this.dialogRef.close(true);
       }
     });
+  }
+
+  onFieldChange(field: keyof BulkConfig, change: { value: string; unit: string } | null): void {
+    if (!change) return;
+    this.configModel.update((config) => ({
+      ...config,
+      [field]: change,
+    }));
   }
 
   apply() {
@@ -443,16 +519,46 @@ export class MassiveConfigurationDialog {
     if (config.impactZone) override.impactZoneId = config.impactZone;
     if (config.dimensions) override.targetDimensionsId = config.dimensions;
     if (config.thickness) override.targetThicknessId = config.thickness;
-    if (config.distance !== '') override.distance = Number(config.distance);
-    if (config.targetInclination !== '') override.targetInclination = Number(config.targetInclination);
-    if (config.orientation !== '') override.orientation = Number(config.orientation);
-    if (config.elevation !== '') override.elevation = Number(config.elevation);
-    if (config.angle !== '') override.angle = Number(config.angle);
-    if (config.range !== '') override.range = Number(config.range);
-    if (config.functioningHeight !== '') override.functioningHeight = Number(config.functioningHeight);
-    if (config.powderWeight !== '') override.powderWeight = Number(config.powderWeight);
-    if (config.projectWeight !== '') override.projectWeight = Number(config.projectWeight);
-    if (config.nominalSpeed !== '') override.nominalSpeed = Number(config.nominalSpeed);
+    if (config.distance.value !== '') {
+      override.distance = Number(config.distance.value);
+      override.distanceUnit = config.distance.unit;
+    }
+    if (config.targetInclination.value !== '') {
+      override.targetInclination = Number(config.targetInclination.value);
+      override.targetInclinationUnit = config.targetInclination.unit;
+    }
+    if (config.orientation.value !== '') {
+      override.orientation = Number(config.orientation.value);
+      override.orientationUnit = config.orientation.unit;
+    }
+    if (config.elevation.value !== '') {
+      override.elevation = Number(config.elevation.value);
+      override.elevationUnit = config.elevation.unit;
+    }
+    if (config.angle.value !== '') {
+      override.angle = Number(config.angle.value);
+      override.angleUnit = config.angle.unit;
+    }
+    if (config.range.value !== '') {
+      override.range = Number(config.range.value);
+      override.rangeUnit = config.range.unit;
+    }
+    if (config.functioningHeight.value !== '') {
+      override.functioningHeight = Number(config.functioningHeight.value);
+      override.functioningHeightUnit = config.functioningHeight.unit;
+    }
+    if (config.powderWeight.value !== '') {
+      override.powderWeight = Number(config.powderWeight.value);
+      override.powderWeightUnit = config.powderWeight.unit;
+    }
+    if (config.projectileWeight.value !== '') {
+      override.projectileWeight = Number(config.projectileWeight.value);
+      override.projectileWeightUnit = config.projectileWeight.unit;
+    }
+    if (config.nominalSpeed.value !== '') {
+      override.nominalSpeed = Number(config.nominalSpeed.value);
+      override.nominalSpeedUnit = config.nominalSpeed.unit;
+    }
 
     const shotsById = new Map<string, UpdateShot>();
     for (const serie of this.data.series) {
@@ -467,9 +573,23 @@ export class MassiveConfigurationDialog {
 
     const shots = Array.from(shotsById.values());
 
+    const units: ShootingConditionsUnits = {
+      distance: (config.distance.unit as ShootingConditionsUnits['distance']) ?? null,
+      orientation: (config.orientation.unit as ShootingConditionsUnits['orientation']) ?? null,
+      targetInclination: (config.targetInclination.unit as ShootingConditionsUnits['targetInclination']) ?? null,
+      elevation: (config.elevation.unit as ShootingConditionsUnits['elevation']) ?? null,
+      angle: (config.angle.unit as ShootingConditionsUnits['angle']) ?? null,
+      range: (config.range.unit as ShootingConditionsUnits['range']) ?? null,
+      functioningHeight: (config.functioningHeight.unit as ShootingConditionsUnits['functioningHeight']) ?? null,
+      nominalSpeed: (config.nominalSpeed.unit as ShootingConditionsUnits['nominalSpeed']) ?? null,
+      powderWeight: (config.powderWeight.unit as ShootingConditionsUnits['powderWeight']) ?? null,
+      projectileWeight: (config.projectileWeight.unit as ShootingConditionsUnits['projectileWeight']) ?? null,
+    };
+
     this.#applyConfirmed.set(true);
     this.shootingConditionsService.updateShootingConditions({
       trialId: this.data.trialId,
+      units,
       shots,
     });
   }

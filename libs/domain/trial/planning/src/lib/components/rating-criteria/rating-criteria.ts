@@ -1,20 +1,35 @@
-import { ChangeDetectionStrategy, Component, computed, input, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, model, signal, untracked } from '@angular/core';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@intaqalab/theme';
+import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { RatingCriteria as RatingCriteriaModel } from '../../utils-models/trial-planing-info.model';
 
 @Component({
   selector: 'inta-rating-criteria',
-  imports: [TranslateModule, MatFormFieldModule, MatSelectModule, MatIconModule],
+  imports: [
+    TranslateModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatIconModule,
+    IntaIconComponent,
+    MatInputModule,
+    NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
+    NoLeadingZerosDirective,
+    FormField,
+  ],
   template: `
     <div class="border border-slate-200 bg-white rounded-xl shadow-sm p-6 space-y-6">
-      <div class="flex justify-between items-center flex-wrap gap-4 pb-4 border-b border-slate-100">
+      <div class="flex justify-between items-center flex-wrap gap-4">
         <div class="flex items-center gap-2">
-          <mat-icon class="text-slate-600">assignment</mat-icon>
-          <h3 class="text-lg font-semibold text-slate-800">
+          <ui-inta-icon name="file_2" size="xxl" />
+          <h3 class="text-xl font-bold text-gray-900">
             {{ 'TRIAL_PLANNING.RATING_CRITERIA.TITLE' | translate }}
           </h3>
         </div>
@@ -53,83 +68,110 @@ import type { RatingCriteria as RatingCriteriaModel } from '../../utils-models/t
           </div>
         </div>
       </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full table-fixed border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-slate-200">
-              <th class="py-3 px-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-[28%]">
-                {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.PROPERTY' | translate }}
-              </th>
-              <th class="py-3 px-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-[18%]">
-                {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USEFUL_1_MIN' | translate }}
-              </th>
-              <th class="py-3 px-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-[18%]">
-                {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USEFUL_1_MAX' | translate }}
-              </th>
-              <th class="py-3 px-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-[18%]">
-                {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USELESS_MIN' | translate }}
-              </th>
-              <th class="py-3 px-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider w-[18%]">
-                {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USELESS_MAX' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            @for (row of convertedRows(); track row.key) {
-              <tr class="hover:bg-slate-50/50 transition-colors">
-                <td class="py-3 px-4 font-medium text-slate-700 text-left">
-                  {{ row.label | translate }}
-                </td>
-                <td class="py-2 px-2 text-center">
-                  <input
-                    type="number"
-                    step="any"
-                    class="w-full text-center px-2 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-slate-700 bg-slate-50/30 hover:bg-white focus:bg-white disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
-                    [disabled]="readonly()"
-                    [attr.aria-label]="row.key + '-useful1Min'"
-                    [value]="row.useful1Min !== null ? row.useful1Min : ''"
-                    (input)="updateValue(row.key, 'useful1Min', $event)"
-                  />
-                </td>
-                <td class="py-2 px-2 text-center">
-                  <input
-                    type="number"
-                    step="any"
-                    class="w-full text-center px-2 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-slate-700 bg-slate-50/30 hover:bg-white focus:bg-white disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
-                    [disabled]="readonly()"
-                    [attr.aria-label]="row.key + '-useful1Max'"
-                    [value]="row.useful1Max !== null ? row.useful1Max : ''"
-                    (input)="updateValue(row.key, 'useful1Max', $event)"
-                  />
-                </td>
-                <td class="py-2 px-2 text-center">
-                  <input
-                    type="number"
-                    step="any"
-                    class="w-full text-center px-2 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-slate-700 bg-slate-50/30 hover:bg-white focus:bg-white disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
-                    [disabled]="readonly()"
-                    [attr.aria-label]="row.key + '-uselessMin'"
-                    [value]="row.uselessMin !== null ? row.uselessMin : ''"
-                    (input)="updateValue(row.key, 'uselessMin', $event)"
-                  />
-                </td>
-                <td class="py-2 px-2 text-center">
-                  <input
-                    type="number"
-                    step="any"
-                    class="w-full text-center px-2 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-slate-700 bg-slate-50/30 hover:bg-white focus:bg-white disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
-                    [disabled]="readonly()"
-                    [attr.aria-label]="row.key + '-uselessMax'"
-                    [value]="row.uselessMax !== null ? row.uselessMax : ''"
-                    (input)="updateValue(row.key, 'uselessMax', $event)"
-                  />
-                </td>
+      @if (localCriteria()) {
+        <div class="overflow-x-auto border border-gray-200 rounded-xl">
+          <table class="min-w-full table-fixed border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-100">
+                <th class="py-3 px-4 text-left text-xs font-medium text-gray-600 tracking-wider w-[28%]">
+                  {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.PROPERTY' | translate }}
+                </th>
+                <th class="py-3 px-4 text-center text-xs font-medium text-gray-600 tracking-wider w-[18%]">
+                  {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USEFUL_1_MIN' | translate }}
+                </th>
+                <th class="py-3 px-4 text-center text-xs font-medium text-gray-600 tracking-wider w-[18%]">
+                  {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USEFUL_1_MAX' | translate }}
+                </th>
+                <th class="py-3 px-4 text-center text-xs font-medium text-gray-600 tracking-wider w-[18%]">
+                  {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USELESS_MIN' | translate }}
+                </th>
+                <th class="py-3 px-4 text-center text-xs font-medium text-gray-600 tracking-wider w-[18%]">
+                  {{ 'TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.USELESS_MAX' | translate }}
+                </th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (row of rows; track row.key) {
+                <tr class="hover-row transition-colors">
+                  <td class="py-3 px-4 font-medium text-slate-700 text-left">
+                    {{ row.label | translate }}
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full max-w-30 small-input">
+                      <input
+                        matInput
+                        libNoLeadingZeros
+                        libNoNegativeValues
+                        libLocalDecimal
+                        type="text"
+                        step="any"
+                        class="w-full text-center disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
+                        [disabled]="readonly()"
+                        [attr.aria-label]="row.key + '-useful1Min'"
+                        [formField]="getFormField(row.key, 'useful1Min')"
+                      />
+                    </mat-form-field>
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full max-w-30 small-input">
+                      <input
+                        matInput
+                        libNoLeadingZeros
+                        libNoNegativeValues
+                        libLocalDecimal
+                        type="text"
+                        step="any"
+                        class="w-full text-center disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
+                        [disabled]="readonly()"
+                        [attr.aria-label]="row.key + '-useful1Max'"
+                        [formField]="getFormField(row.key, 'useful1Max')"
+                      />
+                    </mat-form-field>
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full max-w-30 small-input">
+                      <input
+                        matInput
+                        libNoLeadingZeros
+                        libNoNegativeValues
+                        libLocalDecimal
+                        type="text"
+                        step="any"
+                        class="w-full text-center disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
+                        [disabled]="readonly()"
+                        [attr.aria-label]="row.key + '-uselessMin'"
+                        [formField]="getFormField(row.key, 'uselessMin')"
+                      />
+                    </mat-form-field>
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full max-w-30 small-input">
+                      <input
+                        matInput
+                        libNoLeadingZeros
+                        libNoNegativeValues
+                        libLocalDecimal
+                        type="text"
+                        step="any"
+                        class="w-full text-center disabled:bg-slate-100/50 disabled:text-slate-400 disabled:border-slate-100"
+                        [disabled]="readonly()"
+                        [attr.aria-label]="row.key + '-uselessMax'"
+                        [formField]="getFormField(row.key, 'uselessMax')"
+                      />
+                    </mat-form-field>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
+  `,
+  styles: `
+    .hover-row:hover {
+      background-color: #f8fafc;
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -140,125 +182,137 @@ export class RatingCriteria {
   readonly selectedVelocityUnit = signal<'m/s' | 'ft/s'>('m/s');
   readonly selectedPressureUnit = signal<'bar' | 'MPa' | 'kPa' | 'psi'>('bar');
 
-  readonly convertedRows = computed(() => {
-    const data = this.ratingCriteria();
-    if (!data) return [];
+  readonly rows = [
+    { key: 'v0c', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C' },
+    { key: 'v0cMean', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C_MEAN' },
+    { key: 'v0cStdDev', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C_STD_DEV' },
+    { key: 'p', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.P' },
+    { key: 'pMean', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.P_MEAN' },
+    { key: 'projectile', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.PROJECTILE' },
+    { key: 'primer', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.PRIMER' },
+    { key: 'fuse', label: 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.FUSE' },
+  ];
 
-    const vUnit = this.selectedVelocityUnit();
-    const pUnit = this.selectedPressureUnit();
+  readonly localCriteria = signal<RatingCriteriaModel | undefined>(undefined);
+  readonly criteriaForm = form(this.localCriteria, (f) => {
+    const isReadonly = () => this.readonly();
+    this.rows.forEach((row) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r = (f as Record<string, any>)[row.key];
+      disabled(r.useful1Min, isReadonly);
+      disabled(r.useful1Max, isReadonly);
+      disabled(r.uselessMin, isReadonly);
+      disabled(r.uselessMax, isReadonly);
+    });
+  });
 
-    const convertSpeed = (val: number | null | undefined): number | null => {
-      if (val === null || val === undefined) return null;
-      if (vUnit === 'ft/s') {
-        return val * 3.28084;
+  constructor() {
+    // Sync: base units (ratingCriteria) -> UI units (localCriteria)
+    effect(() => {
+      const data = this.ratingCriteria();
+      if (!data) {
+        this.localCriteria.set(undefined);
+        return;
       }
-      return val;
-    };
 
-    const convertPressure = (val: number | null | undefined): number | null => {
-      if (val === null || val === undefined) return null;
-      if (pUnit === 'MPa') {
-        return val * 0.1;
-      }
-      if (pUnit === 'kPa') {
-        return val * 100;
-      }
-      if (pUnit === 'psi') {
-        return val * 14.50377;
-      }
-      return val;
-    };
+      const vUnit = this.selectedVelocityUnit();
+      const pUnit = this.selectedPressureUnit();
 
-    const passThrough = (val: number | null | undefined): number | null => {
-      if (val === null || val === undefined) return null;
-      return val;
-    };
+      const toUiSpeed = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined) return null;
+        if (vUnit === 'ft/s') return Number((val * 3.28084).toFixed(6));
+        return val;
+      };
 
-    const mapRow = (
-      key: string,
-      label: string,
-      row:
-        | {
-            useful1Min?: number | null;
-            useful1Max?: number | null;
-            uselessMin?: number | null;
-            uselessMax?: number | null;
-          }
-        | undefined,
-      convertFn: (val: number | null | undefined) => number | null,
-    ) => {
-      return {
-        key,
-        label,
+      const toUiPressure = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined) return null;
+        if (pUnit === 'MPa') return Number((val * 0.1).toFixed(6));
+        if (pUnit === 'kPa') return Number((val * 100).toFixed(6));
+        if (pUnit === 'psi') return Number((val * 14.50377).toFixed(6));
+        return val;
+      };
+
+      const passThrough = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined) return null;
+        return val;
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapRow = (row: any, convertFn: (v: any) => number | null) => ({
         useful1Min: convertFn(row?.useful1Min),
         useful1Max: convertFn(row?.useful1Max),
         uselessMin: convertFn(row?.uselessMin),
         uselessMax: convertFn(row?.uselessMax),
+      });
+
+      this.localCriteria.set({
+        v0c: mapRow(data.v0c, toUiSpeed),
+        v0cMean: mapRow(data.v0cMean, toUiSpeed),
+        v0cStdDev: mapRow(data.v0cStdDev, toUiSpeed),
+        p: mapRow(data.p, toUiPressure),
+        pMean: mapRow(data.pMean, toUiPressure),
+        projectile: mapRow(data.projectile, passThrough),
+        primer: mapRow(data.primer, passThrough),
+        fuse: mapRow(data.fuse, passThrough),
+      });
+    });
+
+    // Sync: UI units (localCriteria) -> base units (ratingCriteria)
+    effect(() => {
+      const localData = this.localCriteria();
+      if (!localData) return;
+
+      const currentBase = untracked(() => this.ratingCriteria());
+      const vUnit = untracked(() => this.selectedVelocityUnit());
+      const pUnit = untracked(() => this.selectedPressureUnit());
+
+      const toBaseSpeed = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined || isNaN(val)) return null;
+        if (vUnit === 'ft/s') return Number((val / 3.28084).toFixed(6));
+        return val;
       };
-    };
 
-    return [
-      mapRow('v0c', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C', data.v0c, convertSpeed),
-      mapRow('v0cMean', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C_MEAN', data.v0cMean, convertSpeed),
-      mapRow('v0cStdDev', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.V0C_STD_DEV', data.v0cStdDev, convertSpeed),
-      mapRow('p', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.P', data.p, convertPressure),
-      mapRow('pMean', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.P_MEAN', data.pMean, convertPressure),
-      mapRow('projectile', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.PROJECTILE', data.projectile, passThrough),
-      mapRow('primer', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.PRIMER', data.primer, passThrough),
-      mapRow('fuse', 'TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.FUSE', data.fuse, passThrough),
-    ];
-  });
+      const toBasePressure = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined || isNaN(val)) return null;
+        if (pUnit === 'MPa') return Number((val / 0.1).toFixed(6));
+        if (pUnit === 'kPa') return Number((val / 100).toFixed(6));
+        if (pUnit === 'psi') return Number((val / 14.50377).toFixed(6));
+        return val;
+      };
 
-  updateValue(rowKey: string, field: string, event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
-    const rawVal = inputEl.value === '' ? null : Number(inputEl.value);
+      const toBaseInt = (val: number | null | undefined): number | null => {
+        if (val === null || val === undefined || isNaN(val)) return null;
+        return Math.round(val);
+      };
 
-    // Convert rawVal from current UI unit to base unit
-    const baseVal = this.#convertToBaseUnit(rowKey, rawVal);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapRow = (row: any, convertFn: (v: any) => number | null) => ({
+        useful1Min: convertFn(row?.useful1Min),
+        useful1Max: convertFn(row?.useful1Max),
+        uselessMin: convertFn(row?.uselessMin),
+        uselessMax: convertFn(row?.uselessMax),
+      });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const current = (this.ratingCriteria() ?? {}) as Record<string, any>;
-    const currentRow = current[rowKey] ?? {};
+      const updatedBase: RatingCriteriaModel = {
+        v0c: mapRow(localData.v0c, toBaseSpeed),
+        v0cMean: mapRow(localData.v0cMean, toBaseSpeed),
+        v0cStdDev: mapRow(localData.v0cStdDev, toBaseSpeed),
+        p: mapRow(localData.p, toBasePressure),
+        pMean: mapRow(localData.pMean, toBasePressure),
+        projectile: mapRow(localData.projectile, toBaseInt),
+        primer: mapRow(localData.primer, toBaseInt),
+        fuse: mapRow(localData.fuse, toBaseInt),
+      };
 
-    const updatedRow = {
-      ...currentRow,
-      [field]: baseVal,
-    };
-
-    const updatedCriteria = {
-      ...current,
-      [rowKey]: updatedRow,
-    } as RatingCriteriaModel;
-
-    this.ratingCriteria.set(updatedCriteria);
+      if (JSON.stringify(currentBase) !== JSON.stringify(updatedBase)) {
+        this.ratingCriteria.set(updatedBase);
+      }
+    });
   }
 
-  #convertToBaseUnit(rowKey: string, val: number | null): number | null {
-    if (val === null) return null;
-
-    if (rowKey === 'v0c' || rowKey === 'v0cMean' || rowKey === 'v0cStdDev') {
-      const vUnit = this.selectedVelocityUnit();
-      if (vUnit === 'ft/s') {
-        return val / 3.28084;
-      }
-      return val;
-    }
-
-    if (rowKey === 'p' || rowKey === 'pMean') {
-      const pUnit = this.selectedPressureUnit();
-      if (pUnit === 'MPa') {
-        return val / 0.1;
-      }
-      if (pUnit === 'kPa') {
-        return val / 100;
-      }
-      if (pUnit === 'psi') {
-        return val / 14.50377;
-      }
-      return val;
-    }
-
-    // Integers: projectile, fuse, primer
-    return Math.round(val);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getFormField(rowKey: string, field: string): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.criteriaForm as any)?.[rowKey]?.[field];
   }
 }

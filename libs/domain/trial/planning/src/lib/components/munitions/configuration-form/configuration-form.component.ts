@@ -1,4 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
+import type { ElementRef } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,7 +14,6 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { ElementRef } from '@angular/core';
 import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';

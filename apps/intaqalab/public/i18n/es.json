@@ -1400,7 +1400,7 @@
       },
       "MODAL_DELETE": {
         "TITLE": "Eliminar denominación",
-        "CONTENT_HTML": "Vas a eliminar una denominación aunque esta asociado a ítem registrados. <b>La denominación dejará de estar disponible en los desplegables.</b>"
+        "CONTENT_HTML": "Vas a eliminar una denominación que podría estar asociada a ítems registrados. <b>La denominación dejará de estar disponible en los desplegables.</b>"
       }
     },
     "MUNITIONS_DUMPS": {
@@ -1649,7 +1649,8 @@
         "COL_REASON": "Motivo",
         "COL_TRIAL_ASSOCIATED": "Prueba asociada",
         "REASON_RETURN": "Devolución al cliente",
-        "REASON_DESTRUCTION": "Destrucción"
+        "REASON_DESTRUCTION": "Destrucción",
+        "REASON_EXTERNAL": "Ensayos externos"
       }
     }
   },

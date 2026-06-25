@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -39,23 +39,22 @@ interface DataFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
+    <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto justify-between">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">speed</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -65,7 +64,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.disparo">
             @for (opt of disparoOptions(); track opt.value) {
@@ -75,7 +74,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 
@@ -91,7 +90,7 @@ interface DataFormModel {
       <div class=""></div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+      <div intaReadonlyContent class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 min-h-0 items-end">
         <!-- Row 1 -->
 
         <!-- Radar Doppler -->
@@ -153,7 +152,7 @@ interface DataFormModel {
             class="tabular-nums italic text-slate-400"
             [value]="incertidumbreSoftwareDisplay()"
           />
-          <span matSuffix class="pr-1 text-sm text-gray-700">m/s</span>
+          <span matSuffix class="pr-4 text-sm text-gray-700">m/s</span>
         </mat-form-field>
 
         <!-- Pérdida -->

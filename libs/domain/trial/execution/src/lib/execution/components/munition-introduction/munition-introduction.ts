@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -28,7 +29,6 @@ import { MassiveConfigDialog } from './massive-config-dialog';
 import { MunitionAcondicionamientoTabComponent } from './tabs/acondicionamiento-tab.component';
 import { MunitionIdentificacionTabComponent } from './tabs/identificacion-tab.component';
 import { MunitionPesosTabComponent } from './tabs/pesos-tab.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 export type TabType = 'identificacion' | 'pesos' | 'acondicionamiento';
 export type InputFieldValue = { value: string; unit: string } | null;
@@ -69,8 +69,8 @@ export interface AcondFormModel {
     MunitionIdentificacionTabComponent,
     MunitionPesosTabComponent,
     MunitionAcondicionamientoTabComponent,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-2 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
@@ -113,12 +113,7 @@ export interface AcondFormModel {
         </button>
 
         <!-- Aplicar configuración masiva -->
-        <button
-          mat-flat-button
-          color="primary"
-          type="button"
-          (click)="applyMassiveConfig()"
-        >
+        <button mat-flat-button color="primary" type="button" (click)="applyMassiveConfig()">
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MASSIVE_CONFIG_BTN' | translate }}
         </button>
 

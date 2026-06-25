@@ -13,6 +13,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 type PiezoTab = 'cierre' | 'intermedio' | 'culote';
 
@@ -38,23 +39,22 @@ interface PiezoFormModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-blue-200 bg-white p-2 flex flex-col gap-1.5">
+    <div class="h-full rounded-2xl border border-blue-200 bg-white p-3 flex flex-col gap-1.5 justify-between overflow-auto">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-100 shrink-0">
-            <mat-icon class="text-blue-600 !text-[16px] !w-[16px] !h-[16px]">compress</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.SERIE_PLACEHOLDER' | translate"
             [formField]="selectorForm.serie"
@@ -66,7 +66,7 @@ interface PiezoFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectorForm.disparo"
@@ -78,19 +78,19 @@ interface PiezoFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CURRENT_SHOT_BTN' | translate }}
         </button>
 
         <div class="flex-1"></div>
 
         <!-- Tab chips -->
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex flex-wrap self-center gap-2 shrink-0">
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
+            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'cierre' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              activeTab() === 'cierre' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('cierre')"
           >
@@ -98,9 +98,9 @@ interface PiezoFormModel {
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
+            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'intermedio' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              activeTab() === 'intermedio' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('intermedio')"
           >
@@ -108,9 +108,9 @@ interface PiezoFormModel {
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors"
+            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'culote' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              activeTab() === 'culote' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('culote')"
           >
@@ -119,7 +119,7 @@ interface PiezoFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start sm:ml-4" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
@@ -128,10 +128,10 @@ interface PiezoFormModel {
       <div class=""></div>
 
       <!-- ── Body ───────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 flex flex-col min-h-0">
+      <div intaReadonlyContent class="flex flex-col min-h-0">
         @switch (activeTab()) {
           @case ('cierre') {
-            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+            <div class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 min-h-0 justify-end items-end">
               <!-- Row 1: Selects -->
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
@@ -177,7 +177,7 @@ interface PiezoFormModel {
                   [value]="cierrePresionMaxima() ?? ''"
                   (input)="cierrePresionMaxima.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">bar</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
@@ -189,7 +189,7 @@ interface PiezoFormModel {
                   [value]="cierreAccion() ?? ''"
                   (input)="cierreAccion.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
@@ -201,12 +201,12 @@ interface PiezoFormModel {
                   [value]="cierreRetardo() ?? ''"
                   (input)="cierreRetardo.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
             </div>
           }
           @case ('intermedio') {
-            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+            <div class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 min-h-0 justify-end items-end">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
                 <mat-select
@@ -250,7 +250,7 @@ interface PiezoFormModel {
                   [value]="intermedioPresionMaxima() ?? ''"
                   (input)="intermedioPresionMaxima.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">bar</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
@@ -262,7 +262,7 @@ interface PiezoFormModel {
                   [value]="intermedioAccion() ?? ''"
                   (input)="intermedioAccion.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
@@ -274,12 +274,12 @@ interface PiezoFormModel {
                   [value]="intermedioRetardo() ?? ''"
                   (input)="intermedioRetardo.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
             </div>
           }
           @case ('culote') {
-            <div class="flex-1 grid grid-cols-3 gap-x-2 gap-y-1 min-h-0 content-start">
+            <div class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 min-h-0 justify-end items-end">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
                 <mat-select
@@ -323,7 +323,7 @@ interface PiezoFormModel {
                   [value]="culotePresionMaxima() ?? ''"
                   (input)="culotePresionMaxima.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">bar</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">bar</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
@@ -335,7 +335,7 @@ interface PiezoFormModel {
                   [value]="culoteAccion() ?? ''"
                   (input)="culoteAccion.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
@@ -347,7 +347,7 @@ interface PiezoFormModel {
                   [value]="culoteRetardo() ?? ''"
                   (input)="culoteRetardo.set(parseNumber($any($event.target).value))"
                 />
-                <span matSuffix class="text-xs text-slate-500 pr-1">ms</span>
+                <span matSuffix class="text-xs text-slate-500 pr-4">ms</span>
               </mat-form-field>
             </div>
           }

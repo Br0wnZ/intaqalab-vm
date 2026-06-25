@@ -2,6 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
+import type { TransferMovementsPayload } from '../models/movements.model';
 import type { MunitionDetailResponseModel } from '../models/munition-stock-detail.model';
 import { injectWarehouseResource } from './warehouse-resource.factory';
 
@@ -36,7 +37,7 @@ export class MunitionsStockDetailService {
 
   readonly #whareHouseUrl = injectWharehouseEndpoint();
   readonly #apiUrlMovements = `${this.#whareHouseUrl}/movements`;
-  retire = signal<{ quantity: number; reason: string; itemId: string; category: string } | undefined>(undefined);
+  retire = signal<{ quantity: number; reason: string; stockId: string; category: string } | undefined>(undefined);
   readonly retireResource = httpResource<MunitionDetailResponseModel>(() => {
     const dataToSend = this.retire();
     if (!dataToSend) return undefined;
@@ -49,9 +50,7 @@ export class MunitionsStockDetailService {
     };
   });
 
-  transfer = signal<{ quantity: number; munitionDumpId: string; cellName: string; itemId: string } | undefined>(
-    undefined,
-  );
+  transfer = signal<TransferMovementsPayload | undefined>(undefined);
   readonly transferResource = httpResource<MunitionDetailResponseModel>(() => {
     const dataToSend = this.transfer();
     if (!dataToSend) return undefined;

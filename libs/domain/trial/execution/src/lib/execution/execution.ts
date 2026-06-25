@@ -618,6 +618,7 @@ export class Execution implements OnInit {
   }
 
   openEquipmentSelectorDialog(): void {
+    this.#store.loadEquipmentSelector(this.#fireTrialId());
     const selector = this.#store.equipmentSelector();
     this.#dialog
       .open<EquipmentSelectorDialog, unknown, EquipmentSelectorDialogResult>(EquipmentSelectorDialog, {
@@ -629,14 +630,15 @@ export class Execution implements OnInit {
           items: selector.items,
           serieOptions: selector.serieOptions,
           disparoOptions: selector.disparoOptions,
-          initialSelections: selector.selections,
+          serieDisparoMap: selector.serieDisparoMap,
+          initialEquipments: selector.equipments,
         },
       })
       .afterClosed()
       .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe((result) => {
         if (!result || result.action === 'back') return;
-        this.#store.updateEquipmentSelections(result.selections);
+        this.#store.updateEquipmentSelections(result.equipments);
       });
   }
 

@@ -8,7 +8,6 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatFormField } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import type { FireTrial, TrialSearchFilters } from '@intaqalab/models';
@@ -31,7 +30,6 @@ import { TrialListComponent } from '../../../components/list/components/trial-li
     MatDialogClose,
     MatIconModule,
     TrialListComponent,
-    MatFormField,
     MatDialogClose,
     IntaIconComponent,
   ],
@@ -44,22 +42,6 @@ import { TrialListComponent } from '../../../components/list/components/trial-li
       <span class="font-medium text-lg text-gray-900">
         {{ 'TRIAL_TABLE_SELECTOR_MODAL.PENDING_TRIALS' | translate }}
       </span>
-      <div class="flex justify-end mb-4">
-        <mat-form-field
-          appearance="outline"
-          class="search-field !max-w-sm !min-w-sm !w-full"
-          [subscriptSizing]="'dynamic'"
-        >
-          <ui-inta-icon matPrefix name="search" size="md" class="mx-2" />
-          <input
-            matInput
-            class="text-gray-700"
-            [placeholder]="'TRIAL_TABLE_SELECTOR_MODAL.SEARCH_PLACEHOLDER' | translate"
-            [(ngModel)]="search"
-            (ngModelChange)="updateFilters($event)"
-          />
-        </mat-form-field>
-      </div>
 
       <inta-trial-list [filters]="defaultFilters()" [scheduler]="true" (scheduleTrial)="onTrialSelected($event)" />
     </mat-dialog-content>
@@ -78,13 +60,6 @@ export class TrialTableSelectorModalShellComponent {
   readonly defaultFilters = signal<Partial<TrialSearchFilters>>({
     status: [TrialStatus.UNDER_REVIEW, TrialStatus.PLANNED, TrialStatus.PREPARED],
   });
-
-  updateFilters(searchTerm: string) {
-    this.defaultFilters.set({
-      ...this.defaultFilters(),
-      description: searchTerm ? searchTerm : undefined,
-    });
-  }
 
   onTrialSelected(trial: FireTrial) {
     this.#dialogRef.close(trial);

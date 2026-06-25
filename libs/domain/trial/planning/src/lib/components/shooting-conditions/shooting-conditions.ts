@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { OnInit } from '@angular/core';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,18 +13,25 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
-import { Badge, IntaIconComponent } from '@intaqalab/ui';
+import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
+import { Badge, InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import {
   IntaDatePipe,
   IntaDecimalPipe,
   LocaleDecimalInputDirective,
+  NoLeadingZerosDirective,
   NoNegativeValuesDirective,
   TrialStatusLabelPipe,
 } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import type { Serie, Shot, UpdateConditionsRequest } from '../../models/shooting-conditions.model';
+import type {
+  Serie,
+  ShootingConditionsUnits,
+  Shot,
+  UpdateConditionsRequest,
+} from '../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../services/shooting-conditions.service';
 import type { Serie as SeriesAndShotsSerie } from '../../utils-models/series-and-shots.model';
 import { MassiveConfigurationDialog } from './massive-configuration-dialog/massive-configuration-dialog';
@@ -47,8 +55,11 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     TrialStatusLabelPipe,
     IntaIconComponent,
     NoNegativeValuesDirective,
-    LocaleDecimalInputDirective,
+    NoLeadingZerosDirective,
     IntaDecimalPipe,
+    InputSelect,
+    InputSelectInput,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <div class="w-full space-y-4">
@@ -281,6 +292,8 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     </td>
                   </ng-container>
 
+                  <!-- ── Campos numéricos con ui-input-select ───────────── -->
+
                   <ng-container matColumnDef="distance">
                     <th
                       *matHeaderCellDef
@@ -292,17 +305,23 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
+                        [opciones]="unitOptions.distance"
+                        [showLabel]="false"
+                        [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
+                          inputSelectInput
                           libNoNegativeValues
+                          libNoLeadingZeros
                           [formField]="getShotField(serieIdx, i).distance"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -317,16 +336,22 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
+                        [opciones]="unitOptions.targetInclination"
+                        [showLabel]="false"
+                        [value]="{ value: shot.targetInclination?.toString() ?? '', unit: shot.targetInclinationUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'targetInclination', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
+                          inputSelectInput
+                          libNoLeadingZeros
                           [formField]="getShotField(serieIdx, i).targetInclination"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -341,16 +366,18 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <input
-                          placeholder="0"
-                          matInput
-                          type="number"
-                          [formField]="getShotField(serieIdx, i).orientation"
-                        />
-                      </mat-form-field>
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}"
+                        [opciones]="unitOptions.orientation"
+                        [showLabel]="false"
+                        [value]="{ value: shot.orientation?.toString() ?? '', unit: shot.orientationUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'orientation', $event)"
+                      >
+                        <input inputSelectInput libNoLeadingZeros [formField]="getShotField(serieIdx, i).orientation" />
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -365,16 +392,18 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <input
-                          placeholder="0"
-                          matInput
-                          type="number"
-                          [formField]="getShotField(serieIdx, i).elevation"
-                        />
-                      </mat-form-field>
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}"
+                        [opciones]="unitOptions.elevation"
+                        [showLabel]="false"
+                        [value]="{ value: shot.elevation?.toString() ?? '', unit: shot.elevationUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'elevation', $event)"
+                      >
+                        <input inputSelectInput libNoLeadingZeros [formField]="getShotField(serieIdx, i).elevation" />
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -389,17 +418,23 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}"
+                        [opciones]="unitOptions.angle"
+                        [showLabel]="false"
+                        [value]="{ value: shot.angle?.toString() ?? '', unit: shot.angleUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'angle', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
+                          inputSelectInput
+                          libNoLeadingZeros
                           libLocalDecimal
                           [formField]="getShotField(serieIdx, i).angle"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -414,37 +449,23 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <input placeholder="0" matInput type="number" [formField]="getShotField(serieIdx, i).range" />
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="powderWeight">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}"
+                        [opciones]="unitOptions.range"
+                        [showLabel]="false"
+                        [value]="{ value: shot.range?.toString() ?? '', unit: shot.rangeUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'range', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
-                          step="any"
+                          inputSelectInput
                           libNoNegativeValues
-                          [formField]="getShotField(serieIdx, i).powderWeight"
+                          libNoLeadingZeros
+                          [formField]="getShotField(serieIdx, i).range"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -459,20 +480,58 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT' | translate }}"
+                        [opciones]="unitOptions.functioningHeight"
+                        [showLabel]="false"
+                        [value]="{ value: shot.functioningHeight?.toString() ?? '', unit: shot.functioningHeightUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'functioningHeight', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
+                          inputSelectInput
+                          libNoNegativeValues
+                          libNoLeadingZeros
                           [formField]="getShotField(serieIdx, i).functioningHeight"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
-                  <ng-container matColumnDef="projectWeight">
+                  <ng-container matColumnDef="powderWeight">
+                    <th
+                      *matHeaderCellDef
+                      mat-header-cell
+                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                    >
+                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}
+                    </th>
+                    <td
+                      *matCellDef="let shot; let i = index"
+                      mat-cell
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                    >
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}"
+                        [opciones]="unitOptions.powderWeight"
+                        [showLabel]="false"
+                        [value]="{ value: shot.powderWeight?.toString() ?? '', unit: shot.powderWeightUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'powderWeight', $event)"
+                      >
+                        <input
+                          inputSelectInput
+                          libNoNegativeValues
+                          libNoLeadingZeros
+                          [formField]="getShotField(serieIdx, i).powderWeight"
+                        />
+                      </ui-input-select>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="projectileWeight">
                     <th
                       *matHeaderCellDef
                       mat-header-cell
@@ -483,16 +542,23 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}"
+                        [opciones]="unitOptions.projectileWeight"
+                        [showLabel]="false"
+                        [value]="{ value: shot.projectileWeight?.toString() ?? '', unit: shot.projectileWeightUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'projectileWeight', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
-                          [formField]="getShotField(serieIdx, i).projectWeight"
+                          inputSelectInput
+                          libNoNegativeValues
+                          libNoLeadingZeros
+                          [formField]="getShotField(serieIdx, i).projectileWeight"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -507,16 +573,23 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     <td
                       *matCellDef="let shot; let i = index"
                       mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                     >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                      <ui-input-select
+                        placeholder="0"
+                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}"
+                        [opciones]="unitOptions.nominalSpeed"
+                        [showLabel]="false"
+                        [value]="{ value: shot.nominalSpeed?.toString() ?? '', unit: shot.nominalSpeedUnit }"
+                        (valueChange)="onShotFieldChange(serieIdx, i, 'nominalSpeed', $event)"
+                      >
                         <input
-                          placeholder="0"
-                          matInput
-                          type="number"
+                          inputSelectInput
+                          libNoNegativeValues
+                          libNoLeadingZeros
                           [formField]="getShotField(serieIdx, i).nominalSpeed"
                         />
-                      </mat-form-field>
+                      </ui-input-select>
                     </td>
                   </ng-container>
 
@@ -582,6 +655,9 @@ export class ShootingConditionsComponent implements OnInit {
   readonly targetThicknesses = signal<TargetThickness[] | undefined>(undefined);
   readonly impactZones = signal<MasterData[] | undefined>(undefined);
 
+  /** Opciones de unidad por campo — inmutables, vienen del enum del swagger. */
+  readonly unitOptions = SHOT_CONDITIONS_UNIT_OPTIONS;
+
   readonly displayedColumns = [
     'globalNumber',
     'date',
@@ -598,7 +674,7 @@ export class ShootingConditionsComponent implements OnInit {
     'range',
     'functioningHeight',
     'powderWeight',
-    'projectWeight',
+    'projectileWeight',
     'nominalSpeed',
     'observations',
   ];
@@ -677,7 +753,7 @@ export class ShootingConditionsComponent implements OnInit {
         min(shotPath.angle, 0);
         min(shotPath.range, 0);
         min(shotPath.functioningHeight, 0);
-        min(shotPath.projectWeight, 0);
+        min(shotPath.projectileWeight, 0);
         min(shotPath.nominalSpeed, 0);
       });
     });
@@ -697,6 +773,34 @@ export class ShootingConditionsComponent implements OnInit {
 
   trackByShotId(index: number, shot: Shot): string {
     return shot.shotId;
+  }
+
+  /**
+   * Manejador para los cambios de valor/unidad en `ui-input-select`.
+   * Actualiza el shot correspondiente en el signal del formulario.
+   */
+  onShotFieldChange(
+    serieIdx: number,
+    shotIdx: number,
+    field: keyof Shot,
+    change: { value: string; unit: string } | null,
+  ): void {
+    if (!change) return;
+    this.seriesSignal.update((series) => {
+      const updated = this.#deepClone(series);
+      const shot = updated[serieIdx]?.shots[shotIdx];
+      if (!shot) return series;
+
+      // Valor numérico
+      const numericValue = parseFloat(change.value.replace(',', '.'));
+      (shot as Record<string, unknown>)[field as string] = isNaN(numericValue) ? 0 : numericValue;
+
+      // Unidad asociada (campo *Unit)
+      const unitField = `${field as string}Unit`;
+      (shot as Record<string, unknown>)[unitField] = change.unit;
+
+      return updated;
+    });
   }
 
   getFormValues(): Serie[] {
@@ -741,10 +845,42 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   #mapDataToRequest(formData: Serie[]): Omit<UpdateConditionsRequest, 'trialId'> {
+    const firstShot = formData[0]?.shots[0];
+    const units: ShootingConditionsUnits | undefined = firstShot
+      ? {
+          distance: (firstShot.distanceUnit as ShootingConditionsUnits['distance']) ?? null,
+          orientation: (firstShot.orientationUnit as ShootingConditionsUnits['orientation']) ?? null,
+          targetInclination: (firstShot.targetInclinationUnit as ShootingConditionsUnits['targetInclination']) ?? null,
+          elevation: (firstShot.elevationUnit as ShootingConditionsUnits['elevation']) ?? null,
+          angle: (firstShot.angleUnit as ShootingConditionsUnits['angle']) ?? null,
+          range: (firstShot.rangeUnit as ShootingConditionsUnits['range']) ?? null,
+          functioningHeight: (firstShot.functioningHeightUnit as ShootingConditionsUnits['functioningHeight']) ?? null,
+          nominalSpeed: (firstShot.nominalSpeedUnit as ShootingConditionsUnits['nominalSpeed']) ?? null,
+          powderWeight: (firstShot.powderWeightUnit as ShootingConditionsUnits['powderWeight']) ?? null,
+          projectileWeight: (firstShot.projectileWeightUnit as ShootingConditionsUnits['projectileWeight']) ?? null,
+        }
+      : undefined;
+
     return {
+      units,
       shots: formData.flatMap((serie) =>
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        serie.shots.map(({ globalNumber, date, ...rest }) => ({ date, ...rest })),
+        serie.shots.map(
+          ({
+            globalNumber,
+            date,
+            distanceUnit,
+            targetInclinationUnit,
+            orientationUnit,
+            elevationUnit,
+            angleUnit,
+            rangeUnit,
+            functioningHeightUnit,
+            powderWeightUnit,
+            projectileWeightUnit,
+            nominalSpeedUnit,
+            ...rest
+          }) => ({ date, ...rest }),
+        ),
       ),
     };
   }
@@ -754,8 +890,9 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   #buildSeriesFromStore(series: SeriesAndShotsSerie[], conditions?: Serie[]): Serie[] {
+    const conditionsUnits = this.store.conditionsUnits();
+
     // Build flat maps from ALL condition shots regardless of how the backend groups them by serie.
-    // Backend may return one-serie-per-shot (seriesId === shotId), so per-serie grouping is unreliable.
     const byId = new Map<string, Shot>();
     const byGlobalNumber = new Map<number, Shot>();
     conditions?.forEach((serieCond) =>
@@ -775,9 +912,10 @@ export class ShootingConditionsComponent implements OnInit {
             return {
               ...existing,
               shotId: shot.id,
-              projectWeight: existing.projectWeight ?? 0,
+              projectileWeight: existing.projectileWeight ?? 0,
               nominalSpeed: existing.nominalSpeed ?? 0,
             };
+          // Default shot: usa las unidades del backend si ya llegaron
           return {
             shotId: shot.id,
             globalNumber: shot.globalNumber,
@@ -787,16 +925,26 @@ export class ShootingConditionsComponent implements OnInit {
             targetDimensionsId: '',
             targetThicknessId: '',
             distance: 0,
+            distanceUnit: conditionsUnits?.distance ?? 'M',
             targetInclination: 0,
+            targetInclinationUnit: conditionsUnits?.targetInclination ?? 'DEGREES',
             orientation: 0,
+            orientationUnit: conditionsUnits?.orientation ?? 'DEGREES',
             elevation: 0,
+            elevationUnit: conditionsUnits?.elevation ?? 'DEGREES',
             angle: 0,
+            angleUnit: conditionsUnits?.angle ?? 'DEGREES',
             range: 0,
+            rangeUnit: conditionsUnits?.range ?? 'M',
             impactZoneId: '',
             functioningHeight: 0,
-            projectWeight: 0,
-            powderWeight: 0,
+            functioningHeightUnit: conditionsUnits?.functioningHeight ?? 'M',
+            projectileWeight: 0,
+            projectileWeightUnit: conditionsUnits?.projectileWeight ?? 'KG',
             nominalSpeed: 0,
+            nominalSpeedUnit: conditionsUnits?.nominalSpeed ?? 'M_S',
+            powderWeight: 0,
+            powderWeightUnit: conditionsUnits?.powderWeight ?? 'KG',
             observations: '',
           };
         }),

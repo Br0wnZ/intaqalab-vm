@@ -57,12 +57,14 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
           </mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="retire()">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_RETIRE' | translate }}
-          </button>
-          <button mat-menu-item (click)="transfer()">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_TRANSFER' | translate }}
-          </button>
+          @if (store.item()?.status !== 'RETIRED') {
+            <button mat-menu-item (click)="retire()">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_RETIRE' | translate }}
+            </button>
+            <button mat-menu-item (click)="transfer()">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_TRANSFER' | translate }}
+            </button>
+          }
           <button mat-menu-item (click)="movements()">
             {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_MOVEMENTS' | translate }}
           </button>
@@ -295,6 +297,7 @@ export class MunitionStockDetailShellComponent {
 
   #router = inject(Router);
   movements() {
-    this.#router.navigateByUrl(`/wharehouse-managment/movements`);
+    const stockId = this.id();
+    this.#router.navigateByUrl(`/wharehouse-managment/movements`, { state: { stockId } });
   }
 }

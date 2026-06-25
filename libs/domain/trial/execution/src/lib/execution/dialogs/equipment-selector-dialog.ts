@@ -12,26 +12,24 @@ import { Role, injectCurrentUserRole } from '@intaqalab/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
+import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, LEGACY_CATEGORY_TO_EQUIPMENT_TYPE } from '../models';
+import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../models';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
 
-export type EquipmentItemSelectionEntry = {
-  itemId: string;
-  categoryId: string;
-  series: string[];
-  disparos: string[];
-};
+export type EquipmentItemSelectionEntry = EquipmentItemSelection;
 
 export type EquipmentSelectorDialogData = {
   categories: Array<{ id: string; label: string; maxSelection: number }>;
-  items: Array<{ id: string; label: string; categoryId: string }>;
+  items: Array<{ id: string; label: string; categoryId?: string; equipmentType?: EquipmentTypeEnum }>;
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];
-  initialSelections?: EquipmentItemSelectionEntry[];
+  serieDisparoMap?: Record<string, string[]>;
+  initialEquipments?: EquipmentMagnitudeSelectionGroup[];
 };
 
 export type EquipmentSelectorDialogResult =
-  | { action: 'save'; selections: EquipmentItemSelectionEntry[] }
+  | { action: 'save'; equipments: EquipmentMagnitudeSelectionGroup[] }
   | { action: 'back' };
 
 // ── Internal Tag Config ────────────────────────────────────────────────────────
@@ -40,7 +38,7 @@ type TagFieldConfig = {
   key: string;
   label: string;
   /** Maps to item.categoryId in data.items for options */
-  sourceCategoryId: string;
+  sourceCategoryId: EquipmentTypeEnum | string | '';
   type: 'select' | 'number';
   maxValue?: number;
 };
@@ -64,118 +62,162 @@ const MUNITIONS_ROLES: Role[] = [Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQA
 
 const TOPOGRAPHY_ROLES: Role[] = [Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD, Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN];
 
+const SELECT_ALL_SERIES_VALUE = '__ALL_SERIES__';
+
+// LEGACY_CATEGORY_TO_EQUIPMENT_TYPE is imported from execution/models
+
 // ── Canonical Tag Definitions ─────────────────────────────────────────────────
 
 const TAG_CONFIGS: TagConfig[] = [
   {
-    id: 'velocidad-inicial',
+    id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
     label: 'Velocidad Inicial',
     allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
     fields: [
-      { key: 'radar_doppler', label: 'Radar Doppler', sourceCategoryId: 'radar-dopler', type: 'select' },
-      { key: 'antena', label: 'Antena', sourceCategoryId: 'antena', type: 'select' },
+      {
+        key: 'radar_doppler',
+        label: 'Radar Doppler',
+        sourceCategoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+        type: 'select',
+      },
+      { key: 'antena', label: 'Antena', sourceCategoryId: EquipmentTypeEnum.ANTENNA, type: 'select' },
     ],
   },
   {
-    id: 'presion-piezoelectricos',
+    id: EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS,
     label: 'Presión Sensores Piezoeléctricos',
     allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
     fields: [
       {
         key: 'sensor_piezoelectrico',
         label: 'Sensor piezoeléctrico',
-        sourceCategoryId: 'sensor-piezoelectrico',
+        sourceCategoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
         type: 'select',
       },
-      { key: 'amplificador', label: 'Amplificador', sourceCategoryId: 'amplificador', type: 'select' },
+      { key: 'amplificador', label: 'Amplificador', sourceCategoryId: EquipmentTypeEnum.AMPLIFIER, type: 'select' },
     ],
   },
   {
-    id: 'trayectografia',
+    id: EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA,
     label: 'Trayectografía',
     allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
     fields: [
       {
         key: 'radar_trayectografia',
         label: 'Radar Trayectografía',
-        sourceCategoryId: 'radar-trayectografia',
+        sourceCategoryId: EquipmentTypeEnum.TRAJECTOGRAPHY_RADAR,
         type: 'select',
       },
     ],
   },
   {
-    id: 'video-av',
+    id: EquipmentMagnitudeTagEnum.SONIDO,
+    label: 'Sonido',
+    allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
+    fields: [
+      {
+        key: 'sonometro',
+        label: 'Sonómetro',
+        sourceCategoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
+        type: 'select',
+      },
+    ],
+  },
+  {
+    id: EquipmentMagnitudeTagEnum.VIDEO_AV,
     label: 'Vídeo AV',
     allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
     fields: [
-      { key: 'camara_av', label: 'Cámara AV', sourceCategoryId: 'camara-av', type: 'select' },
-      { key: 'grabador', label: 'Grabador', sourceCategoryId: 'grabador', type: 'select' },
+      {
+        key: 'camara_av',
+        label: 'Cámara AV',
+        sourceCategoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+        type: 'select',
+      },
+      { key: 'grabador', label: 'Grabador', sourceCategoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA, type: 'select' },
       { key: 'canal', label: 'Canal (01 al 32)', sourceCategoryId: '', type: 'number', maxValue: 32 },
       { key: 'magnitud', label: 'Magnitud', sourceCategoryId: 'magnitud', type: 'select' },
     ],
   },
   {
-    id: 'video-c',
+    id: EquipmentMagnitudeTagEnum.VIDEO_C,
     label: 'Vídeo C',
     allowedRoles: [...ADMIN_ROLES, ...BALLISTICS_ROLES],
     fields: [
-      { key: 'camara_c', label: 'Cámara C', sourceCategoryId: 'camara-c', type: 'select' },
-      { key: 'grabador', label: 'Grabador', sourceCategoryId: 'grabador', type: 'select' },
+      {
+        key: 'camara_c',
+        label: 'Cámara C',
+        sourceCategoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+        type: 'select',
+      },
+      {
+        key: 'grabador',
+        label: 'Grabador',
+        sourceCategoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+        type: 'select',
+      },
       { key: 'canal', label: 'Canal (01 al 32)', sourceCategoryId: '', type: 'number', maxValue: 32 },
       { key: 'magnitud', label: 'Magnitud', sourceCategoryId: 'magnitud', type: 'select' },
     ],
   },
   {
-    id: 'longitud',
+    id: EquipmentMagnitudeTagEnum.LONGITUD,
     label: 'Longitud',
     allowedRoles: [...ADMIN_ROLES, ...ARMAMENT_ROLES],
     fields: [
-      { key: 'regla_trazos', label: 'Regla de Trazos', sourceCategoryId: 'regla-trazos', type: 'select' },
+      {
+        key: 'regla_trazos',
+        label: 'Regla de Trazos',
+        sourceCategoryId: EquipmentTypeEnum.TRACE_RULER,
+        type: 'select',
+      },
       { key: 'magnitud', label: 'Magnitud', sourceCategoryId: 'magnitud', type: 'select' },
     ],
   },
   {
-    id: 'presion-manometros',
+    id: EquipmentMagnitudeTagEnum.PRESION_MANOMETROS,
     label: 'Presión Manómetros',
     allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
     fields: [
-      { key: 'manometro', label: 'Manómetro', sourceCategoryId: 'manometro', type: 'select' },
-      { key: 'crusher', label: 'Crusher', sourceCategoryId: 'crusher', type: 'select' },
-      { key: 'palpador', label: 'Palpador', sourceCategoryId: 'palpador', type: 'select' },
+      { key: 'manometro', label: 'Manómetro', sourceCategoryId: EquipmentTypeEnum.PRESSURE_GAUGE, type: 'select' },
+      { key: 'crusher', label: 'Crusher', sourceCategoryId: EquipmentTypeEnum.CRUSHER, type: 'select' },
+      { key: 'palpador', label: 'Palpador', sourceCategoryId: EquipmentTypeEnum.PROBE, type: 'select' },
     ],
   },
   {
-    id: 'presion-ipg',
+    id: EquipmentMagnitudeTagEnum.PRESION_IPG,
     label: 'Presión IPG',
     allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
     fields: [
-      { key: 'sensor_ipg', label: 'Sensor IPG', sourceCategoryId: 'sensor-ipg', type: 'select' },
-      { key: 'micromodulo', label: 'Micromódulo', sourceCategoryId: 'micromodulo', type: 'select' },
+      { key: 'sensor_ipg', label: 'Sensor IPG', sourceCategoryId: EquipmentTypeEnum.IPG_SENSOR, type: 'select' },
+      { key: 'micromodulo', label: 'Micromódulo', sourceCategoryId: EquipmentTypeEnum.MICROMDULE, type: 'select' },
     ],
   },
   {
-    id: 'pesos',
+    id: EquipmentMagnitudeTagEnum.PESOS,
     label: 'Pesos',
     allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
     fields: [
-      { key: 'balanza', label: 'Balanza', sourceCategoryId: 'balanza', type: 'select' },
+      { key: 'balanza', label: 'Balanza', sourceCategoryId: EquipmentTypeEnum.BALANCE, type: 'select' },
       { key: 'municion', label: 'Munición', sourceCategoryId: 'municion', type: 'select' },
     ],
   },
   {
-    id: 'acondicionamiento',
+    id: EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO,
     label: 'Acondicionamiento',
     allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
     fields: [
-      { key: 'camara', label: 'Cámara', sourceCategoryId: 'camara', type: 'select' },
+      { key: 'camara', label: 'Cámara', sourceCategoryId: EquipmentTypeEnum.CLIMATIC_CHAMBER, type: 'select' },
       { key: 'municion', label: 'Munición', sourceCategoryId: 'municion', type: 'select' },
     ],
   },
   {
-    id: 'tiempo',
+    id: EquipmentMagnitudeTagEnum.TIEMPO,
     label: 'Tiempo',
     allowedRoles: [...ADMIN_ROLES, ...TOPOGRAPHY_ROLES],
-    fields: [{ key: 'cronometro', label: 'Cronómetro', sourceCategoryId: 'cronometro', type: 'select' }],
+    fields: [
+      { key: 'cronometro', label: 'Cronómetro', sourceCategoryId: EquipmentTypeEnum.CHRONOMETER, type: 'select' },
+    ],
   },
 ];
 
@@ -307,7 +349,12 @@ const INIT_STATE = (): TagTableState => ({ rows: [EMPTY_ROW()], nextId: 1, pageI
                     <mat-label>
                       {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SERIES_PLACEHOLDER' | translate }}
                     </mat-label>
-                    <mat-select multiple [value]="row.series" (selectionChange)="setRowSeries(row.rowId, $event.value)">
+                    <mat-select
+                      multiple
+                      [value]="row.series"
+                      (selectionChange)="handleSeriesSelection(row.rowId, $event.value)"
+                    >
+                      <mat-option [value]="selectAllSeriesValue">Seleccionar todas las series</mat-option>
                       @for (opt of data.serieOptions; track opt.value) {
                         <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                       }
@@ -372,11 +419,16 @@ export class EquipmentSelectorDialog {
   readonly #dialogRef = inject<MatDialogRef<EquipmentSelectorDialog, EquipmentSelectorDialogResult>>(MatDialogRef);
   readonly data = inject<EquipmentSelectorDialogData>(MAT_DIALOG_DATA);
   readonly #userRoles = injectCurrentUserRole();
+  readonly selectAllSeriesValue = SELECT_ALL_SERIES_VALUE;
 
   // ── State: one entry per tag, lazily initialized ───────────────────────────
 
   readonly #selectedTagId = signal<string>('');
   readonly #tagStates = signal<Record<string, TagTableState>>({});
+
+  constructor() {
+    this.#hydrateFromInitialEquipments();
+  }
 
   // ── Computed ─────────────────────────────────────────────────────────────────
 
@@ -423,9 +475,96 @@ export class EquipmentSelectorDialog {
 
   // ── Methods ──────────────────────────────────────────────────────────────────
 
-  getItemsByCategory(categoryId: string): Array<{ id: string; label: string; categoryId: string }> {
+  getItemsByCategory(
+    categoryId: EquipmentTypeEnum | string | '',
+  ): Array<{ id: string; label: string; categoryId?: string }> {
     if (!categoryId) return [];
-    return this.data.items.filter((i) => i.categoryId === categoryId);
+    return this.data.items.filter((i) => {
+      if (this.#resolveEquipmentType(i) === categoryId) return true;
+      return i.categoryId === categoryId;
+    });
+  }
+
+  #resolveEquipmentType(item: { categoryId?: string; equipmentType?: EquipmentTypeEnum }): EquipmentTypeEnum | null {
+    if (item.equipmentType) return item.equipmentType;
+    if (!item.categoryId) return null;
+    return LEGACY_CATEGORY_TO_EQUIPMENT_TYPE[item.categoryId] ?? null;
+  }
+
+  #getAllSeriesValues(): string[] {
+    return this.data.serieOptions.map((serie) => serie.value);
+  }
+
+  #getDisparosBySeries(series: string[]): string[] {
+    if (!series.length) return [];
+
+    if (!this.data.serieDisparoMap) {
+      return this.data.disparoOptions.map((disparo) => disparo.value);
+    }
+
+    const disparos = series.flatMap((serie) => this.data.serieDisparoMap?.[serie] ?? []);
+    return [...new Set(disparos)];
+  }
+
+  #hydrateFromInitialEquipments(): void {
+    const initialEquipments = this.data.initialEquipments;
+    if (!initialEquipments?.length) {
+      const firstVisible = this.visibleTags()[0]?.id;
+      if (firstVisible) this.selectTag(firstVisible);
+      return;
+    }
+
+    const states: Record<string, TagTableState> = {};
+
+    for (const group of initialEquipments) {
+      const tag = TAG_CONFIGS.find((t) => t.id === group.id);
+      if (!tag) continue;
+
+      const rows: TagRow[] = [];
+
+      for (const selection of group.selections) {
+        const field = tag.fields.find(
+          (f) => f.type === 'select' && f.sourceCategoryId && f.sourceCategoryId === selection.categoryId,
+        );
+
+        if (!field) continue;
+
+        rows.push({
+          rowId: `row-${rows.length}`,
+          fieldValues: { [field.key]: selection.itemId },
+          series: selection.series ?? [],
+          disparos: selection.disparos ?? [],
+        });
+      }
+
+      states[group.id] = {
+        rows: rows.length ? rows : [EMPTY_ROW()],
+        nextId: rows.length || 1,
+        pageIndex: 0,
+      };
+    }
+
+    if (Object.keys(states).length) {
+      this.#tagStates.set(states);
+      this.#selectedTagId.set(Object.keys(states)[0] ?? this.visibleTags()[0]?.id ?? '');
+      return;
+    }
+
+    const firstVisible = this.visibleTags()[0]?.id;
+    if (firstVisible) this.selectTag(firstVisible);
+  }
+
+  handleSeriesSelection(rowId: string, selectedValues: string[]): void {
+    const series = selectedValues.includes(this.selectAllSeriesValue) ? this.#getAllSeriesValues() : selectedValues;
+    const disparos = this.#getDisparosBySeries(series);
+
+    const tagId = this.#selectedTagId();
+    if (!tagId) return;
+
+    this.#updateTag(tagId, (s) => ({
+      ...s,
+      rows: s.rows.map((r) => (r.rowId === rowId ? { ...r, series, disparos } : r)),
+    }));
   }
 
   /** Selects a tag. Preserves existing state; initializes with 1 empty row if first time. */
@@ -492,15 +631,17 @@ export class EquipmentSelectorDialog {
 
   /** Collects entries from ALL tags that have at least one filled field. */
   save(): void {
-    const selections: EquipmentItemSelectionEntry[] = [];
+    const equipments: EquipmentMagnitudeSelectionGroup[] = [];
 
     for (const [tagId, state] of Object.entries(this.#tagStates())) {
       const tag = TAG_CONFIGS.find((t) => t.id === tagId);
       if (!tag) continue;
 
+      const selections: EquipmentItemSelectionEntry[] = [];
+
       for (const row of state.rows) {
         for (const field of tag.fields) {
-          if (field.type === 'select' && row.fieldValues[field.key]) {
+          if (field.type === 'select' && field.sourceCategoryId && row.fieldValues[field.key]) {
             selections.push({
               itemId: row.fieldValues[field.key],
               categoryId: field.sourceCategoryId,
@@ -510,8 +651,15 @@ export class EquipmentSelectorDialog {
           }
         }
       }
+
+      if (selections.length) {
+        equipments.push({
+          id: tagId,
+          selections,
+        });
+      }
     }
 
-    this.#dialogRef.close({ action: 'save', selections });
+    this.#dialogRef.close({ action: 'save', equipments });
   }
 }

@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type {
@@ -15,7 +16,6 @@ import type {
   CalibryWeaponSerialOption,
 } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 export interface ArmamentIntroductionMassConfigDialogData {
   serieOptions: { value: string; label: string }[];
@@ -65,8 +65,8 @@ interface MassConfigForm {
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>
@@ -94,9 +94,11 @@ interface MassConfigForm {
 
       <!-- 2-column grid for fields -->
       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-        <!-- Arma -->  
-        <div>        
-          <mat-label class="block text-sm font-medium text-gray-700 mb-2">{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}</mat-label>
+        <!-- Arma -->
+        <div>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_PLACEHOLDER' | translate"
@@ -109,9 +111,11 @@ interface MassConfigForm {
           </mat-form-field>
         </div>
 
-        <!-- Nº serie del arma -->  
-        <div>        
-          <mat-label class="block text-sm font-medium text-gray-700 mb-2">{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_ARMA_LABEL' | translate }}</mat-label>
+        <!-- Nº serie del arma -->
+        <div>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_ARMA_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_ARMA_PLACEHOLDER' | translate"
@@ -126,7 +130,9 @@ interface MassConfigForm {
 
         <!-- Tubo -->
         <div>
-          <mat-label class="block text-sm font-medium text-gray-700 mb-2">{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_LABEL' | translate }}</mat-label>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_PLACEHOLDER' | translate"
@@ -141,7 +147,9 @@ interface MassConfigForm {
 
         <!-- Nº serie del tubo -->
         <div>
-          <mat-label class="block text-sm font-medium text-gray-700 mb-2">{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_TUBO_LABEL' | translate }}</mat-label>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_TUBO_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_TUBO_PLACEHOLDER' | translate"
@@ -153,7 +161,7 @@ interface MassConfigForm {
             </mat-select>
           </mat-form-field>
         </div>
-     </div>
+      </div>
     </mat-dialog-content>
 
     <!-- Actions -->

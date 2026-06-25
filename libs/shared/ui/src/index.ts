@@ -11,10 +11,8 @@ export * from './lib/ui-dialogs/ui-dialog.model';
 export * from './lib/doc-viewer/doc-viewer';
 export * from './lib/doc-viewer/doc-viewer.contract';
 export * from './lib/input-select/input-select';
+export * from './lib/input-select/input-select-input.directive';
 export * from './lib/chart-directive/chart-directive';
-
-
-
 
 export * from './lib/badge/badge.component';
 export * from './lib/legend-trial-scheduler/legend-trial-scheduler.component';

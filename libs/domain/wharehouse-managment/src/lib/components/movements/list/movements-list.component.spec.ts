@@ -48,6 +48,7 @@ function createMockMunitionsDumpsStore() {
 describe('MovementsListComponent', () => {
   let mockStore: ReturnType<typeof createMockMovementsStore>;
   let mockMunitionsDumpsStore: ReturnType<typeof createMockMunitionsDumpsStore>;
+  window.history.pushState({ stockId: '7e0ef82-5f18-48ab-b36b-115c4e137f3d' }, '');
 
   const setup = async (items: MovementListItem[] = []) => {
     const user = userEvent.setup();
@@ -77,7 +78,9 @@ describe('MovementsListComponent', () => {
 
   describe('Rendering', () => {
     it('should render the table column headers', async () => {
-      await setup();
+      const { fixture } = await setup();
+      fixture.detectChanges();
+
       expect(screen.getByText(/WHAREHOUSE_MANAGMENT\.MOVEMENTS\.TABLE\.COL_USER/i)).toBeInTheDocument();
       expect(screen.getByText(/WHAREHOUSE_MANAGMENT\.MOVEMENTS\.TABLE\.COL_DATE/i)).toBeInTheDocument();
       expect(screen.getByText(/WHAREHOUSE_MANAGMENT\.MOVEMENTS\.TABLE\.COL_QUANTITY/i)).toBeInTheDocument();

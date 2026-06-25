@@ -11,6 +11,7 @@ export * from './lib/trials/upsert-fire-trial-request.model';
 export * from './lib/calendar-trials/calendar-event.model';
 export * from './lib/calendar-trials/trial-scheduler.model';
 export * from './lib/core/resource-status.model';
+export * from './lib/core/measure-unit.enum';
 export * from './lib/dialogs/confirm-dialog-data.model';
 export * from './lib/trials/trial-upsert-form.model';
 

@@ -1,6 +1,7 @@
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 
 export interface MovementListSearch extends PaginatedSortedViewRequest {
+  stockId?: string;
   dateTimeFrom?: string;
   dateTimeTo?: string;
   movementTypes?: string[];
@@ -11,6 +12,12 @@ export interface MovementListSearch extends PaginatedSortedViewRequest {
   quantityMax?: number;
   affectedNeq?: number;
   associatedFireTrialIds?: string[];
+}
+
+export interface TransferMovementsPayload {
+  munitionDumpId: string;
+  cellName: string;
+  items: { quantity: number; stockId: string }[];
 }
 
 export interface MovementListPaginatedResponse {

@@ -80,21 +80,20 @@
   }
 }
 
-html body .mat-mdc-form-field.small-textarea{
-  .mat-mdc-text-field-wrapper{
+html body .mat-mdc-form-field.small-textarea {
+  .mat-mdc-text-field-wrapper {
     padding: 0 8px;
   }
   .mat-mdc-form-field-flex {
     height: 100%;
   }
-  .mat-mdc-form-field-infix{
+  .mat-mdc-form-field-infix {
     padding-top: 4px;
     padding-bottom: 4px;
   }
-  textarea{
+  textarea {
     height: 100%;
     resize: none;
     font-size: 12px !important;
   }
 }
-

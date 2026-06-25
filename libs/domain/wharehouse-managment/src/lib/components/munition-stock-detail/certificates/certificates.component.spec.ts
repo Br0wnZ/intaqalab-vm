@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
 import { MunitionsStockCertificatesStore } from '../../../+state/munitions-stock-certificates.store';
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
 import { CertificatesComponent } from './certificates.component';
@@ -31,6 +32,63 @@ function mockStore(overrides?: { items?: any[]; totalElements?: number }) {
     reload: vi.fn(),
     reset: vi.fn(),
   };
+}
+
+function makeMunitionDetailStore(overrides?: Partial<MunitionDetailResponseModel>) {
+  return {
+    item: signal<MunitionDetailResponseModel | undefined>(munitionData(overrides)),
+    isLoading: signal(false),
+    error: signal(null),
+    hasError: signal(false),
+    searchById: vi.fn(),
+    updateAssociatedComponents: vi.fn(),
+    reload: vi.fn(),
+    reset: vi.fn(),
+  };
+}
+
+function munitionData(overrides?: Partial<MunitionDetailResponseModel>): MunitionDetailResponseModel {
+  return {
+    id: 'stock-1',
+    munitionType: { id: 'mt-root', name: 'Tipo RaÃ­z' },
+    denomination: { id: 'den-root', name: 'DenominaciÃ³n RaÃ­z' },
+    batch: 'Lote X',
+    quantity: 10,
+    totalNeq: 100,
+    weight: 20,
+    generalData: {
+      client: { id: 'cli-1', name: 'Cliente A' },
+      entryDate: '2026-01-01',
+      plannedFireTrial: { id: 'trial-1', name: 'Prueba A', scheduledDate: '2026-06-01' },
+      observations: '',
+    },
+    location: {
+      munitionDump: { id: 'dump-1', munitionDumpId: 'PolvorÃ­n A' },
+      cellName: 'Celda 1',
+    },
+    associatedComponents: [
+      {
+        id: 'comp-0',
+        munitionType: { id: 'Proyectil', name: 'Proyectil' },
+        denomination: { id: 'den-comp-1', name: 'DenominaciÃ³n 1' },
+        batch: 'Lote 1',
+        quantity: 10,
+      },
+      {
+        id: 'comp-1',
+        munitionType: { id: 'Vaso', name: 'Vaso' },
+        denomination: { id: 'den-comp-2', name: 'DenominaciÃ³n 2' },
+        batch: 'Lote 2',
+        quantity: 5,
+      },
+    ],
+    retirementDate: '',
+    retirementReason: '',
+    status: 'ACTIVE',
+    createdBy: 'user',
+    modifiedBy: 'user',
+    ...overrides,
+  } as any;
 }
 
 function mockUiDialogService(confirmed = true) {
@@ -88,6 +146,7 @@ function certificateItem(id: string, name: string) {
 
 let mockDialog: ReturnType<typeof createMockMatDialog>;
 let store: ReturnType<typeof mockStore>;
+let stockDetailStore: ReturnType<typeof makeMunitionDetailStore>;
 let uiDialog: ReturnType<typeof mockUiDialogService>;
 
 async function setup(options?: {
@@ -97,6 +156,7 @@ async function setup(options?: {
 }) {
   mockDialog = createMockMatDialog({ defaultResult: null });
   store = mockStore(options?.storeOverrides);
+  stockDetailStore = makeMunitionDetailStore();
   uiDialog = mockUiDialogService(options?.confirmed ?? true);
 
   const renderResult = await render(CertificatesComponent, {
@@ -105,6 +165,7 @@ async function setup(options?: {
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
       { provide: MunitionsStockCertificatesStore, useValue: store },
+      { provide: MunitionsStockDetailStore, useValue: stockDetailStore },
       { provide: UiDialogService, useValue: uiDialog },
     ],
     componentInputs: {

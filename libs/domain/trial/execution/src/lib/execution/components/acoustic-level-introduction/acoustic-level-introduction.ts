@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -38,23 +38,22 @@ interface DataFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
+    <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">graphic_eq</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>
             {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}
           </mat-label>
@@ -66,7 +65,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-label>
             {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}
           </mat-label>
@@ -78,7 +77,7 @@ interface DataFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button mat-flat-button color="primary" type="button" class="!text-xs !h-8 !px-3" (click)="setCurrentShot()">
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 
@@ -94,7 +93,7 @@ interface DataFormModel {
       <div class=""></div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+      <div intaReadonlyContent class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 min-h-0 items-end">
         <!-- Row 1 -->
 
         <!-- Equipo (Sonómetro) -->
@@ -112,12 +111,12 @@ interface DataFormModel {
 
         <!-- Distancia sonómetro-boca -->
         <ui-input-select
+          subscriptSizing="dynamic"
           [label]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISTANCIA_BOCA_LABEL' | translate"
           [opciones]="mOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DISTANCIA_BOCA_PLACEHOLDER' | translate"
           [value]="distanciaBocaField()"
           (valueChange)="distanciaBocaField.set($event)"
-          subscriptSizing="dynamic"
         />
 
         <!-- Nivel acústico -->
@@ -158,7 +157,7 @@ interface DataFormModel {
             [value]="xSonometroField() ?? ''"
             (input)="xSonometroField.set(parseNum($any($event.target).value))"
           />
-          <span matSuffix class="pr-1 text-sm text-gray-500">m</span>
+          <span matSuffix class="pr-4 text-sm text-gray-500">m</span>
         </mat-form-field>
 
         <!-- Sonómetro Y -->
@@ -173,7 +172,7 @@ interface DataFormModel {
             [value]="ySonometroField() ?? ''"
             (input)="ySonometroField.set(parseNum($any($event.target).value))"
           />
-          <span matSuffix class="pr-1 text-sm text-gray-500">m</span>
+          <span matSuffix class="pr-4 text-sm text-gray-500">m</span>
         </mat-form-field>
 
         <!-- Sonómetro Z -->
@@ -188,7 +187,7 @@ interface DataFormModel {
             [value]="zSonometroField() ?? ''"
             (input)="zSonometroField.set(parseNum($any($event.target).value))"
           />
-          <span matSuffix class="pr-1 text-sm text-gray-500">m</span>
+          <span matSuffix class="pr-4 text-sm text-gray-500">m</span>
         </mat-form-field>
       </div>
     </div>

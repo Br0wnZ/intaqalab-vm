@@ -24,3 +24,6 @@ export type {
   UpsertWidgetPreferencesRequest,
   WidgetPreferencesResponse,
 } from './widget-preferences.model';
+
+// Equipment models
+export * from './equipment.models';

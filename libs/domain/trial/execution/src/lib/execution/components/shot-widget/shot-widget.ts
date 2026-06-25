@@ -5,13 +5,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 /**
  * 🎯 Widget de Disparo con formulario
@@ -27,8 +27,8 @@ import { IntaIconComponent } from "@intaqalab/ui";
     MatIconModule,
     FormField,
     ReadonlyContentDirective,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   host: { class: 'block h-full' },
   template: `
     <mat-card class="h-full !shadow-none border border-gray-100 flex flex-col bg-white">
@@ -61,10 +61,7 @@ import { IntaIconComponent } from "@intaqalab/ui";
 
           <!-- Velocidad -->
           <div [class]="width() === 1 ? '' : 'col-span-6 lg:col-span-4'">
-            <label
-              for="shot-velocity"
-              class="block font-medium text-gray-700 mb-1"
-            >
+            <label for="shot-velocity" class="block font-medium text-gray-700 mb-1">
               {{ 'WIDGETS.SHOT.VELOCITY' | translate }} (m/s)
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
@@ -74,10 +71,7 @@ import { IntaIconComponent } from "@intaqalab/ui";
 
           <!-- Observaciones -->
           <div [class]="width() === 1 ? '' : 'col-span-12 lg:col-span-4'">
-            <label
-              for="shot-observations"
-              class="block font-medium text-gray-700 mb-1"
-            >
+            <label for="shot-observations" class="block font-medium text-gray-700 mb-1">
               {{ 'WIDGETS.SHOT.OBSERVATIONS' | translate }}
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">

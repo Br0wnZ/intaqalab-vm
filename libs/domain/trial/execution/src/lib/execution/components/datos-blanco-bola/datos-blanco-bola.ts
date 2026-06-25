@@ -38,8 +38,8 @@ interface SelectorFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
@@ -53,7 +53,7 @@ interface SelectorFormModel {
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic"class="w-44">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.SERIE_PLACEHOLDER' | translate }}</mat-label>
           <mat-select [formField]="selectorForm.serie">
             @for (opt of serieOptions(); track opt.value) {
@@ -73,23 +73,14 @@ interface SelectorFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button
-          mat-flat-button
-          type="button"
-          
-          (click)="setCurrentShot()"
-        >
+        <button mat-flat-button type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CURRENT_SHOT_BTN' | translate }}
         </button>
 
         <div class="flex-1"></div>
 
         <!-- Aplicar configuración masiva -->
-        <button
-          mat-flat-button
-          type="button"
-          (click)="openMasivaDialog()"
-        >
+        <button mat-flat-button type="button" (click)="openMasivaDialog()">
           {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_BTN' | translate }}
         </button>
 
@@ -100,7 +91,10 @@ interface SelectorFormModel {
       </div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-8 gap-x-2 gap-y-1 min-h-0 content-start">
+      <div
+        intaReadonlyContent
+        class="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-8 gap-x-2 gap-y-1 min-h-0 content-start"
+      >
         <!-- ── Fila 1 ───────────────────────────────────────────────────── -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_X_LABEL' | translate"

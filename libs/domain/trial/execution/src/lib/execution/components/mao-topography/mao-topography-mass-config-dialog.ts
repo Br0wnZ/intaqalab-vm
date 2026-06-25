@@ -58,8 +58,8 @@ type InputFieldValue = { value: string; unit: string } | null;
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>

@@ -14,12 +14,13 @@ import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { BooleanStatusBadge, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
-import { delay } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListResponse, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
+import { MunitionsStockDetailService } from '../../../services/munitions-stock-detail.service';
 import { TransferDialogComponent } from '../../shared/transfer-dialog/transfer-dialog.component';
 import { StockListFilterComponent } from '../filter/stock-list-filter.component';
 import { NeqDataComponent } from '../neq-data/neq-data.component';
@@ -102,6 +103,7 @@ const DEFAULT_COLUMNS = [
               <div class="flex items-center gap-1">
                 <mat-checkbox
                   [checked]="selection.isSelected(item)"
+                  [disabled]="item.status === 'RETIRED'"
                   (click)="$event.stopPropagation()"
                   (change)="selection.toggle(item)"
                 ></mat-checkbox>
@@ -276,12 +278,13 @@ const DEFAULT_COLUMNS = [
 export class StockListComponent {
   readonly stockListStore = inject(StockListStore);
   readonly #munitionDumpsStore: MunitionsDumpsStoreType = inject(MunitionsDumpsStore);
+  readonly #munitionsStockDetailService = inject(MunitionsStockDetailService);
 
   readonly #dialog = inject(MatDialog);
   readonly #router = inject(Router);
 
   readonly displayedColumns = computed(() => [...DEFAULT_COLUMNS]);
-  selection = new SelectionModel<MunitionStockListResponse>();
+  selection = new SelectionModel<MunitionStockListResponse>(true, []);
 
   pageIndex = signal(0);
   pageSize = signal(10);
@@ -290,7 +293,7 @@ export class StockListComponent {
   filtersData = signal<MunitionStockListSearch | undefined>(undefined);
 
   constructor() {
-    this.#munitionDumpsStore.search({ pageSize: 500 });
+    this.#munitionDumpsStore.search({ pageSize: 500, active: true });
 
     effect(() => {
       const page = this.pageIndex() + 1;
@@ -301,24 +304,28 @@ export class StockListComponent {
 
       this.stockListStore.search({ ...filters, page, pageSize, sortDirection, sortField });
     });
+
+    effect(() => {
+      const result = this.#munitionsStockDetailService.transferResource.statusCode();
+
+      if (result === 201) {
+        this.stockListStore.reload();
+        this.selection.clear();
+      }
+    });
   }
 
-  transfer() {
-    const item = this.selection.selected;
-    if (item.length > 0) {
-      this.#dialog
-        .open(TransferDialogComponent, {
-          data: { item: item[0] },
-          width: '1024px',
-        })
-        .afterClosed()
-        .pipe(delay(500))
-        .subscribe((success) => {
-          if (success) {
-            this.stockListStore.reload();
-          }
-        });
-    }
+  async transfer() {
+    const items = this.selection.selected;
+
+    if (!items.length) return;
+
+    const dialogRef = this.#dialog.open(TransferDialogComponent, {
+      data: { items },
+      width: '1024px',
+    });
+
+    await firstValueFrom(dialogRef.afterClosed());
   }
 
   navigate(item: MunitionStockListResponse) {

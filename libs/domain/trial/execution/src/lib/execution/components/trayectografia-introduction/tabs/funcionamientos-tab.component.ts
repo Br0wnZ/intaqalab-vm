@@ -19,7 +19,7 @@ import { ExecutionStore } from '../../../../+state/execution.store';
   selector: 'inta-trayectografia-funcionamientos-tab',
   imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule],
   template: `
-    <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 items-end">
       <!-- Equipo -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>

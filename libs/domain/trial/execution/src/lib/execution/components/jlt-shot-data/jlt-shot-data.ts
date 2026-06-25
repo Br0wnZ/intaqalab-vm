@@ -37,8 +37,8 @@ interface JltShotDataSelectForm {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- Header -->
@@ -94,7 +94,10 @@ interface JltShotDataSelectForm {
       <div class=""></div>
 
       <!-- Fields grid: 4 cols, 2 rows (last col = Observaciones spanning 2 rows) -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+      <div
+        intaReadonlyContent
+        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start"
+      >
         <!-- ── Row 1 ──────────────────────────────────────────────── -->
 
         <!-- JET -->

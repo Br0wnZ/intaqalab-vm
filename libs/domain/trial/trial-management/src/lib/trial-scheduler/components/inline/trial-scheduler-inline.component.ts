@@ -87,10 +87,10 @@ interface SchedulerChip {
   styles: [
     `
       mat-chip {
-        background-color: var(--color-purple-100) !important;
+        background-color: var(--inta-tonal-button-bg) !important;
         .mdc-evolution-chip__text-label.mat-mdc-chip-action-label,
         .mat-mdc-chip-remove {
-          color: var(--color-purple-600) !important;
+          color: var(--inta-button) !important;
           font-size: 12px;
           display: flex;
           align-items: center;

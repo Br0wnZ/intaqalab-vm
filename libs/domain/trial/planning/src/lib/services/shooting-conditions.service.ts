@@ -9,6 +9,7 @@ import type {
   TargetDimension,
   TargetThickness,
 } from '@intaqalab/models';
+import { MeasureUnitEnum } from '@intaqalab/models';
 
 import type {
   Serie,
@@ -18,7 +19,16 @@ import type {
   UpdateConditionsRequest,
 } from '../models/shooting-conditions.model';
 
-function mapShotRecord(shot: Record<string, unknown>): Shot {
+/** Unidad de distancia por defecto cuando el backend no la devuelve. */
+const DEFAULT_DISTANCE_UNIT = MeasureUnitEnum.M;
+/** Unidad de ángulo por defecto cuando el backend no la devuelve. */
+const DEFAULT_ANGLE_UNIT = MeasureUnitEnum.DEGREES;
+/** Unidad de velocidad por defecto cuando el backend no la devuelve. */
+const DEFAULT_SPEED_UNIT = MeasureUnitEnum.M_S;
+/** Unidad de peso por defecto cuando el backend no la devuelve. */
+const DEFAULT_WEIGHT_UNIT = MeasureUnitEnum.KG;
+
+function mapShotRecord(shot: Record<string, unknown>, units: ShootingConditionsUnits): Shot {
   const date = shot['date'];
   return {
     shotId: (shot['shotId'] as string) ?? '',
@@ -29,16 +39,27 @@ function mapShotRecord(shot: Record<string, unknown>): Shot {
     targetDimensionsId: (shot['targetDimensionsId'] as string) ?? '',
     targetThicknessId: (shot['targetThicknessId'] as string) ?? '',
     distance: (shot['distance'] as number) ?? 0,
+    distanceUnit: (shot['distanceUnit'] as string) ?? units.distance ?? DEFAULT_DISTANCE_UNIT,
     targetInclination: (shot['targetInclination'] as number) ?? 0,
+    targetInclinationUnit: (shot['targetInclinationUnit'] as string) ?? units.targetInclination ?? DEFAULT_ANGLE_UNIT,
     orientation: (shot['orientation'] as number) ?? 0,
+    orientationUnit: (shot['orientationUnit'] as string) ?? units.orientation ?? DEFAULT_ANGLE_UNIT,
     elevation: (shot['elevation'] as number) ?? 0,
+    elevationUnit: (shot['elevationUnit'] as string) ?? units.elevation ?? DEFAULT_ANGLE_UNIT,
     angle: (shot['angle'] as number) ?? 0,
+    angleUnit: (shot['angleUnit'] as string) ?? units.angle ?? DEFAULT_ANGLE_UNIT,
     range: (shot['range'] as number) ?? 0,
+    rangeUnit: (shot['rangeUnit'] as string) ?? units.range ?? DEFAULT_DISTANCE_UNIT,
     impactZoneId: (shot['impactZoneId'] as string) ?? '',
     functioningHeight: (shot['functioningHeight'] as number) ?? 0,
+    functioningHeightUnit:
+      (shot['functioningHeightUnit'] as string) ?? units.functioningHeight ?? DEFAULT_DISTANCE_UNIT,
     nominalSpeed: (shot['nominalSpeed'] as number) ?? 0,
+    nominalSpeedUnit: (shot['nominalSpeedUnit'] as string) ?? units.nominalSpeed ?? DEFAULT_SPEED_UNIT,
     powderWeight: (shot['powderWeight'] as number) ?? 0,
-    projectWeight: ((shot['projectWeight'] ?? shot['projectileWeight']) as number) ?? 0,
+    powderWeightUnit: (shot['powderWeightUnit'] as string) ?? units.powderWeight ?? DEFAULT_WEIGHT_UNIT,
+    projectileWeight: ((shot['projectileWeight'] ?? shot['projectWeight']) as number) ?? 0,
+    projectileWeightUnit: (shot['projectileWeightUnit'] as string) ?? units.projectileWeight ?? DEFAULT_WEIGHT_UNIT,
     observations: (shot['observations'] as string | null) ?? '',
   };
 }
@@ -46,19 +67,33 @@ function mapShotRecord(shot: Record<string, unknown>): Shot {
 function parseUnits(raw: unknown): ShootingConditionsUnits {
   const u = (raw ?? {}) as Record<string, unknown>;
   return {
-    distance: (u['distance'] as number | null) ?? null,
-    orientation: (u['orientation'] as number | null) ?? null,
-    targetInclination: (u['targetInclination'] as number | null) ?? null,
-    elevation: (u['elevation'] as number | null) ?? null,
-    angle: (u['angle'] as number | null) ?? null,
-    range: (u['range'] as number | null) ?? null,
-    functioningHeight: (u['functioningHeight'] as number | null) ?? null,
-    nominalSpeed: (u['nominalSpeed'] as number | null) ?? null,
-    powderWeight: (u['powderWeight'] as number | null) ?? null,
+    distance: (u['distance'] as ShootingConditionsUnits['distance']) ?? null,
+    orientation: (u['orientation'] as ShootingConditionsUnits['orientation']) ?? null,
+    targetInclination: (u['targetInclination'] as ShootingConditionsUnits['targetInclination']) ?? null,
+    elevation: (u['elevation'] as ShootingConditionsUnits['elevation']) ?? null,
+    angle: (u['angle'] as ShootingConditionsUnits['angle']) ?? null,
+    range: (u['range'] as ShootingConditionsUnits['range']) ?? null,
+    functioningHeight: (u['functioningHeight'] as ShootingConditionsUnits['functioningHeight']) ?? null,
+    nominalSpeed: (u['nominalSpeed'] as ShootingConditionsUnits['nominalSpeed']) ?? null,
+    powderWeight: (u['powderWeight'] as ShootingConditionsUnits['powderWeight']) ?? null,
+    projectileWeight: (u['projectileWeight'] as ShootingConditionsUnits['projectileWeight']) ?? null,
   };
 }
 
-function parseSeriesArray(items: unknown[]): Serie[] {
+const DEFAULT_UNITS: ShootingConditionsUnits = {
+  distance: null,
+  orientation: null,
+  targetInclination: null,
+  elevation: null,
+  angle: null,
+  range: null,
+  functioningHeight: null,
+  nominalSpeed: null,
+  powderWeight: null,
+  projectileWeight: null,
+};
+
+function parseSeriesArray(items: unknown[], units: ShootingConditionsUnits): Serie[] {
   if (!items.length) return [];
 
   return items.map((rawItem) => {
@@ -66,7 +101,7 @@ function parseSeriesArray(items: unknown[]): Serie[] {
     return {
       seriesId: (item['seriesId'] as string) ?? (item['id'] as string) ?? '',
       seriesName: (item['seriesName'] as string) ?? (item['name'] as string) ?? '',
-      shots: ((item['shots'] as Record<string, unknown>[]) ?? []).map(mapShotRecord),
+      shots: ((item['shots'] as Record<string, unknown>[]) ?? []).map((s) => mapShotRecord(s, units)),
     };
   });
 }
@@ -109,17 +144,7 @@ export class ShootingConditionsService {
     },
     {
       defaultValue: {
-        units: {
-          distance: null,
-          orientation: null,
-          targetInclination: null,
-          elevation: null,
-          angle: null,
-          range: null,
-          functioningHeight: null,
-          nominalSpeed: null,
-          powderWeight: null,
-        },
+        units: DEFAULT_UNITS,
         series: [],
       },
       parse: (raw): ShootingConditionsResponse => {
@@ -131,7 +156,7 @@ export class ShootingConditionsService {
             ? (response['series'] as unknown[])
             : // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((raw as any)?.items ?? []);
-        return { units, series: parseSeriesArray(seriesRaw) };
+        return { units, series: parseSeriesArray(seriesRaw, units) };
       },
     },
   );

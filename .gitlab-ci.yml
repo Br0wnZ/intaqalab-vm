@@ -254,7 +254,7 @@ image-package-des:
 
 image-package-pre:
   environment: pre
-  tags: [k8s-pre]  
+  tags: [k8s-des]  
   variables:
     ENV: "pre"
     INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
@@ -264,7 +264,7 @@ image-package-pre:
 
 image-package-pro:
   environment: pro
-  tags: [k8s-pro]  
+  tags: [k8s-des]  
   variables:
     ENV: "pro"
     INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltStatus } from '../../../+state/execution.store';
@@ -15,7 +16,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 /**
  * 🛡️ Widget "Preparación ejecución – JLT" (W3)
@@ -37,8 +37,8 @@ import { IntaIconComponent } from "@intaqalab/ui";
     MatIconModule,
     MatTooltipModule,
     MatSelectModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-auto">
       <!-- 🔝 Header -->
@@ -115,11 +115,7 @@ import { IntaIconComponent } from "@intaqalab/ui";
               </mat-checkbox>
             </div>
 
-            <mat-form-field
-              appearance="outline"
-              subscriptSizing="dynamic"
-              class="w-full flex-1 small-textarea min-h-0"
-            >
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full flex-1 small-textarea min-h-0">
               <textarea
                 matInput
                 class="custom-scrollbar"
@@ -137,7 +133,10 @@ import { IntaIconComponent } from "@intaqalab/ui";
             @for (unit of techUnits(); track unit.id) {
               <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                  <mat-icon class="!w-4 !h-4 !text-[16px]" [class]="unit.ready ? '!text-[var(--inta-button)]' : '!text-gray-700'">
+                  <mat-icon
+                    class="!w-4 !h-4 !text-[16px]"
+                    [class]="unit.ready ? '!text-[var(--inta-button)]' : '!text-gray-700'"
+                  >
                     {{ unit.ready ? 'check_box' : 'check_box_outline_blank' }}
                   </mat-icon>
                   <span class="text-[11px] font-bold text-slate-700">{{ unit.labelKey | translate }}</span>

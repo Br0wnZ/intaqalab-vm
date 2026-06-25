@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
-import type { WidgetId } from '../execution/models';
+import type { EquipmentMagnitudeTagEnum, WidgetId } from '../execution/models';
 
 // ============= Types =============
 
@@ -167,6 +167,49 @@ export type ProfileReadinessRequest = {
   seriesReadiness: SeriesReadinessItem[];
 };
 
+export type EquipmentSelectorCategory = {
+  id: string;
+  label: string;
+  maxSelection: number;
+  equipmentType?: string;
+};
+
+export type EquipmentSelectorItem = {
+  id: string;
+  label: string;
+  categoryId?: string;
+  equipmentType?: string;
+};
+
+export type EquipmentSelectorSelection = {
+  itemId: string;
+  categoryId: string;
+  series: string[];
+  disparos: string[];
+};
+
+export type EquipmentSelectorMagnitudeGroup = {
+  id: EquipmentMagnitudeTagEnum | string;
+  selections: EquipmentSelectorSelection[];
+};
+
+export type EquipmentSelectorResponse = {
+  categories: EquipmentSelectorCategory[];
+  items: EquipmentSelectorItem[];
+  equipments: EquipmentSelectorMagnitudeGroup[];
+  serieOptions: { value: string; label: string }[];
+  disparoOptions: { value: string; label: string }[];
+  serieDisparoMap?: Record<string, string[]>;
+};
+
+export type EquipmentSelectorUpdateRequest = {
+  equipments: EquipmentSelectorMagnitudeGroup[];
+};
+
+export type EquipmentSelectorUpdateResponse = {
+  equipments: EquipmentSelectorMagnitudeGroup[];
+};
+
 interface PreferencesParams extends ExecutionParams {
   roleName?: string;
   username?: string;
@@ -176,6 +219,10 @@ interface PreferencesParams extends ExecutionParams {
 interface ReadinessProfileParams extends ExecutionParams {
   profile: ExecutionTechnicalProfile;
   body: ProfileReadinessRequest;
+}
+
+interface EquipmentSelectorUpdateParams extends ExecutionParams {
+  body: EquipmentSelectorUpdateRequest;
 }
 
 // ============= Service =============
@@ -536,5 +583,40 @@ export class ExecutionService {
 
   resetSetProfileReadiness(): void {
     this.#setReadinessProfileParams.set(null);
+  }
+
+  // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
+
+  readonly #getEquipmentSelectorParams = signal<ExecutionParams | null>(null);
+
+  readonly equipmentSelectorResource = httpResource<EquipmentSelectorResponse>(() => {
+    const params = this.#getEquipmentSelectorParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selector`,
+      method: 'GET',
+    };
+  });
+
+  getEquipmentSelector(fireTrialId: FireTrial['id']): void {
+    this.#getEquipmentSelectorParams.set({ fireTrialId, _t: Date.now() });
+  }
+
+  // ── EQUIPMENT SELECTOR: PUT ─────────────────────────────────────────────
+
+  readonly #updateEquipmentSelectorParams = signal<EquipmentSelectorUpdateParams | null>(null);
+
+  readonly updateEquipmentSelectorResource = httpResource<EquipmentSelectorUpdateResponse>(() => {
+    const params = this.#updateEquipmentSelectorParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selector`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  updateEquipmentSelector(fireTrialId: FireTrial['id'], body: EquipmentSelectorUpdateRequest): void {
+    this.#updateEquipmentSelectorParams.set({ fireTrialId, body, _t: Date.now() });
   }
 }

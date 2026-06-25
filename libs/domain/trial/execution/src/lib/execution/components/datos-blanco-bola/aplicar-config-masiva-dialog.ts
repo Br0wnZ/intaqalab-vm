@@ -54,12 +54,12 @@ export type AplicarConfigMasivaDialogResult =
     MatIconModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>
-      <ui-inta-icon name="edit" size="xxl"  />
+      <ui-inta-icon name="edit" size="xxl" />
       {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DIALOG_TITLE' | translate }}
     </h2>
 
@@ -72,7 +72,9 @@ export type AplicarConfigMasivaDialogResult =
       <!-- Selección de series y disparos -->
       <div class="flex gap-3 mb-3">
         <div class="flex-1">
-          <mat-label class="block text-sm font-medium text-gray-700 mb-1">{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_SERIES_LABEL' | translate }}</mat-label>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_SERIES_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select [multiple]="true" [(value)]="selectedSeries">
               @for (opt of data.serieOptions; track opt.value) {
@@ -83,7 +85,9 @@ export type AplicarConfigMasivaDialogResult =
         </div>
 
         <div class="flex-1">
-          <mat-label class="block text-sm font-medium text-gray-700 mb-1">{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DISPAROS_LABEL' | translate }}</mat-label>
+          <mat-label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_DISPAROS_LABEL' | translate }}
+          </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select [multiple]="true" [(value)]="selectedDisparos">
               @for (opt of data.disparoOptions; track opt.value) {

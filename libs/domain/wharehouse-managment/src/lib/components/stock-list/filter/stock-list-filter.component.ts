@@ -83,7 +83,7 @@ type FilterForm = {
           [searchable]="true"
           [label]="'WHAREHOUSE_MANAGMENT.LINK.TYPE_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.LINK.TYPE_PLACEHOLDER' | translate"
-          [options]="munitionComboOptions()"
+          [options]="munitionComponentStore.items()"
         />
 
         <ui-inta-signal-select
@@ -257,14 +257,14 @@ type FilterForm = {
 })
 export class StockListFilterComponent {
   store = inject(StockListStore);
-  readonly #munitionComponentStore = inject(MunitionComponentStore);
+  readonly munitionComponentStore = inject(MunitionComponentStore);
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
   readonly clientDataService = inject(ClientsDataService);
   readonly #translate = inject(TranslateService);
   readonly filtersData = output<MunitionStockListSearch>();
 
   constructor() {
-    this.#munitionComponentStore.search({ pageSize: 100 });
+    this.munitionComponentStore.search({ pageSize: 100, active: true });
   }
 
   readonly defaultFormValues = {
@@ -398,12 +398,6 @@ export class StockListFilterComponent {
       label: this.#translate.instant('WHAREHOUSE_MANAGMENT.STOCK_LIST.STATUS_RETIRE'),
     },
   ];
-
-  munitionComboOptions = computed(() => {
-    const munitionComponentList = this.#munitionComponentStore.items();
-
-    return (munitionComponentList || []).filter((item) => item.category === 'MUNITION_COMPONENT');
-  });
 
   search() {
     const criteria: Record<string, string | number | string[] | Date | null> = this.formModel();

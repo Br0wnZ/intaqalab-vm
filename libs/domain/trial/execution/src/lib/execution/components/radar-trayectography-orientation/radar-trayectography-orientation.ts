@@ -4,14 +4,14 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 interface RadarTrayectographyFilters {
   serie: string | null;
@@ -21,22 +21,20 @@ interface RadarTrayectographyFilters {
 
 @Component({
   selector: 'inta-radar-trayectography-orientation',
-  imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslateModule, InputSelect],
+  imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslateModule, InputSelect, IntaIconComponent],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
+    <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- Header: título + filtros -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <div class="flex items-center gap-2 shrink-0">
-          <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[18px] !w-[18px] !h-[18px]">radar</mat-icon>
-          </div>
-          <h3 class="text-sm font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_PLACEHOLDER' | translate"
             [formField]="radarForm.serie"
@@ -75,9 +73,9 @@ interface RadarTrayectographyFilters {
       </div>
 
       <!-- Campos de datos en dos filas de 8 -->
-      <div intaReadonlyContent class="flex-1 flex flex-col justify-between min-h-0">
+      <div intaReadonlyContent class="flex-1 gap-6 flex flex-col justify-end min-h-0">
         <!-- Fila 1: Pieza X/Y/Z, Alcance previsto, X/Y P. Caída, OLT geográfico, Dif. angular radar -->
-        <div class="grid grid-cols-8 gap-2">
+        <div class="grid grid-cols-4 lg:grid-cols-8 gap-2">
           <!-- Pieza X -->
           <ui-input-select
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.X_PIEZA_LABEL' | translate"
@@ -164,7 +162,7 @@ interface RadarTrayectographyFilters {
         </div>
 
         <!-- Fila 2: I. Trans, I. Long, V. inicial, T. vuelo, Grad. espoleta, Ángulo tiro, Peso proyectil, Altura boca -->
-        <div class="grid grid-cols-8 gap-2">
+        <div class="grid grid-cols-4 lg:grid-cols-8 gap-2">
           <!-- I. Transversal (calculado) -->
           <ui-input-select
             variant="computed"

@@ -18,6 +18,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 interface SeguimientoFormModel {
   presionVelocidadUnit: string;
@@ -50,29 +51,28 @@ interface ComputedSerie {
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-  ],
+    IntaIconComponent
+],
   template: `
-    <div class="h-full rounded-2xl border border-violet-200 bg-white p-2 flex flex-col gap-1.5 overflow-hidden">
+    <div class="h-full rounded-2xl border border-violet-200 bg-white p-4 flex flex-col gap-1.5 overflow-hidden">
       <!-- Header: Icon + Title -->
       <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[14px] !w-[14px] !h-[14px]">table_chart</mat-icon>
-        </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate flex-1">
-          {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
+        <ui-inta-icon name="file" color="var(--inta-button)" />
+        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+        {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
         </h3>
       </div>
 
       <!-- Tab chips row -->
-      <div class="flex items-center gap-1 shrink-0 overflow-x-auto pb-0.5">
+      <div class="flex items-center gap-1 shrink-0 overflow-x-auto my-2">
         @for (tab of activeTabs(); track tab) {
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors border shrink-0"
+            class="px-2.5 py-0.5 rounded-full text-[.6875rem] font-medium whitespace-nowrap transition-colors border shrink-0"
             [class]="
               activeTab() === tab
-                ? 'bg-violet-600 text-white border-violet-600'
-                : 'bg-white text-violet-700 border-violet-200 hover:bg-violet-50'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-[var(--inta-button)]/50 text-white cursor-pointer'
             "
             (click)="setActiveTab(tab)"
           >
@@ -84,7 +84,7 @@ interface ComputedSerie {
       <!-- Unit selectors row -->
       <div class="flex items-center gap-2 shrink-0">
         <!-- Unit: Presión/Velocidad -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 small-select">
           <mat-select [formField]="seguimientoForm.presionVelocidadUnit">
             @for (unit of presionUnits; track unit) {
               <mat-option [value]="unit">{{ unit }}</mat-option>
@@ -93,7 +93,7 @@ interface ComputedSerie {
         </mat-form-field>
 
         <!-- Unit: Pesos -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-16 shrink-0">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-16 small-select shrink-0">
           <mat-select [formField]="seguimientoForm.pesosUnit">
             @for (unit of pesoUnits; track unit) {
               <mat-option [value]="unit">{{ unit }}</mat-option>
@@ -104,10 +104,10 @@ interface ComputedSerie {
 
       <!-- Accordion with scrollable table per series -->
       <div intaReadonlyContent class="flex-1 overflow-auto min-h-0">
-        <mat-accordion multi>
+        <mat-accordion multi class="flex flex-col gap-2">
           @for (serie of tableData(); track serie.serieId) {
             <mat-expansion-panel
-              class="!shadow-none !rounded-xl border border-slate-100 mb-1.5 !bg-white"
+              class="!shadow-none !rounded-xl border border-slate-200 !m-0 !bg-white"
               [expanded]="true"
             >
               <mat-expansion-panel-header class="!px-3 !min-h-8 !h-8">
@@ -116,11 +116,11 @@ interface ComputedSerie {
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
-              <div class="overflow-x-auto -mx-4 px-3 pb-1">
+              <div class="overflow-x-auto -mx-11 px-5 pb-1">
                 <table class="text-[10px] border-collapse w-full">
                   <thead>
-                    <tr class="text-slate-500 border-b border-slate-100">
-                      <th class="text-left pb-1 pr-2 font-medium whitespace-nowrap sticky left-0 bg-white z-10">
+                    <tr class="text-slate-500 border-b border-slate-200 bg-gray-50">
+                      <th class="text-left pb-1 pr-2 pl-2 font-medium whitespace-nowrap sticky left-0 z-10">
                         {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.COL_DISP' | translate }}
                       </th>
                       @for (col of columns(); track col.key) {
@@ -130,10 +130,10 @@ interface ComputedSerie {
                   </thead>
                   <tbody>
                     @for (row of serie.computedRows; track row.disparo) {
-                      <tr class="border-b border-slate-50 hover:bg-violet-50/30">
-                        <td class="py-1 pr-2 font-medium text-slate-700 sticky left-0 bg-white">{{ row.disparo }}</td>
+                      <tr class="border-b border-slate-200 [&:hover>td]:bg-violet-50/30">
+                        <td class="py-1 px-2 font-medium text-slate-700 sticky left-0 bg-white">{{ row.disparo }}</td>
                         @for (cell of row.cells; track $index) {
-                          <td class="py-1 px-1.5 text-right text-slate-600 tabular-nums">
+                          <td class="py-1 px-2 text-right text-slate-600 tabular-nums">
                             {{ cell !== null ? cell : '—' }}
                           </td>
                         }

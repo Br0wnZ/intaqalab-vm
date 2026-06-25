@@ -122,7 +122,7 @@ export class RetireDialogComponent {
       ...this.formModel(),
       quantity: this.formModel().quantity as number,
       category: this.data.category,
-      itemId: this.data.item.id,
+      stockId: this.data.item.id,
     });
     this.dialogRef.close(true);
   }

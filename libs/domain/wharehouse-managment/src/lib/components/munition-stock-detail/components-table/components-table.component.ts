@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -18,7 +27,7 @@ import type { UpdateAssociatedComponentsPayload } from '../../../services/muniti
 import type { EditFormResult } from './upsert-dialog/upsert-dialog.component';
 import { UpsertDialogComponent } from './upsert-dialog/upsert-dialog.component';
 
-const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch', 'acciones'];
+const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch'];
 
 @Component({
   selector: 'inta-components-table',
@@ -48,12 +57,14 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch', 'accione
             <h3 class="text-sm font-medium text-gray-900">
               {{ 'WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.HEADING' | translate }}
             </h3>
-            <div class="flex items-center gap-4">
-              <button mat-flat-button (click)="itemToEdit.set({ value: -1 })">
-                <mat-icon>add</mat-icon>
-                {{ 'WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ADD_COMPONENTS' | translate }}
-              </button>
-            </div>
+            @if (munitionStockDetailStore.item()?.status !== 'RETIRED') {
+              <div class="flex items-center gap-4">
+                <button mat-flat-button (click)="itemToEdit.set({ value: -1 })">
+                  <mat-icon>add</mat-icon>
+                  {{ 'WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ADD_COMPONENTS' | translate }}
+                </button>
+              </div>
+            }
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
@@ -103,8 +114,8 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch', 'accione
               </td>
             </ng-container>
 
-            <!-- Columna Acciones -->
-            <ng-container matColumnDef="acciones">
+            <!-- Columna Actions -->
+            <ng-container matColumnDef="actions">
               <th
                 *matHeaderCellDef
                 mat-header-cell
@@ -124,9 +135,9 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch', 'accione
               </td>
             </ng-container>
 
-            <tr *matHeaderRowDef="displayedColumns" mat-header-row class="bg-gray-50"></tr>
+            <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="bg-gray-50"></tr>
             <tr
-              *matRowDef="let row; columns: displayedColumns"
+              *matRowDef="let row; columns: displayedColumns()"
               mat-row
               class="hover:bg-gray-50 transition-colors border-b border-gray-100"
             ></tr>
@@ -148,7 +159,14 @@ export class ComponentsTableComponent {
 
   munition = input.required<MunitionDetailResponseModel>();
 
-  readonly displayedColumns = DISPLAYED_COLUMNS;
+  readonly displayedColumns = computed(() => {
+    const hasRetiredStatus = this.munitionStockDetailStore.item()?.status === 'RETIRED';
+    const columns = [...DISPLAYED_COLUMNS];
+
+    if (!hasRetiredStatus) columns.push('actions');
+
+    return columns;
+  });
 
   itemToEdit = signal<{ value: number } | undefined>(undefined);
 

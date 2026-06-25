@@ -25,6 +25,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 export type TrayectografiaTab = 'trayectorias' | 'funcionamientos' | 'trazas';
 
@@ -47,23 +48,22 @@ interface SelectorFormModel {
     TrayectografiasTrayectoriasTabComponent,
     TrayectografiaFuncionamientosTabComponent,
     TrayectografiaTrazasTabComponent,
-  ],
+    IntaIconComponent
+],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-            <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">edit</mat-icon>
-          </div>
-          <h3 class="text-xs font-semibold text-slate-800 leading-tight whitespace-nowrap">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
             [formField]="selectorForm.serie"
@@ -75,7 +75,7 @@ interface SelectorFormModel {
         </mat-form-field>
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectorForm.disparo"
@@ -91,7 +91,6 @@ interface SelectorFormModel {
           mat-flat-button
           color="primary"
           type="button"
-          class="!bg-violet-600 !text-white !text-xs !h-8 !px-3 !rounded-xl"
           (click)="setCurrentShot()"
         >
           {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
@@ -100,13 +99,13 @@ interface SelectorFormModel {
         <div class="flex-1"></div>
 
         <!-- Tab chips -->
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-start gap-1 shrink-0 h-full lg:mr-4">
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
             [class]="
               activeTab() === 'trayectorias'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
                 : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
             "
             (click)="activeTab.set('trayectorias')"
@@ -115,10 +114,10 @@ interface SelectorFormModel {
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
             [class]="
               activeTab() === 'funcionamientos'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
                 : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
             "
             (click)="activeTab.set('funcionamientos')"
@@ -127,10 +126,10 @@ interface SelectorFormModel {
           </button>
           <button
             type="button"
-            class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors"
+            class="px-2.5 py-0.5 rounded-full text-md font-semibold transition-colors cursor-pointer"
             [class]="
               activeTab() === 'trazas'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-[var(--inta-button)] hover:bg-[var(--inta-button-hover)] text-white'
                 : 'border border-violet-300 text-violet-700 hover:bg-violet-50'
             "
             (click)="activeTab.set('trazas')"

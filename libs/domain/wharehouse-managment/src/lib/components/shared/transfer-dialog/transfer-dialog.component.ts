@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form, max, min, required } from '@angular/forms/signals';
+import { FormField, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import type { TransferMovementsPayload } from '../../../models/movements.model';
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
 import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 import { MunitionsDumpsService } from '../../../services/munitions-dumps.service';
@@ -52,14 +53,16 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
           [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_PLACEHOLDER' | translate"
           [options]="cellOptions()"
         />
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input id="quantiy" type="number" matInput [formField]="form.quantity" />
-          </mat-form-field>
-        </div>
+        @if (data.items.length === 1) {
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input id="quantiy" type="number" matInput [formField]="form.quantity" />
+            </mat-form-field>
+          </div>
+        }
       </div>
     </mat-dialog-content>
 
@@ -85,9 +88,10 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
 export class TransferDialogComponent {
   readonly dialogRef = inject(MatDialogRef);
   readonly data = inject<{
-    item: MunitionDetailResponseModel;
+    items: MunitionDetailResponseModel[];
   }>(MAT_DIALOG_DATA);
 
+  readonly #munitionsStockDetailService = inject(MunitionsStockDetailService);
   munitionDumpsDataService = inject(MunitionsDumpsService);
   munitionDumpsSearchResults = this.munitionDumpsDataService.paginatedResponse;
 
@@ -110,25 +114,33 @@ export class TransferDialogComponent {
     }
   });
 
-  readonly formModel = signal<{ quantity: number | null; munitionDumpId: string; cellName: string }>({
-    quantity: null,
+  readonly formModel = signal<{ quantity: number; munitionDumpId: string; cellName: string }>({
+    quantity: 0,
     munitionDumpId: '',
     cellName: '',
   });
   readonly form = form(this.formModel, (f) => {
-    required(f.quantity);
-    max(f.quantity, this.data.item.quantity);
+    required(f.quantity, { when: () => this.data.items.length === 1 });
     min(f.quantity, 1);
     required(f.munitionDumpId);
+    required(f.cellName);
   });
 
-  retireService = inject(MunitionsStockDetailService);
   onConfirm() {
-    this.retireService.transfer.set({
-      ...this.formModel(),
-      quantity: this.formModel().quantity as number,
-      itemId: this.data.item.id,
-    });
+    const formModelData = this.formModel();
+
+    const dataToSend: TransferMovementsPayload = {
+      munitionDumpId: formModelData.munitionDumpId,
+      cellName: formModelData.cellName,
+      items: this.data.items.map((item) => {
+        return {
+          quantity: this.data.items.length === 1 ? formModelData.quantity : item.quantity,
+          stockId: item.id,
+        };
+      }),
+    };
+
+    this.#munitionsStockDetailService.transfer.set(dataToSend);
     this.dialogRef.close(true);
   }
 

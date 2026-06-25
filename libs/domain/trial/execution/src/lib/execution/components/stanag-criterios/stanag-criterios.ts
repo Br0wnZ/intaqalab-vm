@@ -11,78 +11,84 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { IntaIconComponent } from "@intaqalab/ui";
 
 @Component({
   selector: 'inta-stanag-criterios',
-  imports: [DatePipe, MatButtonModule, ReadonlyContentDirective, MatIconModule, TranslateModule],
+  imports: [DatePipe, MatButtonModule, ReadonlyContentDirective, MatIconModule, TranslateModule, IntaIconComponent],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-100 shrink-0">
-          <mat-icon class="text-violet-600 !text-[16px] !w-[16px] !h-[16px]">policy</mat-icon>
+      <div class="flex items-center justify-between gap-4 shrink-0">
+        <div class="flex gap-1.5">
+          <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+            {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE' | translate }}
+          </h3>
         </div>
-        <h3 class="text-xs font-semibold text-slate-800 leading-tight truncate">
-          {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE' | translate }}
-        </h3>
-      </div>
-
-      <!-- Last checked + Actualizar button -->
-      <div class="flex items-center gap-2 shrink-0">
-        @if (lastChecked()) {
-          <span class="text-[10px] text-slate-500 truncate flex-1">
-            {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.LAST_CHECKED' | translate }}:
-            {{ lastChecked() | date: 'HH:mm:ss' }}
-          </span>
-        } @else {
-          <span class="text-[10px] text-slate-400 flex-1">
-            {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.NOT_CHECKED' | translate }}
-          </span>
-        }
         <button
-          mat-mini-fab
           aria-label="Actualizar criterios"
-          class="!bg-purple-600 !text-white !shadow-none !rounded-xl !flex !items-center !justify-center shrink-0"
+          mat-flat-button color="primary" class="!px-2.5 !min-w-auto"
           [disabled]="checking()"
           (click)="onActualizar()"
         >
           @if (checking()) {
             <span class="block size-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
           } @else {
-            <mat-icon>refresh</mat-icon>
+            <ui-inta-icon name="update" size="xl" />
           }
         </button>
       </div>
 
+      <!-- Last checked + Actualizar button -->
+      <div class="flex items-center gap-2 shrink-0 mb-4">
+        @if (lastChecked()) {
+          <span class="text-xs text-slate-500 truncate flex-1">
+            {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.LAST_CHECKED' | translate }}:
+            {{ lastChecked() | date: 'HH:mm:ss' }}
+          </span>
+        } @else {
+          <span class="text-xs text-slate-400 flex-1">
+            {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.NOT_CHECKED' | translate }}
+          </span>
+        }
+      </div>
+
       <!-- Criteria list with vertical scroll -->
-      <div intaReadonlyContent class="flex-1 overflow-y-auto flex flex-col gap-1.5 min-h-0 pr-0.5">
+      <div intaReadonlyContent class="flex-1 overflow-y-auto flex flex-col gap-4 min-h-0 pr-0.5">
         @for (criterio of criterios(); track criterio.id) {
           <div
-            class="flex items-start gap-2 rounded-lg border p-2 shrink-0"
-            [class]="
-              criterio.cumple === true
-                ? 'bg-green-50 border-green-200'
-                : criterio.cumple === false
-                  ? 'bg-red-50 border-red-200'
-                  : 'bg-slate-50 border-slate-200'
-            "
+            class="flex items-start gap-2 shrink-0"
           >
-            <mat-icon
-              class="shrink-0 !text-[16px] !w-[16px] !h-[16px] mt-0.5"
-              [class]="
+            <ui-inta-icon
+              [size]="
                 criterio.cumple === true
-                  ? 'text-green-600'
+                  ? 'md'
                   : criterio.cumple === false
-                    ? 'text-red-500'
-                    : 'text-slate-400'
+                    ? '18px'
+                    : 'md'
+              "
+              [color]="
+                criterio.cumple === true
+                  ? 'var(--inta-success)'
+                  : criterio.cumple === false
+                    ? 'var(--inta-error)'
+                    : 'var(--inta-warning)'
+              "
+              [name]="
+                criterio.cumple === true
+                  ? 'checkCircle'
+                  : criterio.cumple === false
+                   ? 'closeCircle'
+                   : 'info'
+
               "
             >
-              {{ criterio.cumple === true ? 'check_circle' : criterio.cumple === false ? 'cancel' : 'help_outline' }}
-            </mat-icon>
-            <p class="text-[11px] text-slate-700 leading-snug">{{ criterio.texto }}</p>
+            </ui-inta-icon>
+            <p class="text-xs text-gray-600 leading-snug">{{ criterio.texto }}</p>
           </div>
         } @empty {
-          <p class="text-[11px] text-slate-400 text-center py-4">
+          <p class="text-xs text-slate-400 text-center py-4">
             {{ 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.NO_CRITERIOS' | translate }}
           </p>
         }
