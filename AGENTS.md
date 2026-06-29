@@ -33,6 +33,13 @@
 
 ---
 
+# ⚙️ Configuración del Sistema (Antigravity & Codificación)
+
+- **Codificación de Comentarios:** Todos los comentarios generados en el código (HTML, TS, etc.) y respuestas en español por cualquier agente/IA DEBEN estar en formato **UTF-8** estricto (cuidar ñ, tildes y caracteres especiales).
+- **Auto-Carga de Reglas y Skills:** Antigravity debe aplicar automáticamente y de forma implícita todas las directrices de `AGENTS.md`, los skills definidos en `.agents/skills/` en todas las interacciones, sin necesidad de que el usuario lo solicite de manera explícita.
+
+---
+
 # 🤖 Central AI Orchestrator Routing
 
 Act as the **Central AI Orchestrator** to route tasks to specialized skills located in `.agents/skills/`:
