@@ -36,6 +36,7 @@ testem.log
 /typings
 .stignore
 sync.ffs_db
+apis/*
 
 # System Files
 .DS_Store

@@ -3,10 +3,10 @@ import {
   MENU_EVENT_LOG_ROLES,
   MENU_EXECUTION_ROLES,
   MENU_NEW_TRIAL_ROLES,
+  MENU_STOCK_MUNITION_ROLES,
   MENU_TRIAL_LIST_ROLES,
   MENU_WAREHOUSE_ROLES,
   Role,
-  MENU_STOCK_MUNITION_ROLES,
 } from '@intaqalab/core';
 import type { IntaIconName } from '@intaqalab/ui';
 

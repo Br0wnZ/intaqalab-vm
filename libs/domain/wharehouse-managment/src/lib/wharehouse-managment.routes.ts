@@ -1,5 +1,5 @@
 import type { Routes } from '@angular/router';
-import { MENU_WAREHOUSE_ROLES, Role, canMatchRole, MENU_STOCK_MUNITION_ROLES } from '@intaqalab/core';
+import { MENU_STOCK_MUNITION_ROLES, MENU_WAREHOUSE_ROLES, Role, canMatchRole } from '@intaqalab/core';
 
 import { DenominationsStore } from './+state/denominations.store';
 import { MovementsListStore } from './+state/movements-list.store';
