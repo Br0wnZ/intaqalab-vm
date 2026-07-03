@@ -349,7 +349,7 @@
     },
     "ALL_LINES": "Todas las líneas",
     "CELL_NO_NOTAM": "SIN NOTAM",
-    "CELL_HOLIDAY": "FESTIVO"
+    "CELL_HOLIDAY": "INHÁBIL"
   },
   "SPECIAL_DAYS_MANAGER": {
     "BUTTON_MANAGE_SPECIAL_DAYS": "Gestionar días especiales",

@@ -24,6 +24,7 @@ export type FireTrial = {
   modifiedBy?: string;
   createdAt?: string;
   updatedAt?: string;
+  validated?: boolean;
 };
 
 export type FireTrialType = {

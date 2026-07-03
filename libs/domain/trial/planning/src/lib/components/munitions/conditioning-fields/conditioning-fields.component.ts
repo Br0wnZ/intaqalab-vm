@@ -161,7 +161,13 @@ export class ConditioningFieldsComponent {
 
   readonly dataChange = output<ReconditioningData>();
 
-  readonly formModel = linkedSignal(() => this.data());
+  readonly formModel = linkedSignal<ReconditioningData>(() => {
+    const original = this.data();
+    return {
+      ...original,
+      timeMin: original.timeMin ?? 24,
+    };
+  });
 
   readonly temperatureColor = computed(() => this.#getTemperatureColor(this.formModel().temperature ?? 0));
 

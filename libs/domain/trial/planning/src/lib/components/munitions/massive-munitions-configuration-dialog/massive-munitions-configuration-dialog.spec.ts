@@ -218,7 +218,9 @@ describe('MassiveMunitionsConfigurationDialog', () => {
 
     const minTimeInput = document.querySelector('#timeMin') as HTMLInputElement;
     expect(minTimeInput).toBeInTheDocument();
+    expect(minTimeInput.value).toBe('24');
 
+    await user.clear(minTimeInput);
     await user.type(minTimeInput, '12');
     expect(minTimeInput.value).toBe('12');
   });

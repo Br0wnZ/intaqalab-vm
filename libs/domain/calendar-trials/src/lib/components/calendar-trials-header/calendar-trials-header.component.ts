@@ -43,6 +43,14 @@ import {
 
             <button
               type="button"
+              class="px-3 py-1.5 text-sm font-semibold rounded-lg border border-neutral-300 hover:bg-neutral-100 transition-colors cursor-pointer"
+              (click)="goToToday()"
+            >
+              {{ 'CALENDAR_TRIALS.CONTROLS.TODAY' | translate }}
+            </button>
+
+            <button
+              type="button"
               mwlCalendarNextView
               class="calendar-trials-header__nav-button"
               [view]="viewValue"
@@ -180,6 +188,10 @@ export class CalendarTrialsHeaderComponent {
   handleViewDateChange(date: Date) {
     this.viewDateValue = date;
     this.viewDateChange.emit(date);
+  }
+
+  goToToday() {
+    this.handleViewDateChange(new Date());
   }
 
   #formatDayMonth(date: Date) {

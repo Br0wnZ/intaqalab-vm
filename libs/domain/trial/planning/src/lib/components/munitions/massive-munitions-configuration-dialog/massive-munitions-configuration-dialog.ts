@@ -646,7 +646,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               libNoLeadingZeros
                               libNoNegativeValues
                               [id]="'component-timeMin-' + component"
-                              [value]="getComponentData(component).reconditioning?.timeMin ?? ''"
+                              [value]="getComponentData(component).reconditioning?.timeMin ?? '24'"
                               (keydown)="onDecimalKeydown($event)"
                               (input)="
                                 onComponentReconditioningChange(component, 'timeMin', $any($event.target).valueAsNumber)
@@ -842,6 +842,18 @@ export class MassiveMunitionsConfigurationDialog {
   constructor() {
     if (this.data?.preloadedData) {
       this.formData = { ...this.formData, ...this.data.preloadedData };
+    }
+
+    if (this.formData.reconditioning && this.formData.reconditioning.timeMin === null) {
+      this.formData.reconditioning.timeMin = 24;
+    }
+    if (this.formData.componentsData) {
+      for (const key of Object.keys(this.formData.componentsData)) {
+        const comp = this.formData.componentsData[key];
+        if (comp.reconditioning && comp.reconditioning.timeMin === null) {
+          comp.reconditioning.timeMin = 24;
+        }
+      }
     }
 
     effect(() => {

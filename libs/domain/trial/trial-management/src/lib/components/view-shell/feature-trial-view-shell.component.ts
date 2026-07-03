@@ -3,6 +3,7 @@ import {
   Component,
   InjectionToken,
   Injector,
+  computed,
   effect,
   inject,
   signal,
@@ -13,7 +14,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { injectionTokenTabCommand } from '@intaqalab/core';
+import { Role, injectCurrentUserRole, injectionTokenTabCommand } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { TrialActions } from '@intaqalab/models';
 import { TrialStatus, injectTrialStatus } from '@intaqalab/models';
@@ -95,7 +96,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
           </mat-card-actions>
         }
       </mat-tab>
-      <mat-tab [label]="'TAPS_TOP.TRIAL_PLANIFICATION' | translate">
+      <mat-tab [label]="'TAPS_TOP.TRIAL_PLANIFICATION' | translate" [disabled]="isPlanningDisabled()">
         <ng-template matTabContent>
           @defer (on idle) {
             <inta-feature-planning-general-data-shell [trial]="store.trial()!" [trialId]="id" />
@@ -120,9 +121,9 @@ export class FeatureTrialViewShellComponent {
   readonly store = inject(TrialGeneralDataStore);
   readonly uiDialogs = inject(UiDialogService);
   readonly #injector = inject(Injector);
+  readonly #roles = injectCurrentUserRole();
 
-  readonly #rawParams = this.#injector.get(injectionTokenTrialViewComponent);
-  readonly id = this.#rawParams.id;
+  readonly id = this.#injector.get(injectionTokenTrialViewComponent).id;
 
   readonly onAction = this.#injector.get(injectionTokenTabCommand);
 
@@ -131,6 +132,17 @@ export class FeatureTrialViewShellComponent {
 
   readonly editable = signal(false);
   #isDeletePending = false;
+
+  readonly isPlanningDisabled = computed(() => {
+    const trial = this.store.trial();
+    if (!trial) {
+      return true;
+    }
+    const roles = this.#roles();
+    const isTrialAdministrative = roles.includes(Role.INTAQALAB_TRIAL_ADMINISTRATIVE);
+    const isNotValidated = !trial.validated;
+    return isTrialAdministrative && isNotValidated;
+  });
 
   constructor() {
     this.#trialTransitionsService.resetDelete();
@@ -194,7 +206,7 @@ export class FeatureTrialViewShellComponent {
   }
 
   cancel() {
-    this.store.setTrialId(this.#rawParams.id);
+    this.store.setTrialId(this.id);
     this.editable.set(false);
   }
 

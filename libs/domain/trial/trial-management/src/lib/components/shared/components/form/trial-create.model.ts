@@ -16,4 +16,5 @@ export interface TrialCreateModifyForm {
   observations: string;
   status: TrialStatus;
   statusReason?: string;
+  validated?: boolean;
 }

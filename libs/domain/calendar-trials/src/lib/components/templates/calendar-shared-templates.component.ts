@@ -86,7 +86,7 @@ import { DayActionsComponent } from './day-actions.component';
           <div
             tabindex="0"
             class="cal-event-item calendar-month-event"
-            [mwlCalendarTooltip]="event.meta?.fireTrial?.trialNumber"
+            [mwlCalendarTooltip]="event.meta?.fireTrial?.trialNumber + ' ' + getLineLabel(event.meta?.lineOfShootId)"
             [tooltipPlacement]="tooltipPlacement"
             [tooltipTemplate]="tooltipTemplate2"
             [tooltipEvent]="event"
@@ -102,6 +102,7 @@ import { DayActionsComponent } from './day-actions.component';
               >
                 <span class="calendar-month-event__title w-full">
                   {{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }} {{ event.meta.fireTrial.trialNumber }}
+                  {{ getLineLabel(event.meta.lineOfShootId) }}
                 </span>
                 <span class="calendar-month-event__title w-full">
                   {{ 'CALENDAR_TRIALS.EVENT_TOOLTIP.APPLIER' | translate }} {{ event.meta?.fireTrial?.client?.name }}
@@ -134,7 +135,7 @@ import { DayActionsComponent } from './day-actions.component';
           <span class="calendar-event-tooltip__label">
             {{ 'CALENDAR_TRIALS.EVENT_TOOLTIP.TRIAL' | translate }}
           </span>
-          <span>{{ event.meta?.fireTrial?.trialNumber }}</span>
+          <span>{{ event.meta?.fireTrial?.trialNumber }} {{ getLineLabel(event.meta?.lineOfShootId) }}</span>
         </p>
         <p class="calendar-event-tooltip__row">
           <span class="calendar-event-tooltip__label">
@@ -196,7 +197,9 @@ import { DayActionsComponent } from './day-actions.component';
             (click)="handleViewTrial(weekEvent.event.meta.fireTrial.id)"
           >
             <p class="calendar-week-event__label">{{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }}</p>
-            <p class="calendar-week-event__value">{{ weekEvent.event.meta.fireTrial.trialNumber }}</p>
+            <p class="calendar-week-event__value">
+              {{ weekEvent.event.meta.fireTrial.trialNumber }} {{ getLineLabel(weekEvent.event.meta.lineOfShootId) }}
+            </p>
 
             <p class="calendar-week-event__label">{{ 'CALENDAR_TRIALS.EVENT.APPLIER' | translate }}</p>
             <p class="calendar-week-event__value">{{ weekEvent.event.meta?.fireTrial?.client?.name }}</p>
@@ -249,7 +252,9 @@ import { DayActionsComponent } from './day-actions.component';
             (click)="handleViewTrial(weekEvent.event.meta.fireTrial.id)"
           >
             <p class="calendar-day-event__label">{{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }}</p>
-            <p class="calendar-day-event__value">{{ weekEvent.event.meta.fireTrial.trialNumber }}</p>
+            <p class="calendar-day-event__value">
+              {{ weekEvent.event.meta.fireTrial.trialNumber }} {{ getLineLabel(weekEvent.event.meta.lineOfShootId) }}
+            </p>
 
             <p class="calendar-day-event__label">{{ 'CALENDAR_TRIALS.EVENT.APPLIER' | translate }}</p>
             <p class="calendar-day-event__value">{{ weekEvent.event.meta?.fireTrial?.client?.name }}</p>
@@ -343,5 +348,14 @@ export class CalendarSharedTemplatesComponent {
   handleExecution(trialId: string, event: MouseEvent) {
     event.stopPropagation();
     this.#router.navigateByUrl(`/execution/${trialId}`);
+  }
+
+  getLineLabel(lineOfShootId: string): string {
+    const line = this.store.linesOfShot().find((l) => l.id === lineOfShootId);
+    if (!line) {
+      return `L${lineOfShootId}`;
+    }
+    const match = line.label.match(/\d+/);
+    return match ? `L${match[0]}` : `L${lineOfShootId}`;
   }
 }

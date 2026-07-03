@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { Role, injectCurrentUserRole } from '@intaqalab/core';
 import type { CalendarViewObservation } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20,8 +21,8 @@ import { EventsActionsService } from '../../services/events-actions.service';
         aria-label="Actions"
         class="day-actions__trigger"
         [matMenuTriggerFor]="menu"
-        [disabled]="isDisabled()"
-        [class.day-actions__trigger--disabled]="isDisabled()"
+        [disabled]="isDisabled() || (!canSchedule && !canAddObservations())"
+        [class.day-actions__trigger--disabled]="isDisabled() || (!canSchedule && !canAddObservations())"
       >
         <mat-icon class="day-actions__icon">more_vert</mat-icon>
       </button>
@@ -31,17 +32,19 @@ import { EventsActionsService } from '../../services/events-actions.service';
             <span>{{ 'CALENDAR_TRIALS.ACTIONS.PROGAM' | translate }}</span>
           </button>
         }
-        @if (!observations()) {
-          <button mat-menu-item (click)="addObs()">
-            <span>{{ 'CALENDAR_TRIALS.ACTIONS.ADD_OBS' | translate }}</span>
-          </button>
-        } @else {
-          <button mat-menu-item (click)="editObs()">
-            <span>{{ 'CALENDAR_TRIALS.ACTIONS.EDIT_OBS' | translate }}</span>
-          </button>
-          <button mat-menu-item (click)="deleteObs()">
-            <span>{{ 'CALENDAR_TRIALS.ACTIONS.DELETE_OBS' | translate }}</span>
-          </button>
+        @if (canAddObservations()) {
+          @if (!observations()) {
+            <button mat-menu-item (click)="addObs()">
+              <span>{{ 'CALENDAR_TRIALS.ACTIONS.ADD_OBS' | translate }}</span>
+            </button>
+          } @else {
+            <button mat-menu-item (click)="editObs()">
+              <span>{{ 'CALENDAR_TRIALS.ACTIONS.EDIT_OBS' | translate }}</span>
+            </button>
+            <button mat-menu-item (click)="deleteObs()">
+              <span>{{ 'CALENDAR_TRIALS.ACTIONS.DELETE_OBS' | translate }}</span>
+            </button>
+          }
         }
       </mat-menu>
     </span>
@@ -60,9 +63,15 @@ import { EventsActionsService } from '../../services/events-actions.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DayActionsComponent {
-  canSchedule = inject(TrialPersmissionsService).canSchedule();
-  value = input<Date>();
-  observations = input.required<CalendarViewObservation | undefined | null>();
+  readonly #roles = injectCurrentUserRole();
+
+  readonly canSchedule = inject(TrialPersmissionsService).canSchedule();
+  readonly canAddObservations = computed(
+    () => this.#roles().includes(Role.INTAQALAB_ADMIN) || this.#roles().includes(Role.INTAQALAB_TRIAL_ENGINEER),
+  );
+
+  readonly value = input<Date>();
+  readonly observations = input.required<CalendarViewObservation | undefined | null>();
   isDisabled = input<boolean>(false);
   linesOfShotData = input<LinesOfShotViewState>();
   refreshView = output<true>();

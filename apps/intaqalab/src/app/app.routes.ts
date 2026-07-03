@@ -5,6 +5,8 @@ import {
   MENU_EXECUTION_ROLES,
   MENU_TRIAL_LIST_ROLES,
   MENU_WAREHOUSE_ROLES,
+  MENU_STOCK_MUNITION_ROLES,
+  Role,
   canMatchRole,
 } from '@intaqalab/core';
 
@@ -24,20 +26,24 @@ export const appRoutes: Route[] = [
   {
     path: 'planning',
     loadChildren: () => resolveLazyModule(import('@intaqalab/planning')),
-    data: { breadcrumb: 'BREADCRUMB.PLANNING' },
+    data: {
+      breadcrumb: 'BREADCRUMB.PLANNING',
+      roles: [...ALL_ROLES_EXCEPT_VIEWER],
+    },
+    canMatch: [canMatchRole],
   },
   {
     // Calendario: todos excepto Viewer
     path: 'calendar-trials',
     loadChildren: () => resolveLazyModule(import('@intaqalab/calendar-trials')),
     data: {
-      breadcrumb: 'BREADCRUMB.CALENDAR_TRIALS',
+      breadcrumb: 'BREADCRUMB.CALENDAR',
       roles: [...ALL_ROLES_EXCEPT_VIEWER],
     },
     canMatch: [canMatchRole],
   },
   {
-    // Pruebas de fuego (lista + detalle): todos incluido Viewer (verá sus pruebas)
+    // Nueva prueba/Listado: roles administrativos o consulta
     path: 'trial',
     loadChildren: () => resolveLazyModule(import('@intaqalab/trial-management')),
     data: {
@@ -57,12 +63,12 @@ export const appRoutes: Route[] = [
     canMatch: [canMatchRole],
   },
   {
-    // Alta de munición / Stock: solo Admin + Municiones
+    // Alta de de munición / Stock: solo Admin + Municiones, y Stock para roles en MENU_STOCK_MUNITION_ROLES
     path: 'wharehouse-managment',
     loadChildren: () => resolveLazyModule(import('@intaqalab/wharehouse-managment')),
     data: {
       breadcrumb: 'BREADCRUMB.WAREHOUSE',
-      roles: [...MENU_WAREHOUSE_ROLES],
+      roles: [...MENU_STOCK_MUNITION_ROLES],
     },
     canMatch: [canMatchRole],
   },

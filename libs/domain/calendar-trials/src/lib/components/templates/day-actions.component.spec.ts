@@ -1,8 +1,10 @@
-﻿import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { MatMenuHarness } from '@angular/material/menu/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AuthService } from '@intaqalab/core';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
@@ -38,10 +40,11 @@ interface SetupInputs {
   linesOfShotData?: unknown;
   canSchedule?: boolean;
   value?: Date;
+  userRoles?: string[];
 }
 
 async function setup(inputs: SetupInputs = {}) {
-  const { canSchedule = true, ...componentInputs } = inputs;
+  const { canSchedule = true, userRoles = ['INTAQALAB_ADMIN'], ...componentInputs } = inputs;
   const mock = mockEventsActionsService();
   const permsMock = mockTrialPersmissionsService(canSchedule);
 
@@ -62,6 +65,7 @@ async function setup(inputs: SetupInputs = {}) {
       provideTestingEnvironment(),
       { provide: EventsActionsService, useValue: mock },
       { provide: TrialPersmissionsService, useValue: permsMock },
+      { provide: AuthService, useValue: { userRoles: signal(userRoles) } },
     ],
   });
 
@@ -115,6 +119,22 @@ describe('DayActionsComponent', () => {
       await menu.open();
       const items = await menu.getItems();
       expect(items.length).toBe(2);
+    });
+
+    it('should show only schedule item when canSchedule=true but user role cannot add observations', async () => {
+      const { loader } = await setup({ observations: null, canSchedule: true, userRoles: ['SOME_OTHER_ROLE'] });
+      const menu = await loader.getHarness(MatMenuHarness);
+      await menu.open();
+      const items = await menu.getItems();
+      expect(items.length).toBe(1);
+      const text = await items[0].getText();
+      expect(text).not.toContain('ADD_OBS');
+    });
+
+    it('should disable trigger button when canSchedule=false and user role cannot add observations', async () => {
+      const { fixture } = await setup({ observations: null, canSchedule: false, userRoles: ['SOME_OTHER_ROLE'] });
+      const trigger = fixture.nativeElement.querySelector('.day-actions__trigger') as HTMLButtonElement;
+      expect(trigger.disabled).toBe(true);
     });
   });
 

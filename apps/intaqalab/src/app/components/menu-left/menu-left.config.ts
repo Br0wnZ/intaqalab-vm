@@ -6,6 +6,7 @@ import {
   MENU_TRIAL_LIST_ROLES,
   MENU_WAREHOUSE_ROLES,
   Role,
+  MENU_STOCK_MUNITION_ROLES,
 } from '@intaqalab/core';
 import type { IntaIconName } from '@intaqalab/ui';
 
@@ -112,10 +113,10 @@ export const MENU_TREE: MenuNode[] = [
 
   // ─── Almacén de Municiones ──────────────────────────────────────────────────
   {
-    // Solo Admin + Municiones (Head + Tech)
+    // Solo Admin + Municiones (Head + Tech), y Stock para roles en MENU_STOCK_MUNITION_ROLES
     name: 'MENU_LEFT.WHAREHOUSE.TITLE',
     iconName: 'truck',
-    roles: [...MENU_WAREHOUSE_ROLES],
+    roles: [...MENU_STOCK_MUNITION_ROLES],
     children: [
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_NEW',
@@ -127,7 +128,7 @@ export const MENU_TREE: MenuNode[] = [
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_STOCK',
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITION_STOCK',
-        roles: [...MENU_WAREHOUSE_ROLES],
+        roles: [...MENU_STOCK_MUNITION_ROLES],
       },
       {
         name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITIONS_DUMPS',

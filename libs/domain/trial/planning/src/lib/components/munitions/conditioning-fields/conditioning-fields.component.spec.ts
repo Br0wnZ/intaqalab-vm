@@ -76,6 +76,25 @@ describe('ConditioningFieldsComponent', () => {
       expect(maxTimeInput.value).toBe('8');
       expect(observationsInput.value).toBe('Test observations');
     });
+
+    it('should default timeMin to 24 if missing/undefined in input data', async () => {
+      const dataWithoutTimeMin: ReconditioningData = {
+        temperature: 20,
+        tolerance: 1,
+        timeMax: 10,
+      };
+
+      await render(ConditioningFieldsComponent, {
+        imports: defaultImports,
+        componentInputs: { data: dataWithoutTimeMin },
+      });
+
+      const minTimeInput = screen.getByLabelText(
+        /TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.min_time_label/i,
+      ) as HTMLInputElement;
+
+      expect(minTimeInput.value).toBe('24');
+    });
   });
 
   describe('Field interaction', () => {

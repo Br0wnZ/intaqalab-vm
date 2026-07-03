@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { MENU_WAREHOUSE_ROLES, Role, canMatchRole, MENU_STOCK_MUNITION_ROLES } from '@intaqalab/core';
 
 import { DenominationsStore } from './+state/denominations.store';
 import { MovementsListStore } from './+state/movements-list.store';
@@ -14,52 +15,82 @@ import { MunitionsDumpsListComponent } from './components/munitions-dumps/list/m
 import { MunitionsShellComponent } from './components/munitions/shell/munitions-shell.component';
 import { StockListComponent } from './components/stock-list/list/stock-list.component';
 
+const STOCK_ROLES = MENU_STOCK_MUNITION_ROLES;
+
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'denominations',
+    redirectTo: 'stock',
   },
   {
     path: 'munition-components',
     component: MunitionComponentsListComponent,
     providers: [MunitionComponentStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITION_COMPONENTS' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITION_COMPONENTS',
+      roles: [...MENU_WAREHOUSE_ROLES],
+    },
   },
   {
     path: 'denominations',
     component: DenominationsListComponent,
     providers: [DenominationsStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_DENOMINATIONS' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_DENOMINATIONS',
+      roles: [...MENU_WAREHOUSE_ROLES],
+    },
   },
   {
     path: 'munitions-dumps',
     component: MunitionsDumpsListComponent,
     providers: [MunitionsDumpsStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITIONS_DUMPS' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITIONS_DUMPS',
+      roles: [...MENU_WAREHOUSE_ROLES],
+    },
   },
   {
     path: 'munitions',
     component: MunitionsShellComponent,
     providers: [DenominationsStore, MunitionComponentStore, MunitionsDumpsStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITIONS' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_MUNITIONS',
+      roles: [...MENU_WAREHOUSE_ROLES],
+    },
   },
   {
     path: 'stock',
     component: StockListComponent,
     providers: [StockListStore, MunitionComponentStore, MunitionsDumpsStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_STOCK' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_STOCK',
+      roles: STOCK_ROLES,
+    },
   },
   {
     path: 'stock/:entity/:id',
     component: MunitionStockDetailShellComponent,
     providers: [MunitionsStockDetailStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_STOCK' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_STOCK',
+      roles: STOCK_ROLES,
+    },
   },
   {
     path: 'movements',
     component: MovementsListComponent,
     providers: [MovementsListStore, MunitionsDumpsStore],
-    data: { breadcrumb: 'BREADCRUMB.WAREHOUSE_MOVEMENTS' },
+    canMatch: [canMatchRole],
+    data: {
+      breadcrumb: 'BREADCRUMB.WAREHOUSE_MOVEMENTS',
+      roles: [...MENU_WAREHOUSE_ROLES],
+    },
   },
 ];

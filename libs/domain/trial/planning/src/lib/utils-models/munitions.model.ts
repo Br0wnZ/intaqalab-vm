@@ -193,7 +193,7 @@ export function createEmptyReconditioning(): ReconditioningData {
   return {
     temperature: undefined,
     tolerance: undefined,
-    timeMin: undefined,
+    timeMin: 24,
     timeMax: undefined,
     observations: undefined,
   };

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Injector, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { HasRoleDirective, Role, injectionTokenTabCommand } from '@intaqalab/core';
+import { CAN_MANAGE_SPECIAL_DAYS_ROLES, HasRoleDirective, Role, injectionTokenTabCommand } from '@intaqalab/core';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { CalendarView, DateAdapter, provideCalendar } from 'angular-calendar';
@@ -39,7 +39,7 @@ import { CalendarSharedTemplatesComponent } from '../templates/calendar-shared-t
       #calendarTemplates
     ></lib-calendar-shared-templates>
 
-    <div *libHasRole="[Role.INTAQALAB_ADMIN]" class="flex flex-row-reverse mt-2">
+    <div *libHasRole="CAN_MANAGE_SPECIAL_DAYS_ROLES" class="flex flex-row-reverse mt-2">
       <div>
         <button mat-flat-button color="primary" type="button" class="!leading-normal" (click)="manageSpecialDays()">
           <ui-inta-icon name="calendar" size="xl" class="mr-1" />
@@ -97,6 +97,7 @@ export class FeatureCalendarTrialsShellComponent {
   readonly specialDaysManager = inject(SpecialDaysManagerService);
 
   readonly Role = Role;
+  readonly CAN_MANAGE_SPECIAL_DAYS_ROLES = [...CAN_MANAGE_SPECIAL_DAYS_ROLES];
   readonly view = this.store.view();
   readonly CalendarView = CalendarView;
   readonly viewDate = new Date();
