@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update:
@@ -24,14 +25,17 @@ jobs:
           node-version: '22'
 
       - name: Install OpenWiki
-        run: npm install --global openwiki
+        run: npm install -g https://github.com/langchain-ai/openwiki.git
 
       - name: Run OpenWiki
         run: openwiki --update --print
         env:
           # TODO: Replace with your preferred inference provider and model you want
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENWIKI_MODEL_ID: meta-llama/llama-3.3-70b-instruct:free
+          # OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENWIKI_PROVIDER: openai
+          OPENAI_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai/
+          OPENAI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENWIKI_MODEL_ID: gemini-1.5-pro
           # LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           # LANGCHAIN_PROJECT: openwiki
           # LANGCHAIN_TRACING_V2: "true"
