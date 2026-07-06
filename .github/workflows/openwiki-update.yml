@@ -40,7 +40,7 @@ jobs:
           OPENWIKI_PROVIDER: openai
           OPENAI_BASE_URL: https://generativelanguage.googleapis.com/v1beta/openai/
           OPENAI_API_KEY: ${{ secrets.GOOGLE_API_KEY }} 
-          OPENWIKI_MODEL_ID: gemini-1.5-pro
+          OPENWIKI_MODEL_ID: gemini-1.5-flash-latest
 
       - name: Create OpenWiki update pull request
         uses: peter-evans/create-pull-request@v7
