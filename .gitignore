@@ -10,7 +10,11 @@ node_modules
 
 # IDEs and editors
 /.idea
-.github/*
+.github/agents/*
+.github/prompts/*
+.github/skills/*
+.github/copilot-instructions.md
+.github/COPILOT-SETUP.md
 .project
 .classpath
 .c9/
@@ -44,7 +48,6 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
-.github/*
 
 .angular
 
