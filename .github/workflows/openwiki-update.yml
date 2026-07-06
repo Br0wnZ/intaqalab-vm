@@ -24,11 +24,8 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install OpenWiki
-        run: npm install -g https://github.com/langchain-ai/openwiki.git
-
       - name: Run OpenWiki
-        run: openwiki --update --print
+        run: npx github:langchain-ai/openwiki --update --print
         env:
           # TODO: Replace with your preferred inference provider and model you want
           # OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
