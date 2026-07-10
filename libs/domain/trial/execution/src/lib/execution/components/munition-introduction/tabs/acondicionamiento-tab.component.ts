@@ -144,7 +144,7 @@ import type { AcondFormModel } from '../munition-introduction';
           mat-icon-button
           matSuffix
           type="button"
-          class="!text-[var(--inta-button)]"
+          style="color: var(--inta-button)"
           (click)="captureFechaHoraEntrada()"
         >
           <mat-icon>play_circle_outline</mat-icon>
@@ -165,7 +165,7 @@ import type { AcondFormModel } from '../munition-introduction';
           mat-icon-button
           matSuffix
           type="button"
-          class="!text-[var(--inta-button)]"
+          style="color: var(--inta-button)"
           (click)="captureFechaHoraSalida()"
         >
           <mat-icon>stop_circle</mat-icon>

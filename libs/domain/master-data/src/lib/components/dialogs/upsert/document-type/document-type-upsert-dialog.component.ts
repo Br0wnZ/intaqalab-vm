@@ -63,8 +63,8 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
         [valueKey]="'id'"
         [labelKey]="'name'"
         [formField]="form.category"
-        [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
+        [label]="'MASTER_DATA.DOCUMENT_TYPE.DIALOGS.UPSERT.DOCUMENT_TYPE' | translate"
+        [placeholder]="'MASTER_DATA.DOCUMENT_TYPE.DIALOGS.UPSERT.DOCUMENT_TYPE' | translate"
         [options]="categoryOptions"
       />
     </mat-dialog-content>
@@ -126,9 +126,10 @@ export class DocumentTypeUpsertDialogComponent {
   onConfirm() {
     const { nameEs, nameEn, category } = this.formModel();
 
-    const dataToSend = this.form().touched() && this.form().dirty()
-      ? { ...this.data, name: { en: nameEn, es: nameEs }, category }
-      : null
+    const dataToSend =
+      this.form().touched() && this.form().dirty()
+        ? { ...this.data, name: { en: nameEn, es: nameEs }, category }
+        : null;
 
     this.dialogRef.close(dataToSend);
   }

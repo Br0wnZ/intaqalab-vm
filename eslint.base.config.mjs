@@ -1,4 +1,21 @@
 import nx from '@nx/eslint-plugin';
+import importX from 'eslint-plugin-import-x';
+import jestDom from 'eslint-plugin-jest-dom';
+import testingLibrary from 'eslint-plugin-testing-library';
+import vitest from '@vitest/eslint-plugin';
+
+// Degrada un mapa de reglas de plugin (recommended) a severidad 'warn',
+// preservando las opciones de cada regla. Permite adoptar un ruleset sin
+// bloquear la deuda existente; subir a 'error' regla a regla tras el burn-down.
+function downgradeToWarn(rules) {
+  return Object.fromEntries(
+    Object.entries(rules).map(([id, value]) => {
+      if (Array.isArray(value)) return [id, ['warn', ...value.slice(1)]];
+      if (value === 'off' || value === 0) return [id, value];
+      return [id, 'warn'];
+    }),
+  );
+}
 
 const baseConfig = [
   ...nx.configs['flat/base'],
@@ -66,6 +83,9 @@ const baseConfig = [
       'prefer-const': 'error',
       eqeqeq: ['error', 'always'],
       'object-shorthand': 'error',
+      // Prohíbe console.log/debug; permite info/warn/error para logging intencional.
+      // En 'warn' mientras se limpian los ~37 logs existentes; subir a 'error' tras el burn-down.
+      'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
     },
   },
   {
@@ -105,6 +125,54 @@ const baseConfig = [
           message: 'Hard Privacy: Usa el prefijo # en lugar del modificador "private" de TypeScript.',
         },
       ],
+    },
+  },
+  // ── RxJS: veto a .subscribe() manual en código fuente (no en specs). ──
+  //    En 'warn' mientras se migra la deuda existente; subir a 'error' tras el burn-down.
+  //    Se usa no-restricted-properties (id propio) para poder darle severidad
+  //    independiente del no-restricted-syntax anterior.
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['**/*.spec.ts', '**/*.spec.tsx'],
+    rules: {
+      'no-restricted-properties': [
+        'warn',
+        {
+          property: 'subscribe',
+          message:
+            'RxJS: Evita .subscribe() manual. Usa toSignal()/httpResource o firstValueFrom(). Si es imprescindible, encadena takeUntilDestroyed().',
+        },
+      ],
+    },
+  },
+  // ── Detección de ciclos de importación (a nivel de fichero). ──
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    plugins: { 'import-x': importX },
+    settings: {
+      'import-x/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: 'tsconfig.base.json',
+        },
+      },
+    },
+    rules: {
+      'import-x/no-cycle': ['error', { ignoreExternal: true }],
+      'import-x/no-self-import': 'error',
+    },
+  },
+  // ── Reglas de testing para specs (Vitest + Testing Library + jest-dom). ──
+  //    En 'warn' para no bloquear los specs existentes; subir a 'error' tras el burn-down.
+  {
+    files: ['**/*.spec.ts', '**/*.spec.tsx'],
+    plugins: { vitest, 'testing-library': testingLibrary, 'jest-dom': jestDom },
+    rules: {
+      ...downgradeToWarn(vitest.configs.recommended.rules),
+      ...downgradeToWarn(testingLibrary.configs['flat/angular'].rules),
+      ...downgradeToWarn(jestDom.configs['flat/recommended'].rules),
+      // Testing Library auto-asserta con sus queries; expect-expect da falsos positivos.
+      'vitest/expect-expect': 'off',
     },
   },
 ];

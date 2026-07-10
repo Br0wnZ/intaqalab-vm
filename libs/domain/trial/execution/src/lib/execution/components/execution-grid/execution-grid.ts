@@ -108,7 +108,8 @@ import { VigilanciaWidget } from '../vigilancia/vigilancia';
                 {{ 'TRIAL_EXECUTION.FREE_SPACE_DESC_1' | translate }}
                 <button
                   type="button"
-                  class="text-[var(--inta-button)] font-medium cursor-pointer hover:underline focus:outline-none"
+                  style="color: var(--inta-button)"
+                  class="font-medium cursor-pointer hover:underline focus:outline-none"
                   (click)="openWidgetsPanel.emit()"
                 >
                   {{ 'TRIAL_EXECUTION.FREE_SPACE_DESC_WIDGETS_BTN' | translate }}

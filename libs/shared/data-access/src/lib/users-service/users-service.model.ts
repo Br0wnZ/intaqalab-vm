@@ -4,14 +4,16 @@ export interface User {
   roles: string[];
 }
 
-export interface UserListResponse {
-  page: number;
-  pageSize: number;
-  totalElements: number;
-  items: User[];
+export interface PlanningUser {
+  id: string;
+  username: string;
+  lastName: string;
+  firstName: string;
 }
 
-export interface UserQueryParams {
-  page: number;
-  pageSize: number;
+export type PlanningUsersResponse = PlanningUser[];
+
+export interface PlanningUsersQueryParams {
+  limit: number;
+  search?: string;
 }

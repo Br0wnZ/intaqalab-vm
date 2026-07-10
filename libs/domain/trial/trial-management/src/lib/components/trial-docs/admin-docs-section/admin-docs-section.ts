@@ -69,7 +69,7 @@ interface DocumentType {
             <div class="absolute inset-0 bg-white/80 z-10 flex items-center justify-center backdrop-blur-sm h-64">
               <div class="flex flex-col items-center">
                 <mat-icon class="animate-spin text-[#6366f1] text-3xl mb-2">sync</mat-icon>
-                <span class="text-xs font-medium text-gray-500">{{ 'ADMIN_DOCS_SECTION.SYNC' | translate }}</span>
+                <span class="text-xs font-medium text-gray-500">{{ 'ADMIN.ADMIN_DOCS_SECTION.SYNC' | translate }}</span>
               </div>
             </div>
           }

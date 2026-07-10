@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -21,7 +22,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 interface GrubbsFilterForm {
   serie: string | null;
@@ -30,7 +30,15 @@ interface GrubbsFilterForm {
 
 @Component({
   selector: 'inta-grubbs-criterion',
-  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
+  imports: [
+    FormField,
+    ReadonlyContentDirective,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    TranslateModule,
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header: icon + title -->

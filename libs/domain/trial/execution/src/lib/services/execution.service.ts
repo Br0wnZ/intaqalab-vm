@@ -480,7 +480,7 @@ export class ExecutionService {
 
   readonly #getPreferencesByRoleParams = signal<PreferencesParams | null>(null);
 
-  readonly preferencesByRoleResource = httpResource<Record<string, unknown>>(() => {
+  readonly preferencesByRoleResource = httpResource<ExecutionWidgetLayout>(() => {
     const params = this.#getPreferencesByRoleParams();
     if (!params || !params.roleName) return undefined;
     return {
@@ -495,13 +495,13 @@ export class ExecutionService {
 
   readonly #updatePreferencesByRoleParams = signal<PreferencesParams | null>(null);
 
-  readonly updatePreferencesByRoleResource = httpResource<Record<string, unknown>>(() => {
+  readonly updatePreferencesByRoleResource = httpResource<ExecutionWidgetLayout>(() => {
     const params = this.#updatePreferencesByRoleParams();
-    if (!params || !params.roleName) return undefined;
+    if (!params || !params.roleName || !params.widgetsLayout) return undefined;
     return {
       url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/roles/${params.roleName}`,
       method: 'PUT',
-      body: params.widgetsLayout,
+      body: { widgetsLayout: params.widgetsLayout } satisfies ExecutionWidgetLayout,
     };
   });
 
@@ -513,7 +513,7 @@ export class ExecutionService {
 
   readonly #getPreferencesByUserParams = signal<PreferencesParams | null>(null);
 
-  readonly preferencesByUserResource = httpResource<Record<string, unknown>>(() => {
+  readonly preferencesByUserResource = httpResource<ExecutionWidgetLayout>(() => {
     const params = this.#getPreferencesByUserParams();
     if (!params || !params.username) return undefined;
     return {
@@ -528,13 +528,13 @@ export class ExecutionService {
 
   readonly #updatePreferencesByUserParams = signal<PreferencesParams | null>(null);
 
-  readonly updatePreferencesByUserResource = httpResource<Record<string, unknown>>(() => {
+  readonly updatePreferencesByUserResource = httpResource<ExecutionWidgetLayout>(() => {
     const params = this.#updatePreferencesByUserParams();
-    if (!params || !params.username) return undefined;
+    if (!params || !params.username || !params.widgetsLayout) return undefined;
     return {
       url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/users/${params.username}`,
       method: 'PUT',
-      body: params.widgetsLayout,
+      body: { widgetsLayout: params.widgetsLayout } satisfies ExecutionWidgetLayout,
     };
   });
 
@@ -593,7 +593,7 @@ export class ExecutionService {
     const params = this.#getEquipmentSelectorParams();
     if (!params) return undefined;
     return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selector`,
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selection`,
       method: 'GET',
     };
   });
@@ -610,7 +610,7 @@ export class ExecutionService {
     const params = this.#updateEquipmentSelectorParams();
     if (!params) return undefined;
     return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selector`,
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selection`,
       method: 'PUT',
       body: params.body,
     };

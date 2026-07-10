@@ -10,7 +10,7 @@ import type { MasterDataService } from '../../master-data.service';
   providedIn: 'root',
 })
 export class StanagService implements MasterDataService<MasterDataStanag> {
-  readonly #crud = injectMasterDataResource<MasterDataStanag>(`${injectPlanningEndpoint()}/stanag`);
+  readonly #crud = injectMasterDataResource<MasterDataStanag>(`${injectPlanningEndpoint()}/stanag-criteria`);
 
   readonly searchItems = this.#crud.searchItems;
   readonly paginatedResponse = this.#crud.paginatedResponse;

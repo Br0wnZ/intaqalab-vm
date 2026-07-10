@@ -15,6 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -25,7 +26,6 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 export type TrayectografiaTab = 'trayectorias' | 'funcionamientos' | 'trazas';
 
@@ -48,8 +48,8 @@ interface SelectorFormModel {
     TrayectografiasTrayectoriasTabComponent,
     TrayectografiaFuncionamientosTabComponent,
     TrayectografiaTrazasTabComponent,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
@@ -87,12 +87,7 @@ interface SelectorFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button
-          mat-flat-button
-          color="primary"
-          type="button"
-          (click)="setCurrentShot()"
-        >
+        <button mat-flat-button color="primary" type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 

@@ -78,6 +78,7 @@ export const MENU_STOCK_MUNITION_ROLES: ReadonlyArray<Role> = [
   Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN,
   Role.INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN,
   Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
+  Role.INTAQALAB_TRIAL_CONSULTANT,
 ] as const;
 
 // ─── MENÚ: ACCESO A EJECUCIÓN ────────────────────────────────────────────────
@@ -149,6 +150,12 @@ export const CAN_VALIDATE_PLANNING_ROLES: ReadonlyArray<Role> = [
   Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
 ] as const;
 
+/** Puede MODIFICAR (desbloquear) una planificación ya validada, volviendo a UNDER_REVIEW */
+export const CAN_MODIFY_PLANNING_ROLES: ReadonlyArray<Role> = [
+  Role.INTAQALAB_ADMIN,
+  Role.INTAQALAB_PLANNING_ANALYSIS_HEAD,
+] as const;
+
 /** Puede ASIGNAR usuario de planificación */
 export const CAN_ASSIGN_PLANNING_USER_ROLES: ReadonlyArray<Role> = [
   Role.INTAQALAB_ADMIN,
@@ -175,6 +182,7 @@ export const CAN_MANAGE_SPECIAL_DAYS_ROLES: ReadonlyArray<Role> = [
 export const CAN_ADD_CALENDAR_OBSERVATIONS_ROLES: ReadonlyArray<Role> = [
   Role.INTAQALAB_ADMIN,
   Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
+  Role.INTAQALAB_TRIAL_ENGINEER,
 ] as const;
 
 /** Puede programar/desprogramar prueba en el calendario */

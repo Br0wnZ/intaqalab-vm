@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject
 import type { Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { StanagCriteriosState } from '../../../+state/execution.store';
@@ -11,7 +12,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 @Component({
   selector: 'inta-stanag-criterios',
@@ -28,7 +28,9 @@ import { IntaIconComponent } from "@intaqalab/ui";
         </div>
         <button
           aria-label="Actualizar criterios"
-          mat-flat-button color="primary" class="!px-2.5 !min-w-auto"
+          mat-flat-button
+          color="primary"
+          class="!px-2.5 !min-w-auto"
           [disabled]="checking()"
           (click)="onActualizar()"
         >
@@ -57,17 +59,9 @@ import { IntaIconComponent } from "@intaqalab/ui";
       <!-- Criteria list with vertical scroll -->
       <div intaReadonlyContent class="flex-1 overflow-y-auto flex flex-col gap-4 min-h-0 pr-0.5">
         @for (criterio of criterios(); track criterio.id) {
-          <div
-            class="flex items-start gap-2 shrink-0"
-          >
+          <div class="flex items-start gap-2 shrink-0">
             <ui-inta-icon
-              [size]="
-                criterio.cumple === true
-                  ? 'md'
-                  : criterio.cumple === false
-                    ? '18px'
-                    : 'md'
-              "
+              [size]="criterio.cumple === true ? 'md' : criterio.cumple === false ? '18px' : 'md'"
               [color]="
                 criterio.cumple === true
                   ? 'var(--inta-success)'
@@ -75,16 +69,8 @@ import { IntaIconComponent } from "@intaqalab/ui";
                     ? 'var(--inta-error)'
                     : 'var(--inta-warning)'
               "
-              [name]="
-                criterio.cumple === true
-                  ? 'checkCircle'
-                  : criterio.cumple === false
-                   ? 'closeCircle'
-                   : 'info'
-
-              "
-            >
-            </ui-inta-icon>
+              [name]="criterio.cumple === true ? 'checkCircle' : criterio.cumple === false ? 'closeCircle' : 'info'"
+            ></ui-inta-icon>
             <p class="text-xs text-gray-600 leading-snug">{{ criterio.texto }}</p>
           </div>
         } @empty {

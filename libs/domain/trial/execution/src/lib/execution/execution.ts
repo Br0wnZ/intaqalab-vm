@@ -1,6 +1,15 @@
 import { DatePipe, Location, NgClass } from '@angular/common';
-import type { OnInit } from '@angular/core';
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, inject, signal } from '@angular/core';
+import type { OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ViewEncapsulation,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -62,13 +71,13 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
         <!-- Fila 1: Datos de ejecución principales -->
         <div class="flex gap-4 flex-wrap items-center justify-between">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
+            <span style="color: var(--inta-button)" class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100">
               {{ executionData().code }}
             </span>
-            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
+            <span style="color: var(--inta-button)" class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100">
               {{ shotInfo().actual.serie }}
             </span>
-            <span class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100 text-[var(--inta-button)]">
+            <span style="color: var(--inta-button)" class="px-4 py-1.5 rounded-2xl text-xs font-semibold bg-purple-100">
               {{ shotInfo().actual.shot }}
             </span>
 
@@ -118,7 +127,8 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
             <button
               mat-flat-button
               color="primary"
-              class="!bg-transparent !p-0 !text-[var(--inta-button)]"
+              style="color: var(--inta-button)"
+              class="!bg-transparent !p-0"
               (click)="toggleWidgetsPanel()"
             >
               {{ 'TRIAL_EXECUTION.WIDGETS_BTN' | translate }}
@@ -340,7 +350,7 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Execution implements OnInit {
+export class Execution implements OnInit, OnDestroy {
   readonly #dialog = inject(MatDialog);
   readonly #destroyRef = inject(DestroyRef);
   readonly #location = inject(Location);
@@ -351,6 +361,39 @@ export class Execution implements OnInit {
   readonly widgetStateService = inject(WidgetStateService);
   readonly #translate = inject(TranslateService);
   readonly #currentUser = injectCurrentUser();
+
+  // eslint-disable-next-line no-unused-private-class-members
+  readonly #loadPreferencesEffect = effect(
+    () => {
+      const preferences = this.#store.preferencesByUser();
+      if (preferences) {
+        const layout = preferences.widgetsLayout;
+        if (layout) {
+          untracked(() => {
+            this.widgetStateService.clearWidgets();
+            for (const layoutItem of layout) {
+              const widget = this.widgets().find((w) => w.widgetId === layoutItem);
+              if (widget) {
+                try {
+                  this.widgetStateService.addWidget(
+                    widget.widgetId,
+                    widget.defaultWidth,
+                    undefined,
+                    widget.techProfile,
+                    widget.defaultHeight ?? 1,
+                  );
+                } catch (e) {
+                  console.error('Error adding widget from preferences:', e);
+                  break; // Grid is full - stop trying to paint more widgets
+                }
+              }
+            }
+          });
+        }
+      }
+    },
+    { allowSignalWrites: true },
+  );
 
   readonly #fireTrialId = signal(DEMO_FIRE_TRIAL_ID);
   isWidgetsPanelOpen = signal(false);
@@ -423,6 +466,14 @@ export class Execution implements OnInit {
     } else {
       // No ID in URL — show trial selector dialog
       this.#openTrialSelectorDialog();
+    }
+  }
+
+  ngOnDestroy(): void {
+    const preferences = this.#store.preferencesByUser();
+    if (preferences) {
+      const widgetsLayout = this.widgetStateService.placedWidgets().map((w) => w.type);
+      this.#store.updatePreferencesByUser(this.#fireTrialId(), this.#currentUser.preferred_username, widgetsLayout);
     }
   }
 

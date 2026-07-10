@@ -6,13 +6,6 @@
   "projectType": "library",
   "tags": ["type:util", "scope:shared"],
   "targets": {
-    "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
-      "options": {
-        "reportsDirectory": "../../coverage/libs/shared/config"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
     }

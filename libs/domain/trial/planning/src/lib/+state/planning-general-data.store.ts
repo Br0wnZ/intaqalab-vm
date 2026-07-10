@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, effect, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import { UsersService } from '@intaqalab/data-access';
-import type { MasterData, TrialCreateModifyForm } from '@intaqalab/models';
-import type { TargetDimension, TargetThickness } from '@intaqalab/models';
+import type { MasterData, TargetDimension, TargetThickness, TrialCreateModifyForm } from '@intaqalab/models';
+import { TrialStatus } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type { UpdateConditionsRequest } from '../models/shooting-conditions.model';
 import { DataPlanningService } from '../services/data-planning-service';
+import { PlanningLifecycleService } from '../services/planning-lifecycle-service';
 import { SeriesAndShotsService } from '../services/series-and-shots-service';
 import { ShootingConditionsService } from '../services/shooting-conditions.service';
 import type {
@@ -42,6 +43,7 @@ export const PlanningGeneralDataStore = signalStore(
       seriesService = inject(SeriesAndShotsService),
       shootingConditionsService = inject(ShootingConditionsService),
       usersService = inject(UsersService),
+      lifecycleService = inject(PlanningLifecycleService),
     ) => {
       const readPlanningInfo = () =>
         dataPlanningService.getPlanningDataResource.hasValue()
@@ -62,6 +64,10 @@ export const PlanningGeneralDataStore = signalStore(
           if (!info) return false;
           return Boolean(info.goal || info.planningUser?.id || (info.specimens && info.specimens.length > 0));
         }),
+
+        isPlanningValidable: computed(() => readPlanningInfo()?.isValidable ?? false),
+
+        planningValidationErrors: computed(() => readPlanningInfo()?.validationErrors ?? []),
 
         shootingConditions: computed(() => shootingConditionsService.conditionsResource.value()?.series),
 
@@ -118,11 +124,18 @@ export const PlanningGeneralDataStore = signalStore(
         ),
 
         users: computed(() => {
-          return usersService.users().map((u) => ({
+          const response = usersService.usersResource.value();
+
+          return response?.map((u) => ({
             id: u.id,
-            fullname: u.username,
-            roles: u.roles,
+            fullname: `${u.firstName} ${u.lastName}`,
           }));
+        }),
+
+        totalUsers: computed(() => {
+          const response = usersService.usersResource.value();
+
+          return response?.length;
         }),
 
         isLoadingUsers: computed(() => usersService.usersResource.isLoading()),
@@ -216,6 +229,22 @@ export const PlanningGeneralDataStore = signalStore(
 
         isLoadingImpactZones: computed(() => shootingConditionsService.getImpactZonesResource.isLoading()),
 
+        isTrialPlanned: computed(() => store.fireTrial()?.status === TrialStatus.PLANNED),
+
+        canModifyPlanning: computed(() => store.fireTrial()?.status === TrialStatus.UNDER_REVIEW),
+
+        validatePlanningStatus: computed(() => lifecycleService.validateResource.status()),
+
+        isValidatingPlanning: computed(() => lifecycleService.validateResource.status() === 'loading'),
+
+        validatePlanningError: computed(() => lifecycleService.validateResource.error()),
+
+        unlockPlanningStatus: computed(() => lifecycleService.unlockResource.status()),
+
+        isUnlockingPlanning: computed(() => lifecycleService.unlockResource.status() === 'loading'),
+
+        unlockPlanningError: computed(() => lifecycleService.unlockResource.error()),
+
         updateShotStatus: computed(() => 'idle'),
         isUpdatingShot: computed(() => false),
 
@@ -245,6 +274,7 @@ export const PlanningGeneralDataStore = signalStore(
       seriesService = inject(SeriesAndShotsService),
       shootingConditionsService = inject(ShootingConditionsService),
       usersService = inject(UsersService),
+      lifecycleService = inject(PlanningLifecycleService),
     ) => ({
       setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
         patchState(store, { fireTrialId, fireTrial, selectedSpecimens: [] });
@@ -267,8 +297,12 @@ export const PlanningGeneralDataStore = signalStore(
         dataPlanningService.getSpecimensByType(specimenType, { active: true });
       },
 
-      loadUsers(): void {
-        usersService.load({ page: 1, pageSize: 100 });
+      loadUsers(limit = 25): void {
+        usersService.queryParams.set({ limit });
+      },
+
+      searchUser(searchedTerm: string): void {
+        usersService.queryParams.set({ limit: 25, search: searchedTerm });
       },
 
       updatePlanningInfo(data: UpsertTrialPlanningInfo): void {
@@ -276,6 +310,14 @@ export const PlanningGeneralDataStore = signalStore(
         if (!fireTrialId) return;
 
         dataPlanningService.updateTrialPlanningInfoData({ ...data, fireTrialId });
+      },
+
+      updateAssociatedUser(id: string): void {
+        const fireTrialId = store.fireTrialId();
+
+        if (!fireTrialId) return;
+
+        usersService.associatedPlanningUserId.set({ fireTrialId, id });
       },
 
       reloadPlanningInfo(): void {
@@ -289,7 +331,7 @@ export const PlanningGeneralDataStore = signalStore(
       },
 
       reloadUsers(): void {
-        usersService.load({ page: 1, pageSize: 100 });
+        usersService.queryParams.set({ limit: 25 });
       },
 
       loadSeries(): void {
@@ -377,11 +419,29 @@ export const PlanningGeneralDataStore = signalStore(
         const id = store.fireTrialId();
         if (id) shootingConditionsService.getTrialSchedules(id);
       },
+
+      validatePlanning(): void {
+        const id = store.fireTrialId();
+        if (id) lifecycleService.validate(id);
+      },
+
+      unlockPlanning(): void {
+        const id = store.fireTrialId();
+        if (id) lifecycleService.unlock(id);
+      },
+
+      resetValidatePlanning(): void {
+        lifecycleService.resetValidate();
+      },
+
+      resetUnlockPlanning(): void {
+        lifecycleService.resetUnlock();
+      },
     }),
   ),
 
   withHooks({
-    onInit(store, seriesService = inject(SeriesAndShotsService)) {
+    onInit(store, seriesService = inject(SeriesAndShotsService), lifecycleService = inject(PlanningLifecycleService)) {
       // Whenever the trial has general info loaded, series & shots are
       // auto-loaded so downstream tabs (shooting conditions, munitions,
       // armament, measures) can react to the latest data.
@@ -391,6 +451,34 @@ export const PlanningGeneralDataStore = signalStore(
         if (hasInfo && id) {
           seriesService.getSeriesAndShots(id);
         }
+      });
+
+      // The store is the single source of truth for the trial status, so
+      // once validate/unlock resolve, patch it here instead of leaving
+      // components to re-derive it from the raw resource.
+      // `fireTrial` is read via `untracked` and the trigger is reset right after
+      // patching — otherwise the patch itself would re-run this same effect
+      // (it depends on `fireTrial`) while `status()` is still 'resolved', looping forever.
+      effect(() => {
+        if (lifecycleService.validateResource.status() !== 'resolved') return;
+        untracked(() => {
+          const fireTrial = store.fireTrial();
+          if (fireTrial) {
+            patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.PLANNED } });
+          }
+          lifecycleService.resetValidate();
+        });
+      });
+
+      effect(() => {
+        if (lifecycleService.unlockResource.status() !== 'resolved') return;
+        untracked(() => {
+          const fireTrial = store.fireTrial();
+          if (fireTrial) {
+            patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.UNDER_REVIEW } });
+          }
+          lifecycleService.resetUnlock();
+        });
       });
     },
     onDestroy(store) {

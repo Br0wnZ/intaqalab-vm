@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { TestBed } from '@angular/core/testing';
-import { render } from '@testing-library/angular';
-import { describe, expect, it, vi } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-
+import { TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
+import { describe, expect, it, vi } from 'vitest';
+
 import { ExecutionStore } from '../../../+state/execution.store';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { VigilanciaWidget } from './vigilancia';

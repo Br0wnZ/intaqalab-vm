@@ -1,10 +1,20 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import type { MasterDataStanag } from '../../../../models/master-data-stanag.model';
 import type { MasterDataUpsertDialogType } from '../../../../models/utils.model';
@@ -33,16 +43,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     </h2>
 
     <mat-dialog-content>
-      <div>
-        <mat-form-field appearance="outline" class="w-full">
-          <textarea
-            matInput
-            [formField]="form.description"
-            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION' | translate"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
       <ui-inta-signal-select
         appearance="outline"
         [id]="'variable'"
@@ -63,7 +63,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
             id="numThreshold"
             matInput
             type="number"
-            [formField]="form.numThreshold"
+            [formField]="form.numericThreshold"
             [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.NUM_THRESHOLD.PLACEHOLDER' | translate"
           />
         </mat-form-field>
@@ -72,9 +72,9 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
       <ui-inta-signal-select
         appearance="outline"
         [id]="'measureUnit'"
-        [valueKey]="'id'"
-        [labelKey]="'name'"
-        [formField]="form.measureUnit"
+        [valueKey]="'value'"
+        [labelKey]="'label'"
+        [formField]="form.unit"
         [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.LABEL' | translate"
         [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.PLACEHOLDER' | translate"
         [options]="measureUnitsList"
@@ -85,7 +85,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
         [id]="'calcType'"
         [valueKey]="'id'"
         [labelKey]="'name'"
-        [formField]="form.calcType"
+        [formField]="form.calculationType"
         [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.LABEL' | translate"
         [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.PLACEHOLDER' | translate"
         [options]="calcTypeList"
@@ -96,10 +96,10 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
         [id]="'involvedLayers'"
         [valueKey]="'id'"
         [labelKey]="'name'"
-        [formField]="form.involvedLayers"
+        [formField]="form.involvedLayer"
         [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.LABEL' | translate"
         [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.PLACEHOLDER' | translate"
-        [options]="involvedLayersList"
+        [options]="involvedLayersList()"
       />
 
       <div>
@@ -110,10 +110,16 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
           <input
             id="startLayer"
             matInput
+            type="number"
             [formField]="form.startLayer"
             [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.PLACEHOLDER' | translate"
           />
         </mat-form-field>
+        @if (form.calculationType().dirty() && form.startLayer().errors()) {
+          @for (error of form.startLayer().errors(); track error.kind) {
+            <mat-error>{{ error.message | translate }}</mat-error>
+          }
+        }
       </div>
 
       <div>
@@ -124,9 +130,25 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
           <input
             id="endLayer"
             matInput
+            type="number"
             [formField]="form.endLayer"
             [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.PLACEHOLDER' | translate"
           />
+        </mat-form-field>
+        @if (form.calculationType().dirty() && form.endLayer().errors()) {
+          @for (error of form.endLayer().errors(); track error.kind) {
+            <mat-error>{{ error.message | translate }}</mat-error>
+          }
+        }
+      </div>
+
+      <div>
+        <mat-form-field appearance="outline" class="w-full">
+          <textarea
+            matInput
+            [formField]="form.name.es"
+            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION' | translate"
+          ></textarea>
         </mat-form-field>
       </div>
     </mat-dialog-content>
@@ -167,34 +189,70 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
 export class StanagUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<StanagUpsertDialogComponent>);
   readonly data = inject<MasterDataStanag | null>(MAT_DIALOG_DATA);
+  readonly #translate = inject(TranslateService);
 
   readonly variableNamesList = [
-    { id: '550e8400-e29b-41d4-a716-446655440011', name: 'Velocidad del viento' },
-    { id: '550e8400-e29b-41d4-a716-446655440022', name: 'Dirección del viento' },
-    { id: '550e8400-e29b-41d4-a716-446655440033', name: 'Temperatura' },
-    { id: '550e8400-e29b-41d4-a716-446655440044', name: 'Presión' },
-    { id: '550e8400-e29b-41d4-a716-446655440055', name: 'Densidad' },
+    {
+      id: 'WIND_DIRECTION',
+      name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.VALUE.WIND_DIRECTION'),
+    },
+    { id: 'WIND_SPEED', name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.VALUE.WIND_SPEED') },
+    {
+      id: 'TEMPERATURE',
+      name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.VALUE.TEMPERATURE'),
+    },
+    { id: 'PRESSURE', name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.VALUE.PRESSURE') },
+    { id: 'DENSITY ', name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.VALUE.DENSITY') },
   ];
 
-  readonly measureUnitsList = [
-    { id: '550e8400-e29b-41d4-a716-446655440001', name: 'm/s' },
-    { id: '550e8400-e29b-41d4-a716-446655440002', name: 'grados' },
-    { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Pascales' },
-    { id: '550e8400-e29b-41d4-a716-446655440004', name: 'kg/m3' },
-  ];
+  readonly measureUnitsList = toUnitOptions(Object.keys(MeasureUnitEnum) as MeasureUnitEnum[]);
 
   readonly calcTypeList = [
-    { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Valor único' },
-    { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Diferencia entre capas' },
-    { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Capas consecutivas' },
+    {
+      id: 'SINGLE_VALUE',
+      name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.VALUE.SINGLE_VALUE'),
+    },
+    {
+      id: 'LAYER_DIFFERENCE',
+      name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.VALUE.LAYER_DIFFERENCE'),
+    },
+    {
+      id: 'CONSECUTIVE_LAYERS',
+      name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.VALUE.CONSECUTIVE_LAYERS'),
+    },
   ];
 
-  readonly involvedLayersList = [
-    { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Superficie' },
-    { id: '550e8400-e29b-41d4-a716-446655440002', name: 'Altura aproximada' },
-    { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Flecha máxima' },
-    { id: '550e8400-e29b-41d4-a716-446655440004', name: 'Entre dos alturas' },
-  ];
+  readonly involvedLayersList = computed(() => {
+    const options = [
+      { id: 'SURFACE', name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.VALUE.SURFACE') },
+      {
+        id: 'APPROXIMATE_HEIGHT',
+        name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.VALUE.APPROXIMATE_HEIGHT'),
+      },
+      {
+        id: 'MAX_WIND_LEVEL',
+        name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.VALUE.MAX_WIND_LEVEL'),
+      },
+      {
+        id: 'CONSECUTIVE_LAYERS',
+        name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.VALUE.CONSECUTIVE_LAYERS'),
+      },
+      {
+        id: 'BETWEEN_TWO_HEIGHTS',
+        name: this.#translate.instant('MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.VALUE.BETWEEN_TWO_HEIGHTS'),
+      },
+    ];
+
+    const calcType = this.formModel().calculationType;
+
+    const filteredOptions: Record<string, { id: string; name: string }[]> = {
+      SINGLE_VALUE: options.filter((item) => !['CONSECUTIVE_LAYERS', 'BETWEEN_TWO_HEIGHTS'].includes(item.id)),
+      LAYER_DIFFERENCE: options.filter((item) => ['CONSECUTIVE_LAYERS', 'BETWEEN_TWO_HEIGHTS'].includes(item.id)),
+      CONSECUTIVE_LAYERS: options.filter((item) => ['CONSECUTIVE_LAYERS', 'BETWEEN_TWO_HEIGHTS'].includes(item.id)),
+    };
+
+    return filteredOptions[calcType] ?? options;
+  });
 
   constructor() {
     effect(() => {
@@ -205,44 +263,104 @@ export class StanagUpsertDialogComponent {
       if (data)
         this.formModel.set({
           ...data,
-          variable: data.variable.id,
-          measureUnit: data.measureUnit.id,
-          calcType: data.measureUnit.id,
-          involvedLayers: data.involvedLayers.id,
         });
+    });
+
+    effect(() => {
+      const involvedLayer = this.form.involvedLayer().value();
+      const startLayer = this.form.startLayer().value();
+
+      if (involvedLayer !== 'CONSECUTIVE_LAYERS' || (!startLayer && startLayer !== 0)) return;
+
+      untracked(() => {
+        this.formModel.update((current) => {
+          return {
+            ...current,
+            endLayer: +startLayer + 1,
+          };
+        });
+      });
     });
   }
 
   readonly defaultFormValues = {
     variable: '',
-    description: '',
-    numThreshold: 0,
-    measureUnit: '',
-    calcType: '',
-    involvedLayers: '',
-    startLayer: '0',
-    endLayer: '0',
+    name: { es: '', en: '' },
+    numericThreshold: 0,
+    unit: '',
+    calculationType: '',
+    involvedLayer: '',
+    startLayer: null,
+    endLayer: null,
   };
 
-  readonly formModel = signal<
-    Omit<MasterDataUpsertDialogType<MasterDataStanag>, 'variable' | 'measureUnit' | 'calcType' | 'involvedLayers'> & {
-      variable: string;
-    } & { measureUnit: string } & { calcType: string } & { involvedLayers: string }
-  >(this.defaultFormValues);
+  readonly formModel = signal<Omit<MasterDataUpsertDialogType<MasterDataStanag>, 'id' | 'action'>>(
+    this.defaultFormValues,
+  );
 
   readonly form = form(this.formModel, (schemaPath) => {
     required(schemaPath.variable);
-    required(schemaPath.description);
-    required(schemaPath.numThreshold);
-    required(schemaPath.measureUnit);
-    required(schemaPath.calcType);
-    required(schemaPath.involvedLayers);
-    required(schemaPath.startLayer);
-    required(schemaPath.endLayer);
+    required(schemaPath.numericThreshold);
+    required(schemaPath.unit);
+    required(schemaPath.calculationType);
+    required(schemaPath.involvedLayer);
+    validate(schemaPath.startLayer, ({ value, valueOf }) => {
+      const calculationType = valueOf(schemaPath.calculationType);
+      const startLayerTouched = this.form.startLayer().touched();
+
+      if (!calculationType || !startLayerTouched) return null;
+
+      const startLayer = value();
+
+      if (!startLayer && startLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+
+      const startLayerNumber = +startLayer!;
+      const endLayer = valueOf(schemaPath.endLayer);
+
+      if (endLayer === null) return;
+
+      if (calculationType === 'SINGLE_VALUE' && startLayerNumber !== +endLayer) {
+        return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
+      }
+
+      const involvedLayer = valueOf(schemaPath.involvedLayer);
+
+      if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && startLayerNumber > +endLayer) {
+        return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
+      }
+
+      return null;
+    });
+    validate(schemaPath.endLayer, ({ value, valueOf }) => {
+      const calculationType = valueOf(schemaPath.calculationType);
+      const endLayerTouched = this.form.endLayer().touched();
+
+      if (!calculationType || !endLayerTouched) return null;
+
+      const endLayer = value();
+
+      if (!endLayer && endLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+
+      const endLayerNumber = +endLayer!;
+      const startLayer = valueOf(schemaPath.startLayer);
+
+      if (startLayer === null) return;
+
+      if (calculationType === 'SINGLE_VALUE' && endLayerNumber !== +startLayer) {
+        return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
+      }
+
+      const involvedLayer = valueOf(schemaPath.involvedLayer);
+
+      if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && endLayerNumber < +startLayer) {
+        return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
+      }
+      return null;
+    });
   });
 
   protected sendData() {
-    const { variable, description, numThreshold, measureUnit, calcType, involvedLayers, startLayer, endLayer } =
+    const { variable, name, numericThreshold, unit, calculationType, involvedLayer, startLayer, endLayer } =
       this.formModel();
 
     const dataToSend =
@@ -250,11 +368,11 @@ export class StanagUpsertDialogComponent {
         ? {
             ...this.data,
             variable,
-            description,
-            numThreshold,
-            measureUnit,
-            calcType,
-            involvedLayers,
+            name: { es: name.es, en: name.es },
+            numericThreshold,
+            unit,
+            calculationType,
+            involvedLayer,
             startLayer,
             endLayer,
           }

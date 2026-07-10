@@ -1,44 +1,43 @@
-import { HttpContext, HttpParams, httpResource } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
-import { SKIP_CENTER_INTERCEPTOR, injectUsersEndpoint } from '@intaqalab/config';
+import { HttpContext, httpResource } from '@angular/common/http';
+import { Injectable, signal } from '@angular/core';
+import { SKIP_CENTER_INTERCEPTOR, injectFireTrialsEndpoint, injectUsersEndpoint } from '@intaqalab/config';
+import type { FireTrial } from '@intaqalab/models';
 
-import type { User, UserListResponse, UserQueryParams } from './users-service.model';
+import type { PlanningUsersQueryParams, PlanningUsersResponse } from './users-service.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UsersService {
-  readonly #url = injectUsersEndpoint();
+  readonly #usersUrl = injectUsersEndpoint();
+  readonly #fireTrialUrl = injectFireTrialsEndpoint();
 
-  readonly #queryParams = signal<UserQueryParams>({ page: 1, pageSize: 25 });
+  readonly queryParams = signal<PlanningUsersQueryParams | null>(null);
+  readonly associatedPlanningUserId = signal<{ fireTrialId: string; id: string } | null>(null);
 
-  readonly usersResource = httpResource<UserListResponse>(
-    () => {
-      const { page, pageSize } = this.#queryParams();
-      return {
-        url: `${this.#url}/users`,
-        params: new HttpParams().set('page', String(page)).set('pageSize', String(pageSize)),
-        context: new HttpContext().set(SKIP_CENTER_INTERCEPTOR, true),
-      };
-    },
-    {
-      defaultValue: { page: 1, pageSize: 25, totalElements: 0, items: [] },
-    },
-  );
+  readonly usersResource = httpResource<PlanningUsersResponse>(() => {
+    const params = this.queryParams();
 
-  readonly hasError = computed<boolean>(() => !!this.usersResource.error());
+    if (!params) return;
 
-  readonly users = computed<User[]>(() => {
-    if (this.hasError()) return [];
-    return this.usersResource.value()?.items ?? [];
+    let urlParams = `?limit=${params.limit}`;
+    if (params.search) urlParams += `&search=${params.search}`;
+
+    return {
+      url: `${this.#usersUrl}/users${urlParams}`,
+      context: new HttpContext().set(SKIP_CENTER_INTERCEPTOR, true),
+    };
   });
 
-  readonly totalElements = computed<number>(() => {
-    if (this.hasError()) return 0;
-    return this.usersResource.value()?.totalElements ?? 0;
-  });
+  readonly updateFireTrialAssociatedUser = httpResource<FireTrial>(() => {
+    const ids = this.associatedPlanningUserId();
 
-  load(params: UserQueryParams): void {
-    this.#queryParams.set(params);
-  }
+    if (!ids) return undefined;
+
+    return {
+      url: `${this.#fireTrialUrl}/${ids.fireTrialId}/planning-user`,
+      method: 'PUT',
+      body: [ids.id],
+    };
+  });
 }

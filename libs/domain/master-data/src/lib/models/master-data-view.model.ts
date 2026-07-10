@@ -1,4 +1,4 @@
-import type { MASTERS_ACTIONS } from '../data/master-data.constants';
+import type { MASTERS_ACTIONS, MASTER_LIST_COLUMN_TRANSFORM } from '../data/master-data.constants';
 
 export interface MasterView {
   title: string;
@@ -10,9 +10,16 @@ export interface MasterView {
 export interface MasterViewColumn {
   id: string;
   name: string;
-  key?: string;
-  translation?: string;
+  transform?: MasterViewColumnTransform;
+  status?: boolean;
 }
 
-// Para añadir nuevas acciones hacerlo desde master-data.constants.ts
+export interface MasterViewColumnTransform {
+  id: MasterDataListTransformType;
+  helper: unknown;
+}
+
+export type MasterDataListTransformType =
+  (typeof MASTER_LIST_COLUMN_TRANSFORM)[keyof typeof MASTER_LIST_COLUMN_TRANSFORM];
+
 export type MasterDataActionType = (typeof MASTERS_ACTIONS)[keyof typeof MASTERS_ACTIONS];

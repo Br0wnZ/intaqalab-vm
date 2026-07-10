@@ -16,7 +16,7 @@ describe('AdminDocsSection', () => {
     await render(AdminDocsSection, { imports: [TranslateModule.forRoot()] });
     const translate = TestBed.inject(TranslateService);
     translate.setTranslation('es', {
-      'ADMIN_DOCS_SECTION.SYNC': 'Sincronizando',
+      'ADMIN.ADMIN_DOCS_SECTION.SYNC': 'Sincronizando',
       'ADMIN.ADMIN_DOCS_SECTION.NO_RESULTS': 'No encontrado',
     });
     translate.use('es');

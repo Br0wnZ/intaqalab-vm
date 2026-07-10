@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -13,7 +14,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -39,8 +39,8 @@ interface DataFormModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
@@ -157,8 +157,8 @@ interface DataFormModel {
                 (input)="h1Field.set({ value: $any($event.target).value, unit: h1Field()?.unit ?? 'μm' })"
               />
               <mat-select
-                class="pr-4"
                 matSuffix
+                class="pr-4"
                 [value]="h1Field()?.unit ?? 'μm'"
                 (selectionChange)="h1Field.set({ value: h1Field()?.value ?? '', unit: $event.value })"
               >

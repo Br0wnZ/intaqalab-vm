@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { VigilanciaRow, VigilanciaState } from '../../../+state/execution.store';
@@ -13,7 +14,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 /** Computes the qualification string from a VigilanciaRow */
 function computeCalificacion(row: VigilanciaRow): string | null {
@@ -49,7 +49,15 @@ interface VigilanciaTableRow {
 
 @Component({
   selector: 'inta-vigilancia',
-  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
+  imports: [
+    DatePipe,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    TranslateModule,
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header -->
@@ -94,7 +102,9 @@ interface VigilanciaTableRow {
         </mat-form-field>
 
         <button
-          mat-flat-button color="primary" class="!px-2.5 !min-w-auto"
+          mat-flat-button
+          color="primary"
+          class="!px-2.5 !min-w-auto"
           [disabled]="refreshing()"
           [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.ACTUALIZAR_BTN' | translate"
           (click)="onActualizar()"

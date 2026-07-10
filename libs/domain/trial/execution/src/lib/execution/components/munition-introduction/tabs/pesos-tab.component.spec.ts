@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 import { MunitionPesosTabComponent } from './pesos-tab.component';
@@ -53,9 +53,9 @@ describe('MunitionPesosTabComponent', () => {
   it('save updates the store', async () => {
     const { view, store } = await runSetup();
     const storeSpy = vi.spyOn(store, 'updateMunitionIntroductionPesos');
-    
+
     view.fixture.componentInstance.save();
-    
+
     expect(storeSpy).toHaveBeenCalled();
   });
 
@@ -65,9 +65,9 @@ describe('MunitionPesosTabComponent', () => {
       componente: 'test-comp',
       balanza: 'test-balanza',
     });
-    
+
     view.fixture.componentInstance.reset();
-    
+
     expect(view.fixture.componentInstance.pesosFormModel().componente).toBeNull();
   });
 });

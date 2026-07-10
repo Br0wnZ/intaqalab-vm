@@ -114,7 +114,7 @@ export interface MassiveConfigDialogResult {
               mat-icon-button
               matSuffix
               type="button"
-              class="!text-[var(--inta-button)]"
+              style="color: var(--inta-button)"
               (click)="captureEntrada()"
             >
               <mat-icon>play_circle_outline</mat-icon>
@@ -129,13 +129,7 @@ export interface MassiveConfigDialogResult {
               {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}
             </mat-label>
             <input matInput readonly class="cursor-pointer" [value]="fechaHoraSalida() ?? ''" />
-            <button
-              mat-icon-button
-              matSuffix
-              type="button"
-              class="!text-[var(--inta-button)]"
-              (click)="captureSalida()"
-            >
+            <button mat-icon-button matSuffix type="button" style="color: var(--inta-button)" (click)="captureSalida()">
               <mat-icon>stop_circle</mat-icon>
             </button>
           </mat-form-field>

@@ -191,14 +191,14 @@ describe('FeatureTrialCreateShellComponent', () => {
 
       // In edit mode, the component is NOT editable by default — shows the Modify button
       expect(component.editable()).toBe(false);
-      expect(screen.getByText('COMMONS.MODIFY')).toBeInTheDocument();
+      expect(screen.getByText('UTILS_TRIALS.TRIAL_ACTIONS.MODIFY')).toBeInTheDocument();
       expect(screen.queryByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL')).not.toBeInTheDocument();
     });
 
     it('should become editable after clicking the modify button', async () => {
       const { user } = await setup({ id: '123' });
 
-      const modifyButton = screen.getByText('COMMONS.MODIFY').closest('button')!;
+      const modifyButton = screen.getByText('UTILS_TRIALS.TRIAL_ACTIONS.MODIFY').closest('button')!;
       await user.click(modifyButton);
 
       expect(component.editable()).toBe(true);

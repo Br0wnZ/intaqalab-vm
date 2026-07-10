@@ -37,7 +37,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           <div class="flex items-center gap-1.5 flex-1 self-start">
             <ui-inta-icon name="edit_line" color="var(--inta-button)" />
             <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
-              {{ 'WIDGETS.SHOT.TITLE' | translate }}
+              {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.TITLE' | translate }}
             </h3>
             @if (formState().dirty) {
               <span class="w-2 h-2 rounded-full bg-orange-500"></span>
@@ -52,7 +52,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           <!-- Número de Disparo -->
           <div [class]="width() === 1 ? '' : 'col-span-6 lg:col-span-4'">
             <label for="shot-number" class="block font-medium text-gray-700 mb-1">
-              {{ 'WIDGETS.SHOT.NUMBER' | translate }}
+              {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.NUMBER' | translate }}
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <input placeholder="Ej: 001" id="shot-number" matInput type="number" [formField]="shotForm.shotNumber" />
@@ -62,7 +62,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           <!-- Velocidad -->
           <div [class]="width() === 1 ? '' : 'col-span-6 lg:col-span-4'">
             <label for="shot-velocity" class="block font-medium text-gray-700 mb-1">
-              {{ 'WIDGETS.SHOT.VELOCITY' | translate }} (m/s)
+              {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.VELOCITY' | translate }} (m/s)
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <input placeholder="Ej: 850" id="shot-velocity" matInput type="number" [formField]="shotForm.velocity" />
@@ -72,7 +72,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           <!-- Observaciones -->
           <div [class]="width() === 1 ? '' : 'col-span-12 lg:col-span-4'">
             <label for="shot-observations" class="block font-medium text-gray-700 mb-1">
-              {{ 'WIDGETS.SHOT.OBSERVATIONS' | translate }}
+              {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.OBSERVATIONS' | translate }}
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <textarea

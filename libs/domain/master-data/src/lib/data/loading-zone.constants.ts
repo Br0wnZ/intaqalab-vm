@@ -1,15 +1,22 @@
 import type { MasterView } from '../models/master-data-view.model';
-import { MASTERS_ACTIONS } from './master-data.constants';
+import { MASTERS_ACTIONS, MASTER_LIST_COLUMN_TRANSFORM } from './master-data.constants';
 
 export const LOADING_ZONE_VIEW: MasterView = {
   title: 'MASTER_DATA.LOADING_ZONE.TITLE',
   columnList: [
-    { id: 'denomination', name: 'MASTER_DATA.LOADING_ZONE.LIST.DENOMINATION', key: 'name' },
+    {
+      id: 'denomination',
+      name: 'MASTER_DATA.LOADING_ZONE.LIST.DENOMINATION',
+      transform: {
+        id: MASTER_LIST_COLUMN_TRANSFORM.KEY,
+        helper: 'name',
+      },
+    },
     { id: 'zone', name: 'MASTER_DATA.LOADING_ZONE.LIST.ZONE' },
     { id: 'caliber', name: 'MASTER_DATA.LOADING_ZONE.LIST.CALIBER' },
     { id: 'actions', name: 'MASTER_DATA.LOADING_ZONE.LIST.ACTIONS' },
   ],
-  actions: [MASTERS_ACTIONS.SWITCH_STATUS, MASTERS_ACTIONS.DELETE, MASTERS_ACTIONS.EDIT],
+  actions: [MASTERS_ACTIONS.EDIT, MASTERS_ACTIONS.DELETE, MASTERS_ACTIONS.SWITCH_STATUS],
   dialogs: {
     [MASTERS_ACTIONS.DELETE]: {
       title: 'MASTER_DATA.LOADING_ZONE.DIALOGS.DELETE.TITLE',

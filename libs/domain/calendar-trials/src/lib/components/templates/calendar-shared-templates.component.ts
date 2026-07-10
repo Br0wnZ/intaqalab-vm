@@ -100,7 +100,11 @@ import { DayActionsComponent } from './day-actions.component';
                 class="calendar-month-event__main flex flex-col !items-start overflow-hidden gap-1 !py-1"
                 (click)="handleViewTrial(event.meta.fireTrial.id)"
               >
-                <span class="calendar-month-event__title w-full">
+                <span class="calendar-month-event__title w-full flex items-center gap-1">
+                  <span
+                    class="status-dot"
+                    [style.background-color]="getStatusDotColor(event.meta.fireTrial.status)"
+                  ></span>
                   {{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }} {{ event.meta.fireTrial.trialNumber }}
                   {{ getLineLabel(event.meta.lineOfShootId) }}
                 </span>
@@ -197,7 +201,11 @@ import { DayActionsComponent } from './day-actions.component';
             (click)="handleViewTrial(weekEvent.event.meta.fireTrial.id)"
           >
             <p class="calendar-week-event__label">{{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }}</p>
-            <p class="calendar-week-event__value">
+            <p class="calendar-week-event__value flex items-center gap-1">
+              <span
+                class="status-dot"
+                [style.background-color]="getStatusDotColor(weekEvent.event.meta.fireTrial.status)"
+              ></span>
               {{ weekEvent.event.meta.fireTrial.trialNumber }} {{ getLineLabel(weekEvent.event.meta.lineOfShootId) }}
             </p>
 
@@ -252,7 +260,11 @@ import { DayActionsComponent } from './day-actions.component';
             (click)="handleViewTrial(weekEvent.event.meta.fireTrial.id)"
           >
             <p class="calendar-day-event__label">{{ 'CALENDAR_TRIALS.EVENT.TRIAL' | translate }}</p>
-            <p class="calendar-day-event__value">
+            <p class="calendar-day-event__value flex items-center gap-1">
+              <span
+                class="status-dot"
+                [style.background-color]="getStatusDotColor(weekEvent.event.meta.fireTrial.status)"
+              ></span>
               {{ weekEvent.event.meta.fireTrial.trialNumber }} {{ getLineLabel(weekEvent.event.meta.lineOfShootId) }}
             </p>
 
@@ -348,6 +360,29 @@ export class CalendarSharedTemplatesComponent {
   handleExecution(trialId: string, event: MouseEvent) {
     event.stopPropagation();
     this.#router.navigateByUrl(`/execution/${trialId}`);
+  }
+
+  getStatusDotColor(status: TrialStatus): string {
+    switch (status) {
+      case TrialStatus.UNDER_REVIEW:
+      case TrialStatus.PLANNED:
+      case TrialStatus.PREPARED:
+        return '#67ccd8';
+      case TrialStatus.IN_PROGRESS:
+      case TrialStatus.INTERRUPTED:
+      case TrialStatus.STARTED:
+        return '#f4a27b';
+      case TrialStatus.EXECUTED:
+      case TrialStatus.ANALYZING:
+      case TrialStatus.FINALIZING:
+        return '#7ed9a1';
+      case TrialStatus.CLOSED:
+      case TrialStatus.CANCELLED:
+      case TrialStatus.VOIDED:
+        return '#b0b0b0';
+      default:
+        return '#b0b0b0';
+    }
   }
 
   getLineLabel(lineOfShootId: string): string {

@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type PiezoPosicionState } from '../../../+state/execution.store';
@@ -13,7 +14,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 type PiezoTab = 'cierre' | 'intermedio' | 'culote';
 
@@ -39,10 +39,12 @@ interface PiezoFormModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
-    <div class="h-full rounded-2xl border border-blue-200 bg-white p-3 flex flex-col gap-1.5 justify-between overflow-auto">
+    <div
+      class="h-full rounded-2xl border border-blue-200 bg-white p-3 flex flex-col gap-1.5 justify-between overflow-auto"
+    >
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -90,7 +92,9 @@ interface PiezoFormModel {
             type="button"
             class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'cierre' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
+              activeTab() === 'cierre'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('cierre')"
           >
@@ -100,7 +104,9 @@ interface PiezoFormModel {
             type="button"
             class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'intermedio' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
+              activeTab() === 'intermedio'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('intermedio')"
           >
@@ -110,7 +116,9 @@ interface PiezoFormModel {
             type="button"
             class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
             [class]="
-              activeTab() === 'culote' ? 'bg-[var(--inta-button)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
+              activeTab() === 'culote'
+                ? 'bg-[var(--inta-button)] text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
             "
             (click)="activeTab.set('culote')"
           >
@@ -119,7 +127,10 @@ interface PiezoFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start sm:ml-4" [class]="estadoClass()">
+        <span
+          class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start sm:ml-4"
+          [class]="estadoClass()"
+        >
           {{ estadoLabel() }}
         </span>
       </div>

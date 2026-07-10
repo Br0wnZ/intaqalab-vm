@@ -5,6 +5,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type {
@@ -18,7 +19,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 interface SeguimientoFormModel {
   presionVelocidadUnit: string;
@@ -51,15 +51,15 @@ interface ComputedSerie {
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-4 flex flex-col gap-1.5 overflow-hidden">
       <!-- Header: Icon + Title -->
       <div class="flex items-center gap-1.5 shrink-0">
         <ui-inta-icon name="file" color="var(--inta-button)" />
         <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
-        {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
+          {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
         </h3>
       </div>
 

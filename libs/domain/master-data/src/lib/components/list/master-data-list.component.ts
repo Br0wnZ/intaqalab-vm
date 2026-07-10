@@ -9,24 +9,26 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
 import { BooleanStatusBadge } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { MasterDataStore } from '../../+state/master-data.store';
-import { MASTERS_ACTIONS } from '../../data/master-data.constants';
+import { MASTERS_ACTIONS, MASTER_LIST_COLUMN_TRANSFORM } from '../../data/master-data.constants';
 import { MODAL_COMPONENT } from '../../modal.token';
 import type { MasterDataRemoveDialog } from '../../models/master-data-remove-dialog.model';
 import type { MasterDataSwitchStatusDialog } from '../../models/master-data-switch-status-dialog.model';
-import type { MasterView } from '../../models/master-data-view.model';
+import type { MasterView, MasterViewColumnTransform } from '../../models/master-data-view.model';
 import type { MasterDataResponseType } from '../../models/utils.model';
 import { MasterDataRemoveDialogComponent } from '../dialogs/remove/remove-dialog.component';
 import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/switch-status-dialog.component';
@@ -36,11 +38,13 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
   imports: [
     TranslateModule,
     MatTableModule,
+    FormsModule,
     MatPaginatorModule,
     MatSortModule,
     MatTooltipModule,
     MatButtonModule,
     MatIconModule,
+    MatSlideToggleModule,
     BooleanStatusBadge,
   ],
   template: `
@@ -65,17 +69,18 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
             {{ column.name | translate }}
           </th>
           <td *matCellDef="let rowData" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
+            <!-- SWITCH -->
             @if (column.id === 'actions') {
               @for (action of masterView().actions; track action) {
                 @switch (action) {
-                  @case (ACTIONS.SWITCH_STATUS) {
+                  @case (ACTIONS.EDIT) {
                     <button
                       type="button"
                       mat-icon-button
                       class="hover:bg-gray-100 -mr-2"
-                      (click)="onClickSwitchStatus(rowData)"
+                      (click)="onClickEdit(rowData)"
                     >
-                      <mat-icon>power_settings_new</mat-icon>
+                      <mat-icon>edit</mat-icon>
                     </button>
                   }
                   @case (ACTIONS.DELETE) {
@@ -88,26 +93,19 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
                       <mat-icon>delete</mat-icon>
                     </button>
                   }
-                  @case (ACTIONS.EDIT) {
-                    <button
-                      type="button"
-                      mat-icon-button
-                      class="hover:bg-gray-100 -mr-2"
-                      (click)="onClickEdit(rowData)"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
+                  @case (ACTIONS.SWITCH_STATUS) {
+                    <mat-slide-toggle
+                      class="scale-90"
+                      [(ngModel)]="rowData['active']"
+                      (change)="onClickSwitchStatus(rowData)"
+                    ></mat-slide-toggle>
                   }
                 }
               }
-            } @else if (column.id === 'active') {
+            } @else if (column.status) {
               <ui-boolean-status-badge [isActive]="rowData[column.id]" />
-            } @else if (column.key) {
-              <span>{{ rowData[column.id][column.key] }}</span>
-            } @else if (column.translation) {
-              <span>{{ column.translation + rowData[column.id] | translate }}</span>
             } @else {
-              <span>{{ rowData[column.id] }}</span>
+              <span>{{ castValueToList(rowData[column.id], column.transform) }}</span>
             }
           </td>
         </ng-container>
@@ -133,6 +131,7 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
 export class MasterDataListComponent {
   readonly store = inject(MasterDataStore);
   readonly #dialog = inject(MatDialog);
+  readonly #translate = inject(TranslateService);
 
   readonly masterView = input.required<MasterView>();
 
@@ -159,6 +158,20 @@ export class MasterDataListComponent {
       const sortField = sortDirection ? this.sortField() : undefined;
       this.store.search({ page, pageSize, sortDirection, sortField });
     });
+  }
+
+  protected castValueToList(value: unknown, transform?: MasterViewColumnTransform) {
+    if (!transform) return value;
+
+    const callbacks = {
+      [MASTER_LIST_COLUMN_TRANSFORM.TRANSLATION]: () => this.#translate.instant(`${transform.helper}.${value}`),
+      [MASTER_LIST_COLUMN_TRANSFORM.ENUM]: () => (transform.helper as Record<string, string>)[value as string],
+      [MASTER_LIST_COLUMN_TRANSFORM.LIST_TRANSLATION]: () =>
+        (value as []).map((v) => this.#translate.instant(`${transform.helper}.${v}`)).join(', '),
+      [MASTER_LIST_COLUMN_TRANSFORM.LIST_KEY]: () => (value as []).map((v) => v[transform.helper as string]).join(', '),
+      [MASTER_LIST_COLUMN_TRANSFORM.KEY]: () => (value as Record<string, unknown>)[transform.helper as string],
+    };
+    return callbacks[transform.id]() || '';
   }
 
   protected async createRecord() {
@@ -196,7 +209,7 @@ export class MasterDataListComponent {
     if (result) {
       const itemNew = {
         ...itemToEdit,
-        active: !itemToEdit.active,
+        active: itemToEdit.active,
       };
       this.store.updateItem(itemNew);
     }

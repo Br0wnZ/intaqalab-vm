@@ -41,7 +41,7 @@ export const injectionTokenComponentCreateModifyShell = new InjectionToken<Param
     @if (params().id && !editable()) {
       <div class="flex justify-end mt-6">
         <button mat-flat-button type="button" (click)="enableEdit()">
-          {{ 'COMMONS.MODIFY' | translate }}
+          {{ 'UTILS_TRIALS.TRIAL_ACTIONS.MODIFY' | translate }}
         </button>
       </div>
     } @else {

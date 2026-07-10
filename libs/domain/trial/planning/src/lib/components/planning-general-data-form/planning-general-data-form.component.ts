@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { FormField, disabled, form, required, submit, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,9 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
-import { Badge } from '@intaqalab/ui';
+import { TrialStatus } from '@intaqalab/models';
+import { Badge, IntaIconComponent } from '@intaqalab/ui';
 import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
@@ -55,6 +56,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     MatCheckboxModule,
     FormField,
     Badge,
+    IntaIconComponent,
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
     NoNegativeValuesDirective,
@@ -71,9 +73,47 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             {{ store.fireTrial()!.status | trialStatusLabel }}
           </ui-badge>
         </div>
-        @if (!readonly() && canValidate()) {
-          <button mat-flat-button [disabled]="generalDataForm().invalid()" (click)="onValidate()">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
+        @if (!readonly() && canValidate() && isUnderReview()) {
+          <div class="flex items-center gap-2">
+            @if (validationErrors().length > 0) {
+              <button
+                type="button"
+                class="self-center text-client-primary hover:text-client-primary/80 transition-colors relative"
+                [attr.aria-label]="validationErrorsTitle()"
+                (mouseenter)="showValidationErrorsTooltip = true"
+                (mouseleave)="showValidationErrorsTooltip = false"
+                (click)="showValidationErrorsTooltip = !showValidationErrorsTooltip"
+              >
+                <ui-inta-icon name="alert" size="lg" />
+                @if (showValidationErrorsTooltip) {
+                  <div
+                    class="absolute top-full right-0 mt-2 w-80 bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50"
+                  >
+                    <div
+                      class="absolute bottom-full right-4 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-slate-800"
+                    ></div>
+                    <div class="font-semibold mb-3">{{ validationErrorsTitle() }}</div>
+                    <ul class="space-y-2 leading-relaxed list-disc list-inside">
+                      @for (error of validationErrors(); track error) {
+                        <li>{{ error }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </button>
+            }
+            <button
+              mat-flat-button
+              [disabled]="generalDataForm().invalid() || !store.isPlanningValidable() || store.isValidatingPlanning()"
+              (click)="onValidate()"
+            >
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
+            </button>
+          </div>
+        }
+        @if (canModifyPlanning() && isPlanned()) {
+          <button mat-stroked-button [disabled]="store.isUnlockingPlanning()" (click)="onUnlockPlanning()">
+            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MODIFY_PLANNING' | translate }}
           </button>
         }
       </div>
@@ -152,18 +192,22 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
           <inta-planning-scheduled-dates [trialId]="store.fireTrialId()!" />
         </div>
 
-        <!-- TODO -->
-        <div class="flex flex-wrap gap-4 mb-8">
-          <mat-checkbox [formField]="generalDataForm.hypochelometricReviewBefore">
-            <span>
-              {{ 'Revisión hipocelométrica antes de la prueba' }}
-            </span>
-          </mat-checkbox>
-          <mat-checkbox [formField]="generalDataForm.hypochelometricReviewAfter">
-            <span>
-              {{ 'Revisión hipocelométrica después de la prueba' }}
-            </span>
-          </mat-checkbox>
+        <div class="mb-8 space-y-2">
+          <p class="text-sm font-medium text-gray-700">
+            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_LABEL' | translate }}
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <mat-checkbox [formField]="generalDataForm.hypochelometricReviewBefore">
+              <span>
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL' | translate }}
+              </span>
+            </mat-checkbox>
+            <mat-checkbox [formField]="generalDataForm.hypochelometricReviewAfter">
+              <span>
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_AFTER_LABEL' | translate }}
+              </span>
+            </mat-checkbox>
+          </div>
         </div>
 
         <!-- Observaciones -->
@@ -387,6 +431,19 @@ export class PlanningGeneralDataFormComponent {
   /** Puede validar planificación (pasar a PLANNED) */
   readonly canValidate = computed(() => this.#planningPermissions.canValidatePlanning());
 
+  /** Puede modificar (desbloquear) una planificación ya validada */
+  readonly canModifyPlanning = computed(() => this.#planningPermissions.canModifyPlanning());
+
+  readonly isUnderReview = computed(() => this.store.fireTrial()?.status === TrialStatus.UNDER_REVIEW);
+  readonly isPlanned = computed(() => this.store.fireTrial()?.status === TrialStatus.PLANNED);
+
+  readonly #translate = inject(TranslateService);
+  protected showValidationErrorsTooltip = false;
+  readonly validationErrors = computed(() => this.store.planningValidationErrors());
+  readonly validationErrorsTitle = computed(() =>
+    this.#translate.instant('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
+  );
+
   readonly isSaving = computed(() => this.store.isLoadingPlanningInfo());
 
   readonly formModel = signal<PlanningGeneralData>({
@@ -492,11 +549,10 @@ export class PlanningGeneralDataFormComponent {
         this.#initialFormModel = mappedModel;
         this.#initialSelectedSpecimens = structuredClone(selectedSpecimens);
         this.store.setSelectedSpecimens(selectedSpecimens);
-        this.ratingCriteriaState.set(structuredClone(planningInfo.ratingCriteria));
+        const ratingCriteria = structuredClone(planningInfo.ratingCriteria);
+        this.ratingCriteriaState.set(ratingCriteria);
         this.ratingCriteriaUnitsState.set(planningInfo.ratingCriteriaUnits);
-        if (planningInfo.ratingCriteria) {
-          this.showRatingCriteria.set(true);
-        }
+        this.showRatingCriteria.set(this.#hasRatingCriteriaValues(ratingCriteria));
         untracked(() => {
           this.generalDataForm.percentageTechnicalUnits().markAsTouched();
           this.generalDataForm.percentageEndTrial().markAsTouched();
@@ -507,6 +563,13 @@ export class PlanningGeneralDataFormComponent {
       const status = this.store.updatePlanningInfoStatus();
       if (status === 'resolved') {
         this.store.reloadPlanningInfo();
+
+        let planningUserId;
+        untracked(() => {
+          planningUserId = this.formModel().planningUser;
+        });
+
+        if (planningUserId) this.store.updateAssociatedUser(planningUserId);
       }
     });
 
@@ -561,11 +624,12 @@ export class PlanningGeneralDataFormComponent {
     });
   }
 
-  async onValidate() {
-    await submit(this.generalDataForm, async () => {
-      const data = this.#mapFormDataToUpsertModel();
-      this.store.updatePlanningInfo(data);
-    });
+  onValidate(): void {
+    this.store.validatePlanning();
+  }
+
+  onUnlockPlanning(): void {
+    this.store.unlockPlanning();
   }
 
   cancel(): void {
@@ -575,6 +639,7 @@ export class PlanningGeneralDataFormComponent {
     this.store.setSelectedSpecimens(structuredClone(this.#initialSelectedSpecimens));
     const initialCriteria = this.store.planningInfo()?.ratingCriteria;
     this.ratingCriteriaState.set(structuredClone(initialCriteria));
+    this.showRatingCriteria.set(this.#hasRatingCriteriaValues(initialCriteria));
     const initialUnits = this.store.planningInfo()?.ratingCriteriaUnits;
     this.ratingCriteriaUnitsState.set(initialUnits);
   }
@@ -587,9 +652,14 @@ export class PlanningGeneralDataFormComponent {
     return structuredClone(data);
   }
 
+  #hasRatingCriteriaValues(criteria: RatingCriteriaModel | undefined): boolean {
+    if (!criteria) return false;
+    return Object.values(criteria).some((row) => Object.values(row ?? {}).some((value) => !!value));
+  }
+
   #mapFormDataToUpsertModel(): UpsertTrialPlanningInfo {
     const formValue = this.generalDataForm().value();
-    return {
+    const basePayload: UpsertTrialPlanningInfo = {
       goal: formValue.goal,
       specimens: this.store.selectedSpecimens() ?? [],
       planningUserId: formValue.planningUser,
@@ -604,12 +674,18 @@ export class PlanningGeneralDataFormComponent {
       },
       hypochelometricReviewBefore: formValue.hypochelometricReviewBefore,
       hypochelometricReviewAfter: formValue.hypochelometricReviewAfter,
-      ratingCriteria: this.ratingCriteriaState(),
-      ratingCriteriaUnits: this.ratingCriteriaUnitsState() || {
-        speedUnit: 'MS',
-        pressureUnit: 'BAR',
-      },
     };
+
+    // Solo incluir ratingCriteria y ratingCriteriaUnits si el checkbox está habilitado
+    if (this.showRatingCriteria()) {
+      basePayload.ratingCriteria = this.ratingCriteriaState();
+      basePayload.ratingCriteriaUnits = this.ratingCriteriaUnitsState() || {
+        speedUnit: 'M_S',
+        pressureUnit: 'BAR',
+      };
+    }
+
+    return basePayload;
   }
 
   #mapDataToFormModel(data: TrialPlanningInfo): PlanningGeneralData {

@@ -17,7 +17,7 @@ export interface MunitionsDumpModel {
   updatedAt?: string;
 }
 
-interface MunitionsDumpModelCell {
+export interface MunitionsDumpModelCell {
   name: string;
   currentTotalNeq?: number;
   currentRiskGroups11And12Neq?: number;

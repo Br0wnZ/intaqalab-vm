@@ -91,6 +91,6 @@ describe('AuthService', () => {
   });
   it('should setRawRoles assign validr roles', () => {
     service.setRawRoles([Role.INTAQALAB_ADMIN, 'foo', 'bar']);
-    expect(service.userRoles()).toStrictEqual([Role.INTAQALAB_ADMIN])
+    expect(service.userRoles()).toStrictEqual([Role.INTAQALAB_ADMIN]);
   });
 });

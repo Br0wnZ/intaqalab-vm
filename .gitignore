@@ -41,6 +41,8 @@ testem.log
 .stignore
 sync.ffs_db
 apis/*
+openwiki/*
+start-headroom.sh
 
 # System Files
 .DS_Store

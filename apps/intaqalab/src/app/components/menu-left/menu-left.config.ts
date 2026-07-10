@@ -24,6 +24,7 @@ export type MenuAction =
   | 'MASTER_DATA_FUZE_TYPE'
   | 'MASTER_DATA_LOADING_ZONE'
   | 'MASTER_DATA_STANAG'
+  | 'MASTER_DATA_MEASUREMENTS_AND_RECORDS'
   | 'WHAREHOUSE_MUNITION_NEW'
   | 'WHAREHOUSE_MUNITION_STOCK'
   | 'WHAREHOUSE_MUNITIONS_DUMPS'
@@ -51,6 +52,7 @@ export const ACTION_ROUTES: Partial<Record<MenuAction, string>> = {
   MASTER_DATA_FUZE_TYPE: '/master-data/fuze-type',
   MASTER_DATA_LOADING_ZONE: '/master-data/loading-zone',
   MASTER_DATA_STANAG: '/master-data/stanag',
+  MASTER_DATA_MEASUREMENTS_AND_RECORDS: '/master-data/measures',
   WHAREHOUSE_MUNITION_NEW: '/wharehouse-managment/munitions',
   WHAREHOUSE_MUNITION_STOCK: '/wharehouse-managment/stock',
   WHAREHOUSE_MUNITIONS_DUMPS: '/wharehouse-managment/munitions-dumps',
@@ -71,6 +73,7 @@ export const URL_ACTION_MAP: ReadonlyArray<{ startsWith: string; action: MenuAct
   { startsWith: '/master-data/fuze-type', action: 'MASTER_DATA_FUZE_TYPE' },
   { startsWith: '/master-data/loading-zone', action: 'MASTER_DATA_LOADING_ZONE' },
   { startsWith: '/master-data/stanag', action: 'MASTER_DATA_STANAG' },
+  { startsWith: '/master-data/measures', action: 'MASTER_DATA_MEASUREMENTS_AND_RECORDS' },
   { startsWith: '/event-log', action: 'EVENT_LOG' },
   { startsWith: '/execution', action: 'EXECUTION' },
 ];
@@ -183,6 +186,11 @@ export const MENU_TREE: MenuNode[] = [
       { name: 'MENU_LEFT.CATALOG.OPTIONS.FUZE_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_FUZE_TYPE' },
       { name: 'MENU_LEFT.CATALOG.OPTIONS.LOADING_ZONE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_LOADING_ZONE' },
       { name: 'MENU_LEFT.CATALOG.OPTIONS.STANAG', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_STANAG' },
+      {
+        name: 'MENU_LEFT.CATALOG.OPTIONS.MEASUREMENTS_AND_RECORDS',
+        iconName: TRIAL_CHILD_SVG,
+        id: 'MASTER_DATA_MEASUREMENTS_AND_RECORDS',
+      },
     ],
   },
 ];

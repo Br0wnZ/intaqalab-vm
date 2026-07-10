@@ -6,7 +6,7 @@ import { waitFor } from '@testing-library/dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { UsersService } from './users-service';
-import type { User, UserListResponse } from './users-service.model';
+import type { PlanningUsersQueryParams, PlanningUsersResponse } from './users-service.model';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -14,25 +14,28 @@ describe('UsersService', () => {
 
   const USERS_URL = 'http://localhost:3000/api/users/users';
 
-  const mockUsers: User[] = [
+  const mockUsers: PlanningUsersResponse = [
     {
-      id: 'b01a0e23-da71-3a08-9893-11b8b2dfb069',
-      username: 'Usuario CET 1',
-      roles: ['SYSTEM_ADMIN'],
+      id: '04f70364-0619-40a1-a22a-f2acfae77bf5',
+      firstName: 'Alvaro Alonso',
+      lastName: 'Alonso Juarez',
+      username: 'aalojua',
     },
     {
-      id: 'd6d77053-92bc-3af6-b332-8bea8c4c6904',
-      username: 'Usuario CET 2',
-      roles: ['ADMINISTRATIVE'],
+      id: '8bf53b90-8450-4700-932c-cf3e948849ed',
+      firstName: 'Alberto Alvaro',
+      lastName: 'Alvaro Diaz',
+      username: 'aalvdia',
+    },
+    {
+      id: '5450ba0d-c94e-4d48-a5f6-57759dcef189',
+      firstName: 'Alfredo Álvarez Pladano (Pers.',
+      lastName: 'Álvarez Pladano (Pers. Externo)',
+      username: 'aalvpla',
     },
   ];
 
-  const mockResponse: UserListResponse = {
-    page: 1,
-    pageSize: 25,
-    totalElements: mockUsers.length,
-    items: mockUsers,
-  };
+  const mockUserListResponse: PlanningUsersResponse = mockUsers;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -56,101 +59,117 @@ describe('UsersService', () => {
       expect(service.usersResource).toBeDefined();
     });
 
-    it('should have users computed signal defined', () => {
-      expect(service.users).toBeDefined();
+    it('should have queryParams signal defined', () => {
+      expect(service.queryParams).toBeDefined();
+    });
+
+    it('should start with null queryParams', () => {
+      expect(service.queryParams()).toBeNull();
     });
   });
 
   describe('Data Loading', () => {
-    it('should start with default empty state', () => {
-      expect(service.usersResource.value()).toEqual({ page: 1, pageSize: 25, totalElements: 0, items: [] });
-      expect(service.users()).toEqual([]);
-      TestBed.tick();
-      const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
-      req.flush(mockResponse);
-      TestBed.tick();
+    it('should not make HTTP request when queryParams is null', () => {
+      // usersResource should not trigger request when params are null
+      expect(service.usersResource.value()).toBeUndefined();
+      httpTesting.expectNone((r) => r.url.includes('/users'));
     });
 
-    it('should load UserListResponse and expose items via users signal', async () => {
-      service.usersResource.value();
+    it('should load users when queryParams is set', async () => {
+      const params: PlanningUsersQueryParams = { limit: 25 };
+      service.queryParams.set(params);
+
       TestBed.tick();
       const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
-      expect(req.request.params.get('page')).toBe('1');
-      expect(req.request.params.get('pageSize')).toBe('25');
-      req.flush(mockResponse);
+      expect(req.request.url).toContain('limit=25');
+      req.flush(mockUserListResponse);
 
       await waitFor(() => {
         TestBed.tick();
-        expect(service.usersResource.value()).toEqual(mockResponse);
-        expect(service.users()).toEqual(mockUsers);
-        expect(service.totalElements()).toBe(2);
+        expect(service.usersResource.value()).toEqual(mockUserListResponse);
       });
     });
 
-    it('should react to parameter changes when load() is called', async () => {
-      service.usersResource.value();
+    it('should include search param when provided', () => {
+      const params: PlanningUsersQueryParams = { limit: 10, search: 'admin' };
+      service.queryParams.set(params);
+
       TestBed.tick();
+
+      const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
+      expect(req.request.url).toContain('limit=10');
+      expect(req.request.url).toContain('search=admin');
+      req.flush(mockUserListResponse);
+    });
+
+    it('should react to parameter changes', async () => {
+      // First request
+      service.queryParams.set({ limit: 25 });
+      TestBed.tick();
+
       const req1 = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
-      req1.flush(mockResponse);
+      expect(req1.request.url).toContain('limit=25');
+      req1.flush(mockUserListResponse);
 
       await waitFor(() => {
         TestBed.tick();
-        expect(service.users()).toEqual(mockUsers);
+        expect(service.usersResource.value()).toEqual(mockUserListResponse);
       });
 
-      service.load({ page: 2, pageSize: 10 });
+      // Change params
+      service.queryParams.set({ limit: 10, search: 'test' });
       TestBed.tick();
+
+      const emptyResponse: PlanningUsersResponse = [];
 
       const req2 = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
-      expect(req2.request.params.get('page')).toBe('2');
-      expect(req2.request.params.get('pageSize')).toBe('10');
-
-      const page2Response: UserListResponse = {
-        page: 2,
-        pageSize: 10,
-        totalElements: 12,
-        items: [],
-      };
-      req2.flush(page2Response);
+      expect(req2.request.url).toContain('limit=10');
+      expect(req2.request.url).toContain('search=test');
+      req2.flush(emptyResponse);
 
       await waitFor(() => {
         TestBed.tick();
-        expect(service.usersResource.value()).toEqual(page2Response);
-        expect(service.users()).toEqual([]);
-        expect(service.totalElements()).toBe(12);
+        expect(service.usersResource.value()).toEqual(emptyResponse);
       });
     });
   });
 
   describe('Error Handling', () => {
     it('should handle 404 error', async () => {
-      service.usersResource.value();
+      service.queryParams.set({ limit: 25 });
       TestBed.tick();
+
       const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
       req.flush('Not Found', { status: 404, statusText: 'Not Found' });
 
       await waitFor(() => {
         TestBed.tick();
         expect(service.usersResource.error()).toBeTruthy();
-        expect(service.hasError()).toBe(true);
-        expect(service.users()).toEqual([]);
-        expect(service.totalElements()).toBe(0);
       });
     });
 
     it('should handle 500 error', async () => {
-      service.usersResource.value();
+      service.queryParams.set({ limit: 25 });
       TestBed.tick();
+
       const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
       req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
 
       await waitFor(() => {
         TestBed.tick();
         expect(service.usersResource.error()).toBeTruthy();
-        expect(service.hasError()).toBe(true);
-        expect(service.users()).toEqual([]);
-        expect(service.totalElements()).toBe(0);
       });
+    });
+  });
+
+  describe('updateFireTrialAssociatedUser', () => {
+    it('should have updateFireTrialAssociatedUser resource defined', () => {
+      expect(service.updateFireTrialAssociatedUser).toBeDefined();
+    });
+
+    it('should not make request when associatedPlanningUserId is null', () => {
+      expect(service.associatedPlanningUserId()).toBeNull();
+      httpTesting.expectNone((r) => r.url.includes('/planning-user'));
     });
   });
 });

@@ -25,6 +25,7 @@ export type FireTrial = {
   createdAt?: string;
   updatedAt?: string;
   validated?: boolean;
+  planningUsers?: { id: string; fullname: string; username: string }[];
 };
 
 export type FireTrialType = {

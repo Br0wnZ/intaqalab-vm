@@ -13,7 +13,7 @@ import {
   detachDocFromTrial,
   trialsDocumentsDispatch,
 } from '../fixtures/trials-docs/trials-docs-dispatcher';
-import { setTrialStatus } from '../fixtures/trials/trial-transitions-store';
+import { getTrialById, setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';
 import { trialsGenerator } from '../fixtures/trials/trials-generator';
 import { getFixture } from '../utils';
@@ -50,9 +50,30 @@ trialsRouter.put('/:centerId/fire-trials/:trialId/schedule', (req, res) => {
 });
 
 // Obtener planificación
-trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/info', (req, res) =>
-  res.send(trialPlanningInfoDispatcher(req)),
-);
+trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/info', (req, res) => {
+  const data = trialPlanningInfoDispatcher(req) as { goal?: string; specimens?: unknown[] };
+  const trial = getTrialById(req.params['fireTrialId']);
+  const trialName = typeof trial?.['description'] === 'string' ? (trial['description'] as string).trim() : '';
+
+  // En mocks, las pruebas cuyo nombre lleva el prefijo "Validable" simulan cumplir
+  // los requisitos del backend para pasar a PLANNED.
+  const validationErrors: string[] = [];
+  if (!trial) {
+    validationErrors.push('La prueba de fuego no existe.');
+  }
+  if (!trialName.toLowerCase().startsWith('validable')) {
+    validationErrors.push('El nombre de la prueba no cumple el prefijo requerido para validar.');
+  }
+  if (!data.goal) {
+    validationErrors.push('El objetivo de la prueba es obligatorio.');
+  }
+  if (!Array.isArray(data.specimens) || data.specimens.length === 0) {
+    validationErrors.push('Debe haber al menos un espécimen asociado a la planificación.');
+  }
+
+  const isValidable = validationErrors.length === 0;
+  res.send({ ...data, isValidable, validationErrors });
+});
 
 // Actualizar planificación
 trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/info', (req, res) => {
@@ -329,12 +350,16 @@ trialsRouter.delete('/:centerId/stanag-criteria/:criterionId', (req, res) => {
 // ==========================================
 
 // Validar planificación
+// Nota: en mocks siempre se responde 200 (el 409 de estado incorrecto es
+// comportamiento real de backend, no deseado en entorno de desarrollo).
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/planning/validate', (req, res) => {
+  setTrialStatus(req.params['fireTrialId'], 'PLANNED');
   res.status(200).send({});
 });
 
 // Desbloquear planificación
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/planning/modify', (req, res) => {
+  setTrialStatus(req.params['fireTrialId'], 'UNDER_REVIEW');
   res.status(200).send({});
 });
 

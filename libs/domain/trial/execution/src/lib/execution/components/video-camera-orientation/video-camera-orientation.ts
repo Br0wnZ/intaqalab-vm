@@ -4,14 +4,14 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { BaseFormWidgetComponent } from '../base-widget.component';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
-import { IntaIconComponent } from "@intaqalab/ui";
+import { BaseFormWidgetComponent } from '../base-widget.component';
 
 interface CameraSelectionForm {
   camera: string | null;
@@ -24,7 +24,6 @@ interface CameraSelectionForm {
   imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslateModule, IntaIconComponent],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
-
       <!-- Header -->
       <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
         <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
@@ -36,10 +35,8 @@ interface CameraSelectionForm {
       <!-- Filtros: Cámara / Serie / Disparo -->
       <div class="shrink-0 flex flex-col gap-1.5">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-2">
-
           <!-- Cámara -->
           <div class="flex flex-col gap-0.5">
-
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label for="camera-select">
                 {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.CAMERA_LABEL' | translate }}
@@ -60,7 +57,7 @@ interface CameraSelectionForm {
           <div class="flex flex-col gap-0.5">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label for="serie-select">
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_LABEL' | translate }}
+                {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_LABEL' | translate }}
               </mat-label>
               <mat-select
                 id="serie-select"
@@ -78,7 +75,7 @@ interface CameraSelectionForm {
           <div class="flex flex-col gap-0.5">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label for="disparo-select">
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_LABEL' | translate }}
+                {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_LABEL' | translate }}
               </mat-label>
               <mat-select
                 id="disparo-select"
@@ -91,14 +88,12 @@ interface CameraSelectionForm {
               </mat-select>
             </mat-form-field>
           </div>
-
         </div>
         <div class="h-px bg-slate-100 mb-2"></div>
       </div>
 
       <!-- Campos de salida (read-only, procedentes del widget MAO vía store) -->
       <div intaReadonlyContent class="flex-1 flex flex-col justify-between min-h-0">
-
         <!-- Distancia prevista pique -->
         <div class="flex flex-col gap-0.5">
           <span class="text-xs font-medium text-gray-700 leading-none">
@@ -137,12 +132,13 @@ interface CameraSelectionForm {
           <span class="text-xs font-medium text-gray-700 leading-none">
             {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.ANGULAR_DIFFERENCE_LABEL' | translate }}
           </span>
-          <div class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-violet-100 bg-violet-50/50">
+          <div
+            class="flex items-center justify-between h-[44px] px-3 rounded-lg border border-violet-100 bg-violet-50/50"
+          >
             <span class="text-sm font-medium text-violet-800">{{ angularDifferenceFormatted() ?? '—' }}</span>
             <span class="text-xs font-medium text-violet-400">°</span>
           </div>
         </div>
-
       </div>
     </div>
   `,
@@ -163,9 +159,11 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   protected readonly cameraOptions = computed(() => this.#store.videoCameraOrientation().cameraOptions);
 
   /** Outputs del widget MAO (read-only) */
-  protected readonly estimatedDistancePique = computed(() => this.#store.videoCameraOrientation().estimatedDistancePique);
-  protected readonly operatingHeight        = computed(() => this.#store.videoCameraOrientation().operatingHeight);
-  protected readonly operatingRange         = computed(() => this.#store.videoCameraOrientation().operatingRange);
+  protected readonly estimatedDistancePique = computed(
+    () => this.#store.videoCameraOrientation().estimatedDistancePique,
+  );
+  protected readonly operatingHeight = computed(() => this.#store.videoCameraOrientation().operatingHeight);
+  protected readonly operatingRange = computed(() => this.#store.videoCameraOrientation().operatingRange);
 
   /** Diferencia angular calculada en el store, formateada a 2 decimales */
   protected readonly angularDifferenceFormatted = computed(() => {
@@ -174,14 +172,14 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   });
 
   /** Opciones de serie y disparo — se poblarán desde el planning cuando esté disponible */
-  protected readonly serieOptions   = computed<{ value: string; label: string }[]>(() => []);
+  protected readonly serieOptions = computed<{ value: string; label: string }[]>(() => []);
   protected readonly disparoOptions = computed<{ value: string; label: string }[]>(() => []);
 
   // ── Signal Form (estado local del formulario) ─────────────────────────────
 
   protected readonly selectorModel = signal<CameraSelectionForm>({
-    camera:  this.#store.videoCameraOrientation().camera,
-    serie:   this.#store.videoCameraOrientation().serie,
+    camera: this.#store.videoCameraOrientation().camera,
+    serie: this.#store.videoCameraOrientation().serie,
     disparo: this.#store.videoCameraOrientation().disparo,
   });
 
@@ -190,10 +188,10 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   // ── FormWidget implementation ─────────────────────────────────────────────
 
   readonly formState: Signal<WidgetFormState> = computed(() => ({
-    widgetId:   this.widgetId(),
-    dirty:      this.selectorForm().dirty(),
-    touched:    this.selectorForm().touched(),
-    valid:      this.selectorForm().valid(),
+    widgetId: this.widgetId(),
+    dirty: this.selectorForm().dirty(),
+    touched: this.selectorForm().touched(),
+    valid: this.selectorForm().valid(),
     hasChanges: this.selectorForm().dirty(),
   }));
 

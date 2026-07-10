@@ -96,4 +96,20 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
       'false',
     );
   });
+
+  // The store (single source of truth) drives readonly, not the static `trial` input —
+  // this is what keeps the form locked/unlocked in sync right after validate/unlock resolve.
+  describe('Readonly derived from store status (not the static trial input)', () => {
+    it('should be readonly when the store trial status is PLANNED, even with an edit-capable role', async () => {
+      const { view } = await runSetup({ fireTrial: { ...createTrial(), status: 'PLANNED' } });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((view.fixture.componentInstance as any).isReadonly()).toBe(true);
+    });
+
+    it('should NOT be readonly when the store trial status is UNDER_REVIEW for an edit-capable role', async () => {
+      const { view } = await runSetup({ fireTrial: { ...createTrial(), status: 'UNDER_REVIEW' } });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((view.fixture.componentInstance as any).isReadonly()).toBe(false);
+    });
+  });
 });

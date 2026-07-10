@@ -1,12 +1,12 @@
 export interface MasterDataStanag {
   id: string;
-  variable: { id: string; name: string };
-  description: string;
-  numThreshold: number;
-  measureUnit: { id: string; name: string };
-  calcType: { id: string; name: string };
-  involvedLayers: { id: string; name: string };
-  startLayer: string;
-  endLayer: string;
+  variable: string;
+  name: { es: string; en: string };
+  numericThreshold: number;
+  unit: string;
+  calculationType: string;
+  involvedLayer: string;
+  startLayer: number | null;
+  endLayer: number | null;
   active: boolean;
 }

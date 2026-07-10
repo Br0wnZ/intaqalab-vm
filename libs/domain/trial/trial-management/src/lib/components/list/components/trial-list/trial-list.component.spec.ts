@@ -149,36 +149,11 @@ describe('TrialListComponent', () => {
   describe('getUsuarioTooltip', () => {
     it('should format the user tooltip correctly', async () => {
       const { fixture } = await setup();
-      const usuario = { nombre: 'Juan', apellido1: 'García', apellido2: 'López' };
+      const usuario = 'Juan García López';
 
-      const tooltip = fixture.componentInstance.getUsuarioTooltip(usuario);
+      const tooltip = fixture.componentInstance.getUserTooltip(usuario);
 
       expect(tooltip).toBe('Planificación de la prueba\nJuan García López');
-    });
-
-    it('should work with users from mockTrials', async () => {
-      const { fixture } = await setup();
-      const usuario = { nombre: 'María', apellido1: 'García', apellido2: 'López' };
-
-      const tooltip = fixture.componentInstance.getUsuarioTooltip(usuario);
-
-      expect(tooltip).toContain('María García López');
-    });
-  });
-
-  describe('Assigned users', () => {
-    it('should have 3 assigned users by default', async () => {
-      const { fixture } = await setup();
-      const usuarios = fixture.componentInstance.usuariosAsignados();
-
-      expect(usuarios).toHaveLength(3);
-    });
-
-    it('should contain the correct users', async () => {
-      const { fixture } = await setup();
-      const usuarios = fixture.componentInstance.usuariosAsignados();
-
-      expect(usuarios.map((u) => u.nombre)).toEqual(['María', 'Juan', 'Lucía']);
     });
   });
 

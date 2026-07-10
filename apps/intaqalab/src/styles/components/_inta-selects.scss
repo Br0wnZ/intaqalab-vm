@@ -144,16 +144,16 @@ html body .mat-mdc-form-field.small-select {
   .mdc-notched-outline:not(.mdc-notched-outline--upgraded) {
     display: none;
   }
-  .mat-mdc-notch-piece.mdc-notched-outline__notch{
+  .mat-mdc-notch-piece.mdc-notched-outline__notch {
     padding: 0;
   }
-  .mdc-floating-label.mat-mdc-floating-label{
+  .mdc-floating-label.mat-mdc-floating-label {
     top: 50%;
-    &.mdc-floating-label--float-above{
+    &.mdc-floating-label--float-above {
       display: none;
     }
   }
-  .mat-mdc-notch-piece.mdc-notched-outline__notch{
+  .mat-mdc-notch-piece.mdc-notched-outline__notch {
     width: auto !important;
   }
-} 
+}

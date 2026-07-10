@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 import { MunitionAcondicionamientoTabComponent } from './acondicionamiento-tab.component';
@@ -42,9 +42,15 @@ describe('MunitionAcondicionamientoTabComponent', () => {
     expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.EQUIPO_LABEL')).toBeInTheDocument();
     expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_LABEL')).toBeInTheDocument();
     expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.OBSERVACIONES_LABEL')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL')).toBeInTheDocument();
-    expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL')).toBeInTheDocument();
+    expect(
+      screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL'),
+    ).toBeInTheDocument();
   });
 
   it('starts not dirty', async () => {
@@ -55,9 +61,9 @@ describe('MunitionAcondicionamientoTabComponent', () => {
   it('save updates the store', async () => {
     const { view, store } = await runSetup();
     const storeSpy = vi.spyOn(store, 'updateMunitionIntroductionAcondicionamiento');
-    
+
     view.fixture.componentInstance.save();
-    
+
     expect(storeSpy).toHaveBeenCalled();
   });
 
@@ -67,9 +73,9 @@ describe('MunitionAcondicionamientoTabComponent', () => {
       componente: 'test-comp',
       camara: 'test-camara',
     });
-    
+
     view.fixture.componentInstance.reset();
-    
+
     expect(view.fixture.componentInstance.acondFormModel().componente).toBeNull();
   });
 });

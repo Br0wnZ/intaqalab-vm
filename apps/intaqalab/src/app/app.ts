@@ -50,7 +50,7 @@ export class App {
           tap(({ userData }) => {
             this.#authService.setUserData(userData);
             this.isAuthenticated.set(true);
-            this.#authService.setRoles(Object.values(Role));
+            this.#authService.setRoles([Role.INTAQALAB_ADMIN]);
           }),
         )
       : this.#oidcSecurityService.checkAuth().pipe(

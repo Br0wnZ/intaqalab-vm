@@ -21,7 +21,15 @@ interface RadarTrayectographyFilters {
 
 @Component({
   selector: 'inta-radar-trayectography-orientation',
-  imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslateModule, InputSelect, IntaIconComponent],
+  imports: [
+    FormField,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatIconModule,
+    TranslateModule,
+    InputSelect,
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- Header: título + filtros -->

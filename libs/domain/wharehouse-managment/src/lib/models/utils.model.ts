@@ -39,4 +39,4 @@ export const getMunitionsPartitionedByCategory = (
 };
 
 export const WarehouseMunitionCategory = { MUNITION: 'MUNITION', MUNITION_COMPONENT: 'MUNITION_COMPONENT' } as const;
-export type WarehouseMunitionCategoryType = typeof WarehouseMunitionCategory[keyof typeof WarehouseMunitionCategory];
+export type WarehouseMunitionCategoryType = (typeof WarehouseMunitionCategory)[keyof typeof WarehouseMunitionCategory];

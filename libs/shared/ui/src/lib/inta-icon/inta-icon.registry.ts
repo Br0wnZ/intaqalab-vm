@@ -108,12 +108,12 @@ export const INTA_ICONS = {
       />
     `,
   ),
-  checkCircle: createSvg (
+  checkCircle: createSvg(
     '0 0 16 16',
     `
       <path d="M14.3333 7.05715V7.67048C14.3325 9.1081 13.867 10.5069 13.0062 11.6584C12.1454 12.8098 10.9355 13.6521 9.5569 14.0597C8.17829 14.4674 6.70484 14.4184 5.35631 13.9202C4.00779 13.422 2.85644 12.5012 2.07397 11.2952C1.29151 10.0892 0.919861 8.66253 1.01445 7.22803C1.10904 5.79353 1.6648 4.42803 2.59885 3.3352C3.5329 2.24236 4.79519 1.48074 6.19746 1.16391C7.59973 0.847089 9.06685 0.99204 10.38 1.57715M14.3333 2.33715L7.66667 9.01048L5.66667 7.01048" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
-    `
+    `,
   ),
   checkSquare: createSvg(
     '0 0 21 20',
@@ -203,7 +203,7 @@ export const INTA_ICONS = {
     '0 0 24 24',
     `
       <path d="M16 4H18C18.5304 4 19.0391 4.21071 19.4142 4.58579C19.7893 4.96086 20 5.46957 20 6V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V6C4 5.46957 4.21071 4.96086 4.58579 4.58579C4.96086 4.21071 5.46957 4 6 4H8M9 2H15C15.5523 2 16 2.44772 16 3V5C16 5.55228 15.5523 6 15 6H9C8.44772 6 8 5.55228 8 5V3C8 2.44772 8.44772 2 9 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
   folder_plus: createSvg(
     '0 0 24 24',
@@ -293,7 +293,7 @@ export const INTA_ICONS = {
   ),
   list: createSvg(
     '0 0 24 24',
-    `<path d="M8 6H21M8 12H21M8 18H21M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
+    `<path d="M8 6H21M8 12H21M8 18H21M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
   ),
   maximize: createSvg(
     '0 0 14 14',
@@ -431,7 +431,7 @@ export const INTA_ICONS = {
       <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M10 7H7V16H10V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M17 7H14V12H17V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    `
+    `,
   ),
   truck: createSvg(
     '0 0 24 20',

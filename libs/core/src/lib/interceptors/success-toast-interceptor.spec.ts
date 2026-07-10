@@ -1,12 +1,13 @@
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { of } from 'rxjs';
 
 import { successToastInterceptor } from './success-toast-interceptor';
-import { provideTestingEnvironment } from '@intaqalab/config';
+
 class ToasterStub {
   /* eslint-disable @typescript-eslint/no-empty-function */
   success(): void {}

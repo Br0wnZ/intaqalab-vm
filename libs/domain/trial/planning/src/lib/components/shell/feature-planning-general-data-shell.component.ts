@@ -115,15 +115,22 @@ export class FeaturePlanningGeneralDataShellComponent {
    * - PLANNED+: todos excepto Viewer
    */
   protected readonly canAccessPlanning = computed(() => {
-    const trialStatus = this.trial()?.status ?? TrialStatus.UNDER_REVIEW;
+    const trialStatus = this.#currentStatus();
     return this.#planningPermissions.canAccessPlanningTab(trialStatus);
   });
 
   /**
-   * True si el usuario es solo "viewer" de la planificación (no puede editar).
-   * = tiene acceso pero NO pertenece a los roles de edición.
+   * True si la planificación debe estar bloqueada para edición:
+   * - el usuario no tiene rol de edición, o
+   * - la prueba ya no está en UNDER_REVIEW (se validó y pasó a PLANNED).
+   * El store es la única fuente de verdad del estado, así que tras validar/desbloquear
+   * el formulario reacciona sin depender del input estático `trial`.
    */
-  protected readonly isReadonly = computed(() => !this.#planningPermissions.canEditPlanning());
+  protected readonly isReadonly = computed(
+    () => !this.#planningPermissions.canEditPlanning() || this.#currentStatus() !== TrialStatus.UNDER_REVIEW,
+  );
+
+  #currentStatus = computed(() => this.#store.fireTrial()?.status ?? this.trial()?.status ?? TrialStatus.UNDER_REVIEW);
 
   // Tabs 2 (series & shots) require general info to exist.
   protected readonly disableSeriesTab = computed(() => !this.#store.hasPlanningInfo());

@@ -5,12 +5,14 @@ import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import {
   createMockDataPlanningService,
+  createMockPlanningLifecycleService,
   createMockSeriesAndShotsService,
   createMockShootingConditionsService,
 } from '@intaqalab/utils';
 import { vi } from 'vitest';
 
 import { DataPlanningService } from '../services/data-planning-service';
+import { PlanningLifecycleService } from '../services/planning-lifecycle-service';
 import { SeriesAndShotsService } from '../services/series-and-shots-service';
 import { ShootingConditionsService } from '../services/shooting-conditions.service';
 import { PlanningGeneralDataStore } from './planning-general-data.store';
@@ -20,6 +22,7 @@ describe('PlanningGeneralDataStore', () => {
   let dataPlanningServiceMock: ReturnType<typeof createMockDataPlanningService>;
   let seriesAndShotsServiceMock: ReturnType<typeof createMockSeriesAndShotsService>;
   let shootingConditionsServiceMock: ReturnType<typeof createMockShootingConditionsService>;
+  let lifecycleServiceMock: ReturnType<typeof createMockPlanningLifecycleService>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let usersServiceMock: any;
@@ -28,13 +31,22 @@ describe('PlanningGeneralDataStore', () => {
     dataPlanningServiceMock = createMockDataPlanningService();
     seriesAndShotsServiceMock = createMockSeriesAndShotsService();
     shootingConditionsServiceMock = createMockShootingConditionsService();
+    lifecycleServiceMock = createMockPlanningLifecycleService();
     usersServiceMock = {
       users: signal([]),
       usersResource: {
+        value: signal({
+          page: 1,
+          pageSize: 25,
+          totalElements: 0,
+          items: [],
+        }),
         isLoading: signal(false),
         error: signal(undefined),
       },
       load: vi.fn(),
+      queryParams: signal(null),
+      associatedPlanningUserId: signal(null),
     };
 
     TestBed.configureTestingModule({
@@ -43,6 +55,7 @@ describe('PlanningGeneralDataStore', () => {
         { provide: DataPlanningService, useValue: dataPlanningServiceMock },
         { provide: SeriesAndShotsService, useValue: seriesAndShotsServiceMock },
         { provide: ShootingConditionsService, useValue: shootingConditionsServiceMock },
+        { provide: PlanningLifecycleService, useValue: lifecycleServiceMock },
         { provide: UsersService, useValue: usersServiceMock },
       ],
     });
@@ -104,5 +117,30 @@ describe('PlanningGeneralDataStore', () => {
 
   it('should expose no planning info error by default', () => {
     expect(store.hasPlanningInfoError()).toBe(false);
+  });
+
+  describe('planning validation', () => {
+    it('should default isPlanningValidable to false and validation errors to an empty array', () => {
+      expect(store.isPlanningValidable()).toBe(false);
+      expect(store.planningValidationErrors()).toEqual([]);
+    });
+
+    it('should expose isValidable and validationErrors from the planning info resource', () => {
+      Object.assign(dataPlanningServiceMock.getPlanningDataResource, {
+        hasValue: vi.fn(() => true),
+        value: vi.fn(() => ({
+          goal: 'Goal',
+          specimens: [],
+          isValidable: false,
+          validationErrors: ['El objetivo de la prueba es obligatorio.'],
+        })),
+        error: vi.fn(() => undefined),
+        status: vi.fn(() => 'resolved'),
+        isLoading: vi.fn(() => false),
+      });
+
+      expect(store.isPlanningValidable()).toBe(false);
+      expect(store.planningValidationErrors()).toEqual(['El objetivo de la prueba es obligatorio.']);
+    });
   });
 });

@@ -2,9 +2,9 @@ import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
 
 import { PauseExecutionDialog, type PauseExecutionDialogData } from './pause-execution-dialog';
 

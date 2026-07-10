@@ -1,7 +1,4 @@
 {
-  "app": {
-    "title": "Translation Demo"
-  },
   "HEADER_TOOLS": {
     "TITLE": "Kopfzeilen-Tools",
     "CURRENT_ROLES": "Aktuelle Rollen"
@@ -36,7 +33,12 @@
       }
     },
     "GENERAL_DATA_SECTION": {
-      "SHOW_RATING_CRITERIA": "Qualifikationskriterien anzeigen"
+      "MODIFY_PLANNING": "Planung ändern",
+      "VALIDATION_ERRORS_TITLE": "Gründe, warum nicht validiert werden kann",
+      "SHOW_RATING_CRITERIA": "Qualifikationskriterien anzeigen",
+      "HYPOCHELOMETRIC_REVIEW_LABEL": "Hypochelometrische Prüfung",
+      "HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL": "Vor der Prüfung",
+      "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "Nach der Prüfung"
     },
     "RATING_CRITERIA": {
       "TITLE": "Qualifikationskriterien",
@@ -44,10 +46,8 @@
       "PRESSURE_LABEL": "Druck",
       "COLUMNS": {
         "PROPERTY": "Eigenschaft",
-        "USEFUL_1_MIN": "Nützlich-1 min",
-        "USEFUL_1_MAX": "Nützlich-1 max",
-        "USELESS_MIN": "Nutzlos min",
-        "USELESS_MAX": "Nutzlos max"
+        "USEFUL_1": "Nützlich-1",
+        "USELESS": "Nutzlos"
       },
       "PROPERTIES": {
         "V0C": "V0c",
@@ -58,6 +58,12 @@
         "PROJECTILE": "Projektil",
         "PRIMER": "Zündhütchen",
         "FUSE": "Zünder"
+      }
+    },
+    "ACCESS_DENIED": "Sie haben keinen Zugriff auf diesen Versuch",
+    "ARMAMENT": {
+      "UPDATE_SHOT_DIALOG": {
+        "OBSERVATIONS_LABEL": "Beobachtungen"
       }
     }
   },
@@ -172,11 +178,12 @@
         "NIVEL_ACUSTICO_PLACEHOLDER": "0,00",
         "DISTANCIA_BOCA_LABEL": "Abstand zur Mündung",
         "DISTANCIA_BOCA_PLACEHOLDER": "0,00",
-        "X_SONOMETRO_LABEL": "Schallpegelmesser X",
+        "SONOMETRO_POSITION_LABEL": "Schallpegelmesser Position (X, Y, Z)",
+        "X_SONOMETRO_LABEL": "X",
         "X_SONOMETRO_PLACEHOLDER": "X",
-        "Y_SONOMETRO_LABEL": "Schallpegelmesser Y",
+        "Y_SONOMETRO_LABEL": "Y",
         "Y_SONOMETRO_PLACEHOLDER": "Y",
-        "Z_SONOMETRO_LABEL": "Schallpegelmesser Z",
+        "Z_SONOMETRO_LABEL": "Z",
         "Z_SONOMETRO_PLACEHOLDER": "Z",
         "OBSERVACIONES_LABEL": "Beobachtungen",
         "OBSERVACIONES_PLACEHOLDER": "Beobachtungen eingeben"
@@ -771,12 +778,34 @@
         "ROW_PROYECTIL": "Projektil",
         "ROW_ESPOLETA": "Zünder",
         "ROW_ESTOPIN": "Zündhütchen"
+      },
+      "SHOT": {
+        "TITLE": "Schussdaten",
+        "DESCRIPTION": "Schussnummer, Geschwindigkeit und Beobachtungen",
+        "NUMBER": "Schussnummer",
+        "VELOCITY": "Geschwindigkeit",
+        "OBSERVATIONS": "Beobachtungen"
       }
     }
   },
   "UTILS_TRIALS": {
     "TRIAL_ACTIONS": {
-      "EXECUTION": "Ausführung"
+      "EXECUTION": "Ausführung",
+      "MODIFY": "Ändern"
+    }
+  },
+  "COMMONS": {
+    "LOADING": "Wird geladen..."
+  },
+  "TRIALS_LIST": {
+    "ERROR": "Fehler beim Laden der Versuche",
+    "TABLE": {
+      "ASSIGNED_USER": "Zugewiesener Benutzer"
+    }
+  },
+  "ADMIN": {
+    "ADMIN_DOCS_SECTION": {
+      "SYNC": "Wird geladen..."
     }
   }
 }

@@ -8,7 +8,7 @@ import { ExecutionStore } from '../../+state/execution.store';
 
 export type PauseExecutionDialogData = {
   trialName: string;
-  trialId: string; 
+  trialId: string;
 };
 
 export type PauseExecutionDialogResult = { action: 'pause' } | { action: 'back' };

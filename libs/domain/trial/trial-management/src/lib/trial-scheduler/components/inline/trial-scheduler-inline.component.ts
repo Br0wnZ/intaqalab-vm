@@ -165,7 +165,6 @@ export class TrialSchedulerInlineComponent {
 
   async #loadItemsToShow(trialId: string) {
     const items = await this.calendarTrialScheduleService.getSchedule(trialId);
-    console.log(items);
     this.scheduleItems.set(items);
   }
 

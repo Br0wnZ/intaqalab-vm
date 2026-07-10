@@ -183,16 +183,37 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/pro
 });
 
 // ==========================================
-// EQUIPMENT SELECTOR
+// EQUIPMENT SELECTOR / SELECTION
 // ==========================================
 
-// Contrato GET selector de equipos
+// Contrato GET selector de equipos (legacy & Swagger formats)
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/equipment-selection', (req, res) => {
+  const data = getEquipmentSelectorState(req.params['fireTrialId']);
+  res.status(200).json(data);
+});
+
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {
   const data = getEquipmentSelectorState(req.params['fireTrialId']);
   res.status(200).json(data);
 });
 
-// Contrato PUT selector de equipos
+// Contrato PUT selector de equipos (legacy & Swagger formats)
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selection', (req, res) => {
+  const equipments = req.body?.equipments;
+
+  if (!Array.isArray(equipments)) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "El campo 'equipments' es obligatorio y debe ser un array",
+    });
+    return;
+  }
+
+  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], { equipments });
+  res.status(200).json(updated);
+});
+
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {
   const equipments = req.body?.equipments;
 

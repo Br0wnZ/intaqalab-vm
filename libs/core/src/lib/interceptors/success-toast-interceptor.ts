@@ -1,7 +1,7 @@
 import type { HttpInterceptorFn } from '@angular/common/http';
 import { HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { injectApiUrl, TOAST_FEEDBACK } from '@intaqalab/config';
+import { TOAST_FEEDBACK, injectApiUrl } from '@intaqalab/config';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { tap } from 'rxjs';

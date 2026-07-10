@@ -159,18 +159,18 @@ const EXECUTION_SELECTOR_COLUMNS = [
           <!-- Assigned Users Column -->
           <ng-container matColumnDef="usuariosAsignados">
             <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
-              {{ 'TRIALS_LIST.TABLE.ASSIGNED_USERS' | translate }}
+              {{ 'TRIALS_LIST.TABLE.ASSIGNED_USER' | translate }}
             </th>
             <td *matCellDef="let trial" mat-cell class="px-6 py-4 !bg-white">
               <div class="flex -space-x-2">
-                @for (usuario of usuariosAsignados(); track usuario.nombre) {
+                @if (trial.planningUsers?.length && trial.planningUsers[0]) {
                   <div
                     matTooltipPosition="above"
-                    class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white flex items-center justify-center cursor-pointer hover:z-10 transition-transform hover:scale-110"
-                    [matTooltip]="getUsuarioTooltip(usuario)"
+                    class="min-w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white flex items-center justify-center cursor-pointer hover:z-10 transition-transform hover:scale-110 px-2"
+                    [matTooltip]="getUserTooltip(trial.planningUsers[0].fullName)"
                   >
                     <span class="text-white text-xs font-medium">
-                      {{ usuario.nombre.charAt(0) }}{{ usuario.apellido1.charAt(0) }}
+                      {{ setUserBubble(trial.planningUsers[0].fullName) }}
                     </span>
                   </div>
                 }
@@ -301,11 +301,6 @@ export class TrialListComponent {
   readonly pageSize = computed(() => this.store.currentSearch().pageSize ?? 10);
 
   readonly intaDatePipe = inject(IntaDatePipe);
-  readonly usuariosAsignados = signal([
-    { nombre: 'María', apellido1: 'García', apellido2: 'López', avatar: 'avatar1.jpg' },
-    { nombre: 'Juan', apellido1: 'Martínez', apellido2: 'Sánchez', avatar: 'avatar2.jpg' },
-    { nombre: 'Lucía', apellido1: 'Fernández', apellido2: 'Pérez', avatar: 'avatar3.jpg' },
-  ]);
 
   constructor() {
     effect(() => {
@@ -321,8 +316,35 @@ export class TrialListComponent {
     return this.#trialStatus().find((s) => s.value === status)?.label ?? status;
   }
 
-  getUsuarioTooltip(usuario: { nombre: string; apellido1: string; apellido2: string }): string {
-    return `Planificación de la prueba\n${usuario.nombre} ${usuario.apellido1} ${usuario.apellido2}`;
+  getUserTooltip(fullName: string): string {
+    return `Planificación de la prueba\n${fullName}`;
+  }
+
+  setUserBubble(fullName: string) {
+    const ext = fullName.split('(');
+    let result = '';
+
+    if (ext && ext.length > 1) {
+      const name = ext[0];
+
+      if (!name) return;
+
+      const fullName = name.split(' ');
+
+      fullName.forEach((item) => {
+        result += item.charAt(0);
+      });
+
+      result += '(P.E)';
+    } else {
+      const fullNameArray = fullName.split(' ');
+
+      fullNameArray.forEach((item) => {
+        result += item.charAt(0);
+      });
+    }
+
+    return result;
   }
 
   getSchudeledDate(trial: FireTrial): string {

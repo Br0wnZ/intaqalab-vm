@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Role, injectCurrentUserRole } from '@intaqalab/core';
+import { CAN_ADD_CALENDAR_OBSERVATIONS_ROLES, Role, injectCurrentUserRole } from '@intaqalab/core';
 import type { CalendarViewObservation } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { TranslateModule } from '@ngx-translate/core';
@@ -66,8 +66,8 @@ export class DayActionsComponent {
   readonly #roles = injectCurrentUserRole();
 
   readonly canSchedule = inject(TrialPersmissionsService).canSchedule();
-  readonly canAddObservations = computed(
-    () => this.#roles().includes(Role.INTAQALAB_ADMIN) || this.#roles().includes(Role.INTAQALAB_TRIAL_ENGINEER),
+  readonly canAddObservations = computed(() =>
+    this.#roles().some((role) => CAN_ADD_CALENDAR_OBSERVATIONS_ROLES.includes(role)),
   );
 
   readonly value = input<Date>();

@@ -108,6 +108,14 @@ export class WidgetStateService {
   }
 
   /**
+   * 🧹 Limpiar todos los widgets del grid
+   */
+  clearWidgets(): void {
+    this.#placedWidgets.set([]);
+    this.#widgetFormsState.set(new Map());
+  }
+
+  /**
    * 🔄 Mover widget a nueva posición
    */
   moveWidget(widgetId: string, newPosition: GridPosition): boolean {

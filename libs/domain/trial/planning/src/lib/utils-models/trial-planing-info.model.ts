@@ -11,6 +11,10 @@ export type TrialPlanningInfo = {
   stanagCriteria?: StanagCriterionRef[];
   ratingCriteriaUnits?: RatingCriteriaUnits;
   ratingCriteria?: RatingCriteria;
+  /** Indica si la planificación cumple los requisitos para ser validada (pasar a PLANNED) */
+  isValidable?: boolean;
+  /** Motivos por los que la planificación no cumple los requisitos para ser validada */
+  validationErrors?: string[];
 };
 
 type StanagCriterionRef = {

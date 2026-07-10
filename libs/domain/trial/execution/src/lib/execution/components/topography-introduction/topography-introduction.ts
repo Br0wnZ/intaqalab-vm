@@ -36,8 +36,8 @@ interface TopographyFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2 overflow-auto">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
@@ -75,11 +75,7 @@ interface TopographyFormModel {
         </mat-form-field>
 
         <!-- Disparo actual -->
-        <button
-          mat-flat-button
-          type="button"
-          (click)="setCurrentShot()"
-        >
+        <button mat-flat-button type="button" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.CURRENT_SHOT_BTN' | translate }}
         </button>
 

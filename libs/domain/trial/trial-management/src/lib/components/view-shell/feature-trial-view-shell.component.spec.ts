@@ -119,8 +119,9 @@ describe('FeatureTrialViewShellComponent', () => {
   let mockUiDialogs: { confirm: ReturnType<typeof vi.fn>; input: ReturnType<typeof vi.fn> };
   let mockTabCommand: ReturnType<typeof vi.fn>;
 
-  const setup = async (options: { trialData?: typeof MOCK_TRIAL | null } = {}) => {
+  const setup = async (options: { trialData?: typeof MOCK_TRIAL | null; roles?: Role[] } = {}) => {
     const trialData = options.trialData !== undefined ? options.trialData : MOCK_TRIAL;
+    const roles = options.roles ?? [];
     mockTrialStore = createMockTrialGeneralDataStore({ trial: trialData });
     mockTrialsDataService = createMockTrialsDataService();
     mockTransitionsService = createMockTransitionsService();
@@ -152,7 +153,7 @@ describe('FeatureTrialViewShellComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: AuthService, useValue: { userRoles: signal([]) } },
+        { provide: AuthService, useValue: { userRoles: signal(roles) } },
         { provide: TrialsDataService, useValue: mockTrialsDataService },
         { provide: TrialTransitionsService, useValue: mockTransitionsService },
         { provide: UiDialogService, useValue: mockUiDialogs },
@@ -363,6 +364,56 @@ describe('FeatureTrialViewShellComponent', () => {
       component.handleClickTrialAction('REMOVE');
 
       await waitFor(() => expect(mockTransitionsService.delete).toHaveBeenCalledWith('someId'));
+    });
+  });
+
+  describe('Planning tab access (disabled instead of showing ACCESS_DENIED)', () => {
+    it('should disable the planning tab for a role without access while UNDER_REVIEW', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.UNDER_REVIEW },
+        roles: [Role.INTAQALAB_VIEWER],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
+    it('should enable the planning tab for an Admin while UNDER_REVIEW', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.UNDER_REVIEW },
+        roles: [Role.INTAQALAB_ADMIN],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      );
+    });
+
+    it('should disable the planning tab for a viewer-only role once the trial is PLANNED', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.PLANNED },
+        roles: [Role.INTAQALAB_VIEWER],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
+    it('should enable the planning tab for a non-viewer role once the trial is PLANNED', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.PLANNED },
+        roles: [Role.INTAQALAB_TRIAL_ENGINEER],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      );
     });
   });
 

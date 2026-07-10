@@ -61,9 +61,29 @@ const DEFAULT_COLUMNS = [
       <h2 class="text-base font-semibold text-gray-900 my-6">
         {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TITLE' | translate }}
       </h2>
-      <button mat-flat-button [matMenuTriggerFor]="menu">
-        {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON' | translate }}
-      </button>
+      <div class="flex items-center gap-2 relative">
+        <button
+          type="button"
+          class="self-center text-client-primary hover:text-client-primary/80 transition-colors"
+          (mouseenter)="showTooltip = true"
+          (mouseleave)="showTooltip = false"
+        >
+          <ui-inta-icon name="info" size="lg" />
+        </button>
+        @if (showTooltip) {
+          <div
+            class="absolute right-full top-0 mr-3 w-[600px] bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50 whitespace-pre-line text-left"
+          >
+            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON_TOOLTIP' | translate }}
+            <div
+              class="absolute left-full top-3 w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-slate-800"
+            ></div>
+          </div>
+        }
+        <button mat-flat-button [matMenuTriggerFor]="menu">
+          {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON' | translate }}
+        </button>
+      </div>
       <mat-menu panelClass="warehouse-mat-mene-neq" #menu="matMenu">
         <inta-stock-list-neq-data></inta-stock-list-neq-data>
       </mat-menu>
@@ -285,6 +305,7 @@ export class StockListComponent {
 
   readonly displayedColumns = computed(() => [...DEFAULT_COLUMNS]);
   selection = new SelectionModel<MunitionStockListResponse>(true, []);
+  showTooltip = false;
 
   pageIndex = signal(0);
   pageSize = signal(10);

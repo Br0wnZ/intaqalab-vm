@@ -3,6 +3,7 @@ import type { Signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { OverpressureInfoState } from '../../../+state/execution.store';
@@ -11,7 +12,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 interface OverpressureFormModel {
   presionMaxima: string | null;
@@ -51,11 +51,13 @@ interface OverpressureFormModel {
         <!-- Row 1: Editable input fields -->
         <div class="grid grid-cols-3 gap-1.5">
           <!-- Presión Máxima -->
-           <div>
+          <div>
             <span class="text-xs font-medium text-gray-700 leading-none truncate mb-2 block">
-            {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.PRESION_MAXIMA_LABEL' | translate }}
+              {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.PRESION_MAXIMA_LABEL' | translate }}
             </span>
-            <div class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center">
+            <div
+              class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center"
+            >
               <input
                 type="text"
                 inputmode="decimal"
@@ -72,7 +74,9 @@ interface OverpressureFormModel {
             <span class="text-xs font-medium text-gray-700 leading-none truncate mb-2 block">
               {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.PRESION_MINIMA_LABEL' | translate }}
             </span>
-            <div class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center">
+            <div
+              class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center"
+            >
               <input
                 type="text"
                 inputmode="decimal"
@@ -89,7 +93,9 @@ interface OverpressureFormModel {
             <span class="text-xs font-medium text-gray-700 leading-none truncate mb-2 block">
               {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.PRESION_REF_LABEL' | translate }}
             </span>
-             <div class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center">
+            <div
+              class="flex flex-col justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 gap-0.5 min-h-11 items-center"
+            >
               <input
                 type="text"
                 inputmode="decimal"

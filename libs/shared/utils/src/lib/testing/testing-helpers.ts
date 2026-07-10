@@ -328,6 +328,23 @@ export function createMockShootingConditionsService(initialData?: { conditions?:
 }
 
 /**
+ * Factory para crear un mock de PlanningLifecycleService
+ */
+export function createMockPlanningLifecycleService() {
+  const validateResource = createMockResource();
+  const unlockResource = createMockResource();
+
+  return {
+    validateResource,
+    unlockResource,
+    validate: vi.fn(),
+    unlock: vi.fn(),
+    resetValidate: vi.fn(),
+    resetUnlock: vi.fn(),
+  };
+}
+
+/**
  * Factory para crear un mock de SeriesAndShotsStore
  */
 export function createMockSeriesAndShotsStore(initialData?: { series?: any[]; fireTrialId?: string }) {
@@ -416,6 +433,8 @@ export function createMockPlanningGeneralDataStore(initialData?: {
   const updatePlanningInfoResource = createMockResource();
   const shootingConditionsResource = createMockResource(initialData?.shootingConditions ?? createShootingConditions());
   const updateConditionsResource = createMockResource();
+  const validatePlanningResource = createMockResource();
+  const unlockPlanningResource = createMockResource();
 
   const createSpecimenResource = createMockResource();
   const updateSpecimenResource = createMockResource();
@@ -433,6 +452,18 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     isLoadingPlanningInfo: planningInfoResource.isLoading,
     planningInfoError: planningInfoResource.error,
     hasPlanningInfoError: vi.fn(() => planningInfoResource.error() !== undefined),
+    isPlanningValidable: vi.fn(() => Boolean(planningInfoResource.value()?.isValidable)),
+    planningValidationErrors: vi.fn(() => planningInfoResource.value()?.validationErrors ?? []),
+
+    // Planning Lifecycle signals
+    isTrialPlanned: vi.fn(() => initialData?.fireTrial?.status === 'PLANNED'),
+    canModifyPlanning: vi.fn(() => initialData?.fireTrial?.status === 'UNDER_REVIEW'),
+    validatePlanningStatus: validatePlanningResource.status,
+    isValidatingPlanning: validatePlanningResource.isLoading,
+    validatePlanningError: validatePlanningResource.error,
+    unlockPlanningStatus: unlockPlanningResource.status,
+    isUnlockingPlanning: unlockPlanningResource.isLoading,
+    unlockPlanningError: unlockPlanningResource.error,
 
     // Series signals
     series: vi.fn(() => initialData?.series),
@@ -529,6 +560,12 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     getImpactZones: vi.fn(),
     getSchedules: vi.fn(),
 
+    // Planning Lifecycle methods
+    validatePlanning: vi.fn(),
+    unlockPlanning: vi.fn(),
+    resetValidatePlanning: vi.fn(),
+    resetUnlockPlanning: vi.fn(),
+
     // Reset
     reset: vi.fn(),
 
@@ -544,6 +581,8 @@ export function createMockPlanningGeneralDataStore(initialData?: {
 
     _shootingConditionsResource: shootingConditionsResource,
     _updateConditionsResource: updateConditionsResource,
+    _validatePlanningResource: validatePlanningResource,
+    _unlockPlanningResource: unlockPlanningResource,
   };
 }
 

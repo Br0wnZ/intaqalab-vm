@@ -5,6 +5,7 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
+import type { MunitionsDumpModelCell } from '../../../models/munitions-dumps.model';
 
 @Component({
   selector: 'inta-stock-list-neq-data',
@@ -28,30 +29,15 @@ import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
         <div class="neq-content">
           <div class="neq-row">
             <span>{{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ' | translate }}</span>
-            <strong>{{ munitionDump.currentNeq }}</strong>
-          </div>
-
-          <div class="neq-row">
-            <span>{{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.CELL_MAX_NEQ' | translate }}</span>
-            <strong>{{ munitionDump.maxRiskGroupNeqPerCell }}</strong>
+            <strong>{{ munitionDump.currentNeq }} / {{ munitionDump.maxNeq }}</strong>
           </div>
 
           @for (cell of munitionDump.cells; track cell.name) {
             <div class="neq-row">
               <span>{{ cell.name }}</span>
-              <strong>{{ cell.currentTotalNeq }}</strong>
+              <strong>{{ setCellNeqLabel(cell, munitionDump.maxRiskGroupNeqPerCell, munitionDump.maxNeq) }}</strong>
             </div>
           }
-
-          <div class="neq-row neq-row--separator">
-            <span>{{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_MAX' | translate }}</span>
-            <strong>{{ munitionDump.maxNeq }}</strong>
-          </div>
-
-          <div class="neq-row">
-            <span>{{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.OCCUPANCY_PERCENTAGE' | translate }}</span>
-            <strong>{{ munitionDump.occupancyPercentage }}</strong>
-          </div>
         </div>
       </mat-expansion-panel>
     }
@@ -62,4 +48,13 @@ import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 })
 export class NeqDataComponent {
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
+
+  setCellNeqLabel(cell: MunitionsDumpModelCell, maxRiskGroupNeqPerCell: number, maxNeq: number): string {
+    const current = (cell.currentRiskGroups11And12Neq ?? 0) + (cell.currentOtherRiskGroupsNeq ?? 0);
+
+    if (!current) return '0';
+
+    const maxRisk = cell.currentRiskGroups11And12Neq ? maxRiskGroupNeqPerCell : maxNeq;
+    return `${current.toFixed(2)} / ${maxRisk}`;
+  }
 }

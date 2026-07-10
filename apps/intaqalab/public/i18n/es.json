@@ -7,14 +7,15 @@
     "CATALOG": {
       "TITLE": "Catálogo",
       "OPTIONS": {
-        "TRIAL_TYPE": "Tipo de prueba",
         "DOCUMENT_TYPE": "Tipo de documento",
         "TARGET_TYPE": "Tipo de blanco",
         "MATERIAL": "Material",
         "DIMENSION": "Dimensión",
         "FUZE_TYPE": "Tipo de espoleta",
         "LOADING_ZONE": "Zona de carga",
-        "STANAG": "Criterios STANAG"
+        "STANAG": "Criterios STANAG",
+        "TRIAL_TYPE": "Tipo de prueba",
+        "MEASUREMENTS_AND_RECORDS": "Medidas y registros"
       }
     },
     "WHAREHOUSE": {
@@ -43,7 +44,8 @@
     "RETURN": "Volver",
     "SEARCH": "Buscar",
     "REQUIRED_FIELD": "Valor requerido",
-    "INVALID_DATE_FORMAT": "Formato de fecha no válido"
+    "INVALID_DATE_FORMAT": "Formato de fecha no válido",
+    "LOADING": "Cargando..."
   },
   "VALIDATIONS": {
     "INVALID_DATE": "Introduzca una fecha válida",
@@ -262,14 +264,15 @@
       "CLIENT": "Cliente",
       "DESCRIPTION": "Descripción",
       "TYPE": "Tipo de prueba",
-      "ASSIGNED_USERS": "Usuarios asignados",
       "OTHER_DATA": "Otros datos",
       "ACTIONS": "Acciones",
       "OBSERVATIONS": "Observaciones",
       "REQUESTED_DATE": "Fecha solicitada por el cliente",
       "SCHEDULED_DATE": "Fecha(s) programada(s): {{date}}",
-      "SCHEDULED_DATES": "Fechas programadas"
-    }
+      "SCHEDULED_DATES": "Fechas programadas",
+      "ASSIGNED_USER": "Usuario asignado"
+    },
+    "ERROR": "Error al cargar las pruebas"
   },
   "TAPS_TOP": {
     "TRIAL_NEW": "Nueva prueba de fuego",
@@ -467,20 +470,29 @@
       "DAYS_SIGN_REPORT_LABEL": "Días para firma del informe",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Indica los días para firma del informe",
       "VALIDATE": "Validar",
+      "VALIDATION_ERRORS_TITLE": "Motivos por los que no se puede validar",
+      "MODIFY_PLANNING": "Modificar planificación",
       "SAVE_DRAFT": "Guardar borrador",
       "CANCEL": "Cancelar",
-      "SHOW_RATING_CRITERIA": "Mostrar los Criterios de calificación"
+      "SHOW_RATING_CRITERIA": "Mostrar los Criterios de Calificación",
+      "HYPOCHELOMETRIC_REVIEW_LABEL": "Revisión hipocelométrica",
+      "HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL": "Antes de la prueba",
+      "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "Después de la prueba"
     },
     "RATING_CRITERIA": {
-      "TITLE": "Criterios de calificación",
+      "TITLE": "Criterios de Calificación",
       "VELOCITY_LABEL": "Velocidad",
       "PRESSURE_LABEL": "Presión",
+      "INFO_TOOLTIP": {
+        "TITLE": "Criterios de Calificación",
+        "RULE_1": "Un valor se clasifica como Útil-1 si está dentro del rango Útil-1.",
+        "RULE_2": "Un valor se clasifica como Inútil si está fuera del rango Inútil.",
+        "RULE_3": "Cualquier valor que esté dentro del rango Inútil pero fuera del rango Útil-1 se clasifica como Útil-2."
+      },
       "COLUMNS": {
         "PROPERTY": "Propiedad",
-        "USEFUL_1_MIN": "Útil-1 min",
-        "USEFUL_1_MAX": "Útil-1 max",
-        "USELESS_MIN": "Inútil min",
-        "USELESS_MAX": "Inútil max"
+        "USEFUL_1": "Útil-1",
+        "USELESS": "Inútil"
       },
       "PROPERTIES": {
         "V0C": "V0c",
@@ -737,7 +749,8 @@
         "OBSERVATIONS_PLACEHOLDER": "Escribe aquí las observaciones...",
         "REMOVE_ARIA_LABEL": "Eliminar",
         "CANCEL_BUTTON": "Cancelar",
-        "APPLY_BUTTON": "Aplicar"
+        "APPLY_BUTTON": "Aplicar",
+        "OBSERVATIONS_LABEL": "Observaciones"
       },
       "MASSIVE_SHOTS_DIALOG": {
         "TITLE": "Configuración masiva de disparos",
@@ -786,7 +799,8 @@
       "MESSAGE": "<b>Esta acción implica eliminar el borrado definitivo del disparo.</b>",
       "CONFIRM": "Eliminar",
       "CANCEL": "Volver"
-    }
+    },
+    "ACCESS_DENIED": "No tienes acceso a esta prueba"
   },
   "SPECIMENS_MANAGMENT_DIALOG": {
     "TITLE": "Gestión de espécimen",
@@ -1093,6 +1107,9 @@
         "SWITCH_STATUS": {
           "TITLE": "Activar / Desactivar tipo de documento",
           "DESCRIPTION": "¿Quieres activar/desactivar este tipo de documento?"
+        },
+        "UPSERT": {
+          "DOCUMENT_TYPE": "Categoría del documento"
         }
       }
     },
@@ -1279,7 +1296,14 @@
         "UPSERT": {
           "VARIABLE": {
             "LABEL": "Variable",
-            "PLACEHOLDER": "Seleccione variable"
+            "PLACEHOLDER": "Seleccione variable",
+            "VALUE": {
+              "WIND_DIRECTION": "Dirección del viento",
+              "WIND_SPEED": "Velocidad del viento",
+              "TEMPERATURE": "Temperatura",
+              "PRESSURE": "Presión",
+              "DENSITY": "Densidad"
+            }
           },
           "NUM_THRESHOLD": {
             "LABEL": "Umbral numérico",
@@ -1291,11 +1315,23 @@
           },
           "CALC_TYPE": {
             "LABEL": "Tipo de cálculo",
-            "PLACEHOLDER": "Seleccione el tipo de cálculo"
+            "PLACEHOLDER": "Seleccione el tipo de cálculo",
+            "VALUE": {
+              "SINGLE_VALUE": "Valor único",
+              "LAYER_DIFFERENCE": "Diferencia entre capas",
+              "CONSECUTIVE_LAYERS": "Capas consecutivas"
+            }
           },
           "INV_LAYERS": {
             "LABEL": "Capa implicada",
-            "PLACEHOLDER": "Seleccione la capa implicada"
+            "PLACEHOLDER": "Seleccione la capa implicada",
+            "VALUE": {
+              "SURFACE": "Superficie",
+              "APPROXIMATE_HEIGHT": "Altura aproximada",
+              "MAX_WIND_LEVEL": "Flecha máxima",
+              "CONSECUTIVE_LAYERS": "Capas consecutivas",
+              "BETWEEN_TWO_HEIGHTS": "Entre dos alturas"
+            }
           },
           "START_LAYER": {
             "LABEL": "Capa inicio",
@@ -1320,6 +1356,148 @@
     "STATUS": {
       "ACTIVE": "Activo",
       "INACTIVE": "Inactivo"
+    },
+    "MEASURES": {
+      "TITLE": "Gestión de medidas y registros",
+      "LIST": {
+        "MAGNITUDE_LABEL": "Magnitud",
+        "MEASUREMENT_AREA_CODE": "Área de medición",
+        "MEASURE_UNIT": "Unidad de medida",
+        "UNIT": {
+          "TITLE": "Unidad",
+          "VALUES": {
+            "TOPOGRAPHY": "Topografia",
+            "MUNITIONS": "Municiones",
+            "ARMAMENT": "Armamento",
+            "BALLISTICS": "Balistica"
+          }
+        },
+        "QUALIFICATION_TYPE": {
+          "TITLE": "Tipo de calificación",
+          "VALUES": {
+            "QUANTITATIVE": "Cuantitativa",
+            "QUALITATIVE": "Cualitativa"
+          }
+        },
+        "MAX_VALUE": "Valor máximo",
+        "MIN_VALUE": "Valor mínimo",
+        "VALUES": "Valores",
+        "EQUIPMENT_TYPES": {
+          "TITLE": "Equipos",
+          "VALUES": {
+            "DOPPLER_RADAR": "Radar Doppler",
+            "TRAJECTOGRAPHY_RADAR": "Radar de trayectoria",
+            "ANTENNA": "Antena",
+            "PIEZOELECTRIC_SENSOR": "Sensor piezoeléctrico",
+            "AMPLIFIER": "Amplificador",
+            "SOUND_LEVEL_METER": "Sonómetro",
+            "CONVENTIONAL_CAMERA": "Cámara convencional",
+            "HIGH_SPEED_CAMERA": "Cámara de alta velocidad",
+            "RECORDER": "Grabador",
+            "TRACE_RULER": "Regla de trazos",
+            "CHRONOMETER": "Cronómetro",
+            "BALANCE": "Balanza",
+            "CLIMATIC_CHAMBER": "Cámara climática",
+            "PRESSURE_GAUGE": "Manómetro",
+            "CRUSHER": "Crusher",
+            "PROBE": "Palpador",
+            "IPG": "IPG"
+          }
+        },
+        "PROCEDURE_LABEL": "Procedimiento",
+        "ACREDITATION": "Acreditación",
+        "GRUBBS": "GRUBBS",
+        "ACTIONS": "Acciones"
+      },
+      "DIALOGS": {
+        "UPSERT": {
+          "UNIT": {
+            "LABEL": "Unidad",
+            "PLACEHOLDER": "Seleccione la unidad"
+          },
+          "MEASUREMENT_AREA_CODE": {
+            "LABEL": "Área de medición",
+            "PLACEHOLDER": "Indique el código de área de medición"
+          },
+          "MAGNITUDE_CODE": {
+            "LABEL": "Código de magnitud",
+            "PLACEHOLDER": "Indique el código de magnitud"
+          },
+          "MAGNITUDE_ES": {
+            "LABEL": "Nombre de magnitud en español",
+            "PLACEHOLDER": "Indique el nombre de magnitud en español"
+          },
+          "MAGNITUDE_EN": {
+            "LABEL": "Nombre de magnitud en inglés",
+            "PLACEHOLDER": "Indique el nombre de magnitud en inglés"
+          },
+          "PROCEDURE_ES": {
+            "LABEL": "Nombre de procedimiento en español",
+            "PLACEHOLDER": "Indique el nombre de procedimiento en español"
+          },
+          "PROCEDURE_EN": {
+            "LABEL": "Nombre de procedimiento en inglés",
+            "PLACEHOLDER": "Indique el nombre de procedimiento en inglés"
+          },
+          "QUALIFICATION_TYPE": {
+            "TITLE": "Tipo de calificación",
+            "PLACEHOLDER": "Seleccione el tipo de calificación",
+            "VALUES": {
+              "QUANTITATIVE": "Cuantitativa",
+              "QUALITATIVE": "Cualitativa"
+            }
+          },
+          "MEASURE_UNIT": {
+            "LABEL": "Unidad de medida",
+            "PLACEHOLDER": "Seleccione la unidad de medida"
+          },
+          "MIN_VALUE": {
+            "LABEL": "Valor mínimo",
+            "PLACEHOLDER": "Indique el valor mínimo"
+          },
+          "MAX_VALUE": {
+            "LABEL": "Valor máximo",
+            "PLACEHOLDER": "Indique el valor máximo"
+          },
+          "UNCERTAINTY": {
+            "LABEL": "Incertidumbre",
+            "PLACEHOLDER": "Indique el valor de incertidumbre"
+          },
+          "VALUES": {
+            "TITLE": "Valores",
+            "SUBTITLE": "Valor {{index}}",
+            "NAME_ES": {
+              "LABEL": "Nombre de valor en español",
+              "PLACEHOLDER": "Indique el nombre de valor en español"
+            },
+            "NAME_EN": {
+              "LABEL": "Nombre de valor en inglés",
+              "PLACEHOLDER": "Indique el nombre de valor en inglés"
+            },
+            "CODE": {
+              "LABEL": "Código",
+              "PLACEHOLDER": "Generado automáticamnete en función nombre inglés"
+            }
+          },
+          "EQUIPMENT_TYPES": {
+            "LABEL": "Tipo de equipamiento {{index}}",
+            "PLACEHOLDER": "Indique el tipo de equipamiento {{index}}"
+          },
+          "ACCREDITATION": "Acreditación",
+          "GRUBBS": "GRUBBS"
+        },
+        "DELETE": {
+          "TITLE": "Eliminar método de ensayo, magnitud o registro",
+          "DESCRIPTION": "¿Estás seguro de que quieres eliminar este método de ensayo, magnitud o registro?"
+        },
+        "SWITCH_STATUS": {
+          "TITLE": "Activar / Desactivar método de ensayo, magnitud o registro",
+          "DESCRIPTION": "¿Quieres activar/desactivar este método de ensayo, magnitud o registro?"
+        }
+      },
+      "VALIDATION": {
+        "BOTH_FIELDS": "Debe informar ambos campos"
+      }
     }
   },
   "WHAREHOUSE_MANAGMENT": {
@@ -1328,7 +1506,9 @@
       "CELL_GREATER_THAN_MUNITIONDUMP": "NEQ máximo por celda no puede ser superior a NEQ máximo por polvorín",
       "DATE_TIME_INTERVAL_WRONG": "Intervalo de tiempos mal definido",
       "NUMERIC_INTERVAL_WRONG": "Intervalo numérico mal definido",
-      "TRIAL_PATTERN": "Introduzca un código de prueba con formato correcto"
+      "TRIAL_PATTERN": "Introduzca un código de prueba con formato correcto",
+      "EQUAL_LAYERS": "La capa de inicio y la capa de fin deben tener el mismo valor",
+      "GREATER_END_LAYER": "La capa de inicio debe ser inferior a la capa de fin"
     },
     "MUNITION": "Munición",
     "MUNITION_COMPONENT": "Componente de munición",
@@ -1600,7 +1780,8 @@
         "NEQ": "NEQ polvorín",
         "NEQ_MAX": "NEQ máx. polvorín:",
         "OCCUPANCY_PERCENTAGE": "Ocupación (%):",
-        "CELL_MAX_NEQ": "NEQ máx. celda (1.1, 1.2):"
+        "CELL_MAX_NEQ": "NEQ máx. celda (1.1, 1.2):",
+        "NEQ_BUTTON_TOOLTIP": "Los valores se muestran como NEQ almacenado / NEQ máximo aplicable.\n\nPolvorín:\nSe muestra el NEQ total almacenado en el polvorín sobre el NEQ máximo permitido para el polvorín completo.\n\nCeldas:\nSe muestra el NEQ almacenado en cada celda sobre el límite que aplica a esa celda.\n\nEl límite de la celda se calcula según su grupo de riesgo mayor:\n- Si el grupo de riesgo mayor es 1.1 o 1.2, se aplica el límite máximo definido para celdas de esos grupos.\n- Si el grupo de riesgo mayor es 1.3 o superior, se aplica el límite máximo global del polvorín."
       },
       "COL_TYPE": "Tipo",
       "COL_CLIENT": "Cliente",
@@ -1692,7 +1873,8 @@
     "PLANNING": "Planificación",
     "PLANNING_DETAIL": "Ficha de planificación",
     "EVENT_LOG": "Registro de eventos",
-    "EXECUTION": "Ejecución"
+    "EXECUTION": "Ejecución",
+    "CATALOG_MEASUREMENTS_AND_RECORDS": "Medidas y registros"
   },
   "TRIAL_EXECUTION": {
     "CATEGORIES": {
@@ -2303,14 +2485,22 @@
         "DISTANCIA_BOCA_PLACEHOLDER": "0",
         "NIVEL_ACUSTICO_LABEL": "Nivel acústico",
         "NIVEL_ACUSTICO_PLACEHOLDER": "0",
-        "X_SONOMETRO_LABEL": "Sonómetro X",
+        "SONOMETRO_POSITION_LABEL": "Posición Sonómetro (X, Y, Z)",
+        "X_SONOMETRO_LABEL": "X",
         "X_SONOMETRO_PLACEHOLDER": "X",
-        "Y_SONOMETRO_LABEL": "Sonómetro Y",
+        "Y_SONOMETRO_LABEL": "Y",
         "Y_SONOMETRO_PLACEHOLDER": "Y",
-        "Z_SONOMETRO_LABEL": "Sonómetro Z",
+        "Z_SONOMETRO_LABEL": "Z",
         "Z_SONOMETRO_PLACEHOLDER": "Z",
         "OBSERVACIONES_LABEL": "Observaciones",
         "OBSERVACIONES_PLACEHOLDER": "Escribe tus observaciones"
+      },
+      "SHOT": {
+        "TITLE": "Datos de disparo",
+        "DESCRIPTION": "Número de disparo, velocidad y observaciones",
+        "NUMBER": "Número de disparo",
+        "VELOCITY": "Velocidad",
+        "OBSERVATIONS": "Observaciones"
       }
     },
     "TITLE": "Ejecución",

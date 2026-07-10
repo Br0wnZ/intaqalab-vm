@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -13,7 +14,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
 
@@ -48,17 +48,17 @@ interface SeguridadSelectsModel {
     MatInputModule,
     MatSelectModule,
     TranslateModule,
-    IntaIconComponent
-],
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
-        <ui-inta-icon name="edit_line" color="var(--inta-button)" />
-        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
-          {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
-        </h3>
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+            {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
+          </h3>
         </div>
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -87,12 +87,7 @@ interface SeguridadSelectsModel {
 
       <!-- ── Actions + Tabs ─────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
-        <button
-          mat-flat-button
-          type="button"
-          class="!p-2 !h-auto"
-          (click)="setCurrentShot()"
-        >
+        <button mat-flat-button type="button" class="!p-2 !h-auto" (click)="setCurrentShot()">
           {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.CURRENT_SHOT_BTN' | translate }}
         </button>
         <div class="flex items-center gap-2 ml-auto">
@@ -127,7 +122,10 @@ interface SeguridadSelectsModel {
       <div class="border-t-1 border-gray-200"></div>
 
       <!-- ── Scrollable content ──────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5 [&>div:not(:last-child)]:border-b-1 [&>div:not(:last-child)]:border-gray-200 [&>div:not(:last-child)]:pb-3">
+      <div
+        intaReadonlyContent
+        class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5 [&>div:not(:last-child)]:border-b-1 [&>div:not(:last-child)]:border-gray-200 [&>div:not(:last-child)]:pb-3"
+      >
         @if (activeTab() === 'convencional') {
           <!-- ── Prueba block ──────────────────────────────────────────── -->
           <div class="flex flex-col gap-2">

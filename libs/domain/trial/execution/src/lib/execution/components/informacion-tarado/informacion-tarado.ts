@@ -13,6 +13,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { InformacionTaradoState } from '../../../+state/execution.store';
@@ -21,7 +22,6 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 interface InformacionTaradoForm {
   velocidadUnit: string;
@@ -29,7 +29,15 @@ interface InformacionTaradoForm {
 
 @Component({
   selector: 'inta-informacion-tarado',
-  imports: [FormField, ReadonlyContentDirective, MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
+  imports: [
+    FormField,
+    ReadonlyContentDirective,
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    TranslateModule,
+    IntaIconComponent,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header: Icon + Title + Velocity unit selector -->
@@ -113,9 +121,7 @@ interface InformacionTaradoForm {
               <button
                 type="button"
                 class="rounded-full transition-all duration-200 w-2 h-2"
-                [class]="
-                  i === currentDotIndex() ? 'bg-[var(--inta-button)]' : 'bg-gray-200 hover:bg-gray-400'
-                "
+                [class]="i === currentDotIndex() ? 'bg-[var(--inta-button)]' : 'bg-gray-200 hover:bg-gray-400'"
                 (click)="scrollToCard(i)"
               >
                 &nbsp;

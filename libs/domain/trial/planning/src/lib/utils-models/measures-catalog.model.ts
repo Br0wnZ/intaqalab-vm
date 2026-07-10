@@ -43,13 +43,15 @@ export type EquipmentTypeEnum =
   | 'SOUND_LEVEL_METER'
   | 'CONVENTIONAL_CAMERA'
   | 'HIGH_SPEED_CAMERA'
+  | 'RECORDER'
   | 'TRACE_RULER'
   | 'CHRONOMETER'
   | 'BALANCE'
   | 'CLIMATIC_CHAMBER'
   | 'PRESSURE_GAUGE'
   | 'CRUSHER'
-  | 'PROBE';
+  | 'PROBE'
+  | 'IPG';
 
 export type MasterDataMeasureItem = {
   id: string;

@@ -6,7 +6,7 @@ export enum Role {
   /**
    * ADMINISTRATIVE - Administrativo
    */
-  ADMINISTRATIVE =  'ADMINISTRATIVE',
+  ADMINISTRATIVE = 'ADMINISTRATIVE',
   /**
    * PLANNING_TECHNICIAN - Técnico planificación
    */
@@ -14,19 +14,19 @@ export enum Role {
   /**
    * UNIT_TECHNICIAN - Técnico. Unidad
    */
-  UNIT_TECHNICIAN =  'UNIT_TECHNICIAN',
+  UNIT_TECHNICIAN = 'UNIT_TECHNICIAN',
   /**
    *  INTAQALAB_VIEWER - Solo Lectura
    */
-  INTAQALAB_VIEWER =  'INTAQALAB_VIEWER',
+  INTAQALAB_VIEWER = 'INTAQALAB_VIEWER',
   /**
    * HEAD_ARMAMENT_TRIALS -  Jefatura Área de ensayos de armamento
-   */ 
+   */
   HEAD_ARMAMENT_TRIALS = 'HEAD_ARMAMENT_TRIALS',
   /**
    * INTAQALAB_TRIAL_ENGINEER - Ingeniero ensayos
    */
-  INTAQALAB_TRIAL_ENGINEER = 'INTAQALAB_TRIAL_ENGINEER', 
+  INTAQALAB_TRIAL_ENGINEER = 'INTAQALAB_TRIAL_ENGINEER',
   /**
    * INTAQALAB_TRIAL_ADMINISTRATIVE - Administrativo ensayos
    */
@@ -34,7 +34,7 @@ export enum Role {
   /**
    * INTAQALAB_SHOOTING_LINE_HEAD - Jefe Linea Tiro
    */
-  INTAQALAB_SHOOTING_LINE_HEAD = 'INTAQALAB_SHOOTING_LINE_HEAD', 
+  INTAQALAB_SHOOTING_LINE_HEAD = 'INTAQALAB_SHOOTING_LINE_HEAD',
   /**
    * INTAQALAB_ARMAMENT_UNIT_HEAD - Jefe Unidad Armamento
    */
@@ -70,7 +70,7 @@ export enum Role {
   /**
    * INTAQALAB_FIRE_TRIALS_UNIT_HEAD -  Jefe Unidad de Ensayos de fuego - Topografía
    */
-  INTAQALAB_FIRE_TRIALS_UNIT_HEAD = 'INTAQALAB_FIRE_TRIALS_UNIT_HEAD', 
+  INTAQALAB_FIRE_TRIALS_UNIT_HEAD = 'INTAQALAB_FIRE_TRIALS_UNIT_HEAD',
   /**
    * INTAQALAB_TOPOGRAPHY_UNIT_TECHNICIAN - Técnico Unidad Ensayos de fuego - Topografía
    */

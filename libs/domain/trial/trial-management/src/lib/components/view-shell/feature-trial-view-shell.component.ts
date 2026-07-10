@@ -18,7 +18,7 @@ import { Role, injectCurrentUserRole, injectionTokenTabCommand } from '@intaqala
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { TrialActions } from '@intaqalab/models';
 import { TrialStatus, injectTrialStatus } from '@intaqalab/models';
-import { FeaturePlanningGeneralDataShellComponent } from '@intaqalab/planning';
+import { FeaturePlanningGeneralDataShellComponent, PlanningPermissionsService } from '@intaqalab/planning';
 import { Badge, UiDialogService } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -122,6 +122,7 @@ export class FeatureTrialViewShellComponent {
   readonly uiDialogs = inject(UiDialogService);
   readonly #injector = inject(Injector);
   readonly #roles = injectCurrentUserRole();
+  readonly #planningPermissions = inject(PlanningPermissionsService);
 
   readonly id = this.#injector.get(injectionTokenTrialViewComponent).id;
 
@@ -141,7 +142,13 @@ export class FeatureTrialViewShellComponent {
     const roles = this.#roles();
     const isTrialAdministrative = roles.includes(Role.INTAQALAB_TRIAL_ADMINISTRATIVE);
     const isNotValidated = !trial.validated;
-    return isTrialAdministrative && isNotValidated;
+    const lacksAdministrativeAccess = isTrialAdministrative && isNotValidated;
+
+    // Roles without permission to see/plan this trial status (e.g. UNDER_REVIEW-only
+    // access) don't get an enabled-but-blank tab — it's disabled outright.
+    const lacksPlanningAccess = !this.#planningPermissions.canAccessPlanningTab(trial.status);
+
+    return lacksAdministrativeAccess || lacksPlanningAccess;
   });
 
   constructor() {

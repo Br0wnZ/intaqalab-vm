@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 import { MunitionIdentificacionTabComponent } from './identificacion-tab.component';
@@ -53,9 +53,9 @@ describe('MunitionIdentificacionTabComponent', () => {
   it('save updates the store', async () => {
     const { view, store } = await runSetup();
     const storeSpy = vi.spyOn(store, 'updateMunitionIntroductionIdentification');
-    
+
     view.fixture.componentInstance.save();
-    
+
     expect(storeSpy).toHaveBeenCalled();
   });
 
@@ -68,9 +68,9 @@ describe('MunitionIdentificacionTabComponent', () => {
       lote: null,
       modoFuncionamiento: null,
     });
-    
+
     view.fixture.componentInstance.reset();
-    
+
     // Should be restored to initial null/undefined state from store
     expect(view.fixture.componentInstance.identFormModel().componente).toBeNull();
   });

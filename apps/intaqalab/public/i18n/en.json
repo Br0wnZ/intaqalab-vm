@@ -43,7 +43,8 @@
     "RETURN": "Back",
     "SEARCH": "Look for",
     "REQUIRED_FIELD": "Required value",
-    "INVALID_DATE_FORMAT": "Invalid date format"
+    "INVALID_DATE_FORMAT": "Invalid date format",
+    "LOADING": "Loading..."
   },
   "VALIDATIONS": {
     "INVALID_DATE": "Please enter a valid date",
@@ -262,14 +263,15 @@
       "CLIENT": "Client",
       "DESCRIPTION": "Description",
       "TYPE": "Trial type",
-      "ASSIGNED_USERS": "Usuarios asignados",
+      "ASSIGNED_USER": "Assigned user",
       "OTHER_DATA": "Other data",
       "ACTIONS": "Actions",
       "OBSERVATIONS": "Observations",
       "REQUESTED_DATE": "Fecha solicitada por el cliente",
       "SCHEDULED_DATE": "Scheduled date(s): {{date}}",
       "SCHEDULED_DATES": "Scheduled dates"
-    }
+    },
+    "ERROR": "Error loading trials"
   },
   "TAPS_TOP": {
     "TRIAL_NEW": "Nueva ficha de prueba",
@@ -467,6 +469,8 @@
       "DAYS_SIGN_REPORT_LABEL": "Days to sign the report",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
       "VALIDATE": "Validate",
+      "VALIDATION_ERRORS_TITLE": "Reasons why it can't be validated",
+      "MODIFY_PLANNING": "Modify planning",
       "SAVE_DRAFT": "Save draft",
       "CANCEL": "Cancel",
       "SHOW_RATING_CRITERIA": "Show rating criteria"
@@ -737,7 +741,8 @@
         "OBSERVATIONS_PLACEHOLDER": "Write notes here...",
         "REMOVE_ARIA_LABEL": "Delete",
         "CANCEL_BUTTON": "Cancel",
-        "APPLY_BUTTON": "Apply"
+        "APPLY_BUTTON": "Apply",
+        "OBSERVATIONS_LABEL": "Observations"
       },
       "MASSIVE_SHOTS_DIALOG": {
         "TITLE": "Bulk shot configuration",
@@ -786,7 +791,8 @@
       "MESSAGE": "<b>This action permanently deletes the shot.</b>",
       "CONFIRM": "Delete",
       "CANCEL": "Back"
-    }
+    },
+    "ACCESS_DENIED": "You do not have access to this trial"
   },
   "SPECIMENS_MANAGMENT_DIALOG": {
     "TITLE": "Specimen management",
@@ -2645,14 +2651,22 @@
         "DISTANCIA_BOCA_PLACEHOLDER": "0",
         "NIVEL_ACUSTICO_LABEL": "acoustic level",
         "NIVEL_ACUSTICO_PLACEHOLDER": "0",
-        "X_SONOMETRO_LABEL": "Sound level meter",
+        "SONOMETRO_POSITION_LABEL": "Sound Level Meter Position (X, Y, Z)",
+        "X_SONOMETRO_LABEL": "X",
         "X_SONOMETRO_PLACEHOLDER": "x",
-        "Y_SONOMETRO_LABEL": "Sound level meter Y",
+        "Y_SONOMETRO_LABEL": "Y",
         "Y_SONOMETRO_PLACEHOLDER": "AND",
-        "Z_SONOMETRO_LABEL": "Sound level meter Z",
+        "Z_SONOMETRO_LABEL": "Z",
         "Z_SONOMETRO_PLACEHOLDER": "Z",
         "OBSERVACIONES_LABEL": "Observations",
         "OBSERVACIONES_PLACEHOLDER": "Write your observations"
+      },
+      "SHOT": {
+        "TITLE": "Shot data",
+        "DESCRIPTION": "Shot number, velocity and observations",
+        "NUMBER": "Shot number",
+        "VELOCITY": "Velocity",
+        "OBSERVATIONS": "Observations"
       }
     },
     "TITLE": "Execution",

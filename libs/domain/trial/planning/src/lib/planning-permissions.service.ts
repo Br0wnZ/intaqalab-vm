@@ -4,6 +4,7 @@ import {
   CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES,
   CAN_ASSIGN_PLANNING_USER_ROLES,
   CAN_EDIT_PLANNING_ROLES,
+  CAN_MODIFY_PLANNING_ROLES,
   CAN_SELF_ASSIGN_PLANNING_ROLES,
   CAN_VALIDATE_PLANNING_ROLES,
   type Role,
@@ -67,6 +68,14 @@ export class PlanningPermissionsService {
    */
   canValidatePlanning(): boolean {
     return this.#hasAnyRole(CAN_VALIDATE_PLANNING_ROLES);
+  }
+
+  /**
+   * Determina si el usuario puede MODIFICAR (desbloquear) una planificación ya validada.
+   * Solo Admin y PlanningHead.
+   */
+  canModifyPlanning(): boolean {
+    return this.#hasAnyRole(CAN_MODIFY_PLANNING_ROLES);
   }
 
   /**

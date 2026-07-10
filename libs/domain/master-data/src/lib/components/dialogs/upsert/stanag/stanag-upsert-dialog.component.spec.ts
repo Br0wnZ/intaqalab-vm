@@ -10,14 +10,14 @@ import { StanagUpsertDialogComponent } from './stanag-upsert-dialog.component';
 
 const MOCK_STANAG: MasterDataStanag = {
   id: 'stanag-1',
-  variable: { id: '550e8400-e29b-41d4-a716-446655440011', name: 'Velocidad del viento' },
-  description: 'Test description',
-  numThreshold: 5,
-  measureUnit: { id: '550e8400-e29b-41d4-a716-446655440001', name: 'm/s' },
-  calcType: { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Valor único' },
-  involvedLayers: { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Superficie' },
-  startLayer: '0',
-  endLayer: '10',
+  variable: '550e8400-e29b-41d4-a716-446655440011',
+  name: { es: 'nameEs', en: 'nameEn' },
+  numericThreshold: 5,
+  unit: '550e8400-e29b-41d4-a716-446655440001',
+  calculationType: '550e8400-e29b-41d4-a716-446655440001',
+  involvedLayer: '550e8400-e29b-41d4-a716-446655440001',
+  startLayer: 0,
+  endLayer: 10,
   active: true,
 };
 
@@ -71,12 +71,11 @@ describe('StanagUpsertDialogComponent', () => {
       expect(screen.getByPlaceholderText('MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION')).toBeInTheDocument();
     });
 
-    it('should pre-populate description field with existing data in edit mode', async () => {
+    it('should pre-populate formModel with existing data in edit mode', async () => {
       const { view } = await setup(MOCK_STANAG);
       view.fixture.detectChanges();
-      expect(screen.getByPlaceholderText('MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION')).toHaveValue(
-        'Test description',
-      );
+      const formValue = view.fixture.componentInstance.formModel();
+      expect(formValue.variable).toBe('550e8400-e29b-41d4-a716-446655440011');
     });
   });
 
@@ -102,13 +101,13 @@ describe('StanagUpsertDialogComponent', () => {
 
       instance.formModel.set({
         variable: '550e8400-e29b-41d4-a716-446655440011',
-        description: 'Some desc',
-        numThreshold: 3,
-        measureUnit: '550e8400-e29b-41d4-a716-446655440001',
-        calcType: '550e8400-e29b-41d4-a716-446655440001',
-        involvedLayers: '550e8400-e29b-41d4-a716-446655440001',
-        startLayer: '0',
-        endLayer: '5',
+        name: { es: 'nameEs', en: 'nameEn' },
+        numericThreshold: 5,
+        unit: '550e8400-e29b-41d4-a716-446655440001',
+        calculationType: '550e8400-e29b-41d4-a716-446655440001',
+        involvedLayer: '550e8400-e29b-41d4-a716-446655440001',
+        startLayer: 0,
+        endLayer: 10,
       });
       view.fixture.detectChanges();
 

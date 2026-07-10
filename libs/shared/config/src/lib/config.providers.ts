@@ -15,7 +15,7 @@ export function provideTestingEnvironment(): EnvironmentProviders {
     features: {
       enableTabsNavigation: true,
     },
-    authConfig:{},
+    authConfig: {},
     endpoints: {
       linesOfShot: 'lines-of-shoot',
       fireTrials: 'fire-trials',
