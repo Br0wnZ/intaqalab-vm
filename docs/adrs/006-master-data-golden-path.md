@@ -15,6 +15,7 @@ El repo tiene dominios de distinta antigüedad y calidad (planning, execution, t
 `libs/domain/master-data` es el **Golden Path** oficial del repositorio (declarado en su propio `README.md` y en `AGENTS.md`). Todo dominio nuevo, feature async, uso de `httpResource` o `SignalStore` debe tomar ese código como plantilla y leer su README antes de empezar. No se debe usar código de otros dominios como referencia si contradice los patrones de `master-data`.
 
 Patrones que demuestra y que son obligatorios en todo el repo:
+
 - Cero RxJS en componentes UI (`await firstValueFrom(...)` en vez de `.subscribe()`).
 - Signal Trigger Pattern + `httpResource` para todo fetching (ver ADR-003).
 

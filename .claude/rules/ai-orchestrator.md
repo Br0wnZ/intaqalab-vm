@@ -14,20 +14,20 @@ Caveman mode: ver `AGENTS.md` (fuente única, no dupliques aquí).
 
 Antes de escribir código a mano para estas tareas, invoca la skill correspondiente:
 
-| Tarea | Skill | Dónde vive |
-|---|---|---|
-| Auditar/mejorar Angular Signals, refactor legacy (RxJS/ngIf/ReactiveForms) | `angular-architect` | `.claude/skills/` |
-| Tests Vitest + ATL | `angular-testing-expert` | `.claude/skills/` |
-| Integración API desde Swagger | `swagger-api-architect` | `.claude/skills/` |
-| Mocks/fixtures Express desde Swagger | `mock-server-expert` | `.claude/skills/` |
-| Chart.js v4 | `chartjs-expert` | `.claude/skills/` |
-| Maquetación / widgets UI | `ui-design-engineer` | `.claude/skills/` |
-| i18n / traducciones | `i18n-expert` | `.claude/skills/` |
-| NgRx SignalStore | `signalstore-expert` | `.claude/skills/` |
-| Scaffolding / `nx generate` | `nx-generator-expert` | `.claude/skills/` |
-| Data fetching / `httpResource` (Signal Trigger Pattern) | `signal-trigger-pattern` | `.claude/skills/` + `.agents/skills/` |
-| Delegar a subagentes | `caveman:cavecrew` | plugin `caveman` |
-| Exploración workspace Nx | `nx-workspace` | `.claude/skills/` + `.agents/skills/` |
+| Tarea                                                                      | Skill                    | Dónde vive                            |
+| -------------------------------------------------------------------------- | ------------------------ | ------------------------------------- |
+| Auditar/mejorar Angular Signals, refactor legacy (RxJS/ngIf/ReactiveForms) | `angular-architect`      | `.claude/skills/`                     |
+| Tests Vitest + ATL                                                         | `angular-testing-expert` | `.claude/skills/`                     |
+| Integración API desde Swagger                                              | `swagger-api-architect`  | `.claude/skills/`                     |
+| Mocks/fixtures Express desde Swagger                                       | `mock-server-expert`     | `.claude/skills/`                     |
+| Chart.js v4                                                                | `chartjs-expert`         | `.claude/skills/`                     |
+| Maquetación / widgets UI                                                   | `ui-design-engineer`     | `.claude/skills/`                     |
+| i18n / traducciones                                                        | `i18n-expert`            | `.claude/skills/`                     |
+| NgRx SignalStore                                                           | `signalstore-expert`     | `.claude/skills/`                     |
+| Scaffolding / `nx generate`                                                | `nx-generator-expert`    | `.claude/skills/`                     |
+| Data fetching / `httpResource` (Signal Trigger Pattern)                    | `signal-trigger-pattern` | `.claude/skills/` + `.agents/skills/` |
+| Delegar a subagentes                                                       | `caveman:cavecrew`       | plugin `caveman`                      |
+| Exploración workspace Nx                                                   | `nx-workspace`           | `.claude/skills/` + `.agents/skills/` |
 
 `.claude/skills/` = skills completas específicas de este proyecto (dominio, master-data, execution, etc). `.agents/skills/` = set base compartido con otros agentes (Antigravity y similares) — mismo nombre, contenido puede diferir en profundidad; no fusionar, cada tool lee su propia ruta.
 
