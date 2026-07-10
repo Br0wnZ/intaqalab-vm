@@ -234,7 +234,7 @@ describe('FeatureTrialCreateShellComponent', () => {
       fixture.detectChanges();
 
       const saveButton = screen.getByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL').closest('button');
-      expect(saveButton).not.toBeDisabled();
+      expect(saveButton).toBeEnabled();
     });
   });
 
@@ -247,11 +247,10 @@ describe('FeatureTrialCreateShellComponent', () => {
       fixture.detectChanges();
 
       const saveButton = screen.getByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL').closest('button')!;
-      await waitFor(() => expect(saveButton).not.toBeDisabled());
+      await waitFor(() => expect(saveButton).toBeEnabled());
       await user.click(saveButton);
 
-      expect(mockTrialsDataService.createTrial).toHaveBeenCalledOnce();
-      expect(mockTrialsDataService.createTrial).toHaveBeenCalledWith(
+      expect(mockTrialsDataService.createTrial).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({ code: '123', clientId: 'c1', fireTrialTypeId: 't1' }),
       );
     });

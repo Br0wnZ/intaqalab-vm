@@ -72,7 +72,7 @@ describe('App', () => {
   describe('rendering', () => {
     it('should display the header', async () => {
       await setup(true);
-      expect(screen.getByTestId('header')).toBeTruthy();
+      expect(screen.getByTestId('header')).toBeInTheDocument();
     });
   });
 

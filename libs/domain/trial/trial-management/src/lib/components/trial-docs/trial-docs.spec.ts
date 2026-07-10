@@ -121,18 +121,18 @@ describe('TrialDocs', () => {
   it('should render empty state when no documents and no filters', async () => {
     await renderComponent();
 
-    expect(screen.getByText('TRIAL_DOCS.LABEL')).toBeTruthy();
-    expect(screen.getByText('TRIAL_DOCS.ADD_DOC')).toBeTruthy();
-    expect(screen.getByText('TRIAL_DOCS.DRAG_HERE')).toBeTruthy();
+    expect(screen.getByText('TRIAL_DOCS.LABEL')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_DOCS.ADD_DOC')).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_DOCS.DRAG_HERE')).toBeInTheDocument();
 
-    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
   it('should render loading state', async () => {
     (mockTrialDocsService.documentsResource.isLoading as WritableSignal<boolean>).set(true);
     await renderComponent();
 
-    expect(screen.getByText('TRIAL_DOCS.FILTERS.SHOW_ACTIVE_ONLY')).toBeTruthy();
+    expect(screen.getByText('TRIAL_DOCS.FILTERS.SHOW_ACTIVE_ONLY')).toBeInTheDocument();
   });
 
   it('should render documents in the table', async () => {

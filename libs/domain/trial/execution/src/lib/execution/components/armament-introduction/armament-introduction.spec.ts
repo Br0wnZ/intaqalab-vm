@@ -69,7 +69,7 @@ describe('ArmamentIntroductionComponent', () => {
   it('renders filter selectors (serie, disparo)', async () => {
     await renderWidget();
     // Los selectores deben estar presentes en el template
-    expect(screen.getByRole('heading', { name: /Introducci/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Introducci/i })).toBeInTheDocument();
   });
 
   it('renders action buttons (Disparo actual, Aplicar configuración masiva)', async () => {

@@ -165,7 +165,7 @@ describe('ShootingConditionsComponent', () => {
         const saveButton = screen
           .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
           .closest('button');
-        expect(saveButton).not.toBeDisabled();
+        expect(saveButton).toBeEnabled();
       });
     });
   });

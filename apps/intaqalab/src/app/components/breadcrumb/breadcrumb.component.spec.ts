@@ -36,7 +36,7 @@ describe('BreadcrumbComponent', () => {
   describe('rendering', () => {
     it('should render the nav landmark with accessible label', async () => {
       await setup([{ label: 'HOME', url: '/' }]);
-      expect(screen.getByRole('navigation', { name: 'Ruta de navegación' })).toBeTruthy();
+      expect(screen.getByRole('navigation', { name: 'Ruta de navegación' })).toBeInTheDocument();
     });
 
     it('should not render the list when no items are provided', async () => {
@@ -46,7 +46,7 @@ describe('BreadcrumbComponent', () => {
 
     it('should render an ordered list when items are provided', async () => {
       await setup([{ label: 'HOME', url: '/' }]);
-      expect(screen.getByRole('list')).toBeTruthy();
+      expect(screen.getByRole('list')).toBeInTheDocument();
     });
   });
 
@@ -72,7 +72,7 @@ describe('BreadcrumbComponent', () => {
 
       const currentItem = screen.getByText('DETAILS');
       expect(currentItem.tagName).toBe('SPAN');
-      expect(currentItem.getAttribute('aria-current')).toBe('page');
+      expect(currentItem).toHaveAttribute('aria-current', 'page');
     });
 
     it('should not add aria-current to non-last items', async () => {
@@ -82,7 +82,7 @@ describe('BreadcrumbComponent', () => {
       ]);
 
       const homeLink = screen.getByText('HOME');
-      expect(homeLink.getAttribute('aria-current')).toBeNull();
+      expect(homeLink).not.toHaveAttribute('aria-current');
     });
 
     it('should render a single item as the current page (no links)', async () => {
@@ -90,7 +90,7 @@ describe('BreadcrumbComponent', () => {
 
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
       const currentItem = screen.getByText('HOME');
-      expect(currentItem.getAttribute('aria-current')).toBe('page');
+      expect(currentItem).toHaveAttribute('aria-current', 'page');
     });
   });
 });

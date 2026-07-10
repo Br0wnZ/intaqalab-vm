@@ -214,7 +214,7 @@ describe('SeriePanelComponent', () => {
         (btn) =>
           btn.tagName === 'BUTTON' && btn.textContent?.includes('TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition'),
       );
-      expect(addButton).not.toBeDisabled();
+      expect(addButton).toBeEnabled();
     });
   });
 

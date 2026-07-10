@@ -76,7 +76,7 @@ describe('HeaderComponent', () => {
   describe('rendering', () => {
     it('should display the user name in the heading', async () => {
       await setup({ user: { name: 'Jane Doe' } });
-      expect(screen.getByText('Jane Doe')).toBeTruthy();
+      expect(screen.getByText('Jane Doe')).toBeInTheDocument();
     });
 
     it('should display an empty heading when user is null', async () => {
@@ -89,12 +89,12 @@ describe('HeaderComponent', () => {
   describe('tabs navigation', () => {
     it('should show "ON" when tabs navigation is enabled', async () => {
       await setup({ tabsEnabled: true });
-      expect(screen.getByText(/Tabs: ON/)).toBeTruthy();
+      expect(screen.getByText(/Tabs: ON/)).toBeInTheDocument();
     });
 
     it('should show "OFF" when tabs navigation is disabled', async () => {
       await setup({ tabsEnabled: false });
-      expect(screen.getByText(/Tabs: OFF/)).toBeTruthy();
+      expect(screen.getByText(/Tabs: OFF/)).toBeInTheDocument();
     });
 
     it('should call featureFlags.toggleTabsNavigation when toggle button is clicked', async () => {

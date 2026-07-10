@@ -80,7 +80,7 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
 
   it('renders the dialog title', async () => {
     await setup();
-    expect(screen.getByRole('heading', { name: /MASS_CONFIG_TITLE/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /MASS_CONFIG_TITLE/i })).toBeInTheDocument();
   });
 
   it('renders all field selectors', async () => {

@@ -287,7 +287,7 @@ describe('Munitions', () => {
       view.fixture.detectChanges();
 
       const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
-      expect(saveButton).not.toBeDisabled();
+      expect(saveButton).toBeEnabled();
     });
 
     describe('Reconditioning validation', () => {

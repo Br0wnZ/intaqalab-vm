@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { waitFor } from '@testing-library/dom';
+import { waitFor } from '@testing-library/angular';
 
 import type { Client, ClientListResponse } from '../models/client.model';
 import { ClientsDataService } from './clients-data-service';

@@ -45,10 +45,10 @@ describe('TrialListFilter', () => {
     // use getByPlaceholderText which avoids CSS selector evaluation.
     const trialNumberInput = screen.getByPlaceholderText(/TRIALS_LIST.FILTERS.TRIAL_NUMBER_PLACEHOLDER/i);
 
-    expect(trialNumberInput).toBeTruthy();
-    expect(screen.getByText('TRIALS_LIST.FILTERS.STATUS_PLACEHOLDER')).toBeTruthy();
-    expect(screen.getByText('TRIALS_LIST.FILTERS.CLIENT_PLACEHOLDER')).toBeTruthy();
-    expect(screen.getByText('TRIALS_LIST.FILTERS.FIRE_TRIAL_TYPE_PLACEHOLDER')).toBeTruthy();
+    expect(trialNumberInput).toBeInTheDocument();
+    expect(screen.getByText('TRIALS_LIST.FILTERS.STATUS_PLACEHOLDER')).toBeInTheDocument();
+    expect(screen.getByText('TRIALS_LIST.FILTERS.CLIENT_PLACEHOLDER')).toBeInTheDocument();
+    expect(screen.getByText('TRIALS_LIST.FILTERS.FIRE_TRIAL_TYPE_PLACEHOLDER')).toBeInTheDocument();
 
     await fireEvent.input(trialNumberInput, { target: { value: '123' } });
     detectChanges();

@@ -69,7 +69,7 @@ describe('JltShotData', () => {
 
   it('renders filter selectors (serie, disparo)', async () => {
     await renderWidget();
-    expect(screen.getByRole('heading', { name: /Introducci/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Introducci/i })).toBeInTheDocument();
   });
 
   it('renders action button Disparo actual', async () => {

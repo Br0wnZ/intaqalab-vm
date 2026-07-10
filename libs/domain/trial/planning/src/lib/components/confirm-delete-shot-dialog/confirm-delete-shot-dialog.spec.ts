@@ -137,8 +137,7 @@ describe('ConfirmDeleteShotDialog', () => {
       const confirmButton = screen.getByRole('button', { name: /eliminar/i });
       await user.click(confirmButton);
 
-      expect(mockStore.deleteShot).toHaveBeenCalledOnce();
-      expect(mockStore.deleteShot).toHaveBeenCalledWith('shot-456');
+      expect(mockStore.deleteShot).toHaveBeenCalledExactlyOnceWith('shot-456');
     });
 
     it('should close dialog with false when cancel button is clicked', async () => {
@@ -149,8 +148,7 @@ describe('ConfirmDeleteShotDialog', () => {
       await user.click(cancelButton);
 
       expect(mockStore.deleteShot).not.toHaveBeenCalled();
-      expect(mockDialogRef.close).toHaveBeenCalledOnce();
-      expect(mockDialogRef.close).toHaveBeenCalledWith(false);
+      expect(mockDialogRef.close).toHaveBeenCalledExactlyOnceWith(false);
     });
 
     it('should handle multiple clicks on confirm button gracefully', async () => {
@@ -361,8 +359,7 @@ describe('ConfirmDeleteShotDialog', () => {
 
       expect(mockStore.deleteShot).not.toHaveBeenCalled();
 
-      expect(mockDialogRef.close).toHaveBeenCalledWith(false);
-      expect(mockDialogRef.close).toHaveBeenCalledOnce();
+      expect(mockDialogRef.close).toHaveBeenCalledExactlyOnceWith(false);
     });
   });
 });

@@ -208,6 +208,7 @@ describe('SeriesAndShots', () => {
       const { container, loader } = await runSetup();
       await expandPanelByIndex(loader, 0);
 
+      fireEvent.click(addBtn);
       await waitFor(() => {
         const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
         expect(expandedPanel).toBeTruthy();
@@ -217,7 +218,6 @@ describe('SeriesAndShots', () => {
         );
         expect(addBtn).toBeTruthy();
         if (!addBtn) return;
-        fireEvent.click(addBtn);
       });
 
       expect(mockSeriesStore.addShotToSerie).toHaveBeenCalled();

@@ -44,13 +44,13 @@ describe('NoNegativeValuesDirective', () => {
     const compiled = numFixture.nativeElement;
 
     const defaultInput = compiled.querySelector('#num-default') as HTMLInputElement;
-    expect(defaultInput.getAttribute('min')).toBe('0');
+    expect(defaultInput).toHaveAttribute('min', '0');
 
     const min5Input = compiled.querySelector('#num-min-5') as HTMLInputElement;
-    expect(min5Input.getAttribute('min')).toBe('5');
+    expect(min5Input).toHaveAttribute('min', '5');
 
     const minNegInput = compiled.querySelector('#num-min-neg') as HTMLInputElement;
-    expect(minNegInput.getAttribute('min')).toBe('0');
+    expect(minNegInput).toHaveAttribute('min', '0');
   });
 
   it('should block "-" and "+" keydown events', () => {

@@ -507,7 +507,7 @@ describe('PlanningGeneralDataFormComponent', () => {
       const maxDatesInput = screen.getByLabelText(
         /TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_LABEL/i,
       ) as HTMLInputElement;
-      expect(maxDatesInput.disabled).toBe(false);
+      expect(maxDatesInput).toBeEnabled();
     });
   });
 
@@ -569,7 +569,9 @@ describe('PlanningGeneralDataFormComponent', () => {
   describe('Validation errors icon', () => {
     it('should NOT render the icon when there are no validation errors', async () => {
       await setup({ fireTrialStatus: 'UNDER_REVIEW', roles: ['INTAQALAB_ADMIN'], validationErrors: [] });
-      expect(screen.queryByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
+      ).not.toBeInTheDocument();
     });
 
     it('should render the icon for a permitted role when there are validation errors', async () => {
@@ -578,9 +580,7 @@ describe('PlanningGeneralDataFormComponent', () => {
         roles: ['INTAQALAB_ADMIN'],
         validationErrors: ['El objetivo de la prueba es obligatorio.'],
       });
-      expect(
-        screen.getByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE')).toBeInTheDocument();
     });
 
     it('should NOT render the icon for a role without validate permission, even with errors', async () => {
@@ -589,7 +589,9 @@ describe('PlanningGeneralDataFormComponent', () => {
         roles: ['INTAQALAB_TRIAL_CONSULTANT'],
         validationErrors: ['El objetivo de la prueba es obligatorio.'],
       });
-      expect(screen.queryByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
+      ).not.toBeInTheDocument();
     });
 
     it('should show the validation errors list on hover and hide it on mouse leave', async () => {

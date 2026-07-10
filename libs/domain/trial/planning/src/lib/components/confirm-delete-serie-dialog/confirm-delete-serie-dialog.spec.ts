@@ -192,8 +192,7 @@ describe('ConfirmDeleteSerieDialog', () => {
       const confirmButton = screen.getByRole('button', { name: /eliminar/i });
       await user.click(confirmButton);
 
-      expect(mockStore.deleteSerie).toHaveBeenCalledOnce();
-      expect(mockStore.deleteSerie).toHaveBeenCalledWith('serie-456');
+      expect(mockStore.deleteSerie).toHaveBeenCalledExactlyOnceWith('serie-456');
     });
 
     it('should close dialog with false when cancel button is clicked', async () => {
@@ -204,8 +203,7 @@ describe('ConfirmDeleteSerieDialog', () => {
       await user.click(cancelButton);
 
       expect(mockStore.deleteSerie).not.toHaveBeenCalled();
-      expect(mockDialogRef.close).toHaveBeenCalledOnce();
-      expect(mockDialogRef.close).toHaveBeenCalledWith(false);
+      expect(mockDialogRef.close).toHaveBeenCalledExactlyOnceWith(false);
     });
 
     it('should handle multiple clicks on confirm button gracefully', async () => {
@@ -416,8 +414,7 @@ describe('ConfirmDeleteSerieDialog', () => {
 
       expect(mockStore.deleteSerie).not.toHaveBeenCalled();
 
-      expect(mockDialogRef.close).toHaveBeenCalledWith(false);
-      expect(mockDialogRef.close).toHaveBeenCalledOnce();
+      expect(mockDialogRef.close).toHaveBeenCalledExactlyOnceWith(false);
     });
   });
 });
