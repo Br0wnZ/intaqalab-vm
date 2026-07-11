@@ -1,5 +1,5 @@
 /**
- * @deprecated Use ExecutionService and ExecutionGeneralDataStore from @intaqalab/execution domain instead.
+ * @deprecated Use ExecutionService and ExecutionStore from @intaqalab/execution domain instead.
  *
  * This service is kept for backwards compatibility but will be removed in a future version.
  *
