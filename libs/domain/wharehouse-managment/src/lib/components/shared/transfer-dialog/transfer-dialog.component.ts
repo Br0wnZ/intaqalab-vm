@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form, min, required } from '@angular/forms/signals';
+import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -61,6 +61,11 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
             <mat-form-field appearance="outline" class="w-full">
               <input id="quantiy" type="number" matInput [formField]="form.quantity" />
             </mat-form-field>
+            @if (form.quantity().touched() && form.quantity().errors()) {
+              @for (error of form.quantity().errors(); track error.kind) {
+                <mat-error>{{ error.message | translate }}</mat-error>
+              }
+            }
           </div>
         }
       </div>
@@ -120,8 +125,16 @@ export class TransferDialogComponent {
     cellName: '',
   });
   readonly form = form(this.formModel, (f) => {
-    required(f.quantity, { when: () => this.data.items.length === 1 });
-    min(f.quantity, 1);
+    validate(f.quantity, ({ value }) => {
+      if (this.data.items.length !== 1) return null;
+
+      const quantity = value();
+
+      if (+quantity < 1) {
+        return { kind: 'min_one', message: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.QUANTITY_ERROR' };
+      }
+      return null;
+    });
     required(f.munitionDumpId);
     required(f.cellName);
   });

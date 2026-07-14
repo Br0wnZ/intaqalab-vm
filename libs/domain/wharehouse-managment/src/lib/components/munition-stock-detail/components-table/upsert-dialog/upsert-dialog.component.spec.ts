@@ -139,7 +139,7 @@ describe('UpsertDialogComponent', () => {
     it('should enable the save button when form is pre-filled', async () => {
       await setup(editData);
       const saveBtn = screen.getByText('MODIFY_DOC_DIALOG.SAVE').closest('button');
-      expect(saveBtn).not.toBeDisabled();
+      expect(saveBtn).toBeEnabled();
     });
 
     it('should close the dialog with the form data when clicking save', async () => {

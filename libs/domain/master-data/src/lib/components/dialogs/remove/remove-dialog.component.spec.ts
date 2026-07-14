@@ -41,7 +41,7 @@ describe('MasterDataRemoveDialogComponent', () => {
       await setup();
       const title = screen.getByRole('heading', { level: 2 });
       expect(title).toBeInTheDocument();
-      expect(title.textContent).toContain(MOCK_DIALOG_DATA.title);
+      expect(title).toHaveTextContent(new RegExp(MOCK_DIALOG_DATA.title));
     });
 
     it('should render the description', async () => {

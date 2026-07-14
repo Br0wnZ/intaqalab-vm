@@ -65,8 +65,7 @@ describe('ChartDirective', () => {
     const { fixture } = await render(TestHostComponent);
     fixture.detectChanges();
 
-    expect(mockConstructor).toHaveBeenCalledOnce();
-    expect(mockConstructor).toHaveBeenCalledWith(
+    expect(mockConstructor).toHaveBeenCalledExactlyOnceWith(
       expect.any(HTMLCanvasElement),
       expect.objectContaining({
         type: 'bar',

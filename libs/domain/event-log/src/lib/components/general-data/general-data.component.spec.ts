@@ -90,29 +90,29 @@ describe('EventLogGeneralDataComponent', () => {
 
     it('should render all column headers', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.GENERAL_DATA.LABELS.VALUE')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.GENERAL_DATA.LABELS.VALUE')).toBeInTheDocument();
     });
 
     it('should render a row for each data item', async () => {
       await setup();
-      expect(screen.getByText('192.168.1.1')).toBeTruthy();
-      expect(screen.getByText('192.168.1.2')).toBeTruthy();
+      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
+      expect(screen.getByText('192.168.1.2')).toBeInTheDocument();
     });
 
     it('should render user labels in rows', async () => {
       await setup();
-      expect(screen.getByText('Usuario 1')).toBeTruthy();
-      expect(screen.getByText('Usuario 2')).toBeTruthy();
+      expect(screen.getByText('Usuario 1')).toBeInTheDocument();
+      expect(screen.getByText('Usuario 2')).toBeInTheDocument();
     });
 
     it('should render value fields in rows', async () => {
       await setup();
-      expect(screen.getByText('Valor 1')).toBeTruthy();
-      expect(screen.getByText('Valor 2')).toBeTruthy();
+      expect(screen.getByText('Valor 1')).toBeInTheDocument();
+      expect(screen.getByText('Valor 2')).toBeInTheDocument();
     });
 
     it('should render the table with no data rows when data is empty', async () => {

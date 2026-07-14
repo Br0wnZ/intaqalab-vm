@@ -26,6 +26,8 @@ Forms: Strictly implement modern stable Signal Forms (following the standard at 
 
 Templates: Use the modern Control Flow syntax (@if, @for, @switch) and Deferrable Views (@defer) for optimized loading. Do not declare `changeDetection: ChangeDetectionStrategy.OnPush` explicitly as it is the default in Angular 22.
 
+In-house utilities: Before hand-rolling any reactive helper (debounce/throttle signals, route params as signals, URL-synced filters, storage persistence, countdowns, idle detection, undo/redo), check `@intaqalab/utils` first — the project ships 13 in-house utilities (`injectParams`, `injectQueryParams`, `linkedQueryParam`, `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`). Full guide with examples: `docs/UTILITIES.md`. Never propose installing ngxtension or rx-angular; extend `libs/shared/utils` instead.
+
 Components: Default to Standalone Components.
 
 Code Quality & Architecture Principles:

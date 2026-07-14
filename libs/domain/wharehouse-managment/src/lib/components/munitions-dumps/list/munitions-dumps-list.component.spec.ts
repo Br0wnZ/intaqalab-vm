@@ -105,33 +105,32 @@ describe('MunitionsDumpsListComponent', () => {
   describe('Initialization', () => {
     it('should render the page title', async () => {
       await setup();
-      expect(screen.getByText('MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITIONS_DUMPS')).toBeTruthy();
+      expect(screen.getByText('MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITIONS_DUMPS')).toBeInTheDocument();
     });
 
     it('should render the create button', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.CREATE')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.CREATE')).toBeInTheDocument();
     });
 
     it('should render the table column headers', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NAME')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.CELLS_COUNT')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NEQMAX')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NEQMAXCELL')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.ACTIONS')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NAME')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.CELLS_COUNT')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NEQMAX')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.NEQMAXCELL')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.COLUMNS.ACTIONS')).toBeInTheDocument();
     });
 
     it('should render one row per item returned by the store', async () => {
       await setup();
-      expect(screen.getByText('PolvorÃ­n Norte')).toBeTruthy();
-      expect(screen.getByText('PolvorÃ­n Sur')).toBeTruthy();
+      expect(screen.getByText('PolvorÃ­n Norte')).toBeInTheDocument();
+      expect(screen.getByText('PolvorÃ­n Sur')).toBeInTheDocument();
     });
 
     it('should call store.search() on init via the effect', async () => {
       const { storeMock } = await setup();
-      expect(storeMock.search).toHaveBeenCalledOnce();
-      expect(storeMock.search).toHaveBeenCalledWith({
+      expect(storeMock.search).toHaveBeenCalledExactlyOnceWith({
         page: 1,
         pageSize: 10,
         sortDirection: '',

@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
+import { provideTestingEnvironment } from '@intaqalab/config';
 import {
   TEST_CONSTANTS,
   createMockMatDialog,
@@ -11,12 +11,13 @@ import {
   createSeries,
 } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
-import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
+import { render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
+import type { Serie } from '../../utils-models/series-and-shots.model';
 import { SeriesAndShots } from './series-and-shots';
 
 describe('SeriesAndShots', () => {
@@ -24,17 +25,31 @@ describe('SeriesAndShots', () => {
   let mockSeriesStore: ReturnType<typeof createMockSeriesAndShotsStore>;
   let mockDialog: ReturnType<typeof createMockMatDialog>;
 
+  const createSeriesData = (count = 3, shotsPerSerie = 2): Serie[] =>
+    createSeries(count, shotsPerSerie).map((serie, index) => ({
+      id: `${serie.id}`,
+      name: `${serie.name}`,
+      shotQuantity: serie.shots.length,
+      executionOrder: index + 1,
+      observations: `${serie.observations}`,
+      shots: serie.shots.map((shot) => ({
+        id: `${shot.id}`,
+        globalNumber: shot.globalNumber,
+        observation: shot.observation,
+      })),
+    }));
+
   const runSetup = async (
-    series: any[] = createSeries(3, 2),
+    series: Serie[] = createSeriesData(3, 2),
     fireTrialId: string | null = TEST_CONSTANTS.IDS.TRIAL.DEFAULT,
   ) => {
     mockPlanningStore = createMockPlanningGeneralDataStore({
-      fireTrialId: fireTrialId as string,
+      fireTrialId: fireTrialId ?? undefined,
       fireTrial: { status: 'planned', code: 'TRIAL-2025-001' },
     });
     mockSeriesStore = createMockSeriesAndShotsStore({
       series,
-      fireTrialId: fireTrialId as string,
+      fireTrialId: fireTrialId ?? undefined,
     });
 
     mockDialog = createMockMatDialog({ defaultResult: null });
@@ -44,6 +59,7 @@ describe('SeriesAndShots', () => {
     const view = await render(SeriesAndShots, {
       imports: [TranslateModule.forRoot()],
       providers: [
+        provideTestingEnvironment(),
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
         { provide: MatDialog, useValue: mockDialog },
       ],
@@ -73,16 +89,13 @@ describe('SeriesAndShots', () => {
 
   describe('Initial rendering', () => {
     it('should render the section title heading', async () => {
-      const { container } = await runSetup();
-      const heading = container.querySelector('h2');
-      expect(heading).toBeTruthy();
+      await runSetup();
+      expect(screen.getByText('TRIAL-2025-001')).toBeInTheDocument();
     });
 
     it('should render the create series button', async () => {
       await runSetup();
-      expect(
-        screen.getByRole('button', { name: /TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON')).toBeInTheDocument();
     });
 
     it('should render the table headers', async () => {
@@ -150,9 +163,12 @@ describe('SeriesAndShots', () => {
   describe('Series Management', () => {
     it('should open create series dialog', async () => {
       const { user } = await runSetup();
-      const createButton = screen.getByRole('button', {
-        name: /TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON/i,
-      });
+      const createButton = screen
+        .getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON')
+        .closest('button');
+
+      expect(createButton).toBeTruthy();
+      if (!createButton) return;
 
       await user.click(createButton);
 
@@ -185,10 +201,6 @@ describe('SeriesAndShots', () => {
       const { user } = await runSetup();
       const deleteButtons = screen.getAllByLabelText(/Eliminar/i);
 
-      mockDialog.open.mockReturnValueOnce({
-        afterClosed: () => ({ subscribe: (fn: any) => fn(true) }),
-      } as any);
-
       await user.click(deleteButtons[0]);
 
       expect(mockDialog.open).toHaveBeenCalled();
@@ -205,22 +217,22 @@ describe('SeriesAndShots', () => {
     });
 
     it('should call addShotToSerie when clicking add shot button', async () => {
-      const { container, loader } = await runSetup();
+      const { user, container, loader } = await runSetup();
       await expandPanelByIndex(loader, 0);
 
-      fireEvent.click(addBtn);
-      await waitFor(() => {
-        const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-        expect(expandedPanel).toBeTruthy();
-        if (!expandedPanel) return;
-        const addBtn = Array.from(expandedPanel.querySelectorAll('button')).find((b) =>
-          /ADD_SHOT_BUTTON/i.test(b.textContent || ''),
-        );
-        expect(addBtn).toBeTruthy();
-        if (!addBtn) return;
-      });
+      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
+      expect(expandedPanel).toBeTruthy();
+      if (!expandedPanel) return;
 
-      expect(mockSeriesStore.addShotToSerie).toHaveBeenCalled();
+      const addShotButton = within(expandedPanel as HTMLElement)
+        .getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.ADD_SHOT_BUTTON')
+        .closest('button');
+      expect(addShotButton).toBeTruthy();
+      if (!addShotButton) return;
+
+      await user.click(addShotButton);
+
+      expect(mockSeriesStore.addShotToSerie).toHaveBeenCalledWith({ serieId: '1' });
     });
 
     it('should allow editing a shot observation', async () => {
@@ -232,36 +244,47 @@ describe('SeriesAndShots', () => {
         expect(expandedPanel).toBeTruthy();
       });
 
-      const editButtons = container.querySelectorAll('button[title="Editar"]');
+      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
+      expect(expandedPanel).toBeTruthy();
+      if (!expandedPanel) return;
+
+      const panelQueries = within(expandedPanel as HTMLElement);
+
+      const editButtons = panelQueries.getAllByTitle('Editar');
       expect(editButtons.length).toBeGreaterThan(0);
-      fireEvent.click(editButtons[0]);
+      await userEvent.setup().click(editButtons[0]);
       view.fixture.detectChanges();
 
       await waitFor(() => {
-        const saveButton = container.querySelector('button[title="Guardar"]');
-        expect(saveButton).toBeTruthy();
+        const saveButton = panelQueries.getByTitle('Guardar');
+        expect(saveButton).toBeInTheDocument();
       });
 
-      const input = container.querySelector('input:not([disabled])') as HTMLInputElement;
+      const input = expandedPanel.querySelector('input:not([disabled])');
       expect(input).toBeTruthy();
+      if (!input) return;
 
-      fireEvent.input(input, { target: { value: 'New Observation' } });
+      const user = userEvent.setup();
+      await user.clear(input as HTMLInputElement);
+      await user.type(input as HTMLInputElement, 'New Observation');
       view.fixture.detectChanges();
 
-      const saveButton = container.querySelector('button[title="Guardar"]') as HTMLElement;
-      fireEvent.click(saveButton);
+      const saveButton = panelQueries.getByTitle('Guardar');
+      await user.click(saveButton);
       view.fixture.detectChanges();
 
       expect(mockSeriesStore.updateShot).toHaveBeenCalledWith(
         expect.objectContaining({
+          shotId: '1',
           observation: 'New Observation',
         }),
       );
     });
 
     it('should show empty state when no shots exist', async () => {
-      const emptySeries = createSeries(1, 0);
+      const emptySeries = createSeriesData(1, 0);
       emptySeries[0].shots = [];
+      emptySeries[0].shotQuantity = 0;
 
       const { loader } = await runSetup(emptySeries);
       const panel = await expandPanelByIndex(loader, 0);

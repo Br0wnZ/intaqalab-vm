@@ -109,7 +109,7 @@ describe('StockListFilterComponent', () => {
 
     it('should render the search button', async () => {
       await setup();
-      expect(screen.getByText('COMMONS.SEARCH')).toBeTruthy();
+      expect(screen.getByText('COMMONS.SEARCH')).toBeInTheDocument();
     });
 
     it('should call MunitionComponentStore.search() on init with pageSize 100 and active true', async () => {

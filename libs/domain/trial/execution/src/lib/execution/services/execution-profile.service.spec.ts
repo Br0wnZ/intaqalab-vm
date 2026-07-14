@@ -10,32 +10,38 @@ import { ExecutionProfileService, resolveExecutionProfile } from './execution-pr
 //
 
 describe('resolveExecutionProfile', () => {
-  it('resolves TRIAL_EXECUTION_ADMIN to TRIAL_AREA_CHIEF', () => {
-    expect(resolveExecutionProfile([Role.TRIAL_EXECUTION_ADMIN])).toBe(ExecutionProfile.TRIAL_AREA_CHIEF);
+  it('resolves HEAD_ARMAMENT_TRIALS to TRIAL_AREA_CHIEF', () => {
+    expect(resolveExecutionProfile([Role.HEAD_ARMAMENT_TRIALS])).toBe(ExecutionProfile.TRIAL_AREA_CHIEF);
   });
 
-  it('resolves UNIT_ADMIN to UNIT_CHIEF', () => {
-    expect(resolveExecutionProfile([Role.UNIT_ADMIN])).toBe(ExecutionProfile.UNIT_CHIEF);
+  it('resolves INTAQALAB_ARMAMENT_UNIT_HEAD to UNIT_CHIEF', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_ARMAMENT_UNIT_HEAD])).toBe(ExecutionProfile.UNIT_CHIEF);
   });
 
   it('resolves UNIT_TECHNICIAN to UNIT_TECHNICIAN', () => {
     expect(resolveExecutionProfile([Role.UNIT_TECHNICIAN])).toBe(ExecutionProfile.UNIT_TECHNICIAN);
   });
 
-  it('resolves TRIAL_ADMIN to PLANNING_ANALYSIS_CHIEF', () => {
-    expect(resolveExecutionProfile([Role.TRIAL_ADMIN])).toBe(ExecutionProfile.PLANNING_ANALYSIS_CHIEF);
+  it('resolves INTAQALAB_PLANNING_ANALYSIS_HEAD to PLANNING_ANALYSIS_CHIEF', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_PLANNING_ANALYSIS_HEAD])).toBe(
+      ExecutionProfile.PLANNING_ANALYSIS_CHIEF,
+    );
   });
 
-  it('resolves SYSTEM_ADMIN to DIRECTOR', () => {
-    expect(resolveExecutionProfile([Role.SYSTEM_ADMIN])).toBe(ExecutionProfile.DIRECTOR);
+  it('resolves INTAQALAB_ADMIN to DIRECTOR', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_ADMIN])).toBe(ExecutionProfile.DIRECTOR);
   });
 
-  it('resolves READ_ONLY to TRIAL_CONSULTANT', () => {
-    expect(resolveExecutionProfile([Role.READ_ONLY])).toBe(ExecutionProfile.TRIAL_CONSULTANT);
+  it('resolves INTAQALAB_SHOOTING_LINE_HEAD to FIRING_LINE_CHIEF', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_SHOOTING_LINE_HEAD])).toBe(ExecutionProfile.FIRING_LINE_CHIEF);
+  });
+
+  it('resolves INTAQALAB_VIEWER to TRIAL_CONSULTANT', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_VIEWER])).toBe(ExecutionProfile.TRIAL_CONSULTANT);
   });
 
   it('falls back to TRIAL_CONSULTANT when no role matches', () => {
-    expect(resolveExecutionProfile([Role.ADMINISTRATIVE])).toBe(ExecutionProfile.TRIAL_CONSULTANT);
+    expect(resolveExecutionProfile(['UNKNOWN_ROLE' as Role])).toBe(ExecutionProfile.TRIAL_CONSULTANT);
   });
 
   it('falls back to TRIAL_CONSULTANT for empty roles', () => {
@@ -43,14 +49,14 @@ describe('resolveExecutionProfile', () => {
   });
 
   it('uses priority ordering when user has multiple roles', () => {
-    // TRIAL_EXECUTION_ADMIN has higher priority than SYSTEM_ADMIN
-    expect(resolveExecutionProfile([Role.SYSTEM_ADMIN, Role.TRIAL_EXECUTION_ADMIN])).toBe(
-      ExecutionProfile.TRIAL_AREA_CHIEF,
-    );
+    // INTAQALAB_ADMIN has higher priority than HEAD_ARMAMENT_TRIALS
+    expect(resolveExecutionProfile([Role.HEAD_ARMAMENT_TRIALS, Role.INTAQALAB_ADMIN])).toBe(ExecutionProfile.DIRECTOR);
   });
 
-  it('uses priority ordering: UNIT_ADMIN wins over READ_ONLY', () => {
-    expect(resolveExecutionProfile([Role.READ_ONLY, Role.UNIT_ADMIN])).toBe(ExecutionProfile.UNIT_CHIEF);
+  it('uses priority ordering: INTAQALAB_ARMAMENT_UNIT_HEAD wins over INTAQALAB_VIEWER', () => {
+    expect(resolveExecutionProfile([Role.INTAQALAB_VIEWER, Role.INTAQALAB_ARMAMENT_UNIT_HEAD])).toBe(
+      ExecutionProfile.UNIT_CHIEF,
+    );
   });
 });
 
@@ -76,22 +82,22 @@ describe('ExecutionProfileService', () => {
 
   describe('activeProfile', () => {
     it('resolves the profile based on current user roles', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       expect(service.activeProfile()).toBe(ExecutionProfile.TRIAL_AREA_CHIEF);
     });
 
     it('updates reactively when roles change', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       expect(service.activeProfile()).toBe(ExecutionProfile.TRIAL_AREA_CHIEF);
 
-      authService.setRoles([Role.UNIT_ADMIN]);
+      authService.setRoles([Role.INTAQALAB_ARMAMENT_UNIT_HEAD]);
       expect(service.activeProfile()).toBe(ExecutionProfile.UNIT_CHIEF);
     });
   });
 
   describe('profileConfig', () => {
     it('returns the full config for the active profile', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
 
       const config = service.profileConfig();
       expect(config.profile).toBe(ExecutionProfile.TRIAL_AREA_CHIEF);
@@ -99,7 +105,7 @@ describe('ExecutionProfileService', () => {
     });
 
     it('matches the registry entry', () => {
-      authService.setRoles([Role.UNIT_ADMIN]);
+      authService.setRoles([Role.INTAQALAB_ARMAMENT_UNIT_HEAD]);
 
       const config = service.profileConfig();
       const registryConfig = EXECUTION_PROFILE_REGISTRY.get(ExecutionProfile.UNIT_CHIEF);
@@ -110,12 +116,12 @@ describe('ExecutionProfileService', () => {
 
   describe('isDirectIntervention', () => {
     it('returns true for direct intervention profiles', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       expect(service.isDirectIntervention()).toBe(true);
     });
 
     it('returns false for observer profiles', () => {
-      authService.setRoles([Role.READ_ONLY]);
+      authService.setRoles([Role.INTAQALAB_VIEWER]);
       expect(service.isDirectIntervention()).toBe(false);
     });
   });
@@ -127,14 +133,14 @@ describe('ExecutionProfileService', () => {
     });
 
     it('returns "observer" for consultation profiles', () => {
-      authService.setRoles([Role.SYSTEM_ADMIN]);
+      authService.setRoles([Role.INTAQALAB_ADMIN]);
       expect(service.profileCategory()).toBe('observer');
     });
   });
 
   describe('availableFeatures', () => {
     it('exposes the correct features for TRIAL_AREA_CHIEF', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
 
       const features = service.availableFeatures();
       expect(features).toContain(ExecutionFeature.SERIES_AND_SHOTS);
@@ -142,8 +148,8 @@ describe('ExecutionProfileService', () => {
       expect(features).not.toContain(ExecutionFeature.POWDER_CALIBRATION);
     });
 
-    it('exposes the correct features for FIRING_LINE_CHIEF config (via UNIT_ADMIN fallback)', () => {
-      authService.setRoles([Role.UNIT_ADMIN]);
+    it('exposes the correct features for UNIT_CHIEF', () => {
+      authService.setRoles([Role.INTAQALAB_ARMAMENT_UNIT_HEAD]);
 
       const features = service.availableFeatures();
       expect(features).toContain(ExecutionFeature.BALLISTICS_UNIT);
@@ -153,7 +159,7 @@ describe('ExecutionProfileService', () => {
 
   describe('defaultWidgetIds', () => {
     it('returns the correct widget IDs for the active profile', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
 
       const widgetIds = service.defaultWidgetIds();
       expect(widgetIds).toContain('seguimiento-general');
@@ -161,10 +167,10 @@ describe('ExecutionProfileService', () => {
     });
 
     it('updates reactively when role changes', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       const widgetsBefore = service.defaultWidgetIds();
 
-      authService.setRoles([Role.READ_ONLY]);
+      authService.setRoles([Role.INTAQALAB_VIEWER]);
       const widgetsAfter = service.defaultWidgetIds();
 
       expect(widgetsBefore).not.toEqual(widgetsAfter);
@@ -173,13 +179,13 @@ describe('ExecutionProfileService', () => {
 
   describe('hasFeature', () => {
     it('returns a signal that is true when the feature is available', () => {
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       const hasChat = service.hasFeature(ExecutionFeature.TRIAL_CHAT);
       expect(hasChat()).toBe(true);
     });
 
     it('returns a signal that is false when the feature is not available', () => {
-      authService.setRoles([Role.READ_ONLY]);
+      authService.setRoles([Role.INTAQALAB_VIEWER]);
       const hasPowder = service.hasFeature(ExecutionFeature.POWDER_CALIBRATION);
       expect(hasPowder()).toBe(false);
     });
@@ -188,12 +194,11 @@ describe('ExecutionProfileService', () => {
       const hasPowder = service.hasFeature(ExecutionFeature.POWDER_CALIBRATION);
 
       // Set roles that do NOT have powder calibration
-      authService.setRoles([Role.READ_ONLY]);
+      authService.setRoles([Role.INTAQALAB_VIEWER]);
       expect(hasPowder()).toBe(false);
 
-      // The current mapping does not directly map to TRIAL_ENGINEER
-      // but TRIAL_EXECUTION_ADMIN maps to TRIAL_AREA_CHIEF which lacks it
-      authService.setRoles([Role.TRIAL_EXECUTION_ADMIN]);
+      // HEAD_ARMAMENT_TRIALS maps to TRIAL_AREA_CHIEF, which also lacks it
+      authService.setRoles([Role.HEAD_ARMAMENT_TRIALS]);
       expect(hasPowder()).toBe(false);
     });
   });

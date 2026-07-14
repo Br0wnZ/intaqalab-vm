@@ -202,6 +202,42 @@ withHooks({
 });
 ```
 
+### 4. Utilidades `@intaqalab/utils` para el dominio de ejecución
+
+Utilidades propias ya implementadas (guía completa: `docs/UTILITIES.md`) — úsalas, no las reimplementes:
+
+```typescript
+import {
+  computedPrevious,
+  createCountdown,
+  explicitEffect,
+  injectNetworkStatus,
+  injectPageVisibility,
+} from '@intaqalab/utils';
+
+// Cuenta de seguridad (updateSecurityCountdown) — pausable, sin drift:
+readonly safetyCount = createCountdown(30_000);
+// safetyCount.start() / pause() / resume() / reset()
+// template: safetyCount.remainingMs(), safetyCount.finished()
+
+// Detectar transiciones de la máquina de estados:
+readonly previousStatus = computedPrevious(this.store.executionStatus);
+readonly resumedFromPause = computed(
+  () => this.previousStatus() === 'PAUSED' && this.store.executionStatus() === 'IN_PROGRESS',
+);
+
+// Pausar polling de state/progress con la pestaña en background:
+readonly pageVisible = injectPageVisibility();
+explicitEffect([this.pageVisible], ([visible]) =>
+  visible ? this.store.startPolling() : this.store.stopPolling(),
+);
+
+// Deshabilitar transiciones sin conectividad:
+readonly online = injectNetworkStatus();
+```
+
+`explicitEffect` es la forma preferida para los effects de sincronización del punto 3: dependencias explícitas + cuerpo `untracked` = imposible crear dependencias accidentales.
+
 ---
 
 ## 🔑 Tabla de Sincronización Store ↔ API (CRÍTICO)

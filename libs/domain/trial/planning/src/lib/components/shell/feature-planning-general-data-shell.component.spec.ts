@@ -112,4 +112,32 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
       expect((view.fixture.componentInstance as any).isReadonly()).toBe(false);
     });
   });
+
+  describe('Tab Changes', () => {
+    it('should call reloadPlanningInfo when General tab is selected', async () => {
+      const { view, mockStore } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      const reloadSpy = vi.spyOn(mockStore, 'reloadPlanningInfo');
+
+      // Simulate switching to tab 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).onIndexChange(0);
+
+      expect(reloadSpy).toHaveBeenCalled();
+    });
+
+    it('should NOT call reloadPlanningInfo when any other tab is selected', async () => {
+      const { view, mockStore } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      const reloadSpy = vi.spyOn(mockStore, 'reloadPlanningInfo');
+
+      // Simulate switching to tab 1
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).onIndexChange(1);
+
+      expect(reloadSpy).not.toHaveBeenCalled();
+    });
+  });
 });

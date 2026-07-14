@@ -5,13 +5,12 @@ import {
   Component,
   DestroyRef,
   ViewEncapsulation,
+  computed,
   effect,
   inject,
   signal,
   untracked,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
@@ -25,6 +24,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { injectCurrentUser } from '@intaqalab/core';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../+state/execution.store';
 import { ExecutionGridComponent } from './components/execution-grid/execution-grid';
@@ -39,9 +39,6 @@ import type { Widget } from './models/execution-grid.models';
 import { WidgetStateService } from './services/widget-state.service';
 import { injectWidgets } from './utils/inject-widgets';
 
-// ID de demo mientras la ruta no expose :fireTrialId como parámetro
-const DEMO_FIRE_TRIAL_ID = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
-
 /** ⚡ Polling interval in ms for execution state refresh */
 const EXECUTION_STATE_POLLING_MS = 5_000;
 
@@ -50,7 +47,6 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
   imports: [
     NgClass,
     DatePipe,
-    ReactiveFormsModule,
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
@@ -145,7 +141,9 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
       </div>
 
       <!-- Debug Info Card -->
-      <div class="mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+      <div
+        class="hidden mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex items-center justify-between"
+      >
         <div class="flex items-center gap-6">
           <div class="flex items-center gap-2">
             <mat-icon class="text-purple-600 scale-75">dashboard</mat-icon>
@@ -395,49 +393,100 @@ export class Execution implements OnInit, OnDestroy {
     { allowSignalWrites: true },
   );
 
-  readonly #fireTrialId = signal(DEMO_FIRE_TRIAL_ID);
+  readonly #fireTrialId = signal<string | null>(null);
   isWidgetsPanelOpen = signal(false);
   isEditMode = signal(false);
   searchTerm = signal('');
 
-  // Store integration - these will be connected to store in future updates
+  // Store integration
   readonly store = this.#store;
 
-  executionData = signal({
-    code: '034A/25',
-    client: 'Cliente: RHEINMETALL EXPAL MUNITIONS',
-    project: 'Proyectil de 155 mm SMK RP ERG2A1',
-    status: 'En curso',
+  /** Datos del header derivados del FireTrial cargado en el store. */
+  readonly executionData = computed(() => {
+    const trial = this.#store.fireTrialData();
+    if (!trial) {
+      return { code: '—', client: '—', project: '—', status: '—' };
+    }
+    return {
+      code: trial.trialNumber ?? '—',
+      client: trial.client?.name ? `Cliente: ${trial.client.name}` : '—',
+      project: trial.description ?? '—',
+      status: this.#mapStatusLabel(trial.status),
+    };
   });
 
-  shotInfo = signal({
-    actual: {
-      serie: 'Serie Alpha (A-155mm)',
-      shot: 'Disparo #03',
-      percentaje: '75',
-    },
-    all: [
-      {
-        serie: 'Serie Alpha (A-155mm)',
-        shots: [
-          { shot: 'Disparo #01', timestamp: '2026-03-10T08:15:00Z', status: 'Ejecutada' },
-          { shot: 'Disparo #02', timestamp: '2026-03-10T08:45:00Z', status: 'Planificada' },
-          { shot: 'Disparo #03', timestamp: '2026-03-10T09:30:00Z', status: 'Analizando' },
-        ],
-        timestamp: '2026-03-10T08:15:00Z',
+  /** Información de series/disparos derivada del progress del store. */
+  readonly shotInfo = computed(() => {
+    const progress = this.#store.executionProgress();
+    const execState = this.#store.executionState();
+
+    if (!progress?.series?.length) {
+      return { actual: { serie: '—', shot: '—', percentaje: '0' }, all: [] };
+    }
+
+    const allSeries = progress.series.map((s, si) => ({
+      serie: `Serie ${si + 1}`,
+      shots: s.shots.map((sh, hi) => ({
+        shot: `Disparo #${String(hi + 1).padStart(2, '0')}`,
+        timestamp: sh.updatedAt,
+        status: this.#mapShotStatus(sh.status),
+      })),
+      timestamp: s.shots[0]?.updatedAt ?? '',
+    }));
+
+    // Disparo/serie activa según executionState
+    const activeSerieIdx = execState?.activeSeriesId
+      ? progress.series.findIndex((s) => s.seriesId === execState.activeSeriesId)
+      : 0;
+    const activeSerie = allSeries[Math.max(activeSerieIdx, 0)];
+    const activeShotInSerie = execState?.activeShootId
+      ? progress.series[Math.max(activeSerieIdx, 0)]?.shots.findIndex((sh) => sh.shotId === execState.activeShootId)
+      : 0;
+
+    const totalShots = progress.series.reduce((acc, s) => acc + s.shots.length, 0);
+    const firedShots = progress.series.reduce(
+      (acc, s) => acc + s.shots.filter((sh) => sh.status === 'FIRED').length,
+      0,
+    );
+    const percentaje = totalShots > 0 ? Math.round((firedShots / totalShots) * 100) : 0;
+
+    return {
+      actual: {
+        serie: activeSerie?.serie ?? '—',
+        shot: `Disparo #${String(Math.max(activeShotInSerie ?? 0, 0) + 1).padStart(2, '0')}`,
+        percentaje: String(percentaje),
       },
-      {
-        serie: 'Serie Bravo (B-155mm)',
-        shots: [
-          { shot: 'Disparo #01', timestamp: '2026-03-09T10:00:00Z', status: 'Ejecutada' },
-          { shot: 'Disparo #02', timestamp: '2026-03-09T11:20:00Z', status: 'Planificada' },
-          { shot: 'Disparo #03', timestamp: '2026-03-09T14:15:00Z', status: 'Analizando' },
-          { shot: 'Disparo #04', timestamp: '2026-03-09T16:00:00Z', status: 'Planificada' },
-        ],
-        timestamp: '2026-03-09T10:00:00Z',
-      },
-    ],
+      all: allSeries,
+    };
   });
+
+  /** Mapea estado de disparo de la API al texto en español. */
+  #mapShotStatus(status: string): string {
+    switch (status) {
+      case 'FIRED':
+        return 'Ejecutada';
+      case 'ACTIVE':
+        return 'Analizando';
+      default:
+        return 'Planificada';
+    }
+  }
+
+  /** Mapea TrialStatus de la API a etiqueta en español. */
+  #mapStatusLabel(status: string | undefined): string {
+    if (!status) return '—';
+    const map: Record<string, string> = {
+      PLANNED: 'Planificada',
+      STARTED: 'Iniciada',
+      IN_PROGRESS: 'En curso',
+      INTERRUPTED: 'Interrumpida',
+      EXECUTED: 'Ejecutada',
+      FINALIZING: 'Finalizando',
+      CLOSED: 'Cerrada',
+      CANCELLED: 'Cancelada',
+    };
+    return map[status] ?? status;
+  }
 
   getStatusClass(status?: string): string {
     switch (status) {
@@ -471,14 +520,15 @@ export class Execution implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     const preferences = this.#store.preferencesByUser();
-    if (preferences) {
+    const trialId = this.#fireTrialId();
+    if (preferences && trialId) {
       const widgetsLayout = this.widgetStateService.placedWidgets().map((w) => w.type);
-      this.#store.updatePreferencesByUser(this.#fireTrialId(), this.#currentUser.preferred_username, widgetsLayout);
+      this.#store.updatePreferencesByUser(trialId, this.#currentUser.preferred_username, widgetsLayout);
     }
   }
 
   /** ⚡ Opens trial selector dialog before loading the execution view. */
-  #openTrialSelectorDialog(): void {
+  async #openTrialSelectorDialog(): Promise<void> {
     const dialogRef = this.#dialog.open<TrialSelectorDialog, void, TrialSelectorDialogResult>(TrialSelectorDialog, {
       width: '1100px',
       maxWidth: '95vw',
@@ -486,31 +536,32 @@ export class Execution implements OnInit, OnDestroy {
       disableClose: true,
     });
 
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((result) => {
-        if (!result || result.action === 'cancel') {
-          this.#location.back();
-          return;
-        }
-        // Navigate to parameterized URL — triggers a fresh route load with the trial ID
-        this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
-      });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'cancel') {
+      this.#location.back();
+      return;
+    }
+    // Navigate to parameterized URL — triggers a fresh route load with the trial ID
+    this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
   }
 
   /** ⚙️ Initializes store and polling after trial is selected. */
   #initExecution(): void {
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
     this.#filterWidgets();
-    this.#store.setFireTrialId(this.#fireTrialId());
+    this.#store.setFireTrialId(trialId);
     this.#startExecutionStatePolling();
-    this.#store.loadPreferencesByUser(this.#fireTrialId(), this.#currentUser.preferred_username);
+    this.#store.loadPreferencesByUser(trialId, this.#currentUser.preferred_username);
   }
 
   /** 🔄 Sets up periodic polling for execution state. */
   #startExecutionStatePolling(): void {
     const intervalId = setInterval(() => {
-      this.#store.loadExecutionState(this.#fireTrialId());
+      const trialId = this.#fireTrialId();
+      if (trialId) {
+        this.#store.loadExecutionState(trialId);
+      }
     }, EXECUTION_STATE_POLLING_MS);
 
     this.#destroyRef.onDestroy(() => clearInterval(intervalId));
@@ -578,57 +629,57 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   startExecution(): void {
-    this.#store.startExecution(this.#fireTrialId());
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    this.#store.startExecution(trialId);
   }
 
-  pauseExecution(): void {
+  async pauseExecution(): Promise<void> {
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
     const dialogRef = this.#dialog.open(PauseExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code, trialId: this.#fireTrialId },
     });
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((result) => {
-        if (!result || result.action === 'back') return;
-        console.log('Pausing execution with reason:', result.action);
-      });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'back') return;
+    console.log('Pausing execution with reason:', result.action);
   }
 
   resumeExecution(): void {
-    this.#store.resumeExecution(this.#fireTrialId());
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    this.#store.resumeExecution(trialId);
   }
 
   finishExecution(): void {
-    this.#store.finishExecution(this.#fireTrialId());
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    this.#store.finishExecution(trialId);
   }
 
-  openInterruptDialog(): void {
-    this.#dialog
-      .open(InterruptExecutionDialog, {
-        width: '600px',
-        data: { trialName: this.executionData().code },
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((result) => {
-        if (!result || result.action === 'back') return;
-        this.#store.interruptExecution(this.#fireTrialId(), result.reason);
-      });
+  async openInterruptDialog(): Promise<void> {
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    const dialogRef = this.#dialog.open(InterruptExecutionDialog, {
+      width: '600px',
+      data: { trialName: this.executionData().code },
+    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'back') return;
+    this.#store.interruptExecution(trialId, result.reason);
   }
 
-  openCancelDialog(): void {
-    this.#dialog
-      .open(CancelExecutionDialog, {
-        width: '600px',
-        data: { trialName: this.executionData().code },
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((result) => {
-        if (!result || result.action === 'back') return;
-        this.#store.cancelExecution(this.#fireTrialId(), result.reason);
-      });
+  async openCancelDialog(): Promise<void> {
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    const dialogRef = this.#dialog.open(CancelExecutionDialog, {
+      width: '600px',
+      data: { trialName: this.executionData().code },
+    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'back') return;
+    this.#store.cancelExecution(trialId, result.reason);
   }
 
   addWidget(widgetId: string): void {
@@ -668,11 +719,14 @@ export class Execution implements OnInit, OnDestroy {
     console.log('Widget removido:', widgetId);
   }
 
-  openEquipmentSelectorDialog(): void {
-    this.#store.loadEquipmentSelector(this.#fireTrialId());
+  async openEquipmentSelectorDialog(): Promise<void> {
+    const trialId = this.#fireTrialId();
+    if (!trialId) return;
+    this.#store.loadEquipmentSelector(trialId);
     const selector = this.#store.equipmentSelector();
-    this.#dialog
-      .open<EquipmentSelectorDialog, unknown, EquipmentSelectorDialogResult>(EquipmentSelectorDialog, {
+    const dialogRef = this.#dialog.open<EquipmentSelectorDialog, unknown, EquipmentSelectorDialogResult>(
+      EquipmentSelectorDialog,
+      {
         width: '900px',
         minWidth: '900px',
         maxHeight: '90vh',
@@ -684,13 +738,11 @@ export class Execution implements OnInit, OnDestroy {
           serieDisparoMap: selector.serieDisparoMap,
           initialEquipments: selector.equipments,
         },
-      })
-      .afterClosed()
-      .pipe(takeUntilDestroyed(this.#destroyRef))
-      .subscribe((result) => {
-        if (!result || result.action === 'back') return;
-        this.#store.updateEquipmentSelections(result.equipments);
-      });
+      },
+    );
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'back') return;
+    this.#store.updateEquipmentSelections(result.equipments);
   }
 
   async saveAllChanges(): Promise<void> {

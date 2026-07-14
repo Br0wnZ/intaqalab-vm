@@ -57,13 +57,13 @@ describe('StanagUpsertDialogComponent', () => {
     it('should show create title when data is null', async () => {
       await setup(null);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/);
     });
 
     it('should show edit title when data is provided', async () => {
       await setup(MOCK_STANAG);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.EDIT_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
     });
 
     it('should render the description textarea', async () => {

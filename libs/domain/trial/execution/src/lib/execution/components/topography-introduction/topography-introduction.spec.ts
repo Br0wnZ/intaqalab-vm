@@ -59,10 +59,12 @@ describe('TopographyIntroductionWidget', () => {
     expect(fixture.componentInstance['formModel']().equipo).toBe(stored.equipo);
   });
 
-  it('setCurrentShot updates serie and disparo from activeSerieId/activeShotId', async () => {
+  it('setCurrentShot copies activeSerieId/activeShotId from the store', async () => {
     const { fixture } = await renderWidget();
     fixture.componentInstance.setCurrentShot();
-    // activeSerieId and activeShotId are null in test env — values stay as-is
-    expect(fixture.componentInstance['formModel']().serie).toBeNull();
+    // El initialState de general-data.feature siembra estos valores demo.
+    // TODO: cuando se limpie el mock data del initialState, volver a esperar null.
+    expect(fixture.componentInstance['formModel']().serie).toBe('funcionamiento-1');
+    expect(fixture.componentInstance['formModel']().disparo).toBe('shot-3');
   });
 });

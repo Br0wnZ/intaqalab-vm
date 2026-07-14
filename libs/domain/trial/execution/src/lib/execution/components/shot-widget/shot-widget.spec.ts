@@ -1,23 +1,31 @@
-import type { ComponentFixture } from '@angular/core/testing';
-import { TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
+import { describe, expect, it, vi } from 'vitest';
 
-import { ShotWidget } from './shot-widget';
+import { WidgetStateService } from '../../services/widget-state.service';
+import { ShotWidgetComponent } from './shot-widget';
 
-describe('ShotWidget', () => {
-  let component: ShotWidget;
-  let fixture: ComponentFixture<ShotWidget>;
+const mockWidgetStateService = {
+  updateWidgetFormState: vi.fn(),
+  addWidget: vi.fn(),
+  placedWidgets: () => [],
+};
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ShotWidget],
-    }).compileComponents();
+describe('ShotWidgetComponent', () => {
+  const renderWidget = () =>
+    render(ShotWidgetComponent, {
+      inputs: { widgetId: 'test-shot-widget' },
+      providers: [{ provide: WidgetStateService, useValue: mockWidgetStateService }],
+      imports: [TranslateModule.forRoot()],
+    });
 
-    fixture = TestBed.createComponent(ShotWidget);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', async () => {
+    const { fixture } = await renderWidget();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('formState reports the correct widgetId', async () => {
+    const { fixture } = await renderWidget();
+    expect(fixture.componentInstance.formState().widgetId).toBe('test-shot-widget');
   });
 });

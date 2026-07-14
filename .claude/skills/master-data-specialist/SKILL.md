@@ -43,6 +43,22 @@ Para incorporar un nuevo catálogo al sistema:
 
 Los servicios de datos maestros implementan la construcción dinámica de parámetros `CatalogQueryParams`. Todo cambio en filtros o paginación actualiza un Signal privado en el servicio que dispara una nueva llamada al backend (`httpResource`).
 
+Para filtros y paginación usa las utilidades propias de `@intaqalab/utils` (guía: `docs/UTILITIES.md`) — NO las reimplementes:
+
+```typescript
+import { debouncedSignal, linkedQueryParam } from '@intaqalab/utils';
+
+// Filtro sincronizado con la URL (sobrevive F5, compartible, back restaura):
+readonly searchTerm = linkedQueryParam('q');
+readonly page = linkedQueryParam('page', {
+  parse: (raw) => (raw ? Number(raw) : 1),
+  serialize: (value) => (value === 1 ? null : String(value)),
+});
+
+// Debounce antes del trigger — sin refetch por tecla:
+readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 300);
+```
+
 ## 🛠️ Reglas de Intervención
 
 - Si el usuario te pide crear una pantalla para administrar una nueva entidad básica (ej: "Tipos de Vehículo"), **no crees componentes UI desde cero**. Implementa el modelo, el servicio y conéctalo al `MasterDataShellComponent`.

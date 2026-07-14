@@ -28,7 +28,7 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
   providers: [PlanningGeneralDataStore],
   template: `
     @if (canAccessPlanning()) {
-      <mat-tab-group class="mt-4">
+      <mat-tab-group class="mt-4" (selectedIndexChange)="onIndexChange($event)">
         <mat-tab label="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TAB_TITLE' | translate }}">
           <inta-planning-general-data-form [readonly]="isReadonly()" />
         </mat-tab>
@@ -154,5 +154,11 @@ export class FeaturePlanningGeneralDataShellComponent {
         this.#store.setFireTrialData(trialId, trial);
       }
     });
+  }
+
+  protected onIndexChange(index: number): void {
+    if (index === 0) {
+      this.#store.reloadPlanningInfo();
+    }
   }
 }

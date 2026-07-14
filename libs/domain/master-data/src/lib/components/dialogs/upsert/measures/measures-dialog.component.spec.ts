@@ -116,13 +116,13 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     it('should show create title when data is null', async () => {
       await setup(null);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/);
     });
 
     it('should show edit title when data is provided', async () => {
       await setup(MOCK_QUANTITATIVE);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.EDIT_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
     });
 
     it('should render cancel and save buttons', async () => {
@@ -168,7 +168,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       instance.formModel.set(VALID_QUANTITATIVE_FORM);
       view.fixture.detectChanges();
       const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      expect(saveBtn).not.toBeDisabled();
+      expect(saveBtn).toBeEnabled();
     });
 
     it('should enable save button when QUALITATIVE form is fully valid', async () => {
@@ -177,7 +177,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       instance.formModel.set(VALID_QUALITATIVE_FORM);
       view.fixture.detectChanges();
       const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      expect(saveBtn).not.toBeDisabled();
+      expect(saveBtn).toBeEnabled();
     });
   });
 

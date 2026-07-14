@@ -90,10 +90,10 @@ describe('EventLogShellComponent', () => {
   describe('initial rendering', () => {
     it('should render all four tab labels', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.TABS.DOCUMENTS')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.TABS.GENERAL_DATA')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.TABS.SERIES_AND_SHOOTS')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.TABS.MEASURES')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.TABS.DOCUMENTS')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.TABS.GENERAL_DATA')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.TABS.SERIES_AND_SHOOTS')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.TABS.MEASURES')).toBeInTheDocument();
     });
 
     it('should render the mat-tab-group', async () => {

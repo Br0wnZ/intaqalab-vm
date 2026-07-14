@@ -105,29 +105,33 @@ describe('MunitionGeneralDataComponent', () => {
   describe('Initialization', () => {
     it('should render the section title', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_GENERAL_DATA')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_GENERAL_DATA')).toBeInTheDocument();
     });
 
     it('should render the entry date input placeholder', async () => {
       await setup();
-      expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ENTRY_DATE_PLACEHOLDER')).toBeTruthy();
+      expect(
+        screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.ENTRY_DATE_PLACEHOLDER'),
+      ).toBeInTheDocument();
     });
 
     it('should render the observations input placeholder', async () => {
       await setup();
-      expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.OBSERVATIONS_PLACEHOLDER')).toBeTruthy();
+      expect(
+        screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.OBSERVATIONS_PLACEHOLDER'),
+      ).toBeInTheDocument();
     });
 
     it('should render client label and placeholder', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_LABEL')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_PLACEHOLDER')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_LABEL')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_PLACEHOLDER')).toBeInTheDocument();
     });
 
     it('should render planned trial label and placeholder', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_LABEL')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_PLACEHOLDER')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_LABEL')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.PLANNED_TRIAL_PLACEHOLDER')).toBeInTheDocument();
     });
   });
 
@@ -135,8 +139,7 @@ describe('MunitionGeneralDataComponent', () => {
     it('should call trialsDataService.search with clientId and PLANNED/UNDER_REVIEW statuses', async () => {
       const { component, trialsService } = await setup();
       component.onClientChangeHandler({ value: 'client-1' } as any);
-      expect(trialsService.search).toHaveBeenCalledOnce();
-      expect(trialsService.search).toHaveBeenCalledWith({
+      expect(trialsService.search).toHaveBeenCalledExactlyOnceWith({
         clientId: 'client-1',
         status: [TrialStatus.PLANNED, TrialStatus.UNDER_REVIEW],
       });

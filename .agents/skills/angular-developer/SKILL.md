@@ -53,6 +53,7 @@ If you require deeper documentation not found in the references above, read the 
 
 When managing state and data reactivity, use Angular Signals and consult the following references:
 
+- **Project Utilities**: Custom reactive helpers (debounce, throttle, page visibility, network, idle status, storage, countdown). It is mandatory to use these instead of custom code or third-party packages. Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)
 - **Signals Overview**: Core signal concepts (`signal`, `computed`), reactive contexts, and `untracked`. Read [signals-overview.md](references/signals-overview.md)
 - **Dependent State (`linkedSignal`)**: Creating writable state linked to source signals. Read [linked-signal.md](references/linked-signal.md)
 - **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state. Read [resource.md](references/resource.md)
@@ -89,6 +90,7 @@ When building accessible custom components for any of the following patterns: Ac
 
 When implementing navigation in Angular, consult the following references:
 
+- **Route Params as Signals**: Synchronized router params and query params (`injectParams`, `injectQueryParams`, `linkedQueryParam`). It is mandatory to use these instead of snapshots or manual subscriptions. Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)
 - **Define Routes**: URL paths, static vs dynamic segments, wildcards, and redirects. Read [define-routes.md](references/define-routes.md)
 - **Route Loading Strategies**: Eager vs lazy loading, and context-aware loading. Read [loading-strategies.md](references/loading-strategies.md)
 - **Show Routes with Outlets**: Using `<router-outlet>`, nested outlets, and named outlets. Read [show-routes-with-outlets.md](references/show-routes-with-outlets.md)

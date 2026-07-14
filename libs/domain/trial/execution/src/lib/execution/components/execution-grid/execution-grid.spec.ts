@@ -1,23 +1,34 @@
-import type { ComponentFixture } from '@angular/core/testing';
-import { TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
+import { describe, expect, it, vi } from 'vitest';
 
-import { ExecutionGrid } from './execution-grid';
+import { WidgetStateService } from '../../services/widget-state.service';
+import { ExecutionGridComponent } from './execution-grid';
 
-describe('ExecutionGrid', () => {
-  let component: ExecutionGrid;
-  let fixture: ComponentFixture<ExecutionGrid>;
+const mockWidgetStateService = {
+  updateWidgetFormState: vi.fn(),
+  addWidget: vi.fn(),
+  moveWidget: vi.fn(),
+  removeWidget: vi.fn(),
+  placedWidgets: () => [],
+};
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ExecutionGrid],
-    }).compileComponents();
+describe('ExecutionGridComponent', () => {
+  const renderGrid = (editMode = false) =>
+    render(ExecutionGridComponent, {
+      inputs: { editMode },
+      providers: [{ provide: WidgetStateService, useValue: mockWidgetStateService }],
+      imports: [TranslateModule.forRoot()],
+    });
 
-    fixture = TestBed.createComponent(ExecutionGrid);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  it('should create', async () => {
+    const { fixture } = await renderGrid();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('computes free placeholder blocks when no widget is placed', async () => {
+    const { fixture } = await renderGrid();
+    const blocks = fixture.componentInstance.freePlaceholderBlocks();
+    expect(blocks.length).toBeGreaterThan(0);
   });
 });

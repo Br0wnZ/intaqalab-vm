@@ -22,8 +22,8 @@ describe('IntaMatSelect', () => {
       excludeComponentDeclaration: true,
     });
 
-    expect(screen.getByText('My Label')).toBeTruthy();
-    expect(screen.getByText('Select...')).toBeTruthy();
+    expect(screen.getByText('My Label')).toBeInTheDocument();
+    expect(screen.getByText('Select...')).toBeInTheDocument();
   });
 
   it('accepts arbitrary option objects when valueKey/labelKey provided', async () => {
@@ -43,9 +43,9 @@ describe('IntaMatSelect', () => {
       excludeComponentDeclaration: true,
     });
 
-    expect(screen.getByText('Clients')).toBeTruthy();
-    expect(screen.getByText('Choose a client')).toBeTruthy();
-    expect(screen.queryByText('Client One')).toBeFalsy();
+    expect(screen.getByText('Clients')).toBeInTheDocument();
+    expect(screen.getByText('Choose a client')).toBeInTheDocument();
+    expect(screen.queryByText('Client One')).not.toBeInTheDocument();
   });
 
   it('shows and filters options with search input (Signal API)', async () => {
@@ -81,8 +81,8 @@ describe('IntaMatSelect', () => {
     await userEvent.type(searchInput, 'be');
 
     // Esperar a que solo la opción filtrada esté visible
-    expect(screen.queryByText('Alpha')).toBeFalsy();
-    expect(screen.getByText('Beta')).toBeTruthy();
-    expect(screen.queryByText('Gamma')).toBeFalsy();
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.queryByText('Gamma')).not.toBeInTheDocument();
   });
 });

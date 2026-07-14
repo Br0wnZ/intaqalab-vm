@@ -48,7 +48,7 @@ describe('RetireDialogComponent', () => {
     vi.restoreAllMocks();
   });
 
-  it('renderiza la componente ', async () => {
+  it('renderiza la componente', async () => {
     await setup('munitions');
   });
 });

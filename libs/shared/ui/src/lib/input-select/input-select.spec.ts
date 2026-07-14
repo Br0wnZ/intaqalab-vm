@@ -75,7 +75,7 @@ describe('InputSelect', () => {
       });
       const component = fixture.componentInstance;
       expect(component.inputValue()).toBe('10');
-      expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('10');
+      expect(screen.getByRole('textbox') as HTMLInputElement).toHaveValue('10');
     });
 
     it('should select correct initial unit', async () => {

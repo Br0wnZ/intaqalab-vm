@@ -93,7 +93,7 @@ describe('DocViewer', () => {
   it('should request document blob on init and display document name', async () => {
     const { mockDocsService, mockDialogData } = await setup();
 
-    expect(screen.getByText(mockDialogData.documentName)).toBeTruthy();
+    expect(screen.getByText(mockDialogData.documentName)).toBeInTheDocument();
     expect(mockDocsService.viewDocumentBlob).toHaveBeenCalledWith(mockDialogData.documentId);
   });
 
@@ -104,7 +104,7 @@ describe('DocViewer', () => {
     view.fixture.detectChanges();
 
     await waitFor(() => {
-      expect(screen.getByText(/cargando documento/i)).toBeTruthy();
+      expect(screen.getByText(/cargando documento/i)).toBeInTheDocument();
     });
   });
 
@@ -131,7 +131,7 @@ describe('DocViewer', () => {
     view.fixture.detectChanges();
 
     await waitFor(() => {
-      expect(screen.getByText(/ningún documento seleccionado o el formato no es soportado/i)).toBeTruthy();
+      expect(screen.getByText(/ningún documento seleccionado o el formato no es soportado/i)).toBeInTheDocument();
     });
   });
 

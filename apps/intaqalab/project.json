@@ -8,12 +8,15 @@
   "tags": ["type:app", "scope:intaqalab"],
   "targets": {
     "build": {
-      "executor": "@nx/angular:browser-esbuild",
-      "outputs": ["{options.outputPath}"],
+      "executor": "@angular/build:application",
+      "outputs": ["{workspaceRoot}/dist/intaqalab"],
       "options": {
-        "outputPath": "dist/intaqalab",
+        "outputPath": {
+          "base": "dist/intaqalab",
+          "browser": ""
+        },
         "index": "apps/intaqalab/src/index.html",
-        "main": "apps/intaqalab/src/main.ts",
+        "browser": "apps/intaqalab/src/main.ts",
         "polyfills": [],
         "tsConfig": "apps/intaqalab/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
@@ -140,7 +143,7 @@
       "options": {
         "buildTarget": "intaqalab:build",
         "port": 4200,
-        "staticFilePath": "dist/intaqalab/browser",
+        "staticFilePath": "dist/intaqalab",
         "spa": true
       }
     }

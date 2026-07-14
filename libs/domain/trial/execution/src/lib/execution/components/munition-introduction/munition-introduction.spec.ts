@@ -1,8 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { Injectable, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TrialsDataService } from '@intaqalab/data-access';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
@@ -10,6 +12,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { ExecutionStore } from '../../../+state/execution.store';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MunitionIntroduction } from './munition-introduction';
+
+@Injectable()
+class MockTrialsDataService {
+  readonly byIdResource = {
+    value: signal({
+      id: 'b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c',
+      trialNumber: '034A/25',
+      client: { id: 'client-1', name: 'RHEINMETALL EXPAL MUNITIONS' },
+      description: 'Proyectil de 155 mm SMK RP ERG2A1',
+      status: 'IN_PROGRESS',
+    }),
+    isLoading: signal(false),
+    error: signal(null),
+  };
+  loadById(id: string) {
+    /* empty */
+  }
+}
 
 const mockWidgetStateService = {
   updateWidgetFormState: () => {
@@ -32,6 +52,7 @@ describe('MunitionIntroduction', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
+        { provide: TrialsDataService, useClass: MockTrialsDataService },
       ],
       imports: [TranslateModule.forRoot()],
     });

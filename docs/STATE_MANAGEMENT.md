@@ -78,3 +78,14 @@ effect(() => {
   }
 });
 ```
+
+## 3. Utilidades reactivas de apoyo
+
+Para alimentar triggers y resources sin boilerplate, usa las utilidades propias de `@intaqalab/utils` (NO reimplementar a mano ni añadir librerías externas):
+
+- `injectParams('id')` — id de ruta como signal → dispara `httpResource` al navegar.
+- `debouncedSignal(term, 300)` — búsquedas sin refetch por tecla.
+- `linkedQueryParam('q')` — filtros/paginación sincronizados con la URL.
+- `explicitEffect([deps], fn)` — effects con dependencias explícitas (feedback de mutaciones sin dependencias accidentales).
+
+Guía completa con las 13 utilidades y ejemplos: [UTILITIES.md](UTILITIES.md).

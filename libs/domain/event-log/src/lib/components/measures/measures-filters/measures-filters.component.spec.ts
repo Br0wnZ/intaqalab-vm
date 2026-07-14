@@ -66,17 +66,17 @@ describe('EventLogEventLogMeasuresFiltersComponent', () => {
 
     it('should hide the filter panel by default', async () => {
       await setup();
-      expect(screen.queryByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).toBeNull();
+      expect(screen.queryByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).not.toBeInTheDocument();
     });
 
     it('should render the export PDF button', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.FILTERS.EXPORT_PDF_BUTTON')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.FILTERS.EXPORT_PDF_BUTTON')).toBeInTheDocument();
     });
 
     it('should render the export Excel button', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.FILTERS.EXPORT_EXCEL_BUTTON')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.FILTERS.EXPORT_EXCEL_BUTTON')).toBeInTheDocument();
     });
   });
 
@@ -87,7 +87,7 @@ describe('EventLogEventLogMeasuresFiltersComponent', () => {
       const toggleBtn = screen.getByText('EVENT_LOG.FILTERS.TOGGLE_FILTERS_PANEL_BUTTON');
       await events.click(toggleBtn);
 
-      expect(screen.queryByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).not.toBeNull();
+      expect(screen.getByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).toBeInTheDocument();
     });
 
     it('should hide the filter panel again after clicking toggle twice', async () => {
@@ -97,7 +97,7 @@ describe('EventLogEventLogMeasuresFiltersComponent', () => {
       await events.click(toggleBtn);
       await events.click(toggleBtn);
 
-      expect(screen.queryByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).toBeNull();
+      expect(screen.queryByText('EVENT_LOG.FILTERS.SEARCH_BUTTON')).not.toBeInTheDocument();
     });
   });
 

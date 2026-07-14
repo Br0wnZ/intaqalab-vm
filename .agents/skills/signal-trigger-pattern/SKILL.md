@@ -178,6 +178,38 @@ withMethods((store, service = inject(EntityService)) => ({
 
 ---
 
+## Utilidades `@intaqalab/utils` que alimentan el patrón
+
+Usa estas utilidades propias en lugar de reimplementarlas (guía completa: `docs/UTILITIES.md`):
+
+```typescript
+import { debouncedSignal, explicitEffect, injectParams, linkedQueryParam } from '@intaqalab/utils';
+
+// Id de ruta como trigger — refetch automático al navegar entre entidades:
+readonly trialId = injectParams('trialId');
+readonly trial = httpResource<Trial>(() =>
+  this.trialId() ? `${this.#config.apiUrl}/trials/${this.trialId()}` : undefined,
+);
+
+// Búsqueda sin refetch por tecla:
+readonly searchTerm = linkedQueryParam('q'); // además sincroniza con la URL
+readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 300);
+readonly items = httpResource<Item[]>(() => ({
+  url: `${this.#config.apiUrl}/items`,
+  method: 'GET',
+  params: { q: this.#debounced() },
+}));
+
+// Feedback de mutación sin dependencias accidentales:
+explicitEffect([this.store.saveStatus], ([status]) => {
+  if (status === 'resolved') this.toast.success('OK');
+});
+```
+
+Regla: nunca `route.snapshot.params` para triggers (no se actualiza al reusar el componente) — siempre `injectParams`.
+
+---
+
 ## Anti-patrones — Nunca Hagas Esto
 
 ```typescript

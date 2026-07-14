@@ -177,6 +177,81 @@ describe('Measures', () => {
       expect(mockMeasuresService.updateMeasures).toHaveBeenCalled();
     });
 
+    it('should call updateMeasures propagating first series config to all series when by-series is disabled', async () => {
+      const { user, view } = await runSetup();
+
+      view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 },
+      ]);
+
+      const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
+      await user.click(saveButton);
+
+      expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith('trial-123', {
+        series: [
+          {
+            seriesId: 'series-1',
+            measures: {
+              topographyMeasures: [{ id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 }],
+              munitionsMeasures: [],
+              armamentMeasures: [],
+              ballisticsMeasures: [],
+            },
+          },
+          {
+            seriesId: 'series-2',
+            measures: {
+              topographyMeasures: [{ id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 }],
+              munitionsMeasures: [],
+              armamentMeasures: [],
+              ballisticsMeasures: [],
+            },
+          },
+        ],
+      });
+    });
+
+    it('should call updateMeasures with separate configs when by-series is enabled', async () => {
+      const { user, view } = await runSetup();
+
+      // Enable series configuration
+      const toggleButton = screen.getByText(/Configurar por serie/i);
+      await user.click(toggleButton);
+
+      view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 },
+      ]);
+      view.fixture.componentInstance.onCategoryChange('series-2', 'topografia', [
+        { id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2 },
+      ]);
+
+      const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
+      await user.click(saveButton);
+
+      expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith('trial-123', {
+        series: [
+          {
+            seriesId: 'series-1',
+            measures: {
+              topographyMeasures: [{ id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 }],
+              munitionsMeasures: [],
+              armamentMeasures: [],
+              ballisticsMeasures: [],
+            },
+          },
+          {
+            seriesId: 'series-2',
+            measures: {
+              topographyMeasures: [{ id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2 }],
+              munitionsMeasures: [],
+              armamentMeasures: [],
+              ballisticsMeasures: [],
+            },
+          },
+        ],
+      });
+    });
+
     it('should reset data on cancel', async () => {
       const { user } = await runSetup();
 

@@ -97,37 +97,37 @@ describe('EventLogSeriesAndShootsComponent', () => {
 
     it('should render all column headers', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.ELEMENT')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.VISIBLE_NUMBER')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.INTERNAL_ID')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.ELEMENT')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.VISIBLE_NUMBER')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.SERIES_AND_SHOOTS.LABELS.INTERNAL_ID')).toBeInTheDocument();
     });
 
     it('should render hardware IDs in data rows', async () => {
       await setup();
-      expect(screen.getByText('192.168.1.1')).toBeTruthy();
-      expect(screen.getByText('192.168.1.2')).toBeTruthy();
+      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
+      expect(screen.getByText('192.168.1.2')).toBeInTheDocument();
     });
 
     it('should render user labels in data rows', async () => {
       await setup();
-      expect(screen.getByText('Usuario 1')).toBeTruthy();
-      expect(screen.getByText('Usuario 2')).toBeTruthy();
+      expect(screen.getByText('Usuario 1')).toBeInTheDocument();
+      expect(screen.getByText('Usuario 2')).toBeInTheDocument();
     });
 
     it('should render internalId values in data rows', async () => {
       await setup();
-      expect(screen.getByText('SER-0001')).toBeTruthy();
-      expect(screen.getByText('DSPR-0001')).toBeTruthy();
+      expect(screen.getByText('SER-0001')).toBeInTheDocument();
+      expect(screen.getByText('DSPR-0001')).toBeInTheDocument();
     });
 
     it('should render visibleNumber values in data rows', async () => {
       await setup();
-      expect(screen.getByText('3')).toBeTruthy();
-      expect(screen.getByText('7')).toBeTruthy();
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText('7')).toBeInTheDocument();
     });
 
     it('should render no data rows when response is empty', async () => {

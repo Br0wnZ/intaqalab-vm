@@ -42,14 +42,15 @@ en este monorepo Nx. Está calibrado contra el código real del proyecto.
 
 ## Referencias por Tema
 
-| Patrón                                                          | Referencia                                                      |
-| --------------------------------------------------------------- | --------------------------------------------------------------- |
-| `linkedSignal` — Estado derivado writable                       | [linked-signal.md](references/linked-signal.md)                 |
-| SignalStore avanzado (`withEntities`, custom features, privado) | [signal-store-advanced.md](references/signal-store-advanced.md) |
-| Migración RxJS → Signals                                        | [rxjs-migration.md](references/rxjs-migration.md)               |
-| Limpieza de formularios legacy                                  | [signal-forms-cleanup.md](references/signal-forms-cleanup.md)   |
-| `resource` avanzado (`hasValue`, abort, snapshots)              | [resource-advanced.md](references/resource-advanced.md)         |
-| Efectos seguros (`untracked`, async, afterRenderEffect)         | [effect-best-practices.md](references/effect-best-practices.md) |
+| Patrón                                                                                                                                  | Referencia                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `linkedSignal` — Estado derivado writable                                                                                               | [linked-signal.md](references/linked-signal.md)                 |
+| SignalStore avanzado (`withEntities`, custom features, privado)                                                                         | [signal-store-advanced.md](references/signal-store-advanced.md) |
+| Migración RxJS → Signals                                                                                                                | [rxjs-migration.md](references/rxjs-migration.md)               |
+| Limpieza de formularios legacy                                                                                                          | [signal-forms-cleanup.md](references/signal-forms-cleanup.md)   |
+| `resource` avanzado (`hasValue`, abort, snapshots)                                                                                      | [resource-advanced.md](references/resource-advanced.md)         |
+| Efectos seguros (`untracked`, async, afterRenderEffect)                                                                                 | [effect-best-practices.md](references/effect-best-practices.md) |
+| Utilidades propias `@intaqalab/utils` (13: `injectParams`, `explicitEffect`, `debouncedSignal`, `linkedQueryParam`, `createCountdown`…) | `docs/UTILITIES.md` (raíz del repo)                             |
 
 ## Flujo de Trabajo del Agente
 
@@ -68,3 +69,4 @@ Cuando el agente aplica este skill:
 - **NO migrar** RxJS de terceros (OIDC, Material dialogs) — solo envolver con `toSignal`/`firstValueFrom`
 - **SÍ** actualizar los `.spec.ts` cuando se cambia la API pública de un componente/store
 - **SÍ** mantener el factory pattern `injectWarehouseResource` — es correcto para este proyecto
+- **SÍ** usar utilidades de `@intaqalab/utils` antes de implementar helpers a mano (debounce, params de ruta, URL-sync, countdown, idle…) — ver `docs/UTILITIES.md`; **NO** proponer instalar ngxtension/rx-angular

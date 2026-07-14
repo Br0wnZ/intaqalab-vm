@@ -59,10 +59,10 @@ describe('MunitionComponentsListComponent', () => {
   it('shoult paint the header of the table and the rows', async () => {
     await setup();
 
-    expect(await screen.findByText('WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.COMPONENT_TYPE')).toBeTruthy();
-    expect(await screen.findByText('WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.STATUS')).toBeTruthy();
+    expect(await screen.findByText('WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.COMPONENT_TYPE')).toBeInTheDocument();
+    expect(await screen.findByText('WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.STATUS')).toBeInTheDocument();
 
-    expect(await screen.findByText(munitionTable().items[0].name.es)).toBeTruthy();
+    expect(await screen.findByText(munitionTable().items[0].name.es)).toBeInTheDocument();
   });
 
   it('should edit to call to the MunitionComponentService.updateItem', async () => {

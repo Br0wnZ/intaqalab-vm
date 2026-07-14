@@ -98,7 +98,7 @@ describe('DocumentTypeUpsertDialogComponent', () => {
       view.fixture.detectChanges();
 
       const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      expect(saveBtn).not.toBeDisabled();
+      expect(saveBtn).toBeEnabled();
     });
   });
 

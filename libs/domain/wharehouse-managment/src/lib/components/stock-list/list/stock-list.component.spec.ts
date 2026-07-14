@@ -154,15 +154,15 @@ describe('StockListComponent', () => {
   describe('Initialization', () => {
     it('should render the transfer button', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER')).toBeInTheDocument();
     });
 
     it('should render the column headers', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_TYPE')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH')).toBeTruthy();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_STATUS')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_TYPE')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH')).toBeInTheDocument();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_STATUS')).toBeInTheDocument();
     });
 
     it('should have the transfer button disabled when no rows are selected', async () => {
@@ -178,8 +178,7 @@ describe('StockListComponent', () => {
 
     it('should call store.search() on init via the effect', async () => {
       const { stockListStore } = await setup();
-      expect(stockListStore.search).toHaveBeenCalledOnce();
-      expect(stockListStore.search).toHaveBeenCalledWith({
+      expect(stockListStore.search).toHaveBeenCalledExactlyOnceWith({
         page: 1,
         pageSize: 10,
         sortDirection: '',

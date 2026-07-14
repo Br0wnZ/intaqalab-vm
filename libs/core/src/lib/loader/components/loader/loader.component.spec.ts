@@ -33,7 +33,7 @@ describe('LoaderComponent', () => {
   });
 
   it('should not show loader when isLoading is false', () => {
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   });
 
   it('should show loader after the debounce delay', fakeAsync(() => {
@@ -41,7 +41,7 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
   }));
 
   it('should not show loader before the debounce delay elapses', fakeAsync(() => {
@@ -49,7 +49,7 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS - 1);
     fixture.detectChanges();
 
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   }));
 
   it('should not show loader if hide() is called before debounce fires', fakeAsync(() => {
@@ -58,19 +58,19 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   }));
 
   it('should hide loader when isLoading changes from true to false', fakeAsync(() => {
     loaderService.show();
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
     tick();
     fixture.detectChanges();
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   }));
 
   it('should contain mat-spinner when loading', fakeAsync(() => {
@@ -88,7 +88,7 @@ describe('LoaderComponent', () => {
     fixture.detectChanges();
 
     const loader = screen.getByTestId('loader');
-    expect(loader.classList.contains('loading')).toBe(true);
+    expect(loader).toHaveClass('loading');
     expect(loader.querySelector('.spinner')).toBeTruthy();
   }));
 
@@ -98,17 +98,17 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
     tick();
     fixture.detectChanges();
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
     tick();
     fixture.detectChanges();
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   }));
 
   it('should hide immediately when reset() is called regardless of active requests', fakeAsync(() => {
@@ -118,13 +118,13 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.reset();
     tick();
     fixture.detectChanges();
 
-    expect(screen.queryByTestId('loader')).toBeNull();
+    expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   }));
 
   it('should show loader again after reset() followed by a new show()', fakeAsync(() => {
@@ -135,6 +135,6 @@ describe('LoaderComponent', () => {
     tick(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    expect(screen.getByTestId('loader')).toBeTruthy();
+    expect(screen.getByTestId('loader')).toBeInTheDocument();
   }));
 });

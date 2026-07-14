@@ -103,6 +103,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 
 ## Patrones Avanzados de Signals 🔬
 
+- **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`.
 - **Estado derivado writable:** Usa `linkedSignal()` en lugar de signal+effect. Ejemplo: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
 - **RxJS (Uso Restringido):**
   - ✅ Permitido interop: `toSignal(observable$)`, `firstValueFrom(observable$)`.

@@ -100,7 +100,7 @@ describe('DenominationsDialogComponent', () => {
     it('should have the save button enabled when form is valid', async () => {
       await setup({ item: editItem });
       const saveButton = screen.getByText(/MODIFY_DOC_DIALOG.SAVE/i).closest('button');
-      expect(saveButton).not.toBeDisabled();
+      expect(saveButton).toBeEnabled();
     });
 
     it('should close with the correct payload when save is clicked', async () => {

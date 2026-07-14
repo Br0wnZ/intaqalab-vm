@@ -125,7 +125,7 @@ describe('MunitionsShellComponent', () => {
     const categorySelect = screen.getByRole('combobox');
     await user.click(categorySelect);
     await user.click(screen.getByText('WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.OPTION_MUNITION'));
-    expect(screen.queryByTestId('identificationForm')).toBeInTheDocument();
+    expect(screen.getByTestId('identificationForm')).toBeInTheDocument();
   });
 
   it('should add a component form section when "add component" is clicked', async () => {

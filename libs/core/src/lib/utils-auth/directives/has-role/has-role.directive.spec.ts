@@ -37,11 +37,11 @@ describe('HasRoleDirective', () => {
 
   it('should show the element h2', async () => {
     await setup();
-    expect(screen.queryByTestId('h2-element')).toBeTruthy();
+    expect(screen.getByTestId('h2-element')).toBeInTheDocument();
   });
 
   it('should not show the element h3', async () => {
     await setup();
-    expect(screen.queryByTestId('h3-element')).toBeFalsy();
+    expect(screen.queryByTestId('h3-element')).not.toBeInTheDocument();
   });
 });

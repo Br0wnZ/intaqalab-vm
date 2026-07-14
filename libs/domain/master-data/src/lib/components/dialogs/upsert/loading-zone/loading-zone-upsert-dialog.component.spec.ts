@@ -46,13 +46,13 @@ describe('LoadingZoneUpsertDialogComponent', () => {
     it('should render create title when no data is provided', async () => {
       await setup(null);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/);
     });
 
     it('should render edit title when data is provided', async () => {
       await setup(MOCK_LOADING_ZONE);
       const heading = screen.getByRole('heading', { level: 2 });
-      expect(heading.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.EDIT_TITLE');
+      expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
     });
 
     it('should render zone and caliber input fields', async () => {
@@ -93,7 +93,7 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       }));
       view.fixture.detectChanges();
       const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      expect(saveBtn).not.toBeDisabled();
+      expect(saveBtn).toBeEnabled();
     });
   });
 

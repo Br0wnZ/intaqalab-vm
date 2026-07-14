@@ -1,5 +1,6 @@
-import { computed, inject } from '@angular/core';
-import type { TrialCreateModifyForm } from '@intaqalab/models';
+import { computed, effect, inject } from '@angular/core';
+import { TrialsDataService } from '@intaqalab/data-access';
+import type { FireTrial, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
@@ -20,10 +21,34 @@ const initialState: GeneralDataSlice = {
   activeShotId: 'shot-3',
 };
 
+/** Mapea FireTrial (modelo API) al formato TrialCreateModifyForm del store. */
+function mapFireTrialToForm(trial: FireTrial): TrialCreateModifyForm {
+  return {
+    code: trial.trialNumber,
+    description: trial.description ?? '',
+    client: trial.client?.id ?? '',
+    clientReference: trial.clientReference ?? '',
+    type: trial.fireTrialType?.id ?? '',
+    status: trial.status as TrialStatus,
+    associatedTrial: trial.associatedTrial?.id ?? '',
+    associatedTrialView: trial.associatedTrial?.trialNumber ?? '',
+    hasAssociatedTrial: !!trial.associatedTrial,
+    linkedTrial: trial.linkedTrial?.id ?? '',
+    linkedTrialView: trial.linkedTrial?.trialNumber ?? '',
+    hasLinkedTrial: !!trial.linkedTrial,
+    requestedDate: trial.requestedDate ?? '',
+    observations: trial.observations ?? '',
+  };
+}
+
 export function withGeneralData() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
+    withComputed((store, executionService = inject(ExecutionService), trialsService = inject(TrialsDataService)) => ({
+      // Fire Trial raw (para display: trialNumber, client.name, etc.)
+      fireTrialData: computed(() => trialsService.byIdResource.value()),
+
+      isLoadingFireTrial: computed(() => trialsService.byIdResource.isLoading()),
       // Execution State
       executionState: computed(() => executionService.executionStateResource.value()),
 
@@ -117,7 +142,7 @@ export function withGeneralData() {
 
       isUpdatingPreferencesByUser: computed(() => executionService.updatePreferencesByUserResource.isLoading()),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, executionService = inject(ExecutionService), trialsService = inject(TrialsDataService)) => ({
       setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
         patchState(store, { fireTrialId, fireTrial });
         this.loadExecutionState(fireTrialId);
@@ -130,6 +155,7 @@ export function withGeneralData() {
       setFireTrialId(fireTrialId: string | null): void {
         patchState(store, { fireTrialId });
         if (fireTrialId) {
+          trialsService.loadById(fireTrialId);
           this.loadExecutionState(fireTrialId);
           this.loadExecutionProgress(fireTrialId);
           this.loadSecurityCountdown(fireTrialId);
@@ -226,8 +252,19 @@ export function withGeneralData() {
     })),
     withHooks({
       onInit(store) {
+        const trialsService = inject(TrialsDataService);
+
+        // Sincroniza FireTrial del resource → estado del store para isTrialReadOnly y planning compat
+        effect(() => {
+          const trial = trialsService.byIdResource.value();
+          if (trial) {
+            patchState(store, { fireTrial: mapFireTrialToForm(trial) });
+          }
+        });
+
         const fireTrialId = store.fireTrialId();
         if (fireTrialId) {
+          trialsService.loadById(fireTrialId);
           store.loadExecutionState(fireTrialId);
           store.loadExecutionProgress(fireTrialId);
           store.loadSecurityCountdown(fireTrialId);

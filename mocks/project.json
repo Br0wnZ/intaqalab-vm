@@ -5,6 +5,27 @@
   "projectType": "application",
   "tags": ["type:mock", "scope:dev"],
   "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/mocks",
+        "format": ["cjs"],
+        "main": "mocks/src/main.ts",
+        "tsConfig": "mocks/tsconfig.app.json",
+        "generatePackageJson": true,
+        "assets": [
+          { "glob": "**/*", "input": "mocks/src/assets", "output": "assets" },
+          { "glob": "**/*", "input": "mocks/src/fixtures", "output": "fixtures" },
+          { "glob": "**/*", "input": "mocks/src/db", "output": "db" }
+        ],
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": { ".js": ".js" }
+        }
+      }
+    },
     "prune-lockfile": {
       "dependsOn": ["build"],
       "cache": true,

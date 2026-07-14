@@ -53,6 +53,20 @@ export class TrialsDataService {
     this.#updateTrialParams.set(null);
   }
 
+  // ── FIRE TRIAL BY ID ──────────────────────────────────────────────────────
+
+  readonly #byIdTrigger = signal<string | null>(null);
+
+  readonly byIdResource = httpResource<FireTrial>(() => {
+    const id = this.#byIdTrigger();
+    if (!id) return undefined;
+    return { url: `${this.#url}/${id}` };
+  });
+
+  loadById(id: string): void {
+    this.#byIdTrigger.set(id);
+  }
+
   readonly source = httpResource<PaginatedApiResponse<FireTrial>>(() => {
     const filters = this.#searchFilters();
     const params = this.#getSearchParams(filters);
@@ -68,7 +82,7 @@ export class TrialsDataService {
   }
 
   #getSearchParams(filters: Partial<TrialSearchFilters> | null): HttpParams | undefined {
-    if(filters === null) return undefined
+    if (filters === null) return undefined;
     let params = new HttpParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {

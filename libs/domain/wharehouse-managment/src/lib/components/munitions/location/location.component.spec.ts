@@ -119,17 +119,19 @@ describe('MunitionLocationComponent', () => {
   describe('Initialization', () => {
     it('should render the section title', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_LOCATION')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.SECTION_LOCATION')).toBeInTheDocument();
     });
 
     it('should render the dump selector label', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_ARRIVAL_LABEL')).toBeTruthy();
+      expect(
+        screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_ARRIVAL_LABEL'),
+      ).toBeInTheDocument();
     });
 
     it('should render the cell selector label', async () => {
       await setup();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_CELL_LABEL')).toBeTruthy();
+      expect(screen.getByText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITIONS_DUMPS_CELL_LABEL')).toBeInTheDocument();
     });
   });
 

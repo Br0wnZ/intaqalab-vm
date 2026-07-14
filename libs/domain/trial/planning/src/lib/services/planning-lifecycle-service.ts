@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import { injectPlanningEndpoint } from '@intaqalab/config';
+import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
 @Injectable({
@@ -10,14 +10,14 @@ export class PlanningLifecycleService {
   readonly #validateParams = signal<{ fireTrialId: FireTrial['id'] } | null>(null);
   readonly #unlockParams = signal<{ fireTrialId: FireTrial['id'] } | null>(null);
 
-  readonly #planningUrl = injectPlanningEndpoint();
+  readonly #fireTrialsUrl = injectFireTrialsEndpoint();
 
   readonly validateResource = httpResource<void>(() => {
     const params = this.#validateParams();
     if (!params) return undefined;
 
     return {
-      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/validate`,
+      url: `${this.#fireTrialsUrl}/${params.fireTrialId}/planning/validate`,
       method: 'POST',
       body: {},
     };
@@ -28,7 +28,7 @@ export class PlanningLifecycleService {
     if (!params) return undefined;
 
     return {
-      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/modify`,
+      url: `${this.#fireTrialsUrl}/${params.fireTrialId}/planning/modify`,
       method: 'POST',
       body: {},
     };

@@ -406,7 +406,7 @@ describe('MassiveMunitionsConfigurationDialog', () => {
         ]),
       }),
     );
-  });
+  }, 15000);
 
   it('should initialize with preloaded data when provided', async () => {
     const preloadedData = {

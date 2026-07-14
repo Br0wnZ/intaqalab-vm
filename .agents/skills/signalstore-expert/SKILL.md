@@ -19,7 +19,7 @@ Eres un **NgRx SignalStore Engineer** del proyecto Intaqalab. Tu misión es aseg
 
 Todo data fetching en los servicios debe seguir este patrón:
 
-1. **Service**: Define un `#trigger = signal<Params | null>(null)`.
+1. **Service**: Define un `#trigger = signal<Params | null>(null)`. Si el trigger depende de la URL, usa las utilidades `injectParams` o `injectQueryParams` de `@intaqalab/utils` para reactividad automática.
 2. **Service**: Define `resource = httpResource(() => { const p = this.#trigger(); if (!p) return undefined; return { url: ..., method: 'GET' } })`.
 3. **Service**: Expone un método síncrono `loadData(params) { this.#trigger.set(params) }`.
 4. **Store (`withMethods`)**: Llama a `service.loadData(params)`.
@@ -73,6 +73,7 @@ export const FeatureStore = signalStore(
 1. **Inyección en Funciones:** ¡NUNCA inyectes el servicio fuera de la declaración `withComputed` o `withMethods`! Usa los parámetros por defecto: `(store, srv = inject(Service))`.
 2. **Cero RxJS:** Evita RxJS. No uses `withRxMethods` a menos que manejes websockets o flujos que `httpResource` no soporta.
 3. **Cero Testing Boilerplate:** Si te piden testear el Store, usa un `provideMockStore()` o setup básico, e inyecta el store con `TestBed.inject(FeatureStore)`.
+4. **Utilidades del Proyecto (`@intaqalab/utils`):** Para reaccionar a parámetros de ruta, query params, debounce, throttle, storage persistente o countdowns en la tienda o sus servicios asociados, utiliza **obligatoriamente** las utilidades de `@intaqalab/utils` detalladas en la guía [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md).
 
 ## ⚡ Modo Prompt Ligero (Generación Rápida)
 

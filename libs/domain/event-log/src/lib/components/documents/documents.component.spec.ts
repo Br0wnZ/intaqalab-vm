@@ -112,30 +112,30 @@ describe('EventLogDocumentsComponent', () => {
 
     it('should render all column headers', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.TITLE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.TYPE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.ACCESS_COUNT')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.TITLE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.TYPE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.DOCUMENTS.LABELS.ACCESS_COUNT')).toBeInTheDocument();
     });
 
     it('should render a row for each document', async () => {
       await setup();
-      expect(screen.getByText('Documento 1')).toBeTruthy();
-      expect(screen.getByText('Documento 2')).toBeTruthy();
+      expect(screen.getByText('Documento 1')).toBeInTheDocument();
+      expect(screen.getByText('Documento 2')).toBeInTheDocument();
     });
 
     it('should render user labels in rows', async () => {
       await setup();
-      expect(screen.getByText('Usuario 1')).toBeTruthy();
-      expect(screen.getByText('Usuario 2')).toBeTruthy();
+      expect(screen.getByText('Usuario 1')).toBeInTheDocument();
+      expect(screen.getByText('Usuario 2')).toBeInTheDocument();
     });
 
     it('should render hardware IDs in rows', async () => {
       await setup();
-      expect(screen.getByText('192.168.1.1')).toBeTruthy();
-      expect(screen.getByText('192.168.1.2')).toBeTruthy();
+      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
+      expect(screen.getByText('192.168.1.2')).toBeInTheDocument();
     });
 
     it('should render the paginator', async () => {

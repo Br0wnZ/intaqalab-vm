@@ -18,6 +18,9 @@ const mockWidgetStateService = {
   placedWidgets: () => [],
 };
 
+// jsdom no implementa Element.scrollTo; stub para el carrusel de tarjetas
+Element.prototype.scrollTo = Element.prototype.scrollTo ?? (() => {});
+
 describe('InformacionTaradoWidget', () => {
   const renderWidget = (widgetId = 'test-informacion-tarado') =>
     render(InformacionTaradoWidget, {

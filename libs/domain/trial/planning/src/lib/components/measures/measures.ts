@@ -633,36 +633,42 @@ export class Measures {
   }
 
   #mapLocalToRequest(data: SerieData[]): MeasuresBulkUpdateRequest {
+    const useCommonConfig = !this.seriesConfiguration();
+    const commonSource = useCommonConfig && data.length > 0 ? data[0] : null;
+
     return {
-      series: data.map((item) => ({
-        seriesId: item.id,
-        measures: {
-          topographyMeasures: item.topografia.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          munitionsMeasures: item.municiones.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          armamentMeasures: item.armamento.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          ballisticsMeasures: item.balistica.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-        },
-      })),
+      series: data.map((item) => {
+        const source = commonSource ?? item;
+        return {
+          seriesId: item.id,
+          measures: {
+            topographyMeasures: source.topografia.map((m) => ({
+              id: m.id,
+              minLimit: m.minLimit,
+              maxLimit: m.maxLimit,
+              deviation: m.deviation,
+            })),
+            munitionsMeasures: source.municiones.map((m) => ({
+              id: m.id,
+              minLimit: m.minLimit,
+              maxLimit: m.maxLimit,
+              deviation: m.deviation,
+            })),
+            armamentMeasures: source.armamento.map((m) => ({
+              id: m.id,
+              minLimit: m.minLimit,
+              maxLimit: m.maxLimit,
+              deviation: m.deviation,
+            })),
+            ballisticsMeasures: source.balistica.map((m) => ({
+              id: m.id,
+              minLimit: m.minLimit,
+              maxLimit: m.maxLimit,
+              deviation: m.deviation,
+            })),
+          },
+        };
+      }),
     };
   }
 }

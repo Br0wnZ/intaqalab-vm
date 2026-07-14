@@ -98,33 +98,33 @@ describe('EventLogMeasuresComponent', () => {
 
     it('should render all column headers', async () => {
       await setup();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.INSTRUMENT')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.VALUE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.MEASURE')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.SHOOT')).toBeTruthy();
-      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.SERIE')).toBeTruthy();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.DATE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.ACTION')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.USER')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.LIST_LABELS.HARDWARE_ID')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.INSTRUMENT')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.VALUE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.MEASURE')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.SHOOT')).toBeInTheDocument();
+      expect(screen.getByText('EVENT_LOG.MEASURES.LABELS.SERIE')).toBeInTheDocument();
     });
 
     it('should render hardware IDs in data rows', async () => {
       await setup();
-      expect(screen.getByText('192.168.1.1')).toBeTruthy();
-      expect(screen.getByText('192.168.1.2')).toBeTruthy();
+      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
+      expect(screen.getByText('192.168.1.2')).toBeInTheDocument();
     });
 
     it('should render user labels in data rows', async () => {
       await setup();
-      expect(screen.getByText('Usuario 1')).toBeTruthy();
-      expect(screen.getByText('Usuario 2')).toBeTruthy();
+      expect(screen.getByText('Usuario 1')).toBeInTheDocument();
+      expect(screen.getByText('Usuario 2')).toBeInTheDocument();
     });
 
     it('should render serie values in data rows', async () => {
       await setup();
-      expect(screen.getByText('Serie 1')).toBeTruthy();
-      expect(screen.getByText('Serie 2')).toBeTruthy();
+      expect(screen.getByText('Serie 1')).toBeInTheDocument();
+      expect(screen.getByText('Serie 2')).toBeInTheDocument();
     });
 
     it('should render no data rows when response is empty', async () => {

@@ -64,14 +64,14 @@ describe('DimensionsUpsertDialogComponent', () => {
       await setup(null);
       const title = screen.getByRole('heading', { level: 2 });
       expect(title).toBeInTheDocument();
-      expect(title.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE');
+      expect(title).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/);
     });
 
     it('should render the edit title when data is provided', async () => {
       await setup(MOCK_EDIT_DATA);
       const title = screen.getByRole('heading', { level: 2 });
       expect(title).toBeInTheDocument();
-      expect(title.textContent).toContain('MASTER_DATA.DIALOGS.UPSERT.EDIT_TITLE');
+      expect(title).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
     });
 
     it('should render the cancel button', async () => {

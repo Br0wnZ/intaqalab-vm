@@ -99,7 +99,7 @@ describe('MaoTopographyMassConfigDialog', () => {
 
     // The cancel button uses [mat-dialog-close] directive with { action: 'cancel' }
     // so it wires directly to dialogRef — we verify the button is present
-    const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    const cancelBtn = screen.getByRole('button', { name: /MASS_CONFIG_CANCEL_BTN/ });
     expect(cancelBtn).toBeInTheDocument();
   });
 

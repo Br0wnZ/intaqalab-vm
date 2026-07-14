@@ -16,3 +16,4 @@ REGLAS ESTRICTAS:
 7. Omite `changeDetection: ChangeDetectionStrategy.OnPush` en componentes nuevos ya que es el comportamiento por defecto.
 8. No uses ChangeDetectorRef ni NgZone (Zoneless).
 9. Mantén la lógica exacta, solo migra sintaxis. Muestra solo el código final.
+10. Sustituye helpers manuales por utilidades de `@intaqalab/utils` (guía: `docs/UTILITIES.md`): `route.snapshot.params`/`paramMap.subscribe()` → `injectParams`; `debounceTime` → `debouncedSignal`; `throttleTime` → `throttledSignal`; filtros con `router.navigate` manual → `linkedQueryParam`; `localStorage` manual → `storageSignal`; `setInterval` de countdown → `createCountdown`; `effect()` con lecturas mezcladas → `explicitEffect`.

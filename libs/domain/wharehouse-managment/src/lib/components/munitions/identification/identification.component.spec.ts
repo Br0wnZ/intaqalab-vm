@@ -158,17 +158,19 @@ describe('MunitionIdentificationComponent', () => {
   describe('Initialization', () => {
     it('should render the denomination input', async () => {
       await setup();
-      expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER')).toBeTruthy();
+      expect(
+        screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER'),
+      ).toBeInTheDocument();
     });
 
     it('should render the batch input', async () => {
       await setup();
-      expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL')).toBeTruthy();
+      expect(screen.getByPlaceholderText('WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL')).toBeInTheDocument();
     });
 
     it('should render the quantity input', async () => {
       await setup();
-      expect(screen.getByRole('spinbutton')).toBeTruthy();
+      expect(screen.getByRole('spinbutton')).toBeInTheDocument();
     });
 
     it('should have denomination field disabled when no munitionType is selected', async () => {

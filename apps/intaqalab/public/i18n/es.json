@@ -1578,6 +1578,7 @@
         "OPTION_MUNITION": "Munición",
         "OPTION_MUNITION_COMPONENT": "Componente de munición"
       },
+      "QUANTITY_ERROR": "La cantidad debe ser como mínimo uno",
       "MODAL_DELETE": {
         "TITLE": "Eliminar denominación",
         "CONTENT_HTML": "Vas a eliminar una denominación que podría estar asociada a ítems registrados. <b>La denominación dejará de estar disponible en los desplegables.</b>"

@@ -1,42 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { AuthService, Role } from '@intaqalab/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
-import userEvent from '@testing-library/user-event';
+import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  EquipmentSelectorDialog,
-  type EquipmentSelectorDialogData,
-  type EquipmentTagMapping,
-} from './equipment-selector-dialog';
-
-const mockTagMappings: EquipmentTagMapping[] = [
-  {
-    tag: 'velocidad_inicial',
-    label: 'Velocidad Inicial',
-    fields: [
-      { key: 'radar_doppler', label: 'Radar Doppler', type: 'select', options: [{ value: 'rd1', label: 'RD-001' }] },
-      { key: 'antena', label: 'Antena', type: 'select', options: [{ value: 'a1', label: 'Antena 1' }] },
-    ],
-  },
-  {
-    tag: 'tiempo',
-    label: 'Tiempo',
-    fields: [
-      { key: 'cronometro', label: 'Cronómetro', type: 'select', options: [{ value: 'c1', label: 'Cronómetro 1' }] },
-    ],
-  },
-];
+import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum } from '../models';
+import { EquipmentSelectorDialog, type EquipmentSelectorDialogData } from './equipment-selector-dialog';
 
 const mockData: EquipmentSelectorDialogData = {
-  tags: ['velocidad_inicial', 'tiempo'],
-  tagMappings: mockTagMappings,
+  categories: [],
   items: [
-    { id: 'rd-001', label: 'RD-001', tag: 'velocidad_inicial' },
-    { id: 'rd-002', label: 'RD-002', tag: 'velocidad_inicial' },
-    { id: 'timer-001', label: 'TIMER-001', tag: 'tiempo' },
+    { id: 'rd-001', label: 'RD-001', equipmentType: EquipmentTypeEnum.DOPPLER_RADAR },
+    { id: 'rd-002', label: 'RD-002', equipmentType: EquipmentTypeEnum.DOPPLER_RADAR },
+    { id: 'ant-001', label: 'ANT-001', equipmentType: EquipmentTypeEnum.ANTENNA },
   ],
   serieOptions: [
     { value: 's1', label: 'Serie 1' },
@@ -46,27 +23,32 @@ const mockData: EquipmentSelectorDialogData = {
     { value: 'd1', label: 'Disparo 1' },
     { value: 'd2', label: 'Disparo 2' },
   ],
-  dynamicFieldOptions: {
-    radar_doppler: [{ value: 'rd1', label: 'RD-001' }],
-    antena: [{ value: 'a1', label: 'Antena 1' }],
-    cronometro: [{ value: 'c1', label: 'Cronómetro 1' }],
-  } as any,
-  initialSelections: [],
+  serieDisparoMap: { s1: ['d1'], s2: ['d2'] },
+  initialEquipments: [],
 };
 
 describe('EquipmentSelectorDialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
 
-  const setup = async (data: EquipmentSelectorDialogData = mockData) => {
+  const setup = async (data: EquipmentSelectorDialogData = mockData, roles: Role[] = [Role.INTAQALAB_ADMIN]) => {
     closeMock = vi.fn();
-    return render(EquipmentSelectorDialog, {
+    const view = await render(EquipmentSelectorDialog, {
       providers: [
         provideNoopAnimations(),
+        {
+          provide: AuthService,
+          useFactory: () => {
+            const auth = new AuthService();
+            auth.setRoles(roles);
+            return auth;
+          },
+        },
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
       imports: [TranslateModule.forRoot()],
     });
+    return { ...view, component: view.fixture.componentInstance };
   };
 
   it('renders dialog without errors', async () => {
@@ -74,180 +56,151 @@ describe('EquipmentSelectorDialog', () => {
     expect(document.querySelector('[mat-dialog-title]')).toBeTruthy();
   });
 
-  it('shows tag select field', async () => {
-    await setup();
-    const selectField = screen.getByRole('combobox');
-    expect(selectField).toBeInTheDocument();
+  it('shows one chip per visible tag for an admin role', async () => {
+    const { component } = await setup();
+    const chips = document.querySelectorAll('mat-chip-option');
+    expect(component.visibleTags().length).toBeGreaterThan(0);
+    expect(chips.length).toBe(component.visibleTags().length);
   });
 
-  it('renders back and save action buttons', async () => {
-    await setup();
-    expect(screen.getByText(/guardar|Save/i)).toBeInTheDocument();
-    expect(screen.getByText(/volver|Back|Return/i)).toBeInTheDocument();
+  it('hides all tags when the user has no matching role', async () => {
+    const { component } = await setup(mockData, []);
+    expect(component.visibleTags()).toEqual([]);
+    expect(document.querySelectorAll('mat-chip-option').length).toBe(0);
   });
 
-  it('displays equipment table when tag is selected', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await setup();
-
-    // Select a tag
-    const select = screen.getByRole('combobox');
-    await user.click(select);
-    fixture.detectChanges();
-
-    const option = screen.getAllByRole('option')[0];
-    await user.click(option);
-    fixture.detectChanges();
-
-    // Table should be visible
-    expect(screen.getByText(/Equipo|Equipment/i)).toBeInTheDocument();
+  it('auto-selects the first visible tag with one empty row', async () => {
+    const { component } = await setup();
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);
+    expect(component.activeTagRows()).toHaveLength(1);
   });
 
-  it('allows adding equipment rows', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await setup();
-
-    // Select a tag first
-    const select = screen.getByRole('combobox');
-    await user.click(select);
-    fixture.detectChanges();
-
-    const option = screen.getAllByRole('option')[0];
-    await user.click(option);
-    fixture.detectChanges();
-
-    // Click add equipment button
-    const addBtn = screen.getByRole('button', { name: /añadir|add/i });
-    await user.click(addBtn);
-    fixture.detectChanges();
-
-    // Check that we have more rows
-    expect(screen.getAllByRole('option', { name: /Disparo|Disparo/i }).length).toBeGreaterThan(0);
+  it('selectTag switches tag and initializes its state', async () => {
+    const { component } = await setup();
+    component.selectTag(EquipmentMagnitudeTagEnum.TIEMPO);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.TIEMPO);
+    expect(component.activeTagRows()).toHaveLength(1);
   });
 
-  it('closes dialog on back button click', async () => {
-    const user = userEvent.setup();
-    await setup();
+  it('selectTag preserves existing state when returning to a tag', async () => {
+    const { component } = await setup();
+    component.addRow();
+    expect(component.activeTagRows()).toHaveLength(2);
 
-    const backBtn = screen.getByText(/volver|Back|Return/i);
-    await user.click(backBtn);
-
-    expect(closeMock).toHaveBeenCalledWith({ action: 'back' });
+    component.selectTag(EquipmentMagnitudeTagEnum.TIEMPO);
+    component.selectTag(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);
+    expect(component.activeTagRows()).toHaveLength(2);
   });
 
-  it('closes with { action: "save", selections: [] } on save with no selections', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await setup();
-    const saveBtn = document.querySelector('button[mat-flat-button]') as HTMLElement;
-    await user.click(saveBtn);
-    fixture.detectChanges();
-    expect(closeMock).toHaveBeenCalledWith({ action: 'save', selections: [] });
+  it('addRow appends a new empty row', async () => {
+    const { component } = await setup();
+    component.addRow();
+    expect(component.activeTagRows()).toHaveLength(2);
   });
 
-  it('initialSelections pre-check items', async () => {
-    const { fixture } = await setup(mockDataWithSelections);
-    fixture.detectChanges();
-    const instance = fixture.componentInstance;
-    expect(instance.isChecked('rd-001')).toBe(true);
-    expect(instance.isChecked('rd-002')).toBe(false);
+  it('removeRow deletes the given row', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.removeRow(rowId);
+    expect(component.activeTagRows()).toHaveLength(0);
   });
 
-  it('initialSelections restore series and disparos', async () => {
-    const { fixture } = await setup(mockDataWithSelections);
-    fixture.detectChanges();
-    const instance = fixture.componentInstance;
-    expect(instance.getRowSeries('rd-001')).toEqual(['s1']);
-    expect(instance.getRowDisparos('rd-001')).toEqual(['d1', 'd2']);
+  it('setFieldValue / getFieldValue round-trip', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.setFieldValue(rowId, 'radar_doppler', 'rd-001');
+    expect(component.getFieldValue(rowId, 'radar_doppler')).toBe('rd-001');
   });
 
-  it('toggleItem checks an item', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    const item = mockData.items[0];
-    instance.toggleItem(item, true);
-    fixture.detectChanges();
-    expect(instance.isChecked(item.id)).toBe(true);
+  it('setRowSeries and setRowDisparos store the given arrays', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.setRowSeries(rowId, ['s1', 's2']);
+    component.setRowDisparos(rowId, ['d1']);
+    const row = component.activeTagRows()[0];
+    expect(row.series).toEqual(['s1', 's2']);
+    expect(row.disparos).toEqual(['d1']);
   });
 
-  it('toggleItem unchecks an item', async () => {
-    const { fixture } = await setup(mockDataWithSelections);
-    const instance = fixture.componentInstance;
-    const item = mockData.items[0]; // rd-001 is pre-checked
-    instance.toggleItem(item, false);
-    fixture.detectChanges();
-    expect(instance.isChecked(item.id)).toBe(false);
+  it('handleSeriesSelection expands the select-all value to every serie and derives disparos', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.handleSeriesSelection(rowId, [component.selectAllSeriesValue]);
+    const row = component.activeTagRows()[0];
+    expect(row.series).toEqual(['s1', 's2']);
+    expect(row.disparos).toEqual(['d1', 'd2']);
   });
 
-  it('uncheckItem removes item from selection', async () => {
-    const { fixture } = await setup(mockDataWithSelections);
-    const instance = fixture.componentInstance;
-    instance.uncheckItem('rd-001');
-    fixture.detectChanges();
-    expect(instance.isChecked('rd-001')).toBe(false);
+  it('handleSeriesSelection derives disparos from serieDisparoMap for concrete series', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.handleSeriesSelection(rowId, ['s2']);
+    const row = component.activeTagRows()[0];
+    expect(row.series).toEqual(['s2']);
+    expect(row.disparos).toEqual(['d2']);
   });
 
-  it('isAtMax returns true when category reaches maxSelection', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    // max is 2 for radar; check 2 items
-    instance.toggleItem(mockData.items[0], true);
-    instance.toggleItem(mockData.items[1], true);
-    fixture.detectChanges();
-    expect(instance.isAtMax()).toBe(true);
+  it('getItemsByCategory filters items by equipment type', async () => {
+    const { component } = await setup();
+    const items = component.getItemsByCategory(EquipmentTypeEnum.DOPPLER_RADAR);
+    expect(items.map((i) => i.id)).toEqual(['rd-001', 'rd-002']);
   });
 
-  it('cannot select more items than maxSelection', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    instance.toggleItem(mockData.items[0], true);
-    instance.toggleItem(mockData.items[1], true);
-    // Try to add third item — should be blocked
-    instance.toggleItem(mockData.items[2], true);
-    fixture.detectChanges();
-    expect(instance.isChecked(mockData.items[2].id)).toBe(false);
+  it('save() closes with empty equipments when no field is filled', async () => {
+    const { component } = await setup();
+    component.save();
+    expect(closeMock).toHaveBeenCalledWith({ action: 'save', equipments: [] });
   });
 
-  it('updateRowSeries stores multiple series for an item', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    instance.updateRowSeries('rd-001', ['s1', 's2']);
-    fixture.detectChanges();
-    expect(instance.getRowSeries('rd-001')).toEqual(['s1', 's2']);
+  it('save() collects filled rows into equipment groups', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.setFieldValue(rowId, 'radar_doppler', 'rd-001');
+    component.setRowSeries(rowId, ['s1']);
+    component.setRowDisparos(rowId, ['d1']);
+
+    component.save();
+
+    expect(closeMock).toHaveBeenCalledWith({
+      action: 'save',
+      equipments: [
+        {
+          id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
+          selections: [
+            {
+              itemId: 'rd-001',
+              categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+              series: ['s1'],
+              disparos: ['d1'],
+            },
+          ],
+        },
+      ],
+    });
   });
 
-  it('updateRowDisparos stores multiple disparos for an item', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    instance.updateRowDisparos('rd-001', ['d1', 'd2']);
-    fixture.detectChanges();
-    expect(instance.getRowDisparos('rd-001')).toEqual(['d1', 'd2']);
-  });
+  it('hydrates rows and selected tag from initialEquipments', async () => {
+    const { component } = await setup({
+      ...mockData,
+      initialEquipments: [
+        {
+          id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
+          selections: [
+            {
+              itemId: 'rd-002',
+              categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+              series: ['s2'],
+              disparos: ['d2'],
+            },
+          ],
+        },
+      ],
+    });
 
-  it('save() emits selections with series and disparos arrays', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    instance.toggleItem(mockData.items[0], true);
-    instance.updateRowSeries('rd-001', ['s1']);
-    instance.updateRowDisparos('rd-001', ['d1', 'd2']);
-    fixture.detectChanges();
-
-    const saveBtn = document.querySelector('button[mat-flat-button]') as HTMLElement;
-    await user.click(saveBtn);
-
-    const expected: EquipmentItemSelectionEntry = {
-      itemId: 'rd-001',
-      categoryId: 'radar',
-      series: ['s1'],
-      disparos: ['d1', 'd2'],
-    };
-    expect(closeMock).toHaveBeenCalledWith({ action: 'save', selections: [expected] });
-  });
-
-  it('getCategoryTotalCount returns correct count', async () => {
-    const { fixture } = await setup();
-    const instance = fixture.componentInstance;
-    expect(instance.getCategoryTotalCount('radar')).toBe(3);
-    expect(instance.getCategoryTotalCount('camera')).toBe(1);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);
+    const row = component.activeTagRows()[0];
+    expect(row.fieldValues['radar_doppler']).toBe('rd-002');
+    expect(row.series).toEqual(['s2']);
+    expect(row.disparos).toEqual(['d2']);
   });
 });
