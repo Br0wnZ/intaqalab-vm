@@ -1,7 +1,6 @@
 /**
  * main.ts
- * Express + json-server integrado con prefijo /api
- * Compatible con Nx + assets para db.json
+ * Servidor Express con prefijo /api. Compatible con Nx + assets estáticos.
  */
 import cors from 'cors';
 import express from 'express';
@@ -10,8 +9,6 @@ import * as path from 'path';
 import { delayResponse } from './middlewares/delay.middleware';
 import apiRoutes from './routes';
 import { dateStr } from './utils';
-
-const jsonServer = require('json-server');
 
 const DELAY_RESPONSE_MS = 250;
 
@@ -54,22 +51,7 @@ app.use((req: any, _res: any, next: any) => {
 
 app.use('/api', apiRoutes);
 
-const dbPath = path.join(__dirname, 'db', 'db.json');
-console.log(`db.json path: ${dbPath}`);
-
-const router = jsonServer.router(dbPath);
-const middlewares = jsonServer.defaults();
-
-const rewriter = jsonServer.rewriter({
-  '/api/centers/1/*': '/$1',
-  '/api/*': '/$1',
-});
-
-app.use(middlewares);
-app.use(rewriter);
-app.use(router);
-
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Servidor Express + json-server escuchando en http://localhost:${port}`);
+  console.log(`Servidor Express escuchando en http://localhost:${port}`);
 });

@@ -73,7 +73,6 @@ La aplicación está construida como un **monorepo Nx** con **Angular 21** como 
 | ----------------------- | ------------------------------------- |
 | **ESLint**              | Linting (reglas Angular + TypeScript) |
 | **Prettier**            | Formateo de código                    |
-| **SonarQube**           | Análisis estático y cobertura         |
 | **@vitest/coverage-v8** | Cobertura de tests                    |
 
 ---
@@ -1045,7 +1044,6 @@ graph TD
     ATL --> UE["@testing-library/user-event"]
     ATL --> HARNESS["Angular Material Harnesses"]
     VITEST --> COVERAGE["@vitest/coverage-v8"]
-    COVERAGE --> SONAR["SonarQube"]
 
     style VITEST fill:#1a1a2e,color:#e94560
     style ATL fill:#16213e,color:#0f3460
@@ -1116,7 +1114,7 @@ nx run-many --target=test --projects=admin,calendar-trials,planning,...
 # Tests con UI interactiva (Vitest UI)
 nx test planning --ui --watch
 
-# Cobertura completa + merge para SonarQube
+# Cobertura completa + merge (LCOV unificado)
 npm run coverage:full
 ```
 
@@ -1124,7 +1122,6 @@ npm run coverage:full
 
 - Los reportes de cobertura se generan con `@vitest/coverage-v8`.
 - Un script personalizado (`scripts/merge-coverage.js`) fusiona los reportes de todas las librerías en `coverage/merged/lcov.info`.
-- **SonarQube** consume el reporte fusionado para análisis estático y métricas de calidad.
 
 ---
 

@@ -22,7 +22,7 @@ El repositorio incluye targets automatizados con dependencias caché (`nx affect
 
 ## 2. Cobertura (Coverage)
 
-La validación global o previa a una Release requiere generar un informe unificado de todas las sub-librerías Nx para que herramientas como SonarQube puedan leer el LCOV global.
+La validación global o previa a una Release requiere generar un informe unificado de cobertura de todas las sub-librerías Nx en un único LCOV global.
 
 ```bash
 npm run coverage:full

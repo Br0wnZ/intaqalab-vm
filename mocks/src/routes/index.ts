@@ -8,6 +8,7 @@ import { executionRouter } from './execution.routes';
 import { masterDataRouter } from './master-data.routes';
 import { measuresRouter } from './measures.routes';
 import { munitionsRouter } from './munitions.routes';
+import { planningGeneralDataRouter } from './planning-general-data.routes';
 import { trialsRouter } from './trials.routes';
 import { whareHouseRouter } from './warehouse.routes';
 
@@ -23,6 +24,7 @@ router.use('/centers/:centerId', munitionsRouter);
 router.use('/centers/:centerId', armamentRouter);
 router.use('/centers/:centerId', measuresRouter);
 router.use('/', masterDataRouter);
+router.use('/', planningGeneralDataRouter);
 router.use('/centers', eventLogRouter);
 
 export default router;
