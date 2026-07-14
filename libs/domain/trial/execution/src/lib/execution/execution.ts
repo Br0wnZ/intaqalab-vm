@@ -3,7 +3,6 @@ import type { OnDestroy, OnInit } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   ViewEncapsulation,
   computed,
   effect,
@@ -350,8 +349,8 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
 })
 export class Execution implements OnInit, OnDestroy {
   readonly #dialog = inject(MatDialog);
-  readonly #destroyRef = inject(DestroyRef);
   readonly #location = inject(Location);
+  #pollingIntervalId: ReturnType<typeof setInterval> | null = null;
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   //readonly #transitionsService = inject(ExecutionTransitionsService);
@@ -519,6 +518,10 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.#pollingIntervalId !== null) {
+      clearInterval(this.#pollingIntervalId);
+      this.#pollingIntervalId = null;
+    }
     const preferences = this.#store.preferencesByUser();
     const trialId = this.#fireTrialId();
     if (preferences && trialId) {
@@ -557,14 +560,16 @@ export class Execution implements OnInit, OnDestroy {
 
   /** 🔄 Sets up periodic polling for execution state. */
   #startExecutionStatePolling(): void {
-    const intervalId = setInterval(() => {
+    if (this.#pollingIntervalId !== null) {
+      clearInterval(this.#pollingIntervalId);
+    }
+
+    this.#pollingIntervalId = setInterval(() => {
       const trialId = this.#fireTrialId();
       if (trialId) {
         this.#store.loadExecutionState(trialId);
       }
     }, EXECUTION_STATE_POLLING_MS);
-
-    this.#destroyRef.onDestroy(() => clearInterval(intervalId));
   }
 
   toggleWidgetsPanel(): void {

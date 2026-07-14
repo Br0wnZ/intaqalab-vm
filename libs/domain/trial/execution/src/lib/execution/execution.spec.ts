@@ -295,5 +295,16 @@ describe('Execution', () => {
         [WidgetId.SHOT],
       );
     });
+
+    it('clears execution state polling interval on destroy', async () => {
+      const spyClearInterval = vi.spyOn(globalThis, 'clearInterval');
+      const { view } = await setup();
+      view.fixture.detectChanges();
+
+      // Trigger destroy
+      view.fixture.destroy();
+
+      expect(spyClearInterval).toHaveBeenCalled();
+    });
   });
 });
