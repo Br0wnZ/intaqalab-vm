@@ -403,6 +403,22 @@ describe('PlanningGeneralDataFormComponent', () => {
       expect(payload.ratingCriteriaUnits.speedUnit).toBe('M_S');
       expect(payload.ratingCriteriaUnits.pressureUnit).toBe('BAR');
     });
+
+    it('should render rating criteria table when checkbox is checked for a new planning', async () => {
+      const { user } = await setup();
+
+      expect(screen.queryByText('TRIAL_PLANNING.RATING_CRITERIA.TITLE')).not.toBeInTheDocument();
+
+      const checkbox = screen.getByRole('checkbox', {
+        name: /TRIAL_PLANNING\.GENERAL_DATA_SECTION\.SHOW_RATING_CRITERIA/i,
+      });
+      await user.click(checkbox);
+
+      await waitFor(() => {
+        expect(screen.getByText('TRIAL_PLANNING.RATING_CRITERIA.TITLE')).toBeInTheDocument();
+        expect(screen.getByText('TRIAL_PLANNING.RATING_CRITERIA.COLUMNS.PROPERTY')).toBeInTheDocument();
+      });
+    });
   });
 
   // ── Loading existing data ──────────────────────────────────────────────────

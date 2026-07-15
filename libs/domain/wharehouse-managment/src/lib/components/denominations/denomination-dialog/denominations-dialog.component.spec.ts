@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
-import type { DenominationModel, DenominationUpSertModel } from '../../../models/denominations.model';
+import type { DenominationModel } from '../../../models/denominations.model';
 import { DenominationsDialogComponent } from './denominations-dialog.component';
 
 const createMockMunitionStore = () => ({
@@ -108,12 +108,13 @@ describe('DenominationsDialogComponent', () => {
       const saveButton = screen.getByText(/MODIFY_DOC_DIALOG.SAVE/i).closest('button') as HTMLButtonElement;
       await user.click(saveButton);
 
-      const expectedPayload: DenominationUpSertModel = {
+      const expectedPayload: Partial<DenominationModel> = {
         id: editItem.id,
         name: editItem.name,
         active: editItem.active,
         category: editItem.category,
         munitionTypeId: editItem.munitionType.id,
+        neq: editItem.neq,
         weight: editItem.weight,
         compatibility: editItem.compatibility,
         riskGroups: editItem.riskGroups,

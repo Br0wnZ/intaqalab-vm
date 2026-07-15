@@ -4,6 +4,7 @@ Librería de utilidades compartidas del monorepo. Incluye pipes/directivas de fo
 
 ```ts
 import {
+  actionTrigger,
   computedPrevious,
   createCountdown,
   debouncedSignal,
@@ -14,6 +15,7 @@ import {
   injectParams,
   injectQueryParams,
   linkedQueryParam,
+  safeResourceValue,
   signalHistory,
   storageSignal,
   throttledSignal,
@@ -340,6 +342,59 @@ readonly items = httpResource<Item[]>(() =>
 
 ---
 
+### `actionTrigger()`
+
+**Qué hace:** Retorna un `ActionTrigger<T>` que envuelve a un signal configurado con `{ equal: () => false }` para saltarse las verificaciones de igualdad nativas de Angular. Cuenta con funciones para disparar la reactividad (`fire`) y resetear a nulo (`reset`).
+
+**Cuándo usarlo:**
+
+- Para mutaciones (POST, PUT, DELETE) gestionadas con `httpResource` donde pulsar un botón o enviar el mismo formulario repetidamente deba forzar un nuevo envío de red.
+- Cuando necesitas resetear un recurso de vuelta al estado `Idle` y borrar su valor, ya que hacer `.reset()` pone la señal interna a `null`, indicando a `httpResource` que detenga peticiones en vuelo y limpie el estado.
+
+**Cuándo NO:**
+
+- Para cargas de datos estándar de tipo GET que dependen de filtros o identificadores reactivos normales (usa signals regulares o `linkedQueryParam`).
+
+```ts
+// Definición
+readonly #saveTrigger = actionTrigger<SaveDto>();
+
+readonly saveResource = httpResource<SaveResponse>(() => {
+  const payload = this.#saveTrigger.value();
+  if (!payload) return undefined; // undefined resetea el resource a Idle
+  return { url: '/api/items', method: 'POST', body: payload };
+});
+
+save(dto: SaveDto): void {
+  this.#saveTrigger.fire(dto); // Siempre forzará una petición HTTP
+}
+
+clearState(): void {
+  this.#saveTrigger.reset(); // Resource pasa a Idle y value a undefined
+}
+```
+
+---
+
+### `safeResourceValue(resource)`
+
+**Qué hace:** Extrae de manera segura el valor actual de un `ResourceRef` o `HttpResourceRef`. Comprueba la existencia y valor de la función `hasValue()` y captura posibles excepciones internas al leer el signal.
+
+**Cuándo usarlo:**
+
+- Al consumir recursos desde componentes, getters calculados (`computed()`) o efectos (`effect()`). Evita que la inicialización perezosa de Angular lance la excepción `"Signal is not initialized"` si el recurso todavía no ha resuelto.
+
+**Cuándo NO:**
+
+- No lo uses si necesitas obligatoriamente propagar errores del recurso hacia capas superiores de manera síncrona.
+
+```ts
+// Lectura 100% segura contra fallos de ciclo de vida del recurso
+readonly data = computed(() => safeResourceValue(this.service.resource));
+```
+
+---
+
 ## Tabla resumen
 
 | Utilidad               | Devuelve                                    | Caso de uso principal                                            |
@@ -357,6 +412,8 @@ readonly items = httpResource<Item[]>(() =>
 | `injectParams`         | `Signal<Params>` / `Signal<string \| null>` | Id de ruta → `httpResource` (Signal Trigger Pattern)             |
 | `injectQueryParams`    | `Signal<Params>` / `Signal<string \| null>` | Leer query params (solo lectura)                                 |
 | `linkedQueryParam`     | `WritableSignal<T>`                         | Filtros/paginación sincronizados con URL                         |
+| `actionTrigger`        | `ActionTrigger<T>`                          | Forzar mutaciones httpResource o resetear estado a Idle          |
+| `safeResourceValue`    | `T \| undefined`                            | Leer valor resource con seguridad (anti-excepciones de inicio)   |
 
 ## Tests
 

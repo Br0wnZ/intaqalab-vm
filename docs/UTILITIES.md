@@ -9,6 +9,7 @@ Guía de referencia de las utilidades propias de la librería [`libs/shared/util
 
 ```typescript
 import {
+  actionTrigger,
   computedPrevious,
   createCountdown,
   debouncedSignal,
@@ -19,6 +20,7 @@ import {
   injectParams,
   injectQueryParams,
   linkedQueryParam,
+  safeResourceValue,
   signalHistory,
   storageSignal,
   throttledSignal,
@@ -42,6 +44,8 @@ import {
 | Auto-logout por inactividad                     | `injectIdleStatus`     | ng2-idle / timers manuales                       |
 | Cuenta de seguridad / countdown pausable        | `createCountdown`      | `setInterval` acumulando ticks (drift)           |
 | Estado online/offline                           | `injectNetworkStatus`  | `navigator.onLine` sin reactividad               |
+| Leer valor resource con seguridad               | `safeResourceValue`    | `try/catch` manual o lecturas inseguras          |
+| Forzar mutaciones httpResource o resetear       | `actionTrigger`        | `signal()` regular o métodos no estables         |
 
 ## Contrato común
 
@@ -311,6 +315,49 @@ readonly items = httpResource<Item[]>(() => `/api/master-data/items?q=${this.#de
 ```
 
 **Limitación:** cada `set()` emite una navegación. Cambiar varios params atómicamente → `router.navigate` directo con todos.
+
+---
+
+## 14. `actionTrigger()`
+
+**Qué es:** `ActionTrigger<T>` es un wrapper sobre un signal configurado con `{ equal: () => false }` para asegurar que cada vez que se emita un payload, se obligue a re-evaluar la reactividad (incluso si el payload es idéntico al anterior).
+
+**Para qué se usa:** mutaciones en el **Signal Trigger Pattern** (POST/PUT/DELETE) donde un mismo payload enviado múltiples veces debe disparar un nuevo `httpResource`, o cuando se requiere resetear el recurso manualmente de vuelta al estado `Idle`.
+
+```typescript
+// En lugar de signal<Payload | null>(null)
+readonly #createTrigger = actionTrigger<CreateEntityDto>();
+
+readonly createResource = httpResource<EntityResponse>(() => {
+  const body = this.#createTrigger.value();
+  if (!body) return undefined; // Retornar undefined resetea el resource a Idle
+
+  return { url: '/api/entities', method: 'POST', body };
+});
+
+create(dto: CreateEntityDto): void {
+  // Siempre dispara la red, aunque 'dto' sea idéntico al anterior
+  this.#createTrigger.fire(dto);
+}
+
+reset(): void {
+  // Pone el trigger a null, haciendo que el resource retorne a Idle
+  this.#createTrigger.reset();
+}
+```
+
+---
+
+## 15. `safeResourceValue(resource)`
+
+**Qué es:** Función segura para leer el valor de un `ResourceRef` o `HttpResourceRef` sin lanzar excepciones, comprobando la existencia de `hasValue()`.
+
+**Para qué se usa:** Evitar errores de inicialización ("Signal is not initialized") en componentes, computed properties o efectos al intentar leer recursos en estado inicial sin resolver.
+
+```typescript
+// Seguro independientemente de si es local, HTTP, inicializado o no
+readonly fireTrialData = computed(() => safeResourceValue(this.trialsService.byIdResource));
+```
 
 ---
 

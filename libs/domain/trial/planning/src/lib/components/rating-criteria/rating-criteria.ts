@@ -35,6 +35,22 @@ type LocalRatingCriteria = {
   fuse: LocalRatingCriteriaRow;
 };
 
+const createEmptyRow = (): LocalRatingCriteriaRow => ({
+  useful1: { min: null, max: null },
+  useless: { min: null, max: null },
+});
+
+const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
+  v0c: createEmptyRow(),
+  v0cMean: createEmptyRow(),
+  v0cStdDev: createEmptyRow(),
+  p: createEmptyRow(),
+  pMean: createEmptyRow(),
+  projectile: createEmptyRow(),
+  primer: createEmptyRow(),
+  fuse: createEmptyRow(),
+});
+
 @Component({
   selector: 'inta-rating-criteria',
   imports: [TranslateModule, MatFormFieldModule, MatSelectModule, IntaIconComponent, NumericRangeInput],
@@ -194,7 +210,7 @@ export class RatingCriteria {
     effect(() => {
       const data = this.ratingCriteria();
       if (!data) {
-        this.localCriteria.set(undefined);
+        this.localCriteria.set(createEmptyLocalCriteria());
         return;
       }
 

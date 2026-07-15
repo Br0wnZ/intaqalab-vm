@@ -1556,6 +1556,10 @@
       "STATUS": "Estado",
       "OBSERVATIONS": "Observaciones",
       "ACTIONS": "Acciones",
+      "FILTER": {
+        "SEARCH": "Buscar",
+        "CLEAN": "Limpiar búsqueda"
+      },
       "MODAL": {
         "TITLE_CREATE": "Creación de denominación",
         "TITLE_EDIT": "Edición de denominación",

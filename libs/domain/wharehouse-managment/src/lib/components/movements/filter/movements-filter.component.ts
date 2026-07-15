@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -216,6 +225,17 @@ type FilterForm = {
         </div>
       </div>
       <div class="flex justify-end px-6 pb-6">
+        <div>
+          <button
+            mat-stroked-button
+            type="button"
+            class="mr-4"
+            [disabled]="formModel() === defaultFormValues"
+            (click)="clearFilters()"
+          >
+            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.CLEAN_FILTERS_BUTTON' | translate }}
+          </button>
+        </div>
         <button mat-flat-button type="button" role="button" [disabled]="form().invalid()" (click)="search()">
           {{ 'COMMONS.SEARCH' | translate }}
         </button>
@@ -235,9 +255,43 @@ export class MovementsFilterComponent {
 
   constructor() {
     this.munitionDumpsStore.search({});
+
+    effect(() => {
+      const dateTimeFrom = this.form.dateTimeFrom().value();
+
+      if (!dateTimeFrom) return;
+
+      dateTimeFrom.setHours(0, 0);
+
+      untracked(() => {
+        this.formModel.update((current) => {
+          return {
+            ...current,
+            timeFrom: dateTimeFrom,
+          };
+        });
+      });
+    });
+
+    effect(() => {
+      const dateTimeTo = this.form.dateTimeTo().value();
+
+      if (!dateTimeTo) return;
+
+      dateTimeTo.setHours(23, 30);
+
+      untracked(() => {
+        this.formModel.update((current) => {
+          return {
+            ...current,
+            timeTo: dateTimeTo,
+          };
+        });
+      });
+    });
   }
 
-  #defaultFormModel = {
+  defaultFormValues = {
     affectedNeq: 0,
     associatedFireTrialIds: [],
     dateTimeFrom: null,
@@ -252,7 +306,7 @@ export class MovementsFilterComponent {
     userId: '',
   };
 
-  readonly formModel = signal<FilterForm>(this.#defaultFormModel);
+  readonly formModel = signal<FilterForm>(this.defaultFormValues);
 
   form = form(this.formModel, (schemaPath) => {
     required(schemaPath.timeFrom, { when: () => !!this.formModel().dateTimeFrom });
@@ -348,5 +402,11 @@ export class MovementsFilterComponent {
 
     const isoDate = date.toISOString().replace('.000', '');
     return isoDate;
+  }
+
+  clearFilters() {
+    this.#movementsListStore.search({ stockId: this.stockId() });
+
+    this.formModel.set(this.defaultFormValues);
   }
 }

@@ -29,7 +29,7 @@ function createMockExecutionService(
   updatedPreferencesByUser: ExecutionWidgetLayout | null = null,
 ) {
   return {
-    executionStateResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
+    executionStateResource: { value: signal(null), isLoading: signal(false), error: signal<Error | null>(null) },
     executionProgressResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     securityCountdownResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     updateSecurityCountdownResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
@@ -192,6 +192,18 @@ describe('Execution', () => {
 
   it('renders the execution basic details', async () => {
     await setup();
+    expect(screen.getByText('034A/25')).toBeInTheDocument();
+    expect(screen.getByText('Cliente: RHEINMETALL EXPAL MUNITIONS')).toBeInTheDocument();
+  });
+
+  it('keeps the shell mounted when execution state resource is in error', async () => {
+    const executionService = createMockExecutionService();
+    const executionStateError = new Error('execution state failed');
+
+    executionService.executionStateResource.error.set(executionStateError);
+
+    await setup({ executionService });
+
     expect(screen.getByText('034A/25')).toBeInTheDocument();
     expect(screen.getByText('Cliente: RHEINMETALL EXPAL MUNITIONS')).toBeInTheDocument();
   });

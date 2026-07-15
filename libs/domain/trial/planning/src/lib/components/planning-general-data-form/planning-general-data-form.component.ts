@@ -15,6 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
+import { SpecimenType } from '../../utils-models/specimen.model';
 import type {
   RatingCriteria as RatingCriteriaModel,
   RatingCriteriaUnits,
@@ -486,7 +487,7 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.percentageTechnicalUnits, () => this.readonly() || false);
     disabled(f.percentageEndTrial, () => this.readonly() || false);
     disabled(f.daysSignReport, () => this.readonly() || false);
-    disabled(f.specimen, () => this.readonly() || this.store.isLoadingSpecimens());
+    disabled(f.specimen, () => this.readonly() || this.store.isLoadingTypedSpecimens());
     disabled(f.planningUser, () => this.readonly() || this.store.isLoadingUsers());
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
@@ -507,7 +508,7 @@ export class PlanningGeneralDataFormComponent {
     const selectedIds = selectedSpecimens.map((item) => item.specimenId);
     if (!selectedIds.length) return '';
 
-    const specimens = this.store.specimens() ?? [];
+    const specimens = this.store.typedSpecimens() ?? [];
     const cachedSpecimens = this.#cachedSpecimens();
     const specimenList = specimens.length ? specimens : cachedSpecimens;
     if (!specimenList.length) return '';
@@ -527,11 +528,13 @@ export class PlanningGeneralDataFormComponent {
   });
 
   constructor() {
-    this.store.loadSpecimens();
+    //this.store.loadSpecimensByType(SpecimenType.Weapon);
+    //this.store.loadSpecimensByType(SpecimenType.Tube);
+    this.store.loadSpecimensByType(SpecimenType.Munition);
     this.store.loadUsers();
 
     effect(() => {
-      const specimens = this.store.specimens() ?? [];
+      const specimens = this.store.typedSpecimens() ?? [];
       if (specimens.length) {
         this.#cachedSpecimens.set(specimens);
       }
@@ -598,7 +601,7 @@ export class PlanningGeneralDataFormComponent {
   }
 
   openSpecimenManagement(): void {
-    const specimensSource = this.store.specimens() ?? [];
+    const specimensSource = this.store.typedSpecimens() ?? [];
     const specimens = specimensSource.length ? specimensSource : this.#cachedSpecimens();
     const planningInfo = this.store.planningInfo();
     const fireTrialId = this.store.fireTrialId();

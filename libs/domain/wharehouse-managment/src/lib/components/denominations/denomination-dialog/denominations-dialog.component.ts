@@ -106,7 +106,7 @@ interface DenominationForm {
               [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_PLACEHOLDER' | translate"
             />
           </mat-form-field>
-          @if (form.weight().errors()) {
+          @if (form.weight().touched() && form.weight().errors()) {
             @for (error of form.weight().errors(); track error.kind) {
               <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
             }
@@ -254,6 +254,7 @@ export class DenominationsDialogComponent {
     const value: Partial<DenominationModel> = {
       name: formValue.name,
       active: this.dialogData.item === null ? true : this.dialogData.item.active,
+      neq: formValue.neq,
       category: formValue.category as DenominationsCategoryType,
       id: this.dialogData.item?.id || '',
       munitionTypeId: formValue.munitionTypeId,

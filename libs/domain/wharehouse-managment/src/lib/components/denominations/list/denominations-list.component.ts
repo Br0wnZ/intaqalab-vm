@@ -23,8 +23,8 @@ import type {
   DenominationModel,
   DenominationUpSertModel,
 } from '../../../models/denominations.model';
-import { WharehouseFilterComponent } from '../../shared/filter/wharehouse-filter.component';
 import { DenominationsDialogComponent } from '../denomination-dialog/denominations-dialog.component';
+import { DenominationsFilter } from './filter/denominations-filter.component';
 
 const DEFAULT_COLUMNS = [
   'name',
@@ -54,17 +54,14 @@ const DEFAULT_COLUMNS = [
     MatSelectModule,
     MatSlideToggleModule,
     BooleanStatusBadge,
-    WharehouseFilterComponent,
+    DenominationsFilter,
     IntaIconComponent,
   ],
   template: `
     <h2 class="text-base font-semibold text-gray-900 my-6">
       {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.TITLE' | translate }}
     </h2>
-    <inta-wharehouse-filter
-      [placeholdeTranslation]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.COLUMNS.DENOMINATION'"
-      (searchItems)="searchedName.set($event)"
-    />
+    <inta-denominations-filter />
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-auto mt-4">
       <div class="flex justify-between items-center p-4">
@@ -224,8 +221,6 @@ export class DenominationsListComponent {
   sortField = signal<string | undefined>(undefined);
   sortDirection = signal<'asc' | 'desc' | ''>('');
 
-  searchedName = signal<{ name: string } | undefined>(undefined);
-
   constructor() {
     effect(() => {
       const page = this.pageIndex() + 1;
@@ -233,9 +228,7 @@ export class DenominationsListComponent {
       const sortField = this.sortField();
       const sortDirection = this.sortDirection();
 
-      const name = this.searchedName()?.name;
-
-      this.store.search({ name, page, pageSize, sortDirection, sortField });
+      this.store.search({ page, pageSize, sortDirection, sortField });
     });
   }
 

@@ -103,12 +103,12 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 
 ## Patrones Avanzados de Signals 🔬
 
-- **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`.
+- **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`, `actionTrigger`, `safeResourceValue`.
 - **Estado derivado writable:** Usa `linkedSignal()` en lugar de signal+effect. Ejemplo: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
 - **RxJS (Uso Restringido):**
   - ✅ Permitido interop: `toSignal(observable$)`, `firstValueFrom(observable$)`.
   - ❌ **PROHIBIDO:** `.subscribe()` en componentes sin `takeUntilDestroyed()`.
-- **Formularios Signal Forms:** Usa la API `form()`. **ELIMINA** `ReactiveFormsModule` y `FormBuilder`.
+- **Formularios Signal Forms:** Usa la API `form()`. **ELIMINA** `ReactiveFormsModule` y `FormBuilder`. La fuente de verdad siempre es el modelo (signal). Para acceder a los valores del formulario o resetearlo, se hará siempre a través de dicho modelo (ej. `this.model()` para leer, `this.model.set(initial)` para resetear), no a través de `form().value()` o `form().reset()`.
 - **Effects Seguros:** Lee **todas** las señales antes del primer `await`. Usa `untracked()` para leer sin crear dependencia reactiva. Para manipular DOM usa `afterRenderEffect()`.
 - **httpResource:** Usa `resource.hasValue()` como type guard.
 - **SignalStore:** Servicios exponen read-only: `readonly mySignal = this.#_signal.asReadonly()`. Usa `withProps()` para inyección a nivel de store. Usa `withEntities()` para colecciones.

@@ -1,7 +1,7 @@
 ﻿import { CommonModule } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component, input, output, signal } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -58,11 +58,10 @@ function createMockDialog(defaultResult: unknown = null) {
 }
 
 @Component({
-  selector: 'inta-wharehouse-filter',
+  selector: 'inta-denominations-filter',
   template: '',
 })
-class MockWharehouseFilterComponent {
-  readonly placeholdeTranslation = input<string>('');
+class MockDenominationsFilter {
   readonly searchItems = output<{ name: string }>();
 }
 
@@ -79,11 +78,10 @@ describe('DenominationsListComponent', () => {
 
     TestBed.overrideComponent(DenominationsListComponent, {
       set: {
-        imports: [CommonModule, FormsModule, MatSlideToggleModule, TranslateModule, MockWharehouseFilterComponent],
+        imports: [CommonModule, FormsModule, MatSlideToggleModule, TranslateModule, MockDenominationsFilter],
         template: `
           <h2>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.TITLE' | translate }}</h2>
-          <inta-wharehouse-filter
-            [placeholdeTranslation]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.COLUMNS.DENOMINATION'"
+          <inta-denominations-filter
             (searchItems)="searchedName.set($event)"
           />
           <button mat-flat-button type="button" (click)="create()">

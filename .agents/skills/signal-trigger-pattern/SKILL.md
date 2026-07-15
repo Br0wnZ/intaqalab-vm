@@ -28,6 +28,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/core';
 import { AppConfigService } from '@intaqalab/config';
 import { EntityListResponse, EntityParams } from '@intaqalab/models/<domain>';
+import { actionTrigger } from '@intaqalab/utils';
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
@@ -53,11 +54,12 @@ export class EntityService {
     this.#trigger.set(params);
   }
 
-  // Para operaciones POST/PUT/DELETE usar httpResource con method específico
-  readonly #createTrigger = signal<CreateEntityDto | null>(null);
+  // Para operaciones POST/PUT/DELETE usar actionTrigger en lugar de signal
+  // para evitar caché si se repite el mismo payload y facilitar el reset a Idle
+  readonly #createTrigger = actionTrigger<CreateEntityDto>();
 
   readonly createResource = httpResource<EntityResponse>(() => {
-    const body = this.#createTrigger();
+    const body = this.#createTrigger.value();
     if (!body) return undefined;
     return {
       url: `${this.#config.apiUrl}/entities`,
@@ -67,7 +69,11 @@ export class EntityService {
   });
 
   create(dto: CreateEntityDto): void {
-    this.#createTrigger.set(dto);
+    this.#createTrigger.fire(dto);
+  }
+
+  resetCreate(): void {
+    this.#createTrigger.reset();
   }
 }
 ```

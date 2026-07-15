@@ -8,8 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { TrialStatus } from '@intaqalab/models';
 import type { CalendarTrialApiResponse } from '@intaqalab/models';
+import { TrialStatus } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
@@ -367,7 +367,7 @@ export class CalendarSharedTemplatesComponent {
       case TrialStatus.UNDER_REVIEW:
       case TrialStatus.PLANNED:
       case TrialStatus.PREPARED:
-        return '#67ccd8';
+        return '#4a86d4';
       case TrialStatus.IN_PROGRESS:
       case TrialStatus.INTERRUPTED:
       case TrialStatus.STARTED:
@@ -375,7 +375,7 @@ export class CalendarSharedTemplatesComponent {
       case TrialStatus.EXECUTED:
       case TrialStatus.ANALYZING:
       case TrialStatus.FINALIZING:
-        return '#7ed9a1';
+        return '#3cb87a';
       case TrialStatus.CLOSED:
       case TrialStatus.CANCELLED:
       case TrialStatus.VOIDED:

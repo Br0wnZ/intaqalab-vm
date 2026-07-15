@@ -2,6 +2,7 @@ import { computed, effect, inject } from '@angular/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { FireTrial, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
+import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type { WidgetId } from '../../execution/models';
@@ -40,31 +41,30 @@ function mapFireTrialToForm(trial: FireTrial): TrialCreateModifyForm {
     observations: trial.observations ?? '',
   };
 }
-
 export function withGeneralData() {
   return signalStoreFeature(
     withState(initialState),
     withComputed((store, executionService = inject(ExecutionService), trialsService = inject(TrialsDataService)) => ({
       // Fire Trial raw (para display: trialNumber, client.name, etc.)
-      fireTrialData: computed(() => trialsService.byIdResource.value()),
+      fireTrialData: computed(() => safeResourceValue(trialsService.byIdResource)),
 
       isLoadingFireTrial: computed(() => trialsService.byIdResource.isLoading()),
       // Execution State
-      executionState: computed(() => executionService.executionStateResource.value()),
+      executionState: computed(() => safeResourceValue(executionService.executionStateResource)),
 
       isLoadingExecutionState: computed(() => executionService.executionStateResource.isLoading()),
 
       executionStateError: computed(() => executionService.executionStateResource.error()),
 
       // Execution Progress
-      executionProgress: computed(() => executionService.executionProgressResource.value()),
+      executionProgress: computed(() => safeResourceValue(executionService.executionProgressResource)),
 
       isLoadingExecutionProgress: computed(() => executionService.executionProgressResource.isLoading()),
 
       executionProgressError: computed(() => executionService.executionProgressResource.error()),
 
       // Security Countdown State
-      securityCountdown: computed(() => executionService.securityCountdownResource.value()),
+      securityCountdown: computed(() => safeResourceValue(executionService.securityCountdownResource)),
 
       isLoadingSecurityCountdown: computed(() => executionService.securityCountdownResource.isLoading()),
 
@@ -85,7 +85,7 @@ export function withGeneralData() {
 
       isFinishing: computed(() => executionService.finishResource.isLoading()),
 
-      finishResponse: computed(() => executionService.finishResource.value()),
+      finishResponse: computed(() => safeResourceValue(executionService.finishResource)),
 
       /**
        * Indica si la prueba está en un estado de solo lectura
@@ -115,7 +115,7 @@ export function withGeneralData() {
       finishingExecutionStatus: computed(() => executionService.finishResource.status()),
 
       // Execution Planning
-      planning: computed(() => executionService.planningResource.value()),
+      planning: computed(() => safeResourceValue(executionService.planningResource)),
 
       isLoadingPlanning: computed(() => executionService.planningResource.isLoading()),
 
@@ -123,20 +123,20 @@ export function withGeneralData() {
 
       isUpdatingPlanning: computed(() => executionService.updatePlanningResource.isLoading()),
 
-      planningState: computed(() => executionService.planningStateResource.value()),
+      planningState: computed(() => safeResourceValue(executionService.planningStateResource)),
 
       isLoadingPlanningState: computed(() => executionService.planningStateResource.isLoading()),
 
       isApprovingPlanning: computed(() => executionService.approvePlanningResource.isLoading()),
 
       // Widget Preferences
-      preferencesByRole: computed(() => executionService.preferencesByRoleResource.value()),
+      preferencesByRole: computed(() => safeResourceValue(executionService.preferencesByRoleResource)),
 
       isLoadingPreferencesByRole: computed(() => executionService.preferencesByRoleResource.isLoading()),
 
       isUpdatingPreferencesByRole: computed(() => executionService.updatePreferencesByRoleResource.isLoading()),
 
-      preferencesByUser: computed(() => executionService.preferencesByUserResource.value()),
+      preferencesByUser: computed(() => safeResourceValue(executionService.preferencesByUserResource)),
 
       isLoadingPreferencesByUser: computed(() => executionService.preferencesByUserResource.isLoading()),
 
@@ -256,7 +256,7 @@ export function withGeneralData() {
 
         // Sincroniza FireTrial del resource → estado del store para isTrialReadOnly y planning compat
         effect(() => {
-          const trial = trialsService.byIdResource.value();
+          const trial = safeResourceValue(trialsService.byIdResource);
           if (trial) {
             patchState(store, { fireTrial: mapFireTrialToForm(trial) });
           }
