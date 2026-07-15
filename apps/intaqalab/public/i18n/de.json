@@ -807,5 +807,46 @@
     "ADMIN_DOCS_SECTION": {
       "SYNC": "Wird geladen..."
     }
+  },
+  "WHAREHOUSE_MANAGMENT": {
+    "STOCK_LIST": {
+      "TITLE": "Munitionsbestand",
+      "TRANSFER": "Transfer in ein anderes Pulvermagazin",
+      "STATUS": "Status",
+      "STATUS_AVAILABLE": "Verfügbar",
+      "STATUS_RETIRE": "Zurückgezogen",
+      "TRIAL_PREVIEW": "Geplanter Versuch",
+      "ENTERING_DATE": "Eingangsdatum",
+      "EXIT_DATE": "Ausgangsdatum",
+      "FROM": "Von",
+      "TO": "Bis",
+      "DATE_HINT": "TT/MM/JJJJ - TT/MM/JJJJ",
+      "DATE_ERROR": "Ein Enddatum ist erforderlich",
+      "RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR": "Das Startdatum des Ausgangs muss größer oder gleich dem Eingangsdatum sein",
+      "RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR": "Das Enddatum des Ausgangs muss größer oder gleich dem Eingangsdatum sein",
+      "QUANTITY_MIN": "Mindestmenge",
+      "QUANTITY_MAX": "Höchstmenge",
+      "NEQ_DATA": {
+        "NEQ_BUTTON": "NEQ",
+        "NEQ": "NEQ Pulvermagazin",
+        "NEQ_MAX": "Max. NEQ Pulvermagazin:",
+        "OCCUPANCY_PERCENTAGE": "Auslastung (%):",
+        "CELL_MAX_NEQ": "Max. NEQ Zelle (1.1, 1.2):",
+        "NEQ_BUTTON_TOOLTIP": "Die Werte werden als gespeicherte NEQ / maximale anwendbare NEQ angezeigt.\n\nPulvermagazin:\nDie im Pulvermagazin gespeicherte Gesamt-NEQ wird im Verhältnis zur maximal zulässigen NEQ für das gesamte Pulvermagazin angezeigt.\n\nZellen:\nDie in jeder Zelle gespeicherte NEQ wird im Verhältnis zum für diese Zelle geltenden Grenzwert angezeigt.\n\nDer Zellgrenzwert wird nach der höchsten Risikogruppe berechnet:\n- Wenn die höchste Risikogruppe 1.1 oder 1.2 ist, gilt der für Zellen dieser Gruppen definierte Höchstgrenzwert.\n- Wenn die höchste Risikogruppe 1.3 oder höher ist, gilt der globale Höchstgrenzwert des Pulvermagazins."
+      },
+      "TOGGLE_ACTIVE_FILTER": "Nur verfügbare Munition anzeigen",
+      "COL_TYPE": "Typ",
+      "COL_CLIENT": "Kunde",
+      "COL_DENOMINATION": "Bezeichnung",
+      "COL_BATCH": "Los",
+      "COL_MUNITION_DUMP": "Pulvermagazin",
+      "COL_CELL": "Zelle",
+      "COL_STATUS": "Status",
+      "COL_TRIAL": "Geplanter Versuch",
+      "COL_QUANTITY": "Menge",
+      "COL_NEQ_TOTAL": "NEQ gesamt",
+      "COL_CELL_NAME": "Zelle",
+      "CLEAN_FILTERS_BUTTON": "Filter leeren"
+    }
   }
 }

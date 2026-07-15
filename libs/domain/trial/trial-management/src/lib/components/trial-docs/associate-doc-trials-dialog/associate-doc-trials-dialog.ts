@@ -127,7 +127,7 @@ export class AssociateDocTrialsDialog {
   readonly #associateDocResource = this.#docsService.associateDocResource;
   readonly #dialogRef = inject(MatDialogRef<AssociateDocTrialsDialog>);
   readonly #fireTrialsEndpoint = injectFireTrialsEndpoint();
-  public data = inject<{ documentId: string; trialId: string }>(MAT_DIALOG_DATA);
+  public data = inject<{ documentId: string; trialIds: string[] }>(MAT_DIALOG_DATA);
 
   readonly searchTerm = signal('');
   readonly selectedTrials = signal<FireTrial[]>([]);
@@ -142,16 +142,13 @@ export class AssociateDocTrialsDialog {
 
   readonly searchedTrials = computed(() => this.fireTrialsResource.value()?.items ?? []);
 
-  readonly previousAssociatedTrials = computed(
-    () => this.#docsService.documentAssociatedTrialsResource.value()?.fireTrialIds ?? [],
-  );
-
   constructor() {
     this.#docsService.resetAssociateDoc();
     this.#docsService.getDocumentAssociatedTrials(this.data.documentId);
     effect(() => {
       const status = this.#associateDocResource.status();
       if (status === 'resolved') {
+        this.#docsService.documentAssociatedTrialsResource.reload();
         this.#dialogRef.close(true);
       }
     });
@@ -178,7 +175,7 @@ export class AssociateDocTrialsDialog {
   onAssociate(): void {
     this.#docsService.associateDocToTrial({
       documentId: this.data.documentId,
-      fireTrialIds: [...this.selectedTrials().map((trial) => trial.id), this.data.trialId],
+      fireTrialIds: [...this.selectedTrials().map((trial) => trial.id), ...this.data.trialIds],
     });
   }
 }

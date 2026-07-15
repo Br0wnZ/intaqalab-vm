@@ -3,7 +3,7 @@ import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 export interface MunitionStockListSearch extends PaginatedSortedViewRequest {
   clientIds?: string[];
   denominationIds?: string[];
-  batches?: string[];
+  batches?: string;
   plannedFireTrialIds?: string[];
   munitionTypeIds?: string[];
   munitionDumpIds?: string[];

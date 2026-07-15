@@ -20,7 +20,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
+import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { TrialDocsService } from '../../../services/trial-docs-service';
 import { AssociateDocTrialsDialog } from '../associate-doc-trials-dialog/associate-doc-trials-dialog';
@@ -44,6 +46,7 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
     MatTabsModule,
     FormField,
     TrialDocVersions,
+    IntaDatePipe,
   ],
   template: `
     <div class="w-full">
@@ -192,7 +195,7 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
               </h4>
 
               <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value()?.fireTrialIds || []">
+                <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value() || []">
                   <!-- Columna Número de prueba -->
                   <ng-container matColumnDef="trialNumber">
                     <th
@@ -208,7 +211,7 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                   </ng-container>
 
                   <!-- Columna Usuario vinculación -->
-                  <ng-container matColumnDef="linkedUser">
+                  <ng-container matColumnDef="createdByUsername">
                     <th
                       *matHeaderCellDef
                       mat-header-cell
@@ -217,12 +220,12 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                       {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
                     </th>
                     <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                      {{ trial.linkedUser }}
+                      {{ trial.createdByUsername }}
                     </td>
                   </ng-container>
 
                   <!-- Columna Fecha vinculación -->
-                  <ng-container matColumnDef="linkDate">
+                  <ng-container matColumnDef="createdAt">
                     <th
                       *matHeaderCellDef
                       mat-header-cell
@@ -231,7 +234,7 @@ import { TrialDocsFilePicker } from '../trial-docs-file-picker/trial-docs-file-p
                       {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
                     </th>
                     <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
-                      {{ trial.linkDate }}
+                      {{ trial.createdAt | intaDate: 'dd-MM-yyyy HH:mm:ss' }}
                     </td>
                   </ng-container>
 
@@ -351,7 +354,7 @@ export class TrialDocDetails {
   protected readonly deleteAssociatedDocumentResource = this.#docsService.deleteAssociatedDocumentResource;
   protected readonly downloadDocumentResource = this.#docsService.downloadDocumentResource;
   protected readonly uploadNewDocumentVersionResource = this.#docsService.uploadNewDocumentVersionResource;
-  displayedColumns = ['trialNumber', 'linkedUser', 'linkDate'];
+  displayedColumns = ['trialNumber', 'createdByUsername', 'createdAt'];
 
   selectedTabIndex = signal(0);
   opened = signal(false);
@@ -461,61 +464,61 @@ export class TrialDocDetails {
     this.selectedTabIndex.set(index);
   }
 
-  openFilePickerDialog() {
+  async openFilePickerDialog() {
+    const documentId = this.documentId();
+
     const dialogRef = this.#matDialog.open(TrialDocsFilePicker, {
       width: '1024px',
       data: {
-        documentId: this.documentDetailResource.value()?.id,
+        documentId,
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result?.action === 'add') {
-        const docId = this.documentId();
-        if (docId) {
-          this.#docsService.getDocumentDetail(docId);
-          this.#docsService.getDocumentVersions(docId);
-        }
-      }
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action !== 'add' || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
+    this.#docsService.getDocumentVersions(documentId);
   }
 
-  openAssociatedTrialsDialog() {
+  async openAssociatedTrialsDialog() {
+    const documentId = this.documentId();
+    const fireTrialIds = this.linkedTrialsResource.value()?.map((item) => item.id);
+
     const dialogRef = this.#matDialog.open(AssociateDocTrialsDialog, {
       width: '1024px',
       data: {
-        documentId: this.documentDetailResource.value()?.id,
-        trialId: this.#docsService.fireTrialId(),
+        documentId,
+        trialIds: fireTrialIds,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const documentId = this.documentDetailResource.value()?.id;
-        if (documentId) {
-          this.#docsService.getDocumentDetail(documentId);
-        }
-      }
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
   }
 
-  editDocument() {
+  async editDocument() {
+    const documentId = this.documentId();
+
     const dialogRef = this.#matDialog.open(ModifyDocDialog, {
       width: '600px',
       data: {
         document: this.documentDetailResource.value(),
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const documentId = this.documentDetailResource.value()?.id;
-        if (documentId) {
-          this.#docsService.getDocumentDetail(documentId);
-        }
-      }
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
   }
 
-  deleteDocument(): void {
+  async deleteDocument() {
     const document = this.documentDetailResource.value();
     if (!document) return;
     const dialogRef = this.#matDialog.open(ConfirmDeleteDialogComponent, {
@@ -532,11 +535,11 @@ export class TrialDocDetails {
       },
     });
 
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        this.#docsService.deleteAssociatedDocument(document.id);
-      }
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result) return;
+
+    this.#docsService.deleteAssociatedDocument(document.id);
   }
 
   downloadDocument(): void {

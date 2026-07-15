@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -55,6 +56,7 @@ const DEFAULT_COLUMNS = [
     BooleanStatusBadge,
     MatMenuModule,
     NeqDataComponent,
+    MatSlideToggleModule,
   ],
   template: `
     <div class="flex justify-between items-center">
@@ -92,6 +94,16 @@ const DEFAULT_COLUMNS = [
     <inta-stock-list-filter (filtersData)="setFiltersData($event)" />
 
     <div class="w-full flex justify-end mb-4 mt-6">
+      <div class="flex items-center gap-2 mr-4">
+        <mat-slide-toggle
+          color="primary"
+          [checked]="showOnlyActive()"
+          (change)="showOnlyActive.set($event.checked)"
+        ></mat-slide-toggle>
+        <span class="text-sm text-gray-700">
+          {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TOGGLE_ACTIVE_FILTER' | translate }}
+        </span>
+      </div>
       <button
         mat-flat-button
         data-testid="transfer-btn"
@@ -306,6 +318,7 @@ export class StockListComponent {
   readonly displayedColumns = computed(() => [...DEFAULT_COLUMNS]);
   selection = new SelectionModel<MunitionStockListResponse>(true, []);
   showTooltip = false;
+  readonly showOnlyActive = signal<boolean>(true);
 
   pageIndex = signal(0);
   pageSize = signal(10);
@@ -321,9 +334,10 @@ export class StockListComponent {
       const pageSize = this.pageSize();
       const sortDirection = this.sortDirection();
       const sortField = sortDirection ? this.sortField() : undefined;
+      const status = this.showOnlyActive() ? 'AVAILABLE' : 'RETIRED';
       const filters = this.filtersData();
 
-      this.stockListStore.search({ ...filters, page, pageSize, sortDirection, sortField });
+      this.stockListStore.search({ ...filters, status, page, pageSize, sortDirection, sortField });
     });
 
     effect(() => {

@@ -131,12 +131,11 @@ describe('StockListFilterComponent', () => {
 
       component.formModel.set({
         clientIds: ['c-1'],
-        plannedFireTrialIds: 'trial-id-foo',
+        plannedFireTrialIds: '',
         plannedFireTrialView: '0001/25', // must be excluded from the call
         munitionTypeIds: ['m-type-1'],
-        batch: 'LOT-A',
+        batches: 'LOT-A',
         munitionDumpIds: ['dump-1'],
-        status: 'AVAILABLE',
         entryDateFrom: null,
         entryDateTo: null,
         retirementDateFrom: null,
@@ -149,12 +148,10 @@ describe('StockListFilterComponent', () => {
       fixture.detectChanges();
 
       const expectedCriteria: MunitionStockListSearch = {
-        batch: 'LOT-A',
+        batches: 'LOT-A',
         clientIds: ['c-1'],
-        plannedFireTrialIds: 'trial-id-foo',
         munitionTypeIds: ['m-type-1'],
         munitionDumpIds: ['dump-1'],
-        status: 'AVAILABLE',
         quantityMax: 100,
         quantityMin: 10,
       };
@@ -169,10 +166,9 @@ describe('StockListFilterComponent', () => {
         plannedFireTrialIds: '', // empty string â†’ omitted
         plannedFireTrialView: '',
         munitionTypeIds: [],
-        batch: 'LOT-B',
+        batches: 'LOT-B',
         munitionDumpIds: [],
-        status: '',
-        entryDateFrom: null, // null â†’ omitted
+        entryDateFrom: null, // null â†' omitted
         entryDateTo: null,
         retirementDateFrom: null,
         retirementDateTo: null,
@@ -183,7 +179,7 @@ describe('StockListFilterComponent', () => {
       component.search();
       fixture.detectChanges();
 
-      expect(stockListStore.search).toHaveBeenCalledWith({ batch: 'LOT-B' });
+      expect(stockListStore.search).toHaveBeenCalledWith({ batches: 'LOT-B' });
     });
 
     it('should format Date fields to yyyy-MM-dd strings', async () => {
@@ -194,9 +190,8 @@ describe('StockListFilterComponent', () => {
         plannedFireTrialIds: '',
         plannedFireTrialView: '',
         munitionTypeIds: [],
-        batch: '',
+        batches: '',
         munitionDumpIds: [],
-        status: '',
         entryDateFrom: new Date(2025, 0, 15), // 15 Jan 2025
         entryDateTo: new Date(2025, 11, 31), // 31 Dec 2025
         retirementDateFrom: null,

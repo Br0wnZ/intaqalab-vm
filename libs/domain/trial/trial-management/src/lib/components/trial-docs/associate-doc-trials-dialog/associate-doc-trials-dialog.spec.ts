@@ -23,7 +23,7 @@ describe('AssociateDocTrialsDialog', () => {
 
   const mockData = {
     documentId: 'doc-123',
-    trialId: 'TRIAL-004',
+    trialIds: ['TRIAL-004'],
   };
 
   const mockFireTrialIds = ['TRIAL-001', 'TRIAL-002', 'TRIAL-003'];
@@ -39,6 +39,7 @@ describe('AssociateDocTrialsDialog', () => {
     docsServiceMock = {
       documentAssociatedTrialsResource: {
         value: signal({ fireTrialIds: mockFireTrialIds }),
+        reload: vi.fn(),
       },
       associateDocResource: {
         status: signal('idle'),
@@ -72,11 +73,6 @@ describe('AssociateDocTrialsDialog', () => {
 
   it('should render correct title', () => {
     expect(screen.getByText('TRIAL_DOCS.ASSOCIATE_DOC_TO_TRIAL_DIALOG.TITLE')).toBeInTheDocument();
-  });
-
-  it('should have initial previousAssociatedTrials', () => {
-    expect(component.previousAssociatedTrials().length).toBe(3);
-    expect(component.previousAssociatedTrials()[0]).toBe('TRIAL-001');
   });
 
   it('should update selectedTrials signal', () => {
@@ -119,7 +115,7 @@ describe('AssociateDocTrialsDialog', () => {
 
     expect(docsServiceMock.associateDocToTrial).toHaveBeenCalledWith({
       documentId: mockData.documentId,
-      fireTrialIds: ['TRIAL-001', 'TRIAL-002', mockData.trialId],
+      fireTrialIds: ['TRIAL-001', 'TRIAL-002', ...mockData.trialIds],
     });
   });
 

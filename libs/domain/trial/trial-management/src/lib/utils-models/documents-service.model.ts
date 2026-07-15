@@ -124,9 +124,14 @@ export type DocumentObservations = {
   createdAt: string;
 }[];
 
-export type DocumentFireTrialSync = {
-  fireTrialIds: string[];
+export type FireTrialLink = {
+  id?: string;
+  trialNumber: string;
+  createdByUsername: string;
+  createdAt: string;
 };
+
+export type DocumentFireTrialSync = FireTrialLink[];
 
 export type AssociateDocToExistingTrialRequest = {
   documentId: string;

@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import type {
   CalendarTrialSchedule,
-  CalendarTrialScheduleApiResponse,
   HasIdAndTrialNumber,
   LinesOfShotViewState,
   TrialSchedulerModalShellInput,

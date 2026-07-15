@@ -1788,6 +1788,7 @@
         "CELL_MAX_NEQ": "NEQ máx. celda (1.1, 1.2):",
         "NEQ_BUTTON_TOOLTIP": "Los valores se muestran como NEQ almacenado / NEQ máximo aplicable.\n\nPolvorín:\nSe muestra el NEQ total almacenado en el polvorín sobre el NEQ máximo permitido para el polvorín completo.\n\nCeldas:\nSe muestra el NEQ almacenado en cada celda sobre el límite que aplica a esa celda.\n\nEl límite de la celda se calcula según su grupo de riesgo mayor:\n- Si el grupo de riesgo mayor es 1.1 o 1.2, se aplica el límite máximo definido para celdas de esos grupos.\n- Si el grupo de riesgo mayor es 1.3 o superior, se aplica el límite máximo global del polvorín."
       },
+      "TOGGLE_ACTIVE_FILTER": "Mostrar sólo munición disponible",
       "COL_TYPE": "Tipo",
       "COL_CLIENT": "Cliente",
       "COL_DENOMINATION": "Denominación",

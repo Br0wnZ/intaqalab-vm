@@ -1,9 +1,7 @@
 import { HttpClient, HttpContext, type HttpStatusCode, httpResource } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { SKIP_CENTER_INTERCEPTOR, injectDocumentsEndpoint } from '@intaqalab/config';
-import { TOAST_FEEDBACK } from '@intaqalab/config';
+import { SKIP_CENTER_INTERCEPTOR, TOAST_FEEDBACK, injectDocumentsEndpoint } from '@intaqalab/config';
 
 import type {
   AssociateDocToExistingTrialRequest,

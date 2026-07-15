@@ -161,7 +161,7 @@ describe('StockListComponent', () => {
       await setup();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_TYPE')).toBeInTheDocument();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION')).toBeInTheDocument();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH')).toBeInTheDocument();
+      expect(screen.getAllByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH').length).toBeGreaterThan(0);
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_STATUS')).toBeInTheDocument();
     });
 
@@ -183,6 +183,7 @@ describe('StockListComponent', () => {
         pageSize: 10,
         sortDirection: '',
         sortField: undefined,
+        status: 'AVAILABLE',
       });
     });
 
@@ -272,6 +273,7 @@ describe('StockListComponent', () => {
         pageSize: 10,
         sortDirection: '',
         sortField: undefined,
+        status: 'AVAILABLE',
       });
     });
   });
@@ -295,6 +297,7 @@ describe('StockListComponent', () => {
         pageSize: 10,
         sortDirection: 'asc',
         sortField: 'quantity',
+        status: 'AVAILABLE',
       });
     });
 
@@ -312,6 +315,7 @@ describe('StockListComponent', () => {
         pageSize: 10,
         sortDirection: '',
         sortField: undefined,
+        status: 'AVAILABLE',
       });
     });
   });

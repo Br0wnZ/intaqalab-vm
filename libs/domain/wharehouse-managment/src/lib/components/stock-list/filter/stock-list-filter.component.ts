@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
 import { FormField, form, min, pattern, validate, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,7 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { format } from 'date-fns';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -27,15 +27,14 @@ type FilterForm = {
   plannedFireTrialIds: string;
   plannedFireTrialView: string;
   munitionTypeIds: string[];
-  batch: string;
   munitionDumpIds: string[];
-  status: string;
   entryDateFrom: Date | null;
   entryDateTo: Date | null;
   retirementDateFrom: Date | null;
   retirementDateTo: Date | null;
   quantityMin: number | null;
   quantityMax: number | null;
+  batches: string;
 };
 
 @Component({
@@ -97,17 +96,6 @@ type FilterForm = {
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.MUNITIONS_DUMP' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.MUNITIONS_DUMP' | translate"
           [options]="munitionDumpsStore.items()"
-        />
-
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'status'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form.status"
-          [label]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.STATUS' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.STATUS' | translate"
-          [options]="statusOptions"
         />
 
         <div>
@@ -221,6 +209,15 @@ type FilterForm = {
             }
           }
         </div>
+
+        <div>
+          <label for="batches" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input id="batches" matInput [formField]="form.batches" />
+          </mat-form-field>
+        </div>
       </div>
 
       <div class="w-full flex justify-end mb-4 pr-4">
@@ -260,7 +257,6 @@ export class StockListFilterComponent {
   readonly munitionComponentStore = inject(MunitionComponentStore);
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
   readonly clientDataService = inject(ClientsDataService);
-  readonly #translate = inject(TranslateService);
   readonly filtersData = output<MunitionStockListSearch>();
 
   constructor() {
@@ -269,18 +265,17 @@ export class StockListFilterComponent {
 
   readonly defaultFormValues = {
     clientIds: [],
-    batch: '',
     munitionDumpIds: [],
     munitionTypeIds: [],
     plannedFireTrialIds: '',
     plannedFireTrialView: '',
-    status: '',
     entryDateFrom: null,
     entryDateTo: null,
     retirementDateFrom: null,
     retirementDateTo: null,
     quantityMax: null,
     quantityMin: null,
+    batches: '',
   };
 
   readonly formModel = signal<FilterForm>(this.defaultFormValues);
@@ -387,17 +382,6 @@ export class StockListFilterComponent {
       return null;
     });
   });
-
-  statusOptions = [
-    {
-      id: 'AVAILABLE',
-      label: this.#translate.instant('WHAREHOUSE_MANAGMENT.STOCK_LIST.STATUS_AVAILABLE'),
-    },
-    {
-      id: 'RETIRED',
-      label: this.#translate.instant('WHAREHOUSE_MANAGMENT.STOCK_LIST.STATUS_RETIRE'),
-    },
-  ];
 
   search() {
     const criteria: Record<string, string | number | string[] | Date | null> = this.formModel();

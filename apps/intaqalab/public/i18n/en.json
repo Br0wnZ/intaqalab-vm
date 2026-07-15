@@ -1949,8 +1949,10 @@
         "NEQ": "NEQ powder magazine",
         "NEQ_MAX": "Max NEQ powder keg:",
         "OCCUPANCY_PERCENTAGE": "Occupation (%):",
-        "CELL_MAX_NEQ": "Max NEQ cell (1.1, 1.2):"
+        "CELL_MAX_NEQ": "Max NEQ cell (1.1, 1.2):",
+        "NEQ_BUTTON_TOOLTIP": "Values are shown as stored NEQ / maximum applicable NEQ.\n\nPowder magazine:\nThe total NEQ stored in the powder magazine is shown against the maximum NEQ allowed for the entire powder magazine.\n\nCells:\nThe NEQ stored in each cell is shown against the limit applicable to that cell.\n\nThe cell limit is calculated according to its highest risk group:\n- If the highest risk group is 1.1 or 1.2, the maximum limit defined for cells of those groups applies.\n- If the highest risk group is 1.3 or higher, the overall maximum limit of the powder magazine applies."
       },
+      "TOGGLE_ACTIVE_FILTER": "Show available ammunition only",
       "COL_TYPE": "Guy",
       "COL_CLIENT": "Customer",
       "COL_DENOMINATION": "Denomination",
