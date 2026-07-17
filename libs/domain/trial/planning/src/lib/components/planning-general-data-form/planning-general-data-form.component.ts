@@ -9,9 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
-import { Badge, IntaIconComponent } from '@intaqalab/ui';
+import { Badge, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
@@ -62,6 +63,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     PlanningScheduledDatesComponent,
     NoNegativeValuesDirective,
     RatingCriteria,
+    MatSelectClearable,
   ],
   template: `
     <div class="py-6">
@@ -179,6 +181,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               <mat-select
                 placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
                 id="planningUser"
+                clearable
                 [aria-label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
                 [formField]="generalDataForm.planningUser"
               >
@@ -600,7 +603,7 @@ export class PlanningGeneralDataFormComponent {
     });
   }
 
-  openSpecimenManagement(): void {
+  async openSpecimenManagement(): Promise<void> {
     const specimensSource = this.store.typedSpecimens() ?? [];
     const specimens = specimensSource.length ? specimensSource : this.#cachedSpecimens();
     const planningInfo = this.store.planningInfo();
@@ -620,11 +623,10 @@ export class PlanningGeneralDataFormComponent {
       },
     });
 
-    dialogRef.afterClosed().subscribe((result: { specimenId: string; batch: string }[] | undefined) => {
-      if (result !== undefined) {
-        this.store.setSelectedSpecimens(result);
-      }
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed(), { defaultValue: undefined });
+    if (result !== undefined) {
+      this.store.setSelectedSpecimens(result);
+    }
   }
 
   onValidate(): void {

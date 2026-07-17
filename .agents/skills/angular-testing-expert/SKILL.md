@@ -25,7 +25,7 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
 - **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material.
 - **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
-- **Clean Code:** Tests descriptivos (`it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
+- **Clean Code:** Tests descriptivos. **IMPORTANTE:** Todas las descripciones de los casos de prueba (`it()`) deben ser redactadas obligatoriamente en inglés (e.g. `it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
 ### 2. Zonaless & Signals ⚡
 

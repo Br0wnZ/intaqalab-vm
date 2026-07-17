@@ -85,7 +85,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 - **Angular 21:** `signals`, `httpResource` para peticiones asíncronas, y `signal-forms`. Angular 21 usa standalone por defecto (NO especificar `standalone: true`).
 - **Nx Monorepo:** Estructura modular basada en librerías (`data-access`, `feature`, `ui`, `util`). Mantén la lógica de negocio en `data-access`.
 - **Tailwind CSS 4.1:** Configuración CSS-first usando `@theme` y colores OKLCH. Utiliza clases inline y Angular Material (Aria/Headless).
-- **Testing:** Vitest para unitarias y Angular Testing Library (ATL) para componentes.
+- **Testing:** Vitest para unitarias y Angular Testing Library (ATL) para componentes. **IMPORTANTE:** Todos los casos de prueba (`it()`) deben tener sus descripciones redactadas obligatoriamente en inglés.
 - **Backend:** API ExpressJS limpia con validación estricta (Zod).
 
 ## Diseño de Componentes 🧩

@@ -119,6 +119,38 @@
   html body .mdc-floating-label.mat-mdc-floating-label {
     font-size: var(--text-sm) !important;
   }
+
+  html body .mat-select-clear-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gray-600, #9ca3af) !important;
+    line-height: 1;
+    border-radius: 50%;
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0;
+    margin-right: 4px;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+
+    &:hover {
+      background-color: var(--color-gray-100, rgba(0, 0, 0, 0.05));
+      color: var(--color-gray-700, #374151) !important;
+    }
+
+    mat-icon {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+      line-height: 14px !important;
+    }
+  }
 }
 
 html body .mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label {

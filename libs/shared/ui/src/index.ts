@@ -18,3 +18,5 @@ export * from './lib/badge/badge.component';
 export * from './lib/legend-trial-scheduler/legend-trial-scheduler.component';
 
 export * from './lib/boolean-status-badge/boolean-status-badge.component';
+
+export * from './lib/mat-select-clearable/mat-select-clearable';

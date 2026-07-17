@@ -113,13 +113,13 @@ import { DayActionsComponent } from './day-actions.component';
                 </span>
               </button>
 
-              @if (event.meta.fireTrial.status === TrialStatus.PLANNED) {
+              @if (canGoToExecution(event.meta.fireTrial.status)) {
                 <button
                   type="button"
                   class="calendar-month-event__execution"
                   (click)="handleExecution(event.meta.fireTrial.id, $event)"
                 >
-                  <ui-inta-icon name="eventLog" size="md" />
+                  <ui-inta-icon name="execution" size="md" />
                 </button>
               }
               @if (canSchedule(event.meta.fireTrial.status)) {
@@ -180,7 +180,7 @@ import { DayActionsComponent } from './day-actions.component';
         (keyup.enter)="$event.stopPropagation(); eventClicked.emit({ event: weekEvent })"
       >
         <div class="calendar-week-event__content">
-          @if (weekEvent.event.meta.fireTrial.status === TrialStatus.PLANNED) {
+          @if (canGoToExecution(weekEvent.event.meta.fireTrial.status)) {
             <button
               type="button"
               class="calendar-week-event__execution"
@@ -239,7 +239,7 @@ import { DayActionsComponent } from './day-actions.component';
         (keyup.enter)="$event.stopPropagation(); eventClicked.emit({ event: weekEvent })"
       >
         <div class="calendar-day-event__content">
-          @if (weekEvent.event.meta.fireTrial.status === TrialStatus.PLANNED) {
+          @if (canGoToExecution(weekEvent.event.meta.fireTrial.status)) {
             <button
               type="button"
               class="calendar-day-event__execution"
@@ -324,6 +324,21 @@ export class CalendarSharedTemplatesComponent {
 
   canSchedule(trialStatus: TrialStatus) {
     return this.#trialPersmissionsService.canSchedule(trialStatus);
+  }
+
+  canGoToExecution(status: TrialStatus): boolean {
+    const executionStatuses = [
+      TrialStatus.PLANNED,
+      TrialStatus.IN_PROGRESS,
+      TrialStatus.INTERRUPTED,
+      TrialStatus.STARTED,
+      TrialStatus.EXECUTED,
+      TrialStatus.ANALYZING,
+      TrialStatus.FINALIZING,
+      TrialStatus.CLOSED,
+      TrialStatus.CANCELLED,
+    ];
+    return executionStatuses.includes(status);
   }
 
   viewTrial = output<string>();

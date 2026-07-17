@@ -360,7 +360,7 @@
     "DAY_TYPES_PLACEHOLDER": "Select the day type",
     "DAY_NO_NOTAM": "No NOTAM",
     "DAY_HOLIDAY": "Non-working",
-    "BUTTON_ANNUL": "Cancel holidays"
+    "BUTTON_ANNUL": "Cancel"
   },
   "TRIAL_SCHEDULER": {
     "SCHEDULE_TRIAL_TITLE": "Trial scheduling",

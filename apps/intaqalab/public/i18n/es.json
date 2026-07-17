@@ -361,7 +361,7 @@
     "DAY_TYPES_PLACEHOLDER": "Selecciona el tipo de día",
     "DAY_NO_NOTAM": "Sin NOTAM",
     "DAY_HOLIDAY": "Inhábil",
-    "BUTTON_ANNUL": "Anular festivos"
+    "BUTTON_ANNUL": "Anular"
   },
   "TRIAL_SCHEDULER": {
     "SCHEDULE_TRIAL_TITLE": "Programación de pruebas",
