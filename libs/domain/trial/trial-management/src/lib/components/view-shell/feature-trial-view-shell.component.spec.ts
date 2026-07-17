@@ -146,7 +146,7 @@ describe('FeatureTrialViewShellComponent', () => {
       },
     });
 
-    const renderResult = await render(FeatureTrialViewShellComponent, {
+    const { fixture } = await render(FeatureTrialViewShellComponent, {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
         provideRouter([]),
@@ -162,7 +162,6 @@ describe('FeatureTrialViewShellComponent', () => {
       ],
     });
 
-    const fixture = renderResult.fixture;
     const component = fixture.componentInstance;
     fixture.detectChanges();
     return { user, fixture, component };

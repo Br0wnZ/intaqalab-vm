@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input, output, signal } from '@angular/core';
 import { FormField, form, min, pattern, validate, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -19,6 +19,7 @@ import { MunitionComponentStore } from '../../../+state/munition-component.store
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListSearch } from '../../../models/munition-stock-list.model';
+import { WarehouseMunitionStatus } from '../../../models/utils.model';
 import type { SearchByTrialNumberResponse } from '../../../utils/search-trial.utils';
 import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
 
@@ -257,6 +258,8 @@ export class StockListFilterComponent {
   readonly munitionComponentStore = inject(MunitionComponentStore);
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
   readonly clientDataService = inject(ClientsDataService);
+
+  readonly showOnlyActive = input<boolean>(true);
   readonly filtersData = output<MunitionStockListSearch>();
 
   constructor() {
@@ -400,8 +403,11 @@ export class StockListFilterComponent {
   }
 
   protected clearFilters() {
-    this.store.search({});
+    const status = this.showOnlyActive() ? WarehouseMunitionStatus.AVAILABLE : WarehouseMunitionStatus.RETIRED;
+    this.store.search({ status });
 
     this.formModel.set(this.defaultFormValues);
+
+    this.filtersData.emit({});
   }
 }

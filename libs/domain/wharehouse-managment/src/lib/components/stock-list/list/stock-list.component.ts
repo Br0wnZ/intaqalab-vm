@@ -21,6 +21,7 @@ import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.sto
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListResponse, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
+import { WarehouseMunitionStatus } from '../../../models/utils.model';
 import { MunitionsStockDetailService } from '../../../services/munitions-stock-detail.service';
 import { TransferDialogComponent } from '../../shared/transfer-dialog/transfer-dialog.component';
 import { StockListFilterComponent } from '../filter/stock-list-filter.component';
@@ -91,7 +92,7 @@ const DEFAULT_COLUMNS = [
       </mat-menu>
     </div>
 
-    <inta-stock-list-filter (filtersData)="setFiltersData($event)" />
+    <inta-stock-list-filter [showOnlyActive]="showOnlyActive()" (filtersData)="setFiltersData($event)" />
 
     <div class="w-full flex justify-end mb-4 mt-6">
       <div class="flex items-center gap-2 mr-4">
@@ -234,7 +235,7 @@ const DEFAULT_COLUMNS = [
             <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
               @if (item.status !== '') {
                 <ui-boolean-status-badge
-                  [isActive]="item.status === 'AVAILABLE'"
+                  [isActive]="item.status === status.AVAILABLE"
                   [label]="'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.STATUS_' + item.status"
                 />
               }
@@ -318,6 +319,7 @@ export class StockListComponent {
   readonly displayedColumns = computed(() => [...DEFAULT_COLUMNS]);
   selection = new SelectionModel<MunitionStockListResponse>(true, []);
   showTooltip = false;
+  readonly status = WarehouseMunitionStatus;
   readonly showOnlyActive = signal<boolean>(true);
 
   pageIndex = signal(0);
@@ -334,7 +336,7 @@ export class StockListComponent {
       const pageSize = this.pageSize();
       const sortDirection = this.sortDirection();
       const sortField = sortDirection ? this.sortField() : undefined;
-      const status = this.showOnlyActive() ? 'AVAILABLE' : 'RETIRED';
+      const status = this.showOnlyActive() ? this.status.AVAILABLE : this.status.RETIRED;
       const filters = this.filtersData();
 
       this.stockListStore.search({ ...filters, status, page, pageSize, sortDirection, sortField });

@@ -1,5 +1,7 @@
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 
+import type { WarehouseMunitionStatusType } from './utils.model';
+
 export interface MunitionStockListSearch extends PaginatedSortedViewRequest {
   clientIds?: string[];
   denominationIds?: string[];
@@ -10,7 +12,7 @@ export interface MunitionStockListSearch extends PaginatedSortedViewRequest {
   cellNames?: string[];
   quantityMin?: number;
   quantityMax?: number;
-  status?: string; // AVAILABLE / RETIRED
+  status?: WarehouseMunitionStatusType;
   entryDateFrom?: string;
   entryDateTo?: string;
   retirementDateFrom?: string;

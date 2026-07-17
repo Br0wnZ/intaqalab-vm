@@ -168,7 +168,7 @@ export const MENU_TREE: MenuNode[] = [
     // Todos los roles incluido Viewer
     name: 'MENU_LEFT.EXECUTION',
     id: 'EXECUTION',
-    iconName: 'eventLog',
+    iconName: 'execution',
     roles: [...MENU_EXECUTION_ROLES],
   },
 

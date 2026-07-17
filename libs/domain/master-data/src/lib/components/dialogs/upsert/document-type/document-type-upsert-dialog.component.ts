@@ -97,11 +97,13 @@ export class DocumentTypeUpsertDialogComponent {
     { id: 'SPECIFIC', name: 'Particular' },
   ];
 
-  readonly formModel = signal({
+  readonly #defaultFormModel = {
     nameEs: '',
     nameEn: '',
     category: '',
-  });
+  };
+
+  readonly formModel = signal(this.#defaultFormModel);
 
   readonly form = form(this.formModel, (f) => {
     required(f.nameEs);
@@ -127,9 +129,7 @@ export class DocumentTypeUpsertDialogComponent {
     const { nameEs, nameEn, category } = this.formModel();
 
     const dataToSend =
-      this.form().touched() && this.form().dirty()
-        ? { ...this.data, name: { en: nameEn, es: nameEs }, category }
-        : null;
+      this.formModel() !== this.#defaultFormModel ? { ...this.data, name: { en: nameEn, es: nameEs }, category } : null;
 
     this.dialogRef.close(dataToSend);
   }

@@ -20,7 +20,7 @@ import type { TrialActions } from '@intaqalab/models';
 import { TrialStatus, injectTrialStatus } from '@intaqalab/models';
 import { FeaturePlanningGeneralDataShellComponent, PlanningPermissionsService } from '@intaqalab/planning';
 import { Badge, UiDialogService } from '@intaqalab/ui';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { TrialStatusLabelPipe, linkedQueryParam } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../services/trial-docs-service';
@@ -52,7 +52,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
     <h2 class="text-base font-semibold text-gray-900 my-6">
       {{ 'TRIAL_CREATE_MODIFY_FORM.HEADING_PAGE' | translate }}
     </h2>
-    <mat-tab-group class="inta-tabs-2" [preserveContent]="true">
+    <mat-tab-group class="inta-tabs-2" [preserveContent]="true" [selectedIndex]="selectedTab()" (selectedIndexChange)="selectedTab.set($event)">
       <mat-tab [label]="'TAPS_TOP.TRIAL_GENERAL_INFO' | translate">
         <div class="flex items-center justify-between mt-4 py-4">
           @if (store.trial(); as u) {
@@ -130,6 +130,12 @@ export class FeatureTrialViewShellComponent {
 
   readonly trialStatus = injectTrialStatus();
   readonly trialStatusEnum = TrialStatus;
+
+  /** Pestaña activa sincronizada con query param ?tab= */
+  readonly selectedTab = linkedQueryParam('tab', {
+    parse: (raw) => (raw ? Number(raw) : 0),
+    serialize: (value) => (value === 0 ? null : String(value)),
+  });
 
   readonly editable = signal(false);
   #isDeletePending = false;
