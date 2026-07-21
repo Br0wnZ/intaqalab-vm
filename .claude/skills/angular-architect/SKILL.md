@@ -30,6 +30,12 @@ In-house utilities: Before hand-rolling any reactive helper (debounce/throttle s
 
 Components: Default to Standalone Components.
 
+Measurement Units (Strictly Enforced):
+
+- Use `MeasureUnitEnum` from `@intaqalab/models` as single source of truth for all units.
+- Never hardcode unit strings in business logic, stores, services, or component state.
+- Use `MEASURE_UNIT_LABELS` and typed subsets (`WeightUnitEnum`, `PressureUnitEnum`, etc.) for selectors and rendering.
+
 Code Quality & Architecture Principles:
 
 Clean Architecture: Enforce strict separation of concerns (Presentation, Domain/Business Logic, Data Access/Infrastructure).

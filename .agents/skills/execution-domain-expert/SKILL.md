@@ -21,6 +21,12 @@ description: >
 
 ## 📐 Contexto del Dominio
 
+## 📏 Regla de Unidades (Obligatoria)
+
+- Todas las unidades de medida del dominio Execution deben usar `MeasureUnitEnum` de `@intaqalab/models`.
+- Prohibido introducir strings de unidad hardcodeados (`'g'`, `'kg'`, `'MPa'`, `'bar'`, etc.) en componentes, stores o servicios.
+- Para selectores/labels de unidad usa `MEASURE_UNIT_LABELS` y subtipos (`WeightUnitEnum`, `PressureUnitEnum`, etc.) del paquete de modelos compartidos.
+
 ### Ruta raíz
 
 ```

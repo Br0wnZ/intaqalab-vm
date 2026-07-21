@@ -1,22 +1,27 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
 import type { OverpressureChartState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 
+type WeightUnit = MeasureUnitEnum.G | MeasureUnitEnum.KG;
+type PressureUnit = MeasureUnitEnum.MPA | MeasureUnitEnum.BAR | MeasureUnitEnum.KG_CM2;
+
 interface OverpressureChartForm {
   selectedSerie: string[] | null;
+  selectedWeightUnit: WeightUnit;
+  selectedPressureUnit: PressureUnit;
 }
 
 @Component({
@@ -41,8 +46,24 @@ interface OverpressureChartForm {
               {{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE' | translate }}
             </h3>
           </div>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1 !w-28">
+            <mat-label>Peso</mat-label>
+            <mat-select [formField]="chartForm.selectedWeightUnit">
+              @for (opt of weightUnitOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1 !w-28">
+            <mat-label>Presión</mat-label>
+            <mat-select [formField]="chartForm.selectedPressureUnit">
+              @for (opt of pressureUnitOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
           <!-- Serie multi-select (compact density) — col-span-1, alineado con la leyenda -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1 min-w-48">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_LABEL' | translate }}</mat-label>
             <mat-select
               multiple
@@ -145,13 +166,26 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #defaultWeightUnit: WeightUnit = MeasureUnitEnum.G;
+  readonly #defaultPressureUnit: PressureUnit = MeasureUnitEnum.MPA;
 
   // Data from store (read-only)
   protected readonly serieOptions = computed(() => this.#store.overpressureChart().serieOptions);
+  protected readonly weightUnitOptions: ReadonlyArray<{ value: WeightUnit; label: string }> = [
+    { value: MeasureUnitEnum.G, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.G] },
+    { value: MeasureUnitEnum.KG, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.KG] },
+  ];
+  protected readonly pressureUnitOptions: ReadonlyArray<{ value: PressureUnit; label: string }> = [
+    { value: MeasureUnitEnum.MPA, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.MPA] },
+    { value: MeasureUnitEnum.BAR, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.BAR] },
+    { value: MeasureUnitEnum.KG_CM2, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.KG_CM2] },
+  ];
 
   // Signal Form — serie selector
   protected readonly formModel = signal<OverpressureChartForm>({
     selectedSerie: this.#store.overpressureChart().selectedSerie,
+    selectedWeightUnit: this.#defaultWeightUnit,
+    selectedPressureUnit: this.#defaultPressureUnit,
   });
   protected readonly chartForm = form(this.formModel);
 
@@ -166,13 +200,17 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
   /** Reactive chart config driven by store state + form selection */
   protected readonly chartConfig = computed<ChartConfiguration>(() => {
     const state = this.#store.overpressureChart();
-    const selectedSerie = this.formModel().selectedSerie;
-    return this.#buildChartConfig({ ...state, selectedSerie });
+    const { selectedSerie, selectedWeightUnit, selectedPressureUnit } = this.formModel();
+    return this.#buildChartConfig({ ...state, selectedSerie }, selectedWeightUnit, selectedPressureUnit);
   });
 
   resetForm(): void {
     const stored = this.#store.overpressureChart();
-    this.formModel.set({ selectedSerie: stored.selectedSerie });
+    this.formModel.set({
+      selectedSerie: stored.selectedSerie,
+      selectedWeightUnit: this.#defaultWeightUnit,
+      selectedPressureUnit: this.#defaultPressureUnit,
+    });
   }
 
   async saveForm(): Promise<void> {
@@ -180,12 +218,29 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
     this.#store.updateOverpressureChart({ selectedSerie });
   }
 
-  #buildChartConfig(state: OverpressureChartState): ChartConfiguration {
+  #buildChartConfig(
+    state: OverpressureChartState,
+    selectedWeightUnit: WeightUnit,
+    selectedPressureUnit: PressureUnit,
+  ): ChartConfiguration {
     const { dataPoints, presionSeguridad, presionMaxima, presionMinima, selectedSerie } = state;
 
     const points = selectedSerie?.length ? dataPoints.filter((p) => selectedSerie.includes(p.serie)) : dataPoints;
+    const convertedPoints = points.map((p) => ({
+      ...p,
+      wc: this.#convertWeightFromGrams(p.wc, selectedWeightUnit),
+      rectaPresion: this.#convertPressureFromMpa(p.rectaPresion, selectedPressureUnit),
+      desviacionMax: this.#convertPressureFromMpa(p.desviacionMax, selectedPressureUnit),
+      desviacionMin: this.#convertPressureFromMpa(p.desviacionMin, selectedPressureUnit),
+    }));
+    const convertedPresionSeguridad =
+      presionSeguridad !== null ? this.#convertPressureFromMpa(presionSeguridad, selectedPressureUnit) : null;
+    const convertedPresionMaxima =
+      presionMaxima !== null ? this.#convertPressureFromMpa(presionMaxima, selectedPressureUnit) : null;
+    const convertedPresionMinima =
+      presionMinima !== null ? this.#convertPressureFromMpa(presionMinima, selectedPressureUnit) : null;
 
-    if (!points.length) {
+    if (!convertedPoints.length) {
       return {
         type: 'scatter',
         data: { datasets: [] },
@@ -194,16 +249,16 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
     }
 
     // Axis ranges
-    const xArr = points.map((p) => p.wc);
+    const xArr = convertedPoints.map((p) => p.wc);
     const minX = Math.min(...xArr);
     const maxX = Math.max(...xArr);
     const xRange = maxX - minX || 10;
     const xPad = xRange * 0.08;
 
-    const yArr: number[] = points.flatMap((p) => [p.rectaPresion, p.desviacionMax, p.desviacionMin]);
-    if (presionSeguridad !== null) yArr.push(presionSeguridad);
-    if (presionMaxima !== null) yArr.push(presionMaxima);
-    if (presionMinima !== null) yArr.push(presionMinima);
+    const yArr: number[] = convertedPoints.flatMap((p) => [p.rectaPresion, p.desviacionMax, p.desviacionMin]);
+    if (convertedPresionSeguridad !== null) yArr.push(convertedPresionSeguridad);
+    if (convertedPresionMaxima !== null) yArr.push(convertedPresionMaxima);
+    if (convertedPresionMinima !== null) yArr.push(convertedPresionMinima);
     const minY = Math.min(...yArr);
     const maxY = Math.max(...yArr);
     const yRange = maxY - minY || 10;
@@ -211,7 +266,7 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
 
     // Desviaciones: group by wc, compute mean
     const desvMap = new Map<number, { maxSum: number; minSum: number; n: number }>();
-    for (const p of points) {
+    for (const p of convertedPoints) {
       const g = desvMap.get(p.wc) ?? { maxSum: 0, minSum: 0, n: 0 };
       g.maxSum += p.desviacionMax;
       g.minSum += p.desviacionMin;
@@ -230,7 +285,7 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
 
     // Recta presión: line (mean per wc) + scatter (all individual points)
     const rectaMap = new Map<number, { sum: number; n: number }>();
-    for (const p of points) {
+    for (const p of convertedPoints) {
       const g = rectaMap.get(p.wc) ?? { sum: 0, n: 0 };
       g.sum += p.rectaPresion;
       g.n++;
@@ -240,7 +295,7 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
       const g = rectaMap.get(x);
       return { x, y: g ? g.sum / g.n : 0 };
     });
-    const rectaScatter = points.map((p) => ({ x: p.wc, y: p.rectaPresion }));
+    const rectaScatter = convertedPoints.map((p) => ({ x: p.wc, y: p.rectaPresion }));
 
     // Helper: constant horizontal line across padded x range
     const hLine = (y: number) => [
@@ -256,13 +311,13 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
       data: {
         datasets: [
           // 1. Pres. Seguridad — constant, orange
-          ...(presionSeguridad !== null
+          ...(convertedPresionSeguridad !== null
             ? [
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   type: 'line' as any,
                   label: 'Pres. Seguridad',
-                  data: hLine(presionSeguridad),
+                  data: hLine(convertedPresionSeguridad),
                   borderColor: '#f97316',
                   backgroundColor: '#f97316',
                   ...solidLine,
@@ -282,13 +337,13 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
           },
 
           // 3. Presión máxima — constant, cyan
-          ...(presionMaxima !== null
+          ...(convertedPresionMaxima !== null
             ? [
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   type: 'line' as any,
                   label: 'Presión máxima',
-                  data: hLine(presionMaxima),
+                  data: hLine(convertedPresionMaxima),
                   borderColor: '#22d3ee',
                   backgroundColor: '#22d3ee',
                   ...solidLine,
@@ -320,13 +375,13 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
           },
 
           // 6. Presión mínima — constant, dark navy
-          ...(presionMinima !== null
+          ...(convertedPresionMinima !== null
             ? [
                 {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   type: 'line' as any,
                   label: 'Presión mínima',
-                  data: hLine(presionMinima),
+                  data: hLine(convertedPresionMinima),
                   borderColor: '#1e3a5f',
                   backgroundColor: '#1e3a5f',
                   ...solidLine,
@@ -357,7 +412,8 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
             intersect: false,
             filter: (item) => item.dataset.label !== 'Recta presión (puntos)',
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(4)} MPa`,
+              label: (ctx) =>
+                `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(4)} ${MEASURE_UNIT_LABELS[selectedPressureUnit]}`,
             },
           },
         },
@@ -366,19 +422,45 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
             type: 'linear',
             min: minX - xPad,
             max: maxX + xPad,
-            title: { display: true, text: 'Wc/g (g)', font: { size: 10 } },
+            title: { display: true, text: `Wc/${MEASURE_UNIT_LABELS[selectedWeightUnit]}`, font: { size: 10 } },
             grid: { color: '#e5e7eb', borderDash: [4, 4] },
             ticks: { font: { size: 9 } },
           },
           y: {
             min: minY - yPad,
             max: maxY + yPad,
-            title: { display: true, text: 'Presión (MPa)', font: { size: 10 } },
+            title: {
+              display: true,
+              text: `Presión (${MEASURE_UNIT_LABELS[selectedPressureUnit]})`,
+              font: { size: 10 },
+            },
             grid: { color: '#e5e7eb', borderDash: [4, 4] },
             ticks: { font: { size: 9 } },
           },
         },
       },
     } as ChartConfiguration;
+  }
+
+  #convertWeightFromGrams(value: number, toUnit: WeightUnit): number {
+    switch (toUnit) {
+      case MeasureUnitEnum.KG:
+        return value / 1000;
+      case MeasureUnitEnum.G:
+      default:
+        return value;
+    }
+  }
+
+  #convertPressureFromMpa(value: number, toUnit: PressureUnit): number {
+    switch (toUnit) {
+      case MeasureUnitEnum.BAR:
+        return value * 10;
+      case MeasureUnitEnum.KG_CM2:
+        return value * 10.197162129779;
+      case MeasureUnitEnum.MPA:
+      default:
+        return value;
+    }
   }
 }

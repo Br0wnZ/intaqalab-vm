@@ -59,6 +59,12 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 - **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state. Read [resource.md](references/resource.md)
 - **Side Effects (`effect`)**: Logging, third-party DOM manipulation (`afterRenderEffect`), and when NOT to use effects. Read [effects.md](references/effects.md)
 
+## Measurement Units (Mandatory)
+
+- All measurement units MUST use `MeasureUnitEnum` from `@intaqalab/models` as single source of truth.
+- Do not hardcode unit literals (`'kg'`, `'MPa'`, `'bar'`, etc.) in component/store/service logic.
+- For UI labels/options, reuse `MEASURE_UNIT_LABELS` and typed subsets (`WeightUnitEnum`, `PressureUnitEnum`, etc.) from `@intaqalab/models`.
+
 ## Forms
 
 In most cases for new apps, **prefer signal forms**. When making a forms decision, analyze the project and consider the following guidelines:

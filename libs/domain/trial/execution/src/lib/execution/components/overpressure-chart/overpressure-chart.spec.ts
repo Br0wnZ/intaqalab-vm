@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
@@ -55,10 +56,16 @@ describe('OverpressureChartWidget', () => {
   it('resetForm restores selectedSerie from the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    fixture.componentInstance['formModel'].set({ selectedSerie: ['Serie A'] });
+    fixture.componentInstance['formModel'].set({
+      selectedSerie: ['Serie A'],
+      selectedWeightUnit: MeasureUnitEnum.KG,
+      selectedPressureUnit: MeasureUnitEnum.BAR,
+    });
     fixture.componentInstance.resetForm();
     const stored = store.overpressureChart();
     expect(fixture.componentInstance['formModel']().selectedSerie).toEqual(stored.selectedSerie);
+    expect(fixture.componentInstance['formModel']().selectedWeightUnit).toBe(MeasureUnitEnum.G);
+    expect(fixture.componentInstance['formModel']().selectedPressureUnit).toBe(MeasureUnitEnum.MPA);
   });
 
   it('chartConfig returns a valid scatter configuration', async () => {
@@ -82,5 +89,19 @@ describe('OverpressureChartWidget', () => {
     const { fixture } = await renderWidget();
     const options = fixture.componentInstance['serieOptions']();
     expect(options.length).toBeGreaterThan(0);
+  });
+
+  it('updates axis titles when units are changed in form', async () => {
+    const { fixture } = await renderWidget();
+
+    fixture.componentInstance['formModel'].update((m) => ({
+      ...m,
+      selectedWeightUnit: MeasureUnitEnum.KG,
+      selectedPressureUnit: MeasureUnitEnum.BAR,
+    }));
+
+    const config = fixture.componentInstance['chartConfig']();
+    expect(config.options?.scales?.x?.title?.text).toBe('Wc/kg');
+    expect(config.options?.scales?.y?.title?.text).toBe('Presión (bar)');
   });
 });
