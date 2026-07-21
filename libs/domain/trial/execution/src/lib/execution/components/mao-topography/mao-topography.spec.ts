@@ -81,10 +81,10 @@ describe('MaoTopography', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance as unknown as {
       oltField: () => { value: string; unit: string } | null;
-      xPiezaField: () => { value: string; unit: string } | null;
+      piezaPosition: () => { x: number | null; y: number | null; z: number | null; unit: string } | null;
     };
     expect(component.oltField()).toBeNull();
-    expect(component.xPiezaField()).toBeNull();
+    expect(component.piezaPosition()).toBeNull();
   });
 
   it('maoTopographyDistanciaBocaBlanco is null without full coords', async () => {

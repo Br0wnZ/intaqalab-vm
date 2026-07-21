@@ -58,12 +58,11 @@ describe('MaoTopographyMassConfigDialog', () => {
   it('initializes numeric fields from dialog data', async () => {
     const { fixture } = await renderDialog();
     const component = fixture.componentInstance as unknown as {
-      xPiezaField: () => { value: string; unit: string } | null;
-      yPiezaField: () => { value: string; unit: string } | null;
+      piezaPosition: () => { x: number | null; y: number | null; z: number | null; unit: string } | null;
       oltField: () => { value: string; unit: string } | null;
     };
-    expect(component.xPiezaField()?.value).toBe('100.0');
-    expect(component.yPiezaField()?.value).toBe('200.0');
+    expect(component.piezaPosition()?.x).toBe(100.0);
+    expect(component.piezaPosition()?.y).toBe(200.0);
     expect(component.oltField()?.value).toBe('15.000');
   });
 
@@ -103,12 +102,12 @@ describe('MaoTopographyMassConfigDialog', () => {
     expect(cancelBtn).toBeInTheDocument();
   });
 
-  it('renders all 8 input fields', async () => {
+  it('renders all fields', async () => {
     await renderDialog();
-    const labels = document.querySelectorAll('ui-input-select');
-    // 6 from ui-input-select (pieza x/y/z, blanco x/y/z) + olt = 7
-    // observador is a mat-select
-    expect(labels.length).toBe(7);
+    const inputSelects = document.querySelectorAll('ui-input-select');
+    const coordInputs = document.querySelectorAll('ui-sound-level-meter-input');
+    expect(inputSelects.length).toBe(1); // OLT
+    expect(coordInputs.length).toBe(2); // pieza position, blanco position
   });
 
   it('renders series multi-select', async () => {
@@ -134,8 +133,8 @@ describe('MaoTopographyMassConfigDialog', () => {
     };
     const { fixture } = await renderDialog(nullData);
     const component = fixture.componentInstance as unknown as {
-      xPiezaField: () => { value: string; unit: string } | null;
+      piezaPosition: () => { x: number | null; y: number | null; z: number | null; unit: string } | null;
     };
-    expect(component.xPiezaField()).toBeNull();
+    expect(component.piezaPosition()).toBeNull();
   });
 });

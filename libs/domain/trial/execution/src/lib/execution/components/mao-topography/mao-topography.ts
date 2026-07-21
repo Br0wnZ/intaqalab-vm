@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import type { MaoTopographyState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -38,6 +39,7 @@ interface MaoTopographySelectForm {
     TranslateModule,
     InputSelect,
     IntaIconComponent,
+    SoundLevelMeterInput,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-4 overflow-auto">
@@ -92,71 +94,26 @@ interface MaoTopographySelectForm {
         </span>
       </div>
 
-      <!-- Fields: 4 columns × 2 rows — order matches design -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2 min-h-0">
-        <!-- Row 1: Pieza X | Pieza Y | Pieza Z | Blanco X -->
-
-        <!-- Pieza X -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_PIEZA_PLACEHOLDER' | translate"
-          [value]="xPiezaField()"
-          (valueChange)="xPiezaField.set($event)"
-        />
-
-        <!-- Pieza Y -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_PIEZA_PLACEHOLDER' | translate"
-          [value]="yPiezaField()"
-          (valueChange)="yPiezaField.set($event)"
-        />
-
-        <!-- Pieza Z -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_PIEZA_PLACEHOLDER' | translate"
-          [value]="zPiezaField()"
-          (valueChange)="zPiezaField.set($event)"
-        />
-
-        <!-- Blanco X -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_BLANCO_PLACEHOLDER' | translate"
-          [value]="xBlancoField()"
-          [textColor]="blancoEnabled() ? null : '#94a3b8'"
-          (valueChange)="xBlancoField.set($event)"
-        />
-
-        <!-- Row 2: Blanco Y | Blanco Z | OLT | Observador -->
-
-        <!-- Blanco Y -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_BLANCO_PLACEHOLDER' | translate"
-          [value]="yBlancoField()"
-          [textColor]="blancoEnabled() ? null : '#94a3b8'"
-          (valueChange)="yBlancoField.set($event)"
-        />
-
-        <!-- Blanco Z -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_BLANCO_PLACEHOLDER' | translate"
-          [value]="zBlancoField()"
-          [textColor]="blancoEnabled() ? null : '#94a3b8'"
-          (valueChange)="zBlancoField.set($event)"
+      <!-- Fields: 4 columns layout -->
+      <div
+        intaReadonlyContent
+        class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-3 items-end content-start min-h-0 pt-2.5 pb-2 overflow-y-auto"
+      >
+        <!-- Pieza Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-3"
+          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.PIEZA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="metersOptions"
+          [disabled]="readOnly()"
+          [value]="piezaPosition()"
+          (valueChange)="piezaPosition.set($event)"
         />
 
         <!-- OLT para diferencia angular -->
         <ui-input-select
+          class="col-span-1 md:col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_PLACEHOLDER' | translate"
@@ -164,8 +121,20 @@ interface MaoTopographySelectForm {
           (valueChange)="oltField.set($event)"
         />
 
+        <!-- Blanco Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-3"
+          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="metersOptions"
+          [disabled]="readOnly() || !blancoEnabled()"
+          [value]="blancoPosition()"
+          (valueChange)="blancoPosition.set($event)"
+        />
+
         <!-- Observador -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-1 md:col-span-1 w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_PLACEHOLDER' | translate"
@@ -179,6 +148,21 @@ interface MaoTopographySelectForm {
       </div>
     </div>
   `,
+  styles: [
+    `
+      inta-mao-topography ui-sound-level-meter-input {
+        width: 100%;
+      }
+      inta-mao-topography ui-sound-level-meter-input .flex {
+        gap: 0.25rem !important;
+        padding-left: 0.375rem !important;
+        padding-right: 0.375rem !important;
+      }
+      inta-mao-topography ui-sound-level-meter-input input {
+        max-width: 2rem;
+      }
+    `,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -198,26 +182,15 @@ export class MaoTopography extends BaseFormWidgetComponent {
   protected readonly serieOptions = computed<{ value: string; label: string }[]>(() => []);
   protected readonly disparoOptions = computed<{ value: string; label: string }[]>(() => []);
 
-  // ── Numeric field signals (ui-input-select) ───────────────────────────────
-  protected readonly oltField = signal<InputFieldValue>(this.#numToField(this.#store.maoTopography().olt, 'oo', 3));
-  protected readonly xPiezaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().xPieza, 'm', 1),
-  );
-  protected readonly yPiezaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().yPieza, 'm', 1),
-  );
-  protected readonly zPiezaField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().zPieza, 'm', 1),
-  );
-  protected readonly xBlancoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().xBlanco, 'm', 1),
-  );
-  protected readonly yBlancoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().yBlanco, 'm', 1),
-  );
-  protected readonly zBlancoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.maoTopography().zBlanco, 'm', 1),
-  );
+  // ── ReadOnly State ─────────────────────────────────────────────────────────
+  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
+
+  // ── OLT Field signal ──────────────────────────────────────────────────────
+  protected readonly oltField = signal<InputFieldValue>(null);
+
+  // ── Position signals ──────────────────────────────────────────────────────
+  protected readonly piezaPosition = signal<SoundLevelMeterValue | null>(null);
+  protected readonly blancoPosition = signal<SoundLevelMeterValue | null>(null);
 
   // ── Select form (Signal Forms for dirty tracking of selectors) ────────────
   protected readonly formModel = signal<MaoTopographySelectForm>({
@@ -230,20 +203,12 @@ export class MaoTopography extends BaseFormWidgetComponent {
   // ── Snapshot for numeric dirty tracking ───────────────────────────────────
   readonly #savedSnapshot = signal<{
     olt: InputFieldValue;
-    xPieza: InputFieldValue;
-    yPieza: InputFieldValue;
-    zPieza: InputFieldValue;
-    xBlanco: InputFieldValue;
-    yBlanco: InputFieldValue;
-    zBlanco: InputFieldValue;
+    piezaPosition: SoundLevelMeterValue | null;
+    blancoPosition: SoundLevelMeterValue | null;
   }>({
     olt: this.oltField(),
-    xPieza: this.xPiezaField(),
-    yPieza: this.yPiezaField(),
-    zPieza: this.zPiezaField(),
-    xBlanco: this.xBlancoField(),
-    yBlanco: this.yBlancoField(),
-    zBlanco: this.zBlancoField(),
+    piezaPosition: this.piezaPosition(),
+    blancoPosition: this.blancoPosition(),
   });
 
   // ── Dirty: select form OR any numeric field differs from snapshot ─────────
@@ -252,12 +217,8 @@ export class MaoTopography extends BaseFormWidgetComponent {
     const snap = this.#savedSnapshot();
     return (
       JSON.stringify(this.oltField()) !== JSON.stringify(snap.olt) ||
-      JSON.stringify(this.xPiezaField()) !== JSON.stringify(snap.xPieza) ||
-      JSON.stringify(this.yPiezaField()) !== JSON.stringify(snap.yPieza) ||
-      JSON.stringify(this.zPiezaField()) !== JSON.stringify(snap.zPieza) ||
-      JSON.stringify(this.xBlancoField()) !== JSON.stringify(snap.xBlanco) ||
-      JSON.stringify(this.yBlancoField()) !== JSON.stringify(snap.yBlanco) ||
-      JSON.stringify(this.zBlancoField()) !== JSON.stringify(snap.zBlanco)
+      JSON.stringify(this.piezaPosition()) !== JSON.stringify(snap.piezaPosition) ||
+      JSON.stringify(this.blancoPosition()) !== JSON.stringify(snap.blancoPosition)
     );
   });
 
@@ -270,6 +231,12 @@ export class MaoTopography extends BaseFormWidgetComponent {
     hasChanges: this.isDirty(),
   }));
 
+  constructor() {
+    super();
+    this.#applyFieldsFromStore();
+    this.#syncSnapshot();
+  }
+
   resetForm(): void {
     const stored = this.#store.maoTopography();
     this.formModel.set({
@@ -277,25 +244,22 @@ export class MaoTopography extends BaseFormWidgetComponent {
       disparo: stored.disparo,
       observador: stored.observador,
     });
-    this.oltField.set(this.#numToField(stored.olt, 'oo', 3));
-    this.xPiezaField.set(this.#numToField(stored.xPieza, 'm', 1));
-    this.yPiezaField.set(this.#numToField(stored.yPieza, 'm', 1));
-    this.zPiezaField.set(this.#numToField(stored.zPieza, 'm', 1));
-    this.xBlancoField.set(this.#numToField(stored.xBlanco, 'm', 1));
-    this.yBlancoField.set(this.#numToField(stored.yBlanco, 'm', 1));
-    this.zBlancoField.set(this.#numToField(stored.zBlanco, 'm', 1));
+    this.#applyFieldsFromStore();
     this.#syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
     const { serie, disparo, observador } = this.formModel();
     const olt = this.#parseNum(this.oltField());
-    const xPieza = this.#parseNum(this.xPiezaField());
-    const yPieza = this.#parseNum(this.yPiezaField());
-    const zPieza = this.#parseNum(this.zPiezaField());
-    const xBlanco = this.#parseNum(this.xBlancoField());
-    const yBlanco = this.#parseNum(this.yBlancoField());
-    const zBlanco = this.#parseNum(this.zBlancoField());
+    const pieza = this.#fromPosition(this.piezaPosition());
+    const blanco = this.#fromPosition(this.blancoPosition());
+
+    const xPieza = this.#parseNum(pieza.x);
+    const yPieza = this.#parseNum(pieza.y);
+    const zPieza = this.#parseNum(pieza.z);
+    const xBlanco = this.#parseNum(blanco.x);
+    const yBlanco = this.#parseNum(blanco.y);
+    const zBlanco = this.#parseNum(blanco.z);
 
     const updates: Partial<MaoTopographyState> = {
       serie,
@@ -332,7 +296,10 @@ export class MaoTopography extends BaseFormWidgetComponent {
     }));
   }
 
-  openMassConfig(): void {
+  async openMassConfig(): Promise<void> {
+    const pieza = this.#fromPosition(this.piezaPosition());
+    const blanco = this.#fromPosition(this.blancoPosition());
+
     const ref = this.#dialog.open<MaoTopographyMassConfigDialog, unknown, MaoTopographyMassConfigDialogResult>(
       MaoTopographyMassConfigDialog,
       {
@@ -342,12 +309,12 @@ export class MaoTopography extends BaseFormWidgetComponent {
           serieOptions: this.serieOptions(),
           observadorOptions: this.observadorOptions(),
           current: {
-            xPieza: this.xPiezaField(),
-            yPieza: this.yPiezaField(),
-            zPieza: this.zPiezaField(),
-            xBlanco: this.xBlancoField(),
-            yBlanco: this.yBlancoField(),
-            zBlanco: this.zBlancoField(),
+            xPieza: pieza.x,
+            yPieza: pieza.y,
+            zPieza: pieza.z,
+            xBlanco: blanco.x,
+            yBlanco: blanco.y,
+            zBlanco: blanco.z,
             olt: this.oltField(),
             observador: this.formModel().observador,
           },
@@ -355,24 +322,57 @@ export class MaoTopography extends BaseFormWidgetComponent {
       },
     );
 
-    ref.afterClosed().subscribe((result) => {
-      if (result?.action !== 'apply') return;
+    const result = await firstValueFrom(ref.afterClosed());
 
-      // Apply values to local form signals
-      if (result.xPieza !== undefined) this.xPiezaField.set(result.xPieza);
-      if (result.yPieza !== undefined) this.yPiezaField.set(result.yPieza);
-      if (result.zPieza !== undefined) this.zPiezaField.set(result.zPieza);
-      if (result.xBlanco !== undefined) this.xBlancoField.set(result.xBlanco);
-      if (result.yBlanco !== undefined) this.yBlancoField.set(result.yBlanco);
-      if (result.zBlanco !== undefined) this.zBlancoField.set(result.zBlanco);
-      if (result.olt !== undefined) this.oltField.set(result.olt);
-      if (result.observador !== undefined) {
-        this.formModel.update((m) => ({ ...m, observador: result.observador ?? null }));
-      }
-    });
+    if (result?.action !== 'apply') return;
+
+    // Apply values to local form signals
+    if (result.xPieza !== undefined || result.yPieza !== undefined || result.zPieza !== undefined) {
+      const currentPieza = this.piezaPosition();
+      this.piezaPosition.set({
+        x: result.xPieza ? parseFloat(result.xPieza.value) : null,
+        y: result.yPieza ? parseFloat(result.yPieza.value) : null,
+        z: result.zPieza ? parseFloat(result.zPieza.value) : null,
+        unit: result.xPieza?.unit ?? result.yPieza?.unit ?? result.zPieza?.unit ?? currentPieza?.unit ?? 'm',
+      });
+    }
+    if (result.xBlanco !== undefined || result.yBlanco !== undefined || result.zBlanco !== undefined) {
+      const currentBlanco = this.blancoPosition();
+      this.blancoPosition.set({
+        x: result.xBlanco ? parseFloat(result.xBlanco.value) : null,
+        y: result.yBlanco ? parseFloat(result.yBlanco.value) : null,
+        z: result.zBlanco ? parseFloat(result.zBlanco.value) : null,
+        unit: result.xBlanco?.unit ?? result.yBlanco?.unit ?? result.zBlanco?.unit ?? currentBlanco?.unit ?? 'm',
+      });
+    }
+    if (result.olt !== undefined) this.oltField.set(result.olt);
+    if (result.observador !== undefined) {
+      this.formModel.update((m) => ({ ...m, observador: result.observador ?? null }));
+    }
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
+  #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
+    if (!x && !y && !z) return null;
+    return {
+      x: x?.value ? parseFloat(x.value.replace(',', '.')) : null,
+      y: y?.value ? parseFloat(y.value.replace(',', '.')) : null,
+      z: z?.value ? parseFloat(z.value.replace(',', '.')) : null,
+      unit: x?.unit ?? y?.unit ?? z?.unit ?? 'm',
+    };
+  }
+
+  #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
+    if (!pos) {
+      return { x: null, y: null, z: null };
+    }
+    const unit = pos.unit ?? 'm';
+    return {
+      x: pos.x !== null ? { value: pos.x.toFixed(1), unit } : null,
+      y: pos.y !== null ? { value: pos.y.toFixed(1), unit } : null,
+      z: pos.z !== null ? { value: pos.z.toFixed(1), unit } : null,
+    };
+  }
 
   #numToField(v: number | null, unit: string, decimals: number): InputFieldValue {
     return v !== null ? { value: v.toFixed(decimals), unit } : null;
@@ -387,12 +387,27 @@ export class MaoTopography extends BaseFormWidgetComponent {
   #syncSnapshot(): void {
     this.#savedSnapshot.set({
       olt: this.oltField(),
-      xPieza: this.xPiezaField(),
-      yPieza: this.yPiezaField(),
-      zPieza: this.zPiezaField(),
-      xBlanco: this.xBlancoField(),
-      yBlanco: this.yBlancoField(),
-      zBlanco: this.zBlancoField(),
+      piezaPosition: this.piezaPosition(),
+      blancoPosition: this.blancoPosition(),
     });
+  }
+
+  #applyFieldsFromStore(): void {
+    const stored = this.#store.maoTopography();
+    this.oltField.set(this.#numToField(stored.olt, 'oo', 3));
+    this.piezaPosition.set(
+      this.#toPosition(
+        this.#numToField(stored.xPieza, 'm', 1),
+        this.#numToField(stored.yPieza, 'm', 1),
+        this.#numToField(stored.zPieza, 'm', 1),
+      ),
+    );
+    this.blancoPosition.set(
+      this.#toPosition(
+        this.#numToField(stored.xBlanco, 'm', 1),
+        this.#numToField(stored.yBlanco, 'm', 1),
+        this.#numToField(stored.zBlanco, 'm', 1),
+      ),
+    );
   }
 }

@@ -52,7 +52,12 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
     <h2 class="text-base font-semibold text-gray-900 my-6">
       {{ 'TRIAL_CREATE_MODIFY_FORM.HEADING_PAGE' | translate }}
     </h2>
-    <mat-tab-group class="inta-tabs-2" [preserveContent]="true" [selectedIndex]="selectedTab()" (selectedIndexChange)="selectedTab.set($event)">
+    <mat-tab-group
+      class="inta-tabs-2"
+      [preserveContent]="true"
+      [selectedIndex]="selectedTab()"
+      (selectedIndexChange)="selectedTab.set($event)"
+    >
       <mat-tab [label]="'TAPS_TOP.TRIAL_GENERAL_INFO' | translate">
         <div class="flex items-center justify-between mt-4 py-4">
           @if (store.trial(); as u) {

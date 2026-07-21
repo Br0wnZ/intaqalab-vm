@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { CalibryObserverOption } from '../../../+state/execution.store';
@@ -59,6 +59,7 @@ type InputFieldValue = { value: string; unit: string } | null;
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    SoundLevelMeterInput,
   ],
   template: `
     <!-- Header -->
@@ -87,64 +88,22 @@ type InputFieldValue = { value: string; unit: string } | null;
         </mat-form-field>
       </div>
 
-      <!-- Fields 2-column grid -->
-      <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-        <!-- Pieza X -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_PIEZA_PLACEHOLDER' | translate"
-          [value]="xPiezaField()"
-          (valueChange)="xPiezaField.set($event)"
-        />
-
-        <!-- Pieza Y -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_PIEZA_PLACEHOLDER' | translate"
-          [value]="yPiezaField()"
-          (valueChange)="yPiezaField.set($event)"
-        />
-
-        <!-- Pieza Z -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_PIEZA_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_PIEZA_PLACEHOLDER' | translate"
-          [value]="zPiezaField()"
-          (valueChange)="zPiezaField.set($event)"
-        />
-
-        <!-- Blanco X -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.X_BLANCO_PLACEHOLDER' | translate"
-          [value]="xBlancoField()"
-          (valueChange)="xBlancoField.set($event)"
-        />
-
-        <!-- Blanco Y -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Y_BLANCO_PLACEHOLDER' | translate"
-          [value]="yBlancoField()"
-          (valueChange)="yBlancoField.set($event)"
-        />
-
-        <!-- Blanco Z -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_BLANCO_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.Z_BLANCO_PLACEHOLDER' | translate"
-          [value]="zBlancoField()"
-          (valueChange)="zBlancoField.set($event)"
+      <!-- Fields 3-column layout -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mt-2 pt-2.5 pb-2">
+        <!-- Pieza Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.PIEZA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="metersOptions"
+          [value]="piezaPosition()"
+          (valueChange)="piezaPosition.set($event)"
         />
 
         <!-- OLT para diferencia angular -->
         <ui-input-select
+          class="col-span-1 md:col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_PLACEHOLDER' | translate"
@@ -152,8 +111,19 @@ type InputFieldValue = { value: string; unit: string } | null;
           (valueChange)="oltField.set($event)"
         />
 
+        <!-- Blanco Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="metersOptions"
+          [value]="blancoPosition()"
+          (valueChange)="blancoPosition.set($event)"
+        />
+
         <!-- Observador -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-1 md:col-span-1 w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_LABEL' | translate }}</mat-label>
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_PLACEHOLDER' | translate"
@@ -196,26 +166,51 @@ export class MaoTopographyMassConfigDialog {
   });
   readonly massForm = form(this.formModel);
 
-  // ── Numeric field signals ─────────────────────────────────────────────────
-  readonly xPiezaField = signal<InputFieldValue>(this.data.current.xPieza);
-  readonly yPiezaField = signal<InputFieldValue>(this.data.current.yPieza);
-  readonly zPiezaField = signal<InputFieldValue>(this.data.current.zPieza);
-  readonly xBlancoField = signal<InputFieldValue>(this.data.current.xBlanco);
-  readonly yBlancoField = signal<InputFieldValue>(this.data.current.yBlanco);
-  readonly zBlancoField = signal<InputFieldValue>(this.data.current.zBlanco);
+  // ── Position signals ──────────────────────────────────────────────────────
+  readonly piezaPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(this.data.current.xPieza, this.data.current.yPieza, this.data.current.zPieza),
+  );
+  readonly blancoPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(this.data.current.xBlanco, this.data.current.yBlanco, this.data.current.zBlanco),
+  );
   readonly oltField = signal<InputFieldValue>(this.data.current.olt);
 
+  // Helper mappings
+  #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
+    if (!x && !y && !z) return null;
+    return {
+      x: x?.value ? parseFloat(x.value.replace(',', '.')) : null,
+      y: y?.value ? parseFloat(y.value.replace(',', '.')) : null,
+      z: z?.value ? parseFloat(z.value.replace(',', '.')) : null,
+      unit: x?.unit ?? y?.unit ?? z?.unit ?? 'm',
+    };
+  }
+
+  #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
+    if (!pos) {
+      return { x: null, y: null, z: null };
+    }
+    const unit = pos.unit ?? 'm';
+    return {
+      x: pos.x !== null ? { value: pos.x.toFixed(1), unit } : null,
+      y: pos.y !== null ? { value: pos.y.toFixed(1), unit } : null,
+      z: pos.z !== null ? { value: pos.z.toFixed(1), unit } : null,
+    };
+  }
+
   apply(): void {
+    const pieza = this.#fromPosition(this.piezaPosition());
+    const blanco = this.#fromPosition(this.blancoPosition());
     this.#dialogRef.close({
       action: 'apply',
       series: this.formModel().series,
       observador: this.formModel().observador,
-      xPieza: this.xPiezaField(),
-      yPieza: this.yPiezaField(),
-      zPieza: this.zPiezaField(),
-      xBlanco: this.xBlancoField(),
-      yBlanco: this.yBlancoField(),
-      zBlanco: this.zBlancoField(),
+      xPieza: pieza.x,
+      yPieza: pieza.y,
+      zPieza: pieza.z,
+      xBlanco: blanco.x,
+      yBlanco: blanco.y,
+      zBlanco: blanco.z,
       olt: this.oltField(),
     });
   }

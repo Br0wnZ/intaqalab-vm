@@ -1,17 +1,16 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
-import { form } from '@angular/forms/signals';
-import { FormField } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ExecutionStore } from '../../../+state/execution.store';
 import type { InputFieldValue } from '../../../+state/execution.store';
+import { ExecutionStore } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -39,9 +38,10 @@ interface SelectorFormModel {
     TranslateModule,
     InputSelect,
     IntaIconComponent,
+    SoundLevelMeterInput,
   ],
   template: `
-    <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
+    <div class="h-full rounded-2xl bg-white p-2.5 flex flex-col gap-1.5 overflow-hidden">
       <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -93,59 +93,45 @@ interface SelectorFormModel {
       <!-- ── Body ────────────────────────────────────────────────────────── -->
       <div
         intaReadonlyContent
-        class="flex-1 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-8 gap-x-2 gap-y-1 min-h-0 content-start"
+        class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-2 items-end content-start min-h-0 mt-4 pt-2.5 pb-2 overflow-hidden"
       >
-        <!-- ── Fila 1 ───────────────────────────────────────────────────── -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'X'"
-          [value]="blancoBolax()"
-          (valueChange)="blancoBolax.set($event)"
+        <!-- Blanco bola Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [disabled]="readOnly()"
+          [value]="blancoBolaPosition()"
+          (valueChange)="blancoBolaPosition.set($event)"
         />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Y'"
-          [value]="blancoBolay()"
-          (valueChange)="blancoBolay.set($event)"
+
+        <!-- Boca pieza Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [disabled]="readOnly()"
+          [value]="bocaPiezaPosition()"
+          (valueChange)="bocaPiezaPosition.set($event)"
         />
+
+        <!-- Diámetro de la bola -->
         <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Z'"
-          [value]="blancoBolaz()"
-          (valueChange)="blancoBolaz.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'X'"
-          [value]="bocaPiezaX()"
-          (valueChange)="bocaPiezaX.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Y'"
-          [value]="bocaPiezaY()"
-          (valueChange)="bocaPiezaY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Z'"
-          [value]="bocaPiezaZ()"
-          (valueChange)="bocaPiezaZ.set($event)"
-        />
-        <ui-input-select
+          class="col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DIAMETRO_BOLA_LABEL' | translate"
           [opciones]="mOptions"
           [placeholder]="'XXX'"
           [value]="diametroBola()"
           (valueChange)="diametroBola.set($event)"
         />
+
+        <!-- Altura de la bola -->
         <ui-input-select
+          class="col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALTURA_BOLA_LABEL' | translate"
           [opciones]="mOptions"
           [placeholder]="'XXX'"
@@ -153,66 +139,67 @@ interface SelectorFormModel {
           (valueChange)="alturaBola.set($event)"
         />
 
-        <!-- ── Fila 2 ───────────────────────────────────────────────────── -->
+        <!-- Alt. trípode cám. trans. -->
         <ui-input-select
+          class="col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_TRANS_LABEL' | translate"
           [opciones]="mOptions"
           [placeholder]="'XXX'"
           [value]="altTripodeCamTransversal()"
           (valueChange)="altTripodeCamTransversal.set($event)"
         />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'X'"
-          [value]="camaraFrontalX()"
-          (valueChange)="camaraFrontalX.set($event)"
+
+        <!-- Cámara frontal Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [disabled]="readOnly()"
+          [value]="camaraFrontalPosition()"
+          (valueChange)="camaraFrontalPosition.set($event)"
         />
+
+        <!-- Alt. trípode cám. frontal -->
         <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Y'"
-          [value]="camaraFrontalY()"
-          (valueChange)="camaraFrontalY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Z'"
-          [value]="camaraFrontalZ()"
-          (valueChange)="camaraFrontalZ.set($event)"
-        />
-        <ui-input-select
+          class="col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_FRONTAL_LABEL' | translate"
           [opciones]="mOptions"
           [placeholder]="'XXX'"
           [value]="altTripodeCamFrontal()"
           (valueChange)="altTripodeCamFrontal.set($event)"
         />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'X'"
-          [value]="camTransversalX()"
-          (valueChange)="camTransversalX.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Y'"
-          [value]="camTransversalY()"
-          (valueChange)="camTransversalY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [placeholder]="'Z'"
-          [value]="camTransversalZ()"
-          (valueChange)="camTransversalZ.set($event)"
+
+        <!-- Cámara transversal Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [disabled]="readOnly()"
+          [value]="camTransversalPosition()"
+          (valueChange)="camTransversalPosition.set($event)"
         />
       </div>
     </div>
   `,
+  styles: [
+    `
+      inta-datos-blanco-bola ui-sound-level-meter-input {
+        width: 100%;
+      }
+      inta-datos-blanco-bola ui-sound-level-meter-input .flex {
+        gap: 0.25rem !important;
+        padding-left: 0.375rem !important;
+        padding-right: 0.375rem !important;
+      }
+      inta-datos-blanco-bola ui-sound-level-meter-input input {
+        max-width: 2rem;
+      }
+    `,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -228,6 +215,9 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => this.#store.datosBlancoBola().serieOptions);
   protected readonly disparoOptions = computed(() => this.#store.datosBlancoBola().disparoOptions);
+
+  // ── ReadOnly State ─────────────────────────────────────────────────────────
+  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
 
   // ── Estado del disparo ────────────────────────────────────────────────────
   protected readonly estadoLabel = computed(() => {
@@ -263,25 +253,17 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   });
   protected readonly selectorForm = form(this.selectorFormModel);
 
-  // ── Field signals ─────────────────────────────────────────────────────────
-  protected readonly blancoBolax = signal<InputFieldValue>(this.#store.datosBlancoBola().blancoBolax);
-  protected readonly blancoBolay = signal<InputFieldValue>(this.#store.datosBlancoBola().blancoBolay);
-  protected readonly blancoBolaz = signal<InputFieldValue>(this.#store.datosBlancoBola().blancoBolaz);
-  protected readonly bocaPiezaX = signal<InputFieldValue>(this.#store.datosBlancoBola().bocaPiezaX);
-  protected readonly bocaPiezaY = signal<InputFieldValue>(this.#store.datosBlancoBola().bocaPiezaY);
-  protected readonly bocaPiezaZ = signal<InputFieldValue>(this.#store.datosBlancoBola().bocaPiezaZ);
-  protected readonly diametroBola = signal<InputFieldValue>(this.#store.datosBlancoBola().diametroBola);
-  protected readonly alturaBola = signal<InputFieldValue>(this.#store.datosBlancoBola().alturaBola);
-  protected readonly altTripodeCamTransversal = signal<InputFieldValue>(
-    this.#store.datosBlancoBola().altTripodeCamTransversal,
-  );
-  protected readonly camaraFrontalX = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalX);
-  protected readonly camaraFrontalY = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalY);
-  protected readonly camaraFrontalZ = signal<InputFieldValue>(this.#store.datosBlancoBola().camaraFrontalZ);
-  protected readonly altTripodeCamFrontal = signal<InputFieldValue>(this.#store.datosBlancoBola().altTripodeCamFrontal);
-  protected readonly camTransversalX = signal<InputFieldValue>(this.#store.datosBlancoBola().camTransversalX);
-  protected readonly camTransversalY = signal<InputFieldValue>(this.#store.datosBlancoBola().camTransversalY);
-  protected readonly camTransversalZ = signal<InputFieldValue>(this.#store.datosBlancoBola().camTransversalZ);
+  // ── Position signals ──────────────────────────────────────────────────────
+  protected readonly blancoBolaPosition = signal<SoundLevelMeterValue | null>(null);
+  protected readonly bocaPiezaPosition = signal<SoundLevelMeterValue | null>(null);
+  protected readonly camaraFrontalPosition = signal<SoundLevelMeterValue | null>(null);
+  protected readonly camTransversalPosition = signal<SoundLevelMeterValue | null>(null);
+
+  // ── Single field signals ──────────────────────────────────────────────────
+  protected readonly diametroBola = signal<InputFieldValue>(null);
+  protected readonly alturaBola = signal<InputFieldValue>(null);
+  protected readonly altTripodeCamTransversal = signal<InputFieldValue>(null);
+  protected readonly altTripodeCamFrontal = signal<InputFieldValue>(null);
 
   // ── Snapshot for dirty tracking ───────────────────────────────────────────
   readonly #savedSnapshot = signal(this.#currentFieldSnapshot());
@@ -301,6 +283,12 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
     hasChanges: this.isDirty(),
   }));
 
+  constructor() {
+    super();
+    this.#applyFieldsFromStore();
+    this.#savedSnapshot.set(this.#currentFieldSnapshot());
+  }
+
   setCurrentShot(): void {
     this.selectorFormModel.update((m) => ({
       ...m,
@@ -311,26 +299,31 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
 
   openMasivaDialog(): void {
     const stored = this.#store.datosBlancoBola();
+    const blancoBola = this.#fromPosition(this.blancoBolaPosition());
+    const bocaPieza = this.#fromPosition(this.bocaPiezaPosition());
+    const camaraFrontal = this.#fromPosition(this.camaraFrontalPosition());
+    const camTransversal = this.#fromPosition(this.camTransversalPosition());
+
     const dialogData: AplicarConfigMasivaDialogData = {
       serieOptions: stored.serieOptions,
       disparoOptions: stored.disparoOptions,
       currentData: {
-        blancoBolax: this.blancoBolax(),
-        blancoBolay: this.blancoBolay(),
-        blancoBolaz: this.blancoBolaz(),
-        bocaPiezaX: this.bocaPiezaX(),
-        bocaPiezaY: this.bocaPiezaY(),
-        bocaPiezaZ: this.bocaPiezaZ(),
+        blancoBolax: blancoBola.x,
+        blancoBolay: blancoBola.y,
+        blancoBolaz: blancoBola.z,
+        bocaPiezaX: bocaPieza.x,
+        bocaPiezaY: bocaPieza.y,
+        bocaPiezaZ: bocaPieza.z,
         diametroBola: this.diametroBola(),
         alturaBola: this.alturaBola(),
         altTripodeCamTransversal: this.altTripodeCamTransversal(),
-        camaraFrontalX: this.camaraFrontalX(),
-        camaraFrontalY: this.camaraFrontalY(),
-        camaraFrontalZ: this.camaraFrontalZ(),
+        camaraFrontalX: camaraFrontal.x,
+        camaraFrontalY: camaraFrontal.y,
+        camaraFrontalZ: camaraFrontal.z,
         altTripodeCamFrontal: this.altTripodeCamFrontal(),
-        camTransversalX: this.camTransversalX(),
-        camTransversalY: this.camTransversalY(),
-        camTransversalZ: this.camTransversalZ(),
+        camTransversalX: camTransversal.x,
+        camTransversalY: camTransversal.y,
+        camTransversalZ: camTransversal.z,
       },
     };
 
@@ -347,7 +340,6 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
 
     ref.afterClosed().subscribe((result) => {
       if (result?.action === 'apply') {
-        // Apply the form values to the store (applies to all selected series/disparos)
         this.#store.updateDatosBlancoBola(result.data);
         this.#applyFieldsFromStore();
         this.#savedSnapshot.set(this.#currentFieldSnapshot());
@@ -364,68 +356,84 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
 
   async saveForm(): Promise<void> {
     const { serie, disparo } = this.selectorFormModel();
+    const blancoBola = this.#fromPosition(this.blancoBolaPosition());
+    const bocaPieza = this.#fromPosition(this.bocaPiezaPosition());
+    const camaraFrontal = this.#fromPosition(this.camaraFrontalPosition());
+    const camTransversal = this.#fromPosition(this.camTransversalPosition());
+
     this.#store.updateDatosBlancoBola({
       serie,
       disparo,
-      blancoBolax: this.blancoBolax(),
-      blancoBolay: this.blancoBolay(),
-      blancoBolaz: this.blancoBolaz(),
-      bocaPiezaX: this.bocaPiezaX(),
-      bocaPiezaY: this.bocaPiezaY(),
-      bocaPiezaZ: this.bocaPiezaZ(),
+      blancoBolax: blancoBola.x,
+      blancoBolay: blancoBola.y,
+      blancoBolaz: blancoBola.z,
+      bocaPiezaX: bocaPieza.x,
+      bocaPiezaY: bocaPieza.y,
+      bocaPiezaZ: bocaPieza.z,
       diametroBola: this.diametroBola(),
       alturaBola: this.alturaBola(),
       altTripodeCamTransversal: this.altTripodeCamTransversal(),
-      camaraFrontalX: this.camaraFrontalX(),
-      camaraFrontalY: this.camaraFrontalY(),
-      camaraFrontalZ: this.camaraFrontalZ(),
+      camaraFrontalX: camaraFrontal.x,
+      camaraFrontalY: camaraFrontal.y,
+      camaraFrontalZ: camaraFrontal.z,
       altTripodeCamFrontal: this.altTripodeCamFrontal(),
-      camTransversalX: this.camTransversalX(),
-      camTransversalY: this.camTransversalY(),
-      camTransversalZ: this.camTransversalZ(),
+      camTransversalX: camTransversal.x,
+      camTransversalY: camTransversal.y,
+      camTransversalZ: camTransversal.z,
     });
     this.#savedSnapshot.set(this.#currentFieldSnapshot());
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
+  #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
+    const unit = x?.unit ?? y?.unit ?? z?.unit ?? 'm';
+    return {
+      x: x?.value ? parseFloat(x.value) : null,
+      y: y?.value ? parseFloat(y.value) : null,
+      z: z?.value ? parseFloat(z.value) : null,
+      unit,
+    };
+  }
+
+  #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
+    if (!pos) {
+      return { x: null, y: null, z: null };
+    }
+    const unit = pos.unit ?? 'm';
+    return {
+      x: pos.x !== null ? { value: pos.x.toString(), unit } : null,
+      y: pos.y !== null ? { value: pos.y.toString(), unit } : null,
+      z: pos.z !== null ? { value: pos.z.toString(), unit } : null,
+    };
+  }
+
   #currentFieldSnapshot() {
     return {
-      blancoBolax: this.blancoBolax(),
-      blancoBolay: this.blancoBolay(),
-      blancoBolaz: this.blancoBolaz(),
-      bocaPiezaX: this.bocaPiezaX(),
-      bocaPiezaY: this.bocaPiezaY(),
-      bocaPiezaZ: this.bocaPiezaZ(),
+      blancoBolaPosition: this.blancoBolaPosition(),
+      bocaPiezaPosition: this.bocaPiezaPosition(),
+      camaraFrontalPosition: this.camaraFrontalPosition(),
+      camTransversalPosition: this.camTransversalPosition(),
       diametroBola: this.diametroBola(),
       alturaBola: this.alturaBola(),
       altTripodeCamTransversal: this.altTripodeCamTransversal(),
-      camaraFrontalX: this.camaraFrontalX(),
-      camaraFrontalY: this.camaraFrontalY(),
-      camaraFrontalZ: this.camaraFrontalZ(),
       altTripodeCamFrontal: this.altTripodeCamFrontal(),
-      camTransversalX: this.camTransversalX(),
-      camTransversalY: this.camTransversalY(),
-      camTransversalZ: this.camTransversalZ(),
     };
   }
 
   #applyFieldsFromStore(): void {
     const stored = this.#store.datosBlancoBola();
-    this.blancoBolax.set(stored.blancoBolax);
-    this.blancoBolay.set(stored.blancoBolay);
-    this.blancoBolaz.set(stored.blancoBolaz);
-    this.bocaPiezaX.set(stored.bocaPiezaX);
-    this.bocaPiezaY.set(stored.bocaPiezaY);
-    this.bocaPiezaZ.set(stored.bocaPiezaZ);
+    this.blancoBolaPosition.set(this.#toPosition(stored.blancoBolax, stored.blancoBolay, stored.blancoBolaz));
+    this.bocaPiezaPosition.set(this.#toPosition(stored.bocaPiezaX, stored.bocaPiezaY, stored.bocaPiezaZ));
+    this.camaraFrontalPosition.set(
+      this.#toPosition(stored.camaraFrontalX, stored.camaraFrontalY, stored.camaraFrontalZ),
+    );
+    this.camTransversalPosition.set(
+      this.#toPosition(stored.camTransversalX, stored.camTransversalY, stored.camTransversalZ),
+    );
+
     this.diametroBola.set(stored.diametroBola);
     this.alturaBola.set(stored.alturaBola);
     this.altTripodeCamTransversal.set(stored.altTripodeCamTransversal);
-    this.camaraFrontalX.set(stored.camaraFrontalX);
-    this.camaraFrontalY.set(stored.camaraFrontalY);
-    this.camaraFrontalZ.set(stored.camaraFrontalZ);
     this.altTripodeCamFrontal.set(stored.altTripodeCamFrontal);
-    this.camTransversalX.set(stored.camTransversalX);
-    this.camTransversalY.set(stored.camTransversalY);
-    this.camTransversalZ.set(stored.camTransversalZ);
   }
 }

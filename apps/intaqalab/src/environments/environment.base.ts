@@ -7,7 +7,8 @@ export const baseEnvironment: Omit<AppEnvironment, 'production' | 'apiUrl'> = {
   authConfig: {
     authority: 'https://iam.des.inta.es/realms/intaqalab',
     redirectUrl: window.location.origin,
-    clientId: '32853603-4a07-4725-bc1b-4c983f956b4d',
+    // clientId: '32853603-4a07-4725-bc1b-4c983f956b4d',
+    clientId: '656b06ef-927c-45a3-8a66-3e7b5b3997e2',
     scope: 'openid profile email offline_access',
     responseType: 'code',
     useCustomAuth0Domain: false,

@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { DatosBlancoBolasState, InputFieldValue } from '../../../+state/execution.store';
@@ -55,6 +55,7 @@ export type AplicarConfigMasivaDialogResult =
     TranslateModule,
     InputSelect,
     IntaIconComponent,
+    SoundLevelMeterInput,
   ],
   template: `
     <!-- Header -->
@@ -98,107 +99,82 @@ export type AplicarConfigMasivaDialogResult =
         </div>
       </div>
 
-      <!-- Campos — Fila 1 -->
-      <div class="grid grid-cols-2 gap-3">
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="blancoBolax()"
-          (valueChange)="blancoBolax.set($event)"
+      <!-- Campos -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mt-2 pt-2.5 pb-2">
+        <!-- Blanco bola Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [value]="blancoBolaPosition()"
+          (valueChange)="blancoBolaPosition.set($event)"
         />
+        <!-- Diámetro de la bola -->
         <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="blancoBolay()"
-          (valueChange)="blancoBolay.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BLANCO_BOLA_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="blancoBolaz()"
-          (valueChange)="blancoBolaz.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="bocaPiezaX()"
-          (valueChange)="bocaPiezaX.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="bocaPiezaY()"
-          (valueChange)="bocaPiezaY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="bocaPiezaZ()"
-          (valueChange)="bocaPiezaZ.set($event)"
-        />
-        <ui-input-select
+          class="col-span-1 md:col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DIAMETRO_BOLA_LABEL' | translate"
           [opciones]="mOptions"
           [value]="diametroBola()"
           (valueChange)="diametroBola.set($event)"
         />
+
+        <!-- Boca pieza Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.BOCA_PIEZA_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [value]="bocaPiezaPosition()"
+          (valueChange)="bocaPiezaPosition.set($event)"
+        />
+        <!-- Altura de la bola -->
         <ui-input-select
+          class="col-span-1 md:col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALTURA_BOLA_LABEL' | translate"
           [opciones]="mOptions"
           [value]="alturaBola()"
           (valueChange)="alturaBola.set($event)"
         />
-      </div>
 
-      <!-- Campos — Fila 2 -->
-      <div class="grid grid-cols-2 gap-3">
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_TRANS_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="altTripodeCamTransversal()"
-          (valueChange)="altTripodeCamTransversal.set($event)"
+        <!-- Cámara frontal Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [value]="camaraFrontalPosition()"
+          (valueChange)="camaraFrontalPosition.set($event)"
         />
+        <!-- Alt. trípode cám. frontal -->
         <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="camaraFrontalX()"
-          (valueChange)="camaraFrontalX.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_Y_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="camaraFrontalY()"
-          (valueChange)="camaraFrontalY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAMARA_FRONTAL_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="camaraFrontalZ()"
-          (valueChange)="camaraFrontalZ.set($event)"
-        />
-        <ui-input-select
+          class="col-span-1 md:col-span-1"
           [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_FRONTAL_LABEL' | translate"
           [opciones]="mOptions"
           [value]="altTripodeCamFrontal()"
           (valueChange)="altTripodeCamFrontal.set($event)"
         />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_X_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="camTransversalX()"
-          (valueChange)="camTransversalX.set($event)"
+
+        <!-- Cámara transversal Position -->
+        <ui-sound-level-meter-input
+          size="small"
+          class="col-span-1 md:col-span-2"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_GROUP_LABEL' | translate"
+          [placeholder]="'0'"
+          [unitOptions]="mOptions"
+          [value]="camTransversalPosition()"
+          (valueChange)="camTransversalPosition.set($event)"
         />
+        <!-- Alt. trípode cám. trans. -->
         <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_Y_LABEL' | translate"
+          class="col-span-1 md:col-span-1"
+          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.ALT_TRIPODE_CAM_TRANS_LABEL' | translate"
           [opciones]="mOptions"
-          [value]="camTransversalY()"
-          (valueChange)="camTransversalY.set($event)"
-        />
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.CAM_TRANSVERSAL_Z_LABEL' | translate"
-          [opciones]="mOptions"
-          [value]="camTransversalZ()"
-          (valueChange)="camTransversalZ.set($event)"
+          [value]="altTripodeCamTransversal()"
+          (valueChange)="altTripodeCamTransversal.set($event)"
         />
       </div>
     </mat-dialog-content>
@@ -218,6 +194,22 @@ export type AplicarConfigMasivaDialogResult =
       </button>
     </mat-dialog-actions>
   `,
+  styles: [
+    `
+      inta-aplicar-config-masiva-dialog ui-sound-level-meter-input {
+        max-width: 280px;
+        width: 100%;
+      }
+      inta-aplicar-config-masiva-dialog ui-sound-level-meter-input .flex {
+        gap: 0.25rem !important;
+        padding-left: 0.375rem !important;
+        padding-right: 0.375rem !important;
+      }
+      inta-aplicar-config-masiva-dialog ui-sound-level-meter-input input {
+        max-width: 2rem;
+      }
+    `,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -231,46 +223,91 @@ export class AplicarConfigMasivaDialog {
   protected selectedSeries: string[] = [];
   protected selectedDisparos: string[] = [];
 
-  // Field signals initialized from current data
-  protected readonly blancoBolax = signal<InputFieldValue>(this.data.currentData.blancoBolax);
-  protected readonly blancoBolay = signal<InputFieldValue>(this.data.currentData.blancoBolay);
-  protected readonly blancoBolaz = signal<InputFieldValue>(this.data.currentData.blancoBolaz);
-  protected readonly bocaPiezaX = signal<InputFieldValue>(this.data.currentData.bocaPiezaX);
-  protected readonly bocaPiezaY = signal<InputFieldValue>(this.data.currentData.bocaPiezaY);
-  protected readonly bocaPiezaZ = signal<InputFieldValue>(this.data.currentData.bocaPiezaZ);
+  // Position signals
+  protected readonly blancoBolaPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(
+      this.data.currentData.blancoBolax,
+      this.data.currentData.blancoBolay,
+      this.data.currentData.blancoBolaz,
+    ),
+  );
+  protected readonly bocaPiezaPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(
+      this.data.currentData.bocaPiezaX,
+      this.data.currentData.bocaPiezaY,
+      this.data.currentData.bocaPiezaZ,
+    ),
+  );
+  protected readonly camaraFrontalPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(
+      this.data.currentData.camaraFrontalX,
+      this.data.currentData.camaraFrontalY,
+      this.data.currentData.camaraFrontalZ,
+    ),
+  );
+  protected readonly camTransversalPosition = signal<SoundLevelMeterValue | null>(
+    this.#toPosition(
+      this.data.currentData.camTransversalX,
+      this.data.currentData.camTransversalY,
+      this.data.currentData.camTransversalZ,
+    ),
+  );
+
+  // Single fields
   protected readonly diametroBola = signal<InputFieldValue>(this.data.currentData.diametroBola);
   protected readonly alturaBola = signal<InputFieldValue>(this.data.currentData.alturaBola);
   protected readonly altTripodeCamTransversal = signal<InputFieldValue>(this.data.currentData.altTripodeCamTransversal);
-  protected readonly camaraFrontalX = signal<InputFieldValue>(this.data.currentData.camaraFrontalX);
-  protected readonly camaraFrontalY = signal<InputFieldValue>(this.data.currentData.camaraFrontalY);
-  protected readonly camaraFrontalZ = signal<InputFieldValue>(this.data.currentData.camaraFrontalZ);
   protected readonly altTripodeCamFrontal = signal<InputFieldValue>(this.data.currentData.altTripodeCamFrontal);
-  protected readonly camTransversalX = signal<InputFieldValue>(this.data.currentData.camTransversalX);
-  protected readonly camTransversalY = signal<InputFieldValue>(this.data.currentData.camTransversalY);
-  protected readonly camTransversalZ = signal<InputFieldValue>(this.data.currentData.camTransversalZ);
+
+  #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
+    const unit = x?.unit ?? y?.unit ?? z?.unit ?? 'm';
+    return {
+      x: x?.value ? parseFloat(x.value) : null,
+      y: y?.value ? parseFloat(y.value) : null,
+      z: z?.value ? parseFloat(z.value) : null,
+      unit,
+    };
+  }
+
+  #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
+    if (!pos) {
+      return { x: null, y: null, z: null };
+    }
+    const unit = pos.unit ?? 'm';
+    return {
+      x: pos.x !== null ? { value: pos.x.toString(), unit } : null,
+      y: pos.y !== null ? { value: pos.y.toString(), unit } : null,
+      z: pos.z !== null ? { value: pos.z.toString(), unit } : null,
+    };
+  }
 
   apply(): void {
+    const blancoBola = this.#fromPosition(this.blancoBolaPosition());
+    const bocaPieza = this.#fromPosition(this.bocaPiezaPosition());
+    const camaraFrontal = this.#fromPosition(this.camaraFrontalPosition());
+    const camTransversal = this.#fromPosition(this.camTransversalPosition());
+
     const result: AplicarConfigMasivaDialogResult = {
       action: 'apply',
       series: this.selectedSeries,
       disparos: this.selectedDisparos,
       data: {
-        blancoBolax: this.blancoBolax(),
-        blancoBolay: this.blancoBolay(),
-        blancoBolaz: this.blancoBolaz(),
-        bocaPiezaX: this.bocaPiezaX(),
-        bocaPiezaY: this.bocaPiezaY(),
-        bocaPiezaZ: this.bocaPiezaZ(),
+        blancoBolax: blancoBola.x,
+        blancoBolay: blancoBola.y,
+        blancoBolaz: blancoBola.z,
+        bocaPiezaX: bocaPieza.x,
+        bocaPiezaY: bocaPieza.y,
+        bocaPiezaZ: bocaPieza.z,
         diametroBola: this.diametroBola(),
         alturaBola: this.alturaBola(),
         altTripodeCamTransversal: this.altTripodeCamTransversal(),
-        camaraFrontalX: this.camaraFrontalX(),
-        camaraFrontalY: this.camaraFrontalY(),
-        camaraFrontalZ: this.camaraFrontalZ(),
+        camaraFrontalX: camaraFrontal.x,
+        camaraFrontalY: camaraFrontal.y,
+        camaraFrontalZ: camaraFrontal.z,
         altTripodeCamFrontal: this.altTripodeCamFrontal(),
-        camTransversalX: this.camTransversalX(),
-        camTransversalY: this.camTransversalY(),
-        camTransversalZ: this.camTransversalZ(),
+        camTransversalX: camTransversal.x,
+        camTransversalY: camTransversal.y,
+        camTransversalZ: camTransversal.z,
       },
     };
     this.#dialogRef.close(result);

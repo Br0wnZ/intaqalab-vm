@@ -51,21 +51,21 @@ describe('DatosBlancoBola', () => {
 
   it('setting a field marks widget as dirty', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['blancoBolax'].set({ value: '123.4', unit: 'm' });
+    fixture.componentInstance['blancoBolaPosition'].set({ x: 123.4, y: null, z: null, unit: 'm' });
     expect(fixture.componentInstance.formState().dirty).toBe(true);
   });
 
   it('saveForm persists field values to the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    fixture.componentInstance['blancoBolax'].set({ value: '100.5', unit: 'm' });
+    fixture.componentInstance['blancoBolaPosition'].set({ x: 100.5, y: null, z: null, unit: 'm' });
     await fixture.componentInstance.saveForm();
     expect(store.datosBlancoBola().blancoBolax).toEqual({ value: '100.5', unit: 'm' });
   });
 
   it('saveForm marks widget as clean', async () => {
     const { fixture } = await renderWidget();
-    fixture.componentInstance['blancoBolay'].set({ value: '50.0', unit: 'm' });
+    fixture.componentInstance['blancoBolaPosition'].set({ x: null, y: 50.0, z: null, unit: 'm' });
     await fixture.componentInstance.saveForm();
     expect(fixture.componentInstance.formState().dirty).toBe(false);
   });
@@ -73,9 +73,14 @@ describe('DatosBlancoBola', () => {
   it('resetForm restores values from the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    fixture.componentInstance['bocaPiezaX'].set({ value: '999.9', unit: 'm' });
+    fixture.componentInstance['bocaPiezaPosition'].set({ x: 999.9, y: null, z: null, unit: 'm' });
     fixture.componentInstance.resetForm();
-    expect(fixture.componentInstance['bocaPiezaX']()).toEqual(store.datosBlancoBola().bocaPiezaX);
+    expect(fixture.componentInstance['bocaPiezaPosition']()).toEqual({
+      x: store.datosBlancoBola().bocaPiezaX?.value ? parseFloat(store.datosBlancoBola().bocaPiezaX.value) : null,
+      y: store.datosBlancoBola().bocaPiezaY?.value ? parseFloat(store.datosBlancoBola().bocaPiezaY.value) : null,
+      z: store.datosBlancoBola().bocaPiezaZ?.value ? parseFloat(store.datosBlancoBola().bocaPiezaZ.value) : null,
+      unit: store.datosBlancoBola().bocaPiezaX?.unit ?? 'm',
+    });
   });
 
   it('resetForm marks widget as clean', async () => {

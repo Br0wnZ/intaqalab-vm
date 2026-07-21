@@ -555,7 +555,7 @@ export class Execution implements OnInit, OnDestroy {
     this.#filterWidgets();
     this.#store.setFireTrialId(trialId);
     this.#startExecutionStatePolling();
-    this.#store.loadPreferencesByUser(trialId, this.#currentUser.preferred_username);
+    //this.#store.loadPreferencesByUser(trialId, this.#currentUser.preferred_username);
   }
 
   /** 🔄 Sets up periodic polling for execution state. */
