@@ -13,7 +13,8 @@ export class TrialStatusLabelPipe implements PipeTransform {
     this.#translate.getStreamOnTranslationChange('UTILS_TRIALS.TRIAL_STATUS'),
   );
 
-  transform(status: TrialStatus): string {
+  transform(status?: TrialStatus | null): string {
+    if (!status) return '';
     const translations = this.#trialStatusTranslations();
     if (!translations) return status;
     const found = [

@@ -54,7 +54,7 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
             {{ trialCode() }}
           </h2>
           <ui-badge [status]="trialStatus()">
-            {{ trialStatus()! | trialStatusLabel }}
+            {{ trialStatus() | trialStatusLabel }}
           </ui-badge>
         </div>
         <button mat-flat-button [disabled]="isLoading()" (click)="openMassiveConfiguration()">

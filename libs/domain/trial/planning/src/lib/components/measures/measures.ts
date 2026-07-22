@@ -63,7 +63,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
               {{ trialCode() }}
             </h2>
             <ui-badge [status]="trialStatus()">
-              {{ trialStatus()! | trialStatusLabel }}
+              {{ trialStatus() | trialStatusLabel }}
             </ui-badge>
           </div>
           <mat-checkbox

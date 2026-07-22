@@ -53,7 +53,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
             {{ trialCode() }}
           </h2>
           <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()!.status | trialStatusLabel }}
+            {{ store.fireTrial()?.status | trialStatusLabel }}
           </ui-badge>
         </div>
         <button mat-flat-button class="flex gap-4" (click)="openNewSerieDialog()">

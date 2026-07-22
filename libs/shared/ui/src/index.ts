@@ -15,6 +15,7 @@ export * from './lib/ui-dialogs/services/ui-dialog-service';
 export * from './lib/ui-dialogs/ui-dialog.model';
 
 export * from './lib/badge/badge.component';
+export * from './lib/badge/trial-status-tone';
 export * from './lib/legend-trial-scheduler/legend-trial-scheduler.component';
 
 export * from './lib/boolean-status-badge/boolean-status-badge.component';

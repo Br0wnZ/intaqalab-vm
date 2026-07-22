@@ -21,7 +21,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { injectCurrentUser } from '@intaqalab/core';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -85,7 +85,10 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
               </span>
             </button>
 
-            <span class="px-4 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700 ml-1">
+            <span
+              class="px-4 py-1.5 rounded-full border text-sm font-medium ml-1"
+              [ngClass]="getStatusClass(executionData().status)"
+            >
               {{ executionData().status }}
             </span>
           </div>
@@ -488,16 +491,7 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   getStatusClass(status?: string): string {
-    switch (status) {
-      case 'Ejecutada':
-        return 'bg-green-100 text-green-700';
-      case 'Planificada':
-        return 'bg-blue-100 text-blue-700';
-      case 'Analizando':
-        return 'bg-orange-100 text-orange-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
+    return getTrialStatusToneClass(status);
   }
 
   widgets = signal<Widget[]>(injectWidgets());

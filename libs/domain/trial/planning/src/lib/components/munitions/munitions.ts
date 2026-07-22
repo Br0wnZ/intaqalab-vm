@@ -53,7 +53,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
               {{ trialCode() }}
             </h2>
             <ui-badge [status]="trialStatus()">
-              {{ trialStatus()! | trialStatusLabel }}
+              {{ trialStatus() | trialStatusLabel }}
             </ui-badge>
           </div>
           <button mat-flat-button [disabled]="checkIfAnyConfigurationsHaveValues()" (click)="openMassiveConfigDialog()">

@@ -132,6 +132,7 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
       const component = view.fixture.componentInstance;
 
       const reloadSpy = vi.spyOn(mockStore, 'reloadPlanningInfo');
+      reloadSpy.mockClear();
 
       // Simulate switching to tab 1
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -73,7 +73,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             {{ store.fireTrialCode() }}
           </h2>
           <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()!.status | trialStatusLabel }}
+            {{ store.fireTrial()?.status | trialStatusLabel }}
           </ui-badge>
         </div>
         @if (!readonly() && canValidate() && isUnderReview()) {

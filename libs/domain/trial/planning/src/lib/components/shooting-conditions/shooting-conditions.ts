@@ -69,7 +69,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
             {{ store.fireTrialCode() }}
           </h2>
           <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()!.status | trialStatusLabel }}
+            {{ store.fireTrial()?.status | trialStatusLabel }}
           </ui-badge>
         </div>
         <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
