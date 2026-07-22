@@ -105,4 +105,17 @@ describe('TrialSchedulerInlineComponent', () => {
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
   });
+
+  it('should not show remove icon for past scheduled dates', async () => {
+    mockCalendarTrialScheduleService.getSchedule.mockResolvedValue([
+      { date: '2020-01-01T12:00:00.000Z', lineOfShootId: 'line-1' },
+    ]);
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Línea de tiro 1/)).toBeInTheDocument();
+    });
+
+    expect(document.querySelector('.mat-mdc-chip-remove')).toBeNull();
+  });
 });

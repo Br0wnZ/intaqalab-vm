@@ -67,14 +67,14 @@ interface SchedulerChip {
           <mat-chip-set [disabled]="!canEdit()">
             @for (item of itemsView(); track item; let idx = $index) {
               <mat-chip
-                [removable]="canEdit()"
+                [removable]="canEdit() && isRemovable(item.date)"
                 [disabled]="!canEdit()"
                 [class.opacity-60]="!canEdit()"
                 (removed)="unschedule(idx)"
                 (click)="onRemoveClick($event)"
               >
                 {{ item.description }}
-                @if (canEdit()) {
+                @if (canEdit() && isRemovable(item.date)) {
                   <ui-inta-icon matChipRemove name="close" size="xs" />
                 }
               </mat-chip>
@@ -195,8 +195,20 @@ export class TrialSchedulerInlineComponent {
     }
   }
 
+  isRemovable(dateStr: string): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    return date >= today;
+  }
+
   async unschedule(index: number): Promise<void> {
     const items = this.itemsView() || [];
+    const item = items[index];
+    if (!item || !this.isRemovable(item.date)) {
+      return;
+    }
     items.splice(index, 1);
     this.calendarTrialScheduleService.update(this.trialId(), items).subscribe(() => {
       this.scheduleItems.set([...items]);

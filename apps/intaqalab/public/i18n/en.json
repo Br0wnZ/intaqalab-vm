@@ -79,7 +79,9 @@
     "CREATE_SUCCESS": "Trial created successfully",
     "MODIFY_SUCCESS": "Trial updated successfully",
     "SAVE_TRIAL": "Register",
-    "RESET_DATA": "Clear data"
+    "RESET_DATA": "Clear data",
+    "SCHEDULER_LOAD_ERROR": "Failed to load the scheduling section.",
+    "DOCUMENTS_LOAD_ERROR": "Failed to load the documentation section."
   },
   "TRIAL_DOCS": {
     "LABEL": "Associated documentation (Optional)",

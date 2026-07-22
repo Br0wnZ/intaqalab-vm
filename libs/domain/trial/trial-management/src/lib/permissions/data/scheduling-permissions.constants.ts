@@ -14,4 +14,12 @@ export const CAN_SCHEDULE_STATUS: ReadonlyArray<TrialStatus> = [
   TrialStatus.UNDER_REVIEW,
   TrialStatus.PLANNED,
   TrialStatus.PREPARED,
+  TrialStatus.IN_PROGRESS,
+  TrialStatus.INTERRUPTED,
+  TrialStatus.STARTED,
+  TrialStatus.EXECUTED,
+  TrialStatus.ANALYZING,
+  TrialStatus.FINALIZING,
+  TrialStatus.CLOSED,
+  TrialStatus.CANCELLED,
 ];

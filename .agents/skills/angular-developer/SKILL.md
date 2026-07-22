@@ -43,6 +43,7 @@ When asked to create a new Angular project, you must determine the correct execu
 When working with Angular components, consult the following references based on the task:
 
 - **Fundamentals**: Anatomy, metadata, core concepts, and template control flow (@if, @for, @switch). Read [components.md](references/components.md)
+- **Deferrable Views Rule**: Every `@defer` block must include an explicit `@error` block with a user-facing fallback state.
 - **Inputs**: Signal-based inputs, transforms, and model inputs. Read [inputs.md](references/inputs.md)
 - **Outputs**: Signal-based outputs and custom event best practices. Read [outputs.md](references/outputs.md)
 - **Host Elements**: Host bindings and attribute injection. Read [host-elements.md](references/host-elements.md)

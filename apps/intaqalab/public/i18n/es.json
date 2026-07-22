@@ -80,7 +80,9 @@
     "CREATE_SUCCESS": "Prueba creada correctamente",
     "MODIFY_SUCCESS": "Prueba modificada correctamente",
     "SAVE_TRIAL": "Registrar",
-    "RESET_DATA": "Borrar datos"
+    "RESET_DATA": "Borrar datos",
+    "SCHEDULER_LOAD_ERROR": "No se ha podido cargar la sección de programación.",
+    "DOCUMENTS_LOAD_ERROR": "No se ha podido cargar la sección de documentación."
   },
   "TRIAL_DOCS": {
     "LABEL": "Documentación asociada (Opcional)",

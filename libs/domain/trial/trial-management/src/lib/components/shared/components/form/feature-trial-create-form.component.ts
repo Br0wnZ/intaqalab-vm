@@ -14,9 +14,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { provideIntaDateAdapter } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
-import type { FireTrial } from '@intaqalab/models';
 import { IntaSignalCheckboxComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslatePipe } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
 import { TrialSchedulerInlineComponent } from '../../../../trial-scheduler/components/inline/trial-scheduler-inline.component';
@@ -211,6 +211,10 @@ import type { TrialCreateModifyForm } from './trial-create.model';
             ></inta-trial-scheduler-inline>
           } @placeholder {
             <div class="h-10 bg-gray-100 rounded animate-pulse"></div>
+          } @error {
+            <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.SCHEDULER_LOAD_ERROR' | translate }}
+            </div>
           }
         </div>
       }
@@ -236,6 +240,10 @@ import type { TrialCreateModifyForm } from './trial-create.model';
           <inta-trial-docs [trialId]="trialId()!" (viewDocument)="viewDocument.emit($event)" />
         } @placeholder {
           <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
+        } @error {
+          <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ 'TRIAL_CREATE_MODIFY_FORM.DOCUMENTS_LOAD_ERROR' | translate }}
+          </div>
         }
       }
     </div>
@@ -302,7 +310,7 @@ export class FeatureTrialCreateFormComponent {
 
   trialStatus = computed(() => this.formData()?.status);
 
-  openTrialDialog(title: string, controlName: 'associatedTrial' | 'linkedTrial') {
+  async openTrialDialog(title: string, controlName: 'associatedTrial' | 'linkedTrial') {
     if (!this.editable()) {
       return;
     }
@@ -312,14 +320,14 @@ export class FeatureTrialCreateFormComponent {
       disableClose: true,
       data: { title },
     });
-    dialogRef.afterClosed().subscribe((result: FireTrial | undefined) => {
-      if (result) {
-        this.upsertTrialModel.update((current) => ({
-          ...current,
-          [controlName]: result.id,
-          [controlName + 'View']: result.trialNumber,
-        }));
-      }
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result) {
+      this.upsertTrialModel.update((current) => ({
+        ...current,
+        [controlName]: result.id,
+        [controlName + 'View']: result.trialNumber,
+      }));
+    }
   }
 }

@@ -122,7 +122,7 @@ import { DayActionsComponent } from './day-actions.component';
                   <ui-inta-icon name="execution" size="md" />
                 </button>
               }
-              @if (canSchedule(event.meta.fireTrial.status)) {
+              @if (canUnprogram(event.meta.fireTrial.status, event.meta.date)) {
                 <button type="button" class="calendar-month-event__delete" (click)="unprogram(event.meta, $event)">
                   <ui-inta-icon name="remove" size="md" />
                 </button>
@@ -189,7 +189,7 @@ import { DayActionsComponent } from './day-actions.component';
               <ui-inta-icon name="execution" size="md" />
             </button>
           }
-          @if (canSchedule(weekEvent.event.meta.fireTrial.status)) {
+          @if (canUnprogram(weekEvent.event.meta.fireTrial.status, weekEvent.event.meta.date)) {
             <button type="button" class="calendar-week-event__delete" (click)="unprogram(weekEvent.event.meta, $event)">
               <ui-inta-icon name="remove" size="md" />
             </button>
@@ -248,7 +248,7 @@ import { DayActionsComponent } from './day-actions.component';
               <ui-inta-icon name="execution" size="md" />
             </button>
           }
-          @if (canSchedule(weekEvent.event.meta.fireTrial.status)) {
+          @if (canUnprogram(weekEvent.event.meta.fireTrial.status, weekEvent.event.meta.date)) {
             <button type="button" class="calendar-day-event__delete" (click)="unprogram(weekEvent.event.meta, $event)">
               <ui-inta-icon name="remove" size="md" />
             </button>
@@ -324,6 +324,13 @@ export class CalendarSharedTemplatesComponent {
 
   canSchedule(trialStatus: TrialStatus) {
     return this.#trialPersmissionsService.canSchedule(trialStatus);
+  }
+
+  canUnprogram(trialStatus: TrialStatus, dateStr: string): boolean {
+    if (!this.canSchedule(trialStatus)) {
+      return false;
+    }
+    return !isYesterdayOrEarlier(new Date(dateStr));
   }
 
   canGoToExecution(status: TrialStatus): boolean {
@@ -408,4 +415,14 @@ export class CalendarSharedTemplatesComponent {
     const match = line.label.match(/\d+/);
     return match ? `L${match[0]}` : `L${lineOfShootId}`;
   }
+}
+
+function isYesterdayOrEarlier(date: Date) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const dateToCheck = new Date(date);
+  dateToCheck.setHours(0, 0, 0, 0);
+  return dateToCheck <= yesterday;
 }

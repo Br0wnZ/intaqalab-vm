@@ -258,15 +258,22 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
   });
 
   onDateSelected(date: Date) {
-    this.touchedSomeDate.set(true);
     const values = this.selectedDates();
     const idx = values.findIndex(
       (d) => d.date.toDateString() === date.toDateString() && d.lineOfShootId === this.selectedLineOfShot(),
     );
     if (idx >= 0) {
+      if (isYesterdayOrEarlier(date)) {
+        return;
+      }
       values.splice(idx, 1);
+      this.touchedSomeDate.set(true);
     } else {
+      if (isYesterdayOrEarlier(date)) {
+        return;
+      }
       values.push({ date, lineOfShootId: this.selectedLineOfShot() });
+      this.touchedSomeDate.set(true);
     }
     console.log('selecting values...', values);
     this.selectedDates.set([...values]);
