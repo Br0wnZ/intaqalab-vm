@@ -20,6 +20,20 @@ export interface MunitionStockListSearch extends PaginatedSortedViewRequest {
   hasCertificate?: boolean;
 }
 
+export interface MunitionStockListFilterForm {
+  clientIds: string[];
+  plannedFireTrialIds: string;
+  plannedFireTrialView: string;
+  munitionTypeIds: string[];
+  munitionDumpIds: string[];
+  entryDateFrom: Date | null;
+  entryDateTo: Date | null;
+  retirementDateFrom: Date | null;
+  retirementDateTo: Date | null;
+  quantity: { min: number | null; max: number | null };
+  batches: string;
+}
+
 export interface MunitionStockListPaginatedResponse {
   page: number;
   pageSize: number;

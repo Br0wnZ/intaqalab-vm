@@ -92,7 +92,7 @@ const DEFAULT_COLUMNS = [
       </mat-menu>
     </div>
 
-    <inta-stock-list-filter [showOnlyActive]="showOnlyActive()" (filtersData)="setFiltersData($event)" />
+    <inta-stock-list-filter (filtersData)="setFiltersData($event)" />
 
     <div class="w-full flex justify-end mb-4 mt-6">
       <div class="flex items-center gap-2 mr-4">
@@ -324,8 +324,8 @@ export class StockListComponent {
 
   pageIndex = signal(0);
   pageSize = signal(10);
-  sortField = signal<string | undefined>(undefined);
-  sortDirection = signal<'asc' | 'desc' | ''>('');
+  sortField = signal<string | undefined>('createdAt');
+  sortDirection = signal<'asc' | 'desc' | ''>('desc');
   filtersData = signal<MunitionStockListSearch | undefined>(undefined);
 
   constructor() {
@@ -384,6 +384,7 @@ export class StockListComponent {
   }
 
   setFiltersData(data: MunitionStockListSearch) {
+    this.pageIndex.set(0);
     this.filtersData.set(data);
   }
 }

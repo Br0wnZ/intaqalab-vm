@@ -8,7 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { FormField, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -366,6 +366,8 @@ export class MunitionsShellComponent {
         return this.formModel().category === WarehouseMunitionCategory.MUNITION;
       },
     });
+    min(schemaPath.quantity, 0);
+    max(schemaPath.quantity, 999999);
     validate(schemaPath.quantity, ({ value }) => {
       const quantity = value();
 
@@ -424,6 +426,8 @@ export class MunitionsShellComponent {
           return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
         },
       });
+      min(component.quantity!, 0);
+      max(component.quantity!, 999999);
       validate(component.quantity!, ({ value }) => {
         const quantity = value();
         const isMunitionComponent = this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;

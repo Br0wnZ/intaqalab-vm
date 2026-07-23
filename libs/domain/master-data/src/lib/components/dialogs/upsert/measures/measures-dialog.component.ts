@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MEASUREMENTS_AND_RECORDS_UNITS } from '../../../../data/measures.constants';
@@ -34,6 +35,8 @@ import {
     MatExpansionModule,
     MatCheckbox,
     MatSelectModule,
+    NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -170,6 +173,7 @@ import {
               id="minValue"
               type="number"
               matInput
+              libLocalDecimal
               [formField]="form.minValue!"
               [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MIN_VALUE.PLACEHOLDER' | translate"
             />
@@ -185,6 +189,7 @@ import {
               id="maxValue"
               type="number"
               matInput
+              libLocalDecimal
               [formField]="form.maxValue!"
               [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MAX_VALUE.PLACEHOLDER' | translate"
             />
@@ -198,7 +203,11 @@ import {
           <mat-form-field appearance="outline" class="w-full">
             <input
               id="uncertainty"
+              type="number"
               matInput
+              libNoNegativeValues
+              libLocalDecimal
+              min="0"
               [formField]="form.uncertainty!"
               [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.UNCERTAINTY.PLACEHOLDER' | translate"
             />

@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { MasterDataDimension } from '../../../../models/master-data-dimension.model';
@@ -18,6 +19,8 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
     TranslateModule,
     FormField,
     IntaIconComponent,
+    NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -39,6 +42,8 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
             id="width"
             matInput
             type="number"
+            libNoNegativeValues
+            libLocalDecimal
             [formField]="form.width"
             [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.WIDTH' | translate"
           />
@@ -60,6 +65,8 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
             id="height"
             matInput
             type="number"
+            libNoNegativeValues
+            libLocalDecimal
             [formField]="form.height"
             [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.HEIGHT' | translate"
           />
@@ -81,6 +88,8 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
             id="diameter"
             matInput
             type="number"
+            libNoNegativeValues
+            libLocalDecimal
             [formField]="form.diameter"
             [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.DIAMETER' | translate"
           />

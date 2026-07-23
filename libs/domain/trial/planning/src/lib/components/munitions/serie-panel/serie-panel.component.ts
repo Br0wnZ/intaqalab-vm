@@ -7,7 +7,6 @@ import {
   input,
   linkedSignal,
   output,
-  signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -48,7 +47,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
           <button
             mat-flat-button
             class="!h-7 !min-h-0 !px-2 !text-xs flex items-center gap-1"
-            [disabled]="allShotsAssigned()"
+            [disabled]="readonly() || allShotsAssigned()"
             (click)="onAddMunition(); $event.stopPropagation()"
           >
             <ui-inta-icon name="plus" size="xs" />
@@ -82,6 +81,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
                     mat-icon-button
                     type="button"
                     class="!text-gray-500 hover:!text-red-500"
+                    [disabled]="readonly()"
                     [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
                     (click)="onDeleteConfiguration(configIdx); $event.stopPropagation()"
                   >
@@ -97,6 +97,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
               [configIndex]="configIdx"
               [shots]="shots()"
               [excludeShotIds]="getExcludeShotIds(configIdx)"
+              [readonly]="readonly()"
               (configChange)="onConfigChange(configIdx, $event)"
             />
           </mat-expansion-panel>
@@ -139,6 +140,8 @@ export class SeriePanelComponent {
 
   readonly expanded = input(false);
 
+  readonly readonly = input<boolean>(false);
+
   readonly serieName = computed(() => this.serie().seriesName);
 
   readonly configurations = computed(() => this.serie().configurations);
@@ -161,6 +164,9 @@ export class SeriePanelComponent {
   }
 
   onAddMunition(): void {
+    if (this.readonly()) {
+      return;
+    }
     const serieIdx = this.serieIndex();
     const seriesId = this.serie().seriesId;
     this.seriesSignal().update((series) =>
@@ -172,6 +178,9 @@ export class SeriePanelComponent {
   }
 
   onConfigChange(configIndex: number, config: Configuration): void {
+    if (this.readonly()) {
+      return;
+    }
     const serieIdx = this.serieIndex();
     this.seriesSignal().update((series) =>
       series.map((s, idx) => {
@@ -184,6 +193,9 @@ export class SeriePanelComponent {
   }
 
   onDeleteConfiguration(configIndex: number): void {
+    if (this.readonly()) {
+      return;
+    }
     this.deleteConfiguration.emit(configIndex);
   }
 }

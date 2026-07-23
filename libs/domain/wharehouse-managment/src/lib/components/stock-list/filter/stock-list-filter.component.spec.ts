@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
@@ -67,9 +67,11 @@ async function setup() {
   const munitionComponentStore = makeMunitionComponentStore();
   const munitionsDumpsStore = makeMunitionsDumpsStore();
   const clientsDataService = makeClientsDataService();
+  const filtersSpy = vi.fn();
 
   const view = await render(StockListFilterComponent, {
     imports: [TranslateModule.forRoot()],
+    on: { filtersData: filtersSpy },
     providers: [
       provideAnimationsAsync(),
       provideHttpClient(),
@@ -86,7 +88,7 @@ async function setup() {
   fixture.detectChanges();
   const component = fixture.componentInstance;
   const container = fixture.nativeElement as HTMLElement;
-  return { fixture, component, container, stockListStore, munitionComponentStore, munitionsDumpsStore };
+  return { fixture, component, container, stockListStore, munitionComponentStore, munitionsDumpsStore, filtersSpy };
 }
 
 // Tests
@@ -124,15 +126,15 @@ describe('StockListFilterComponent', () => {
     });
   });
 
-  // â”€â”€ search() â€“ field mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // search() - field mapping
   describe('search()', () => {
-    it('should call store.search() with only non-empty fields, excluding plannedFireTrialView', async () => {
-      const { component, fixture, stockListStore } = await setup();
+    it('should emit only non-empty fields via filtersData, excluding plannedFireTrialView', async () => {
+      const { component, fixture, filtersSpy } = await setup();
 
       component.formModel.set({
         clientIds: ['c-1'],
         plannedFireTrialIds: '',
-        plannedFireTrialView: '0001/25', // must be excluded from the call
+        plannedFireTrialView: '0001/25',
         munitionTypeIds: ['m-type-1'],
         batches: 'LOT-A',
         munitionDumpIds: ['dump-1'],
@@ -140,8 +142,7 @@ describe('StockListFilterComponent', () => {
         entryDateTo: null,
         retirementDateFrom: null,
         retirementDateTo: null,
-        quantityMax: 100,
-        quantityMin: 10,
+        quantity: { min: 10, max: 100 },
       });
       fixture.detectChanges();
       component.search();
@@ -155,35 +156,34 @@ describe('StockListFilterComponent', () => {
         quantityMax: 100,
         quantityMin: 10,
       };
-      expect(stockListStore.search).toHaveBeenCalledWith(expectedCriteria);
+      expect(filtersSpy).toHaveBeenCalledWith(expectedCriteria);
     });
 
-    it('should omit null / empty / empty-array fields from the search call', async () => {
-      const { component, fixture, stockListStore } = await setup();
+    it('should omit null and empty-array fields from the emitted filters', async () => {
+      const { component, fixture, filtersSpy } = await setup();
 
       component.formModel.set({
-        clientIds: [], // empty array â†’ omitted
-        plannedFireTrialIds: '', // empty string â†’ omitted
+        clientIds: [],
+        plannedFireTrialIds: '',
         plannedFireTrialView: '',
         munitionTypeIds: [],
         batches: 'LOT-B',
         munitionDumpIds: [],
-        entryDateFrom: null, // null â†' omitted
+        entryDateFrom: null,
         entryDateTo: null,
         retirementDateFrom: null,
         retirementDateTo: null,
-        quantityMax: null,
-        quantityMin: null,
+        quantity: { min: null, max: null },
       });
       fixture.detectChanges();
       component.search();
       fixture.detectChanges();
 
-      expect(stockListStore.search).toHaveBeenCalledWith({ batches: 'LOT-B' });
+      expect(filtersSpy).toHaveBeenCalledWith({ batches: 'LOT-B' });
     });
 
-    it('should format Date fields to yyyy-MM-dd strings', async () => {
-      const { component, fixture, stockListStore } = await setup();
+    it('should format Date fields to yyyy-MM-dd strings in the emitted filters', async () => {
+      const { component, fixture, filtersSpy } = await setup();
 
       component.formModel.set({
         clientIds: [],
@@ -196,14 +196,13 @@ describe('StockListFilterComponent', () => {
         entryDateTo: new Date(2025, 11, 31), // 31 Dec 2025
         retirementDateFrom: null,
         retirementDateTo: null,
-        quantityMax: null,
-        quantityMin: null,
+        quantity: { min: null, max: null },
       });
       fixture.detectChanges();
       component.search();
       fixture.detectChanges();
 
-      expect(stockListStore.search).toHaveBeenCalledWith({
+      expect(filtersSpy).toHaveBeenCalledWith({
         entryDateFrom: '2025-01-15',
         entryDateTo: '2025-12-31',
       });
@@ -214,6 +213,29 @@ describe('StockListFilterComponent', () => {
       // fireEvent.click bypasses disabled state in JSDOM, so assert the attribute directly
       const searchBtn = container.querySelector('[mat-flat-button]') as HTMLButtonElement;
       expect(searchBtn.disabled).toBe(true);
+    });
+  });
+
+  // clearFilters()
+  describe('clearFilters()', () => {
+    it('should emit empty filters when clear button is clicked', async () => {
+      const { component, fixture, filtersSpy, container } = await setup();
+      component.formModel.set({ ...component.defaultFormValues, batches: 'LOT-X' });
+      fixture.detectChanges();
+      const clearBtn = container.querySelector('[mat-stroked-button]') as HTMLButtonElement;
+      clearBtn.click();
+      fixture.detectChanges();
+      expect(filtersSpy).toHaveBeenCalledWith({});
+    });
+
+    it('should reset formModel to default values when clear button is clicked', async () => {
+      const { component, fixture, container } = await setup();
+      component.formModel.set({ ...component.defaultFormValues, batches: 'LOT-X' });
+      fixture.detectChanges();
+      const clearBtn = container.querySelector('[mat-stroked-button]') as HTMLButtonElement;
+      clearBtn.click();
+      fixture.detectChanges();
+      expect(component.formModel()).toEqual(component.defaultFormValues);
     });
   });
 

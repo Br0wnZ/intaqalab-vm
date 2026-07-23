@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
@@ -20,6 +21,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -56,7 +58,14 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
             {{ 'WHAREHOUSE_MANAGMENT.DIALOG_RETIRE.QUANTITY_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="quantiy" type="number" matInput [formField]="form.quantity" />
+            <input
+              id="quantiy"
+              type="number"
+              matInput
+              libNoNegativeValues
+              libNoLeadingZeros
+              [formField]="form.quantity"
+            />
           </mat-form-field>
         </div>
         <ui-inta-signal-select

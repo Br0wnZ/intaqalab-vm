@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type PiezoPosicionState } from '../../../+state/execution.store';
@@ -40,6 +41,8 @@ interface PiezoFormModel {
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <div
@@ -183,7 +186,10 @@ interface PiezoFormModel {
                 <input
                   matInput
                   type="number"
+                  libNoNegativeValues
+                  libLocalDecimal
                   min="0"
+                  [decimals]="1"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
                   [value]="cierrePresionMaxima() ?? ''"
                   (input)="cierrePresionMaxima.set(parseNumber($any($event.target).value))"
@@ -195,6 +201,8 @@ interface PiezoFormModel {
                 <input
                   matInput
                   type="number"
+                  libNoNegativeValues
+                  libLocalDecimal
                   min="0"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
                   [value]="cierreAccion() ?? ''"
@@ -207,6 +215,8 @@ interface PiezoFormModel {
                 <input
                   matInput
                   type="number"
+                  libNoNegativeValues
+                  libLocalDecimal
                   min="0"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
                   [value]="cierreRetardo() ?? ''"
@@ -255,8 +265,9 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
+                  [decimals]="1"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
                   [value]="intermedioPresionMaxima() ?? ''"
                   (input)="intermedioPresionMaxima.set(parseNumber($any($event.target).value))"
@@ -267,8 +278,8 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
                   [value]="intermedioAccion() ?? ''"
                   (input)="intermedioAccion.set(parseNumber($any($event.target).value))"
@@ -279,8 +290,8 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
                   [value]="intermedioRetardo() ?? ''"
                   (input)="intermedioRetardo.set(parseNumber($any($event.target).value))"
@@ -328,8 +339,9 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
+                  [decimals]="1"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_MAXIMA_PLACEHOLDER' | translate"
                   [value]="culotePresionMaxima() ?? ''"
                   (input)="culotePresionMaxima.set(parseNumber($any($event.target).value))"
@@ -340,8 +352,8 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_ACCION_PLACEHOLDER' | translate"
                   [value]="culoteAccion() ?? ''"
                   (input)="culoteAccion.set(parseNumber($any($event.target).value))"
@@ -352,8 +364,8 @@ interface PiezoFormModel {
                 <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_LABEL' | translate }}</mat-label>
                 <input
                   matInput
-                  type="number"
-                  min="0"
+                  libNoNegativeValues
+                  libLocalDecimal
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TIEMPO_RETARDO_PLACEHOLDER' | translate"
                   [value]="culoteRetardo() ?? ''"
                   (input)="culoteRetardo.set(parseNumber($any($event.target).value))"

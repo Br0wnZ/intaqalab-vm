@@ -119,17 +119,41 @@ export const EntityStore = signalStore(
 
 ### Capa 3 — Shell Component (`feature`)
 
+> [!IMPORTANT]
+> **Patrón Obligatorio de 3 Estados en la Vista:**
+> 1. **Loading (`store.isLoading()`)**: Réplica visual de la vista usando componentes `ui-skeleton` / `ui-skeleton-card` de `@intaqalab/ui`.
+> 2. **Error (`store.error()`)**: Mensaje de error accesible traducido con `@ngx-translate` (`{{ 'ERRORS.LOADING_ERROR' | translate }}`).
+> 3. **Success**: Componentes reales cargados con los datos.
+
 ```typescript
 // El componente Shell provee el Store y dispara la carga inicial
 @Component({
   selector: 'inta-entity-shell',
+  imports: [Skeleton, SkeletonCard, TranslateModule, EntityCardComponent],
   providers: [EntityStore], // provee aquí si el scope es la feature
   template: `
     @if (store.isLoading()) {
-      <mat-progress-bar mode="indeterminate" />
-    }
-    @for (item of store.items(); track item.id) {
-      <inta-entity-card [item]="item" />
+      <!-- ESTADO 1: LOADING (Réplica visual con Skeletons) -->
+      <div class="flex flex-col gap-4 p-4">
+        <ui-skeleton variant="text" width="40%" />
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          @for (i of [1, 2, 3]; track i) {
+            <ui-skeleton-card animation="wave" />
+          }
+        </div>
+      </div>
+    } @else if (store.error()) {
+      <!-- ESTADO 2: ERROR (Mensaje i18n) -->
+      <div class="p-6 text-center text-client-error font-medium">
+        {{ 'ERRORS.LOADING_ERROR' | translate }}
+      </div>
+    } @else {
+      <!-- ESTADO 3: ÉXITO (Componentes reales con datos) -->
+      <div class="flex flex-col gap-4 p-4">
+        @for (item of store.items(); track item.id) {
+          <inta-entity-card [item]="item" />
+        }
+      </div>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

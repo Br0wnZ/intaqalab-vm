@@ -16,6 +16,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { Badge } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { MunitionsStore } from '../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -52,13 +53,21 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
             <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
               {{ trialCode() }}
             </h2>
-            <ui-badge [status]="trialStatus()">
-              {{ trialStatus() | trialStatusLabel }}
-            </ui-badge>
+            @if (trialStatus(); as status) {
+              <ui-badge [status]="status">
+                {{ status | trialStatusLabel }}
+              </ui-badge>
+            }
           </div>
-          <button mat-flat-button [disabled]="checkIfAnyConfigurationsHaveValues()" (click)="openMassiveConfigDialog()">
-            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
-          </button>
+          @if (!readonly()) {
+            <button
+              mat-flat-button
+              [disabled]="checkIfAnyConfigurationsHaveValues()"
+              (click)="openMassiveConfigDialog()"
+            >
+              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
+            </button>
+          }
         </div>
 
         <mat-accordion class="flex flex-col gap-5">
@@ -69,6 +78,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
               [seriesSignal]="seriesSignal"
               [shots]="shotsPerSerie().get(serie.seriesId) ?? []"
               [expanded]="serieIdx === 0"
+              [readonly]="readonly()"
               (deleteConfiguration)="deleteConfiguration(serieIdx, $event)"
             />
           }
@@ -81,12 +91,14 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
         }
 
         <div class="mt-6 flex gap-4 justify-end">
-          <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
-            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
-          </button>
-          <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
-            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
-          </button>
+          @if (!readonly()) {
+            <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
+              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
+            </button>
+            <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -329,7 +341,10 @@ export class Munitions {
     return this.seriesSignal();
   }
 
-  openMassiveConfigDialog(): void {
+  async openMassiveConfigDialog(): Promise<void> {
+    if (this.readonly()) {
+      return;
+    }
     this.#massiveDialogOpen = true;
     const dialogRef = this.#dialog.open(MassiveMunitionsConfigurationDialog, {
       maxWidth: 1200,
@@ -347,16 +362,18 @@ export class Munitions {
       },
     });
 
-    dialogRef.afterClosed().subscribe((saved: boolean | null) => {
-      this.#massiveDialogOpen = false;
-      this.#munitionsStore.resetUpdateMunitions();
-      if (saved) {
-        this.#munitionsStore.reloadMunitions();
-      }
-    });
+    const saved = await firstValueFrom(dialogRef.afterClosed());
+    this.#massiveDialogOpen = false;
+    this.#munitionsStore.resetUpdateMunitions();
+    if (saved) {
+      this.#munitionsStore.reloadMunitions();
+    }
   }
 
   saveForm(): void {
+    if (this.readonly()) {
+      return;
+    }
     if (!this.isFormValid()) {
       console.error('Formulario inválido');
       return;
@@ -367,10 +384,16 @@ export class Munitions {
   }
 
   resetForm(): void {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
   }
 
   deleteConfiguration(serieIdx: number, configIdx: number): void {
+    if (this.readonly()) {
+      return;
+    }
     this.#preDeleteSnapshot = this.#deepClone(this.seriesSignal());
 
     this.seriesSignal.update((series) =>
@@ -407,7 +430,7 @@ export class Munitions {
     try {
       const data = JSON.parse(jsonString);
       this.loadConfiguration(data);
-      console.log('Configuración importada correctamente');
+      console.info('Configuración importada correctamente');
     } catch (error) {
       console.error('Error al importar configuración:', error);
     }

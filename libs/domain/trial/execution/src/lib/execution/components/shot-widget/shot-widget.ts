@@ -1,11 +1,12 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -28,6 +29,9 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
     FormField,
     ReadonlyContentDirective,
     IntaIconComponent,
+    NoNegativeValuesDirective,
+    NoLeadingZerosDirective,
+    LocaleDecimalInputDirective,
   ],
   host: { class: 'block h-full' },
   template: `
@@ -55,7 +59,15 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
               {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.NUMBER' | translate }}
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <input placeholder="Ej: 001" id="shot-number" matInput type="number" [formField]="shotForm.shotNumber" />
+              <input
+                placeholder="Ej: 001"
+                id="shot-number"
+                matInput
+                type="number"
+                libNoNegativeValues
+                libNoLeadingZeros
+                [formField]="shotForm.shotNumber"
+              />
             </mat-form-field>
           </div>
 
@@ -65,7 +77,13 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
               {{ 'TRIAL_EXECUTION.WIDGETS.SHOT.VELOCITY' | translate }} (m/s)
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <input placeholder="Ej: 850" id="shot-velocity" matInput type="number" [formField]="shotForm.velocity" />
+              <input
+                placeholder="Ej: 850"
+                id="shot-velocity"
+                matInput
+                libLocalDecimal
+                [formField]="shotForm.velocity"
+              />
             </mat-form-field>
           </div>
 
@@ -116,6 +134,10 @@ export class ShotWidgetComponent extends BaseFormWidgetComponent {
   readonly shotForm = form(this.shotModel, (f) => {
     required(f.shotNumber);
     required(f.velocity);
+    min(f.shotNumber, 1);
+    max(f.shotNumber, 999);
+    min(f.velocity, 0);
+    max(f.velocity, 2000);
 
     validate(f.velocity, ({ value }) => {
       const numValue = parseFloat(value());

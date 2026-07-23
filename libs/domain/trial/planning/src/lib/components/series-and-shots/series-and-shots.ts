@@ -52,11 +52,13 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
           <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
             {{ trialCode() }}
           </h2>
-          <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()?.status | trialStatusLabel }}
-          </ui-badge>
+          @if (store.fireTrial()?.status; as status) {
+            <ui-badge [status]="status">
+              {{ status | trialStatusLabel }}
+            </ui-badge>
+          }
         </div>
-        <button mat-flat-button class="flex gap-4" (click)="openNewSerieDialog()">
+        <button mat-flat-button class="flex gap-4" [disabled]="readonly()" (click)="openNewSerieDialog()">
           <ui-inta-icon name="plus" size="xs" class="mr-1" />
           {{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON' | translate }}
         </button>
@@ -81,11 +83,17 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
       </div>
 
       <div class="overflow-x-auto">
-        <mat-accordion cdkDropList class="min-w-[600px] w-full" (cdkDropListDropped)="dropSerie($event)">
+        <mat-accordion
+          cdkDropList
+          class="min-w-[600px] w-full"
+          [cdkDropListDisabled]="readonly()"
+          (cdkDropListDropped)="dropSerie($event)"
+        >
           @for (serie of shotsSets(); track serie.id) {
             <mat-expansion-panel
               cdkDrag
               class="custom-expansion-panel [&]:!rounded-none"
+              [cdkDragDisabled]="readonly()"
               (opened)="openPanel(serie.id)"
               (closed)="closePanel(serie.id)"
             >
@@ -102,6 +110,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                       cdkDragHandle
                       title="Arrastrar para reordenar"
                       class="!w-8 !h-8 !flex !items-center !justify-center drag-handle-btn !-ml-2"
+                      [disabled]="readonly()"
                       [class.!text-purple-400]="openSerieId() === serie.id"
                       [class.hover:!text-purple-600]="openSerieId() === serie.id"
                       [class.!text-gray-400]="openSerieId() !== serie.id"
@@ -136,21 +145,23 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                   </div>
 
                   <div class="flex items-center gap-4">
-                    <button
-                      aria-label="Editar"
-                      class="cursor-pointer"
-                      (click)="updateSerie(serie.id); $event.stopPropagation()"
-                    >
-                      <ui-inta-icon name="edit" size="xl" />
-                    </button>
+                    @if (!readonly()) {
+                      <button
+                        aria-label="Editar"
+                        class="cursor-pointer"
+                        (click)="updateSerie(serie.id); $event.stopPropagation()"
+                      >
+                        <ui-inta-icon name="edit" size="xl" />
+                      </button>
 
-                    <button
-                      aria-label="Eliminar"
-                      class="cursor-pointer"
-                      (click)="deleteSerie(serie.id); $event.stopPropagation()"
-                    >
-                      <ui-inta-icon name="remove" size="xl" />
-                    </button>
+                      <button
+                        aria-label="Eliminar"
+                        class="cursor-pointer"
+                        (click)="deleteSerie(serie.id); $event.stopPropagation()"
+                      >
+                        <ui-inta-icon name="remove" size="xl" />
+                      </button>
+                    }
 
                     <div class="border-l border-gray-300 h-10 mx-1"></div>
                   </div>
@@ -172,7 +183,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                     <h2 class="text-sm font-semibold">
                       {{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SERIES_SHOTS' | translate }}
                     </h2>
-                    <button mat-flat-button class="flex gap-4" (click)="addShot(serie.id)">
+                    <button mat-flat-button class="flex gap-4" [disabled]="readonly()" (click)="addShot(serie.id)">
                       <ui-inta-icon name="plus" size="xs" class="mr-1" />
                       {{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.ADD_SHOT_BUTTON' | translate }}
                     </button>
@@ -207,25 +218,27 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                                   | translate
                               }}"
                               matInput
-                              [disabled]="editingShotId() !== shot.id"
+                              [disabled]="readonly() || editingShotId() !== shot.id"
                               [(ngModel)]="shot.observation"
                             />
                           </mat-form-field>
                         </div>
 
                         <div class="flex items-center justify-end gap-4">
-                          @if (editingShotId() === shot.id) {
-                            <button title="Guardar" class="cursor-pointer flex items-center" (click)="saveShot(shot)">
-                              <mat-icon class="!text-xl">save</mat-icon>
-                            </button>
-                          } @else {
-                            <button title="Editar" class="cursor-pointer" (click)="toggleEdit(shot)">
-                              <ui-inta-icon name="edit" size="xl" />
+                          @if (!readonly()) {
+                            @if (editingShotId() === shot.id) {
+                              <button title="Guardar" class="cursor-pointer flex items-center" (click)="saveShot(shot)">
+                                <mat-icon class="!text-xl">save</mat-icon>
+                              </button>
+                            } @else {
+                              <button title="Editar" class="cursor-pointer" (click)="toggleEdit(shot)">
+                                <ui-inta-icon name="edit" size="xl" />
+                              </button>
+                            }
+                            <button title="Eliminar" class="cursor-pointer" (click)="deleteShot(serie.id, shot.id)">
+                              <ui-inta-icon name="remove" size="xl" />
                             </button>
                           }
-                          <button title="Eliminar" class="cursor-pointer" (click)="deleteShot(serie.id, shot.id)">
-                            <ui-inta-icon name="remove" size="xl" />
-                          </button>
                         </div>
                       </div>
                     } @empty {
@@ -309,6 +322,9 @@ export class SeriesAndShots {
   }
 
   dropSerie(event: CdkDragDrop<Serie[]>) {
+    if (this.readonly()) {
+      return;
+    }
     const items = [...(this.shotsSets() ?? [])];
     moveItemInArray(items, event.previousIndex, event.currentIndex);
     const reordered: Serie[] = items.map((item, index) => ({
@@ -341,6 +357,9 @@ export class SeriesAndShots {
   }
 
   openNewSerieDialog() {
+    if (this.readonly()) {
+      return;
+    }
     this.dialog
       .open(UpsertSerieDialog, {
         width: '500px',
@@ -359,6 +378,9 @@ export class SeriesAndShots {
   }
 
   updateSerie(serieId: string) {
+    if (this.readonly()) {
+      return;
+    }
     const serie = this.shotsSets()
       ?.filter((s) => s.id === serieId)
       .shift();
@@ -384,10 +406,16 @@ export class SeriesAndShots {
   }
 
   addShot(serieId: string) {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesStore.addShotToSerie({ serieId });
   }
 
   deleteShot(serieId: string, shotId: string) {
+    if (this.readonly()) {
+      return;
+    }
     const dialog = this.dialog.open(ConfirmDeleteShotDialog, {
       viewContainerRef: this.#viewContainerRef,
       data: {
@@ -417,6 +445,9 @@ export class SeriesAndShots {
   }
 
   deleteSerie(serieId: string) {
+    if (this.readonly()) {
+      return;
+    }
     const dialog = this.dialog.open(ConfirmDeleteSerieDialog, {
       viewContainerRef: this.#viewContainerRef,
       data: {
@@ -441,6 +472,9 @@ export class SeriesAndShots {
   }
 
   toggleEdit(shot: Shot) {
+    if (this.readonly()) {
+      return;
+    }
     if (this.editingShotId() === shot.id) {
       this.editingShotId.set(null);
       this.seriesStore.reloadSeries();
@@ -450,6 +484,9 @@ export class SeriesAndShots {
   }
 
   saveShot(shot: Shot) {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesStore.updateShot({
       shotId: shot.id,
       observation: shot.observation || '',

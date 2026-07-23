@@ -40,6 +40,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             libNoLeadingZeros
             [value]="formModel().temperature ?? ''"
             [style.color]="temperatureColor()"
+            [disabled]="readonly()"
             (input)="onFieldChange('temperature', $any($event.target).valueAsNumber)"
             (blur)="onFieldBlur('temperature')"
           />
@@ -58,6 +59,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             type="number"
             libNoLeadingZeros
             [value]="formModel().tolerance ?? ''"
+            [disabled]="readonly()"
             (input)="onFieldChange('tolerance', $any($event.target).valueAsNumber)"
             (blur)="onFieldBlur('tolerance')"
           />
@@ -77,6 +79,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             libNoLeadingZeros
             libNoNegativeValues
             [value]="formModel().timeMin ?? ''"
+            [disabled]="readonly()"
             (input)="onFieldChange('timeMin', $any($event.target).valueAsNumber)"
             (blur)="onFieldBlur('timeMin')"
           />
@@ -96,6 +99,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             libNoLeadingZeros
             libNoNegativeValues
             [value]="formModel().timeMax ?? ''"
+            [disabled]="readonly()"
             (input)="onFieldChange('timeMax', $any($event.target).valueAsNumber)"
             (blur)="onFieldBlur('timeMax')"
           />
@@ -114,6 +118,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
           rows="2"
           [value]="formModel().observations ?? ''"
           [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.OBSERVATIONS_PLACEHOLDER' | translate"
+          [disabled]="readonly()"
           (input)="onFieldChange('observations', $any($event.target).value)"
         ></textarea>
       </mat-form-field>
@@ -158,6 +163,7 @@ export class ConditioningFieldsComponent {
   readonly data = input.required<ReconditioningData>();
   /** When true, forces all errors visible regardless of touched state (e.g. on save attempt) */
   readonly showErrors = input<boolean>(false);
+  readonly readonly = input<boolean>(false);
 
   readonly dataChange = output<ReconditioningData>();
 
@@ -198,6 +204,9 @@ export class ConditioningFieldsComponent {
   }
 
   onFieldChange(field: keyof ReconditioningData, value: number | string): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       [field]: value,

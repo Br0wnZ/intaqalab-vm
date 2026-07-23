@@ -8,11 +8,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService, provideTestingEnvironment } from '@intaqalab/core';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
-import { createMockMatDialog } from '@intaqalab/utils';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
+import { of } from 'rxjs';
 import { vi } from 'vitest';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
@@ -47,7 +47,12 @@ describe('FeatureTrialCreateFormComponent', () => {
   };
 
   async function setup(options: { inputs?: Record<string, unknown>; dialogResult?: unknown } = {}) {
-    const mockDialog = createMockMatDialog({ defaultResult: options.dialogResult ?? null });
+    const defaultResult = options.dialogResult ?? null;
+    const mockDialog = {
+      open: vi.fn().mockImplementation(() => ({
+        afterClosed: vi.fn().mockReturnValue(of(defaultResult)),
+      })),
+    };
     const user = userEvent.setup();
 
     const mockClientsResource = createMockResource([{ id: 'c-001', name: 'Client 1' }]);
@@ -236,7 +241,7 @@ describe('FeatureTrialCreateFormComponent', () => {
     });
 
     it('should populate associatedTrial field with value returned from dialog', async () => {
-      const { user, loader } = await setup({ dialogResult: { id: 'assoc-id-001', trialNumber: 'T-ASSOC-001' } });
+      const { user, loader, view } = await setup({ dialogResult: { id: 'assoc-id-001', trialNumber: 'T-ASSOC-001' } });
       const checkbox = await loader.getHarness(
         MatCheckboxHarness.with({ label: 'TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL' }),
       );
@@ -244,12 +249,15 @@ describe('FeatureTrialCreateFormComponent', () => {
       TestBed.flushEffects();
 
       await user.click(screen.getByText('add'));
-      TestBed.flushEffects();
+      await view.fixture.whenStable();
+      view.fixture.detectChanges();
       expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL')).toHaveValue('T-ASSOC-001');
     });
 
     it('should populate linkedTrial field with value returned from dialog', async () => {
-      const { user, loader } = await setup({ dialogResult: { id: 'linked-id-001', trialNumber: 'T-LINKED-001' } });
+      const { user, loader, view } = await setup({
+        dialogResult: { id: 'linked-id-001', trialNumber: 'T-LINKED-001' },
+      });
       const checkbox = await loader.getHarness(
         MatCheckboxHarness.with({ label: 'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' }),
       );
@@ -257,7 +265,8 @@ describe('FeatureTrialCreateFormComponent', () => {
       TestBed.flushEffects();
 
       await user.click(screen.getByText('add'));
-      TestBed.flushEffects();
+      await view.fixture.whenStable();
+      view.fixture.detectChanges();
       expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL')).toHaveValue('T-LINKED-001');
     });
 

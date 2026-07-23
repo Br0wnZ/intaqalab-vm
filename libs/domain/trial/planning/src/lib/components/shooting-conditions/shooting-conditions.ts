@@ -2,7 +2,7 @@
 import type { OnInit } from '@angular/core';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FormField, applyEach, form, min, required } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -17,9 +17,7 @@ import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
 import { Badge, InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import {
   IntaDatePipe,
-  IntaDecimalPipe,
   LocaleDecimalInputDirective,
-  NoLeadingZerosDirective,
   NoNegativeValuesDirective,
   TrialStatusLabelPipe,
 } from '@intaqalab/utils';
@@ -55,8 +53,6 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     TrialStatusLabelPipe,
     IntaIconComponent,
     NoNegativeValuesDirective,
-    NoLeadingZerosDirective,
-    IntaDecimalPipe,
     InputSelect,
     InputSelectInput,
     LocaleDecimalInputDirective,
@@ -68,11 +64,15 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
           <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
             {{ store.fireTrialCode() }}
           </h2>
-          <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()?.status | trialStatusLabel }}
-          </ui-badge>
+          @if (store.fireTrial()?.status; as status) {
+            <ui-badge [status]="status">
+              {{ status | trialStatusLabel }}
+            </ui-badge>
+          }
         </div>
-        <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
+        @if (!readonly()) {
+          <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
+        }
       </div>
       <mat-accordion multi class="flex flex-col gap-6">
         @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
@@ -318,7 +318,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).distance"
                         />
                       </ui-input-select>
@@ -348,7 +348,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       >
                         <input
                           inputSelectInput
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).targetInclination"
                         />
                       </ui-input-select>
@@ -376,7 +376,12 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         [value]="{ value: shot.orientation?.toString() ?? '', unit: shot.orientationUnit }"
                         (valueChange)="onShotFieldChange(serieIdx, i, 'orientation', $event)"
                       >
-                        <input inputSelectInput libNoLeadingZeros [formField]="getShotField(serieIdx, i).orientation" />
+                        <input
+                          inputSelectInput
+                          libNoNegativeValues
+                          libLocalDecimal
+                          [formField]="getShotField(serieIdx, i).orientation"
+                        />
                       </ui-input-select>
                     </td>
                   </ng-container>
@@ -402,7 +407,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         [value]="{ value: shot.elevation?.toString() ?? '', unit: shot.elevationUnit }"
                         (valueChange)="onShotFieldChange(serieIdx, i, 'elevation', $event)"
                       >
-                        <input inputSelectInput libNoLeadingZeros [formField]="getShotField(serieIdx, i).elevation" />
+                        <input inputSelectInput libLocalDecimal [formField]="getShotField(serieIdx, i).elevation" />
                       </ui-input-select>
                     </td>
                   </ng-container>
@@ -430,7 +435,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       >
                         <input
                           inputSelectInput
-                          libNoLeadingZeros
+                          libNoNegativeValues
                           libLocalDecimal
                           [formField]="getShotField(serieIdx, i).angle"
                         />
@@ -462,7 +467,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).range"
                         />
                       </ui-input-select>
@@ -493,7 +498,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).functioningHeight"
                         />
                       </ui-input-select>
@@ -524,7 +529,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).powderWeight"
                         />
                       </ui-input-select>
@@ -555,7 +560,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).projectileWeight"
                         />
                       </ui-input-select>
@@ -586,7 +591,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                         <input
                           inputSelectInput
                           libNoNegativeValues
-                          libNoLeadingZeros
+                          libLocalDecimal
                           [formField]="getShotField(serieIdx, i).nominalSpeed"
                         />
                       </ui-input-select>
@@ -626,12 +631,14 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
         }
       </mat-accordion>
       <div class="mt-10 flex gap-4 justify-end">
-        <button mat-flat-button [disabled]="isUpdating() || !isFormValid()" (click)="saveForm()">
-          {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
-        </button>
-        <button mat-stroked-button [disabled]="isUpdating() || !isFormValid()" (click)="resetForm()">
-          {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL' | translate }}
-        </button>
+        @if (!readonly()) {
+          <button mat-flat-button [disabled]="isUpdating() || !isFormValid()" (click)="saveForm()">
+            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
+          </button>
+          <button mat-stroked-button [disabled]="isUpdating() || !isFormValid()" (click)="resetForm()">
+            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL' | translate }}
+          </button>
+        }
       </div>
     </div>
   `,
@@ -749,6 +756,23 @@ export class ShootingConditionsComponent implements OnInit {
         required(shotPath.shotId);
         required(shotPath.impactZoneId);
 
+        disabled(shotPath.date, () => this.readonly());
+        disabled(shotPath.impactZoneId, () => this.readonly());
+        disabled(shotPath.targetTypeId, () => this.readonly());
+        disabled(shotPath.targetMaterialId, () => this.readonly());
+        disabled(shotPath.targetDimensionsId, () => this.readonly());
+        disabled(shotPath.targetThicknessId, () => this.readonly());
+        disabled(shotPath.distance, () => this.readonly());
+        disabled(shotPath.targetInclination, () => this.readonly());
+        disabled(shotPath.orientation, () => this.readonly());
+        disabled(shotPath.elevation, () => this.readonly());
+        disabled(shotPath.angle, () => this.readonly());
+        disabled(shotPath.range, () => this.readonly());
+        disabled(shotPath.functioningHeight, () => this.readonly());
+        disabled(shotPath.powderWeight, () => this.readonly());
+        disabled(shotPath.projectileWeight, () => this.readonly());
+        disabled(shotPath.nominalSpeed, () => this.readonly());
+
         min(shotPath.orientation, 0);
         min(shotPath.angle, 0);
         min(shotPath.range, 0);
@@ -785,6 +809,7 @@ export class ShootingConditionsComponent implements OnInit {
     field: keyof Shot,
     change: { value: string; unit: string } | null,
   ): void {
+    if (this.readonly()) return;
     if (!change) return;
     this.seriesSignal.update((series) => {
       const updated = this.#deepClone(series);
@@ -822,6 +847,9 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   openMassiveConfigurationDialog() {
+    if (this.readonly()) {
+      return;
+    }
     this.#dialog.open(MassiveConfigurationDialog, {
       maxWidth: 800,
       width: '100vw',
@@ -835,12 +863,18 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   saveForm() {
+    if (this.readonly()) {
+      return;
+    }
     const formData = this.getFormValues();
     const request = this.#mapDataToRequest(formData);
     this.store.updateShootingConditions(request);
   }
 
   resetForm() {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
   }
 

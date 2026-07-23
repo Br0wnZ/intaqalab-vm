@@ -67,6 +67,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [id]="'munitionType-' + configIndex()"
               [value]="selectedMunitionTypeId()"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_PLACEHOLDER' | translate"
+              [disabled]="readonly()"
               (selectionChange)="onMunitionTypeChange($event.value)"
             >
               @for (type of munitionTypes(); track type.id) {
@@ -145,6 +146,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [id]="'assignedShotIds-' + configIndex()"
               [value]="formModel().assignedShotIds ?? []"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS' | translate"
+              [disabled]="readonly()"
               (selectionChange)="onAssignedShotsSelectChange($event.value)"
             >
               <div class="px-3 py-2 border-b border-gray-200">
@@ -152,6 +154,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                   data-testid="select-all-shots-checkbox"
                   [checked]="allShotsSelected()"
                   [indeterminate]="someShotsSelected()"
+                  [disabled]="readonly()"
                   (change)="onSelectAllShots($event.checked)"
                   (click)="$event.stopPropagation()"
                   (keydown)="$event.stopPropagation()"
@@ -211,6 +214,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
           data-testid="conditioning-checkbox"
           class="!text-gray-700"
           [checked]="isConditioningEnabled()"
+          [disabled]="readonly()"
           (change)="onConditioningToggle($event.checked)"
         >
           {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.CONDITIONING_CHECKBOX' | translate }}
@@ -218,7 +222,11 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
       </div>
 
       @if (isConditioningEnabled()) {
-        <inta-conditioning-fields [data]="conditioningData()" (dataChange)="onConditioningChange($event)" />
+        <inta-conditioning-fields
+          [data]="conditioningData()"
+          [readonly]="readonly()"
+          (dataChange)="onConditioningChange($event)"
+        />
       }
 
       <!-- Component Selector -->
@@ -232,6 +240,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             [id]="'selectedComponents-' + configIndex()"
             [value]="selectableComponentsSelected()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR_PLACEHOLDER' | translate"
+            [disabled]="readonly()"
             (selectionChange)="onComponentsChange($event.value)"
           >
             @for (type of filteredComponentTypes(); track type.id) {
@@ -248,7 +257,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 @if (
                   component !== 'pólvora' && component !== 'polvora' && !component.toLowerCase().startsWith('polvora-')
                 ) {
-                  <mat-chip [removable]="true" (removed)="removeComponent(component)">
+                  <mat-chip [removable]="!readonly()" (removed)="removeComponent(component)">
                     {{ component | titlecase }}
                     <button matChipRemove>
                       <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
@@ -257,7 +266,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 }
               }
               @if (hasMainPowder()) {
-                <mat-chip [removable]="true" (removed)="removeMainPowder()">
+                <mat-chip [removable]="!readonly()" (removed)="removeMainPowder()">
                   {{ 'pólvora' | titlecase }}
                   <button matChipRemove>
                     <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
@@ -265,7 +274,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 </mat-chip>
               }
               @for (powder of powderTabs(); track powder.id) {
-                <mat-chip [removable]="true" (removed)="removePowder(powder.detail.type.type)">
+                <mat-chip [removable]="!readonly()" (removed)="removePowder(powder.detail.type.type)">
                   {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.POWDER_INDEX' | translate: { index: powder.index } }}
                   <button matChipRemove>
                     <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
@@ -286,6 +295,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
                 <inta-component-detail-form
                   [detail]="getComponentDetail(component)"
                   [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
+                  [readonly]="readonly()"
                   (detailChange)="onComponentDetailChange(component, $event)"
                   (addPowder)="onAddPowder(component)"
                 />
@@ -299,6 +309,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               <inta-component-detail-form
                 [detail]="powder.detail"
                 [assignedShotsCount]="formModel().assignedShotIds?.length ?? 0"
+                [readonly]="readonly()"
                 (detailChange)="onPowderDetailChange(powder.detail.type.type, $event)"
                 (addPowder)="onAddPowder('polvora')"
               />
@@ -338,6 +349,7 @@ export class ConfigurationFormComponent {
   readonly configIndex = input.required<number>();
   readonly shots = input<Shot[]>([]);
   readonly excludeShotIds = input<string[]>([]);
+  readonly readonly = input<boolean>(false);
   readonly configChange = output<Configuration>();
 
   readonly componentTypes = this.#munitionsStore.componentTypes;
@@ -488,9 +500,12 @@ export class ConfigurationFormComponent {
 
   readonly configForm = form(this.formModel, (f) => {
     required(f.batch);
+    disabled(f.batch, () => this.readonly());
+    disabled(f.maxAllowedErrors, () => this.readonly());
+    disabled(f.observations, () => this.readonly());
     // Denomination disabled when no munition-type is selected AND no component
     // path is available (prevents interacting with an empty dropdown).
-    disabled(f.denomination, () => !this.selectedMunitionTypeId() && !this.hasValidComponents());
+    disabled(f.denomination, () => this.readonly() || (!this.selectedMunitionTypeId() && !this.hasValidComponents()));
     // When the component path is not valid, denomination (and implicitly
     // munition-type) are required.  Also catches stale denomination values
     // left over when munition-type is not selected.
@@ -528,6 +543,9 @@ export class ConfigurationFormComponent {
   }
 
   onMunitionTypeChange(munitionTypeId: string): void {
+    if (this.readonly()) {
+      return;
+    }
     this.selectedMunitionTypeId.set(munitionTypeId);
     // Clear denomination when type changes: old denomination would not belong
     // to the new type, keeping it would make the parent form falsely valid.
@@ -544,6 +562,9 @@ export class ConfigurationFormComponent {
   }
 
   onSelectAllShots(checked: boolean): void {
+    if (this.readonly()) {
+      return;
+    }
     const ids = checked ? this.eligibleShots().map((s) => s.id) : [];
     this.formModel.update((current) => ({
       ...current,
@@ -553,6 +574,9 @@ export class ConfigurationFormComponent {
   }
 
   onAssignedShotsSelectChange(ids: string[]): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       assignedShotIds: ids,
@@ -561,6 +585,9 @@ export class ConfigurationFormComponent {
   }
 
   onConditioningToggle(enabled: boolean): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       reconditioning: enabled
@@ -571,6 +598,9 @@ export class ConfigurationFormComponent {
   }
 
   onConditioningChange(data: ReconditioningData): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       reconditioning: data,
@@ -579,6 +609,9 @@ export class ConfigurationFormComponent {
   }
 
   onComponentsChange(components: string[]): void {
+    if (this.readonly()) {
+      return;
+    }
     const current = this.formModel();
     const existingComponents = [...current.components];
     const types = this.componentTypes();
@@ -635,6 +668,9 @@ export class ConfigurationFormComponent {
   }
 
   removePowder(powderType: string): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => {
       const remainingComponents = current.components.filter((c) => c.type.type !== powderType);
 
@@ -687,6 +723,9 @@ export class ConfigurationFormComponent {
   }
 
   removeComponent(component: string): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => {
       const isPowder = component.toLowerCase() === 'pólvora' || component.toLowerCase() === 'polvora';
 
@@ -725,6 +764,9 @@ export class ConfigurationFormComponent {
   }
 
   onComponentDetailChange(componentType: string, detail: ComponentDetail): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => {
       const existingIndex = current.components.findIndex((d) => d.type.type.toLowerCase() === componentType);
       const updatedComponents = [...current.components];
@@ -744,6 +786,9 @@ export class ConfigurationFormComponent {
   }
 
   onAddPowder(_componentType: string): void {
+    if (this.readonly()) {
+      return;
+    }
     void _componentType;
     const currentComponents = this.formModel().components ?? [];
 
@@ -786,6 +831,9 @@ export class ConfigurationFormComponent {
   }
 
   onPowderDetailChange(powderType: string, detail: ComponentDetail): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => {
       const updatedComponents = current.components.map((c) => {
         if (c.type.type === powderType) {

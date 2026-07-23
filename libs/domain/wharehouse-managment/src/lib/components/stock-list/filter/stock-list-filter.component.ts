@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input, output, signal } from '@angular/core';
-import { FormField, form, min, pattern, validate, validateHttp } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
+import { FormField, form, pattern, validate, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -11,32 +11,16 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
-import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { IntaSignalSelectComponent, NumericRangeInput } from '@intaqalab/ui';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { format } from 'date-fns';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
-import type { MunitionStockListSearch } from '../../../models/munition-stock-list.model';
-import { WarehouseMunitionStatus } from '../../../models/utils.model';
+import type { MunitionStockListFilterForm, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import type { SearchByTrialNumberResponse } from '../../../utils/search-trial.utils';
 import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
-
-type FilterForm = {
-  clientIds: string[];
-  plannedFireTrialIds: string;
-  plannedFireTrialView: string;
-  munitionTypeIds: string[];
-  munitionDumpIds: string[];
-  entryDateFrom: Date | null;
-  entryDateTo: Date | null;
-  retirementDateFrom: Date | null;
-  retirementDateTo: Date | null;
-  quantityMin: number | null;
-  quantityMax: number | null;
-  batches: string;
-};
 
 @Component({
   selector: 'inta-stock-list-filter',
@@ -52,6 +36,7 @@ type FilterForm = {
     MatPaginatorModule,
     MatCheckboxModule,
     MatDatepickerModule,
+    NumericRangeInput,
   ],
   template: `
     <div class="w-full bg-white rounded-lg border border-gray-200">
@@ -186,29 +171,9 @@ type FilterForm = {
         </div>
         <div>
           <label for="quantityMin" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.QUANTITY_MIN' | translate }}
+            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.QUANTITY' | translate }}
           </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="quantityMin" type="number" matInput [formField]="form.quantityMin" />
-          </mat-form-field>
-          @if (form.quantityMin().touched() && form.quantityMin().errors()) {
-            @for (error of form.quantityMin().errors(); track error.kind) {
-              <mat-error>{{ error.message | translate }}</mat-error>
-            }
-          }
-        </div>
-        <div>
-          <label for="quantityMax" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.QUANTITY_MAX' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="quantityMax" type="number" matInput [formField]="form.quantityMax" />
-          </mat-form-field>
-          @if (form.quantityMax().touched() && form.quantityMax().errors()) {
-            @for (error of form.quantityMax().errors(); track error.kind) {
-              <mat-error>{{ error.message | translate }}</mat-error>
-            }
-          }
+          <ui-numeric-range-input [formField]="form.quantity" />
         </div>
 
         <div>
@@ -248,7 +213,22 @@ type FilterForm = {
       </div>
     </div>
   `,
-  styles: ``,
+  styles: `
+    inta-stock-list-filter ui-numeric-range-input > div > div {
+      border-radius: 8px !important;
+      border-color: var(--inta-neutral-300) !important;
+      height: 44px !important;
+    }
+    inta-stock-list-filter ui-numeric-range-input > div > div:hover {
+      border-color: var(--inta-neutral-400) !important;
+    }
+    inta-stock-list-filter ui-numeric-range-input > div > div:focus-within {
+      border-color: var(--inta-button) !important;
+      border-width: 2px !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  `,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
@@ -258,8 +238,9 @@ export class StockListFilterComponent {
   readonly munitionComponentStore = inject(MunitionComponentStore);
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
   readonly clientDataService = inject(ClientsDataService);
+  readonly #translate = inject(TranslateService);
+  readonly #urlTrialSearch = injectFireTrialsEndpoint();
 
-  readonly showOnlyActive = input<boolean>(true);
   readonly filtersData = output<MunitionStockListSearch>();
 
   constructor() {
@@ -276,46 +257,39 @@ export class StockListFilterComponent {
     entryDateTo: null,
     retirementDateFrom: null,
     retirementDateTo: null,
-    quantityMax: null,
-    quantityMin: null,
+    quantity: { min: null, max: null },
     batches: '',
   };
 
-  readonly formModel = signal<FilterForm>(this.defaultFormValues);
-
-  urlTrialSearch = injectFireTrialsEndpoint();
+  readonly formModel = signal<MunitionStockListFilterForm>(this.defaultFormValues);
 
   readonly form = form(this.formModel, (schemaPath) => {
-    min(schemaPath.quantityMax, 0);
-    min(schemaPath.quantityMin, 0);
-    validate(schemaPath.quantityMin, ({ value, valueOf }) => {
-      const quantityMin = value();
-      if (quantityMin === null) {
-        return null;
-      }
-      const quantityMinNumber = Number(quantityMin);
+    validate(schemaPath.quantity, ({ value }) => {
+      const { min, max } = value();
 
-      if (quantityMinNumber < 0) {
-        return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
-      }
-      const quantityMax = valueOf(schemaPath.quantityMax);
-      if (quantityMax !== null && quantityMin > Number(quantityMax)) {
-        return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG' };
-      }
-      return null;
-    });
-    validate(schemaPath.quantityMax, ({ value, valueOf }) => {
-      const quantityMax = value();
-      if (quantityMax === null) {
-        return null;
-      }
-      if (quantityMax < 0) {
-        return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
-      }
-      const quantityMin = valueOf(schemaPath.quantityMin);
-      if (quantityMin !== null && Number(quantityMin) > quantityMax) {
-        return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG' };
-      }
+      if (!min && !max) return null;
+
+      const numMin = min ? +min : null;
+      const numMax = max ? +max : null;
+
+      if (numMin && numMin < 0)
+        return {
+          kind: 'min_greater_than_zero',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MIN_GREATER_THAN_ZERO'),
+        };
+
+      if (numMax && numMax < 0)
+        return {
+          kind: 'max_greater_than_zero',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MAX_GREATER_THAN_ZERO'),
+        };
+
+      if (numMin && numMax && numMin > numMax)
+        return {
+          kind: 'wrong_interval',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG'),
+        };
+
       return null;
     });
     pattern(schemaPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN);
@@ -323,7 +297,7 @@ export class StockListFilterComponent {
       request: ({ value }) => {
         if (!value()) return undefined;
         return {
-          url: this.urlTrialSearch,
+          url: this.#urlTrialSearch,
           params: { trialNumber: value() },
         };
       },
@@ -387,25 +361,33 @@ export class StockListFilterComponent {
   });
 
   search() {
-    const criteria: Record<string, string | number | string[] | Date | null> = this.formModel();
-    const params: Record<string, string | string[] | number> = {};
+    const criteria = this.formModel();
 
-    Object.keys(criteria).forEach((key) => {
-      const value = criteria[key];
+    this.filtersData.emit(this.#castFilterFormIntoListSearch(criteria));
+  }
 
-      if (!value || (Array.isArray(value) && !value.length) || key === 'plannedFireTrialView') return;
+  #castFilterFormIntoListSearch(criteria: MunitionStockListFilterForm) {
+    const search = <MunitionStockListSearch>{
+      clientIds: criteria.clientIds,
+      batches: criteria.batches,
+      plannedFireTrialIds: criteria.plannedFireTrialIds.length ? [criteria.plannedFireTrialIds] : '',
+      munitionTypeIds: criteria.munitionTypeIds,
+      munitionDumpIds: criteria.munitionDumpIds,
+      quantityMin: criteria.quantity.min,
+      quantityMax: criteria.quantity.max,
+      entryDateFrom: criteria.entryDateFrom ? format(criteria.entryDateFrom, 'yyyy-MM-dd') : null,
+      entryDateTo: criteria.entryDateTo ? format(criteria.entryDateTo, 'yyyy-MM-dd') : null,
+      retirementDateFrom: criteria.retirementDateFrom ? format(criteria.retirementDateFrom, 'yyyy-MM-dd') : null,
+      retirementDateTo: criteria.retirementDateTo ? format(criteria.retirementDateTo, 'yyyy-MM-dd') : null,
+    };
 
-      params[key as keyof MunitionStockListSearch] = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
-    });
+    const hasValue = (value: unknown) => (Array.isArray(value) ? value.length > 0 : value);
+    const result = Object.fromEntries(Object.entries(search).filter(([, v]) => hasValue(v))) as MunitionStockListSearch;
 
-    this.store.search(params as MunitionStockListSearch);
-    this.filtersData.emit(params as MunitionStockListSearch);
+    return result;
   }
 
   protected clearFilters() {
-    const status = this.showOnlyActive() ? WarehouseMunitionStatus.AVAILABLE : WarehouseMunitionStatus.RETIRED;
-    this.store.search({ status });
-
     this.formModel.set(this.defaultFormValues);
 
     this.filtersData.emit({});

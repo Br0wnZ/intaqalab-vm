@@ -1,5 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
+import type { ElementRef } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,8 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { ElementRef } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -67,6 +67,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             data-testid="denomination-select"
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
+            [disabled]="readonly()"
             (selectionChange)="onDenominationChange($event.value)"
             (openedChange)="onDenominationPanelToggle($event)"
           >
@@ -150,6 +151,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             id="espoleta-fuze-mode"
             [value]="fuseWorkingModeId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FUZE_MODE' | translate"
+            [disabled]="readonly()"
             (selectionChange)="onFuseWorkingModeChange($event.value)"
           >
             @for (mode of fuseWorkingModes(); track mode.id) {
@@ -232,6 +234,7 @@ export class EspoletaDetailFormComponent {
 
   readonly detail = input.required<ComponentDetail>();
   readonly assignedShotsCount = input<number>(0);
+  readonly readonly = input<boolean>(false);
   readonly detailChange = output<ComponentDetail>();
 
   readonly #denominationsResource = httpResource<WarehousePaginatedResponse<WarehouseDenominationItem>>(() => {
@@ -286,6 +289,11 @@ export class EspoletaDetailFormComponent {
 
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
+    disabled(f.batch, () => this.readonly());
+    disabled(f.clientNumber, () => this.readonly());
+    disabled(f.fuseMeasurement, () => this.readonly());
+    disabled(f.maxAllowedErrors, () => this.readonly());
+    disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return null;
@@ -309,6 +317,9 @@ export class EspoletaDetailFormComponent {
   });
 
   onClientNumberInput(event: Event): void {
+    if (this.readonly()) {
+      return;
+    }
     const inputEl = event.target as HTMLInputElement;
     const rawVal = inputEl.value;
 
@@ -336,6 +347,9 @@ export class EspoletaDetailFormComponent {
   }
 
   onDenominationChange(denominationId: string): void {
+    if (this.readonly()) {
+      return;
+    }
     const denom = this.denominations().find((d) => d.id === denominationId);
     if (denom) {
       this.formModel.update((current) => ({
@@ -347,6 +361,9 @@ export class EspoletaDetailFormComponent {
   }
 
   onFuseWorkingModeChange(modeId: string): void {
+    if (this.readonly()) {
+      return;
+    }
     const mode = this.fuseWorkingModes().find((m) => m.id === modeId);
     if (mode) {
       this.formModel.update((current) => ({

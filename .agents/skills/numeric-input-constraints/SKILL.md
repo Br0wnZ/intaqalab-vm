@@ -19,7 +19,43 @@ user-invocable: true
 
 ---
 
-## 📦 Core Directives
+## � CRITICAL: Signal Forms + `[formField]` Directive
+
+> ⚠️ **When using Angular Signal Forms with `[formField]` directive, HTML attributes `min` and `max` DO NOT WORK.**
+>
+> **Always apply min/max constraints using `Validators.min()` and `Validators.max()` in the form definition, NOT as HTML attributes.**
+
+### Why?
+
+The `[formField]` directive in Signal Forms manages validation through TypeScript validators, not HTML attributes. HTML `min/max` attributes are ignored and will not prevent invalid submissions.
+
+### ✅ DO THIS:
+
+```typescript
+// TypeScript Component
+protected readonly form = form<MyForm>({
+  age: {
+    initialValue: 0,
+    validators: [Validators.required, Validators.min(1), Validators.max(150)],
+  },
+});
+```
+
+```html
+<!-- HTML Template: NO min/max attributes -->
+<input type="number" libNoNegativeValues [formField]="form.age" />
+```
+
+### ❌ DON'T DO THIS:
+
+```html
+<!-- WRONG: min/max attributes with [formField] directive are ignored -->
+<input type="number" libNoNegativeValues min="1" max="150" [formField]="form.age" />
+```
+
+---
+
+## �📦 Core Directives
 
 Three production-ready directives live in `libs/shared/utils/src/lib/directives/`:
 
@@ -31,7 +67,7 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 
 - Blocks `-` and `+` key presses
 - Strips `-`/`+` on paste
-- Enforces `min="0"` HTML attribute if missing
+- Does NOT replace HTML `min` attribute (see note below)
 
 **When to use:**
 
@@ -40,10 +76,34 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 - Percentages
 - Weights, pressures, velocities (physics domain always ≥ 0)
 
+**⚠️ Critical with `[formField]`:**
+
+When using Signal Forms with `[formField]` directive, **do NOT use HTML `min` attribute**. Instead, apply `Validators.min(0)` in the form definition:
+
+```typescript
+// ✅ CORRECT
+protected readonly form = form<YourForm>({
+  fieldName: {
+    initialValue: 0,
+    validators: [Validators.min(0), Validators.max(100)],
+  },
+});
+```
+
+```html
+<!-- ✅ CORRECT: No HTML min/max, directive alone with formField -->
+<input type="number" matInput libNoNegativeValues [formField]="form.fieldName" />
+```
+
+```html
+<!-- ❌ WRONG: HTML min/max with formField directive -->
+<input type="number" matInput libNoNegativeValues min="0" max="100" [formField]="form.fieldName" />
+```
+
 **Example:**
 
 ```html
-<input matInput type="number" libNoNegativeValues min="1" max="60" [formField]="form.daysForReport" />
+<input matInput type="number" libNoNegativeValues [formField]="form.daysForReport" />
 ```
 
 ---
@@ -69,18 +129,34 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 - Weights — 2–3 decimals
 - Any **non-integer physics measurement**
 
+**⚠️ Critical with `[formField]`:**
+
+When using Signal Forms with `[formField]` directive, **do NOT use HTML `min/max` attributes**. Instead, apply min/max validators in the form definition:
+
+```typescript
+// ✅ CORRECT
+protected readonly form = form<YourForm>({
+  velocity: {
+    initialValue: null,
+    validators: [Validators.required, Validators.min(0), Validators.max(2000)],
+  },
+});
+```
+
+```html
+<!-- ✅ CORRECT: No HTML min/max, use validators in component instead -->
+<input matInput libLocalDecimal [decimals]="2" [minDecimals]="1" [formField]="form.velocity" />
+```
+
+```html
+<!-- ❌ WRONG: HTML min/max with formField directive -->
+<input matInput libLocalDecimal min="0" max="2000" [decimals]="2" [formField]="form.velocity" />
+```
+
 **Example:**
 
 ```html
-<input
-  matInput
-  libLocalDecimal
-  min="0"
-  max="1200"
-  [decimals]="2"
-  [minDecimals]="1"
-  [formField]="form.initialVelocity"
-/>
+<input matInput libLocalDecimal [decimals]="2" [minDecimals]="1" [formField]="form.initialVelocity" />
 ```
 
 ---
@@ -100,10 +176,42 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 - Integers: days, counts, series numbers, years
 - **NOT for:** client numbers, codes, or fields where `01 ≠ 1`
 
+**⚠️ Critical with `[formField]`:**
+
+When using Signal Forms with `[formField]` directive, **do NOT use HTML `min/max` attributes**. Apply validators in the form definition instead:
+
+```typescript
+// ✅ CORRECT
+protected readonly form = form<YourForm>({
+  daysForReport: {
+    initialValue: 20,
+    validators: [Validators.min(1), Validators.max(120)],
+  },
+});
+```
+
+```html
+<!-- ✅ CORRECT: No HTML min/max, use validators in component -->
+<input matInput type="number" libNoLeadingZeros libNoNegativeValues [formField]="form.daysForReport" />
+```
+
+```html
+<!-- ❌ WRONG: HTML min/max with formField directive -->
+<input
+  matInput
+  type="number"
+  libNoLeadingZeros
+  libNoNegativeValues
+  min="1"
+  max="120"
+  [formField]="form.daysForReport"
+/>
+```
+
 **Example:**
 
 ```html
-<input matInput type="number" libNoLeadingZeros min="1" max="60" [formField]="form.daysUntilDeadline" />
+<input matInput type="number" libNoLeadingZeros [formField]="form.daysUntilDeadline" />
 ```
 
 ---
@@ -152,10 +260,15 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 
 ## 🛠️ Implementation Patterns
 
+> ⚠️ **CRITICAL:** When using `[formField]` directive with Signal Forms, **HTML attributes `min/max` CANNOT be used**. Instead, apply min/max constraints using **`Validators.min()` and `Validators.max()`** in the form definition.
+
 ### Pattern 1: Integer with Range (Days, Counts, Percentages)
 
+**TypeScript Component:**
+
 ```typescript
-// Component
+import { Validators } from '@angular/forms';
+
 export class PlanningFormComponent {
   protected readonly form = form<PlanningForm>({
     daysForReport: {
@@ -170,30 +283,24 @@ export class PlanningFormComponent {
 }
 ```
 
+**HTML Template:**
+
 ```html
-<!-- Template -->
 <mat-form-field>
   <mat-label i18n="PLANNING.DAYS_FOR_REPORT">Max days for report</mat-label>
-  <input
-    matInput
-    type="number"
-    libNoNegativeValues
-    libNoLeadingZeros
-    min="1"
-    max="120"
-    [formField]="form.daysForReport"
-  />
-  @if (form.daysForReport.touched && form.daysForReport.invalid) {
+  <input matInput type="number" libNoNegativeValues libNoLeadingZeros [formField]="form.daysForReport" />
+  @if (form.daysForReport().touched() && form.daysForReport().errors()) { @for (error of form.daysForReport().errors();
+  track error.kind) {
   <mat-error>
-    @if (form.daysForReport.errors?.['required']) {
+    @switch (error.kind) { @case ('required') {
     <span i18n="COMMON.FIELD_REQUIRED">Required</span>
-    } @if (form.daysForReport.errors?.['min']) {
-    <span i18n="COMMON.MIN_VALUE">Min value is 1</span>
-    } @if (form.daysForReport.errors?.['max']) {
-    <span i18n="COMMON.MAX_VALUE">Max value is 120</span>
-    }
+    } @case ('min') {
+    <span>Minimum value is 1</span>
+    } @case ('max') {
+    <span>Maximum value is 120</span>
+    } }
   </mat-error>
-  }
+  } }
 </mat-form-field>
 ```
 
@@ -201,8 +308,11 @@ export class PlanningFormComponent {
 
 ### Pattern 2: Decimal with Locale (Physics Measurements)
 
+**TypeScript Component:**
+
 ```typescript
-// Component
+import { Validators } from '@angular/forms';
+
 export class ExecutionFormComponent {
   protected readonly form = form<ExecutionForm>({
     initialVelocity: {
@@ -217,30 +327,24 @@ export class ExecutionFormComponent {
 }
 ```
 
+**HTML Template:**
+
 ```html
-<!-- Template -->
 <mat-form-field>
   <mat-label i18n="EXECUTION.INITIAL_VELOCITY">Initial velocity (m/s)</mat-label>
-  <input
-    matInput
-    libLocalDecimal
-    min="0"
-    max="2000"
-    [decimals]="2"
-    [minDecimals]="1"
-    [formField]="form.initialVelocity"
-  />
-  @if (form.initialVelocity.touched && form.initialVelocity.invalid) {
+  <input matInput libLocalDecimal [decimals]="2" [minDecimals]="1" [formField]="form.initialVelocity" />
+  @if (form.initialVelocity().touched() && form.initialVelocity().errors()) { @for (error of
+  form.initialVelocity().errors(); track error.kind) {
   <mat-error>
-    @if (form.initialVelocity.errors?.['required']) {
+    @switch (error.kind) { @case ('required') {
     <span i18n="COMMON.FIELD_REQUIRED">Required</span>
-    } @if (form.initialVelocity.errors?.['min']) {
-    <span i18n="COMMON.PHYSICS_POSITIVE">Must be ≥ 0</span>
-    } @if (form.initialVelocity.errors?.['max']) {
-    <span i18n="COMMON.EXCEEDS_MAX">Cannot exceed 2000 m/s</span>
-    }
+    } @case ('min') {
+    <span>Must be ≥ 0 m/s</span>
+    } @case ('max') {
+    <span>Cannot exceed 2000 m/s</span>
+    } }
   </mat-error>
-  }
+  } }
 </mat-form-field>
 ```
 
@@ -248,23 +352,62 @@ export class ExecutionFormComponent {
 
 ### Pattern 3: Coordinate Input (Can Be Negative)
 
+**TypeScript Component:**
+
+```typescript
+import { Validators } from '@angular/forms';
+
+export class TrajectoryFormComponent {
+  protected readonly form = form<TrajectoryForm>({
+    trajectoryX: {
+      initialValue: null,
+      validators: [Validators.required, Validators.min(-10000), Validators.max(10000)],
+    },
+    trajectoryZ: {
+      initialValue: null,
+      validators: [Validators.required, Validators.min(0), Validators.max(5000)],
+    },
+  });
+}
+```
+
+**HTML Template:**
+
 ```html
+<!-- Coordinate X: allows negative values -->
 <mat-form-field>
   <mat-label i18n="EXECUTION.COORD_X">Coordinate X (m)</mat-label>
-  <input matInput libLocalDecimal min="-10000" max="10000" [decimals]="2" [formField]="form.trajectoryX" />
+  <input matInput libLocalDecimal [decimals]="2" [minDecimals]="1" [formField]="form.trajectoryX" />
+  @if (form.trajectoryX().touched() && form.trajectoryX().errors()) { @for (error of form.trajectoryX().errors(); track
+  error.kind) {
+  <mat-error>
+    @switch (error.kind) { @case ('required') {
+    <span i18n="COMMON.FIELD_REQUIRED">Required</span>
+    } @case ('min') {
+    <span>Must be ≥ -10000 m</span>
+    } @case ('max') {
+    <span>Cannot exceed 10000 m</span>
+    } }
+  </mat-error>
+  } }
 </mat-form-field>
 
+<!-- Height Z: no negative values -->
 <mat-form-field>
   <mat-label i18n="EXECUTION.COORD_Z">Height Z (m)</mat-label>
-  <input
-    matInput
-    libLocalDecimal
-    libNoNegativeValues
-    min="0"
-    max="5000"
-    [decimals]="2"
-    [formField]="form.trajectoryZ"
-  />
+  <input matInput libLocalDecimal libNoNegativeValues [decimals]="2" [minDecimals]="1" [formField]="form.trajectoryZ" />
+  @if (form.trajectoryZ().touched() && form.trajectoryZ().errors()) { @for (error of form.trajectoryZ().errors(); track
+  error.kind) {
+  <mat-error>
+    @switch (error.kind) { @case ('required') {
+    <span i18n="COMMON.FIELD_REQUIRED">Required</span>
+    } @case ('min') {
+    <span>Must be ≥ 0 m</span>
+    } @case ('max') {
+    <span>Cannot exceed 5000 m</span>
+    } }
+  </mat-error>
+  } }
 </mat-form-field>
 ```
 

@@ -36,7 +36,7 @@ export const routes: Routes = [
   {
     path: 'denominations',
     component: DenominationsListComponent,
-    providers: [DenominationsStore],
+    providers: [DenominationsStore, MunitionComponentStore],
     canMatch: [canMatchRole],
     data: {
       breadcrumb: 'BREADCRUMB.WAREHOUSE_DENOMINATIONS',

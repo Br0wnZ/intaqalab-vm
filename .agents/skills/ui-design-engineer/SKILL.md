@@ -48,6 +48,18 @@ Como experto en Web Content Accessibility Guidelines (WCAG):
 - Prohibidos `*ngIf` / `*ngFor`. Usa `@if`, `@for` (con `track` obligatorio), `@switch`, `@empty`.
 - **Estilos Inteligentes**: Aplica clases y estilos dinámicos a través de enlaces nativos del DOM (`[class.active]="isActive()"`). Evita `NgClass` y `NgStyle`.
 
+### 6. Patrón Obligatorio de 3 Estados en Vistas (Skeleton Loading)
+
+Toda vista o componente inteligente que cargue datos remotos DEBE implementar obligatoriamente 3 estados estructurados con `@if` / `@else if` / `@else`:
+
+1. **Estado Loading (`store.isLoading()`)**:
+   - Muestra una réplica de la estructura de la vista utilizando componentes `ui-skeleton` y/o `ui-skeleton-card` de `@intaqalab/ui`.
+   - Utiliza `variant` (`text`, `rectangle`, `circle`, `button`) y `animation` (`wave` o `pulse`) para emular la disposición del contenido real.
+2. **Estado Error (`store.error()`)**:
+   - Muestra un contenedor accesible con el mensaje traducido con `@ngx-translate` indicando que ha ocurrido un error (ej. `{{ 'ERRORS.LOADING_ERROR' | translate }}` o `{{ 'ERRORS.GENERIC' | translate }}`).
+3. **Estado Éxito/Normal (`!store.isLoading() && !store.error()`)**:
+   - Muestra los componentes reales y los datos cargados.
+
 ---
 
 ## 🧩 Widgets de Execution Grid (execution-widget-builder)

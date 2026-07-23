@@ -181,8 +181,8 @@ describe('StockListComponent', () => {
       expect(stockListStore.search).toHaveBeenCalledExactlyOnceWith({
         page: 1,
         pageSize: 10,
-        sortDirection: '',
-        sortField: undefined,
+        sortDirection: 'desc',
+        sortField: 'createdAt',
         status: 'AVAILABLE',
       });
     });
@@ -271,8 +271,8 @@ describe('StockListComponent', () => {
       expect(stockListStore.search).toHaveBeenCalledWith({
         page: 2,
         pageSize: 10,
-        sortDirection: '',
-        sortField: undefined,
+        sortDirection: 'desc',
+        sortField: 'createdAt',
         status: 'AVAILABLE',
       });
     });

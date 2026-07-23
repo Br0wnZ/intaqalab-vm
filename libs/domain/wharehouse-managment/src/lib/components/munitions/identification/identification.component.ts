@@ -17,6 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
@@ -39,6 +40,7 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
     MatSelectModule,
     MatInputModule,
     MatAutocompleteModule,
+    NoNegativeValuesDirective,
   ],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -113,7 +115,7 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
           {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate }}
         </label>
         <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input id="quantity" type="number" matInput [formField]="form().quantity" />
+          <input id="quantity" type="number" matInput libNoNegativeValues [formField]="form().quantity" />
         </mat-form-field>
         @if (form().quantity().touched() && form().quantity().errors().length) {
           @for (error of form().quantity().errors(); track error.kind) {

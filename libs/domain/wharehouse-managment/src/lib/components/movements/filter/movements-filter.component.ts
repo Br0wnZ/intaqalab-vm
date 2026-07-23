@@ -20,7 +20,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MovementsListStore } from '../../../+state/movements-list.store';
@@ -58,6 +58,7 @@ type FilterForm = {
     MatDatepickerModule,
     MatTimepickerModule,
     NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <h2 class="text-base font-semibold text-gray-900 my-6">{{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.TITLE' | translate }}</h2>
@@ -194,7 +195,14 @@ type FilterForm = {
             {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MIN' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="quantityMin" type="number" matInput libNoNegativeValues [formField]="form.quantityMin" />
+            <input
+              id="quantityMin"
+              type="number"
+              matInput
+              libNoNegativeValues
+              libNoLeadingZeros
+              [formField]="form.quantityMin"
+            />
           </mat-form-field>
           @if (form.quantityMin().touched() && form.quantityMin().errors()) {
             @for (error of form.quantityMin().errors(); track error.kind) {
@@ -207,7 +215,14 @@ type FilterForm = {
             {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MAX' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="quantityMax" type="number" matInput libNoNegativeValues [formField]="form.quantityMax" />
+            <input
+              id="quantityMax"
+              type="number"
+              matInput
+              libNoNegativeValues
+              libNoLeadingZeros
+              [formField]="form.quantityMax"
+            />
           </mat-form-field>
           @if (form.quantityMax().touched() && form.quantityMax().errors()) {
             @for (error of form.quantityMax().errors(); track error.kind) {
@@ -220,7 +235,14 @@ type FilterForm = {
             {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.NEQ_AFECTED' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="affectedNeq" type="number" matInput libNoNegativeValues [formField]="form.affectedNeq" />
+            <input
+              id="affectedNeq"
+              type="number"
+              matInput
+              libNoNegativeValues
+              libLocalDecimal
+              [formField]="form.affectedNeq"
+            />
           </mat-form-field>
         </div>
       </div>

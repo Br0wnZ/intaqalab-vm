@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { TransferMovementsPayload } from '../../../models/movements.model';
@@ -24,6 +25,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
+    NoNegativeValuesDirective,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -59,7 +61,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
               {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full">
-              <input id="quantiy" type="number" matInput [formField]="form.quantity" />
+              <input id="quantiy" type="number" matInput libNoNegativeValues [formField]="form.quantity" />
             </mat-form-field>
             @if (form.quantity().touched() && form.quantity().errors()) {
               @for (error of form.quantity().errors(); track error.kind) {
@@ -125,6 +127,8 @@ export class TransferDialogComponent {
     cellName: '',
   });
   readonly form = form(this.formModel, (f) => {
+    min(f.quantity, 0);
+    max(f.quantity, 999999);
     validate(f.quantity, ({ value }) => {
       if (this.data.items.length !== 1) return null;
 

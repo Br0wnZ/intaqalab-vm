@@ -4,13 +4,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { DenominationsStore } from '../../../../+state/denominations.store';
+import { MunitionComponentStore } from '../../../../+state/munition-component.store';
+import type { MunitionComponentsModel } from '../../../../models/munition-components.model';
 import { DenominationsFilter } from './denominations-filter.component';
 
-function createMockStore() {
+function createMunitionComponentStore() {
   return {
     search: vi.fn(),
-    items: signal([]),
+    items: signal<MunitionComponentsModel[]>([]),
     totalElements: signal(0),
     isLoading: signal(false),
     hasError: signal(false),
@@ -19,18 +20,20 @@ function createMockStore() {
 }
 
 async function setup() {
-  const mockStore = createMockStore();
+  const mockStore = createMunitionComponentStore();
+  const filtersSpy = vi.fn();
   const user = userEvent.setup();
 
   const view = await render(DenominationsFilter, {
     imports: [TranslateModule.forRoot()],
-    providers: [provideAnimationsAsync(), { provide: DenominationsStore, useValue: mockStore }],
+    on: { filters: filtersSpy },
+    providers: [provideAnimationsAsync(), { provide: MunitionComponentStore, useValue: mockStore }],
   });
 
   const fixture = view.fixture;
   fixture.detectChanges();
   const container = fixture.nativeElement as HTMLElement;
-  return { user, view, fixture, container, mockStore };
+  return { user, view, fixture, container, mockStore, filtersSpy };
 }
 
 describe('DenominationsFilter', () => {
@@ -63,6 +66,11 @@ describe('DenominationsFilter', () => {
       await setup();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.CLEAN')).toBeInTheDocument();
     });
+
+    it('should call MunitionComponentStore.search() on init with pageSize 100', async () => {
+      const { mockStore } = await setup();
+      expect(mockStore.search).toHaveBeenCalledWith({ pageSize: 100 });
+    });
   });
 
   describe('searchByName()', () => {
@@ -75,30 +83,30 @@ describe('DenominationsFilter', () => {
       expect(button.disabled).toBe(false);
     });
 
-    it('should call store.search with name when search is clicked', async () => {
-      const { user, container, mockStore } = await setup();
+    it('should emit filters with the typed name when search is clicked', async () => {
+      const { user, container, filtersSpy } = await setup();
       const input = screen.getByRole('textbox');
       await user.type(input, 'Granada');
 
       const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
       await user.click(button);
 
-      expect(mockStore.search).toHaveBeenCalledWith({ name: 'Granada' });
+      expect(filtersSpy).toHaveBeenCalledWith({ name: 'Granada', munitionTypeId: '' });
     });
 
-    it('should NOT call store.search when input is empty', async () => {
-      const { container, mockStore } = await setup();
+    it('should NOT emit filters when both fields are empty', async () => {
+      const { container, filtersSpy } = await setup();
       const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
       button.click();
       await Promise.resolve();
 
-      expect(mockStore.search).not.toHaveBeenCalled();
+      expect(filtersSpy).not.toHaveBeenCalled();
     });
   });
 
   describe('clearFilter()', () => {
-    it('should call store.search with empty params when clear is clicked', async () => {
-      const { user, container, mockStore } = await setup();
+    it('should emit empty filter values when clear is clicked', async () => {
+      const { user, container, filtersSpy } = await setup();
       const input = screen.getByRole('textbox');
       await user.type(input, 'Granada');
 
@@ -107,7 +115,7 @@ describe('DenominationsFilter', () => {
         .closest('button') as HTMLButtonElement;
       await user.click(clearBtn);
 
-      expect(mockStore.search).toHaveBeenCalledWith({});
+      expect(filtersSpy).toHaveBeenCalledWith({ name: '', munitionTypeId: '' });
     });
 
     it('should reset the input after clear', async () => {

@@ -1,0 +1,27 @@
+// =============================================================================
+// SKELETON — Animación shimmer (wave)
+// Complementa la animación pulse de Tailwind con un efecto de onda.
+// Se aplica añadiendo la clase `inta-skeleton-wave` al host del componente.
+// =============================================================================
+
+@keyframes inta-skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.inta-skeleton-wave::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 100%
+  );
+  animation: inta-skeleton-shimmer 1.5s infinite;
+}

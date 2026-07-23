@@ -9,7 +9,7 @@ export const setParamsAsHttpParams = (params: PaginatedSortedViewRequest) => {
   const sortData = { sortDirection: '', sortField: '' };
 
   Object.entries(params).forEach(([key, value]) => {
-    if (!value) return;
+    if (!value && key !== 'active') return;
 
     if (key === 'sortField' || key === 'sortDirection') {
       sortData[key] = value as string;

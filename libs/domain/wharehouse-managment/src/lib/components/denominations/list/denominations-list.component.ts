@@ -61,7 +61,18 @@ const DEFAULT_COLUMNS = [
     <h2 class="text-base font-semibold text-gray-900 my-6">
       {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.TITLE' | translate }}
     </h2>
-    <inta-denominations-filter />
+    <inta-denominations-filter (filters)="setFiltersData($event)" />
+
+    <div class="flex justify-end items-center gap-2 mr-4">
+      <mat-slide-toggle
+        color="primary"
+        [checked]="showOnlyActive()"
+        (change)="showOnlyActive.set($event.checked)"
+      ></mat-slide-toggle>
+      <span class="text-sm text-gray-700">
+        {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.TOGGLE_ACTIVE_FILTER' | translate }}
+      </span>
+    </div>
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-auto mt-4">
       <div class="flex justify-between items-center p-4">
@@ -220,15 +231,20 @@ export class DenominationsListComponent {
   pageSize = signal(10);
   sortField = signal<string | undefined>(undefined);
   sortDirection = signal<'asc' | 'desc' | ''>('');
+  filters = signal<{ name: string; munitionTypeId: string }>({ name: '', munitionTypeId: '' });
+
+  readonly showOnlyActive = signal<boolean>(true);
 
   constructor() {
     effect(() => {
       const page = this.pageIndex() + 1;
       const pageSize = this.pageSize();
       const sortField = this.sortField();
+      const active = this.showOnlyActive();
       const sortDirection = this.sortDirection();
+      const { name, munitionTypeId } = this.filters();
 
-      this.store.search({ page, pageSize, sortDirection, sortField });
+      this.store.search({ page, pageSize, sortDirection, sortField, active, name, munitionTypeId });
     });
   }
 
@@ -290,5 +306,10 @@ export class DenominationsListComponent {
   onSort(event: Sort) {
     this.sortField.set(event.active);
     this.sortDirection.set(event.direction);
+  }
+
+  setFiltersData(data: { name: string; munitionTypeId: string }) {
+    this.pageIndex.set(0);
+    this.filters.set(data);
   }
 }

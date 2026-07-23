@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -41,6 +41,7 @@ interface DenominationForm {
     IntaSignalSelectComponent,
     IntaIconComponent,
     NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   providers: [MunitionComponentStore],
   template: `
@@ -102,6 +103,7 @@ interface DenominationForm {
               type="number"
               matInput
               libNoNegativeValues
+              libLocalDecimal
               [formField]="form.weight"
               [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_PLACEHOLDER' | translate"
             />
@@ -121,6 +123,8 @@ interface DenominationForm {
               id="neq"
               type="number"
               matInput
+              libNoNegativeValues
+              libLocalDecimal
               [formField]="form.neq"
               [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NEQ_PLACEHOLDER' | translate"
             />

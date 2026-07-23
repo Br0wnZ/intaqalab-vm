@@ -41,6 +41,7 @@ testem.log
 .stignore
 sync.ffs_db
 apis/*
+functionals/*
 openwiki/*
 start-headroom.sh
 

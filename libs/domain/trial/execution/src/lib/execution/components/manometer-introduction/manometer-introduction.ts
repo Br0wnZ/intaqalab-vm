@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -40,6 +41,8 @@ interface DataFormModel {
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    NoNegativeValuesDirective,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2 overflow-auto">
@@ -151,6 +154,8 @@ interface DataFormModel {
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H1_LABEL' | translate }}</mat-label>
               <input
                 matInput
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h1Field()?.value ?? ''"
@@ -173,6 +178,8 @@ interface DataFormModel {
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H2_LABEL' | translate }}</mat-label>
               <input
                 matInput
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h2Field()?.value ?? ''"
@@ -195,6 +202,8 @@ interface DataFormModel {
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H3_LABEL' | translate }}</mat-label>
               <input
                 matInput
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h3Field()?.value ?? ''"
@@ -217,6 +226,8 @@ interface DataFormModel {
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H4_LABEL' | translate }}</mat-label>
               <input
                 matInput
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h4Field()?.value ?? ''"
@@ -239,6 +250,8 @@ interface DataFormModel {
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H5_LABEL' | translate }}</mat-label>
               <input
                 matInput
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h5Field()?.value ?? ''"

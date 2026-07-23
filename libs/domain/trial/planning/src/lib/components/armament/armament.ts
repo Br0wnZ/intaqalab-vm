@@ -8,7 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { FormField, applyEach, form } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -21,6 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Badge, IntaIconComponent } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -53,13 +54,17 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
           <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
             {{ trialCode() }}
           </h2>
-          <ui-badge [status]="trialStatus()">
-            {{ trialStatus() | trialStatusLabel }}
-          </ui-badge>
+          @if (trialStatus(); as status) {
+            <ui-badge [status]="status">
+              {{ status | trialStatusLabel }}
+            </ui-badge>
+          }
         </div>
-        <button mat-flat-button [disabled]="isLoading()" (click)="openMassiveConfiguration()">
-          {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
-        </button>
+        @if (!readonly()) {
+          <button mat-flat-button [disabled]="isLoading()" (click)="openMassiveConfiguration()">
+            {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
+          </button>
+        }
       </div>
 
       @if (isLoading()) {
@@ -211,9 +216,11 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                           >
                             <ui-inta-icon name="info" size="xxl" />
                           </button>
-                          <button mat-icon-button class="!text-gray-600 scale-90" (click)="openUpdateDialog(i, j)">
-                            <ui-inta-icon name="edit" size="xxl" />
-                          </button>
+                          @if (!readonly()) {
+                            <button mat-icon-button class="!text-gray-600 scale-90" (click)="openUpdateDialog(i, j)">
+                              <ui-inta-icon name="edit" size="xxl" />
+                            </button>
+                          }
                         </div>
                       </td>
                     </ng-container>
@@ -227,14 +234,16 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
           }
         </mat-accordion>
 
-        <div class="flex justify-end gap-3 mt-6">
-          <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
-            {{ 'COMMONS.CANCEL' | translate }}
-          </button>
-          <button mat-flat-button [disabled]="!isFormValid() || isSaving()" (click)="saveForm()">
-            {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
-          </button>
-        </div>
+        @if (!readonly()) {
+          <div class="flex justify-end gap-3 mt-6">
+            <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+              {{ 'COMMONS.CANCEL' | translate }}
+            </button>
+            <button mat-flat-button [disabled]="!isFormValid() || isSaving()" (click)="saveForm()">
+              {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
+            </button>
+          </div>
+        }
       }
     </div>
   `,
@@ -290,7 +299,7 @@ export class Armament {
     effect(() => {
       const status = this.updateStatus();
       if (status === 'resolved') {
-        console.log('Armamento guardado correctamente');
+        console.info('Armamento guardado correctamente');
         this.#armamentStore.resetUpdateArmament();
         this.#armamentStore.reloadArmament();
       } else if (status === 'error') {
@@ -302,8 +311,10 @@ export class Armament {
 
   readonly armamentForm = form(this.armamentSignal, (root) => {
     applyEach(root, (serie) => {
-      applyEach(serie.shots, () => {
-        // form validations
+      applyEach(serie.shots, (shotPath) => {
+        disabled(shotPath.armament.weaponExternalId, () => this.readonly());
+        disabled(shotPath.armament.tubeExternalId, () => this.readonly());
+        disabled(shotPath.armament.isInstrumented, () => this.readonly());
       });
     });
   });
@@ -314,12 +325,18 @@ export class Armament {
   }
 
   openMassiveConfiguration() {
+    if (this.readonly()) {
+      return;
+    }
     this.dialog.open(MassiveShotsConfigurationDialog, {
       width: '800px',
     });
   }
 
-  openUpdateDialog(serieIdx: number, shotIdx: number): void {
+  async openUpdateDialog(serieIdx: number, shotIdx: number): Promise<void> {
+    if (this.readonly()) {
+      return;
+    }
     const serie = this.armamentSignal()[serieIdx];
     const shot = serie.shots[shotIdx];
     const trialId = this.#planningGeneralDataStore.fireTrialId();
@@ -341,12 +358,11 @@ export class Armament {
       },
     });
 
-    dialogRef.afterClosed().subscribe((wasUpdated) => {
-      if (wasUpdated) {
-        this.#armamentStore.reloadArmament();
-        console.log('Shot actualizado correctamente');
-      }
-    });
+    const wasUpdated = await firstValueFrom(dialogRef.afterClosed());
+    if (wasUpdated) {
+      this.#armamentStore.reloadArmament();
+      console.info('Shot actualizado correctamente');
+    }
   }
 
   isFormValid(): boolean {
@@ -354,6 +370,9 @@ export class Armament {
   }
 
   saveForm(): void {
+    if (this.readonly()) {
+      return;
+    }
     if (!this.isFormValid()) {
       console.error('Formulario inválido');
       return;
@@ -364,6 +383,9 @@ export class Armament {
   }
 
   resetForm(): void {
+    if (this.readonly()) {
+      return;
+    }
     this.armamentSignal.set(this.#deepClone(this.#initialArmamentData));
   }
 

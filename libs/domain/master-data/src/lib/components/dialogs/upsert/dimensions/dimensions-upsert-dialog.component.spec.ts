@@ -1,4 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -20,7 +21,7 @@ async function setup(data: MasterDataDimension | null = null) {
   const events = userEvent.setup();
 
   const view = await render(DimensionsUpsertDialogComponent, {
-    imports: [TranslateModule.forRoot()],
+    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: MatDialogRef, useValue: { close: closeFn } },
@@ -47,6 +48,7 @@ async function typeInInput(
   const input = getInput(container, id);
   await events.clear(input);
   await events.type(input, value);
+  await events.tab(); // trigger blur → LocaleDecimalInputDirective commits value to Signal Forms model
   view.fixture.detectChanges();
 }
 
@@ -162,106 +164,5 @@ describe('DimensionsUpsertDialogComponent', () => {
       expect(closeFn).toHaveBeenCalledOnce();
       expect(closeFn.mock.calls[0][0]).toMatchObject({ width: 30, height: 20, diameter: null });
     });
-  });
-});
-
-describe('DimensionsUpsertDialogComponent', () => {
-  const defaultImports = [TranslateModule.forRoot()];
-  let closeMock: ReturnType<typeof vi.fn>;
-
-  const renderDialog = async (data: MasterDataDimensionUpsertDialog | null = null) => {
-    closeMock = vi.fn();
-    const user = userEvent.setup();
-    const view = await render(DimensionsUpsertDialogComponent, {
-      imports: defaultImports,
-      providers: [
-        { provide: MatDialogRef, useValue: { close: closeMock } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
-      ],
-    });
-    const container = view.fixture.nativeElement as HTMLElement;
-    return { user, view, container };
-  };
-
-  const getInput = (container: HTMLElement, id: string) => container.querySelector(`#${id}`) as HTMLInputElement;
-
-  const typeInInput = async (
-    user: ReturnType<typeof userEvent.setup>,
-    container: HTMLElement,
-    id: string,
-    value: string,
-  ) => {
-    const input = getInput(container, id);
-    await user.clear(input);
-    await user.type(input, value);
-  };
-
-  it('should render the create title when data is null', async () => {
-    await renderDialog(null);
-    const title = screen.getByRole('heading', { name: /MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/i });
-    expect(title).toBeInTheDocument();
-  });
-
-  it('should render the edit title when data is provided', async () => {
-    await renderDialog({ id: '1', label: 'Test', width: 10, height: 20 });
-    const title = screen.getByRole('heading', { name: /MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/i });
-    expect(title).toBeInTheDocument();
-  });
-
-  it('should disable width and height when diameter has a value', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'diameter', '50');
-
-    expect(getInput(container, 'width').disabled).toBe(true);
-    expect(getInput(container, 'height').disabled).toBe(true);
-  });
-
-  it('should disable diameter when width has a value', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'width', '30');
-
-    expect(getInput(container, 'diameter').disabled).toBe(true);
-  });
-
-  it('should disable diameter when height has a value', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'height', '20');
-
-    expect(getInput(container, 'diameter').disabled).toBe(true);
-  });
-
-  it('should have confirm button enabled when both width and height are set', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'width', '30');
-    await typeInInput(user, container, 'height', '20');
-
-    const confirmBtn = container.querySelector('button[cdkfocusinitial]') as HTMLButtonElement;
-    expect(confirmBtn.disabled).toBe(false);
-  });
-
-  it('should have confirm button enabled when diameter is set', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'diameter', '50');
-
-    const confirmBtn = container.querySelector('button[cdkfocusinitial]') as HTMLButtonElement;
-    expect(confirmBtn.disabled).toBe(false);
-  });
-
-  it('should pre-fill form fields in edit mode', async () => {
-    const { container } = await renderDialog({ id: '1', label: 'Dim1', width: 100, height: 200, diameter: 0 });
-
-    expect(getInput(container, 'width').value).toBe('100');
-    expect(getInput(container, 'height').value).toBe('200');
-  });
-
-  it('should close dialog with form data on confirm', async () => {
-    const { user, container } = await renderDialog(null);
-    await typeInInput(user, container, 'width', '30');
-    await typeInInput(user, container, 'height', '20');
-
-    const confirmBtn = container.querySelector('button[cdkfocusinitial]') as HTMLButtonElement;
-    await user.click(confirmBtn);
-
-    expect(closeMock).toHaveBeenCalledWith(expect.objectContaining({ width: 30, height: 20, diameter: null }));
   });
 });

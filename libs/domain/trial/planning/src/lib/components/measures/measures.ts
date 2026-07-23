@@ -62,14 +62,17 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
             <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
               {{ trialCode() }}
             </h2>
-            <ui-badge [status]="trialStatus()">
-              {{ trialStatus() | trialStatusLabel }}
-            </ui-badge>
+            @if (trialStatus(); as status) {
+              <ui-badge [status]="status">
+                {{ status | trialStatusLabel }}
+              </ui-badge>
+            }
           </div>
           <mat-checkbox
             data-testid="conditioning-checkbox"
             class="!text-gray-700"
             [checked]="seriesConfiguration()"
+            [disabled]="readonly()"
             (change)="toggleConfigBySerie()"
           >
             Configurar por serie
@@ -85,6 +88,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 [placeholder]="'Selecciona magnitudes y/o registros'"
                 [options]="magnitudesOptions().topografia"
                 [selectedValues]="seriesSignal()[0].topografia"
+                [disabled]="readonly()"
                 (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'topografia', $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
               />
@@ -108,6 +112,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 [placeholder]="'Selecciona magnitudes y/o registros'"
                 [options]="magnitudesOptions().municiones"
                 [selectedValues]="seriesSignal()[0].municiones"
+                [disabled]="readonly()"
                 (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'municiones', $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
               />
@@ -131,6 +136,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 [placeholder]="'Selecciona magnitudes y/o registros'"
                 [options]="magnitudesOptions().armamento"
                 [selectedValues]="seriesSignal()[0].armamento"
+                [disabled]="readonly()"
                 (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'armamento', $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
               />
@@ -154,6 +160,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 [placeholder]="'Selecciona magnitudes y/o registros'"
                 [options]="magnitudesOptions().balistica"
                 [selectedValues]="seriesSignal()[0].balistica"
+                [disabled]="readonly()"
                 (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'balistica', $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
               />
@@ -195,6 +202,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                     [placeholder]="'Selecciona magnitudes y/o registros'"
                     [options]="magnitudesOptions().topografia"
                     [selectedValues]="serie.topografia"
+                    [disabled]="readonly()"
                     (selectedValuesChange)="onCategoryChange(serie.id, 'topografia', $event)"
                     (toggleFavorite)="onToggleFavorite($event)"
                   />
@@ -218,6 +226,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                     [placeholder]="'Selecciona magnitudes y/o registros'"
                     [options]="magnitudesOptions().municiones"
                     [selectedValues]="serie.municiones"
+                    [disabled]="readonly()"
                     (selectedValuesChange)="onCategoryChange(serie.id, 'municiones', $event)"
                     (toggleFavorite)="onToggleFavorite($event)"
                   />
@@ -241,6 +250,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                     [placeholder]="'Selecciona magnitudes y/o registros'"
                     [options]="magnitudesOptions().armamento"
                     [selectedValues]="serie.armamento"
+                    [disabled]="readonly()"
                     (selectedValuesChange)="onCategoryChange(serie.id, 'armamento', $event)"
                     (toggleFavorite)="onToggleFavorite($event)"
                   />
@@ -264,6 +274,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                     [placeholder]="'Selecciona magnitudes y/o registros'"
                     [options]="magnitudesOptions().balistica"
                     [selectedValues]="serie.balistica"
+                    [disabled]="readonly()"
                     (selectedValuesChange)="onCategoryChange(serie.id, 'balistica', $event)"
                     (toggleFavorite)="onToggleFavorite($event)"
                   />
@@ -287,15 +298,17 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
         }
 
         <div class="flex justify-end gap-3 mt-6">
-          <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">Cancelar</button>
-          <button mat-flat-button [disabled]="isSaving() || !seriesForm().valid()" (click)="save()">
-            @if (isSaving()) {
-              <ng-container>
-                <mat-icon class="animate-spin mr-2">sync</mat-icon>
-              </ng-container>
-            }
-            {{ isSaving() ? 'Guardando...' : 'Guardar borrador' }}
-          </button>
+          @if (!readonly()) {
+            <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">Cancelar</button>
+            <button mat-flat-button [disabled]="isSaving() || !seriesForm().valid()" (click)="save()">
+              @if (isSaving()) {
+                <ng-container>
+                  <mat-icon class="animate-spin mr-2">sync</mat-icon>
+                </ng-container>
+              }
+              {{ isSaving() ? 'Guardando...' : 'Guardar borrador' }}
+            </button>
+          }
         </div>
       }
 
@@ -311,6 +324,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 mat-icon-button
                 type="button"
                 class="!text-gray-500 hover:!text-red-500"
+                [disabled]="readonly()"
                 (click)="removeMeasure(serieId, category, measure.id)"
               >
                 <mat-icon>delete</mat-icon>
@@ -334,6 +348,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                   matInput
                   type="number"
                   [ngModel]="measure.maxLimit"
+                  [disabled]="readonly()"
                   (ngModelChange)="updateLimit(serieId, category, measure.id, 'maxLimit', $event)"
                 />
               </mat-form-field>
@@ -344,6 +359,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                   matInput
                   type="number"
                   [ngModel]="measure.minLimit"
+                  [disabled]="readonly()"
                   (ngModelChange)="updateLimit(serieId, category, measure.id, 'minLimit', $event)"
                 />
               </mat-form-field>
@@ -354,6 +370,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                   matInput
                   type="number"
                   [ngModel]="measure.deviation"
+                  [disabled]="readonly()"
                   (ngModelChange)="updateLimit(serieId, category, measure.id, 'deviation', $event)"
                 />
               </mat-form-field>
@@ -451,7 +468,7 @@ export class Measures {
     effect(() => {
       const status = this.updateStatus();
       if (status === 'resolved') {
-        console.log('Measures saved successfully');
+        console.info('Measures saved successfully');
         this.#measuresStore.resetUpdateMeasures();
         this.#measuresStore.reloadMeasures();
       } else if (status === 'error') {
@@ -494,6 +511,9 @@ export class Measures {
     category: 'topografia' | 'municiones' | 'armamento' | 'balistica',
     newValues: MeasureSelectionData[],
   ): void {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesSignal.update((series) => series.map((s) => (s.id === serieId ? { ...s, [category]: newValues } : s)));
   }
 
@@ -529,6 +549,9 @@ export class Measures {
     category: 'topografia' | 'municiones' | 'armamento' | 'balistica',
     measureId: string,
   ): void {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesSignal.update((series) =>
       series.map((s) => {
         if (s.id !== serieId) return s;
@@ -547,6 +570,9 @@ export class Measures {
     field: 'minLimit' | 'maxLimit' | 'deviation',
     value: number | null,
   ): void {
+    if (this.readonly()) {
+      return;
+    }
     this.seriesSignal.update((series) =>
       series.map((s) => {
         if (s.id !== serieId) return s;
@@ -561,6 +587,9 @@ export class Measures {
   }
 
   onToggleFavorite(event: { id: string; isFavorite: boolean }): void {
+    if (this.readonly()) {
+      return;
+    }
     if (event.isFavorite) {
       this.#measuresStore.addFavorite(event.id);
     } else {
@@ -569,11 +598,17 @@ export class Measures {
   }
 
   toggleConfigBySerie(): void {
+    if (this.readonly()) {
+      return;
+    }
     const newStatus = !this.seriesConfiguration();
     this.seriesConfiguration.set(newStatus);
   }
 
   save(): void {
+    if (this.readonly()) {
+      return;
+    }
     if (!this.seriesForm().valid()) {
       return;
     }
@@ -582,6 +617,9 @@ export class Measures {
   }
 
   cancel(): void {
+    if (this.readonly()) {
+      return;
+    }
     const data = this.#backendData();
     if (data.planningSeries) {
       this.seriesSignal.set(this.#mapResponseToLocal(data.planningSeries, data.measuresSeries));

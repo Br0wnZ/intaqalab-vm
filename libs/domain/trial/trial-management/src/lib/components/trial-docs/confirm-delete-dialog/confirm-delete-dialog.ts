@@ -63,16 +63,15 @@ export class ConfirmDeleteDialogComponent {
     });
   }
 
-  onConfirm(): void {
+  onConfirm() {
     if (!this.data.documentId) {
       this.dialogRef.close(true);
       return;
     }
-    const fireTrialId = this.deleteService.fireTrialId();
-    if (!fireTrialId) return;
+    if (!this.data.trialId) return;
     this.#deleteConfirmed.set(true);
     this.#deleteInFlight.set(false);
-    this.deleteService.deleteDocument(fireTrialId, this.data.documentId);
+    this.deleteService.deleteDocument(this.data.trialId, this.data.documentId);
   }
 
   onCancel(): void {

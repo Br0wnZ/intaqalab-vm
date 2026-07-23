@@ -23,3 +23,4 @@ export * from './lib/router/inject-query-params';
 export * from './lib/router/linked-query-param';
 export * from './lib/signals/safe-resource-value';
 export * from './lib/signals/action-trigger';
+export * from './lib/cn/cn';
