@@ -11,7 +11,7 @@ import { Skeleton, type SkeletonAnimation } from './skeleton';
  * Uso:
  * ```html
  * @if (resource.isLoading()) {
- *   @for (i of [1, 2, 3]; track i) {
+ *   @for (i of (3 | range); track i) {
  *     <ui-skeleton-card />
  *   }
  * }

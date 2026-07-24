@@ -1,8 +1,18 @@
 // =============================================================================
-// SKELETON — Animación shimmer (wave)
+// SKELETON — Animaciones shimmer (wave) y pulse
 // Complementa la animación pulse de Tailwind con un efecto de onda.
 // Se aplica añadiendo la clase `inta-skeleton-wave` al host del componente.
 // =============================================================================
+
+// Fallback: garantiza color de fondo y posición relativa en todos los skeletons
+ui-skeleton {
+  display: block;
+  position: relative;
+  background-color: #e5e7eb; // fallback gris-200 si la clase TW no resuelve
+  overflow: hidden;
+}
+
+// ─── Wave shimmer ─────────────────────────────────────────────────────────────
 
 @keyframes inta-skeleton-shimmer {
   from {
@@ -13,15 +23,37 @@
   }
 }
 
-.inta-skeleton-wave::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.5) 50%,
-    transparent 100%
-  );
-  animation: inta-skeleton-shimmer 1.5s infinite;
+.inta-skeleton-wave {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb; // garantiza fondo visible para el shimmer
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.65) 50%,
+      transparent 100%
+    );
+    animation: inta-skeleton-shimmer 1.5s ease-in-out infinite;
+  }
 }
+
+// ─── Pulse (fallback si Tailwind animate-pulse no aplica) ────────────────────
+
+@keyframes inta-skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-pulse {
+  animation: inta-skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

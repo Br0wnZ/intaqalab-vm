@@ -94,12 +94,13 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 - **Convención de Nombres (2025 Style Guide):**
   - **Archivos:** Formato conciso sin sufijos técnicos para componentes/directivas/pipes (ej: `user-profile.ts` en vez de `user-profile.component.ts`). Los **servicios** deben mantener el sufijo `.service.ts` (ej: `user-profile.service.ts`).
   - **Clases:** Omitir sufijos técnicos en componentes/directivas/pipes (ej: `UserProfile` en lugar de `UserProfileComponent`). Los **servicios** deben mantener el sufijo `Service` (ej: `UserProfileService`). Combina con componentes sin selector (selector-less components) para etiquetas limpias.
-- **El estado viene de la Store, no de @Input().** Evita cadenas de `@Input()`/`@Output()`. El componente hijo inyecta su propio `SignalStore` directamente.
+- **Inyección de Store en Componentes:** 🚫 **PROHIBIDO acceder a la store en la vista HTML (`store.prop()`).** La store siempre se inyectará como privada y readonly (`readonly #store = inject(Store)`). En la vista se accederá únicamente a sus propiedades/señales mediante `computed()` o propiedades expuestas por el componente.
 - **Jerarquía de decisión para estado:**
-  1. `inject(Store)` — El componente hijo lee/escribe su estado directamente.
+  1. `readonly #store = inject(Store)` — Inyección privada en el componente; el componente expone señales mediante `computed()` para la vista.
   2. `model()` — Estado local bidireccional (formularios, toggles).
   3. `linkedSignal()` — Estado local dependiente de la store pero modificable localmente.
   4. `input()` + `output()` — Exclusivo para componentes UI puros o librerías sin contexto de negocio.
+
 
 ## Patrones Avanzados de Signals 🔬
 

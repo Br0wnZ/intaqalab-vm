@@ -14,7 +14,7 @@ export const loaderInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const loader = inject(LoaderService);
-  loader.show();
+  //loader.show();
 
   return next(req).pipe(finalize(() => loader.hide()));
 };

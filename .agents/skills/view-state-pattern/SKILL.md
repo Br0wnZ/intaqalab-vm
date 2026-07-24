@@ -10,10 +10,29 @@ Todas las vistas y componentes de pantalla en Intaqalab que consuman datos asín
 
 ---
 
+## 🚫 Regla de Inyección y Acceso a Store (Antipatrón Prohibido)
+
+> [!CAUTION]
+> **NUNCA acceder a la store en la plantilla HTML (`store.isLoading()`, `store.items()`, etc.).**
+> La store siempre **DEBE** inyectarse como privada y readonly (`readonly #store = inject(MyStore);`) en la clase del componente.
+> En la vista se accederá **ÚNICAMENTE** a través de señales computadas o getters/métodos expuestos por el componente.
+
+```ts
+export class MyFeatureShellComponent {
+  readonly #store = inject(MyStore);
+
+  readonly isLoading = computed(() => this.#store.isLoading());
+  readonly error = computed(() => this.#store.error());
+  readonly items = computed(() => this.#store.items());
+}
+```
+
+---
+
 ## 📐 Estructura Canónica de la Plantilla
 
 ```html
-@if (store.isLoading()) {
+@if (isLoading()) {
   <!-- ===================================================================== -->
   <!-- ESTADO 1: LOADING (Skeletons replicando la disposición de la vista)    -->
   <!-- ===================================================================== -->
@@ -30,15 +49,18 @@ Todas las vistas y componentes de pantalla en Intaqalab que consuman datos asín
       <ui-skeleton variant="rectangle" width="150px" height="40px" />
     </div>
 
-    <!-- Grid / Lista Skeleton -->
+  <!-- Grid / Lista Skeleton -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+      @for (i of (6 | range); track i) {
         <ui-skeleton-card animation="wave" />
       }
     </div>
+    
+    <!-- Table Skeleton (Alternativa) -->
+    <ui-skeleton-table [rows]="5" [columns]="4" />
   </div>
 
-} @else if (store.error()) {
+} @else if (error()) {
   <!-- ===================================================================== -->
   <!-- ESTADO 2: ERROR (Mensaje traducido accesible)                        -->
   <!-- ===================================================================== -->
@@ -60,7 +82,7 @@ Todas las vistas y componentes de pantalla en Intaqalab que consuman datos asín
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      @for (item of store.items(); track item.id) {
+      @for (item of items(); track item.id) {
         <inta-entity-card [item]="item" />
       }
     </div>
@@ -72,18 +94,26 @@ Todas las vistas y componentes de pantalla en Intaqalab que consuman datos asín
 
 ## 🎯 Reglas de Implementación
 
-1. **Imports Requeridos:**
-   Importa `Skeleton`, `SkeletonCard` de `@intaqalab/ui` y `TranslateModule` de `@ngx-translate/core`.
+1. **Inyección Privada de Store:**
+   Inyecta la store estrictamente como `readonly #store = inject(MyStore)`. Expón las señales a la vista mediante `computed(() => this.#store.property())`.
 
-2. **Réplica Estructural Pixel-Perfect:**
+2. **Imports Requeridos:**
+   Importa los componentes de esqueleto (`Skeleton`, `SkeletonCard`, `SkeletonTable`, `SkeletonForm`) de `@intaqalab/ui`.
+   Importa `RangePipe` de `@intaqalab/utils` si necesitas iterar sobre skeletons sueltos.
+   Importa `TranslateModule` de `@ngx-translate/core`.
+
+3. **Réplica Estructural Pixel-Perfect:**
    El estado `Loading` debe imitar la disposición espacial de los componentes reales:
    - Usa `variant="text"` para títulos y etiquetas.
    - Usa `variant="button"` para botones de acción.
    - Usa `variant="circle"` para avatares o iconos circulares.
-   - Usa `variant="rectangle"` (o `<ui-skeleton-card>`) para contenedores, tablas o tarjetas.
+   - Usa `SkeletonTable` (`<ui-skeleton-table>`) para maquetar el esqueleto de las tablas de datos fácilmente sin código extra.
+   - Usa `SkeletonForm` (`<ui-skeleton-form>`) para maquetar el esqueleto de formularios fácilmente.
+   - Si necesitas bucles de elementos visuales (ej. iterar un card n veces), utiliza **siempre** el pipe `(n | range)` (`@for (i of (6 | range); track i)`). ¡NUNCA uses arrays quemados como `[1,2,3,4,5,6]`!
 
-3. **Animación:**
+4. **Animación:**
    Usa `animation="wave"` (shimmer) para listados y vistas principales para dar mayor sensación de fluidez visual.
 
-4. **Estado de Error:**
+5. **Estado de Error:**
    Usa la clave i18n `'ERRORS.LOADING_ERROR'` (o `'ERRORS.GENERIC'`) con `@ngx-translate` para garantizar la localización en ES, EN y DE.
+

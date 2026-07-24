@@ -65,11 +65,15 @@ export class Skeleton {
 
   @HostBinding('class') get elementClass(): string {
     return cn(
-      'block relative bg-client-neutral-200',
+      'block relative',
       this.#variantClasses(),
       this.#animationClasses(),
       this.class(),
     );
+  }
+
+  @HostBinding('style.background-color') get elementBgColor(): string {
+    return 'var(--inta-neutral-200, #e5e7eb)';
   }
 
   @HostBinding('style.width') get elementWidth(): string | undefined {

@@ -24,3 +24,6 @@ export * from './lib/mat-select-clearable/mat-select-clearable';
 
 export * from './lib/skeleton/skeleton';
 export * from './lib/skeleton/skeleton-card';
+export * from './lib/skeleton/skeleton-table';
+export * from './lib/skeleton/skeleton-form';
+export * from './lib/error-state/error-state';
