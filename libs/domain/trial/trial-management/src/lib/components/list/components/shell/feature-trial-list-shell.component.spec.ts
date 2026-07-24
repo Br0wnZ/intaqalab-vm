@@ -100,4 +100,3 @@ describe('FeatureTrialListShellComponent', () => {
     expect(container.querySelector('inta-trial-list')).toBeFalsy();
   });
 });
-

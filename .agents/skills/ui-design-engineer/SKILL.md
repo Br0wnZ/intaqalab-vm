@@ -60,7 +60,6 @@ Toda vista o componente inteligente que cargue datos remotos DEBE implementar ob
 3. **Estado Éxito/Normal (`!isLoading() && !error()`)**:
    - Muestra los componentes reales y los datos cargados.
 
-
 ---
 
 ## 🧩 Widgets de Execution Grid (execution-widget-builder)

@@ -1,5 +1,5 @@
-import { render } from '@testing-library/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { SkeletonForm } from './skeleton-form';

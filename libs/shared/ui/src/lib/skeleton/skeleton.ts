@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation, computed, input } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
-
 import { cn } from '@intaqalab/utils';
+import { TranslateModule } from '@ngx-translate/core';
 
 /** Forma del esqueleto */
 export type SkeletonVariant = 'rectangle' | 'circle' | 'text' | 'button';
@@ -64,12 +63,7 @@ export class Skeleton {
   });
 
   @HostBinding('class') get elementClass(): string {
-    return cn(
-      'block relative',
-      this.#variantClasses(),
-      this.#animationClasses(),
-      this.class(),
-    );
+    return cn('block relative', this.#variantClasses(), this.#animationClasses(), this.class());
   }
 
   @HostBinding('style.background-color') get elementBgColor(): string {

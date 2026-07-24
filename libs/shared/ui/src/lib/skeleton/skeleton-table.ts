@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
-
 import { RangePipe } from '@intaqalab/utils';
 
 import { Skeleton, type SkeletonAnimation } from './skeleton';
@@ -32,40 +31,24 @@ const CELL_WIDTHS = ['80%', '65%', '90%', '70%', '85%', '75%', '60%', '95%'];
   selector: 'ui-skeleton-table',
   imports: [Skeleton, RangePipe],
   template: `
-    <div
-      class="w-full rounded-client-md bg-white shadow-client-sm overflow-hidden"
-      role="status"
-      aria-busy="true"
-    >
+    <div role="status" aria-busy="true" class="w-full rounded-client-md bg-white shadow-client-sm overflow-hidden">
       @if (showHeader()) {
         <!-- Cabecera de tabla -->
         <div class="flex gap-4 px-4 py-3 bg-client-neutral-50">
-          @for (col of (columns() | range); track col) {
+          @for (col of columns() | range; track col) {
             <div class="flex-1">
-              <ui-skeleton
-                variant="text"
-                [width]="headerWidth(col)"
-                [animation]="animation()"
-                class="text-sm"
-              />
+              <ui-skeleton variant="text" class="text-sm" [width]="headerWidth(col)" [animation]="animation()" />
             </div>
           }
         </div>
       }
 
       <!-- Filas de tabla -->
-      @for (row of (rows() | range); track row) {
-        <div
-          class="flex gap-4 px-4 py-3"
-        >
-          @for (col of (columns() | range); track col) {
+      @for (row of rows() | range; track row) {
+        <div class="flex gap-4 px-4 py-3">
+          @for (col of columns() | range; track col) {
             <div class="flex-1">
-              <ui-skeleton
-                variant="text"
-                [width]="cellWidth(row, col)"
-                [animation]="animation()"
-                class="text-sm"
-              />
+              <ui-skeleton variant="text" class="text-sm" [width]="cellWidth(row, col)" [animation]="animation()" />
             </div>
           }
         </div>

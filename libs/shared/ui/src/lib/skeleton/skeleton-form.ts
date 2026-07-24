@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@angular/core';
-
 import { RangePipe } from '@intaqalab/utils';
 
 import { Skeleton, type SkeletonAnimation } from './skeleton';
@@ -31,32 +30,15 @@ const LABEL_WIDTHS = ['30%', '45%', '35%', '50%', '40%', '55%', '38%', '42%'];
   selector: 'ui-skeleton-form',
   imports: [Skeleton, RangePipe],
   template: `
-    <div
-      class="w-full rounded-client-md bg-white shadow-client-sm p-6"
-      role="status"
-      aria-busy="true"
-    >
+    <div role="status" aria-busy="true" class="w-full rounded-client-md bg-white shadow-client-sm p-6">
       <!-- Campos del formulario -->
-      <div
-        class="grid gap-x-6 gap-y-5"
-        [style.grid-template-columns]="'repeat(' + columns() + ', minmax(0, 1fr))'"
-      >
-        @for (field of (fields() | range); track field) {
+      <div class="grid gap-x-6 gap-y-5" [style.grid-template-columns]="'repeat(' + columns() + ', minmax(0, 1fr))'">
+        @for (field of fields() | range; track field) {
           <div class="flex flex-col gap-1.5">
             <!-- Label skeleton -->
-            <ui-skeleton
-              variant="text"
-              [width]="labelWidth(field)"
-              [animation]="animation()"
-              class="text-xs"
-            />
+            <ui-skeleton variant="text" class="text-xs" [width]="labelWidth(field)" [animation]="animation()" />
             <!-- Input skeleton -->
-            <ui-skeleton
-              variant="rectangle"
-              width="100%"
-              height="40px"
-              [animation]="animation()"
-            />
+            <ui-skeleton variant="rectangle" width="100%" height="40px" [animation]="animation()" />
           </div>
         }
       </div>

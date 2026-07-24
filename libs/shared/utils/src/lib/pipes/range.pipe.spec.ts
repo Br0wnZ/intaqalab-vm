@@ -1,6 +1,7 @@
-import { RangePipe } from './range.pipe';
-import { render, screen } from '@testing-library/angular';
 import { Component } from '@angular/core';
+import { render, screen } from '@testing-library/angular';
+
+import { RangePipe } from './range.pipe';
 
 @Component({
   template: `
@@ -47,12 +48,12 @@ describe('RangePipe', () => {
 
   it('should render items correctly in template', async () => {
     await render(TestHostComponent);
-    
+
     const items = screen.getAllByTestId('range-item');
     expect(items).toHaveLength(3);
-    expect(items[0].textContent).toBe('1');
-    expect(items[1].textContent).toBe('2');
-    expect(items[2].textContent).toBe('3');
+    expect(items[0]).toHaveTextContent('1');
+    expect(items[1]).toHaveTextContent('2');
+    expect(items[2]).toHaveTextContent('3');
   });
 
   it('should render items correctly with custom start in template', async () => {
@@ -60,13 +61,13 @@ describe('RangePipe', () => {
       componentProperties: {
         length: 3,
         start: 0,
-      }
+      },
     });
-    
+
     const items = screen.getAllByTestId('range-item');
     expect(items).toHaveLength(3);
-    expect(items[0].textContent).toBe('0');
-    expect(items[1].textContent).toBe('1');
-    expect(items[2].textContent).toBe('2');
+    expect(items[0]).toHaveTextContent('0');
+    expect(items[1]).toHaveTextContent('1');
+    expect(items[2]).toHaveTextContent('2');
   });
 });

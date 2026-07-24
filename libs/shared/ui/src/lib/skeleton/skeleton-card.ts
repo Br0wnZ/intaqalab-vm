@@ -26,7 +26,9 @@ import { Skeleton, type SkeletonAnimation } from './skeleton';
   selector: 'ui-skeleton-card',
   imports: [Skeleton],
   template: `
-    <div class="flex flex-col gap-3 p-4 rounded-client-md border border-client-neutral-200 bg-white shadow-client-sm w-full">
+    <div
+      class="flex flex-col gap-3 p-4 rounded-client-md border border-client-neutral-200 bg-white shadow-client-sm w-full"
+    >
       <!-- Cabecera -->
       <div class="flex items-center gap-3">
         @if (showAvatar()) {
@@ -36,7 +38,7 @@ import { Skeleton, type SkeletonAnimation } from './skeleton';
         <!-- Título y subtítulo -->
         <div class="flex flex-col gap-1.5 flex-1">
           <ui-skeleton variant="text" width="55%" [animation]="animation()" />
-          <ui-skeleton variant="text" width="35%" [animation]="animation()" class="text-xs" />
+          <ui-skeleton variant="text" width="35%" class="text-xs" [animation]="animation()" />
         </div>
         <!-- Badge / estado -->
         <ui-skeleton variant="button" width="64px" [animation]="animation()" />

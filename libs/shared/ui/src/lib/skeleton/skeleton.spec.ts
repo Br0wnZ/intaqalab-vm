@@ -1,5 +1,5 @@
-import { render } from '@testing-library/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { Skeleton } from './skeleton';
@@ -11,12 +11,12 @@ const withTranslate = {
 describe('Skeleton', () => {
   it('renders with role="status"', async () => {
     const { container } = await render(Skeleton, withTranslate);
-    expect(container.getAttribute('role')).toBe('status');
+    expect(container).toHaveAttribute('role', 'status');
   });
 
   it('renders with aria-busy="true"', async () => {
     const { container } = await render(Skeleton, withTranslate);
-    expect(container.getAttribute('aria-busy')).toBe('true');
+    expect(container).toHaveAttribute('aria-busy', 'true');
   });
 
   it('applies background-color style as base', async () => {
@@ -75,7 +75,7 @@ describe('Skeleton', () => {
       ...withTranslate,
       componentInputs: { width: '200px' },
     });
-    expect(container.style.width).toBe('200px');
+    expect(container).toHaveStyle({ width: '200px' });
   });
 
   it('binds height style', async () => {
@@ -83,7 +83,7 @@ describe('Skeleton', () => {
       ...withTranslate,
       componentInputs: { height: '80px' },
     });
-    expect(container.style.height).toBe('80px');
+    expect(container).toHaveStyle({ height: '80px' });
   });
 
   it('merges custom class via class input', async () => {

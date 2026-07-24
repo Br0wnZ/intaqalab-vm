@@ -1,5 +1,5 @@
-import { render } from '@testing-library/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { SkeletonTable } from './skeleton-table';
@@ -73,5 +73,4 @@ describe('SkeletonTable', () => {
     // Header has border-b (1) + First 2 body rows have border-b (2) = 3
     expect(borderedRows.length).toBe(3);
   });
-
 });

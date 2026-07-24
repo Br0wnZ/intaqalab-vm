@@ -101,7 +101,6 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
   3. `linkedSignal()` — Estado local dependiente de la store pero modificable localmente.
   4. `input()` + `output()` — Exclusivo para componentes UI puros o librerías sin contexto de negocio.
 
-
 ## Patrones Avanzados de Signals 🔬
 
 - **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`, `actionTrigger`, `safeResourceValue`.

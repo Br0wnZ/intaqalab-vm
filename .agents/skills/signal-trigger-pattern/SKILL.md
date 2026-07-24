@@ -121,6 +121,7 @@ export const EntityStore = signalStore(
 
 > [!IMPORTANT]
 > **Patrón Obligatorio de 3 Estados en la Vista:**
+>
 > 1. **Loading (`isLoading()`)**: Réplica visual de la vista usando componentes `ui-skeleton` / `ui-skeleton-card` de `@intaqalab/ui`.
 > 2. **Error (`error()`)**: Mensaje de error accesible traducido con `@ngx-translate` (`{{ 'ERRORS.LOADING_ERROR' | translate }}`).
 > 3. **Success**: Componentes reales cargados con los datos.
@@ -174,7 +175,6 @@ export class EntityShellComponent {
         this.#store.load({ page: 1, size: 20 });
       },
       { allowSignalWrites: true },
-
     );
   }
 }
