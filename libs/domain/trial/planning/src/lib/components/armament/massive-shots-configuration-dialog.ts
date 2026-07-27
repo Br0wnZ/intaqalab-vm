@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { MassiveConfigData } from '../../utils-models/armament.model';
+import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 
 @Component({
   selector: 'inta-massive-shots-configuration-dialog',
@@ -46,9 +46,9 @@ import type { MassiveConfigData } from '../../utils-models/armament.model';
               [formField]="configForm.series"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_PLACEHOLDER' | translate"
             >
-              <mat-option value="serie1">Serie 1</mat-option>
-              <mat-option value="serie2">Serie 2</mat-option>
-              <mat-option value="serie3">Serie 3</mat-option>
+              @for (option of seriesOptions(); track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -84,8 +84,9 @@ import type { MassiveConfigData } from '../../utils-models/armament.model';
               [formField]="configForm.denominacionArma"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_PLACEHOLDER' | translate"
             >
-              <mat-option value="obus105">Obús 105/37 mm L118 Light Gun</mat-option>
-              <mat-option value="obus155">Obús 155mm</mat-option>
+              @for (option of weaponsOptions(); track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -101,9 +102,9 @@ import type { MassiveConfigData } from '../../utils-models/armament.model';
               [formField]="configForm.denominacionTubo"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_PLACEHOLDER' | translate"
             >
-              <mat-option value="-">-</mat-option>
-              <mat-option value="tubo1">Tubo 1</mat-option>
-              <mat-option value="tubo2">Tubo 2</mat-option>
+              @for (option of tubesOptions(); track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -184,12 +185,39 @@ import type { MassiveConfigData } from '../../utils-models/armament.model';
 })
 export class MassiveShotsConfigurationDialog {
   readonly dialogRef = inject(MatDialogRef<MassiveShotsConfigurationDialog>);
+  readonly data = inject<MassiveShotsConfigurationDialogData | null>(MAT_DIALOG_DATA, { optional: true });
 
-  readonly #seriesOptions: { value: string; label: string }[] = [
-    { value: 'serie1', label: 'Serie 1' },
-    { value: 'serie2', label: 'Serie 2' },
-    { value: 'serie3', label: 'Serie 3' },
-  ];
+  readonly seriesOptions = computed<{ value: string; label: string }[]>(() => {
+    if (this.data?.series && this.data.series.length > 0) {
+      return this.data.series.map((s) => ({ value: s.id, label: s.name }));
+    }
+    return [
+      { value: 'serie1', label: 'Serie 1' },
+      { value: 'serie2', label: 'Serie 2' },
+      { value: 'serie3', label: 'Serie 3' },
+    ];
+  });
+
+  readonly weaponsOptions = computed<{ value: string; label: string }[]>(() => {
+    if (this.data?.weapons && this.data.weapons.length > 0) {
+      return this.data.weapons.map((w) => ({ value: w.id, label: w.name }));
+    }
+    return [
+      { value: 'obus105', label: 'Obús 105/37 mm L118 Light Gun' },
+      { value: 'obus155', label: 'Obús 155mm' },
+    ];
+  });
+
+  readonly tubesOptions = computed<{ value: string; label: string }[]>(() => {
+    if (this.data?.tubes && this.data.tubes.length > 0) {
+      return this.data.tubes.map((t) => ({ value: t.id, label: t.name }));
+    }
+    return [
+      { value: '-', label: '-' },
+      { value: 'tubo1', label: 'Tubo 1' },
+      { value: 'tubo2', label: 'Tubo 2' },
+    ];
+  });
 
   readonly configModel = signal<MassiveConfigData>({
     series: [],
@@ -204,7 +232,7 @@ export class MassiveShotsConfigurationDialog {
 
   readonly selectedChips = computed(() => {
     const selectedSeries = this.configModel().series;
-    return this.#seriesOptions.filter((opt) => selectedSeries.includes(opt.value));
+    return this.seriesOptions().filter((opt) => selectedSeries.includes(opt.value));
   });
 
   removeChip(value: string): void {

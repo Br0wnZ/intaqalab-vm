@@ -74,6 +74,16 @@ export const config: ButtonTrialActionsConfiguration = [
     // Ejecutar: todos (sin restricción de rol, restringido por estado)
     label: 'UTILS_TRIALS.TRIAL_ACTIONS.EXECUTION',
     option: 'EXECUTION',
-    status: [TrialStatus.PLANNED, TrialStatus.STARTED, TrialStatus.IN_PROGRESS, TrialStatus.INTERRUPTED],
+    status: [
+      TrialStatus.PLANNED,
+      TrialStatus.IN_PROGRESS,
+      TrialStatus.INTERRUPTED,
+      TrialStatus.STARTED,
+      TrialStatus.EXECUTED,
+      TrialStatus.ANALYZING,
+      TrialStatus.FINALIZING,
+      TrialStatus.CLOSED,
+      TrialStatus.CANCELLED,
+    ],
   },
 ];

@@ -1,4 +1,5 @@
 import { computed, inject } from '@angular/core';
+import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
@@ -25,10 +26,10 @@ export const ArmamentStore = signalStore(
     (store, armamentService = inject(ArmamentService), planningStore = inject(PlanningGeneralDataStore)) => ({
       fireTrialId: computed(() => planningStore.fireTrialId()),
 
-      armamentResponse: computed(() => armamentService.armamentResource.value()),
+      armamentResponse: computed(() => safeResourceValue(armamentService.armamentResource)),
 
       seriesArmament: computed<SeriesArmamentData[] | undefined>(() => {
-        const response = armamentService.armamentResource.value();
+        const response = safeResourceValue(armamentService.armamentResource);
         return response?.series;
       }),
 
@@ -45,12 +46,12 @@ export const ArmamentStore = signalStore(
       updateArmamentError: computed(() => armamentService.updateArmamentResource.error()),
 
       weapons: computed<SpecimenItem[]>(() => {
-        const response = armamentService.weaponsResource.value();
+        const response = safeResourceValue(armamentService.weaponsResource);
         return response?.items ?? [];
       }),
 
       weaponsPagination: computed(() => {
-        const response = armamentService.weaponsResource.value();
+        const response = safeResourceValue(armamentService.weaponsResource);
         if (!response) return null;
         return {
           page: response.page,
@@ -64,12 +65,12 @@ export const ArmamentStore = signalStore(
       weaponsError: computed(() => armamentService.weaponsResource.error()),
 
       tubes: computed<SpecimenItem[]>(() => {
-        const response = armamentService.tubesResource.value();
+        const response = safeResourceValue(armamentService.tubesResource);
         return response?.items ?? [];
       }),
 
       tubesPagination: computed(() => {
-        const response = armamentService.tubesResource.value();
+        const response = safeResourceValue(armamentService.tubesResource);
         if (!response) return null;
         return {
           page: response.page,

@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
+import { actionTrigger } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type {
@@ -129,29 +130,7 @@ import type {
       </button>
     </mat-dialog-actions>
   `,
-  styles: [
-    `
-      ::ng-deep {
-        .mat-mdc-dialog-container {
-          .mdc-dialog__surface {
-            border-radius: 12px !important;
-          }
-        }
-      }
-
-      mat-form-field {
-        ::ng-deep {
-          .mat-mdc-text-field-wrapper {
-            background-color: white;
-          }
-
-          .mat-mdc-form-field-subscript-wrapper {
-            display: none;
-          }
-        }
-      }
-    `,
-  ],
+  styles: [],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -160,10 +139,10 @@ export class UpdateArmamentDialog {
   readonly dialogRef = inject(MatDialogRef<UpdateArmamentDialog>);
   readonly data = inject<UpdateArmamentDialogData>(MAT_DIALOG_DATA);
 
-  readonly #updateParams = signal<{ trialId: string; body: ArmamentBulkUpdateRequest } | null>(null);
+  readonly #updateTrigger = actionTrigger<{ trialId: string; body: ArmamentBulkUpdateRequest }>();
 
   readonly #updateResource = httpResource<void>(() => {
-    const params = this.#updateParams();
+    const params = this.#updateTrigger.value();
     if (!params) return undefined;
 
     return {
@@ -210,7 +189,7 @@ export class UpdateArmamentDialog {
     if (this.armamentForm().valid()) {
       const formData = this.armamentModel();
 
-      this.#updateParams.set({
+      this.#updateTrigger.fire({
         trialId: this.data.trialId,
         body: {
           shots: [

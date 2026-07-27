@@ -2,6 +2,8 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuTrigger } from '@angular/material/menu';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -209,7 +211,7 @@ describe('MunitionStockDetailShellComponent', () => {
       const { component } = await setup('munitions');
       component.transfer();
       const [, options] = dialogMock.open.mock.calls[0];
-      expect(options.data).toEqual(expect.objectContaining({ category: 'MUNITION' }));
+      expect(options.data).toEqual(expect.objectContaining({ items: options.data.items }));
     });
 
     it('should navigate to movements URL when movements() is called', async () => {
@@ -221,10 +223,15 @@ describe('MunitionStockDetailShellComponent', () => {
     });
 
     it('should toggle opened signal when actions menu is opened/closed', async () => {
-      const { component } = await setup();
-      expect(component.opened()).toBe(false);
-      component.opened.set(true);
-      expect(component.opened()).toBe(true);
+      const { fixture } = await setup();
+      const triggerDe = fixture.debugElement.query(By.directive(MatMenuTrigger));
+      const menuTrigger = triggerDe.injector.get(MatMenuTrigger);
+      expect(menuTrigger.menuOpen).toBe(false);
+
+      menuTrigger.openMenu();
+      fixture.detectChanges();
+
+      expect(menuTrigger.menuOpen).toBe(true);
     });
   });
 

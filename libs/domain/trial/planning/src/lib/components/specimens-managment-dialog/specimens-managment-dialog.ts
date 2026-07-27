@@ -278,8 +278,13 @@ export class SpecimensManagmentDialog {
   }
 
   onSave(): void {
+    const type = this.selectedSpecimenType();
     this.#dialogRef.close(
-      this.selectedSpecimens().map((i) => ({ specimenId: i.id, batch: i.serialNumber || i.lot || '' })),
+      this.selectedSpecimens().map((i) => ({
+        specimenId: i.id,
+        batch: i.serialNumber || i.lot || '',
+        type: type === 'denomination' ? 'MUNITION' : type?.toUpperCase(),
+      })),
     );
   }
 

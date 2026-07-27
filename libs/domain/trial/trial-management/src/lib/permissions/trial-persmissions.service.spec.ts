@@ -25,27 +25,33 @@ describe('TrialPersmissionsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should return true for canSchedule on all allowed trial statuses when user has schedule role', () => {
-    const statuses = [
+  it('should return true for canSchedule on allowed trial statuses when user has schedule role', () => {
+    const allowedStatuses = [
       TrialStatus.UNDER_REVIEW,
       TrialStatus.PLANNED,
-      TrialStatus.PREPARED,
       TrialStatus.IN_PROGRESS,
       TrialStatus.INTERRUPTED,
       TrialStatus.STARTED,
-      TrialStatus.EXECUTED,
-      TrialStatus.ANALYZING,
-      TrialStatus.FINALIZING,
-      TrialStatus.CLOSED,
-      TrialStatus.CANCELLED,
     ];
 
-    statuses.forEach((status) => {
+    allowedStatuses.forEach((status) => {
       expect(service.canSchedule(status)).toBe(true);
     });
   });
 
   it('should return false for canSchedule on unallowed trial status', () => {
-    expect(service.canSchedule(TrialStatus.VOIDED)).toBe(false);
+    const unallowedStatuses = [
+      TrialStatus.PREPARED,
+      TrialStatus.EXECUTED,
+      TrialStatus.ANALYZING,
+      TrialStatus.FINALIZING,
+      TrialStatus.CLOSED,
+      TrialStatus.CANCELLED,
+      TrialStatus.VOIDED,
+    ];
+
+    unallowedStatuses.forEach((status) => {
+      expect(service.canSchedule(status)).toBe(false);
+    });
   });
 });

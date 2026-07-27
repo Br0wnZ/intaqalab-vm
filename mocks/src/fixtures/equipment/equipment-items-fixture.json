@@ -1,0 +1,41 @@
+{
+  "totalElements": 4,
+  "items": [
+    {
+      "id": 101,
+      "name": "Cañón 120mm L44 #01",
+      "itemType": "WEAPON",
+      "serialNumber": "SN-W120-01",
+      "denominationId": 1,
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 102,
+      "name": "Obús 105mm #02",
+      "itemType": "WEAPON",
+      "serialNumber": "SN-W105-02",
+      "denominationId": 2,
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 201,
+      "name": "Tubo T-1 #01",
+      "itemType": "TUBE",
+      "serialNumber": "SN-T1-01",
+      "denominationId": 5,
+      "familyId": 11,
+      "active": true
+    },
+    {
+      "id": 202,
+      "name": "Tubo T-2 #02",
+      "itemType": "TUBE",
+      "serialNumber": "SN-T2-02",
+      "denominationId": 6,
+      "familyId": 11,
+      "active": true
+    }
+  ]
+}

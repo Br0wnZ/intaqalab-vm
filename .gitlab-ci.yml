@@ -234,8 +234,7 @@ build-pro:
         --dockerfile "${CI_PROJECT_DIR}/Dockerfile" \
         --destination "${FULL_IMAGE_PATH}:${INTA_REGISTRY_IMAGE_TAG}" \
         --destination "${FULL_IMAGE_PATH}:latest" \
-        --cache=true \
-        --cache-repo="${FULL_IMAGE_PATH}/cache" \
+        --cache=false \
         --cleanup
       
       echo "Image built and pushed:"

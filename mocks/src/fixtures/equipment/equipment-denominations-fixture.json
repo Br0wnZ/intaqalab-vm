@@ -1,0 +1,47 @@
+{
+  "totalElements": 6,
+  "items": [
+    {
+      "id": 1,
+      "name": "Cañón 120mm L44",
+      "itemType": "WEAPON",
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Obús 105/37 mm L118 Light Gun",
+      "itemType": "WEAPON",
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Obús 155mm M107",
+      "itemType": "WEAPON",
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Mortero M120",
+      "itemType": "WEAPON",
+      "familyId": 10,
+      "active": true
+    },
+    {
+      "id": 5,
+      "name": "Tubo de ensayo T-1",
+      "itemType": "TUBE",
+      "familyId": 11,
+      "active": true
+    },
+    {
+      "id": 6,
+      "name": "Tubo calibrador T-2",
+      "itemType": "TUBE",
+      "familyId": 11,
+      "active": true
+    }
+  ]
+}

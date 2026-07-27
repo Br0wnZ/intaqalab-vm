@@ -18,9 +18,14 @@ export type TrialSelectorDialogResult = { action: 'select'; trial: FireTrial } |
 
 const EXECUTION_SELECTOR_STATUSES: TrialStatus[] = [
   TrialStatus.PLANNED,
-  TrialStatus.STARTED,
   TrialStatus.IN_PROGRESS,
   TrialStatus.INTERRUPTED,
+  TrialStatus.STARTED,
+  TrialStatus.EXECUTED,
+  TrialStatus.ANALYZING,
+  TrialStatus.FINALIZING,
+  TrialStatus.CLOSED,
+  TrialStatus.CANCELLED,
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────

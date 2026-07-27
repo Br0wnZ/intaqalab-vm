@@ -2,6 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
+import { actionTrigger } from '@intaqalab/utils';
 
 import type {
   ArmamentBulkUpdateRequest,
@@ -18,7 +19,7 @@ export type { CatalogQueryParams, SpecimenListResponse };
 })
 export class ArmamentService {
   readonly #getArmamentParams = signal<{ trialId: FireTrial['id'] } | null>(null);
-  readonly #updateArmamentParams = signal<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest } | null>(null);
+  readonly #updateArmamentTrigger = actionTrigger<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest }>();
 
   readonly #getWeaponsParams = signal<CatalogQueryParams | null>(null);
   readonly #getTubesParams = signal<CatalogQueryParams | null>(null);
@@ -36,7 +37,7 @@ export class ArmamentService {
   });
 
   readonly updateArmamentResource = httpResource<void>(() => {
-    const params = this.#updateArmamentParams();
+    const params = this.#updateArmamentTrigger.value();
     if (!params) return undefined;
 
     return {
@@ -50,9 +51,9 @@ export class ArmamentService {
     const params = this.#getWeaponsParams();
     if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams(params);
+    const queryParams = this.#buildQueryParams({ itemType: 'WEAPON', ...params });
     return {
-      url: `${this.#planningUrl}/weapons${queryParams}`,
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
     };
   });
@@ -61,9 +62,9 @@ export class ArmamentService {
     const params = this.#getTubesParams();
     if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams(params);
+    const queryParams = this.#buildQueryParams({ itemType: 'TUBE', ...params });
     return {
-      url: `${this.#planningUrl}/tubes${queryParams}`,
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
     };
   });
@@ -73,11 +74,11 @@ export class ArmamentService {
   }
 
   updateArmament(trialId: FireTrial['id'], body: ArmamentBulkUpdateRequest) {
-    this.#updateArmamentParams.set({ trialId, body });
+    this.#updateArmamentTrigger.fire({ trialId, body });
   }
 
   resetUpdateArmament() {
-    this.#updateArmamentParams.set(null);
+    this.#updateArmamentTrigger.reset();
   }
 
   getWeapons(params: CatalogQueryParams = {}) {
@@ -88,9 +89,12 @@ export class ArmamentService {
     this.#getTubesParams.set(params);
   }
 
-  #buildQueryParams(params: CatalogQueryParams): string {
+  #buildQueryParams(params: CatalogQueryParams & { itemType?: string }): string {
     const searchParams = new URLSearchParams();
 
+    if (params.itemType) {
+      searchParams.set('itemType', params.itemType);
+    }
     if (params.name) {
       searchParams.set('name', params.name);
     }

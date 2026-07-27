@@ -9,8 +9,8 @@ import type {
   WarehouseDenominationItem,
   WarehousePaginatedResponse,
 } from '../utils-models/catalog.model';
-import { SpecimenType } from '../utils-models/specimen.model';
 import type { SpecimenApiResponse } from '../utils-models/specimen.model';
+import { SpecimenType } from '../utils-models/specimen.model';
 import type { TrialPlanningInfo, UpsertTrialPlanningInfo } from '../utils-models/trial-planing-info.model';
 
 interface PlanningDataApiResponse {
@@ -75,7 +75,7 @@ export class DataPlanningService {
     if (!params) return undefined;
 
     return {
-      url: `${this.#planningUrl}/weapons`,
+      url: `${this.#planningUrl}/equipment/denominations`,
       params: this.#buildQueryParams({ pageSize: 100, ...params }),
       method: 'GET',
     };
@@ -86,7 +86,7 @@ export class DataPlanningService {
     if (!params) return undefined;
 
     return {
-      url: `${this.#planningUrl}/tubes`,
+      url: `${this.#planningUrl}/equipment/denominations`,
       params: this.#buildQueryParams({ pageSize: 100, ...params }),
       method: 'GET',
     };
@@ -128,12 +128,12 @@ export class DataPlanningService {
 
   getSpecimensByType(specimenType: SpecimenType, params: CatalogQueryParams = {}): void {
     if (specimenType === SpecimenType.Weapon) {
-      this.#weaponsParams.set(params);
+      this.#weaponsParams.set({ ...params, itemType: 'WEAPON' });
       return;
     }
 
     if (specimenType === SpecimenType.Tube) {
-      this.#tubesParams.set(params);
+      this.#tubesParams.set({ ...params, itemType: 'TUBE' });
       return;
     }
 
@@ -163,6 +163,7 @@ export class DataPlanningService {
     if (params.active !== undefined) result['active'] = params.active;
     if (params.sort?.length) result['sort'] = params.sort.join(',');
     if (params.munitionTypeId) result['munitionTypeId'] = params.munitionTypeId;
+    if (params.itemType) result['itemType'] = params.itemType;
     return result;
   }
 }

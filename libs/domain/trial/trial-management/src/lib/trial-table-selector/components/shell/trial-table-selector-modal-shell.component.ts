@@ -58,7 +58,13 @@ export class TrialTableSelectorModalShellComponent {
 
   readonly search = signal('');
   readonly defaultFilters = signal<Partial<TrialSearchFilters>>({
-    status: [TrialStatus.UNDER_REVIEW, TrialStatus.PLANNED, TrialStatus.PREPARED],
+    status: [
+      TrialStatus.UNDER_REVIEW,
+      TrialStatus.PLANNED,
+      TrialStatus.IN_PROGRESS,
+      TrialStatus.INTERRUPTED,
+      TrialStatus.STARTED,
+    ],
   });
 
   onTrialSelected(trial: FireTrial) {

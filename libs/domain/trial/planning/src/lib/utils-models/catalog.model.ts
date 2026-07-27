@@ -5,6 +5,7 @@ export type CatalogQueryParams = {
   active?: boolean;
   sort?: string[];
   munitionTypeId?: string;
+  itemType?: string;
 };
 
 export type SelectOption = {

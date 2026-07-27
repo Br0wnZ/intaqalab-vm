@@ -541,13 +541,13 @@ export class PlanningGeneralDataFormComponent {
       );
     };
 
-    const labelMap = new Map(specimenList.map((s) => [s.id, getName(s)]));
+    const labelMap = new Map(specimenList.map((s) => [String(s.id), getName(s)]));
     return selectedIds.map((id) => labelMap.get(id) ?? id).join(', ');
   });
 
   constructor() {
-    //this.store.loadSpecimensByType(SpecimenType.Weapon);
-    //this.store.loadSpecimensByType(SpecimenType.Tube);
+    this.store.loadSpecimensByType(SpecimenType.Weapon);
+    this.store.loadSpecimensByType(SpecimenType.Tube);
     this.store.loadSpecimensByType(SpecimenType.Munition);
     this.store.loadUsers();
 

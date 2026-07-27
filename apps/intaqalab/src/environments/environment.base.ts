@@ -33,7 +33,7 @@ export const baseEnvironment: Omit<AppEnvironment, 'production' | 'apiUrl'> = {
     munitionComponentTypes: 'munition-component-types-api/1.0.0',
     munitionDenominations: 'munition-denominations-api/1.0.0',
     fuseWorkingModes: 'fuse-working-modes-api/1.0.0',
-    planning: 'planning-api/1.2.0',
+    planning: 'planning-api/1.3.0',
     execution: 'execution-api/1.0.0',
     centers: 'centers-api/1.0.0/centers',
   },

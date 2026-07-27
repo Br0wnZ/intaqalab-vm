@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
 import type { StockEntity } from '../../../models/munition-stock-detail.model';
@@ -45,15 +37,10 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
       </h2>
 
       <div class="w-full flex justify-end mb-6">
-        <button
-          mat-flat-button
-          [matMenuTriggerFor]="menu"
-          (menuOpened)="opened.set(true)"
-          (menuClosed)="opened.set(false)"
-        >
+        <button mat-flat-button [matMenuTriggerFor]="menu" #trigger="matMenuTrigger">
           {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTIONS' | translate }}
           <mat-icon>
-            {{ opened() ? 'expand_less' : 'expand_more' }}
+            {{ trigger.menuOpen ? 'expand_less' : 'expand_more' }}
           </mat-icon>
         </button>
         <mat-menu #menu="matMenu">
@@ -241,6 +228,8 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionStockDetailShellComponent {
+  readonly #dialog = inject(MatDialog);
+  readonly #router = inject(Router);
   readonly store = inject(MunitionsStockDetailStore);
 
   id = input.required<string>();
@@ -251,7 +240,6 @@ export class MunitionStockDetailShellComponent {
     return result;
   });
 
-  opened = signal(false);
   constructor() {
     effect(() => {
       const id = this.id();
@@ -274,28 +262,32 @@ export class MunitionStockDetailShellComponent {
     return [];
   });
 
-  #dialog = inject(MatDialog);
-  retire() {
+  async retire() {
     const item = this.store.item();
-    if (item) {
-      this.#dialog.open(RetireDialogComponent, {
-        data: { item, category: this.categoryView() },
-        width: '1024px',
-      });
-    }
+
+    if (!item) return;
+
+    const dialogRef = this.#dialog.open(RetireDialogComponent, {
+      data: { item, category: this.categoryView() },
+      width: '1024px',
+    });
+
+    await firstValueFrom(dialogRef.afterClosed());
   }
 
-  transfer() {
+  async transfer() {
     const item = this.store.item();
-    if (item) {
-      this.#dialog.open(TransferDialogComponent, {
-        data: { item, category: this.categoryView() },
-        width: '1024px',
-      });
-    }
+
+    if (!item) return;
+
+    const dialogRef = this.#dialog.open(TransferDialogComponent, {
+      data: { items: [item] },
+      width: '1024px',
+    });
+
+    await firstValueFrom(dialogRef.afterClosed());
   }
 
-  #router = inject(Router);
   movements() {
     const stockId = this.id();
     this.#router.navigateByUrl(`/wharehouse-managment/movements`, { state: { stockId } });

@@ -25,7 +25,13 @@ import { firstValueFrom } from 'rxjs';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import type { ArmamentSerie, SeriesArmamentData, UpdateArmamentDialogData } from '../../utils-models/armament.model';
+import type {
+  ArmamentSerie,
+  MassiveConfigData,
+  MassiveShotsConfigurationDialogData,
+  SeriesArmamentData,
+  UpdateArmamentDialogData,
+} from '../../utils-models/armament.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 import { UpdateArmamentDialog } from './update-armament-dialog';
 
@@ -328,9 +334,79 @@ export class Armament {
     if (this.readonly()) {
       return;
     }
-    this.dialog.open(MassiveShotsConfigurationDialog, {
+    const dialogRef = this.dialog.open<
+      MassiveShotsConfigurationDialog,
+      MassiveShotsConfigurationDialogData,
+      MassiveConfigData | undefined
+    >(MassiveShotsConfigurationDialog, {
       width: '800px',
+      data: {
+        series: this.armamentSignal().map((s) => ({ id: s.seriesId, name: s.seriesName })),
+        weapons: this.weapons(),
+        tubes: this.tubes(),
+      },
     });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.#applyMassiveConfiguration(result);
+      }
+    });
+  }
+
+  #applyMassiveConfiguration(config: MassiveConfigData): void {
+    const currentSeries = this.armamentSignal();
+    const targetSeriesIds = config.series.length > 0 ? config.series : currentSeries.map((s) => s.seriesId);
+
+    const updatedSeries = currentSeries.map((serie) => {
+      if (!targetSeriesIds.includes(serie.seriesId)) {
+        return serie;
+      }
+
+      const updatedShots = serie.shots.map((shot) => {
+        const updatedArmament = { ...shot.armament };
+
+        if (config.denominacionArma) {
+          updatedArmament.weaponExternalId = config.denominacionArma;
+          const foundWeapon = this.weapons().find((w) => w.id === config.denominacionArma);
+          if (foundWeapon) {
+            updatedArmament.weaponName = foundWeapon.name;
+          }
+        }
+
+        if (config.denominacionTubo) {
+          updatedArmament.tubeExternalId = config.denominacionTubo;
+          const foundTube = this.tubes().find((t) => t.id === config.denominacionTubo);
+          if (foundTube) {
+            updatedArmament.tubeName = foundTube.name;
+          }
+        }
+
+        if (config.instrumentado) {
+          updatedArmament.isInstrumented = config.instrumentado === 'si';
+        }
+
+        if (config.vidaUtil) {
+          updatedArmament.tubeLifePercentage = Number(config.vidaUtil);
+        }
+
+        if (config.observaciones !== undefined && config.observaciones !== '') {
+          updatedArmament.observations = config.observaciones;
+        }
+
+        return {
+          ...shot,
+          armament: updatedArmament,
+        };
+      });
+
+      return {
+        ...serie,
+        shots: updatedShots,
+      };
+    });
+
+    this.armamentSignal.set(updatedSeries);
   }
 
   async openUpdateDialog(serieIdx: number, shotIdx: number): Promise<void> {

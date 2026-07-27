@@ -165,7 +165,7 @@ describe('ArmamentService', () => {
         service.getWeapons();
         tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/weapons`, 'GET', mockResponse);
+        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', mockResponse);
       }));
 
     it('should fetch weapons with query params', () =>
@@ -173,10 +173,11 @@ describe('ArmamentService', () => {
         service.getWeapons({ name: 'Obús', page: 0, pageSize: 20, active: true });
         tick();
 
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/weapons`));
+        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
         expect(req.request.method).toBe('GET');
 
         const url = new URL(req.request.url);
+        expect(url.searchParams.get('itemType')).toBe('WEAPON');
         expect(url.searchParams.get('name')).toBe('Obús');
         expect(url.searchParams.get('page')).toBe('0');
         expect(url.searchParams.get('pageSize')).toBe('20');
@@ -191,7 +192,7 @@ describe('ArmamentService', () => {
         service.getWeapons({ sort: ['name,asc', 'id,desc'] });
         tick();
 
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/weapons`));
+        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
         expect(req.request.method).toBe('GET');
 
         const url = new URL(req.request.url);
@@ -206,7 +207,7 @@ describe('ArmamentService', () => {
         service.getWeapons();
         tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/weapons`);
+        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`);
         req.error(new ErrorEvent('Network error'));
         tick();
       }));
@@ -228,7 +229,7 @@ describe('ArmamentService', () => {
         service.getTubes();
         tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/tubes`, 'GET', mockResponse);
+        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`, 'GET', mockResponse);
       }));
 
     it('should fetch tubes with query params', () =>
@@ -236,10 +237,11 @@ describe('ArmamentService', () => {
         service.getTubes({ name: 'Tubo', page: 1, pageSize: 5, active: false });
         tick();
 
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/tubes`));
+        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
         expect(req.request.method).toBe('GET');
 
         const url = new URL(req.request.url);
+        expect(url.searchParams.get('itemType')).toBe('TUBE');
         expect(url.searchParams.get('name')).toBe('Tubo');
         expect(url.searchParams.get('page')).toBe('1');
         expect(url.searchParams.get('pageSize')).toBe('5');
@@ -254,7 +256,7 @@ describe('ArmamentService', () => {
         service.getTubes();
         tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/tubes`);
+        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`);
         req.error(new ErrorEvent('Network error'));
         tick();
       }));
@@ -271,14 +273,14 @@ describe('ArmamentService', () => {
     it('should not make weapons request when params are null', () =>
       fakeAsync(() => {
         tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/weapons`);
+        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
         expect(service.weaponsResource.value()).toBeUndefined();
       }));
 
     it('should not make tubes request when params are null', () =>
       fakeAsync(() => {
         tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/tubes`);
+        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
         expect(service.tubesResource.value()).toBeUndefined();
       }));
 

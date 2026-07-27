@@ -103,3 +103,9 @@ export type MassiveConfigData = {
   vidaUtil: string;
   observaciones: string;
 };
+
+export type MassiveShotsConfigurationDialogData = {
+  series?: { id: string; name: string }[];
+  weapons?: SpecimenItem[];
+  tubes?: SpecimenItem[];
+};
