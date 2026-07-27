@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/no-node-access */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';

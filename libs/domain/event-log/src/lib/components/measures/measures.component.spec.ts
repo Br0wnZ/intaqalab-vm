@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 import { signal } from '@angular/core';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';

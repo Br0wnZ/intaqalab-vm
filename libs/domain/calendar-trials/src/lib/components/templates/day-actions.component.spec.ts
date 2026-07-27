@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';

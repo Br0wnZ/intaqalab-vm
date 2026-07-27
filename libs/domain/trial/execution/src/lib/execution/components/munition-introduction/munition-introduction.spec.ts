@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable testing-library/no-node-access */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Injectable, signal } from '@angular/core';

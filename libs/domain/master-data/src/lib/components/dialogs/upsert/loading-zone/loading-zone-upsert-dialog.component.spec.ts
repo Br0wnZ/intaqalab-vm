@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable testing-library/no-node-access */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';

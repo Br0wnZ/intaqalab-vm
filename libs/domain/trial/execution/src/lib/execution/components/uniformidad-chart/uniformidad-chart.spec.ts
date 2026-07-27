@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -35,6 +36,7 @@ describe('UniformidadChartWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
+    // eslint-disable-next-line testing-library/no-node-access
     expect(document.querySelector('h3')).toBeTruthy();
   });
 

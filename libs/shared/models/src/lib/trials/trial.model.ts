@@ -51,3 +51,12 @@ export type FireTrialClient = {
   id: string;
   name: string;
 };
+
+export interface ChangeStatusRequest {
+  reason: string;
+}
+
+export interface FinishFireTrialResponse {
+  executionFinishedAt?: string;
+}
+

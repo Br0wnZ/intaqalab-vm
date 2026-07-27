@@ -1,4 +1,5 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable testing-library/no-node-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';

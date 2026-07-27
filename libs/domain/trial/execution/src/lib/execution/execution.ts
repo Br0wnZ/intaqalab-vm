@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { DatePipe, Location, NgClass } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import {

@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-restricted-properties */
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';

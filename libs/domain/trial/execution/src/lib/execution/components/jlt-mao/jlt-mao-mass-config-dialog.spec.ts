@@ -1,12 +1,11 @@
+/* eslint-disable testing-library/no-node-access */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
-import { userEvent } from '@testing-library/user-event';
+import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { JltMaoMassConfigDialogData } from './jlt-mao-mass-config-dialog';

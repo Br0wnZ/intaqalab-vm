@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/no-node-access */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';

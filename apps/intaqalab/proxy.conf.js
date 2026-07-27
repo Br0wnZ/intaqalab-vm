@@ -12,7 +12,7 @@ const API_TARGETS = {
 };
 
 const REMOTE_API_BASE_PATH = '/intaqalab';
-const FIRE_TRIALS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/fire-trials-api/1.0.0`;
+const FIRE_TRIALS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/fire-trials-api/1.1.0`;
 const CLIENTS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/clients-api/1.0.0`;
 const USERS_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/users-api/1.0.0`;
 const PLANNING_API_BASE_PATH = `${REMOTE_API_BASE_PATH}/planning-api/1.1.0`;

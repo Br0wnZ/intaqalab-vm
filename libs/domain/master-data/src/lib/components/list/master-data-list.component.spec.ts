@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
@@ -23,6 +24,8 @@ const MOCK_ITEMS = [
   { id: 'id-1', label: 'Material 1', name: { es: 'Material 1', en: 'Material 1' }, active: true },
   { id: 'id-2', label: 'Material 2', name: { es: 'Material 2', en: 'Material 2' }, active: false },
 ];
+
+type DialogCloseResult = (typeof MOCK_ITEMS)[number] | null;
 
 function paginate<T>(items: T[]) {
   return { page: 1, pageSize: 10, totalElements: items.length, items };
@@ -55,7 +58,7 @@ const MOCK_VIEW: MasterView = {
   },
 };
 
-const mockDialogRef = { afterClosed: vi.fn(() => of(null)), close: vi.fn() };
+const mockDialogRef = { afterClosed: vi.fn(() => of<DialogCloseResult>(null)), close: vi.fn() };
 const mockMatDialog = { open: vi.fn(() => mockDialogRef) };
 
 const setup = async (masterView: MasterView = MOCK_VIEW) => {

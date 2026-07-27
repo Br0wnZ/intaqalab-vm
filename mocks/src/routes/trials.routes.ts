@@ -367,6 +367,19 @@ trialsRouter.post('/:centerId/fire-trials/:fireTrialId/planning/modify', (req, r
 // TRIAL TRANSITIONS
 // ==========================================
 
+// Iniciar prueba de fuego
+trialsRouter.post('/:centerId/fire-trials/:fireTrialId/start', (req, res) => {
+  setTrialStatus(req.params['fireTrialId'], 'STARTED');
+  res.status(200).send();
+});
+
+// Finalizar prueba de fuego
+trialsRouter.post('/:centerId/fire-trials/:fireTrialId/finish', (req, res) => {
+  setTrialStatus(req.params['fireTrialId'], 'EXECUTED');
+  res.status(200).json({ executionFinishedAt: new Date().toISOString() });
+});
+
+
 // Cancelar prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/cancel', (req, res) => {
   const { reason } = req.body as { reason?: string };

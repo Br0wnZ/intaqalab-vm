@@ -1,9 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
 import type { EquipmentMagnitudeTagEnum, WidgetId } from '../execution/models';
+import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 // ============= Types =============
 
@@ -231,6 +232,7 @@ interface EquipmentSelectorUpdateParams extends ExecutionParams {
   providedIn: 'root',
 })
 export class ExecutionService {
+  readonly #lifecycleService = inject(FireTrialLifecycleService);
   readonly #executionUrl = injectExecutionEndpoint();
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
@@ -304,19 +306,10 @@ export class ExecutionService {
 
   // ── EXECUTION TRANSITIONS: START ─────────────────────────────────────────
 
-  readonly #startParams = signal<ExecutionParams | null>(null);
-
-  readonly startResource = httpResource<void>(() => {
-    const params = this.#startParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/start`,
-      method: 'POST',
-    };
-  });
+  readonly startResource = this.#lifecycleService.startResource;
 
   startExecution(fireTrialId: FireTrial['id']): void {
-    this.#startParams.set({ fireTrialId, _t: Date.now() });
+    this.#lifecycleService.startFireTrial(fireTrialId);
   }
 
   // ── EXECUTION TRANSITIONS: PAUSE ─────────────────────────────────────────
@@ -373,37 +366,18 @@ export class ExecutionService {
 
   // ── EXECUTION TRANSITIONS: CANCEL ───────────────────────────────────────
 
-  readonly #cancelParams = signal<ExecutionWithReasonParams | null>(null);
-
-  readonly cancelResource = httpResource<void>(() => {
-    const params = this.#cancelParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/cancel`,
-      method: 'POST',
-      body: { reason: params.reason } satisfies TransitionWithReasonRequest,
-    };
-  });
+  readonly cancelResource = this.#lifecycleService.cancelResource;
 
   cancelExecution(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#cancelParams.set({ fireTrialId, reason, _t: Date.now() });
+    this.#lifecycleService.cancelFireTrial(fireTrialId, reason);
   }
 
   // ── EXECUTION TRANSITIONS: FINISH ────────────────────────────────────────
 
-  readonly #finishParams = signal<ExecutionParams | null>(null);
-
-  readonly finishResource = httpResource<ExecutionFinishResponse>(() => {
-    const params = this.#finishParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/finish`,
-      method: 'POST',
-    };
-  });
+  readonly finishResource = this.#lifecycleService.finishResource;
 
   finishExecution(fireTrialId: FireTrial['id']): void {
-    this.#finishParams.set({ fireTrialId, _t: Date.now() });
+    this.#lifecycleService.finishFireTrial(fireTrialId);
   }
 
   // ── EXECUTION PLANNING: GET ─────────────────────────────────────────────

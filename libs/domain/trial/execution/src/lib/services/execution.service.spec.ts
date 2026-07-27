@@ -124,9 +124,9 @@ describe('ExecutionService', () => {
     // Start
     service.startExecution(DEMO_TRIAL_ID);
     TestBed.tick();
-    const startReq = httpMock.expectOne(`${BASE_URL}/start`);
+    const startReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/start`));
     expect(startReq.request.method).toBe('POST');
-    startReq.flush(null, { status: 204, statusText: 'No Content' });
+    startReq.flush(null, { status: 200, statusText: 'OK' });
     TestBed.tick();
 
     // Pause
@@ -157,17 +157,17 @@ describe('ExecutionService', () => {
     // Cancel
     service.cancelExecution(DEMO_TRIAL_ID, 'abort');
     TestBed.tick();
-    const cancelReq = httpMock.expectOne(`${BASE_URL}/cancel`);
+    const cancelReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/cancel`));
     expect(cancelReq.request.method).toBe('POST');
     expect(cancelReq.request.body).toEqual({ reason: 'abort' });
-    cancelReq.flush(null, { status: 204, statusText: 'No Content' });
+    cancelReq.flush(null, { status: 200, statusText: 'OK' });
     TestBed.tick();
 
     // Finish
-    const finishResponse = { finishedAt: '2026-03-03T12:00:00Z' };
+    const finishResponse = { executionFinishedAt: '2026-03-03T12:00:00Z' };
     service.finishExecution(DEMO_TRIAL_ID);
     TestBed.tick();
-    const finishReq = httpMock.expectOne(`${BASE_URL}/finish`);
+    const finishReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/finish`));
     expect(finishReq.request.method).toBe('POST');
     finishReq.flush(finishResponse);
 
