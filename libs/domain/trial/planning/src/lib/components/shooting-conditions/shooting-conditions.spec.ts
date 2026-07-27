@@ -264,24 +264,40 @@ describe('ShootingConditionsComponent', () => {
   });
 
   describe('Table Columns', () => {
-    it('should have all columns defined', () => {
-      expect(component.displayedColumns).toContain('globalNumber');
-      expect(component.displayedColumns).toContain('date');
-      expect(component.displayedColumns).toContain('targetTypeId');
-      expect(component.displayedColumns).toContain('targetMaterialId');
-      expect(component.displayedColumns).toContain('impactZoneId');
-      expect(component.displayedColumns).toContain('targetDimensionsId');
-      expect(component.displayedColumns).toContain('targetThicknessId');
-      expect(component.displayedColumns).toContain('distance');
-      expect(component.displayedColumns).toContain('orientation');
-      expect(component.displayedColumns).toContain('elevation');
-      expect(component.displayedColumns).toContain('angle');
-      expect(component.displayedColumns).toContain('range');
+    it('should have all columns defined when target is selected', () => {
+      expect(component.displayedColumns()).toContain('globalNumber');
+      expect(component.displayedColumns()).toContain('date');
+      expect(component.displayedColumns()).toContain('targetTypeId');
+      expect(component.displayedColumns()).toContain('targetMaterialId');
+      expect(component.displayedColumns()).toContain('impactZoneId');
+      expect(component.displayedColumns()).toContain('targetDimensionsId');
+      expect(component.displayedColumns()).toContain('targetThicknessId');
+      expect(component.displayedColumns()).toContain('distance');
+      expect(component.displayedColumns()).toContain('orientation');
+      expect(component.displayedColumns()).toContain('elevation');
+      expect(component.displayedColumns()).toContain('angle');
+      expect(component.displayedColumns()).toContain('range');
 
-      expect(component.displayedColumns).toContain('powderWeight');
-      expect(component.displayedColumns).toContain('projectileWeight');
-      expect(component.displayedColumns).toContain('functioningHeight');
-      expect(component.displayedColumns).toContain('observations');
+      expect(component.displayedColumns()).toContain('powderWeight');
+      expect(component.displayedColumns()).toContain('projectileWeight');
+      expect(component.displayedColumns()).toContain('functioningHeight');
+      expect(component.displayedColumns()).toContain('observations');
+    });
+
+    it('should hide target columns when no target is selected', () => {
+      component.seriesSignal.update((series) =>
+        series.map((s) => ({
+          ...s,
+          shots: s.shots.map((sh) => ({ ...sh, targetTypeId: '' })),
+        })),
+      );
+      fixture.detectChanges();
+
+      expect(component.displayedColumns()).not.toContain('targetMaterialId');
+      expect(component.displayedColumns()).not.toContain('targetDimensionsId');
+      expect(component.displayedColumns()).not.toContain('targetThicknessId');
+      expect(component.displayedColumns()).not.toContain('distance');
+      expect(component.displayedColumns()).not.toContain('targetInclination');
     });
   });
 

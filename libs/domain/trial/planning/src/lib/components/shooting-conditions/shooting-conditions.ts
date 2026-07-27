@@ -613,9 +613,9 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                     </td>
                   </ng-container>
 
-                  <tr *matHeaderRowDef="displayedColumns" mat-header-row class="!bg-slate-50"></tr>
+                  <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="!bg-slate-50"></tr>
                   <tr
-                    *matRowDef="let row; columns: displayedColumns"
+                    *matRowDef="let row; columns: displayedColumns()"
                     mat-row
                     class="hover:bg-slate-50/50 transition-colors"
                   ></tr>
@@ -665,26 +665,38 @@ export class ShootingConditionsComponent implements OnInit {
   /** Opciones de unidad por campo — inmutables, vienen del enum del swagger. */
   readonly unitOptions = SHOT_CONDITIONS_UNIT_OPTIONS;
 
-  readonly displayedColumns = [
-    'globalNumber',
-    'date',
-    'impactZoneId',
-    'targetTypeId',
-    'targetMaterialId',
-    'targetDimensionsId',
-    'targetThicknessId',
-    'distance',
-    'targetInclination',
-    'orientation',
-    'elevation',
-    'angle',
-    'range',
-    'functioningHeight',
-    'powderWeight',
-    'projectileWeight',
-    'nominalSpeed',
-    'observations',
-  ];
+  readonly hasTargetSelected = computed(() =>
+    this.seriesSignal().some((serie) => serie.shots.some((shot) => !!shot.targetTypeId)),
+  );
+
+  readonly displayedColumns = computed(() => {
+    const baseColumns = [
+      'globalNumber',
+      'date',
+      'impactZoneId',
+      'targetTypeId',
+      'orientation',
+      'elevation',
+      'angle',
+      'range',
+      'functioningHeight',
+      'powderWeight',
+      'projectileWeight',
+      'nominalSpeed',
+      'observations',
+    ];
+    if (this.hasTargetSelected()) {
+      return [
+        ...baseColumns,
+        'targetMaterialId',
+        'targetDimensionsId',
+        'targetThicknessId',
+        'distance',
+        'targetInclination',
+      ];
+    }
+    return baseColumns;
+  });
 
   #initialSeriesData: Serie[] = [];
   #conditionsApplied = false;
@@ -913,7 +925,18 @@ export class ShootingConditionsComponent implements OnInit {
             projectileWeightUnit,
             nominalSpeedUnit,
             ...rest
-          }) => ({ date, ...rest }),
+          }) => {
+            const hasTarget = !!rest.targetTypeId;
+            return {
+              date,
+              ...rest,
+              targetMaterialId: hasTarget ? rest.targetMaterialId : '',
+              targetDimensionsId: hasTarget ? rest.targetDimensionsId : '',
+              targetThicknessId: hasTarget ? rest.targetThicknessId : '',
+              distance: hasTarget ? rest.distance : 0,
+              targetInclination: hasTarget ? rest.targetInclination : 0,
+            };
+          },
         ),
       ),
     };
