@@ -305,6 +305,10 @@ export class SpecimensManagmentDialog {
     this.selectedSpecimenType.set(specimenType);
     this.resetSelection();
     if (!specimenType) return;
+    if (specimenType === SpecimenType.Munition) {
+      this.store.loadSpecimensByType(SpecimenType.Munition);
+      return;
+    }
     this.store.loadSpecimensByType(specimenType);
   }
 

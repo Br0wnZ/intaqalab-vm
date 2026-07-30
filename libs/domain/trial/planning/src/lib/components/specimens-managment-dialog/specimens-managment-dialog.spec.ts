@@ -196,6 +196,11 @@ describe('SpecimensManagmentDialog', () => {
       expect(mockStore.loadSpecimensByType).toHaveBeenCalledWith(SpecimenType.Weapon);
     });
 
+    it('should call loadSpecimensByType with Munition when specimen type is Munition', () => {
+      component.onSpecimenTypeChange(SpecimenType.Munition);
+      expect(mockStore.loadSpecimensByType).toHaveBeenCalledWith(SpecimenType.Munition);
+    });
+
     it('should get specimens from store', () => {
       const specimens = component.specimens();
       expect(specimens.length).toBeGreaterThan(0);
