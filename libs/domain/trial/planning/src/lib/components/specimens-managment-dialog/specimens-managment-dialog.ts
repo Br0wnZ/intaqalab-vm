@@ -218,10 +218,7 @@ export class SpecimensManagmentDialog {
   readonly #initialized = signal(false);
 
   readonly isSpecimenInputDisabled = computed(
-    () =>
-      this.selectedSpecimenType() === null ||
-      this.store.isLoadingTypedSpecimens() ||
-      Boolean(this.store.typedSpecimensError()),
+    () => this.selectedSpecimenType() === null || this.store.isLoadingTypedSpecimens(),
   );
 
   readonly selectedOption = computed(() => {

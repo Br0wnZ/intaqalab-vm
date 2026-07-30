@@ -155,13 +155,14 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.isSpecimenInputDisabled()).toBe(true);
     });
 
-    it('should disable specimen input when typed specimens request fails', () => {
+    it('should keep specimen input enabled when request fails but type is selected and not loading', () => {
       component.onSpecimenTypeChange(SpecimenType.Tube);
 
       const resource = mockStore._specimensResource as unknown as MockResourceControls;
       resource._setError(new Error('Request failed'));
+      resource._setLoading(false);
 
-      expect(component.isSpecimenInputDisabled()).toBe(true);
+      expect(component.isSpecimenInputDisabled()).toBe(false);
     });
   });
 
