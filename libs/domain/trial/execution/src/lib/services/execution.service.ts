@@ -3,7 +3,12 @@ import { Injectable, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
-import type { EquipmentMagnitudeTagEnum, WidgetId } from '../execution/models';
+import type {
+    EquipmentMagnitudeTagEnum,
+    EquipmentSelectionApiList,
+    EquipmentTypeEnum,
+    WidgetId
+} from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 // ============= Types =============
@@ -183,33 +188,22 @@ export type EquipmentSelectorItem = {
 };
 
 export type EquipmentSelectorSelection = {
-  itemId: string;
-  categoryId: string;
-  series: string[];
-  disparos: string[];
+  equipmentDenominationId: number;
+  categoryId: EquipmentTypeEnum;
+  seriesIds?: string[];
+  shotIds?: string[];
 };
 
 export type EquipmentSelectorMagnitudeGroup = {
-  id: EquipmentMagnitudeTagEnum | string;
+  measurementGroup: EquipmentMagnitudeTagEnum | string;
   selections: EquipmentSelectorSelection[];
 };
 
-export type EquipmentSelectorResponse = {
-  categories: EquipmentSelectorCategory[];
-  items: EquipmentSelectorItem[];
-  equipments: EquipmentSelectorMagnitudeGroup[];
-  serieOptions: { value: string; label: string }[];
-  disparoOptions: { value: string; label: string }[];
-  serieDisparoMap?: Record<string, string[]>;
-};
+export type EquipmentSelectorResponse = EquipmentSelectionApiList;
 
-export type EquipmentSelectorUpdateRequest = {
-  equipments: EquipmentSelectorMagnitudeGroup[];
-};
+export type EquipmentSelectorUpdateRequest = EquipmentSelectionApiList;
 
-export type EquipmentSelectorUpdateResponse = {
-  equipments: EquipmentSelectorMagnitudeGroup[];
-};
+export type EquipmentSelectorUpdateResponse = EquipmentSelectionApiList;
 
 interface PreferencesParams extends ExecutionParams {
   roleName?: string;

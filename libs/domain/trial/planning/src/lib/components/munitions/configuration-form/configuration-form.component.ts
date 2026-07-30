@@ -23,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -41,6 +41,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     MatButtonModule,
     MatIconModule,
     MatCheckboxModule,
@@ -63,6 +64,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               data-testid="munition-type-select"
               [id]="'munitionType-' + configIndex()"
               [value]="selectedMunitionTypeId()"
@@ -84,6 +86,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               data-testid="denomination-select"
               [formField]="configForm.denomination"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
@@ -141,6 +144,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               multiple
               data-testid="assigned-shots-select"
               [id]="'assignedShotIds-' + configIndex()"
@@ -236,6 +240,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
         </label>
         <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
           <mat-select
+            clearable
             multiple
             [id]="'selectedComponents-' + configIndex()"
             [value]="selectableComponentsSelected()"

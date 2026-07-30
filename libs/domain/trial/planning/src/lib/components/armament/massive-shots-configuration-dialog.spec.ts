@@ -10,6 +10,7 @@ import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SpecimenType } from '../../utils-models/specimen.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 
 describe('MassiveShotsConfigurationDialog', () => {
@@ -58,6 +59,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       await runSetup();
 
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_LABEL/i)).toBeInTheDocument();
+      expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL/i)).toBeInTheDocument();
@@ -78,7 +80,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       const { loader } = await runSetup();
 
       const selects = await loader.getAllHarnesses(MatSelectHarness);
-      expect(selects.length).toBe(5);
+      expect(selects.length).toBe(6);
     });
   });
 
@@ -191,15 +193,18 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
-    it('should close dialog with form data when clicking apply button', async () => {
-      const { loader } = await runSetup();
+    it('should emit form data when clicking apply button', async () => {
+      const { loader, view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      const applySpy = vi.fn();
+      component.applyConfig.subscribe(applySpy);
 
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
       const applyButton = await buttons[0];
 
       await applyButton.click();
 
-      expect(mockDialogRef.close).toHaveBeenCalledWith(
+      expect(applySpy).toHaveBeenCalledWith(
         expect.objectContaining({
           series: [],
           denominacionArma: '',
@@ -209,10 +214,14 @@ describe('MassiveShotsConfigurationDialog', () => {
           observaciones: '',
         }),
       );
+      expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
 
-    it('should close dialog with updated data after modifying observations', async () => {
-      const { loader } = await runSetup();
+    it('should emit updated data after modifying observations', async () => {
+      const { loader, view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      const applySpy = vi.fn();
+      component.applyConfig.subscribe(applySpy);
 
       const inputs = await loader.getAllHarnesses(MatInputHarness);
       const textarea = inputs[0];
@@ -223,11 +232,12 @@ describe('MassiveShotsConfigurationDialog', () => {
 
       await applyButton.click();
 
-      expect(mockDialogRef.close).toHaveBeenCalledWith(
+      expect(applySpy).toHaveBeenCalledWith(
         expect.objectContaining({
           observaciones: 'Test observations',
         }),
       );
+      expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
   });
 
@@ -271,12 +281,15 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
-    it('onApply should call dialogRef.close with current config data', async () => {
+    it('onApply should emit applyConfig output with current config data', async () => {
       const { view } = await runSetup();
       const component = view.fixture.componentInstance;
+      const applySpy = vi.fn();
+      component.applyConfig.subscribe(applySpy);
 
       component.configModel.set({
         series: ['serie1'],
+        tipo: SpecimenType.Weapon,
         denominacionArma: 'obus105',
         denominacionTubo: 'tubo1',
         instrumentado: 'si',
@@ -286,8 +299,9 @@ describe('MassiveShotsConfigurationDialog', () => {
 
       component.onApply();
 
-      expect(mockDialogRef.close).toHaveBeenCalledWith({
+      expect(applySpy).toHaveBeenCalledWith({
         series: ['serie1'],
+        tipo: SpecimenType.Weapon,
         denominacionArma: 'obus105',
         denominacionTubo: 'tubo1',
         instrumentado: 'si',

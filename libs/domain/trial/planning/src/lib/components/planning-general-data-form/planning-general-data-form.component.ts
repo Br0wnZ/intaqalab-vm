@@ -548,6 +548,8 @@ export class PlanningGeneralDataFormComponent {
   constructor() {
     this.store.loadSpecimensByType(SpecimenType.Weapon);
     this.store.loadSpecimensByType(SpecimenType.Tube);
+    this.store.loadSpecimensByType(SpecimenType.Mortar);
+    this.store.loadSpecimensByType(SpecimenType.Bundle);
     this.store.loadSpecimensByType(SpecimenType.Munition);
     this.store.loadUsers();
 

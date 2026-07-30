@@ -1066,7 +1066,9 @@
     "SPECIMEN_LABEL": "Specimen",
     "SPECIMEN_PLACEHOLDER": "Select specimen",
     "TITLE": "Specimen management",
+    "TYPE_BUNDLE": "Weapon system",
     "TYPE_LABEL": "Specimen type",
+    "TYPE_MORTAR": "Mortar",
     "TYPE_MUNITION": "Ammunition",
     "TYPE_PLACEHOLDER": "Select type",
     "TYPE_TUBE": "Tube",
@@ -2084,6 +2086,8 @@
         "TITLE": "Bulk shot configuration",
         "TUBE_LABEL": "Tube designation",
         "TUBE_PLACEHOLDER": "Select tube designation",
+        "TYPE_LABEL": "Type",
+        "TYPE_PLACEHOLDER": "Select type",
         "WEAPON_LABEL": "Weapon designation",
         "WEAPON_PLACEHOLDER": "Select weapon"
       },
@@ -2099,6 +2103,7 @@
         "SERIE": "Series",
         "SHOT": "Shot",
         "TUBE": "Tube designation",
+        "TYPE": "Type",
         "WEAPON": "Weapon designation",
         "YES": "Yes"
       },

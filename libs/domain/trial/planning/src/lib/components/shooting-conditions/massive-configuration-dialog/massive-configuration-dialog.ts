@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
 import { MatButtonModule, MatFormFieldModule, MatIconModule } from '@intaqalab/theme';
-import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import {
   IntaDatePipe,
   LocaleDecimalInputDirective,
@@ -52,6 +52,7 @@ interface DialogData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     MatIconModule,
     MatTooltipModule,
     FormField,
@@ -80,6 +81,7 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="bulk-series"
               multiple
               [placeholder]="
@@ -100,6 +102,7 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="bulk-date"
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_PLACEHOLDER' | translate
@@ -126,6 +129,7 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="bulk-impact"
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
@@ -146,6 +150,7 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="bulk-target"
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
@@ -306,6 +311,7 @@ interface DialogData {
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
+                clearable
                 id="bulk-material"
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
@@ -329,6 +335,7 @@ interface DialogData {
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
+                clearable
                 id="bulk-dims"
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_PLACEHOLDER'
@@ -352,6 +359,7 @@ interface DialogData {
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
+                clearable
                 id="bulk-thick"
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_PLACEHOLDER'

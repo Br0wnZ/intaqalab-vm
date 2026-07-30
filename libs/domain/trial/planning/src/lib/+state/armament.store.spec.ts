@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import {
-  createArmamentCatalogTestData,
-  createArmamentTestData,
-  createMockArmamentService,
-  createMockPlanningGeneralDataStore,
+    createArmamentCatalogTestData,
+    createArmamentTestData,
+    createMockArmamentService,
+    createMockPlanningGeneralDataStore,
 } from '@intaqalab/utils';
 
 import { ArmamentService } from '../services/armament-service';
@@ -237,11 +237,11 @@ describe('ArmamentStore', () => {
 
   describe('Bulk Operations', () => {
     describe('loadAllCatalogs', () => {
-      it('should load all catalogs with active=true', () => {
+      it('should load all catalogs with default filters', () => {
         store.loadAllCatalogs();
 
-        expect(testSetup.armamentServiceMock.getWeapons).toHaveBeenCalledWith({ active: true });
-        expect(testSetup.armamentServiceMock.getTubes).toHaveBeenCalledWith({ active: true });
+        expect(testSetup.armamentServiceMock.getWeapons).toHaveBeenCalledWith();
+        expect(testSetup.armamentServiceMock.getTubes).toHaveBeenCalledWith();
       });
     });
   });

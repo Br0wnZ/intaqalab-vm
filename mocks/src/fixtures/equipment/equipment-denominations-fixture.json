@@ -1,5 +1,5 @@
 {
-  "totalElements": 6,
+  "totalElements": 8,
   "items": [
     {
       "id": 1,
@@ -41,6 +41,20 @@
       "name": "Tubo calibrador T-2",
       "itemType": "TUBE",
       "familyId": 11,
+      "active": true
+    },
+    {
+      "id": 7,
+      "name": "Mortero Epsilon 81mm",
+      "itemType": "MORTAR",
+      "familyId": 12,
+      "active": true
+    },
+    {
+      "id": 8,
+      "name": "Sistema de Armas RWS-1",
+      "itemType": "BUNDLE",
+      "familyId": 13,
       "active": true
     }
   ]

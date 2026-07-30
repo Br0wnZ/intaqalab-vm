@@ -14,7 +14,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
 import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
-import { Badge, InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import { Badge, InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import {
   IntaDatePipe,
   LocaleDecimalInputDirective,
@@ -43,6 +43,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     MatButtonModule,
     MatIconModule,
     MatTableModule,
@@ -126,7 +127,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select [formField]="getShotField(serieIdx, i).date">
+                        <mat-select clearable [formField]="getShotField(serieIdx, i).date">
                           @for (schedule of getTrialSchedulesResource.value(); track schedule.date) {
                             <mat-option
                               class="truncate"
@@ -156,7 +157,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select [formField]="getShotField(serieIdx, i).impactZoneId">
+                        <mat-select clearable [formField]="getShotField(serieIdx, i).impactZoneId">
                           @for (zone of impactZones(); track zone.id) {
                             <mat-option
                               class="truncate"
@@ -186,7 +187,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select [formField]="getShotField(serieIdx, i).targetTypeId">
+                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetTypeId">
                           @for (target of targetTypes(); track target.id) {
                             <mat-option
                               class="truncate"
@@ -216,7 +217,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select [formField]="getShotField(serieIdx, i).targetMaterialId">
+                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
                           @for (material of targetMaterials(); track material.id) {
                             <mat-option
                               class="truncate"
@@ -246,7 +247,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select matNativeControl [formField]="getShotField(serieIdx, i).targetDimensionsId">
+                        <mat-select clearable matNativeControl [formField]="getShotField(serieIdx, i).targetDimensionsId">
                           @for (dimension of targetDimensions(); track dimension.id) {
                             <mat-option
                               class="truncate"
@@ -276,7 +277,7 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
                       class="px-6 py-4 text-sm text-gray-900 !bg-white"
                     >
                       <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select [formField]="getShotField(serieIdx, i).targetThicknessId">
+                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
                           @for (thickness of targetThicknesses(); track thickness.id) {
                             <mat-option
                               class="truncate"
@@ -674,7 +675,6 @@ export class ShootingConditionsComponent implements OnInit {
       'globalNumber',
       'date',
       'impactZoneId',
-      'targetTypeId',
       'orientation',
       'elevation',
       'angle',
@@ -683,19 +683,22 @@ export class ShootingConditionsComponent implements OnInit {
       'powderWeight',
       'projectileWeight',
       'nominalSpeed',
-      'observations',
     ];
+
     if (this.hasTargetSelected()) {
       return [
         ...baseColumns,
+        'targetTypeId',
         'targetMaterialId',
         'targetDimensionsId',
         'targetThicknessId',
         'distance',
         'targetInclination',
+        'observations',
       ];
     }
-    return baseColumns;
+
+    return [...baseColumns, 'targetTypeId', 'observations'];
   });
 
   #initialSeriesData: Serie[] = [];

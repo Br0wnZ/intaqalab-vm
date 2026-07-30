@@ -19,23 +19,23 @@ export enum EquipmentTypeEnum {
 }
 
 export enum EquipmentMagnitudeTagEnum {
-  VELOCIDAD_INICIAL = 'velocidad-inicial',
-  PRESION_PIEZOELECTRICOS = 'presion-piezoelectricos',
-  TRAYECTOGRAFIA = 'trayectografia',
-  SONIDO = 'sonido',
-  VIDEO_AV = 'video-av',
-  VIDEO_C = 'video-c',
-  LONGITUD = 'longitud',
-  PRESION_MANOMETROS = 'presion-manometros',
-  PRESION_IPG = 'presion-ipg',
-  PESOS = 'pesos',
-  ACONDICIONAMIENTO = 'acondicionamiento',
-  TIEMPO = 'tiempo',
+  VELOCIDAD_INICIAL = 'INITIAL_VELOCITY',
+  PRESION_PIEZOELECTRICOS = 'PIEZOELECTRIC_PRESSURE',
+  TRAYECTOGRAFIA = 'TRAJECTOGRAPHY',
+  SONIDO = 'SOUND',
+  VIDEO_AV = 'HIGH_SPEED_VIDEO',
+  VIDEO_C = 'CONVENTIONAL_VIDEO',
+  LONGITUD = 'LENGTH',
+  PRESION_MANOMETROS = 'MANOMETER_PRESSURE',
+  PRESION_IPG = 'IPG_PRESSURE',
+  PESOS = 'WEIGHT',
+  ACONDICIONAMIENTO = 'CONDITIONING',
+  TIEMPO = 'TIME',
 }
 
 export interface EquipmentItemSelection {
   itemId: string;
-  categoryId: string;
+  categoryId: EquipmentTypeEnum;
   series: string[];
   disparos: string[];
 }
@@ -43,6 +43,42 @@ export interface EquipmentItemSelection {
 export interface EquipmentMagnitudeSelectionGroup {
   id: EquipmentMagnitudeTagEnum | string;
   selections: EquipmentItemSelection[];
+}
+
+export interface EquipmentSelectionApiItem {
+  equipmentDenominationId: number;
+  categoryId: EquipmentTypeEnum;
+  seriesIds?: string[];
+  shotIds?: string[];
+}
+
+export interface EquipmentMeasurementGroupApi {
+  measurementGroup: EquipmentMagnitudeTagEnum | string;
+  selections: EquipmentSelectionApiItem[];
+}
+
+export type EquipmentSelectionApiList = EquipmentMeasurementGroupApi[];
+
+export const API_EQUIPMENT_TYPES: readonly EquipmentTypeEnum[] = [
+  EquipmentTypeEnum.DOPPLER_RADAR,
+  EquipmentTypeEnum.TRAJECTOGRAPHY_RADAR,
+  EquipmentTypeEnum.ANTENNA,
+  EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+  EquipmentTypeEnum.AMPLIFIER,
+  EquipmentTypeEnum.SOUND_LEVEL_METER,
+  EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+  EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+  EquipmentTypeEnum.TRACE_RULER,
+  EquipmentTypeEnum.CHRONOMETER,
+  EquipmentTypeEnum.BALANCE,
+  EquipmentTypeEnum.CLIMATIC_CHAMBER,
+  EquipmentTypeEnum.PRESSURE_GAUGE,
+  EquipmentTypeEnum.CRUSHER,
+  EquipmentTypeEnum.PROBE,
+];
+
+export function isEquipmentTypeEnum(value: EquipmentTypeEnum | string): value is EquipmentTypeEnum {
+  return API_EQUIPMENT_TYPES.includes(value as EquipmentTypeEnum);
 }
 
 export const LEGACY_CATEGORY_TO_EQUIPMENT_TYPE: Record<string, EquipmentTypeEnum> = {

@@ -1,13 +1,91 @@
-import { computed, effect, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import { patchState, signalStoreFeature, type, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
-import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../../execution/models';
-import { EquipmentMagnitudeTagEnum } from '../../execution/models';
+import type {
+    EquipmentItemSelection,
+    EquipmentMagnitudeSelectionGroup,
+    EquipmentMeasurementGroupApi,
+    EquipmentSelectionApiList,
+} from '../../execution/models';
+import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../../execution/models';
 import { ExecutionService } from '../../services/execution.service';
 import type { EquipmentSelectorState } from '../execution-state.models';
 
 function flattenGroupedEquipments(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentItemSelection[] {
   return equipments.flatMap((group) => group.selections ?? []);
+}
+
+function extractDenominationId(itemId: string): number | null {
+  const direct = Number(itemId);
+  if (Number.isFinite(direct)) return direct;
+
+  const numericSuffix = itemId.match(/(\d+)$/)?.[1];
+  if (!numericSuffix) return null;
+
+  const parsed = Number(numericSuffix);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function resolveItemIdFromDenomination(
+  denominationId: number,
+  items: EquipmentSelectorState['items'],
+  categoryId?: EquipmentTypeEnum,
+): string {
+  const candidateItems = categoryId
+    ? items.filter((item) => item.equipmentType === categoryId || item.categoryId === categoryId)
+    : items;
+
+  const searchList = candidateItems.length ? candidateItems : items;
+
+  const byDirect = searchList.find((item) => Number(item.id) === denominationId)?.id;
+  if (byDirect) return byDirect;
+
+  const bySuffix = searchList.find((item) => item.id.endsWith(`-${denominationId}`))?.id;
+  if (bySuffix) return bySuffix;
+
+  const paddedStr = String(denominationId).padStart(2, '0');
+  const byPadded = searchList.find((item) => item.id.endsWith(`-${paddedStr}`))?.id;
+  if (byPadded) return byPadded;
+
+  return String(denominationId);
+}
+
+function toEquipmentSelectionApi(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentSelectionApiList {
+  return equipments.map((group) => ({
+    measurementGroup: group.id,
+    selections: group.selections
+      .map((selection) => {
+        const equipmentDenominationId = extractDenominationId(selection.itemId);
+        if (equipmentDenominationId === null) {
+          return null;
+        }
+
+        return {
+          equipmentDenominationId,
+          categoryId: selection.categoryId,
+          seriesIds: selection.series,
+          shotIds: selection.disparos,
+        };
+      })
+      .filter((selection): selection is NonNullable<typeof selection> => selection !== null),
+  }));
+}
+
+function fromEquipmentSelectionApi(
+  apiGroups: EquipmentSelectionApiList,
+  items: EquipmentSelectorState['items'],
+): EquipmentMagnitudeSelectionGroup[] {
+  return apiGroups.map((group: EquipmentMeasurementGroupApi) => ({
+    id: group.measurementGroup,
+    selections: group.selections
+      .filter((selection) => isEquipmentTypeEnum(selection.categoryId))
+      .map((selection) => ({
+        itemId: resolveItemIdFromDenomination(selection.equipmentDenominationId, items, selection.categoryId),
+        categoryId: selection.categoryId as EquipmentTypeEnum,
+        series: selection.seriesIds ?? [],
+        disparos: selection.shotIds ?? [],
+      })),
+  }));
 }
 
 interface EquipmentSelectorSlice {
@@ -142,16 +220,92 @@ const initialState: EquipmentSelectorSlice = {
       {
         id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
         selections: [
-          { itemId: 'rd-9876', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
-          { itemId: 'rd-4321', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
-          { itemId: 'rd-8899', categoryId: 'DOPPLER_RADAR', series: [], disparos: [] },
+          {
+            itemId: 'rd-9876',
+            categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+            series: ['funcionamiento-1'],
+            disparos: ['disparo-1', 'disparo-2'],
+          },
+          {
+            itemId: 'rd-4321',
+            categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+            series: ['funcionamiento-1'],
+            disparos: ['disparo-1', 'disparo-2'],
+          },
+          {
+            itemId: 'ant-01',
+            categoryId: EquipmentTypeEnum.ANTENNA,
+            series: ['funcionamiento-1'],
+            disparos: ['disparo-1', 'disparo-2'],
+          },
+        ],
+      },
+      {
+        id: EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS,
+        selections: [
+          {
+            itemId: 'sp-01',
+            categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+            series: ['funcionamiento-1'],
+            disparos: ['disparo-1', 'disparo-2'],
+          },
+          {
+            itemId: 'amp-01',
+            categoryId: EquipmentTypeEnum.AMPLIFIER,
+            series: ['funcionamiento-1'],
+            disparos: ['disparo-1', 'disparo-2'],
+          },
+        ],
+      },
+      {
+        id: EquipmentMagnitudeTagEnum.SONIDO,
+        selections: [
+          {
+            itemId: 'son-01',
+            categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
+            series: ['funcionamiento-2'],
+            disparos: ['disparo-3'],
+          },
         ],
       },
     ],
     selections: [
-      { itemId: 'rd-9876', categoryId: 'radar-dopler', series: [], disparos: [] },
-      { itemId: 'rd-4321', categoryId: 'radar-dopler', series: [], disparos: [] },
-      { itemId: 'rd-8899', categoryId: 'radar-dopler', series: [], disparos: [] },
+      {
+        itemId: 'rd-9876',
+        categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+        series: ['funcionamiento-1'],
+        disparos: ['disparo-1', 'disparo-2'],
+      },
+      {
+        itemId: 'rd-4321',
+        categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+        series: ['funcionamiento-1'],
+        disparos: ['disparo-1', 'disparo-2'],
+      },
+      {
+        itemId: 'ant-01',
+        categoryId: EquipmentTypeEnum.ANTENNA,
+        series: ['funcionamiento-1'],
+        disparos: ['disparo-1', 'disparo-2'],
+      },
+      {
+        itemId: 'sp-01',
+        categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+        series: ['funcionamiento-1'],
+        disparos: ['disparo-1', 'disparo-2'],
+      },
+      {
+        itemId: 'amp-01',
+        categoryId: EquipmentTypeEnum.AMPLIFIER,
+        series: ['funcionamiento-1'],
+        disparos: ['disparo-1', 'disparo-2'],
+      },
+      {
+        itemId: 'son-01',
+        categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
+        series: ['funcionamiento-2'],
+        disparos: ['disparo-3'],
+      },
     ],
     serieOptions: [
       { value: 'funcionamiento-1', label: 'Funcionamiento I' },
@@ -191,7 +345,7 @@ export function withEquipmentSelector() {
         const fireTrialId = store.fireTrialId();
         const flattenedSelections = flattenGroupedEquipments(equipments);
         if (fireTrialId) {
-          executionService.updateEquipmentSelector(fireTrialId, { equipments });
+          executionService.updateEquipmentSelector(fireTrialId, toEquipmentSelectionApi(equipments));
         }
         patchState(store, (state) => ({
           equipmentSelector: {
@@ -213,21 +367,16 @@ export function withEquipmentSelector() {
           const remote = store.equipmentSelectorRemote();
           if (!remote) return;
 
+          // Leer items fuera del grafo reactivo para evitar el loop:
+          // patchState → equipmentSelector cambia → effect re-dispara → loop infinito
+          const items = untracked(() => store.equipmentSelector().items);
+          const equipments = fromEquipmentSelectionApi(remote, items);
+
           patchState(store, (state) => ({
             equipmentSelector: {
               ...state.equipmentSelector,
-              categories: remote.categories,
-              items: remote.items.map((item) => ({
-                id: item.id,
-                label: item.label,
-                categoryId: item.categoryId ?? item.equipmentType ?? '',
-                equipmentType: item.equipmentType,
-              })),
-              equipments: remote.equipments,
-              selections: flattenGroupedEquipments(remote.equipments),
-              serieOptions: remote.serieOptions,
-              disparoOptions: remote.disparoOptions,
-              serieDisparoMap: remote.serieDisparoMap,
+              equipments,
+              selections: flattenGroupedEquipments(equipments),
             },
           }));
         });

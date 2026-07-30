@@ -7,10 +7,11 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440001",
           "armament": {
+            "weaponType": "WEAPON",
             "weaponName": "Cañón 120mm L44",
-            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440011",
+            "weaponExternalId": 1,
             "tubeName": "Tubo de ensayo T-1",
-            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440012",
+            "tubeExternalId": 5,
             "isInstrumented": true,
             "tubeLifePercentage": 75.5,
             "observations": "Tubo en buen estado"
@@ -19,10 +20,11 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440002",
           "armament": {
+            "weaponType": "WEAPON",
             "weaponName": "Cañón 120mm L44",
-            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440011",
+            "weaponExternalId": 1,
             "tubeName": "Tubo de ensayo T-1",
-            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440012",
+            "tubeExternalId": 5,
             "isInstrumented": false,
             "tubeLifePercentage": 75.5,
             "observations": ""
@@ -37,10 +39,11 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440003",
           "armament": {
+            "weaponType": "BUNDLE",
             "weaponName": "Obús M107",
-            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440014",
+            "weaponExternalId": 3,
             "tubeName": "Tubo calibrador T-2",
-            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440016",
+            "tubeExternalId": 6,
             "isInstrumented": true,
             "tubeLifePercentage": 60.0,
             "observations": "Requiere inspección post-disparo"
@@ -49,10 +52,11 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440004",
           "armament": {
+            "weaponType": "BUNDLE",
             "weaponName": "Obús M107",
-            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440014",
+            "weaponExternalId": 3,
             "tubeName": "Tubo calibrador T-2",
-            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440016",
+            "tubeExternalId": 6,
             "isInstrumented": false,
             "tubeLifePercentage": 60.0,
             "observations": ""
@@ -67,10 +71,11 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440005",
           "armament": {
+            "weaponType": "MORTAR",
             "weaponName": "Mortero M120",
-            "weaponExternalId": "550e8400-e29b-41d4-a716-446655440017",
-            "tubeName": "Tubo de ánima lisa T-3",
-            "tubeExternalId": "550e8400-e29b-41d4-a716-446655440019",
+            "weaponExternalId": 4,
+            "tubeName": "Tubo de ánima lista T-3",
+            "tubeExternalId": 6,
             "isInstrumented": true,
             "tubeLifePercentage": 85.2,
             "observations": "Nuevo, primera serie de disparos"

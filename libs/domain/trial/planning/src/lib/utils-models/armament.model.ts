@@ -1,10 +1,14 @@
 import type { SpecimenItem } from './catalog.model';
+import type { SpecimenType } from './specimen.model';
 
 export type ArmamentData = {
+  weaponType?: SpecimenType | '';
   weaponName?: string;
-  weaponExternalId?: string;
+  /** ID numérico del arma en Calibry (integer según contrato Swagger) */
+  weaponExternalId?: number;
   tubeName?: string;
-  tubeExternalId?: string;
+  /** ID numérico del tubo en Calibry (integer según contrato Swagger) */
+  tubeExternalId?: number;
   isInstrumented?: boolean;
   tubeLifePercentage?: number;
   observations?: string;
@@ -27,8 +31,11 @@ export type TrialArmamentResponse = {
 
 export type ShotArmamentUpdateRequest = {
   shotId: string;
-  weaponExternalId?: string;
-  tubeExternalId?: string;
+  weaponType?: SpecimenType | '';
+  /** ID numérico del arma en Calibry (integer según contrato Swagger) */
+  weaponExternalId?: number;
+  /** ID numérico del tubo en Calibry (integer según contrato Swagger) */
+  tubeExternalId?: number;
   isInstrumented?: boolean;
   lifeUsefulPercentage?: number;
   observations?: string;
@@ -50,9 +57,12 @@ export type ArmamentSerieShot = {
 };
 
 export type ArmamentSerieShotDetail = {
+  weaponType: SpecimenType | '';
   weaponName: string;
+  /** ID de catálogo usado en el select — se convierte a number al enviar al API */
   weaponExternalId: string;
   tubeName: string;
+  /** ID de catálogo usado en el select — se convierte a number al enviar al API */
   tubeExternalId: string;
   isInstrumented: boolean;
   tubeLifePercentage: number;
@@ -88,7 +98,9 @@ export type UpdateArmamentDialogData = {
 };
 
 export type UpdateArmamentDialogResult = {
+  /** ID de catálogo del arma (string en el form, se convierte a integer al enviar al API) */
   weaponExternalId: string;
+  /** ID de catálogo del tubo (string en el form, se convierte a integer al enviar al API) */
   tubeExternalId: string;
   isInstrumented: boolean;
   tubeLifePercentage: number;
@@ -97,6 +109,7 @@ export type UpdateArmamentDialogResult = {
 
 export type MassiveConfigData = {
   series: string[];
+  tipo: SpecimenType | '';
   denominacionArma: string;
   denominacionTubo: string;
   instrumentado: string;

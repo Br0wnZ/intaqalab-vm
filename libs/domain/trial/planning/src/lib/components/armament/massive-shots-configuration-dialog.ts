@@ -7,10 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 
 @Component({
   selector: 'inta-massive-shots-configuration-dialog',
@@ -19,6 +20,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
     MatDialogModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatSelectClearable,
     MatIconModule,
     MatButtonModule,
     MatInputModule,
@@ -41,6 +43,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="series"
               multiple
               [formField]="configForm.series"
@@ -73,6 +76,25 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </mat-chip-set>
         }
 
+        <!-- Tipo -->
+        <div>
+          <label for="tipo" class="block text-sm font-medium text-gray-700">
+            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-select
+              clearable
+              id="tipo"
+              [formField]="configForm.tipo"
+              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_PLACEHOLDER' | translate"
+            >
+              @for (option of typeOptions; track option.value) {
+                <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <!-- Denominación arma -->
         <div>
           <label for="denominacionArma" class="block text-sm font-medium text-gray-700">
@@ -80,6 +102,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="denominacionArma"
               [formField]="configForm.denominacionArma"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_PLACEHOLDER' | translate"
@@ -98,6 +121,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="denominacionTubo"
               [formField]="configForm.denominacionTubo"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_PLACEHOLDER' | translate"
@@ -116,6 +140,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="instrumentado"
               [formField]="configForm.instrumentado"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
@@ -137,6 +162,7 @@ import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="vidaUtil"
               [formField]="configForm.vidaUtil"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_PLACEHOLDER' | translate"
@@ -191,36 +217,32 @@ export class MassiveShotsConfigurationDialog {
     if (this.data?.series && this.data.series.length > 0) {
       return this.data.series.map((s) => ({ value: s.id, label: s.name }));
     }
-    return [
-      { value: 'serie1', label: 'Serie 1' },
-      { value: 'serie2', label: 'Serie 2' },
-      { value: 'serie3', label: 'Serie 3' },
-    ];
+    return [];
   });
 
   readonly weaponsOptions = computed<{ value: string; label: string }[]>(() => {
     if (this.data?.weapons && this.data.weapons.length > 0) {
       return this.data.weapons.map((w) => ({ value: w.id, label: w.name }));
     }
-    return [
-      { value: 'obus105', label: 'Obús 105/37 mm L118 Light Gun' },
-      { value: 'obus155', label: 'Obús 155mm' },
-    ];
+    return [];
   });
 
   readonly tubesOptions = computed<{ value: string; label: string }[]>(() => {
     if (this.data?.tubes && this.data.tubes.length > 0) {
       return this.data.tubes.map((t) => ({ value: t.id, label: t.name }));
     }
-    return [
-      { value: '-', label: '-' },
-      { value: 'tubo1', label: 'Tubo 1' },
-      { value: 'tubo2', label: 'Tubo 2' },
-    ];
+    return [];
   });
+
+  readonly typeOptions = [
+    { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
+    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
+    { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
+  ] as const;
 
   readonly configModel = signal<MassiveConfigData>({
     series: [],
+    tipo: '',
     denominacionArma: '',
     denominacionTubo: '',
     instrumentado: '',
@@ -231,7 +253,7 @@ export class MassiveShotsConfigurationDialog {
   readonly configForm = form(this.configModel);
 
   readonly selectedChips = computed(() => {
-    const selectedSeries = this.configModel().series;
+    const selectedSeries = this.configModel().series ?? [];
     return this.seriesOptions().filter((opt) => selectedSeries.includes(opt.value));
   });
 
@@ -239,7 +261,7 @@ export class MassiveShotsConfigurationDialog {
     const current = this.configModel();
     this.configModel.set({
       ...current,
-      series: current.series.filter((s) => s !== value),
+      series: (current.series ?? []).filter((s) => s !== value),
     });
   }
 

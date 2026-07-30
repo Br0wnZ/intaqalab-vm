@@ -6,6 +6,7 @@ export type CatalogQueryParams = {
   sort?: string[];
   munitionTypeId?: string;
   itemType?: string;
+  familyId?: number;
 };
 
 export type SelectOption = {
@@ -18,7 +19,8 @@ export type SelectOption = {
 export type SpecimenItem = {
   id: string;
   name: string;
-  type: 'WEAPON' | 'TUBE' | 'MUNITION';
+  /** Alineado con PlanningSpecimenTypeEnum del Swagger */
+  type: 'WEAPON' | 'TUBE' | 'MUNITION' | 'MORTAR' | 'BUNDLE';
   active: boolean;
 };
 

@@ -30,6 +30,7 @@ function createMockDialogData(overrides: Partial<UpdateArmamentDialogData> = {})
     shotNumber: 1,
     shotId: 'shot-001',
     armament: {
+      weaponType: 'WEAPON',
       weaponName: 'Obús 105mm',
       weaponExternalId: 'weapon-1',
       tubeName: 'Tubo 1',

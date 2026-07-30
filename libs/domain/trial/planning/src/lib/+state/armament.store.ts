@@ -3,10 +3,10 @@ import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
-  ArmamentBulkUpdateRequest,
-  CatalogQueryParams,
-  SeriesArmamentData,
-  SpecimenItem,
+    ArmamentBulkUpdateRequest,
+    CatalogQueryParams,
+    SeriesArmamentData,
+    SpecimenItem,
 } from '../services/armament-service';
 import { ArmamentService } from '../services/armament-service';
 import { PlanningGeneralDataStore } from './planning-general-data.store';
@@ -130,8 +130,8 @@ export const ArmamentStore = signalStore(
     },
 
     loadAllCatalogs(): void {
-      armamentService.getWeapons({ active: true });
-      armamentService.getTubes({ active: true });
+      armamentService.getWeapons();
+      armamentService.getTubes();
     },
 
     reset(): void {

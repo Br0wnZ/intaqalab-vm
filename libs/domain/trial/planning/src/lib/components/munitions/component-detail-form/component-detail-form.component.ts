@@ -19,6 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
+import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -42,6 +43,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     MatCheckboxModule,
     FormField,
     ConditioningFieldsComponent,
@@ -112,6 +114,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full">
                 <mat-select
+                  clearable
                   id="component-denomination"
                   data-testid="denomination-select"
                   [value]="denominationId()"

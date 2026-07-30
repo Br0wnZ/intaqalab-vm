@@ -157,8 +157,8 @@ describe('ArmamentService', () => {
           pageSize: 10,
           totalElements: 2,
           items: [
-            { id: 'weapon-1', name: 'Obús 105mm', type: 'WEAPON', active: true },
-            { id: 'weapon-2', name: 'Obús 155mm', type: 'WEAPON', active: true },
+            { id: 1, name: 'Obús 105mm', itemType: 'WEAPON', active: true },
+            { id: 2, name: 'Obús 155mm', itemType: 'WEAPON', active: true },
           ],
         };
 
@@ -168,9 +168,9 @@ describe('ArmamentService', () => {
         expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', mockResponse);
       }));
 
-    it('should fetch weapons with query params', () =>
+    it('should fetch weapons with paging and familyId params', () =>
       fakeAsync(() => {
-        service.getWeapons({ name: 'Obús', page: 0, pageSize: 20, active: true });
+        service.getWeapons({ page: 0, pageSize: 20, familyId: 10 });
         tick();
 
         const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
@@ -178,27 +178,11 @@ describe('ArmamentService', () => {
 
         const url = new URL(req.request.url);
         expect(url.searchParams.get('itemType')).toBe('WEAPON');
-        expect(url.searchParams.get('name')).toBe('Obús');
         expect(url.searchParams.get('page')).toBe('0');
         expect(url.searchParams.get('pageSize')).toBe('20');
-        expect(url.searchParams.get('active')).toBe('true');
+        expect(url.searchParams.get('familyId')).toBe('10');
 
         req.flush({ page: 0, pageSize: 20, totalElements: 0, items: [] });
-        tick();
-      }));
-
-    it('should fetch weapons with sort params', () =>
-      fakeAsync(() => {
-        service.getWeapons({ sort: ['name,asc', 'id,desc'] });
-        tick();
-
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
-        expect(req.request.method).toBe('GET');
-
-        const url = new URL(req.request.url);
-        expect(url.searchParams.getAll('sort')).toEqual(['name,asc', 'id,desc']);
-
-        req.flush({ page: 0, pageSize: 10, totalElements: 0, items: [] });
         tick();
       }));
 
@@ -221,8 +205,8 @@ describe('ArmamentService', () => {
           pageSize: 10,
           totalElements: 2,
           items: [
-            { id: 'tube-1', name: 'Tubo 1', type: 'TUBE', active: true },
-            { id: 'tube-2', name: 'Tubo 2', type: 'TUBE', active: true },
+            { id: 5, name: 'Tubo 1', itemType: 'TUBE', active: true },
+            { id: 6, name: 'Tubo 2', itemType: 'TUBE', active: true },
           ],
         };
 
@@ -234,7 +218,7 @@ describe('ArmamentService', () => {
 
     it('should fetch tubes with query params', () =>
       fakeAsync(() => {
-        service.getTubes({ name: 'Tubo', page: 1, pageSize: 5, active: false });
+        service.getTubes({ page: 1, pageSize: 5, familyId: 11 });
         tick();
 
         const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
@@ -242,10 +226,9 @@ describe('ArmamentService', () => {
 
         const url = new URL(req.request.url);
         expect(url.searchParams.get('itemType')).toBe('TUBE');
-        expect(url.searchParams.get('name')).toBe('Tubo');
         expect(url.searchParams.get('page')).toBe('1');
         expect(url.searchParams.get('pageSize')).toBe('5');
-        expect(url.searchParams.get('active')).toBe('false');
+        expect(url.searchParams.get('familyId')).toBe('11');
 
         req.flush({ page: 1, pageSize: 5, totalElements: 0, items: [] });
         tick();

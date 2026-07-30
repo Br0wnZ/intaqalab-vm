@@ -548,6 +548,10 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     reloadSpecimens: vi.fn(),
     reloadUsers: vi.fn(),
 
+    // Series methods
+    loadSeries: vi.fn(),
+    reloadSeries: vi.fn(),
+
     // Shooting conditions methods
     getShootingConditions: vi.fn(),
     updateShootingConditions: vi.fn(),

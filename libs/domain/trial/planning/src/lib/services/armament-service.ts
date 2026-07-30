@@ -5,14 +5,34 @@ import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 
 import type {
-  ArmamentBulkUpdateRequest,
-  SeriesArmamentData,
-  TrialArmamentResponse,
+    ArmamentBulkUpdateRequest,
+    SeriesArmamentData,
+    TrialArmamentResponse,
 } from '../utils-models/armament.model';
-import type { CatalogQueryParams, SpecimenItem, SpecimenListResponse } from '../utils-models/catalog.model';
+import type { CatalogQueryParams, SpecimenListResponse } from '../utils-models/catalog.model';
 
-export type { ArmamentBulkUpdateRequest, SeriesArmamentData, SpecimenItem, TrialArmamentResponse };
-export type { CatalogQueryParams, SpecimenListResponse };
+export type { ArmamentBulkUpdateRequest, CatalogQueryParams, SeriesArmamentData, SpecimenItem, SpecimenListResponse, TrialArmamentResponse };
+
+type EquipmentDenominationApiItem = {
+  id: number | string;
+  name: string;
+  itemType?: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE';
+  active?: boolean;
+};
+
+type EquipmentDenominationsResponse = {
+  page?: number;
+  pageSize?: number;
+  totalElements: number;
+  items: EquipmentDenominationApiItem[];
+};
+
+type SpecimenItem = {
+  id: string;
+  name: string;
+  type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION';
+  active: boolean;
+};
 
 @Injectable({
   providedIn: 'root',
@@ -51,10 +71,11 @@ export class ArmamentService {
     const params = this.#getWeaponsParams();
     if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ itemType: 'WEAPON', ...params });
+    const queryParams = this.#buildQueryParams({ ...params, itemType: 'WEAPON' });
     return {
       url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
+      parse: (raw) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON'),
     };
   });
 
@@ -62,10 +83,11 @@ export class ArmamentService {
     const params = this.#getTubesParams();
     if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ itemType: 'TUBE', ...params });
+    const queryParams = this.#buildQueryParams({ ...params, itemType: 'TUBE' });
     return {
       url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
+      parse: (raw) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
     };
   });
 
@@ -95,23 +117,33 @@ export class ArmamentService {
     if (params.itemType) {
       searchParams.set('itemType', params.itemType);
     }
-    if (params.name) {
-      searchParams.set('name', params.name);
-    }
     if (params.page !== undefined) {
       searchParams.set('page', params.page.toString());
     }
     if (params.pageSize !== undefined) {
       searchParams.set('pageSize', params.pageSize.toString());
     }
-    if (params.active !== undefined) {
-      searchParams.set('active', params.active.toString());
-    }
-    if (params.sort?.length) {
-      params.sort.forEach((s) => searchParams.append('sort', s));
+    if (params.familyId !== undefined) {
+      searchParams.set('familyId', params.familyId.toString());
     }
 
     const queryString = searchParams.toString();
     return queryString ? `?${queryString}` : '';
+  }
+
+  #mapEquipmentDenominationsResponse(raw: unknown, defaultType: SpecimenItem['type']): SpecimenListResponse {
+    const response = raw as EquipmentDenominationsResponse;
+
+    return {
+      page: response.page ?? 0,
+      pageSize: response.pageSize ?? response.items.length,
+      totalElements: response.totalElements ?? response.items.length,
+      items: (response.items ?? []).map((item) => ({
+        id: String(item.id),
+        name: item.name,
+        type: item.itemType ?? defaultType,
+        active: item.active ?? true,
+      })),
+    };
   }
 }

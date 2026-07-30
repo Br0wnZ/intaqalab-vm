@@ -3,6 +3,8 @@ import type { TrialPlanningInfo } from './trial-planing-info.model';
 export enum SpecimenType {
   Weapon = 'weapon',
   Tube = 'tube',
+  Mortar = 'mortar',
+  Bundle = 'bundle',
   Munition = 'denomination',
 }
 

@@ -94,6 +94,14 @@ export const PlanningGeneralDataStore = signalStore(
             ...item,
             type: SpecimenType.Tube,
           }));
+          const mortars = (dataPlanningService.mortarsResource.value()?.items ?? []).map((item) => ({
+            ...item,
+            type: SpecimenType.Mortar,
+          }));
+          const bundles = (dataPlanningService.bundlesResource.value()?.items ?? []).map((item) => ({
+            ...item,
+            type: SpecimenType.Bundle,
+          }));
           const denominations = (dataPlanningService.denominationsResource.value()?.items ?? []).map((item) => ({
             id: item.id,
             name: { es: item.name, en: item.name },
@@ -102,7 +110,7 @@ export const PlanningGeneralDataStore = signalStore(
             active: item.active,
           }));
 
-          return [...weapons, ...tubes, ...denominations];
+          return [...weapons, ...tubes, ...mortars, ...bundles, ...denominations];
         }),
 
         isLoadingSpecimens: computed(() => dataPlanningService.specimenResource.isLoading()),
@@ -113,6 +121,8 @@ export const PlanningGeneralDataStore = signalStore(
           () =>
             dataPlanningService.weaponsResource.isLoading() ||
             dataPlanningService.tubesResource.isLoading() ||
+            dataPlanningService.mortarsResource.isLoading() ||
+            dataPlanningService.bundlesResource.isLoading() ||
             dataPlanningService.denominationsResource.isLoading(),
         ),
 
@@ -120,6 +130,8 @@ export const PlanningGeneralDataStore = signalStore(
           () =>
             dataPlanningService.weaponsResource.error() ||
             dataPlanningService.tubesResource.error() ||
+            dataPlanningService.mortarsResource.error() ||
+            dataPlanningService.bundlesResource.error() ||
             dataPlanningService.denominationsResource.error(),
         ),
 

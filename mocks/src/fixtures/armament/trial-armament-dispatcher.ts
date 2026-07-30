@@ -18,10 +18,13 @@ interface ShotArmamentData {
 }
 
 interface ArmamentData {
+  weaponType?: string;
   weaponName?: string;
-  weaponExternalId?: string;
+  /** integer según Swagger */
+  weaponExternalId?: number;
   tubeName?: string;
-  tubeExternalId?: string;
+  /** integer según Swagger */
+  tubeExternalId?: number;
   isInstrumented?: boolean;
   tubeLifePercentage?: number;
   observations?: string;
@@ -33,8 +36,11 @@ interface ArmamentBulkUpdateRequest {
 
 interface ShotArmamentUpdateRequest {
   shotId: string;
-  weaponExternalId?: string;
-  tubeExternalId?: string;
+  weaponType?: string;
+  /** integer según Swagger */
+  weaponExternalId?: number;
+  /** integer según Swagger */
+  tubeExternalId?: number;
   isInstrumented?: boolean;
   lifeUsefulPercentage?: number;
   observations?: string;
@@ -74,14 +80,18 @@ export function updateArmamentDispatcher(req: Request): TrialArmamentResponse {
           shot.armament = {};
         }
 
+        if (shotUpdate.weaponType !== undefined) {
+          shot.armament.weaponType = shotUpdate.weaponType;
+        }
+
         if (shotUpdate.weaponExternalId) {
           shot.armament.weaponExternalId = shotUpdate.weaponExternalId;
-          shot.armament.weaponName = `Weapon ${shotUpdate.weaponExternalId.substring(0, 8)}`;
+          shot.armament.weaponName = `Weapon ${shotUpdate.weaponExternalId}`;
         }
 
         if (shotUpdate.tubeExternalId) {
           shot.armament.tubeExternalId = shotUpdate.tubeExternalId;
-          shot.armament.tubeName = `Tube ${shotUpdate.tubeExternalId.substring(0, 8)}`;
+          shot.armament.tubeName = `Tube ${shotUpdate.tubeExternalId}`;
         }
 
         if (shotUpdate.isInstrumented !== undefined) {

@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSelectClearable } from '@intaqalab/ui';
 
 import type { SelectOption } from '../../utils-models/catalog.model';
 import type { MeasureSelectionData } from '../../utils-models/measure-serie.model';
@@ -13,7 +14,15 @@ export type { MeasureSelectionData, SelectOption };
 
 @Component({
   selector: 'inta-multi-select-searchable',
-  imports: [MatFormFieldModule, MatSelectModule, MatInputModule, MatIconModule, MatButtonModule, FormsModule],
+  imports: [
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSelectClearable,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    FormsModule,
+  ],
   template: `
     <div class="multi-select-container">
       @if (label()) {
@@ -23,6 +32,7 @@ export type { MeasureSelectionData, SelectOption };
       }
       <mat-form-field id="multi-select-field" appearance="outline" class="w-full">
         <mat-select
+          clearable
           panelClass="custom-select-panel"
           multiple
           [placeholder]="placeholder()"

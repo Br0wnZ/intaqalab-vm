@@ -264,27 +264,36 @@ describe('ShootingConditionsComponent', () => {
   });
 
   describe('Table Columns', () => {
-    it('should have all columns defined when target is selected', () => {
-      expect(component.displayedColumns()).toContain('globalNumber');
-      expect(component.displayedColumns()).toContain('date');
-      expect(component.displayedColumns()).toContain('targetTypeId');
-      expect(component.displayedColumns()).toContain('targetMaterialId');
-      expect(component.displayedColumns()).toContain('impactZoneId');
-      expect(component.displayedColumns()).toContain('targetDimensionsId');
-      expect(component.displayedColumns()).toContain('targetThicknessId');
-      expect(component.displayedColumns()).toContain('distance');
-      expect(component.displayedColumns()).toContain('orientation');
-      expect(component.displayedColumns()).toContain('elevation');
-      expect(component.displayedColumns()).toContain('angle');
-      expect(component.displayedColumns()).toContain('range');
+    it('should have all columns defined when target is selected with target columns at the end before observations', () => {
+      const cols = component.displayedColumns();
+      expect(cols).toContain('globalNumber');
+      expect(cols).toContain('date');
+      expect(cols).toContain('targetTypeId');
+      expect(cols).toContain('targetMaterialId');
+      expect(cols).toContain('impactZoneId');
+      expect(cols).toContain('targetDimensionsId');
+      expect(cols).toContain('targetThicknessId');
+      expect(cols).toContain('distance');
+      expect(cols).toContain('orientation');
+      expect(cols).toContain('elevation');
+      expect(cols).toContain('angle');
+      expect(cols).toContain('range');
+      expect(cols).toContain('powderWeight');
+      expect(cols).toContain('projectileWeight');
+      expect(cols).toContain('functioningHeight');
+      expect(cols).toContain('observations');
 
-      expect(component.displayedColumns()).toContain('powderWeight');
-      expect(component.displayedColumns()).toContain('projectileWeight');
-      expect(component.displayedColumns()).toContain('functioningHeight');
-      expect(component.displayedColumns()).toContain('observations');
+      const nominalSpeedIdx = cols.indexOf('nominalSpeed');
+      const targetTypeIdx = cols.indexOf('targetTypeId');
+      const targetMaterialIdx = cols.indexOf('targetMaterialId');
+
+      expect(nominalSpeedIdx).toBeGreaterThan(-1);
+      expect(targetTypeIdx).toEqual(nominalSpeedIdx + 1);
+      expect(targetMaterialIdx).toEqual(targetTypeIdx + 1);
+      expect(cols[cols.length - 1]).toBe('observations');
     });
 
-    it('should hide target columns when no target is selected', () => {
+    it('should hide target detail columns when no target is selected and keep targetTypeId and observations at the end', () => {
       component.seriesSignal.update((series) =>
         series.map((s) => ({
           ...s,
@@ -293,11 +302,18 @@ describe('ShootingConditionsComponent', () => {
       );
       fixture.detectChanges();
 
-      expect(component.displayedColumns()).not.toContain('targetMaterialId');
-      expect(component.displayedColumns()).not.toContain('targetDimensionsId');
-      expect(component.displayedColumns()).not.toContain('targetThicknessId');
-      expect(component.displayedColumns()).not.toContain('distance');
-      expect(component.displayedColumns()).not.toContain('targetInclination');
+      const cols = component.displayedColumns();
+      expect(cols).toContain('targetTypeId');
+      expect(cols).not.toContain('targetMaterialId');
+      expect(cols).not.toContain('targetDimensionsId');
+      expect(cols).not.toContain('targetThicknessId');
+      expect(cols).not.toContain('distance');
+      expect(cols).not.toContain('targetInclination');
+
+      const nominalSpeedIdx = cols.indexOf('nominalSpeed');
+      const targetTypeIdx = cols.indexOf('targetTypeId');
+      expect(targetTypeIdx).toEqual(nominalSpeedIdx + 1);
+      expect(cols[cols.length - 1]).toBe('observations');
     });
   });
 

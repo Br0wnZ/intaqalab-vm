@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -56,6 +56,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     MatCheckboxModule,
     MatChipsModule,
     MatTabsModule,
@@ -84,6 +85,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
+                  clearable
                   id="munitionType"
                   data-testid="munition-type-select"
                   [value]="selectedMunitionTypeId()"
@@ -104,6 +106,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
+                  clearable
                   id="denomination"
                   data-testid="denomination-select"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
@@ -159,6 +162,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
+                  clearable
                   id="assignedShotIds"
                   multiple
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS' | translate"
@@ -366,6 +370,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
+                clearable
                 id="selectedComponents"
                 multiple
                 [placeholder]="
@@ -454,6 +459,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                           <!-- Denominación -->
                           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                             <mat-select
+                              clearable
                               data-testid="denomination-select"
                               [placeholder]="
                                 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate

@@ -28,6 +28,7 @@ describe('DataPlanningService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting(), DataPlanningService],
     });
@@ -135,7 +136,7 @@ describe('DataPlanningService', () => {
       service.getSpecimensByType(SpecimenType.Weapon, { page: 1, pageSize: 50 });
       TestBed.tick();
 
-      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/weapons`));
+      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/equipment/denominations`));
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('pageSize')).toBe('50');
       req.flush(mockResponse);
@@ -147,9 +148,33 @@ describe('DataPlanningService', () => {
       service.getSpecimensByType(SpecimenType.Tube, { page: 2 });
       TestBed.tick();
 
-      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/tubes`));
+      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/equipment/denominations`));
       expect(req.request.method).toBe('GET');
       expect(req.request.params.get('page')).toBe('2');
+      req.flush(mockResponse);
+    });
+
+    it('should get mortars when triggered by SpecimenType', () => {
+      const mockResponse = { page: 1, pageSize: 100, totalElements: 0, items: [] };
+
+      service.getSpecimensByType(SpecimenType.Mortar, { page: 1 });
+      TestBed.tick();
+
+      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/equipment/denominations`));
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('itemType')).toBe('MORTAR');
+      req.flush(mockResponse);
+    });
+
+    it('should get bundles when triggered by SpecimenType', () => {
+      const mockResponse = { page: 1, pageSize: 100, totalElements: 0, items: [] };
+
+      service.getSpecimensByType(SpecimenType.Bundle, { page: 1 });
+      TestBed.tick();
+
+      const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.PLANNING}/equipment/denominations`));
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('itemType')).toBe('BUNDLE');
       req.flush(mockResponse);
     });
 

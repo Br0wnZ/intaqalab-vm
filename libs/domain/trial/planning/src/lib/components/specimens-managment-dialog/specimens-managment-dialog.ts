@@ -16,7 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -32,6 +32,7 @@ import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../..
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     FormField,
     TranslateModule,
     IntaIconComponent,
@@ -51,6 +52,7 @@ import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../..
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
+              clearable
               id="specimenType"
               [value]="selectedSpecimenType()"
               [placeholder]="'SPECIMENS_MANAGMENT_DIALOG.TYPE_PLACEHOLDER' | translate"
@@ -191,6 +193,8 @@ export class SpecimensManagmentDialog {
   readonly specimenTypes = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
     { value: SpecimenType.Tube, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_TUBE' },
+    { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
+    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
     { value: SpecimenType.Munition, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MUNITION' },
   ] as const;
 
@@ -238,10 +242,15 @@ export class SpecimensManagmentDialog {
 
   readonly showSerialNumberField = computed(() => {
     const type = this.#getUiType(this.selectedOption());
-    return type === 'weapon' || type === 'tube';
+    return (
+      type === SpecimenType.Weapon ||
+      type === SpecimenType.Tube ||
+      type === SpecimenType.Mortar ||
+      type === SpecimenType.Bundle
+    );
   });
 
-  readonly showLotField = computed(() => this.#getUiType(this.selectedOption()) === 'denomination');
+  readonly showLotField = computed(() => this.#getUiType(this.selectedOption()) === SpecimenType.Munition);
 
   readonly hasChanges = computed(() => {
     const current = this.selectedSpecimens();
@@ -283,7 +292,7 @@ export class SpecimensManagmentDialog {
       this.selectedSpecimens().map((i) => ({
         specimenId: i.id,
         batch: i.serialNumber || i.lot || '',
-        type: type === 'denomination' ? 'MUNITION' : type?.toUpperCase(),
+        type: type === SpecimenType.Munition ? 'MUNITION' : type?.toUpperCase(),
       })),
     );
   }
@@ -307,7 +316,7 @@ export class SpecimensManagmentDialog {
     this.searchTerm.set(selected ? this.getSpecimenLabel(selected) : '');
     this.autocompleteEnabled.set(false);
 
-    const isDenomination = this.#getUiType(selected) === 'denomination';
+    const isDenomination = this.#getUiType(selected) === SpecimenType.Munition;
     this.formModel.update((c) => ({
       ...c,
       specimenId,
@@ -347,6 +356,8 @@ export class SpecimensManagmentDialog {
     const normalized = (specimen.type ?? 'denomination').toString().toUpperCase();
     if (normalized === 'WEAPON') return SpecimenType.Weapon;
     if (normalized === 'TUBE') return SpecimenType.Tube;
+    if (normalized === 'MORTAR') return SpecimenType.Mortar;
+    if (normalized === 'BUNDLE') return SpecimenType.Bundle;
     return SpecimenType.Munition;
   }
 
@@ -374,7 +385,7 @@ export class SpecimensManagmentDialog {
             id: specimen.id,
             label: this.getSpecimenLabel(specimen),
             type: specimen.type ?? SpecimenType.Munition,
-            ...(batch && (type === 'denomination' ? { lot: batch } : { serialNumber: batch })),
+            ...(batch && (type === SpecimenType.Munition ? { lot: batch } : { serialNumber: batch })),
           } as SpecimenSelection;
         })
         .filter((s): s is SpecimenSelection => Boolean(s));

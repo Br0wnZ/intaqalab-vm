@@ -24,6 +24,16 @@ app.use(cors());
 app.use(express.json());
 app.use(delayResponse(DELAY_RESPONSE_MS));
 
+// Deshabilita caché HTTP en todos los endpoints del mock
+// Evita que el browser reutilice respuestas 304 vacías de sesiones previas
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+app.use((_req: any, res: any, next: any) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 app.use('/api/assets', express.static(path.join(__dirname, 'assets')));
 
 // Rewriter de URLs versionadas → rutas internas del mock server
@@ -43,6 +53,10 @@ app.use((req: any, _res: any, next: any) => {
   // /api/centers/X/planning-api/1.0.0/fire-trials/Y/... → /api/centers/X/fire-trials/Y/...
   // /api/centers/X/planning-api/1.0.0/specimens/... → /api/centers/X/specimens/...
   req.url = req.url.replace(/^(\/api\/centers\/[^/]+\/)planning-api\/[^/]+\/(.*)/, '$1$2');
+  // /api/centers/X/execution-api/1.0.0/fire-trials/Y/... → /api/centers/X/fire-trials/Y/...
+  req.url = req.url.replace(/^(\/api\/centers\/[^/]+\/)execution-api\/[^/]+\/(.*)/, '$1$2');
+  // /api/execution-api/1.0.0/Y/... → /api/Y/... (endpoints sin center)
+  req.url = req.url.replace(/^(\/api\/)execution-api\/[^/]+\/(.*)/, '$1$2');
   if (originalUrl !== req.url) {
     console.log(`  🔄 [Rewriter] ${originalUrl} → ${req.url}`);
   }

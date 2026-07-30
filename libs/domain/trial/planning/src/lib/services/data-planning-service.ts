@@ -30,6 +30,8 @@ export class DataPlanningService {
   readonly #specimenTrigger = signal<number>(0);
   readonly #weaponsParams = signal<CatalogQueryParams | null>(null);
   readonly #tubesParams = signal<CatalogQueryParams | null>(null);
+  readonly #mortarsParams = signal<CatalogQueryParams | null>(null);
+  readonly #bundlesParams = signal<CatalogQueryParams | null>(null);
   readonly #denominationsParams = signal<CatalogQueryParams | null>(null);
   readonly #usersTrigger = signal<number>(0);
   readonly #getPlanningDataParams = signal<{ fireTrialId: string } | null>(null);
@@ -92,6 +94,28 @@ export class DataPlanningService {
     };
   });
 
+  readonly mortarsResource = httpResource<PaginatedApiResponse<SpecimenApiResponse>>(() => {
+    const params = this.#mortarsParams();
+    if (!params) return undefined;
+
+    return {
+      url: `${this.#planningUrl}/equipment/denominations`,
+      params: this.#buildQueryParams({ pageSize: 100, ...params }),
+      method: 'GET',
+    };
+  });
+
+  readonly bundlesResource = httpResource<PaginatedApiResponse<SpecimenApiResponse>>(() => {
+    const params = this.#bundlesParams();
+    if (!params) return undefined;
+
+    return {
+      url: `${this.#planningUrl}/equipment/denominations`,
+      params: this.#buildQueryParams({ pageSize: 100, ...params }),
+      method: 'GET',
+    };
+  });
+
   readonly denominationsResource = httpResource<WarehousePaginatedResponse<WarehouseDenominationItem>>(() => {
     const params = this.#denominationsParams();
     if (!params) return undefined;
@@ -137,6 +161,16 @@ export class DataPlanningService {
       return;
     }
 
+    if (specimenType === SpecimenType.Mortar) {
+      this.#mortarsParams.set({ ...params, itemType: 'MORTAR' });
+      return;
+    }
+
+    if (specimenType === SpecimenType.Bundle) {
+      this.#bundlesParams.set({ ...params, itemType: 'BUNDLE' });
+      return;
+    }
+
     this.#denominationsParams.set(params);
   }
 
@@ -148,6 +182,8 @@ export class DataPlanningService {
     this.#specimenTrigger.set(0);
     this.#weaponsParams.set(null);
     this.#tubesParams.set(null);
+    this.#mortarsParams.set(null);
+    this.#bundlesParams.set(null);
     this.#denominationsParams.set(null);
   }
 

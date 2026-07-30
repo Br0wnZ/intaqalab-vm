@@ -12,7 +12,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
-import { IntaIconComponent, NumericRangeInput } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable, NumericRangeInput } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import type { RatingCriteria as RatingCriteriaModel } from '../../utils-models/trial-planing-info.model';
@@ -53,7 +53,14 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
 
 @Component({
   selector: 'inta-rating-criteria',
-  imports: [TranslateModule, MatFormFieldModule, MatSelectModule, IntaIconComponent, NumericRangeInput],
+  imports: [
+    TranslateModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSelectClearable,
+    IntaIconComponent,
+    NumericRangeInput,
+  ],
   template: `
     <div class="border border-slate-200 bg-white rounded-xl shadow-sm p-6 space-y-6">
       <div class="flex justify-between items-center flex-wrap gap-4">
@@ -75,7 +82,7 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
             <ui-inta-icon name="info" size="lg" />
             @if (showTooltip) {
               <div
-                class="absolute bottom-full right-0 mb-2 w-80 bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50"
+                class="absolute bottom-full right-0 mb-3 w-80 p-4 bg-slate-800 text-white text-xs rounded-xl shadow-xl z-50 pointer-events-none"
               >
                 <div class="font-semibold mb-3">{{ criteriaInfoTitle() }}</div>
                 <div class="space-y-2 leading-relaxed">
@@ -95,6 +102,7 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
             </span>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
               <mat-select
+                clearable
                 aria-labelledby="velocityLabel"
                 [value]="selectedVelocityUnit()"
                 (valueChange)="selectedVelocityUnit.set($event)"
@@ -110,6 +118,7 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
             </span>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
               <mat-select
+                clearable
                 aria-labelledby="pressureLabel"
                 [value]="selectedPressureUnit()"
                 (valueChange)="selectedPressureUnit.set($event)"

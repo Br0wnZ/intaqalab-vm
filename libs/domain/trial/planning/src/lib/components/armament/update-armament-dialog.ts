@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
+import { MatSelectClearable } from '@intaqalab/ui';
 import { actionTrigger } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -24,6 +25,7 @@ import type {
     MatDialogModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatSelectClearable,
     MatIconModule,
     MatButtonModule,
     MatInputModule,
@@ -44,6 +46,7 @@ import type {
           </div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-select
+              clearable
               [formField]="armamentForm.weaponExternalId"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.WEAPON_PLACEHOLDER' | translate"
             >
@@ -61,6 +64,7 @@ import type {
           </div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-select
+              clearable
               [formField]="armamentForm.tubeExternalId"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_PLACEHOLDER' | translate"
             >
@@ -78,6 +82,7 @@ import type {
           </div>
           <mat-form-field appearance="outline" class="w-full">
             <mat-select
+              clearable
               [formField]="armamentForm.isInstrumented"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
             >
@@ -195,8 +200,9 @@ export class UpdateArmamentDialog {
           shots: [
             {
               shotId: this.data.shotId,
-              weaponExternalId: formData.weaponExternalId,
-              tubeExternalId: formData.tubeExternalId,
+              // Conversión string→integer según contrato Swagger
+              weaponExternalId: formData.weaponExternalId ? Number(formData.weaponExternalId) : undefined,
+              tubeExternalId: formData.tubeExternalId ? Number(formData.tubeExternalId) : undefined,
               isInstrumented: formData.isInstrumented,
               lifeUsefulPercentage: formData.tubeLifePercentage,
               observations: formData.observations,

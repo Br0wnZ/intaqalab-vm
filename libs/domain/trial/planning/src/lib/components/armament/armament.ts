@@ -1,3 +1,4 @@
+import type { OnInit } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,6 +11,7 @@ import {
 } from '@angular/core';
 import { FormField, applyEach, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
+import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,7 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Badge, IntaIconComponent } from '@intaqalab/ui';
+import { Badge, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -26,12 +28,15 @@ import { firstValueFrom } from 'rxjs';
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import type {
+  ArmamentData,
   ArmamentSerie,
   MassiveConfigData,
   MassiveShotsConfigurationDialogData,
   SeriesArmamentData,
   UpdateArmamentDialogData,
 } from '../../utils-models/armament.model';
+import type { Serie as SeriesAndShotsSerie } from '../../utils-models/series-and-shots.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 import { UpdateArmamentDialog } from './update-armament-dialog';
 
@@ -40,6 +45,7 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
   imports: [
     MatExpansionModule,
     MatSelectModule,
+    MatSelectClearable,
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
@@ -127,6 +133,26 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">{{ j + 1 }}</td>
                     </ng-container>
 
+                    <!-- Type Column -->
+                    <ng-container matColumnDef="type">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TYPE' | translate }}
+                      </th>
+                      <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.weaponType">
+                            @for (option of typeOptions; track option.value) {
+                              <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
                     <!-- Weapon Column -->
                     <ng-container matColumnDef="weapon">
                       <th
@@ -138,8 +164,8 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                          <mat-select [formField]="$any(getShotField(i, j)).armament.weaponExternalId">
-                            @for (weapon of weapons(); track weapon.id) {
+                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.weaponExternalId">
+                            @for (weapon of weaponOptions(); track weapon.id) {
                               <mat-option [value]="weapon.id">{{ weapon.name }}</mat-option>
                             }
                           </mat-select>
@@ -158,8 +184,8 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                          <mat-select [formField]="$any(getShotField(i, j)).armament.tubeExternalId">
-                            @for (tube of tubes(); track tube.id) {
+                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.tubeExternalId">
+                            @for (tube of tubeOptions(); track tube.id) {
                               <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
                             }
                           </mat-select>
@@ -178,7 +204,7 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="max-w-20">
-                          <mat-select [formField]="$any(getShotField(i, j)).armament.isInstrumented">
+                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.isInstrumented">
                             <mat-option [value]="true">
                               {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.YES' | translate }}
                             </mat-option>
@@ -257,7 +283,7 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Armament {
+export class Armament implements OnInit {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
 
@@ -268,7 +294,13 @@ export class Armament {
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
-  displayedColumns: string[] = ['serie', 'shot', 'weapon', 'tube', 'instrumented', 'life', 'observations'];
+  displayedColumns: string[] = ['serie', 'shot', 'type', 'weapon', 'tube', 'instrumented', 'life', 'observations'];
+
+  readonly typeOptions = [
+    { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
+    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
+    { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
+  ] as const;
 
   readonly armamentSignal = signal<ArmamentSerie[]>([]);
 
@@ -278,8 +310,19 @@ export class Armament {
   readonly weapons = this.#armamentStore.weapons;
   readonly tubes = this.#armamentStore.tubes;
 
+  readonly weaponOptions = computed(() => {
+    const existing = this.armamentSignal().flatMap((serie) => serie.shots);
+    return this.#mergeCatalogOptions(this.weapons(), existing, 'weaponExternalId', 'weaponName', 'WEAPON');
+  });
+
+  readonly tubeOptions = computed(() => {
+    const existing = this.armamentSignal().flatMap((serie) => serie.shots);
+    return this.#mergeCatalogOptions(this.tubes(), existing, 'tubeExternalId', 'tubeName', 'TUBE');
+  });
+
   #initialArmamentData: ArmamentSerie[] = [];
-  #isLocalInitialized = false;
+  #armamentApplied = false;
+  #massiveDialogRef: MatDialogRef<MassiveShotsConfigurationDialog, MassiveConfigData | undefined> | null = null;
 
   constructor() {
     effect(() => {
@@ -291,14 +334,34 @@ export class Armament {
     });
 
     effect(() => {
+      const series = this.#planningGeneralDataStore.series();
       const seriesArmament = this.#armamentStore.seriesArmament();
-      if (seriesArmament && seriesArmament.length > 0) {
-        const mappedSeries = this.#mapBackendToLocal(seriesArmament);
-        this.armamentSignal.set(mappedSeries);
-        if (!this.#isLocalInitialized) {
-          this.#initialArmamentData = this.#deepClone(mappedSeries);
-          this.#isLocalInitialized = true;
+      if (!series?.length && !seriesArmament?.length) return;
+
+      const hasArmament = !!seriesArmament?.length;
+
+      // Si ya se aplicó armament y no hay nuevos datos, no sobrescribir
+      if (this.#armamentApplied && !hasArmament) return;
+
+      let mergedSeries: ArmamentSerie[];
+      if (hasArmament) {
+        // El backend es la fuente de verdad cuando hay datos
+        if (!seriesArmament) {
+          return;
         }
+        mergedSeries = this.#mapBackendToLocal(seriesArmament);
+      } else if (series && series.length > 0) {
+        // Sin datos de armamento, construir estructura vacía desde planning
+        mergedSeries = this.#buildSeriesFromStore(series, undefined);
+      } else {
+        return;
+      }
+
+      this.armamentSignal.set(mergedSeries);
+      this.#initialArmamentData = this.#deepClone(mergedSeries);
+
+      if (hasArmament) {
+        this.#armamentApplied = true;
       }
     });
 
@@ -306,18 +369,26 @@ export class Armament {
       const status = this.updateStatus();
       if (status === 'resolved') {
         console.info('Armamento guardado correctamente');
+        this.#massiveDialogRef?.close();
+        this.#massiveDialogRef = null;
         this.#armamentStore.resetUpdateArmament();
         this.#armamentStore.reloadArmament();
       } else if (status === 'error') {
         console.error('Error al guardar el armamento');
+        this.#massiveDialogRef = null;
         this.#armamentStore.resetUpdateArmament();
       }
     });
   }
 
+  ngOnInit(): void {
+    this.#planningGeneralDataStore.loadSeries();
+  }
+
   readonly armamentForm = form(this.armamentSignal, (root) => {
     applyEach(root, (serie) => {
       applyEach(serie.shots, (shotPath) => {
+        disabled(shotPath.armament.weaponType, () => this.readonly());
         disabled(shotPath.armament.weaponExternalId, () => this.readonly());
         disabled(shotPath.armament.tubeExternalId, () => this.readonly());
         disabled(shotPath.armament.isInstrumented, () => this.readonly());
@@ -330,7 +401,7 @@ export class Armament {
     return root[serieIdx]?.shots[shotIdx];
   }
 
-  openMassiveConfiguration() {
+  async openMassiveConfiguration(): Promise<void> {
     if (this.readonly()) {
       return;
     }
@@ -342,16 +413,21 @@ export class Armament {
       width: '800px',
       data: {
         series: this.armamentSignal().map((s) => ({ id: s.seriesId, name: s.seriesName })),
-        weapons: this.weapons(),
-        tubes: this.tubes(),
+        weapons: this.weaponOptions(),
+        tubes: this.tubeOptions(),
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.#applyMassiveConfiguration(result);
-      }
-    });
+    this.#massiveDialogRef = dialogRef;
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    this.#massiveDialogRef = null;
+
+    if (result) {
+      this.#applyMassiveConfiguration(result);
+      const shots = this.#mapLocalToRequest(this.armamentSignal());
+      this.#armamentStore.updateArmament({ shots });
+    }
   }
 
   #applyMassiveConfiguration(config: MassiveConfigData): void {
@@ -366,9 +442,13 @@ export class Armament {
       const updatedShots = serie.shots.map((shot) => {
         const updatedArmament = { ...shot.armament };
 
+        if (config.tipo) {
+          updatedArmament.weaponType = config.tipo;
+        }
+
         if (config.denominacionArma) {
           updatedArmament.weaponExternalId = config.denominacionArma;
-          const foundWeapon = this.weapons().find((w) => w.id === config.denominacionArma);
+          const foundWeapon = this.weaponOptions().find((w) => w.id === config.denominacionArma);
           if (foundWeapon) {
             updatedArmament.weaponName = foundWeapon.name;
           }
@@ -376,7 +456,7 @@ export class Armament {
 
         if (config.denominacionTubo) {
           updatedArmament.tubeExternalId = config.denominacionTubo;
-          const foundTube = this.tubes().find((t) => t.id === config.denominacionTubo);
+          const foundTube = this.tubeOptions().find((t) => t.id === config.denominacionTubo);
           if (foundTube) {
             updatedArmament.tubeName = foundTube.name;
           }
@@ -429,8 +509,8 @@ export class Armament {
         shotNumber: shotIdx + 1,
         shotId: shot.shotId,
         armament: shot.armament,
-        weapons: this.weapons(),
-        tubes: this.tubes(),
+        weapons: this.weaponOptions(),
+        tubes: this.tubeOptions(),
       },
     });
 
@@ -465,8 +545,71 @@ export class Armament {
     this.armamentSignal.set(this.#deepClone(this.#initialArmamentData));
   }
 
+  #buildSeriesFromStore(series: SeriesAndShotsSerie[], seriesArmament?: SeriesArmamentData[]): ArmamentSerie[] {
+    const armamentByShotId = new Map<string, ArmamentData>();
+
+    seriesArmament?.forEach((sArm) => {
+      sArm.shots?.forEach((shot) => {
+        if (shot.armament) {
+          armamentByShotId.set(shot.shotId, shot.armament);
+        }
+      });
+    });
+
+    return series.map((serie, idx) => ({
+      seriesId: serie.id,
+      seriesName: serie.name || `Serie ${idx + 1}`,
+      shots: (serie.shots || []).map((shot) => {
+        const existing = armamentByShotId.get(shot.id);
+        return {
+          shotId: shot.id,
+          armament: {
+            weaponType: existing?.weaponType ?? '',
+            weaponName: existing?.weaponName ?? '',
+            weaponExternalId: existing?.weaponExternalId?.toString() ?? '',
+            tubeName: existing?.tubeName ?? '',
+            tubeExternalId: existing?.tubeExternalId?.toString() ?? '',
+            isInstrumented: existing?.isInstrumented ?? false,
+            tubeLifePercentage: existing?.tubeLifePercentage ?? 0,
+            observations: existing?.observations ?? '',
+          },
+        };
+      }),
+    }));
+  }
+
   #deepClone(data: ArmamentSerie[]): ArmamentSerie[] {
     return JSON.parse(JSON.stringify(data));
+  }
+
+  #mergeCatalogOptions(
+    catalog: Array<{ id: string; name: string; type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION'; active: boolean }>,
+    shots: ArmamentSerie['shots'],
+    idKey: 'weaponExternalId' | 'tubeExternalId',
+    nameKey: 'weaponName' | 'tubeName',
+    fallbackType: 'WEAPON' | 'TUBE',
+  ) {
+    const byId = new Map<string, { id: string; name: string; type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION'; active: boolean }>();
+
+    for (const item of catalog) {
+      byId.set(item.id, item);
+    }
+
+    for (const shot of shots) {
+      const id = shot.armament[idKey];
+      if (!id || byId.has(id)) {
+        continue;
+      }
+
+      byId.set(id, {
+        id,
+        name: shot.armament[nameKey] || id,
+        type: fallbackType,
+        active: true,
+      });
+    }
+
+    return Array.from(byId.values());
   }
 
   #mapBackendToLocal(seriesArmament: SeriesArmamentData[]): ArmamentSerie[] {
@@ -476,10 +619,11 @@ export class Armament {
       shots: series.shots.map((shot) => ({
         shotId: shot.shotId,
         armament: {
+          weaponType: (shot.armament?.weaponType?.toLowerCase() as SpecimenType) ?? '',
           weaponName: shot.armament?.weaponName ?? '',
-          weaponExternalId: shot.armament?.weaponExternalId ?? '',
+          weaponExternalId: shot.armament?.weaponExternalId?.toString() ?? '',
           tubeName: shot.armament?.tubeName ?? '',
-          tubeExternalId: shot.armament?.tubeExternalId ?? '',
+          tubeExternalId: shot.armament?.tubeExternalId?.toString() ?? '',
           isInstrumented: shot.armament?.isInstrumented ?? false,
           tubeLifePercentage: shot.armament?.tubeLifePercentage ?? 0,
           observations: shot.armament?.observations ?? '',
@@ -492,8 +636,10 @@ export class Armament {
     return series.flatMap((serie) =>
       serie.shots.map((shot) => ({
         shotId: shot.shotId,
-        weaponExternalId: shot.armament.weaponExternalId || undefined,
-        tubeExternalId: shot.armament.tubeExternalId || undefined,
+        weaponType: shot.armament.weaponType ? (shot.armament.weaponType.toUpperCase() as SpecimenType) : undefined,
+        // Conversión string→integer según contrato Swagger
+        weaponExternalId: shot.armament.weaponExternalId ? Number(shot.armament.weaponExternalId) : undefined,
+        tubeExternalId: shot.armament.tubeExternalId ? Number(shot.armament.tubeExternalId) : undefined,
         isInstrumented: shot.armament.isInstrumented,
         lifeUsefulPercentage: shot.armament.tubeLifePercentage,
         observations: shot.armament.observations || undefined,

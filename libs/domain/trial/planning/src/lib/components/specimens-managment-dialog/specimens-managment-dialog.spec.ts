@@ -331,6 +331,24 @@ describe('SpecimensManagmentDialog', () => {
 
       expect(filtered.every((s) => s.type === SpecimenType.Tube)).toBe(true);
     });
+
+    it('should filter options by Mortar specimen type', () => {
+      component.onSpecimenTypeChange(SpecimenType.Mortar);
+      component.searchTerm.set('');
+
+      const filtered = component.filteredSpecimenOptions();
+
+      expect(filtered.every((s) => s.type === SpecimenType.Mortar)).toBe(true);
+    });
+
+    it('should filter options by Bundle specimen type', () => {
+      component.onSpecimenTypeChange(SpecimenType.Bundle);
+      component.searchTerm.set('');
+
+      const filtered = component.filteredSpecimenOptions();
+
+      expect(filtered.every((s) => s.type === SpecimenType.Bundle)).toBe(true);
+    });
   });
 
   describe('Change Detection (hasChanges)', () => {

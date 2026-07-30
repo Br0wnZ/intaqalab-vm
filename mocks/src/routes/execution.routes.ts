@@ -1,19 +1,19 @@
 import { Router } from 'express';
 
 import {
-  getEquipmentSelectorState,
-  updateEquipmentSelectorState,
+    getEquipmentSelectorState,
+    updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
-  approvePlanning,
-  bumpPlanningVersion,
-  getCountdownState,
-  getExecutionState,
-  getPlanningState,
-  getReadiness,
-  setExecutionStatus,
-  setProfileReadiness,
-  updateCountdownState,
+    approvePlanning,
+    bumpPlanningVersion,
+    getCountdownState,
+    getExecutionState,
+    getPlanningState,
+    getReadiness,
+    setExecutionStatus,
+    setProfileReadiness,
+    updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
 
@@ -199,33 +199,29 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/equipment-sel
 
 // Contrato PUT selector de equipos (legacy & Swagger formats)
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selection', (req, res) => {
-  const equipments = req.body?.equipments;
-
-  if (!Array.isArray(equipments)) {
+  if (!Array.isArray(req.body)) {
     res.status(400).json({
       title: 'Bad Request',
       status: 400,
-      detail: "El campo 'equipments' es obligatorio y debe ser un array",
+      detail: 'El cuerpo debe ser un array de grupos de medida',
     });
     return;
   }
 
-  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], { equipments });
+  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], req.body);
   res.status(200).json(updated);
 });
 
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {
-  const equipments = req.body?.equipments;
-
-  if (!Array.isArray(equipments)) {
+  if (!Array.isArray(req.body)) {
     res.status(400).json({
       title: 'Bad Request',
       status: 400,
-      detail: "El campo 'equipments' es obligatorio y debe ser un array",
+      detail: 'El cuerpo debe ser un array de grupos de medida',
     });
     return;
   }
 
-  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], { equipments });
+  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], req.body);
   res.status(200).json(updated);
 });

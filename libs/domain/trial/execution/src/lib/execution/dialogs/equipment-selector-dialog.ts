@@ -12,8 +12,13 @@ import { Role, injectCurrentUserRole } from '@intaqalab/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
-import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, LEGACY_CATEGORY_TO_EQUIPMENT_TYPE } from '../models';
 import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../models';
+import {
+  EquipmentMagnitudeTagEnum,
+  EquipmentTypeEnum,
+  LEGACY_CATEGORY_TO_EQUIPMENT_TYPE,
+  isEquipmentTypeEnum,
+} from '../models';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
 
@@ -641,14 +646,20 @@ export class EquipmentSelectorDialog {
 
       for (const row of state.rows) {
         for (const field of tag.fields) {
-          if (field.type === 'select' && field.sourceCategoryId && row.fieldValues[field.key]) {
-            selections.push({
-              itemId: row.fieldValues[field.key],
-              categoryId: field.sourceCategoryId,
-              series: row.series,
-              disparos: row.disparos,
-            });
-          }
+          if (field.type !== 'select' || !field.sourceCategoryId) continue;
+
+          const sourceCategoryId = field.sourceCategoryId;
+          if (!isEquipmentTypeEnum(sourceCategoryId)) continue;
+
+          const itemId = row.fieldValues[field.key];
+          if (!itemId) continue;
+
+          selections.push({
+            itemId,
+            categoryId: sourceCategoryId,
+            series: row.series,
+            disparos: row.disparos,
+          });
         }
       }
 

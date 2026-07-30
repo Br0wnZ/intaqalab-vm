@@ -351,13 +351,7 @@ describe('ExecutionService', () => {
   });
 
   it('should GET and PUT equipment selection using the new aligned URL', async () => {
-    const mockResponse = {
-      categories: [],
-      items: [],
-      equipments: [],
-      serieOptions: [],
-      disparoOptions: [],
-    };
+    const mockResponse = [];
 
     // GET equipment selection
     service.getEquipmentSelector(DEMO_TRIAL_ID);
@@ -373,18 +367,18 @@ describe('ExecutionService', () => {
     });
 
     // PUT equipment selection
-    const putReqBody = { equipments: [] };
+    const putReqBody = [];
     service.updateEquipmentSelector(DEMO_TRIAL_ID, putReqBody);
     TestBed.tick();
 
     const putReq = httpMock.expectOne(`${BASE_URL}/equipment-selection`);
     expect(putReq.request.method).toBe('PUT');
     expect(putReq.request.body).toEqual(putReqBody);
-    putReq.flush({ equipments: [] });
+    putReq.flush([]);
 
     await waitFor(() => {
       TestBed.tick();
-      expect(service.updateEquipmentSelectorResource.value()).toEqual({ equipments: [] });
+      expect(service.updateEquipmentSelectorResource.value()).toEqual([]);
     });
   });
 });

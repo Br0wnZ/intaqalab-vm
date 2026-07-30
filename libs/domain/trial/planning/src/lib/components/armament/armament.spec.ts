@@ -43,10 +43,19 @@ describe('Armament', () => {
   const runSetup = async (options?: { armamentData?: TrialArmamentResponse; trialId?: string | null }) => {
     const armamentData = options?.armamentData ?? createArmamentResponse(2, 2);
     const trialId = options && 'trialId' in options ? options.trialId : 'trial-123';
+    const series = armamentData?.series
+      ? armamentData.series.map((s) => ({
+          id: s.seriesId,
+          name: s.seriesName,
+          shotQuantity: s.shots?.length ?? 0,
+          shots: s.shots?.map((sh) => ({ id: sh.shotId })),
+        }))
+      : [];
 
     mockPlanningStore = createMockPlanningGeneralDataStore({
       fireTrialId: trialId ?? undefined,
       fireTrial: { code: 'TRIAL-001' },
+      series,
     });
 
     mockArmamentService = createMockArmamentService({
@@ -109,6 +118,34 @@ describe('Armament', () => {
       const { loader } = await runSetup();
       const panels = await loader.getAllHarnesses(MatExpansionPanelHarness);
       expect(panels.length).toBe(2);
+    });
+
+    it('should render series panels when series exist in store even if backend armament is empty', async () => {
+      const series = [
+        { id: 'series-1', name: 'Serie 1', shotQuantity: 1, shots: [{ id: 'shot-1-1' }] },
+      ];
+      mockPlanningStore = createMockPlanningGeneralDataStore({
+        fireTrialId: 'trial-123',
+        fireTrial: { code: 'TRIAL-001' },
+        series,
+      });
+      mockArmamentService = createMockArmamentService({
+        armament: { series: [] } as any,
+      });
+      mockDialog = createMockMatDialog({ defaultResult: null });
+
+      const view = await render(Armament, {
+        imports: [TranslateModule.forRoot()],
+        providers: [
+          ArmamentStore,
+          { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
+          { provide: ArmamentService, useValue: mockArmamentService },
+          { provide: MatDialog, useValue: mockDialog },
+        ],
+      });
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const panels = await loader.getAllHarnesses(MatExpansionPanelHarness);
+      expect(panels.length).toBe(1);
     });
 
     it('should render table headers', async () => {
@@ -197,6 +234,12 @@ describe('Armament', () => {
     it('should open dialog when massive config button is clicked', async () => {
       const { view } = await runSetup();
 
+      mockDialog.open.mockReturnValueOnce({
+        componentInstance: { applyConfig: { subscribe: vi.fn() } },
+        afterClosed: () => of(undefined),
+        close: vi.fn(),
+      } as any);
+
       const button = screen.getByText('TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON').closest('button')!;
       fireEvent.click(button);
       view.fixture.detectChanges();
@@ -229,9 +272,8 @@ describe('Armament', () => {
       });
 
       // Each observations cell has 2 buttons: [info, edit] per shot row
-      // querySelectorAll('td button') returns them in DOM order
-      const tdButtons = container.querySelectorAll('td button');
-      const editButton = tdButtons[1] as HTMLElement | null; // index 1 = edit button for first row
+      const obsButtons = container.querySelectorAll('td.mat-column-observations button');
+      const editButton = obsButtons[1] as HTMLElement | null; // index 1 = edit button for first row
 
       expect(editButton).toBeTruthy();
 

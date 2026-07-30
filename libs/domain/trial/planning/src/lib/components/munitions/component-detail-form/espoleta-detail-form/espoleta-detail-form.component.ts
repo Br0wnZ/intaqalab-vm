@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
+import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -36,6 +37,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatSelectClearable,
     FormField,
     NoLeadingZerosDirective,
     NoNegativeValuesDirective,
@@ -63,6 +65,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
+            clearable
             id="espoleta-denomination"
             data-testid="denomination-select"
             [value]="denominationId()"
@@ -148,6 +151,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
+            clearable
             id="espoleta-fuze-mode"
             [value]="fuseWorkingModeId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FUZE_MODE' | translate"

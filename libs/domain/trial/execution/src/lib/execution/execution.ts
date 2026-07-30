@@ -24,7 +24,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { injectCurrentUser } from '@intaqalab/core';
 import { IntaIconComponent, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { ExecutionStore } from '../+state/execution.store';
 import { ExecutionGridComponent } from './components/execution-grid/execution-grid';
@@ -526,7 +526,7 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   /** ⚡ Opens trial selector dialog before loading the execution view. */
-  async #openTrialSelectorDialog(): Promise<void> {
+  #openTrialSelectorDialog(): void {
     const dialogRef = this.#dialog.open<TrialSelectorDialog, void, TrialSelectorDialogResult>(TrialSelectorDialog, {
       width: '1100px',
       maxWidth: '95vw',
@@ -534,13 +534,14 @@ export class Execution implements OnInit, OnDestroy {
       disableClose: true,
     });
 
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result || result.action === 'cancel') {
-      this.#location.back();
-      return;
-    }
-    // Navigate to parameterized URL — triggers a fresh route load with the trial ID
-    this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
+    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+      if (!result || result.action === 'cancel') {
+        this.#location.back();
+        return;
+      }
+      // Navigate to parameterized URL — triggers a fresh route load with the trial ID
+      this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
+    });
   }
 
   /** ⚙️ Initializes store and polling after trial is selected. */
@@ -550,7 +551,7 @@ export class Execution implements OnInit, OnDestroy {
     this.#filterWidgets();
     this.#store.setFireTrialId(trialId);
     this.#startExecutionStatePolling();
-    //this.#store.loadPreferencesByUser(trialId, this.#currentUser.preferred_username);
+    this.#store.loadPreferencesByUser(trialId, this.#currentUser.preferred_username);
   }
 
   /** 🔄 Sets up periodic polling for execution state. */
@@ -634,16 +635,17 @@ export class Execution implements OnInit, OnDestroy {
     this.#store.startExecution(trialId);
   }
 
-  async pauseExecution(): Promise<void> {
+  pauseExecution(): void {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(PauseExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code, trialId: this.#fireTrialId },
     });
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result || result.action === 'back') return;
-    console.log('Pausing execution with reason:', result.action);
+    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+      if (!result || result.action === 'back') return;
+      console.log('Pausing execution with reason:', result.action);
+    });
   }
 
   resumeExecution(): void {
@@ -658,28 +660,30 @@ export class Execution implements OnInit, OnDestroy {
     this.#store.finishExecution(trialId);
   }
 
-  async openInterruptDialog(): Promise<void> {
+  openInterruptDialog(): void {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(InterruptExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code },
     });
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result || result.action === 'back') return;
-    this.#store.interruptExecution(trialId, result.reason);
+    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+      if (!result || result.action === 'back') return;
+      this.#store.interruptExecution(trialId, result.reason);
+    });
   }
 
-  async openCancelDialog(): Promise<void> {
+  openCancelDialog(): void {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(CancelExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code },
     });
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result || result.action === 'back') return;
-    this.#store.cancelExecution(trialId, result.reason);
+    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+      if (!result || result.action === 'back') return;
+      this.#store.cancelExecution(trialId, result.reason);
+    });
   }
 
   addWidget(widgetId: string): void {
@@ -719,7 +723,7 @@ export class Execution implements OnInit, OnDestroy {
     console.log('Widget removido:', widgetId);
   }
 
-  async openEquipmentSelectorDialog(): Promise<void> {
+  openEquipmentSelectorDialog(): void {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     this.#store.loadEquipmentSelector(trialId);
@@ -740,9 +744,10 @@ export class Execution implements OnInit, OnDestroy {
         },
       },
     );
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result || result.action === 'back') return;
-    this.#store.updateEquipmentSelections(result.equipments);
+    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
+      if (!result || result.action === 'back') return;
+      this.#store.updateEquipmentSelections(result.equipments);
+    });
   }
 
   async saveAllChanges(): Promise<void> {

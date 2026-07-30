@@ -888,7 +888,9 @@
     "SPECIMEN_LABEL": "Espécimen",
     "SPECIMEN_PLACEHOLDER": "Selecciona espécimen",
     "TITLE": "Gestión de espécimen",
+    "TYPE_BUNDLE": "Sistema de armas",
     "TYPE_LABEL": "Tipo de espécimen",
+    "TYPE_MORTAR": "Mortero",
     "TYPE_MUNITION": "Munición",
     "TYPE_PLACEHOLDER": "Seleccionar tipo",
     "TYPE_TUBE": "Tubo",
@@ -1906,6 +1908,8 @@
         "TITLE": "Configuración masiva de disparos",
         "TUBE_LABEL": "Denominación tubo",
         "TUBE_PLACEHOLDER": "Selecciona denominación de tubo",
+        "TYPE_LABEL": "Tipo",
+        "TYPE_PLACEHOLDER": "Selecciona tipo",
         "WEAPON_LABEL": "Denominación arma",
         "WEAPON_PLACEHOLDER": "Selecciona arma"
       },
@@ -1921,6 +1925,7 @@
         "SERIE": "Serie",
         "SHOT": "Disparo",
         "TUBE": "Denominación tubo",
+        "TYPE": "Tipo",
         "WEAPON": "Denominación arma",
         "YES": "Si"
       },
