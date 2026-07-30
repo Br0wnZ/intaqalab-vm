@@ -9,7 +9,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { FormField, applyEach, disabled, form } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form, max, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
@@ -36,6 +36,7 @@ import type {
   UpdateArmamentDialogData,
 } from '../../utils-models/armament.model';
 import type { Serie as SeriesAndShotsSerie } from '../../utils-models/series-and-shots.model';
+import type { SpecimenItem } from '../../utils-models/catalog.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 import { UpdateArmamentDialog } from './update-armament-dialog';
@@ -144,7 +145,11 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.weaponType">
+                          <mat-select
+                            clearable
+                            [formField]="$any(getShotField(i, j)).armament.weaponType"
+                            (valueChange)="onWeaponTypeChange($event, i, j)"
+                          >
                             @for (option of typeOptions; track option.value) {
                               <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
                             }
@@ -164,7 +169,11 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.weaponExternalId">
+                          <mat-select
+                            clearable
+                            [formField]="$any(getShotField(i, j)).armament.weaponExternalId"
+                            (valueChange)="onWeaponChange($event, i, j)"
+                          >
                             @for (weapon of weaponOptions(); track weapon.id) {
                               <mat-option [value]="weapon.id">{{ weapon.name }}</mat-option>
                             }
@@ -183,13 +192,15 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                         {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TUBE' | translate }}
                       </th>
                       <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                          <mat-select clearable [formField]="$any(getShotField(i, j)).armament.tubeExternalId">
-                            @for (tube of tubeOptions(); track tube.id) {
-                              <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
+                        @if (element.armament.weaponType?.toLowerCase() !== 'mortar') {
+                          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                            <mat-select clearable [formField]="$any(getShotField(i, j)).armament.tubeExternalId">
+                              @for (tube of tubeOptions(); track tube.id) {
+                                <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                        }
                       </td>
                     </ng-container>
 
@@ -225,8 +236,16 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                       >
                         {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.LIFE' | translate }}
                       </th>
-                      <td *matCellDef="let element" mat-cell class="py-2 px-1 text-center">
-                        {{ element.armament.tubeLifePercentage }}%
+                      <td *matCellDef="let element; let j = index" mat-cell class="py-2 px-1 text-center">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="max-w-28">
+                          <input
+                            matInput
+                            type="number"
+                            step="1"
+                            [formField]="$any(getShotField(i, j)).armament.tubeLifePercentage"
+                          />
+                          <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
+                        </mat-form-field>
                       </td>
                     </ng-container>
 
@@ -248,11 +267,11 @@ import { UpdateArmamentDialog } from './update-armament-dialog';
                           >
                             <ui-inta-icon name="info" size="xxl" />
                           </button>
-                          @if (!readonly()) {
+                          <!-- @if (!readonly()) {
                             <button mat-icon-button class="!text-gray-600 scale-90" (click)="openUpdateDialog(i, j)">
                               <ui-inta-icon name="edit" size="xxl" />
                             </button>
-                          }
+                          } -->
                         </div>
                       </td>
                     </ng-container>
@@ -307,17 +326,27 @@ export class Armament implements OnInit {
   readonly isLoading = this.#armamentStore.isLoading;
   readonly isSaving = this.#armamentStore.isUpdatingArmament;
   readonly updateStatus = this.#armamentStore.updateArmamentStatus;
-  readonly weapons = this.#armamentStore.weapons;
-  readonly tubes = this.#armamentStore.tubes;
+  readonly isLoadingWeaponDenominations = this.#armamentStore.isLoadingWeaponDenominations;
+  readonly isLoadingTubeDenominations = this.#armamentStore.isLoadingTubeDenominations;
 
+  /**
+   * Denominaciones de arma reactivas: se cargan al seleccionar un Tipo.
+   * Incluye las armas ya guardadas en el armamento para no perder opciones activas.
+   */
   readonly weaponOptions = computed(() => {
+    const denominations = this.#armamentStore.weaponDenominations();
     const existing = this.armamentSignal().flatMap((serie) => serie.shots);
-    return this.#mergeCatalogOptions(this.weapons(), existing, 'weaponExternalId', 'weaponName', 'WEAPON');
+    return this.#mergeCatalogOptions(denominations, existing, 'weaponExternalId', 'weaponName', 'WEAPON');
   });
 
+  /**
+   * Denominaciones de tubo reactivas: se cargan al seleccionar un Arma (familyId).
+   * Incluye los tubos ya guardados en el armamento para no perder opciones activas.
+   */
   readonly tubeOptions = computed(() => {
+    const denominations = this.#armamentStore.tubeDenominations();
     const existing = this.armamentSignal().flatMap((serie) => serie.shots);
-    return this.#mergeCatalogOptions(this.tubes(), existing, 'tubeExternalId', 'tubeName', 'TUBE');
+    return this.#mergeCatalogOptions(denominations, existing, 'tubeExternalId', 'tubeName', 'TUBE');
   });
 
   #initialArmamentData: ArmamentSerie[] = [];
@@ -329,7 +358,6 @@ export class Armament implements OnInit {
       const trialId = this.#planningGeneralDataStore.fireTrialId();
       if (trialId && !this.#armamentStore.isInitialized()) {
         this.#armamentStore.loadArmament();
-        this.#armamentStore.loadAllCatalogs();
       }
     });
 
@@ -388,10 +416,31 @@ export class Armament implements OnInit {
   readonly armamentForm = form(this.armamentSignal, (root) => {
     applyEach(root, (serie) => {
       applyEach(serie.shots, (shotPath) => {
+        required(shotPath.armament.weaponType);
+        required(shotPath.armament.weaponExternalId);
+        required(shotPath.armament.tubeExternalId, {
+          when: ({ valueOf }) => valueOf(shotPath.armament.weaponType)?.toLowerCase() !== SpecimenType.Mortar,
+        });
+
         disabled(shotPath.armament.weaponType, () => this.readonly());
-        disabled(shotPath.armament.weaponExternalId, () => this.readonly());
-        disabled(shotPath.armament.tubeExternalId, () => this.readonly());
+        disabled(
+          shotPath.armament.weaponExternalId,
+          ({ valueOf }) =>
+            this.readonly() ||
+            !valueOf(shotPath.armament.weaponType) ||
+            this.isLoadingWeaponDenominations(),
+        );
+        disabled(
+          shotPath.armament.tubeExternalId,
+          ({ valueOf }) =>
+            this.readonly() ||
+            !valueOf(shotPath.armament.weaponExternalId) ||
+            this.isLoadingTubeDenominations(),
+        );
         disabled(shotPath.armament.isInstrumented, () => this.readonly());
+        disabled(shotPath.armament.tubeLifePercentage, () => this.readonly());
+        min(shotPath.armament.tubeLifePercentage, 0);
+        max(shotPath.armament.tubeLifePercentage, 100);
       });
     });
   });
@@ -413,8 +462,6 @@ export class Armament implements OnInit {
       width: '800px',
       data: {
         series: this.armamentSignal().map((s) => ({ id: s.seriesId, name: s.seriesName })),
-        weapons: this.weaponOptions(),
-        tubes: this.tubeOptions(),
       },
     });
 
@@ -448,7 +495,8 @@ export class Armament implements OnInit {
 
         if (config.denominacionArma) {
           updatedArmament.weaponExternalId = config.denominacionArma;
-          const foundWeapon = this.weaponOptions().find((w) => w.id === config.denominacionArma);
+          const foundWeapon = this.#armamentStore.weaponDenominations().find((w) => String(w.id) === config.denominacionArma)
+            ?? this.weaponOptions().find((w) => w.id === config.denominacionArma);
           if (foundWeapon) {
             updatedArmament.weaponName = foundWeapon.name;
           }
@@ -456,7 +504,8 @@ export class Armament implements OnInit {
 
         if (config.denominacionTubo) {
           updatedArmament.tubeExternalId = config.denominacionTubo;
-          const foundTube = this.tubeOptions().find((t) => t.id === config.denominacionTubo);
+          const foundTube = this.#armamentStore.tubeDenominations().find((t) => String(t.id) === config.denominacionTubo)
+            ?? this.tubeOptions().find((t) => t.id === config.denominacionTubo);
           if (foundTube) {
             updatedArmament.tubeName = foundTube.name;
           }
@@ -518,6 +567,81 @@ export class Armament implements OnInit {
     if (wasUpdated) {
       this.#armamentStore.reloadArmament();
       console.info('Shot actualizado correctamente');
+    }
+  }
+
+  /**
+   * Manejador llamado desde el template cuando cambia el Tipo de un disparo.
+   * Dispara la carga de denominaciones de arma filtradas por itemType y resetea arma y tubo de la fila.
+   */
+  onWeaponTypeChange(itemType: string | null | undefined, serieIdx?: number, shotIdx?: number): void {
+    if (serieIdx !== undefined && shotIdx !== undefined) {
+      this.armamentSignal.update((series) =>
+        series.map((serie, sIdx) => {
+          if (sIdx !== serieIdx) return serie;
+          return {
+            ...serie,
+            shots: serie.shots.map((shot, shIdx) => {
+              if (shIdx !== shotIdx) return shot;
+              return {
+                ...shot,
+                armament: {
+                  ...shot.armament,
+                  weaponExternalId: '',
+                  weaponName: '',
+                  tubeExternalId: '',
+                  tubeName: '',
+                },
+              };
+            }),
+          };
+        }),
+      );
+    }
+
+    if (itemType) {
+      this.#armamentStore.loadWeaponDenominations(itemType.toUpperCase());
+      this.#armamentStore.clearTubeDenominations();
+    } else {
+      this.#armamentStore.clearWeaponDenominations();
+      this.#armamentStore.clearTubeDenominations();
+    }
+  }
+
+  /**
+   * Manejador llamado desde el template cuando cambia la Denominación Arma de un disparo.
+   * Extrae el familyId del arma seleccionada, dispara la carga de tubos y resetea el tubo de la fila.
+   */
+  onWeaponChange(weaponId: string | null | undefined, serieIdx?: number, shotIdx?: number): void {
+    if (serieIdx !== undefined && shotIdx !== undefined) {
+      this.armamentSignal.update((series) =>
+        series.map((serie, sIdx) => {
+          if (sIdx !== serieIdx) return serie;
+          return {
+            ...serie,
+            shots: serie.shots.map((shot, shIdx) => {
+              if (shIdx !== shotIdx) return shot;
+              return {
+                ...shot,
+                armament: {
+                  ...shot.armament,
+                  tubeExternalId: '',
+                  tubeName: '',
+                },
+              };
+            }),
+          };
+        }),
+      );
+    }
+
+    if (!weaponId) {
+      this.#armamentStore.clearTubeDenominations();
+      return;
+    }
+    const weapon = this.weaponOptions().find((w) => w.id === weaponId);
+    if (weapon?.familyId !== undefined) {
+      this.#armamentStore.loadTubeDenominations(weapon.familyId);
     }
   }
 
@@ -583,13 +707,13 @@ export class Armament implements OnInit {
   }
 
   #mergeCatalogOptions(
-    catalog: Array<{ id: string; name: string; type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION'; active: boolean }>,
+    catalog: SpecimenItem[],
     shots: ArmamentSerie['shots'],
     idKey: 'weaponExternalId' | 'tubeExternalId',
     nameKey: 'weaponName' | 'tubeName',
     fallbackType: 'WEAPON' | 'TUBE',
   ) {
-    const byId = new Map<string, { id: string; name: string; type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION'; active: boolean }>();
+    const byId = new Map<string, SpecimenItem>();
 
     for (const item of catalog) {
       byId.set(item.id, item);
@@ -641,7 +765,12 @@ export class Armament implements OnInit {
         weaponExternalId: shot.armament.weaponExternalId ? Number(shot.armament.weaponExternalId) : undefined,
         tubeExternalId: shot.armament.tubeExternalId ? Number(shot.armament.tubeExternalId) : undefined,
         isInstrumented: shot.armament.isInstrumented,
-        lifeUsefulPercentage: shot.armament.tubeLifePercentage,
+        lifeUsefulPercentage:
+          shot.armament.tubeLifePercentage !== undefined &&
+          shot.armament.tubeLifePercentage !== null &&
+          (shot.armament.tubeLifePercentage as unknown) !== ''
+            ? Number(shot.armament.tubeLifePercentage)
+            : undefined,
         observations: shot.armament.observations || undefined,
       })),
     );

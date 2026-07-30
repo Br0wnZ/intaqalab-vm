@@ -22,6 +22,8 @@ export type SpecimenItem = {
   /** Alineado con PlanningSpecimenTypeEnum del Swagger */
   type: 'WEAPON' | 'TUBE' | 'MUNITION' | 'MORTAR' | 'BUNDLE';
   active: boolean;
+  /** ID de familia devuelto por la API — necesario para filtrar tubos asociados al arma seleccionada */
+  familyId?: number;
 };
 
 export type SpecimenListResponse = {

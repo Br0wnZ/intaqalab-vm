@@ -891,16 +891,20 @@ export function createMockArmamentService(initialData?: {
   armament?: { series: Array<{ seriesId: string; seriesName: string; configurations: any[] }> };
   weapons?: { page: number; pageSize: number; totalElements: number; items: any[] };
   tubes?: { page: number; pageSize: number; totalElements: number; items: any[] };
+  weaponDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
+  tubeDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
 }) {
   // Trial Armament resources
   const armamentResource = createMockResource(initialData?.armament);
   const updateArmamentResource = createMockResource<void>();
 
-  // Weapons resources
+  // Legacy catalog resources
   const weaponsResource = createMockResource(initialData?.weapons);
-
-  // Tubes resources
   const tubesResource = createMockResource(initialData?.tubes);
+
+  // Denomination resources (cascada reactiva)
+  const weaponDenominationsResource = createMockResource(initialData?.weaponDenominations);
+  const tubeDenominationsResource = createMockResource(initialData?.tubeDenominations);
 
   return {
     // Trial Armament
@@ -910,21 +914,31 @@ export function createMockArmamentService(initialData?: {
     updateArmament: vi.fn(),
     resetUpdateArmament: vi.fn(),
 
-    // Weapons
+    // Legacy weapons/tubes
     weaponsResource,
     getWeapons: vi.fn(),
 
-    // Tubes
     tubesResource,
     getTubes: vi.fn(),
+
+    // Denomination resources (cascada por tipo → arma → tubo)
+    weaponDenominationsResource,
+    tubeDenominationsResource,
+    loadWeaponDenominations: vi.fn(),
+    clearWeaponDenominations: vi.fn(),
+    loadTubeDenominations: vi.fn(),
+    clearTubeDenominations: vi.fn(),
 
     // Internal resources for test manipulation
     _armamentResource: armamentResource,
     _updateArmamentResource: updateArmamentResource,
     _weaponsResource: weaponsResource,
     _tubesResource: tubesResource,
+    _weaponDenominationsResource: weaponDenominationsResource,
+    _tubeDenominationsResource: tubeDenominationsResource,
   };
 }
+
 
 /**
  * Factory para crear datos de prueba de armamento

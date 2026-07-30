@@ -14,6 +14,7 @@ import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { ArmamentService } from '../../services/armament-service';
 import type { TrialArmamentResponse } from '../../utils-models/armament.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 import { Armament } from './armament';
 
 const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmamentResponse => ({
@@ -23,10 +24,11 @@ const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmam
     shots: Array.from({ length: shotsPerSeries }, (_, shotIdx) => ({
       shotId: `shot-${seriesIdx + 1}-${shotIdx + 1}`,
       armament: {
+        weaponType: SpecimenType.Weapon,
         weaponName: `Weapon ${shotIdx + 1}`,
-        weaponExternalId: `weapon-${shotIdx + 1}`,
+        weaponExternalId: shotIdx + 1,
         tubeName: `Tube ${shotIdx + 1}`,
-        tubeExternalId: `tube-${shotIdx + 1}`,
+        tubeExternalId: shotIdx + 1,
         isInstrumented: shotIdx % 2 === 0,
         tubeLifePercentage: 80 + shotIdx * 10,
         observations: `Observation ${shotIdx + 1}`,
@@ -235,7 +237,7 @@ describe('Armament', () => {
       const { view } = await runSetup();
 
       mockDialog.open.mockReturnValueOnce({
-        componentInstance: { applyConfig: { subscribe: vi.fn() } },
+        componentInstance: {},
         afterClosed: () => of(undefined),
         close: vi.fn(),
       } as any);

@@ -17,6 +17,7 @@ type EquipmentDenominationApiItem = {
   id: number | string;
   name: string;
   itemType?: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE';
+  familyId?: number;
   active?: boolean;
 };
 
@@ -32,6 +33,17 @@ type SpecimenItem = {
   name: string;
   type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION';
   active: boolean;
+  familyId?: number;
+};
+
+/** Parámetros para el resource de denominaciones arma: itemType obligatorio */
+type WeaponDenominationParams = {
+  itemType: string;
+};
+
+/** Parámetros para el resource de denominaciones tubo: siempre TUBE + familyId del arma seleccionada */
+type TubeDenominationParams = {
+  familyId: number;
 };
 
 @Injectable({
@@ -41,8 +53,13 @@ export class ArmamentService {
   readonly #getArmamentParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateArmamentTrigger = actionTrigger<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest }>();
 
+  // Legacy catalog signals (mantenidos por compatibilidad con loadAllCatalogs)
   readonly #getWeaponsParams = signal<CatalogQueryParams | null>(null);
   readonly #getTubesParams = signal<CatalogQueryParams | null>(null);
+
+  // Nuevos signals reactivos para denominaciones en cascada
+  readonly #weaponDenominationParams = signal<WeaponDenominationParams | null>(null);
+  readonly #tubeDenominationParams = signal<TubeDenominationParams | null>(null);
 
   readonly #planningUrl = injectPlanningEndpoint();
 
@@ -67,6 +84,7 @@ export class ArmamentService {
     };
   });
 
+  // Legacy: carga inicial de catálogos sin filtro
   readonly weaponsResource = httpResource<SpecimenListResponse>(() => {
     const params = this.#getWeaponsParams();
     if (!params) return undefined;
@@ -87,7 +105,41 @@ export class ArmamentService {
     return {
       url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
-      parse: (raw) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
+    };
+  });
+
+  /**
+   * Resource reactivo para denominaciones de arma filtrado por itemType.
+   * Se activa cuando se selecciona un tipo en el campo Tipo.
+   * URL: GET /centers/{centerId}/equipment/denominations?itemType={itemType}
+   */
+  readonly weaponDenominationsResource = httpResource<SpecimenListResponse>(() => {
+    const params = this.#weaponDenominationParams();
+    if (!params) return undefined;
+
+    const queryParams = this.#buildQueryParams({ itemType: params.itemType });
+    return {
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+      method: 'GET',
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, params.itemType as SpecimenItem['type']),
+    };
+  });
+
+  /**
+   * Resource reactivo para denominaciones de tubo filtrado por familyId del arma seleccionada.
+   * Se activa cuando se selecciona un arma.
+   * URL: GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
+   */
+  readonly tubeDenominationsResource = httpResource<SpecimenListResponse>(() => {
+    const params = this.#tubeDenominationParams();
+    if (!params) return undefined;
+
+    const queryParams = this.#buildQueryParams({ itemType: 'TUBE', familyId: params.familyId });
+    return {
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+      method: 'GET',
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
     };
   });
 
@@ -109,6 +161,36 @@ export class ArmamentService {
 
   getTubes(params: CatalogQueryParams = {}) {
     this.#getTubesParams.set(params);
+  }
+
+  /**
+   * Carga denominaciones de arma filtradas por itemType.
+   * @param itemType Tipo seleccionado (WEAPON, MORTAR, BUNDLE)
+   */
+  loadWeaponDenominations(itemType: string): void {
+    this.#weaponDenominationParams.set({ itemType });
+  }
+
+  /**
+   * Limpia el resource de denominaciones de arma.
+   */
+  clearWeaponDenominations(): void {
+    this.#weaponDenominationParams.set(null);
+  }
+
+  /**
+   * Carga denominaciones de tubo filtradas por familyId del arma seleccionada.
+   * @param familyId ID de familia devuelto por la selección del arma
+   */
+  loadTubeDenominations(familyId: number): void {
+    this.#tubeDenominationParams.set({ familyId });
+  }
+
+  /**
+   * Limpia el resource de denominaciones de tubo.
+   */
+  clearTubeDenominations(): void {
+    this.#tubeDenominationParams.set(null);
   }
 
   #buildQueryParams(params: CatalogQueryParams & { itemType?: string }): string {
@@ -143,6 +225,7 @@ export class ArmamentService {
         name: item.name,
         type: item.itemType ?? defaultType,
         active: item.active ?? true,
+        familyId: item.familyId,
       })),
     };
   }

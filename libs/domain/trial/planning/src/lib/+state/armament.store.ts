@@ -45,6 +45,7 @@ export const ArmamentStore = signalStore(
 
       updateArmamentError: computed(() => armamentService.updateArmamentResource.error()),
 
+      // Legacy weapons/tubes (carga inicial sin filtro)
       weapons: computed<SpecimenItem[]>(() => {
         const response = safeResourceValue(armamentService.weaponsResource);
         return response?.items ?? [];
@@ -82,6 +83,22 @@ export const ArmamentStore = signalStore(
       isLoadingTubes: computed(() => armamentService.tubesResource.isLoading()),
 
       tubesError: computed(() => armamentService.tubesResource.error()),
+
+      // Denominaciones arma reactivas (filtradas por itemType seleccionado)
+      weaponDenominations: computed<SpecimenItem[]>(() => {
+        const response = safeResourceValue(armamentService.weaponDenominationsResource);
+        return response?.items ?? [];
+      }),
+
+      isLoadingWeaponDenominations: computed(() => armamentService.weaponDenominationsResource.isLoading()),
+
+      // Denominaciones tubo reactivas (filtradas por familyId del arma seleccionada)
+      tubeDenominations: computed<SpecimenItem[]>(() => {
+        const response = safeResourceValue(armamentService.tubeDenominationsResource);
+        return response?.items ?? [];
+      }),
+
+      isLoadingTubeDenominations: computed(() => armamentService.tubeDenominationsResource.isLoading()),
 
       isLoadingCatalogs: computed(
         () => armamentService.weaponsResource.isLoading() || armamentService.tubesResource.isLoading(),
@@ -132,6 +149,36 @@ export const ArmamentStore = signalStore(
     loadAllCatalogs(): void {
       armamentService.getWeapons();
       armamentService.getTubes();
+    },
+
+    /**
+     * Carga denominaciones de arma filtradas por el itemType seleccionado.
+     * Llama a GET /centers/{centerId}/equipment/denominations?itemType={itemType}
+     */
+    loadWeaponDenominations(itemType: string): void {
+      armamentService.loadWeaponDenominations(itemType);
+    },
+
+    /**
+     * Limpia el listado de denominaciones de arma.
+     */
+    clearWeaponDenominations(): void {
+      armamentService.clearWeaponDenominations();
+    },
+
+    /**
+     * Carga denominaciones de tubo filtradas por familyId del arma seleccionada.
+     * Llama a GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
+     */
+    loadTubeDenominations(familyId: number): void {
+      armamentService.loadTubeDenominations(familyId);
+    },
+
+    /**
+     * Limpia el listado de denominaciones de tubo.
+     */
+    clearTubeDenominations(): void {
+      armamentService.clearTubeDenominations();
     },
 
     reset(): void {

@@ -4,20 +4,27 @@ import { MatChipHarness } from '@angular/material/chips/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
+import { createMockArmamentService, createMockMatDialogRef } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ArmamentService } from '../../services/armament-service';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 
+vi.mock('@intaqalab/config', () => ({
+  injectPlanningEndpoint: () => 'http://api.test/planning',
+}));
+
 describe('MassiveShotsConfigurationDialog', () => {
   let mockDialogRef: ReturnType<typeof createMockMatDialogRef>;
+  let mockArmamentService: ReturnType<typeof createMockArmamentService>;
 
   const runSetup = async (dialogData = {}) => {
     mockDialogRef = createMockMatDialogRef();
+    mockArmamentService = createMockArmamentService();
 
     const user = userEvent.setup();
 
@@ -26,6 +33,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: ArmamentService, useValue: mockArmamentService },
       ],
     });
 
@@ -193,18 +201,15 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
-    it('should emit form data when clicking apply button', async () => {
-      const { loader, view } = await runSetup();
-      const component = view.fixture.componentInstance;
-      const applySpy = vi.fn();
-      component.applyConfig.subscribe(applySpy);
+    it('should close dialog with form data when clicking apply button', async () => {
+      const { loader } = await runSetup();
 
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
-      const applyButton = await buttons[0];
+      const applyButton = buttons[0];
 
       await applyButton.click();
 
-      expect(applySpy).toHaveBeenCalledWith(
+      expect(mockDialogRef.close).toHaveBeenCalledWith(
         expect.objectContaining({
           series: [],
           denominacionArma: '',
@@ -214,14 +219,10 @@ describe('MassiveShotsConfigurationDialog', () => {
           observaciones: '',
         }),
       );
-      expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
 
-    it('should emit updated data after modifying observations', async () => {
-      const { loader, view } = await runSetup();
-      const component = view.fixture.componentInstance;
-      const applySpy = vi.fn();
-      component.applyConfig.subscribe(applySpy);
+    it('should close dialog with updated data after modifying observations', async () => {
+      const { loader } = await runSetup();
 
       const inputs = await loader.getAllHarnesses(MatInputHarness);
       const textarea = inputs[0];
@@ -232,12 +233,11 @@ describe('MassiveShotsConfigurationDialog', () => {
 
       await applyButton.click();
 
-      expect(applySpy).toHaveBeenCalledWith(
+      expect(mockDialogRef.close).toHaveBeenCalledWith(
         expect.objectContaining({
           observaciones: 'Test observations',
         }),
       );
-      expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
   });
 
@@ -281,11 +281,9 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
-    it('onApply should emit applyConfig output with current config data', async () => {
+    it('onApply should close dialog with current config data', async () => {
       const { view } = await runSetup();
       const component = view.fixture.componentInstance;
-      const applySpy = vi.fn();
-      component.applyConfig.subscribe(applySpy);
 
       component.configModel.set({
         series: ['serie1'],
@@ -299,7 +297,7 @@ describe('MassiveShotsConfigurationDialog', () => {
 
       component.onApply();
 
-      expect(applySpy).toHaveBeenCalledWith({
+      expect(mockDialogRef.close).toHaveBeenCalledWith({
         series: ['serie1'],
         tipo: SpecimenType.Weapon,
         denominacionArma: 'obus105',
