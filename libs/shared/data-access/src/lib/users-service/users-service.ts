@@ -21,7 +21,14 @@ export class UsersService {
     if (!params) return;
 
     let urlParams = `?limit=${params.limit}`;
-    if (params.search) urlParams += `&search=${params.search}`;
+    if (params.search) {
+      urlParams += `&search=${encodeURIComponent(params.search)}`;
+    } else if (params.roles && params.roles.length > 0) {
+      const rolesArray = Array.isArray(params.roles) ? params.roles : [params.roles];
+      rolesArray.forEach((role) => {
+        urlParams += `&roles=${encodeURIComponent(role)}`;
+      });
+    }
 
     return {
       url: `${this.#usersUrl}/users${urlParams}`,

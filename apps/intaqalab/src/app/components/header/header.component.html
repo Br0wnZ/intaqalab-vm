@@ -6,17 +6,6 @@
     <h1 class="text-base font-medium">{{ userView() }}</h1>
   </div>
   <div class="flex gap-4 items-center">
-    @if (isDevMode) {
-      <div class="flex items-center gap-2">
-        <button type="button" class="inta-icon-btn" (click)="toggleTabsNavigation()">
-          <mat-icon>{{ tabsNavigationEnabled ? 'tab' : 'tab_unselected' }}</mat-icon>
-        </button>
-        <span class="text-xs">Tabs: {{ tabsNavigationEnabled ? 'ON' : 'OFF' }}</span>
-      </div>
-      <button type="button" class="inta-icon-btn">
-        <ui-inta-icon name="maximize" color="#fff" size="sm" />
-      </button>
-    }
     <button type="button" class="inta-icon-btn" (click)="logout.emit()">
       <ui-inta-icon name="exit" color="#fff" size="sm" />
     </button>

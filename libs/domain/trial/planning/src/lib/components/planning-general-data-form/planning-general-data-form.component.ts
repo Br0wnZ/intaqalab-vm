@@ -474,12 +474,6 @@ export class PlanningGeneralDataFormComponent {
   #initialFormModel = this.formModel();
   #initialSelectedSpecimens: { specimenId: string; batch: string }[] = [];
 
-  readonly fakeSpecimens = [
-    { id: crypto.randomUUID(), label: 'Specimen 1' },
-    { id: crypto.randomUUID(), label: 'Specimen 2' },
-    { id: crypto.randomUUID(), label: 'Specimen 3' },
-  ];
-
   readonly generalDataForm = form(this.formModel, (f) => {
     required(f.goal);
     validate(f.specimen, ({ value }) =>

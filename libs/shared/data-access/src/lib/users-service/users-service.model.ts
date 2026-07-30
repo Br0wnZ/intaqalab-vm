@@ -1,3 +1,5 @@
+import type { Role } from '@intaqalab/models';
+
 export interface User {
   id: string;
   username: string;
@@ -16,4 +18,5 @@ export type PlanningUsersResponse = PlanningUser[];
 export interface PlanningUsersQueryParams {
   limit: number;
   search?: string;
+  roles?: Role[] | Role;
 }

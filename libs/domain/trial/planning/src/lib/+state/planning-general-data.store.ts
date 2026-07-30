@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { computed, effect, inject, untracked } from '@angular/core';
+import { Role } from '@intaqalab/core';
 import { UsersService } from '@intaqalab/data-access';
 import type { MasterData, TargetDimension, TargetThickness, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
@@ -310,11 +311,18 @@ export const PlanningGeneralDataStore = signalStore(
       },
 
       loadUsers(limit = 25): void {
-        usersService.queryParams.set({ limit });
+        usersService.queryParams.set({
+          limit,
+          roles: [Role.INTAQALAB_PLANNING_ANALYSIS_HEAD, Role.INTAQALAB_TRIAL_CONSULTANT],
+        });
       },
 
       searchUser(searchedTerm: string): void {
-        usersService.queryParams.set({ limit: 25, search: searchedTerm });
+        usersService.queryParams.set({
+          limit: 25,
+          search: searchedTerm,
+          roles: [Role.INTAQALAB_PLANNING_ANALYSIS_HEAD, Role.INTAQALAB_TRIAL_CONSULTANT],
+        });
       },
 
       updatePlanningInfo(data: UpsertTrialPlanningInfo): void {
@@ -343,7 +351,10 @@ export const PlanningGeneralDataStore = signalStore(
       },
 
       reloadUsers(): void {
-        usersService.queryParams.set({ limit: 25 });
+        usersService.queryParams.set({
+          limit: 25,
+          roles: [Role.INTAQALAB_PLANNING_ANALYSIS_HEAD, Role.INTAQALAB_TRIAL_CONSULTANT],
+        });
       },
 
       loadSeries(): void {

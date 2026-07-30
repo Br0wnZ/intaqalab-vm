@@ -102,6 +102,22 @@ describe('UsersService', () => {
       req.flush(mockUserListResponse);
     });
 
+    it('should include roles params when provided', () => {
+      const params: PlanningUsersQueryParams = {
+        limit: 25,
+        roles: ['INTAQALAB_PLANNING_ANALYSIS_HEAD', 'INTAQALAB_TRIAL_CONSULTANT'],
+      };
+      service.queryParams.set(params);
+
+      TestBed.tick();
+
+      const req = httpTesting.expectOne((r) => r.url.startsWith(USERS_URL));
+      expect(req.request.url).toContain('limit=25');
+      expect(req.request.url).toContain('roles=INTAQALAB_PLANNING_ANALYSIS_HEAD');
+      expect(req.request.url).toContain('roles=INTAQALAB_TRIAL_CONSULTANT');
+      req.flush(mockUserListResponse);
+    });
+
     it('should react to parameter changes', async () => {
       // First request
       service.queryParams.set({ limit: 25 });
