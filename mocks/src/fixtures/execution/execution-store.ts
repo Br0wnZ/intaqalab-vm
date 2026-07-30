@@ -1,13 +1,14 @@
 import { getFixture } from '../../utils';
 
 type ExecutionStatus =
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'INTERRUPTED'
+  | 'CANCELED'
   | 'PLANNED'
   | 'IN_PROGRESS'
   | 'STARTED'
   | 'EXECUTED'
-  | 'INTERRUPTED'
-  | 'PAUSED'
-  | 'CANCELED'
   | 'FINISHED'
   | 'ANALYZING'
   | 'CLOSED';
@@ -34,7 +35,8 @@ interface ProfilesReadinessState {
 interface ExecutionState {
   status: ExecutionStatus;
   activeSeriesId: string | null;
-  activeShootId: string | null;
+  activeShotId: string | null;
+  activeShootId?: string | null;
   updatedAt: string;
 }
 
@@ -73,9 +75,17 @@ function defaultReadinessState(): ProfilesReadinessState {
 
 export function getExecutionState(fireTrialId: string): ExecutionState {
   if (!executionStateMap.has(fireTrialId)) {
-    executionStateMap.set(fireTrialId, { ...defaultExecutionState() });
+    const initial = { ...defaultExecutionState() };
+    executionStateMap.set(fireTrialId, {
+      ...initial,
+      activeShootId: initial.activeShotId,
+    });
   }
-  return executionStateMap.get(fireTrialId) ?? defaultExecutionState();
+  const state = executionStateMap.get(fireTrialId) ?? defaultExecutionState();
+  return {
+    ...state,
+    activeShootId: state.activeShotId,
+  };
 }
 
 export function setExecutionStatus(fireTrialId: string, status: ExecutionStatus): ExecutionState {

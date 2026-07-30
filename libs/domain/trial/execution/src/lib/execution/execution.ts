@@ -2,14 +2,14 @@
 import { DatePipe, Location, NgClass } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    computed,
+    effect,
+    inject,
+    signal,
+    untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -442,8 +442,9 @@ export class Execution implements OnInit, OnDestroy {
       ? progress.series.findIndex((s) => s.seriesId === execState.activeSeriesId)
       : 0;
     const activeSerie = allSeries[Math.max(activeSerieIdx, 0)];
-    const activeShotInSerie = execState?.activeShootId
-      ? progress.series[Math.max(activeSerieIdx, 0)]?.shots.findIndex((sh) => sh.shotId === execState.activeShootId)
+    const activeShotId = execState?.activeShotId ?? execState?.activeShootId ?? null;
+    const activeShotInSerie = activeShotId
+      ? progress.series[Math.max(activeSerieIdx, 0)]?.shots.findIndex((sh) => sh.shotId === activeShotId)
       : 0;
 
     const totalShots = progress.series.reduce((acc, s) => acc + s.shots.length, 0);

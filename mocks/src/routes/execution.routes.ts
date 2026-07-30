@@ -77,7 +77,7 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/interrupt', 
 
 // Reanudar ensayo
 executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/resume', (req, res) => {
-  setExecutionStatus(req.params['fireTrialId'], 'IN_PROGRESS');
+  setExecutionStatus(req.params['fireTrialId'], 'ACTIVE');
   res.status(204).send();
 });
 
@@ -208,8 +208,8 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-sel
     return;
   }
 
-  const updated = updateEquipmentSelectorState(req.params['fireTrialId'], req.body);
-  res.status(200).json(updated);
+  updateEquipmentSelectorState(req.params['fireTrialId'], req.body);
+  res.status(200).send();
 });
 
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-selector', (req, res) => {

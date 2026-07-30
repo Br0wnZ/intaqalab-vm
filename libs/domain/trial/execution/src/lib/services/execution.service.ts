@@ -4,23 +4,25 @@ import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
 import type {
-    EquipmentMagnitudeTagEnum,
-    EquipmentSelectionApiList,
-    EquipmentTypeEnum,
-    WidgetId
+  EquipmentMagnitudeTagEnum,
+  EquipmentSelectionApiList,
+  EquipmentTypeEnum,
+  WidgetId
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 // ============= Types =============
 
 export type ExecutionStatus =
+  | 'ACTIVE'
+  | 'PAUSED'
+  | 'INTERRUPTED'
+  | 'CANCELED'
+  // Legacy statuses still present in some mock/UI flows.
   | 'PLANNED'
   | 'IN_PROGRESS'
   | 'STARTED'
   | 'EXECUTED'
-  | 'INTERRUPTED'
-  | 'PAUSED'
-  | 'CANCELED'
   | 'FINISHED'
   | 'ANALYZING'
   | 'CLOSED';
@@ -28,19 +30,19 @@ export type ExecutionStatus =
 export interface ExecutionStateResponse {
   status: ExecutionStatus;
   activeSeriesId: string | null;
-  activeShootId: string | null;
+  activeShotId: string | null;
+  // Backward compatibility with legacy payloads still sending this field.
+  activeShootId?: string | null;
   updatedAt: string;
 }
 
 export interface ExecutionSeriesProgress {
   seriesId: string;
-  sequenceNumber: number;
   shots: ExecutionShotProgress[];
 }
 
 export interface ExecutionShotProgress {
   shotId: string;
-  sequenceNumber: number;
   status: 'PENDING' | 'ACTIVE' | 'FIRED';
   updatedAt: string;
 }
@@ -120,7 +122,7 @@ export interface PlanningStateResponse {
 
 export interface PlanningApprovalRequest {
   approved: boolean;
-  comments: string | null;
+  comments?: string | null;
 }
 
 // ============= Params Signals =============
@@ -203,7 +205,7 @@ export type EquipmentSelectorResponse = EquipmentSelectionApiList;
 
 export type EquipmentSelectorUpdateRequest = EquipmentSelectionApiList;
 
-export type EquipmentSelectorUpdateResponse = EquipmentSelectionApiList;
+export type EquipmentSelectorUpdateResponse = void;
 
 interface PreferencesParams extends ExecutionParams {
   roleName?: string;

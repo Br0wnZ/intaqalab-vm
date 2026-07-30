@@ -37,6 +37,7 @@ describe('ExecutionService', () => {
       status: 'IN_PROGRESS' as const,
       activeSeriesId: 's-1',
       activeShotId: 'sh-1',
+      activeShootId: 'sh-1',
       updatedAt: '2026-03-03T10:15:30Z',
     };
 
@@ -58,11 +59,9 @@ describe('ExecutionService', () => {
       series: [
         {
           seriesId: 's-1',
-          sequenceNumber: 1,
           shots: [
             {
               shotId: 'sh-1',
-              sequenceNumber: 1,
               status: 'ACTIVE' as const,
               updatedAt: '2026-03-03T10:15:30Z',
             },
@@ -374,11 +373,11 @@ describe('ExecutionService', () => {
     const putReq = httpMock.expectOne(`${BASE_URL}/equipment-selection`);
     expect(putReq.request.method).toBe('PUT');
     expect(putReq.request.body).toEqual(putReqBody);
-    putReq.flush([]);
+    putReq.flush(null, { status: 200, statusText: 'OK' });
 
     await waitFor(() => {
       TestBed.tick();
-      expect(service.updateEquipmentSelectorResource.value()).toEqual([]);
+      expect(service.updateEquipmentSelectorResource.value()).toBeUndefined();
     });
   });
 });
