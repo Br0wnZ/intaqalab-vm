@@ -922,11 +922,19 @@
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "Sie haben keinen Zugriff auf diesen Versuch",
     "ARMAMENT": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Bewaffnung",
+        "LOAD_FAILED_DETAIL": "Die Bewaffnungsinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      },
       "UPDATE_SHOT_DIALOG": {
         "OBSERVATIONS_LABEL": "Beobachtungen"
       }
     },
     "GENERAL_DATA_SECTION": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der allgemeinen Daten",
+        "LOAD_FAILED_DETAIL": "Die Informationen zur Versuchsplanung konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      },
       "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "Nach der Prüfung",
       "HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL": "Vor der Prüfung",
       "HYPOCHELOMETRIC_REVIEW_LABEL": "Hypochelometrische Prüfung",
@@ -934,7 +942,29 @@
       "SHOW_RATING_CRITERIA": "Qualifikationskriterien anzeigen",
       "VALIDATION_ERRORS_TITLE": "Gründe, warum nicht validiert werden kann"
     },
+    "SERIES_AND_SHOTS_SECTION": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden von Serien und Schüssen",
+        "LOAD_FAILED_DETAIL": "Die Serien und Schüsse konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      }
+    },
+    "SHOOTING_CONDITIONS_SECTION": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Schussbedingungen",
+        "LOAD_FAILED_DETAIL": "Die Schussbedingungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      }
+    },
+    "MEASURES": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Messgrößen und Aufzeichnungen",
+        "LOAD_FAILED_DETAIL": "Die Messgrößen und Aufzeichnungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      }
+    },
     "MUNITIONS": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Munitionskonfigurationen",
+        "LOAD_FAILED_DETAIL": "Die Munitionskonfigurationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      },
       "CONFIGURATION_FORM": {
         "MUNITION_TYPE_LABEL": "Munitionstyp",
         "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
@@ -1074,6 +1104,12 @@
       "MIN_GREATER_THAN_ZERO": "Geben Sie einen Mindestwert größer als Null ein",
       "NUMERIC_INTERVAL_WRONG": "Numerisches Intervall ist falsch definiert",
       "TRIAL_PATTERN": "Geben Sie einen korrekt formatierten Prüfcode ein"
+    }
+  },
+  "TRIAL_CREATE_MODIFY_FORM": {
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Fehler beim Laden des Testformulars",
+      "LOAD_FAILED_DETAIL": "Die Testformulardaten konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
     }
   }
 }

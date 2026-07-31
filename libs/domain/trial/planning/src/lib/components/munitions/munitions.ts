@@ -13,8 +13,8 @@ import { applyEach, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { Badge } from '@intaqalab/ui';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
+import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -43,65 +43,121 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
 
 @Component({
   selector: 'inta-munitions',
-  imports: [MatExpansionModule, MatButtonModule, SeriePanelComponent, TranslateModule, Badge, TrialStatusLabelPipe],
+  imports: [
+    MatExpansionModule,
+    MatButtonModule,
+    SeriePanelComponent,
+    TranslateModule,
+    Badge,
+    TrialStatusLabelPipe,
+    Skeleton,
+    ErrorState,
+    RangePipe,
+  ],
   providers: [MunitionsStore, SeriesAndShotsStore],
   template: `
-    <div class="py-6">
-      <div>
+    @if (isLoadingView()) {
+      <div class="py-6 space-y-6">
+        <!-- Top header skeleton -->
         <div class="flex justify-between items-center mb-6">
           <div class="flex gap-2">
-            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
-              {{ trialCode() }}
-            </h2>
-            @if (trialStatus(); as status) {
-              <ui-badge [status]="status">
-                {{ status | trialStatusLabel }}
-              </ui-badge>
-            }
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
           </div>
-          @if (!readonly()) {
-            <button
-              mat-flat-button
-              [disabled]="checkIfAnyConfigurationsHaveValues()"
-              (click)="openMassiveConfigDialog()"
-            >
-              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
-            </button>
+          <ui-skeleton variant="button" width="220px" height="40px" animation="wave" />
+        </div>
+
+        <!-- Expansion Panels Skeleton -->
+        <div class="flex flex-col gap-5">
+          @for (i of 4 | range; track i) {
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+              <div class="h-14 px-6 flex items-center justify-between bg-gray-100/70 border-b border-gray-200">
+                <ui-skeleton variant="text" width="140px" height="1.25rem" animation="wave" />
+                <div class="flex items-center gap-3">
+                  <ui-skeleton variant="button" width="130px" height="36px" animation="wave" />
+                  <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                </div>
+              </div>
+
+              @if (i === 0) {
+                <div class="p-8 bg-gray-50/50 flex flex-col items-center justify-center gap-3 text-center">
+                  <ui-skeleton variant="rectangle" width="48px" height="48px" animation="wave" />
+                  <ui-skeleton variant="text" width="380px" height="1.25rem" animation="wave" />
+                </div>
+              }
+            </div>
           }
         </div>
 
-        <mat-accordion class="flex flex-col gap-5">
-          @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
-            <inta-serie-panel
-              [serie]="serie"
-              [serieIndex]="serieIdx"
-              [seriesSignal]="seriesSignal"
-              [shots]="shotsPerSerie().get(serie.seriesId) ?? []"
-              [expanded]="serieIdx === 0"
-              [readonly]="readonly()"
-              (deleteConfiguration)="deleteConfiguration(serieIdx, $event)"
-            />
-          }
-        </mat-accordion>
-
-        @if (seriesSignal().length === 0) {
-          <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
-            {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.EMPTY_STATE' | translate }}
-          </div>
-        }
-
+        <!-- Bottom buttons skeleton -->
         <div class="mt-6 flex gap-4 justify-end">
-          @if (!readonly()) {
-            <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
-              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
-            </button>
-            <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
-              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
-            </button>
-          }
+          <ui-skeleton variant="button" width="160px" height="40px" animation="wave" />
+          <ui-skeleton variant="button" width="100px" height="40px" animation="wave" />
         </div>
       </div>
-    </div>
+    } @else if (viewError()) {
+      <ui-error-state
+        [title]="'TRIAL_PLANNING.MUNITIONS.ERRORS.LOAD_FAILED_TITLE' | translate"
+        [message]="'TRIAL_PLANNING.MUNITIONS.ERRORS.LOAD_FAILED_DETAIL' | translate"
+      />
+    } @else {
+      <div class="py-6">
+        <div>
+          <div class="flex justify-between items-center mb-6">
+            <div class="flex gap-2">
+              <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+                {{ trialCode() }}
+              </h2>
+              @if (trialStatus(); as status) {
+                <ui-badge [status]="status">
+                  {{ status | trialStatusLabel }}
+                </ui-badge>
+              }
+            </div>
+            @if (!readonly()) {
+              <button
+                mat-flat-button
+                [disabled]="checkIfAnyConfigurationsHaveValues()"
+                (click)="openMassiveConfigDialog()"
+              >
+                {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
+              </button>
+            }
+          </div>
+
+          <mat-accordion class="flex flex-col gap-5">
+            @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
+              <inta-serie-panel
+                [serie]="serie"
+                [serieIndex]="serieIdx"
+                [seriesSignal]="seriesSignal"
+                [shots]="shotsPerSerie().get(serie.seriesId) ?? []"
+                [expanded]="serieIdx === 0"
+                [readonly]="readonly()"
+                (deleteConfiguration)="deleteConfiguration(serieIdx, $event)"
+              />
+            }
+          </mat-accordion>
+
+          @if (seriesSignal().length === 0) {
+            <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+              {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.EMPTY_STATE' | translate }}
+            </div>
+          }
+
+          <div class="mt-6 flex gap-4 justify-end">
+            @if (!readonly()) {
+              <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
+                {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
+              </button>
+              <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+                {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: `
     :host {
@@ -132,6 +188,20 @@ export class Munitions {
   readonly #dialog = inject(MatDialog);
   readonly #seriesAndShotsStore = inject(SeriesAndShotsStore);
   readonly #injector = inject(Injector);
+
+  readonly isLoadingView = computed(
+    () =>
+      this.#munitionsStore.isLoadingMunitions() ||
+      this.#planningGeneralDataStore.isLoadingPlanningInfo() ||
+      this.#seriesAndShotsStore.isLoadingSeries(),
+  );
+
+  readonly viewError = computed(
+    () =>
+      !!this.#munitionsStore.munitionsError() ||
+      !!this.#planningGeneralDataStore.planningInfoError() ||
+      !!this.#seriesAndShotsStore.seriesError(),
+  );
 
   readonly shotsPerSerie = computed(() => {
     const series = this.#seriesAndShotsStore.series() ?? [];

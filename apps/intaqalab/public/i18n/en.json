@@ -1165,6 +1165,10 @@
     "DESCRIPTION": "Trial description (Optional)",
     "DESCRIPTION_PLACEHOLDER": "Write the trial description here",
     "DOCUMENTS_LOAD_ERROR": "Failed to load the documentation section.",
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Error loading trial form",
+      "LOAD_FAILED_DETAIL": "Failed to load trial form data. Please try again later."
+    },
     "HEADING_PAGE": "Trial details",
     "LINKED_TRIAL": "Linked trial",
     "MODIFY_SUCCESS": "Trial updated successfully",
@@ -2059,6 +2063,10 @@
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "You do not have access to this trial",
     "ARMAMENT": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading armament",
+        "LOAD_FAILED_DETAIL": "Failed to load trial armament information. Please try again later."
+      },
       "FOOTER": {
         "SAVE_DRAFT": "Save draft"
       },
@@ -2148,6 +2156,10 @@
       "ADDITIONAL_INFO_LABEL": "Additional client information",
       "ADDITIONAL_INFO_PLACEHOLDER": "Write the additional information here",
       "CANCEL": "Cancel",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading general data",
+        "LOAD_FAILED_DETAIL": "Failed to load trial planning information. Please try again later."
+      },
       "DATE_PARAMS_CONTROL": "Date control parameters",
       "DAYS_SIGN_REPORT_LABEL": "Days to sign the report",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
@@ -2181,7 +2193,17 @@
       "VALIDATE": "Validate",
       "VALIDATION_ERRORS_TITLE": "Reasons why it can't be validated"
     },
+    "MEASURES": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading measures and records",
+        "LOAD_FAILED_DETAIL": "Failed to load trial measures and records. Please try again later."
+      }
+    },
     "MUNITIONS": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading munition configurations",
+        "LOAD_FAILED_DETAIL": "Failed to load trial munition configurations. Please try again later."
+      },
       "COMPONENT_DETAIL_FORM": {
         "ADD_POWDER_BUTTON": "Add powder",
         "CONDITIONING_CHECKBOX": "Conditioning",
@@ -2319,6 +2341,10 @@
     "SERIES_AND_SHOTS_SECTION": {
       "ADD_SHOT_BUTTON": "Add shot",
       "CREATE_SERIE_BUTTON": "Create series",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading series and shots",
+        "LOAD_FAILED_DETAIL": "Failed to load trial series and shots. Please try again later."
+      },
       "NEW_SERIE_BUTTON": "New series",
       "NOT_SHOTS_IN_SERIE": "There are no shots in the series",
       "NO_SERIES_RESULTS": "No series found.",
@@ -2346,6 +2372,10 @@
         "SAVE": "Save draft"
       },
       "EMPTY_STATE": "There are no shots in this series",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error loading shooting conditions",
+        "LOAD_FAILED_DETAIL": "Failed to load shooting conditions. Please try again later."
+      },
       "MASSIVE_CONFIG_DIALOG": {
         "ANGLE_LABEL": "Firing angle",
         "APPLY_BUTTON": "Apply",

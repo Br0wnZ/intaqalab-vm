@@ -987,6 +987,10 @@
     "DESCRIPTION": "Descripción de la prueba (Opcional)",
     "DESCRIPTION_PLACEHOLDER": "Escribe aquí la descripción de la prueba",
     "DOCUMENTS_LOAD_ERROR": "No se ha podido cargar la sección de documentación.",
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Error al cargar el formulario de prueba",
+      "LOAD_FAILED_DETAIL": "No se han podido cargar los datos del formulario de la prueba. Por favor, reintente más tarde."
+    },
     "HEADING_PAGE": "Ficha de la prueba",
     "LINKED_TRIAL": "Prueba vinculada",
     "MODIFY_SUCCESS": "Prueba modificada correctamente",
@@ -1881,6 +1885,10 @@
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "No tienes acceso a esta prueba",
     "ARMAMENT": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar el armamento",
+        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de armamento de la prueba. Por favor, reintente más tarde."
+      },
       "FOOTER": {
         "SAVE_DRAFT": "Guardar borrador"
       },
@@ -1970,6 +1978,10 @@
       "ADDITIONAL_INFO_LABEL": "Información adicional del cliente",
       "ADDITIONAL_INFO_PLACEHOLDER": "Escribe aquí la información adicional",
       "CANCEL": "Cancelar",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar los datos generales",
+        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de la planificación de la prueba. Por favor, reintente más tarde."
+      },
       "DATE_PARAMS_CONTROL": "Parámetros de control de fechas",
       "DAYS_SIGN_REPORT_LABEL": "Días para firma del informe",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Indica los días para firma del informe",
@@ -2006,7 +2018,17 @@
       "VALIDATE": "Validar",
       "VALIDATION_ERRORS_TITLE": "Motivos por los que no se puede validar"
     },
+    "MEASURES": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar las magnitudes y registros",
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las magnitudes y registros de la prueba. Por favor, reintente más tarde."
+      }
+    },
     "MUNITIONS": {
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar las configuraciones de munición",
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las configuraciones de munición de la prueba. Por favor, reintente más tarde."
+      },
       "COMPONENT_DETAIL_FORM": {
         "ADD_POWDER_BUTTON": "Añadir pólvora",
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
@@ -2148,6 +2170,10 @@
     "SERIES_AND_SHOTS_SECTION": {
       "ADD_SHOT_BUTTON": "Añadir disparo",
       "CREATE_SERIE_BUTTON": "Crear serie",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar las series y disparos",
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las series y disparos de la prueba. Por favor, reintente más tarde."
+      },
       "NEW_SERIE_BUTTON": "Nueva serie",
       "NOT_SHOTS_IN_SERIE": "No hay disparos en la serie",
       "NO_SERIES_RESULTS": "No se han encontrado series.",
@@ -2175,6 +2201,10 @@
         "SAVE": "Guardar borrador"
       },
       "EMPTY_STATE": "No hay disparos en esta serie",
+      "ERRORS": {
+        "LOAD_FAILED_TITLE": "Error al cargar las condiciones de disparo",
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las condiciones de disparo. Por favor, reintente más tarde."
+      },
       "MASSIVE_CONFIG_DIALOG": {
         "ANGLE_LABEL": "Ángulo tiro",
         "APPLY_BUTTON": "Aplicar",

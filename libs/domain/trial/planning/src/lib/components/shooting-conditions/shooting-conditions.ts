@@ -14,11 +14,21 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
 import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
-import { Badge, InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
+import {
+  Badge,
+  ErrorState,
+  InputSelect,
+  InputSelectInput,
+  IntaIconComponent,
+  MatSelectClearable,
+  Skeleton,
+  SkeletonTable,
+} from '@intaqalab/ui';
 import {
   IntaDatePipe,
   LocaleDecimalInputDirective,
   NoNegativeValuesDirective,
+  RangePipe,
   TrialStatusLabelPipe,
 } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -57,591 +67,657 @@ import { MassiveConfigurationDialog } from './massive-configuration-dialog/massi
     InputSelect,
     InputSelectInput,
     LocaleDecimalInputDirective,
+    Skeleton,
+    SkeletonTable,
+    RangePipe,
+    ErrorState,
   ],
   template: `
-    <div class="w-full space-y-4">
-      <div class="flex items-center justify-between mt-6 mb-8">
-        <div class="flex gap-2">
-          <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
-            {{ store.fireTrialCode() }}
-          </h2>
-          @if (store.fireTrial()?.status; as status) {
-            <ui-badge [status]="status">
-              {{ status | trialStatusLabel }}
-            </ui-badge>
+    @if (isLoadingView()) {
+      <div class="w-full space-y-4">
+        <!-- Header skeleton -->
+        <div class="flex items-center justify-between mt-6 mb-8">
+          <div class="flex gap-2">
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+          </div>
+          <ui-skeleton variant="button" width="220px" height="40px" animation="wave" />
+        </div>
+
+        <!-- Expansion Panels skeleton -->
+        <div class="flex flex-col gap-6">
+          @for (i of 3 | range; track i) {
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-gray-200">
+              <div class="h-12 px-6 flex items-center justify-between bg-gray-200">
+                <ui-skeleton variant="text" width="120px" height="1.25rem" animation="wave" />
+                <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+              </div>
+              @if (i === 0) {
+                <div class="p-4 bg-white space-y-4">
+                  <ui-skeleton variant="text" width="180px" height="1.25rem" animation="wave" />
+                  <ui-skeleton-table [rows]="2" [columns]="11" />
+                </div>
+              }
+            </div>
           }
         </div>
-        @if (!readonly()) {
-          <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
-        }
+
+        <!-- Action buttons skeleton -->
+        <div class="mt-10 flex gap-4 justify-end">
+          <ui-skeleton variant="button" width="140px" height="40px" animation="wave" />
+          <ui-skeleton variant="button" width="100px" height="40px" animation="wave" />
+        </div>
       </div>
-      <mat-accordion multi class="flex flex-col gap-6">
-        @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
-          <mat-expansion-panel
-            class="!shadow-sm !border !border-slate-200 !rounded-xl overflow-hidden !m-0 !bg-gray-200"
-            [expanded]="true"
-          >
-            <mat-expansion-panel-header class="!h-12 !bg-gray-200">
-              <mat-panel-title class="flex items-center gap-2">
-                <h2 class="!font-medium !text-sm !text-gray-900">{{ serie.seriesName }}</h2>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-
-            <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
-              <div class="flex items-center justify-between mb-4 px-4">
-                <h3 class="font-semibold text-sm text-gray-700">
-                  {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE' | translate }}
-                </h3>
-              </div>
-
-              <div class="overflow-x-auto border border-slate-200">
-                <table mat-table class="w-full compact-table" [dataSource]="serie.shots" [trackBy]="trackByShotId">
-                  <ng-container matColumnDef="globalNumber">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.SHOT' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      {{ shot.globalNumber || i + 1 }}
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="date">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DATE' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable [formField]="getShotField(serieIdx, i).date">
-                          @for (schedule of getTrialSchedulesResource.value(); track schedule.date) {
-                            <mat-option
-                              class="truncate"
-                              [value]="schedule.date"
-                              [matTooltip]="schedule.date | intaDate"
-                              [matTooltipDisabled]="(schedule.date | intaDate)!.length <= 20"
-                            >
-                              <span class="truncate">{{ schedule.date | intaDate }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="impactZoneId">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.IMPACT_ZONE' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable [formField]="getShotField(serieIdx, i).impactZoneId">
-                          @for (zone of impactZones(); track zone.id) {
-                            <mat-option
-                              class="truncate"
-                              [value]="zone.id"
-                              [matTooltip]="zone.label"
-                              [matTooltipDisabled]="zone.label.length <= 20"
-                            >
-                              <span class="truncate">{{ zone.label }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="targetTypeId">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetTypeId">
-                          @for (target of targetTypes(); track target.id) {
-                            <mat-option
-                              class="truncate"
-                              [value]="target.id"
-                              [matTooltip]="target.label"
-                              [matTooltipDisabled]="target.label.length <= 20"
-                            >
-                              <span class="truncate">{{ target.label }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="targetMaterialId">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_MATERIAL' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
-                          @for (material of targetMaterials(); track material.id) {
-                            <mat-option
-                              class="truncate"
-                              [value]="material.id"
-                              [matTooltip]="material.label"
-                              [matTooltipDisabled]="material.label.length <= 20"
-                            >
-                              <span class="truncate">{{ material.label }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="targetDimensionsId">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_DIMENSIONS' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable matNativeControl [formField]="getShotField(serieIdx, i).targetDimensionsId">
-                          @for (dimension of targetDimensions(); track dimension.id) {
-                            <mat-option
-                              class="truncate"
-                              [value]="dimension.id"
-                              [matTooltip]="dimension.label"
-                              [matTooltipDisabled]="dimension.label.length <= 20"
-                            >
-                              <span class="truncate">{{ dimension.label }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="targetThicknessId">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_THICKNESS' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-6 py-4 text-sm text-gray-900 !bg-white"
-                    >
-                      <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
-                          @for (thickness of targetThicknesses(); track thickness.id) {
-                            <mat-option
-                              class="truncate"
-                              [value]="thickness.id"
-                              [matTooltip]="thickness.name"
-                              [matTooltipDisabled]="thickness.name.length <= 20"
-                            >
-                              <span class="truncate">{{ thickness.name }}</span>
-                            </mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    </td>
-                  </ng-container>
-
-                  <!-- ── Campos numéricos con ui-input-select ───────────── -->
-
-                  <ng-container matColumnDef="distance">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
-                        [opciones]="unitOptions.distance"
-                        [showLabel]="false"
-                        [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).distance"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="targetInclination">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
-                        [opciones]="unitOptions.targetInclination"
-                        [showLabel]="false"
-                        [value]="{ value: shot.targetInclination?.toString() ?? '', unit: shot.targetInclinationUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'targetInclination', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).targetInclination"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="orientation">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}"
-                        [opciones]="unitOptions.orientation"
-                        [showLabel]="false"
-                        [value]="{ value: shot.orientation?.toString() ?? '', unit: shot.orientationUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'orientation', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).orientation"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="elevation">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}"
-                        [opciones]="unitOptions.elevation"
-                        [showLabel]="false"
-                        [value]="{ value: shot.elevation?.toString() ?? '', unit: shot.elevationUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'elevation', $event)"
-                      >
-                        <input inputSelectInput libLocalDecimal [formField]="getShotField(serieIdx, i).elevation" />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="angle">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}"
-                        [opciones]="unitOptions.angle"
-                        [showLabel]="false"
-                        [value]="{ value: shot.angle?.toString() ?? '', unit: shot.angleUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'angle', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).angle"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="range">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}"
-                        [opciones]="unitOptions.range"
-                        [showLabel]="false"
-                        [value]="{ value: shot.range?.toString() ?? '', unit: shot.rangeUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'range', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).range"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="functioningHeight">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT' | translate }}"
-                        [opciones]="unitOptions.functioningHeight"
-                        [showLabel]="false"
-                        [value]="{ value: shot.functioningHeight?.toString() ?? '', unit: shot.functioningHeightUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'functioningHeight', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).functioningHeight"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="powderWeight">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}"
-                        [opciones]="unitOptions.powderWeight"
-                        [showLabel]="false"
-                        [value]="{ value: shot.powderWeight?.toString() ?? '', unit: shot.powderWeightUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'powderWeight', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).powderWeight"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="projectileWeight">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}"
-                        [opciones]="unitOptions.projectileWeight"
-                        [showLabel]="false"
-                        [value]="{ value: shot.projectileWeight?.toString() ?? '', unit: shot.projectileWeightUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'projectileWeight', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).projectileWeight"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="nominalSpeed">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}
-                    </th>
-                    <td
-                      *matCellDef="let shot; let i = index"
-                      mat-cell
-                      class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
-                    >
-                      <ui-input-select
-                        placeholder="0"
-                        label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}"
-                        [opciones]="unitOptions.nominalSpeed"
-                        [showLabel]="false"
-                        [value]="{ value: shot.nominalSpeed?.toString() ?? '', unit: shot.nominalSpeedUnit }"
-                        (valueChange)="onShotFieldChange(serieIdx, i, 'nominalSpeed', $event)"
-                      >
-                        <input
-                          inputSelectInput
-                          libNoNegativeValues
-                          libLocalDecimal
-                          [formField]="getShotField(serieIdx, i).nominalSpeed"
-                        />
-                      </ui-input-select>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="observations">
-                    <th
-                      *matHeaderCellDef
-                      mat-header-cell
-                      class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
-                    >
-                      {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.OBSERVATIONS' | translate }}
-                    </th>
-                    <td *matCellDef="let shot" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
-                      <button mat-icon-button class="!text-gray-600 scale-90" [title]="shot.observations">
-                        <ui-inta-icon name="info" size="xxl" />
-                      </button>
-                    </td>
-                  </ng-container>
-
-                  <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="!bg-slate-50"></tr>
-                  <tr
-                    *matRowDef="let row; columns: displayedColumns()"
-                    mat-row
-                    class="hover:bg-slate-50/50 transition-colors"
-                  ></tr>
-                </table>
-              </div>
-            </div>
-          </mat-expansion-panel>
-        } @empty {
-          <div class="py-8 text-center text-gray-400">
-            <mat-icon class="!text-5xl !w-12 !h-12 mx-auto mb-2">inbox</mat-icon>
-            <p>{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.EMPTY_STATE' | translate }}</p>
+    } @else if (viewError()) {
+      <ui-error-state
+        [title]="'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ERRORS.LOAD_FAILED_TITLE' | translate"
+        [message]="'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ERRORS.LOAD_FAILED_DETAIL' | translate"
+      />
+    } @else {
+      <div class="w-full space-y-4">
+        <div class="flex items-center justify-between mt-6 mb-8">
+          <div class="flex gap-2">
+            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+              {{ store.fireTrialCode() }}
+            </h2>
+            @if (store.fireTrial()?.status; as status) {
+              <ui-badge [status]="status">
+                {{ status | trialStatusLabel }}
+              </ui-badge>
+            }
           </div>
-        }
-      </mat-accordion>
-      <div class="mt-10 flex gap-4 justify-end">
-        @if (!readonly()) {
-          <button mat-flat-button [disabled]="isUpdating() || !isFormValid()" (click)="saveForm()">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
-          </button>
-          <button mat-stroked-button [disabled]="isUpdating() || !isFormValid()" (click)="resetForm()">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL' | translate }}
-          </button>
-        }
+          @if (!readonly()) {
+            <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
+          }
+        </div>
+        <mat-accordion multi class="flex flex-col gap-6">
+          @for (serie of seriesSignal(); track serie.seriesId; let serieIdx = $index) {
+            <mat-expansion-panel
+              class="!shadow-sm !border !border-slate-200 !rounded-xl overflow-hidden !m-0 !bg-gray-200"
+              [expanded]="true"
+            >
+              <mat-expansion-panel-header class="!h-12 !bg-gray-200">
+                <mat-panel-title class="flex items-center gap-2">
+                  <h2 class="!font-medium !text-sm !text-gray-900">{{ serie.seriesName }}</h2>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
+                <div class="flex items-center justify-between mb-4 px-4">
+                  <h3 class="font-semibold text-sm text-gray-700">
+                    {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE' | translate }}
+                  </h3>
+                </div>
+
+                <div class="overflow-x-auto border border-slate-200">
+                  <table mat-table class="w-full compact-table" [dataSource]="serie.shots" [trackBy]="trackByShotId">
+                    <ng-container matColumnDef="globalNumber">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.SHOT' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        {{ shot.globalNumber || i + 1 }}
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="date">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DATE' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select clearable [formField]="getShotField(serieIdx, i).date">
+                            @for (schedule of getTrialSchedulesResource.value(); track schedule.date) {
+                              <mat-option
+                                class="truncate"
+                                [value]="schedule.date"
+                                [matTooltip]="schedule.date | intaDate"
+                                [matTooltipDisabled]="(schedule.date | intaDate)!.length <= 20"
+                              >
+                                <span class="truncate">{{ schedule.date | intaDate }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="impactZoneId">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.IMPACT_ZONE' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select clearable [formField]="getShotField(serieIdx, i).impactZoneId">
+                            @for (zone of impactZones(); track zone.id) {
+                              <mat-option
+                                class="truncate"
+                                [value]="zone.id"
+                                [matTooltip]="zone.label"
+                                [matTooltipDisabled]="zone.label.length <= 20"
+                              >
+                                <span class="truncate">{{ zone.label }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="targetTypeId">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetTypeId">
+                            @for (target of targetTypes(); track target.id) {
+                              <mat-option
+                                class="truncate"
+                                [value]="target.id"
+                                [matTooltip]="target.label"
+                                [matTooltipDisabled]="target.label.length <= 20"
+                              >
+                                <span class="truncate">{{ target.label }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="targetMaterialId">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_MATERIAL' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
+                            @for (material of targetMaterials(); track material.id) {
+                              <mat-option
+                                class="truncate"
+                                [value]="material.id"
+                                [matTooltip]="material.label"
+                                [matTooltipDisabled]="material.label.length <= 20"
+                              >
+                                <span class="truncate">{{ material.label }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="targetDimensionsId">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_DIMENSIONS' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select
+                            clearable
+                            matNativeControl
+                            [formField]="getShotField(serieIdx, i).targetDimensionsId"
+                          >
+                            @for (dimension of targetDimensions(); track dimension.id) {
+                              <mat-option
+                                class="truncate"
+                                [value]="dimension.id"
+                                [matTooltip]="dimension.label"
+                                [matTooltipDisabled]="dimension.label.length <= 20"
+                              >
+                                <span class="truncate">{{ dimension.label }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="targetThicknessId">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_THICKNESS' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-6 py-4 text-sm text-gray-900 !bg-white"
+                      >
+                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
+                            @for (thickness of targetThicknesses(); track thickness.id) {
+                              <mat-option
+                                class="truncate"
+                                [value]="thickness.id"
+                                [matTooltip]="thickness.name"
+                                [matTooltipDisabled]="thickness.name.length <= 20"
+                              >
+                                <span class="truncate">{{ thickness.name }}</span>
+                              </mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    </ng-container>
+
+                    <!-- ── Campos numéricos con ui-input-select ───────────── -->
+
+                    <ng-container matColumnDef="distance">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
+                          [opciones]="unitOptions.distance"
+                          [showLabel]="false"
+                          [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).distance"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="targetInclination">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_INCLINATION' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{
+                            'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_INCLINATION' | translate
+                          }}"
+                          [opciones]="unitOptions.targetInclination"
+                          [showLabel]="false"
+                          [value]="{
+                            value: shot.targetInclination?.toString() ?? '',
+                            unit: shot.targetInclinationUnit,
+                          }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'targetInclination', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).targetInclination"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="orientation">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}"
+                          [opciones]="unitOptions.orientation"
+                          [showLabel]="false"
+                          [value]="{ value: shot.orientation?.toString() ?? '', unit: shot.orientationUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'orientation', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).orientation"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="elevation">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}"
+                          [opciones]="unitOptions.elevation"
+                          [showLabel]="false"
+                          [value]="{ value: shot.elevation?.toString() ?? '', unit: shot.elevationUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'elevation', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).elevation"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="angle">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}"
+                          [opciones]="unitOptions.angle"
+                          [showLabel]="false"
+                          [value]="{ value: shot.angle?.toString() ?? '', unit: shot.angleUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'angle', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).angle"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="range">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}"
+                          [opciones]="unitOptions.range"
+                          [showLabel]="false"
+                          [value]="{ value: shot.range?.toString() ?? '', unit: shot.rangeUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'range', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).range"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="functioningHeight">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{
+                            'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT' | translate
+                          }}"
+                          [opciones]="unitOptions.functioningHeight"
+                          [showLabel]="false"
+                          [value]="{
+                            value: shot.functioningHeight?.toString() ?? '',
+                            unit: shot.functioningHeightUnit,
+                          }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'functioningHeight', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).functioningHeight"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="powderWeight">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}"
+                          [opciones]="unitOptions.powderWeight"
+                          [showLabel]="false"
+                          [value]="{ value: shot.powderWeight?.toString() ?? '', unit: shot.powderWeightUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'powderWeight', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).powderWeight"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="projectileWeight">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}"
+                          [opciones]="unitOptions.projectileWeight"
+                          [showLabel]="false"
+                          [value]="{ value: shot.projectileWeight?.toString() ?? '', unit: shot.projectileWeightUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'projectileWeight', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).projectileWeight"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="nominalSpeed">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}
+                      </th>
+                      <td
+                        *matCellDef="let shot; let i = index"
+                        mat-cell
+                        class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
+                      >
+                        <ui-input-select
+                          placeholder="0"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}"
+                          [opciones]="unitOptions.nominalSpeed"
+                          [showLabel]="false"
+                          [value]="{ value: shot.nominalSpeed?.toString() ?? '', unit: shot.nominalSpeedUnit }"
+                          (valueChange)="onShotFieldChange(serieIdx, i, 'nominalSpeed', $event)"
+                        >
+                          <input
+                            inputSelectInput
+                            libNoNegativeValues
+                            libLocalDecimal
+                            [formField]="getShotField(serieIdx, i).nominalSpeed"
+                          />
+                        </ui-input-select>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="observations">
+                      <th
+                        *matHeaderCellDef
+                        mat-header-cell
+                        class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
+                      >
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.OBSERVATIONS' | translate }}
+                      </th>
+                      <td *matCellDef="let shot" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
+                        <button mat-icon-button class="!text-gray-600 scale-90" [title]="shot.observations">
+                          <ui-inta-icon name="info" size="xxl" />
+                        </button>
+                      </td>
+                    </ng-container>
+
+                    <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="!bg-slate-50"></tr>
+                    <tr
+                      *matRowDef="let row; columns: displayedColumns()"
+                      mat-row
+                      class="hover:bg-slate-50/50 transition-colors"
+                    ></tr>
+                  </table>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          } @empty {
+            <div class="py-8 text-center text-gray-400">
+              <mat-icon class="!text-5xl !w-12 !h-12 mx-auto mb-2">inbox</mat-icon>
+              <p>{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.EMPTY_STATE' | translate }}</p>
+            </div>
+          }
+        </mat-accordion>
+        <div class="mt-10 flex gap-4 justify-end">
+          @if (!readonly()) {
+            <button mat-flat-button [disabled]="isUpdating() || !isFormValid()" (click)="saveForm()">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
+            </button>
+            <button mat-stroked-button [disabled]="isUpdating() || !isFormValid()" (click)="resetForm()">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL' | translate }}
+            </button>
+          }
+        </div>
       </div>
-    </div>
+    }
   `,
   styleUrl: './shooting-conditions.scss',
 })
@@ -650,12 +726,28 @@ export class ShootingConditionsComponent implements OnInit {
   readonly readonly = input<boolean>(false);
 
   readonly #dialog = inject(MatDialog);
-  protected readonly store = inject(PlanningGeneralDataStore);
-  readonly shootingConditionsService = inject(ShootingConditionsService);
-  readonly shootingConditionsSource = this.shootingConditionsService.conditionsResource;
-  readonly updateConditionsSource = this.shootingConditionsService.updateConditionsResource;
-  readonly getTrialSchedulesResource = this.shootingConditionsService.getTrialSchedulesResource;
-  readonly isUpdating = computed(() => this.store.isUpdatingConditions() || this.store.isLoadingShootingConditions());
+  readonly #store = inject(PlanningGeneralDataStore);
+  readonly #shootingConditionsService = inject(ShootingConditionsService);
+
+  protected readonly store = this.#store;
+  readonly shootingConditionsService = this.#shootingConditionsService;
+  readonly shootingConditionsSource = this.#shootingConditionsService.conditionsResource;
+  readonly updateConditionsSource = this.#shootingConditionsService.updateConditionsResource;
+  readonly getTrialSchedulesResource = this.#shootingConditionsService.getTrialSchedulesResource;
+  readonly isUpdating = computed(() => this.#store.isUpdatingConditions() || this.#store.isLoadingShootingConditions());
+
+  readonly isLoadingView = computed(
+    () =>
+      this.#store.isLoadingShootingConditions() ||
+      this.#shootingConditionsService.conditionsResource.isLoading() ||
+      this.#shootingConditionsService.getTrialSchedulesResource.isLoading(),
+  );
+
+  readonly viewError = computed(
+    () =>
+      !!this.#shootingConditionsService.conditionsResource.error() ||
+      !!this.#shootingConditionsService.getTrialSchedulesResource.error(),
+  );
 
   readonly targetTypes = signal<MasterData[] | undefined>(undefined);
   readonly targetMaterials = signal<MasterData[] | undefined>(undefined);

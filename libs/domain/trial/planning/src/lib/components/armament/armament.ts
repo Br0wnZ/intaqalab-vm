@@ -15,22 +15,18 @@ import { applyEach, disabled, form, max, min, required } from '@angular/forms/si
 import { MatButtonModule } from '@angular/material/button';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { Badge } from '@intaqalab/ui';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { Badge, ErrorState, Skeleton, SkeletonTable } from '@intaqalab/ui';
+import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import type {
-  ArmamentSerie,
-  ArmamentSerieShot,
-  MassiveConfigData,
-} from '../../utils-models/armament.model';
+import type { ArmamentSerie, ArmamentSerieShot, MassiveConfigData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
-import type { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 import { ArmamentDialogService } from './armament-dialog.service';
 import { ArmamentMapperService } from './armament-mapper.service';
 import { ArmamentRow, type ShotFormPath } from './armament-row';
+import type { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 
 type ArmamentFormType = FieldTree<ArmamentSerie[]>;
 
@@ -43,118 +39,161 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
     Badge,
     TrialStatusLabelPipe,
     ArmamentRow,
+    Skeleton,
+    SkeletonTable,
+    ErrorState,
+    RangePipe,
   ],
   providers: [ArmamentStore],
   template: `
-    <div class="py-6">
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex gap-2">
-          <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
-            {{ trialCode() }}
-          </h2>
-          @if (trialStatus(); as status) {
-            <ui-badge [status]="status">
-              {{ status | trialStatusLabel }}
-            </ui-badge>
+    @if (isLoadingView()) {
+      <div class="py-6 space-y-6">
+        <!-- Top header skeleton -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex gap-2">
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+          </div>
+          <ui-skeleton variant="button" width="220px" height="40px" animation="wave" />
+        </div>
+
+        <!-- Expansion Panels Skeleton -->
+        <div class="flex flex-col gap-6">
+          @for (i of 3 | range; track i) {
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-gray-200 shadow-sm">
+              <div class="h-12 px-6 flex items-center justify-between bg-gray-200">
+                <ui-skeleton variant="text" width="80px" height="1.25rem" animation="wave" />
+                <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+              </div>
+
+              @if (i === 0) {
+                <div class="py-4 bg-white px-6 space-y-4">
+                  <ui-skeleton variant="text" width="140px" height="1.25rem" animation="wave" />
+                  <ui-skeleton-table [rows]="2" [columns]="7" />
+                </div>
+              }
+            </div>
           }
         </div>
-        @if (!readonly()) {
-          <button mat-flat-button [disabled]="isLoading()" (click)="openMassiveConfiguration()">
-            {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
-          </button>
+
+        <!-- Bottom buttons skeleton -->
+        <div class="flex justify-end gap-3 mt-6">
+          <ui-skeleton variant="button" width="100px" height="40px" animation="wave" />
+          <ui-skeleton variant="button" width="150px" height="40px" animation="wave" />
+        </div>
+      </div>
+    } @else if (viewError()) {
+      <ui-error-state
+        [title]="'TRIAL_PLANNING.ARMAMENT.ERRORS.LOAD_FAILED_TITLE' | translate"
+        [message]="'TRIAL_PLANNING.ARMAMENT.ERRORS.LOAD_FAILED_DETAIL' | translate"
+      />
+    } @else {
+      <div class="py-6">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex gap-2">
+            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+              {{ trialCode() }}
+            </h2>
+            @if (trialStatus(); as status) {
+              <ui-badge [status]="status">
+                {{ status | trialStatusLabel }}
+              </ui-badge>
+            }
+          </div>
+          @if (!readonly()) {
+            <button mat-flat-button [disabled]="isLoading()" (click)="openMassiveConfiguration()">
+              {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON' | translate }}
+            </button>
+          }
+        </div>
+
+        @if (armamentSignal().length === 0) {
+          <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+            {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.EMPTY_STATE' | translate }}
+          </div>
+        } @else {
+          <mat-accordion multi class="flex flex-col gap-6">
+            @for (serie of armamentSignal(); track serie.seriesId; let i = $index) {
+              <mat-expansion-panel
+                class="!shadow-sm !border !border-slate-200 !rounded-xl overflow-hidden !m-0 !bg-gray-200"
+                [expanded]="true"
+              >
+                <mat-expansion-panel-header class="!h-12 !bg-gray-200">
+                  <mat-panel-title>
+                    <h2 class="!font-medium !text-sm !text-gray-900">{{ serie.seriesName }}</h2>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
+                  <div class="flex items-center justify-between mb-4 px-6">
+                    <h3 class="font-semibold text-sm text-gray-700">
+                      {{ 'TRIAL_PLANNING.ARMAMENT.TABLE_TITLE' | translate }}
+                    </h3>
+                  </div>
+
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full text-xs text-left border-collapse">
+                      <thead>
+                        <tr class="border-b border-gray-200 bg-gray-100">
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SERIE' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SHOT' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TYPE' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.WEAPON' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TUBE' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.INSTRUMENTED' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.LIFE' | translate }}
+                          </th>
+                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
+                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.OBSERVATIONS' | translate }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (shot of serie.shots; track shot.shotId; let j = $index) {
+                          <tr
+                            inta-armament-row
+                            class="border-b border-gray-200 hover:bg-gray-50"
+                            [formPath]="getShotPath(i, j)"
+                            [readonly]="readonly()"
+                            [serieIndex]="i"
+                            [shotIndex]="j"
+                            [(shot)]="serie.shots[j]"
+                          ></tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+
+          @if (!readonly()) {
+            <div class="flex justify-end gap-3 mt-6">
+              <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+                {{ 'COMMONS.CANCEL' | translate }}
+              </button>
+              <button mat-flat-button [disabled]="!isFormValid() || isSaving()" (click)="saveForm()">
+                {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
+              </button>
+            </div>
+          }
         }
       </div>
-
-      @if (isLoading()) {
-        <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
-          {{ 'COMMONS.LOADING' | translate }}
-        </div>
-      } @else if (armamentSignal().length === 0) {
-        <div class="p-6 text-center text-gray-500 bg-white rounded-lg shadow-sm">
-          {{ 'TRIAL_PLANNING.ARMAMENT.HEADER.EMPTY_STATE' | translate }}
-        </div>
-      } @else {
-        <mat-accordion multi class="flex flex-col gap-6">
-          @for (serie of armamentSignal(); track serie.seriesId; let i = $index) {
-            <mat-expansion-panel
-              class="!shadow-sm !border !border-slate-200 !rounded-xl overflow-hidden !m-0 !bg-gray-200"
-              [expanded]="true"
-            >
-              <mat-expansion-panel-header class="!h-12 !bg-gray-200">
-                <mat-panel-title>
-                  <h2 class="!font-medium !text-sm !text-gray-900">{{ serie.seriesName }}</h2>
-                </mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
-                <div class="flex items-center justify-between mb-4 px-6">
-                  <h3 class="font-semibold text-sm text-gray-700">
-                    {{ 'TRIAL_PLANNING.ARMAMENT.TABLE_TITLE' | translate }}
-                  </h3>
-                </div>
-
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-xs text-left border-collapse">
-                    <thead>
-                      <tr class="border-b border-gray-200 bg-gray-100">
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SERIE' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SHOT' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TYPE' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.WEAPON' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.TUBE' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.INSTRUMENTED' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.LIFE' | translate }}
-                        </th>
-                        <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                          {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.OBSERVATIONS' | translate }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (shot of serie.shots; track shot.shotId; let j = $index) {
-                        <tr
-                          inta-armament-row
-                          class="border-b border-gray-200 hover:bg-gray-50"
-                          [(shot)]="serie.shots[j]"
-                          [formPath]="getShotPath(i, j)"
-                          [readonly]="readonly()"
-                          [serieIndex]="i"
-                          [shotIndex]="j"
-                        ></tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </mat-expansion-panel>
-          }
-        </mat-accordion>
-
-        @if (!readonly()) {
-          <div class="flex justify-end gap-3 mt-6">
-            <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
-              {{ 'COMMONS.CANCEL' | translate }}
-            </button>
-            <button mat-flat-button [disabled]="!isFormValid() || isSaving()" (click)="saveForm()">
-              {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
-            </button>
-          </div>
-        }
-      }
-    </div>
+    }
   `,
   styles: [``],
   encapsulation: ViewEncapsulation.None,
@@ -169,6 +208,14 @@ export class Armament implements OnInit {
   readonly #armamentMapperService = inject(ArmamentMapperService);
   readonly #armamentDialogService = inject(ArmamentDialogService);
   readonly #destroyRef = inject(DestroyRef);
+
+  readonly isLoadingView = computed(
+    () => this.#armamentStore.isLoadingArmament() || this.#planningGeneralDataStore.isLoadingPlanningInfo(),
+  );
+
+  readonly viewError = computed(
+    () => !!this.#armamentStore.armamentError() || !!this.#planningGeneralDataStore.planningInfoError(),
+  );
 
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);

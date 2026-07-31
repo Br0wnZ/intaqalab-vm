@@ -9,8 +9,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
-import { Badge, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective, TrialStatusLabelPipe } from '@intaqalab/utils';
+import { Badge, ErrorState, IntaIconComponent, MatSelectClearable, Skeleton } from '@intaqalab/ui';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective, RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -58,6 +58,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     MatCheckboxModule,
     FormField,
     Badge,
+    ErrorState,
     IntaIconComponent,
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
@@ -65,231 +66,311 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     NoLeadingZerosDirective,
     RatingCriteria,
     MatSelectClearable,
+    Skeleton,
+    RangePipe,
   ],
   template: `
     <div class="py-6">
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex gap-2">
-          <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
-            {{ store.fireTrialCode() }}
-          </h2>
-          @if (store.fireTrial()?.status; as status) {
-            <ui-badge [status]="status">
-              {{ status | trialStatusLabel }}
-            </ui-badge>
-          }
-        </div>
-        @if (!readonly() && canValidate() && isUnderReview()) {
-          <div class="flex items-center gap-2">
-            @if (validationErrors().length > 0) {
-              <button
-                type="button"
-                class="self-center text-client-primary hover:text-client-primary/80 transition-colors relative"
-                [attr.aria-label]="validationErrorsTitle()"
-                (mouseenter)="showValidationErrorsTooltip = true"
-                (mouseleave)="showValidationErrorsTooltip = false"
-                (click)="showValidationErrorsTooltip = !showValidationErrorsTooltip"
-              >
-                <ui-inta-icon name="alert" size="lg" />
-                @if (showValidationErrorsTooltip) {
-                  <div
-                    class="absolute top-full right-0 mt-2 w-80 bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50"
-                  >
-                    <div
-                      class="absolute bottom-full right-4 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-slate-800"
-                    ></div>
-                    <div class="font-semibold mb-3">{{ validationErrorsTitle() }}</div>
-                    <ul class="space-y-2 leading-relaxed list-disc list-inside">
-                      @for (error of validationErrors(); track error) {
-                        <li>{{ error }}</li>
-                      }
-                    </ul>
+      @if (isLoadingView()) {
+        <div class="py-6 space-y-6">
+          <div class="flex justify-between items-center mb-6">
+            <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+            <ui-skeleton variant="button" width="100px" height="36px" animation="wave" />
+          </div>
+          <div class="space-y-6">
+            <!-- Objeto de la prueba -->
+            <div class="flex flex-col gap-2">
+              <ui-skeleton variant="text" width="140px" height="1.25rem" animation="wave" />
+              <ui-skeleton variant="rectangle" width="100%" height="88px" animation="wave" />
+            </div>
+
+            <!-- Espécimen -->
+            <div class="flex flex-col gap-2">
+              <ui-skeleton variant="text" width="80px" height="1.25rem" animation="wave" />
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                <ui-skeleton variant="button" width="160px" height="40px" animation="wave" />
+              </div>
+            </div>
+
+            <!-- Usuario planificación + Fechas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <ui-skeleton variant="text" width="160px" height="1.25rem" animation="wave" />
+                <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+              </div>
+              <div class="flex flex-col gap-2">
+                <ui-skeleton variant="text" width="200px" height="1.25rem" animation="wave" />
+                <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+              </div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="flex flex-wrap gap-4 py-2">
+              <ui-skeleton variant="rectangle" width="220px" height="24px" animation="wave" />
+              <ui-skeleton variant="rectangle" width="220px" height="24px" animation="wave" />
+            </div>
+
+            <!-- Observaciones -->
+            <div class="flex flex-col gap-2">
+              <ui-skeleton variant="text" width="110px" height="1.25rem" animation="wave" />
+              <ui-skeleton variant="rectangle" width="100%" height="88px" animation="wave" />
+            </div>
+
+            <!-- Requisitos -->
+            <div class="flex flex-col gap-2">
+              <ui-skeleton variant="text" width="280px" height="1.25rem" animation="wave" />
+              <ui-skeleton variant="rectangle" width="100%" height="160px" animation="wave" />
+            </div>
+
+            <!-- Información adicional -->
+            <div class="flex flex-col gap-2">
+              <ui-skeleton variant="text" width="220px" height="1.25rem" animation="wave" />
+              <ui-skeleton variant="rectangle" width="100%" height="110px" animation="wave" />
+            </div>
+
+            <!-- Parámetros de control de fechas -->
+            <div class="flex flex-col gap-3">
+              <ui-skeleton variant="text" width="240px" height="1.25rem" animation="wave" />
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                @for (i of 4 | range; track i) {
+                  <div class="flex flex-col gap-2">
+                    <ui-skeleton variant="text" width="75%" height="1rem" animation="wave" />
+                    <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
                   </div>
                 }
-              </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else if (viewError()) {
+        <ui-error-state
+          [title]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.ERRORS.LOAD_FAILED_TITLE' | translate"
+          [message]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.ERRORS.LOAD_FAILED_DETAIL' | translate"
+        />
+      } @else {
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex gap-2">
+            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+              {{ trialCode() }}
+            </h2>
+            @if (trialStatus(); as status) {
+              <ui-badge [status]="status">
+                {{ status | trialStatusLabel }}
+              </ui-badge>
             }
-            <button
-              mat-flat-button
-              [disabled]="generalDataForm().invalid() || !store.isPlanningValidable() || store.isValidatingPlanning()"
-              (click)="onValidate()"
-            >
-              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
-            </button>
           </div>
-        }
-        @if (canModifyPlanning() && isPlanned()) {
-          <button mat-stroked-button [disabled]="store.isUnlockingPlanning()" (click)="onUnlockPlanning()">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MODIFY_PLANNING' | translate }}
-          </button>
-        }
-      </div>
-      <div class="space-y-6">
-        <!-- Objeto de la prueba -->
-        <div>
-          <label for="goal" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TRIAL_GOAL_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <textarea
-              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TRIAL_GOAL_PLACEHOLDER' | translate }}"
-              id="goal"
-              matInput
-              rows="3"
-              class="w-full"
-              [formField]="generalDataForm.goal"
-            ></textarea>
-          </mat-form-field>
-        </div>
-
-        <!-- Espécimen -->
-        <div>
-          <label for="specimen" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_LABEL' | translate }}
-          </label>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-[2rem]">
-            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input
-                id="specimen"
-                matInput
-                readonly
-                [disabled]="generalDataForm.specimen().disabled()"
-                [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_PLACEHOLDER' | translate"
-                [value]="specimenSummary()"
-              />
-              @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
-                @for (error of generalDataForm.specimen().errors(); track error) {
-                  <mat-error class="text-sm mt-[8px]">{{ error.message | translate }}</mat-error>
-                }
+          @if (!readonly() && canValidate() && isUnderReview()) {
+            <div class="flex items-center gap-2">
+              @if (validationErrors().length > 0) {
+                <button
+                  type="button"
+                  class="self-center text-client-primary hover:text-client-primary/80 transition-colors relative"
+                  [attr.aria-label]="validationErrorsTitle()"
+                  (mouseenter)="showValidationErrorsTooltip = true"
+                  (mouseleave)="showValidationErrorsTooltip = false"
+                  (click)="showValidationErrorsTooltip = !showValidationErrorsTooltip"
+                >
+                  <ui-inta-icon name="alert" size="lg" />
+                  @if (showValidationErrorsTooltip) {
+                    <div
+                      class="absolute top-full right-0 mt-2 w-80 bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50"
+                    >
+                      <div
+                        class="absolute bottom-full right-4 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-slate-800"
+                      ></div>
+                      <div class="font-semibold mb-3">{{ validationErrorsTitle() }}</div>
+                      <ul class="space-y-2 leading-relaxed list-disc list-inside">
+                        @for (error of validationErrors(); track error) {
+                          <li>{{ error }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </button>
               }
-            </mat-form-field>
-            <button
-              mat-flat-button
-              type="button"
-              class="w-fit justify-self-start"
-              [disabled]="generalDataForm.specimen().disabled()"
-              (click)="openSpecimenManagement()"
-            >
-              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MANAGE_SPECIMEN_BUTTON' | translate }}
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- Usuario planificación -->
-          <div class="flex flex-col">
-            <label for="planningUser" class="block text-sm font-medium mb-2">
-              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate }}
-            </label>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-select
-                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
-                id="planningUser"
-                clearable
-                [aria-label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
-                [formField]="generalDataForm.planningUser"
+              <button
+                mat-flat-button
+                [disabled]="generalDataForm().invalid() || !isPlanningValidable() || isValidatingPlanning()"
+                (click)="onValidate()"
               >
-                @for (opt of store.users(); track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.fullname }}</mat-option>
-                }
-              </mat-select>
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}
+              </button>
+            </div>
+          }
+          @if (canModifyPlanning() && isPlanned()) {
+            <button mat-stroked-button [disabled]="isUnlockingPlanning()" (click)="onUnlockPlanning()">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MODIFY_PLANNING' | translate }}
+            </button>
+          }
+        </div>
+        <div class="space-y-6">
+          <!-- Objeto de la prueba -->
+          <div>
+            <label for="goal" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TRIAL_GOAL_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <textarea
+                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.TRIAL_GOAL_PLACEHOLDER' | translate }}"
+                id="goal"
+                matInput
+                rows="3"
+                class="w-full"
+                [formField]="generalDataForm.goal"
+              ></textarea>
             </mat-form-field>
           </div>
 
-          <!-- Fechas programadas (solo lectura) -->
-          <inta-planning-scheduled-dates [trialId]="store.fireTrialId()!" />
-        </div>
+          <!-- Espécimen -->
+          <div>
+            <label for="specimen" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_LABEL' | translate }}
+            </label>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-[2rem]">
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                <input
+                  id="specimen"
+                  matInput
+                  readonly
+                  [disabled]="generalDataForm.specimen().disabled()"
+                  [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_PLACEHOLDER' | translate"
+                  [value]="specimenSummary()"
+                />
+                @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
+                  @for (error of generalDataForm.specimen().errors(); track error) {
+                    <mat-error class="text-sm mt-[8px]">{{ error.message | translate }}</mat-error>
+                  }
+                }
+              </mat-form-field>
+              <button
+                mat-flat-button
+                type="button"
+                class="w-fit justify-self-start"
+                [disabled]="generalDataForm.specimen().disabled()"
+                (click)="openSpecimenManagement()"
+              >
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MANAGE_SPECIMEN_BUTTON' | translate }}
+              </button>
+            </div>
+          </div>
 
-        <div class="mb-8 space-y-2">
-          <p class="text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_LABEL' | translate }}
-          </p>
-          <div class="flex flex-wrap gap-4">
-            <mat-checkbox [formField]="generalDataForm.hypochelometricReviewBefore">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Usuario planificación -->
+            <div class="flex flex-col">
+              <label for="planningUser" class="block text-sm font-medium mb-2">
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-select
+                  placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_PLACEHOLDER' | translate }}"
+                  id="planningUser"
+                  clearable
+                  [aria-label]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.PLANNING_USER_LABEL' | translate"
+                  [formField]="generalDataForm.planningUser"
+                >
+                  @for (opt of users(); track opt.id) {
+                    <mat-option [value]="opt.id">{{ opt.fullname }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Fechas programadas (solo lectura) -->
+            <inta-planning-scheduled-dates [trialId]="fireTrialId()!" />
+          </div>
+
+          <div class="mb-8 space-y-2">
+            <p class="text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_LABEL' | translate }}
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <mat-checkbox [formField]="generalDataForm.hypochelometricReviewBefore">
+                <span>
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL' | translate }}
+                </span>
+              </mat-checkbox>
+              <mat-checkbox [formField]="generalDataForm.hypochelometricReviewAfter">
+                <span>
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_AFTER_LABEL' | translate }}
+                </span>
+              </mat-checkbox>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div>
+            <label for="observations" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.OBSERVATIONS_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <textarea
+                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.OBSERVATIONS_PLACEHOLDER' | translate }}"
+                id="observations"
+                matInput
+                rows="3"
+                class="w-full"
+                [formField]="generalDataForm.observations"
+              ></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Requisitos para aprobación -->
+          <div>
+            <label for="requeriments" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <textarea
+                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_PLACEHOLDER' | translate }}"
+                id="requeriments"
+                matInput
+                rows="8"
+                class="w-full"
+                [formField]="generalDataForm.requeriments"
+              ></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Checkbox para mostrar criterios de calificación -->
+          <div>
+            <mat-checkbox [checked]="showRatingCriteria()" (change)="showRatingCriteria.set(!showRatingCriteria())">
               <span>
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL' | translate }}
-              </span>
-            </mat-checkbox>
-            <mat-checkbox [formField]="generalDataForm.hypochelometricReviewAfter">
-              <span>
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_AFTER_LABEL' | translate }}
+                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SHOW_RATING_CRITERIA' | translate }}
               </span>
             </mat-checkbox>
           </div>
-        </div>
 
-        <!-- Observaciones -->
-        <div>
-          <label for="observations" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.OBSERVATIONS_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <textarea
-              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.OBSERVATIONS_PLACEHOLDER' | translate }}"
-              id="observations"
-              matInput
-              rows="3"
-              class="w-full"
-              [formField]="generalDataForm.observations"
-            ></textarea>
-          </mat-form-field>
-        </div>
+          @if (showRatingCriteria()) {
+            <!-- Criterios de calificación -->
+            <inta-rating-criteria [readonly]="readonly()" [(ratingCriteria)]="ratingCriteriaState" />
+          }
 
-        <!-- Requisitos para aprobación -->
-        <div>
-          <label for="requeriments" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <textarea
-              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_PLACEHOLDER' | translate }}"
-              id="requeriments"
-              matInput
-              rows="8"
-              class="w-full"
-              [formField]="generalDataForm.requeriments"
-            ></textarea>
-          </mat-form-field>
-        </div>
+          <!-- Información adicional del cliente -->
+          <div>
+            <label for="additionalInfo" class="block text-sm font-medium text-gray-700 mt-4 mb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <textarea
+                placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_PLACEHOLDER' | translate }}"
+                id="additionalInfo"
+                matInput
+                rows="4"
+                class="w-full"
+                [formField]="generalDataForm.additionalInfo"
+              ></textarea>
+            </mat-form-field>
+          </div>
 
-        <!-- Checkbox para mostrar criterios de calificación -->
-        <div>
-          <mat-checkbox [checked]="showRatingCriteria()" (change)="showRatingCriteria.set(!showRatingCriteria())">
-            <span>
-              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SHOW_RATING_CRITERIA' | translate }}
+          <!-- Parámetros de control de fechas -->
+          <div>
+            <span class="block text-sm font-medium text-gray-700 mb-2 border-b border-gray-300 pb-2">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DATE_PARAMS_CONTROL' | translate }}
             </span>
-          </mat-checkbox>
-        </div>
-
-        @if (showRatingCriteria()) {
-          <!-- Criterios de calificación -->
-          <inta-rating-criteria [readonly]="readonly()" [(ratingCriteria)]="ratingCriteriaState" />
-        }
-
-        <!-- Información adicional del cliente -->
-        <div>
-          <label for="additionalInfo" class="block text-sm font-medium text-gray-700 mt-4 mb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <textarea
-              placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_PLACEHOLDER' | translate }}"
-              id="additionalInfo"
-              matInput
-              rows="4"
-              class="w-full"
-              [formField]="generalDataForm.additionalInfo"
-            ></textarea>
-          </mat-form-field>
-        </div>
-
-        <!-- Parámetros de control de fechas -->
-        <div>
-          <span class="block text-sm font-medium text-gray-700 mb-2 border-b border-gray-300 pb-2">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DATE_PARAMS_CONTROL' | translate }}
-          </span>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <!--Fecha límite para emisión de informe -->
-            <!-- <div class="flex flex-col">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <!--Fecha límite para emisión de informe -->
+              <!-- <div class="flex flex-col">
               <label for="limitDate" class="flex items-end text-xs text-gray-600 mb-2 h-8">
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.LIMIT_DATE_LABEL' | translate }}
               </label>
@@ -311,112 +392,113 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               }
             </div> -->
 
-            <!-- Máximo días para emisión de informe -->
-            <div class="flex flex-col">
-              <label for="maxDaysReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_LABEL' | translate }}
-              </label>
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                <input
-                  placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
-                  id="maxDaysReport"
-                  libNoNegativeValues
-                  libNoLeadingZeros
-                  matInput
-                  type="number"
-                  [formField]="generalDataForm.maxEmissionDates"
-                />
-              </mat-form-field>
-            </div>
-
-            <!-- Porcentaje para unidades técnicas -->
-            <div class="flex flex-col">
-              <label for="percentageTechnicalUnits" class="flex items-end text-xs text-gray-600 mb-2 h-8">
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_LABEL' | translate }}
-              </label>
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                <input
-                  placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
-                  id="percentageTechnicalUnits"
-                  libNoNegativeValues
-                  libNoLeadingZeros
-                  matInput
-                  type="number"
-                  [formField]="generalDataForm.percentageTechnicalUnits"
-                />
-                <span matSuffix class="mr-2 text-gray-500">%</span>
-              </mat-form-field>
-              @if (
-                generalDataForm.percentageTechnicalUnits().touched() &&
-                generalDataForm.percentageTechnicalUnits().errors()
-              ) {
-                @for (error of generalDataForm.percentageTechnicalUnits().errors(); track error) {
-                  <mat-error>{{ error.message }}</mat-error>
-                }
-              }
-            </div>
-
-            <!-- Porcentaje para fin de prueba -->
-            <div class="flex flex-col">
-              <label for="percentageEndTrial" class="flex items-end text-xs text-gray-600 mb-2 h-8">
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL' | translate }}
-              </label>
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                <div class="flex items-center justify-between w-full">
+              <!-- Máximo días para emisión de informe -->
+              <div class="flex flex-col">
+                <label for="maxDaysReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_LABEL' | translate }}
+                </label>
+                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                   <input
-                    placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
-                    id="percentageEndTrial"
+                    placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
+                    id="maxDaysReport"
                     libNoNegativeValues
                     libNoLeadingZeros
                     matInput
                     type="number"
-                    class="flex-1"
-                    [formField]="generalDataForm.percentageEndTrial"
+                    [formField]="generalDataForm.maxEmissionDates"
+                  />
+                </mat-form-field>
+              </div>
+
+              <!-- Porcentaje para unidades técnicas -->
+              <div class="flex flex-col">
+                <label for="percentageTechnicalUnits" class="flex items-end text-xs text-gray-600 mb-2 h-8">
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_LABEL' | translate }}
+                </label>
+                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                  <input
+                    placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
+                    id="percentageTechnicalUnits"
+                    libNoNegativeValues
+                    libNoLeadingZeros
+                    matInput
+                    type="number"
+                    [formField]="generalDataForm.percentageTechnicalUnits"
                   />
                   <span matSuffix class="mr-2 text-gray-500">%</span>
-                </div>
-              </mat-form-field>
-              @if (generalDataForm.percentageEndTrial().touched() && generalDataForm.percentageEndTrial().errors()) {
-                @for (error of generalDataForm.percentageEndTrial().errors(); track error) {
-                  <mat-error>{{ error.message }}</mat-error>
+                </mat-form-field>
+                @if (
+                  generalDataForm.percentageTechnicalUnits().touched() &&
+                  generalDataForm.percentageTechnicalUnits().errors()
+                ) {
+                  @for (error of generalDataForm.percentageTechnicalUnits().errors(); track error) {
+                    <mat-error>{{ error.message }}</mat-error>
+                  }
                 }
-              }
-            </div>
+              </div>
 
-            <!-- Días para firma del informe -->
-            <div class="flex flex-col">
-              <label for="daysSignReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
-                {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_LABEL' | translate }}
-              </label>
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                <input
-                  placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
-                  id="daysSignReport"
-                  libNoNegativeValues
-                  libNoLeadingZeros
-                  matInput
-                  type="number"
-                  [formField]="generalDataForm.daysSignReport"
-                />
-              </mat-form-field>
+              <!-- Porcentaje para fin de prueba -->
+              <div class="flex flex-col">
+                <label for="percentageEndTrial" class="flex items-end text-xs text-gray-600 mb-2 h-8">
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL' | translate }}
+                </label>
+                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                  <div class="flex items-center justify-between w-full">
+                    <input
+                      placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
+                      id="percentageEndTrial"
+                      libNoNegativeValues
+                      libNoLeadingZeros
+                      matInput
+                      type="number"
+                      class="flex-1"
+                      [formField]="generalDataForm.percentageEndTrial"
+                    />
+                    <span matSuffix class="mr-2 text-gray-500">%</span>
+                  </div>
+                </mat-form-field>
+                @if (generalDataForm.percentageEndTrial().touched() && generalDataForm.percentageEndTrial().errors()) {
+                  @for (error of generalDataForm.percentageEndTrial().errors(); track error) {
+                    <mat-error>{{ error.message }}</mat-error>
+                  }
+                }
+              </div>
+
+              <!-- Días para firma del informe -->
+              <div class="flex flex-col">
+                <label for="daysSignReport" class="flex items-end text-xs text-gray-600 mb-2 h-8">
+                  {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_LABEL' | translate }}
+                </label>
+                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                  <input
+                    placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
+                    id="daysSignReport"
+                    libNoNegativeValues
+                    libNoLeadingZeros
+                    matInput
+                    type="number"
+                    [formField]="generalDataForm.daysSignReport"
+                  />
+                </mat-form-field>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      @if (!readonly()) {
-        <div class="flex justify-end gap-3 mt-6">
-          <button mat-flat-button [disabled]="isSaving() || !generalDataForm().valid()" (click)="saveDraft()">
-            @if (isSaving()) {
-              <ng-container>
-                <mat-icon class="animate-spin mr-2">sync</mat-icon>
-              </ng-container>
-            }
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT' | translate }}
-          </button>
-          <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">
-            {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL' | translate }}
-          </button>
-        </div>
+        @if (!readonly()) {
+          <div class="flex justify-end gap-3 mt-6">
+            <button mat-flat-button [disabled]="isSaving() || !generalDataForm().valid()" (click)="saveDraft()">
+              @if (isSaving()) {
+                <ng-container>
+                  <mat-icon class="animate-spin mr-2">sync</mat-icon>
+                </ng-container>
+              }
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT' | translate }}
+            </button>
+            <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">
+              {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL' | translate }}
+            </button>
+          </div>
+        }
       }
     </div>
   `,
@@ -430,7 +512,7 @@ export class PlanningGeneralDataFormComponent {
   readonly ratingCriteriaState = signal<RatingCriteriaModel | undefined>(undefined);
   readonly ratingCriteriaUnitsState = signal<RatingCriteriaUnits | undefined>(undefined);
 
-  protected readonly store = inject(PlanningGeneralDataStore);
+  readonly #store = inject(PlanningGeneralDataStore);
   readonly #calendarStore = inject(CalendarTrialScheduleStore);
   readonly #planningPermissions = inject(PlanningPermissionsService);
   readonly #cachedSpecimens = signal<
@@ -445,17 +527,31 @@ export class PlanningGeneralDataFormComponent {
   /** Puede modificar (desbloquear) una planificación ya validada */
   readonly canModifyPlanning = computed(() => this.#planningPermissions.canModifyPlanning());
 
-  readonly isUnderReview = computed(() => this.store.fireTrial()?.status === TrialStatus.UNDER_REVIEW);
-  readonly isPlanned = computed(() => this.store.fireTrial()?.status === TrialStatus.PLANNED);
+  readonly trialCode = computed(() => this.#store.fireTrialCode());
+  readonly trialStatus = computed(() => this.#store.fireTrial()?.status);
+  readonly users = computed(() => this.#store.users() ?? []);
+  readonly fireTrialId = computed(() => this.#store.fireTrialId());
+  readonly isPlanningValidable = computed(() => this.#store.isPlanningValidable());
+  readonly isValidatingPlanning = computed(() => this.#store.isValidatingPlanning());
+  readonly isUnlockingPlanning = computed(() => this.#store.isUnlockingPlanning());
+  readonly isLoadingView = computed(
+    () => this.#store.isLoadingPlanningInfo() || this.#store.isLoadingUsers() || this.#store.isLoadingTypedSpecimens(),
+  );
+  readonly viewError = computed(
+    () => this.#store.planningInfoError() || this.#store.usersError() || this.#store.typedSpecimensError(),
+  );
+
+  readonly isUnderReview = computed(() => this.#store.fireTrial()?.status === TrialStatus.UNDER_REVIEW);
+  readonly isPlanned = computed(() => this.#store.fireTrial()?.status === TrialStatus.PLANNED);
 
   readonly #translate = inject(TranslateService);
   protected showValidationErrorsTooltip = false;
-  readonly validationErrors = computed(() => this.store.planningValidationErrors());
+  readonly validationErrors = computed(() => this.#store.planningValidationErrors());
   readonly validationErrorsTitle = computed(() =>
     this.#translate.instant('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
   );
 
-  readonly isSaving = computed(() => this.store.isLoadingPlanningInfo());
+  readonly isSaving = computed(() => this.#store.isLoadingPlanningInfo());
 
   readonly formModel = signal<PlanningGeneralData>({
     goal: '',
@@ -491,8 +587,8 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.percentageTechnicalUnits, () => this.readonly() || false);
     disabled(f.percentageEndTrial, () => this.readonly() || false);
     disabled(f.daysSignReport, () => this.readonly() || false);
-    disabled(f.specimen, () => this.readonly() || this.store.isLoadingTypedSpecimens());
-    disabled(f.planningUser, () => this.readonly() || this.store.isLoadingUsers());
+    disabled(f.specimen, () => this.readonly() || this.#store.isLoadingTypedSpecimens());
+    disabled(f.planningUser, () => this.readonly() || this.#store.isLoadingUsers());
     min(f.maxEmissionDates, 1);
     max(f.maxEmissionDates, 120);
     min(f.percentageTechnicalUnits, 0);
@@ -516,11 +612,11 @@ export class PlanningGeneralDataFormComponent {
   });
 
   readonly specimenSummary = computed(() => {
-    const selectedSpecimens = this.store.selectedSpecimens() ?? [];
+    const selectedSpecimens = this.#store.selectedSpecimens() ?? [];
     const selectedIds = selectedSpecimens.map((item) => item.specimenId);
     if (!selectedIds.length) return '';
 
-    const specimens = this.store.typedSpecimens() ?? [];
+    const specimens = this.#store.typedSpecimens() ?? [];
     const cachedSpecimens = this.#cachedSpecimens();
     const specimenList = specimens.length ? specimens : cachedSpecimens;
     if (!specimenList.length) return '';
@@ -540,22 +636,22 @@ export class PlanningGeneralDataFormComponent {
   });
 
   constructor() {
-    this.store.loadSpecimensByType(SpecimenType.Weapon);
-    this.store.loadSpecimensByType(SpecimenType.Tube);
-    this.store.loadSpecimensByType(SpecimenType.Mortar);
-    this.store.loadSpecimensByType(SpecimenType.Bundle);
-    this.store.loadSpecimensByType(SpecimenType.Munition);
-    this.store.loadUsers();
+    this.#store.loadSpecimensByType(SpecimenType.Weapon);
+    this.#store.loadSpecimensByType(SpecimenType.Tube);
+    this.#store.loadSpecimensByType(SpecimenType.Mortar);
+    this.#store.loadSpecimensByType(SpecimenType.Bundle);
+    this.#store.loadSpecimensByType(SpecimenType.Munition);
+    this.#store.loadUsers();
 
     effect(() => {
-      const specimens = this.store.typedSpecimens() ?? [];
+      const specimens = this.#store.typedSpecimens() ?? [];
       if (specimens.length) {
         this.#cachedSpecimens.set(specimens);
       }
     });
 
     effect(() => {
-      const planningInfo: TrialPlanningInfo | undefined = this.store.planningInfo();
+      const planningInfo: TrialPlanningInfo | undefined = this.#store.planningInfo();
       if (planningInfo) {
         const mappedModel = this.#mapDataToFormModel(planningInfo);
         const selectedSpecimens = planningInfo.specimens.map((s) => ({
@@ -565,7 +661,7 @@ export class PlanningGeneralDataFormComponent {
         this.formModel.set(mappedModel);
         this.#initialFormModel = mappedModel;
         this.#initialSelectedSpecimens = structuredClone(selectedSpecimens);
-        this.store.setSelectedSpecimens(selectedSpecimens);
+        this.#store.setSelectedSpecimens(selectedSpecimens);
         const ratingCriteria = structuredClone(planningInfo.ratingCriteria);
         this.ratingCriteriaState.set(ratingCriteria);
         this.ratingCriteriaUnitsState.set(planningInfo.ratingCriteriaUnits);
@@ -577,30 +673,30 @@ export class PlanningGeneralDataFormComponent {
       }
     });
     effect(() => {
-      const status = this.store.updatePlanningInfoStatus();
+      const status = this.#store.updatePlanningInfoStatus();
       if (status === 'resolved') {
-        this.store.reloadPlanningInfo();
+        this.#store.reloadPlanningInfo();
 
         let planningUserId;
         untracked(() => {
           planningUserId = this.formModel().planningUser;
         });
 
-        if (planningUserId) this.store.updateAssociatedUser(planningUserId);
+        if (planningUserId) this.#store.updateAssociatedUser(planningUserId);
       }
     });
 
     effect(() => {
       this.#calendarStore.scheduleChangeTrigger();
       untracked(() => {
-        this.store.reloadPlanningInfo();
+        this.#store.reloadPlanningInfo();
       });
     });
 
     // Sync selectedSpecimens from store → formModel.specimen + mark touched
     // This keeps Signal Forms validation reactive when the dialog adds/removes specimens
     effect(() => {
-      const selected = this.store.selectedSpecimens() ?? [];
+      const selected = this.#store.selectedSpecimens() ?? [];
       const mapped = selected.map((s) => ({ specimenId: s.specimenId, batch: s.batch ?? '' }));
       untracked(() => {
         this.formModel.update((m) => ({ ...m, specimen: mapped }));
@@ -615,10 +711,10 @@ export class PlanningGeneralDataFormComponent {
   }
 
   async openSpecimenManagement(): Promise<void> {
-    const specimensSource = this.store.typedSpecimens() ?? [];
+    const specimensSource = this.#store.typedSpecimens() ?? [];
     const specimens = specimensSource.length ? specimensSource : this.#cachedSpecimens();
-    const planningInfo = this.store.planningInfo();
-    const fireTrialId = this.store.fireTrialId();
+    const planningInfo = this.#store.planningInfo();
+    const fireTrialId = this.#store.fireTrialId();
 
     const dialogRef = this.dialog.open(SpecimensManagmentDialog, {
       width: '600px',
@@ -628,7 +724,7 @@ export class PlanningGeneralDataFormComponent {
           .specimen()
           .value()
           .map((entry) => entry.specimenId),
-        selectedSpecimens: this.store.selectedSpecimens(),
+        selectedSpecimens: this.#store.selectedSpecimens(),
         planningInfo,
         fireTrialId,
       },
@@ -636,32 +732,32 @@ export class PlanningGeneralDataFormComponent {
 
     const result = await firstValueFrom(dialogRef.afterClosed(), { defaultValue: undefined });
     if (result !== undefined) {
-      this.store.setSelectedSpecimens(result);
+      this.#store.setSelectedSpecimens(result);
     }
   }
 
   onValidate(): void {
-    this.store.validatePlanning();
+    this.#store.validatePlanning();
   }
 
   onUnlockPlanning(): void {
-    this.store.unlockPlanning();
+    this.#store.unlockPlanning();
   }
 
   cancel(): void {
     // Omit no saved form changes
-    this.store.reloadPlanningInfo();
+    this.#store.reloadPlanningInfo();
     this.formModel.set(this.#deepClone(this.#initialFormModel));
-    this.store.setSelectedSpecimens(structuredClone(this.#initialSelectedSpecimens));
-    const initialCriteria = this.store.planningInfo()?.ratingCriteria;
+    this.#store.setSelectedSpecimens(structuredClone(this.#initialSelectedSpecimens));
+    const initialCriteria = this.#store.planningInfo()?.ratingCriteria;
     this.ratingCriteriaState.set(structuredClone(initialCriteria));
     this.showRatingCriteria.set(this.#hasRatingCriteriaValues(initialCriteria));
-    const initialUnits = this.store.planningInfo()?.ratingCriteriaUnits;
+    const initialUnits = this.#store.planningInfo()?.ratingCriteriaUnits;
     this.ratingCriteriaUnitsState.set(initialUnits);
   }
 
   saveDraft(): void {
-    this.store.updatePlanningInfo(this.#mapFormDataToUpsertModel());
+    this.#store.updatePlanningInfo(this.#mapFormDataToUpsertModel());
   }
 
   #deepClone(data: PlanningGeneralData): PlanningGeneralData {
@@ -677,7 +773,7 @@ export class PlanningGeneralDataFormComponent {
     const formValue = this.generalDataForm().value();
     const basePayload: UpsertTrialPlanningInfo = {
       goal: formValue.goal,
-      specimens: this.store.selectedSpecimens() ?? [],
+      specimens: this.#store.selectedSpecimens() ?? [],
       planningUserId: formValue.planningUser,
       observations: formValue.observations,
       requirements: formValue.requeriments,

@@ -14,8 +14,14 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { provideIntaDateAdapter } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
-import { IntaSignalCheckboxComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslatePipe } from '@ngx-translate/core';
+import {
+  ErrorState,
+  IntaSignalCheckboxComponent,
+  IntaSignalSelectComponent,
+  Skeleton,
+  SkeletonTable,
+} from '@intaqalab/ui';
+import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
@@ -44,209 +50,297 @@ import type { TrialCreateModifyForm } from './trial-create.model';
     MatChipsModule,
     MatIconModule,
     TranslatePipe,
+    TranslateModule,
     TrialSchedulerInlineComponent,
     TrialDocs,
     FormField,
     IntaSignalCheckboxComponent,
     IntaSignalSelectComponent,
+    Skeleton,
+    SkeletonTable,
+    ErrorState,
   ],
   providers: [...provideIntaDateAdapter()],
   template: `
-    <div class="mx-auto">
-      <div class="flex flex-col lg:flex-row gap-6 items-start mb-6">
-        <div class="flex-1 w-full lg:max-w-lg">
-          <label for="trial-number" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_CREATE_MODIFY_FORM.CODE' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="trial-number"
-              matInput
-              [formField]="upsertTrialForm.code"
-              [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CODE' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <div class="flex-1 flex flex-col gap-4 w-full lg:max-w-lg">
-          <div class="flex items-center gap-4">
-            <ui-signal-checkbox
-              [formField]="upsertTrialForm.hasAssociatedTrial"
-              [label]="'TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL' | translate"
-            />
-            @if (upsertTrialForm.hasAssociatedTrial().value()) {
-              <div class="flex-1">
-                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                  <input
-                    id="associated-trial"
-                    matInput
-                    [formField]="upsertTrialForm.associatedTrialView"
-                    [placeholder]="'TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL' | translate"
-                  />
-                  <button
-                    mat-icon-button
-                    matIconSuffix
-                    type="button"
-                    (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.ASSOCIATED_TITLE', 'associatedTrial')"
-                  >
-                    <mat-icon>add</mat-icon>
-                  </button>
-                </mat-form-field>
-              </div>
-            }
+    @if (isLoadingView()) {
+      <div class="mx-auto space-y-6">
+        <!-- Top Row: Code & Associated / Linked Trial -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start">
+          <div class="flex-1 w-full lg:max-w-lg flex flex-col gap-2">
+            <ui-skeleton variant="text" width="140px" height="1.25rem" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
           </div>
-          <div class="flex items-center gap-4">
-            <ui-signal-checkbox
-              [formField]="upsertTrialForm.hasLinkedTrial"
-              [label]="'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' | translate"
-            />
-            @if (upsertTrialForm.hasLinkedTrial().value()) {
-              <div class="flex-1">
-                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                  <input
-                    id="linked-trial"
-                    matInput
-                    [formField]="upsertTrialForm.linkedTrialView"
-                    [placeholder]="'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' | translate"
-                  />
-                  <button
-                    mat-icon-button
-                    class="!absolute right-0 top-0 bottom-0 m-auto !text-gray-500"
-                    (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.LINKED_TITLE', 'linkedTrial')"
-                  >
-                    <mat-icon matSuffix>add</mat-icon>
-                  </button>
-                </mat-form-field>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <label for="trial-description" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'TRIAL_CREATE_MODIFY_FORM.DESCRIPTION' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <textarea
-            id="trial-description"
-            matInput
-            rows="4"
-            class="resize-none"
-            [formField]="upsertTrialForm.description"
-            [placeholder]="'TRIAL_CREATE_MODIFY_FORM.DESCRIPTION_PLACEHOLDER' | translate"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'trial-type'"
-          [valueKey]="'id'"
-          [labelKey]="'name'"
-          [formField]="upsertTrialForm.type"
-          [label]="'TRIAL_CREATE_MODIFY_FORM.TYPE' | translate"
-          [placeholder]="'TRIAL_CREATE_MODIFY_FORM.TYPE_PLACEHOLDER' | translate"
-          [options]="trialTypeOptions()"
-        />
-
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'trial-client'"
-          [valueKey]="'id'"
-          [labelKey]="'name'"
-          [formField]="upsertTrialForm.client"
-          [label]="'TRIAL_CREATE_MODIFY_FORM.CLIENT' | translate"
-          [searchable]="true"
-          [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CLIENT_PLACEHOLDER' | translate"
-          [options]="clientsService.clients()"
-        />
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label for="client-reference" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_CREATE_MODIFY_FORM.CLIENT_REFERENCE' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="client-reference"
-              matInput
-              [formField]="upsertTrialForm.clientReference"
-              [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CLIENT_REFERENCE_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <div>
-          <label for="requested-date" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_CREATE_MODIFY_FORM.REQUESTED_DATE' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="requested-date"
-              matInput
-              [formField]="upsertTrialForm.requestedDate"
-              [matDatepicker]="picker"
-              [placeholder]="'TRIAL_CREATE_MODIFY_FORM.REQUESTED_DATE_PLACEHOLDER' | translate"
-              (click)="picker.open()"
-              #dateInput
-            />
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker (closed)="dateInput.blur()" #picker></mat-datepicker>
-          </mat-form-field>
-          @if (upsertTrialForm.requestedDate().touched() && upsertTrialForm.requestedDate().errors()) {
-            @for (error of upsertTrialForm.requestedDate().errors(); track error) {
-              <mat-error>{{ error.message | translate }}</mat-error>
-            }
-          }
-        </div>
-      </div>
-      @if (trialId()) {
-        <div class="w-full mb-6">
-          @defer (on idle) {
-            <inta-trial-scheduler-inline
-              [trialId]="trialId()!"
-              [trialNumber]="upsertTrialModel().code"
-              [trialStatus]="trialStatus()"
-            ></inta-trial-scheduler-inline>
-          } @placeholder {
-            <div class="h-10 bg-gray-100 rounded animate-pulse"></div>
-          } @error {
-            <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {{ 'TRIAL_CREATE_MODIFY_FORM.SCHEDULER_LOAD_ERROR' | translate }}
+          <div class="flex-1 flex flex-col gap-4 w-full lg:max-w-lg">
+            <div class="flex items-center gap-4">
+              <ui-skeleton variant="rectangle" width="160px" height="24px" animation="wave" />
             </div>
-          }
+            <div class="flex items-center gap-4">
+              <ui-skeleton variant="rectangle" width="160px" height="24px" animation="wave" />
+            </div>
+          </div>
         </div>
-      }
-      <div>
-        <div>
+
+        <!-- Description -->
+        <div class="flex flex-col gap-2">
+          <ui-skeleton variant="text" width="220px" height="1.25rem" animation="wave" />
+          <ui-skeleton variant="rectangle" width="100%" height="110px" animation="wave" />
+        </div>
+
+        <!-- Type & Client -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-2">
+            <ui-skeleton variant="text" width="120px" height="1.25rem" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <ui-skeleton variant="text" width="100px" height="1.25rem" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+          </div>
+        </div>
+
+        <!-- Client Ref & Requested Date -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-2">
+            <ui-skeleton variant="text" width="180px" height="1.25rem" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <ui-skeleton variant="text" width="220px" height="1.25rem" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+          </div>
+        </div>
+
+        <!-- Scheduled Date -->
+        <div class="flex flex-col gap-2">
+          <ui-skeleton variant="text" width="150px" height="1.25rem" animation="wave" />
+          <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+        </div>
+
+        <!-- Observations -->
+        <div class="flex flex-col gap-2">
+          <ui-skeleton variant="text" width="180px" height="1.25rem" animation="wave" />
+          <ui-skeleton variant="rectangle" width="100%" height="110px" animation="wave" />
+        </div>
+
+        <!-- Associated Docs Card Skeleton -->
+        <div class="rounded-xl border border-gray-200 p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <ui-skeleton variant="text" width="200px" height="1.5rem" animation="wave" />
+            <div class="flex items-center gap-4">
+              <ui-skeleton variant="rectangle" width="220px" height="24px" animation="wave" />
+              <ui-skeleton variant="button" width="180px" height="40px" animation="wave" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
+            <ui-skeleton variant="rectangle" width="100%" height="40px" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="40px" animation="wave" />
+            <ui-skeleton variant="rectangle" width="100%" height="40px" animation="wave" />
+          </div>
+          <ui-skeleton-table [rows]="4" [columns]="7" />
+        </div>
+      </div>
+    } @else if (viewError()) {
+      <ui-error-state
+        [title]="'TRIAL_CREATE_MODIFY_FORM.ERRORS.LOAD_FAILED_TITLE' | translate"
+        [message]="'TRIAL_CREATE_MODIFY_FORM.ERRORS.LOAD_FAILED_DETAIL' | translate"
+      />
+    } @else {
+      <div class="mx-auto">
+        <div class="flex flex-col lg:flex-row gap-6 items-start mb-6">
+          <div class="flex-1 w-full lg:max-w-lg">
+            <label for="trial-number" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.CODE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="trial-number"
+                matInput
+                [formField]="upsertTrialForm.code"
+                [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CODE' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div class="flex-1 flex flex-col gap-4 w-full lg:max-w-lg">
+            <div class="flex items-center gap-4">
+              <ui-signal-checkbox
+                [formField]="upsertTrialForm.hasAssociatedTrial"
+                [label]="'TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL' | translate"
+              />
+              @if (upsertTrialForm.hasAssociatedTrial().value()) {
+                <div class="flex-1">
+                  <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                    <input
+                      id="associated-trial"
+                      matInput
+                      [formField]="upsertTrialForm.associatedTrialView"
+                      [placeholder]="'TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL' | translate"
+                    />
+                    <button
+                      mat-icon-button
+                      matIconSuffix
+                      type="button"
+                      (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.ASSOCIATED_TITLE', 'associatedTrial')"
+                    >
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+              }
+            </div>
+            <div class="flex items-center gap-4">
+              <ui-signal-checkbox
+                [formField]="upsertTrialForm.hasLinkedTrial"
+                [label]="'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' | translate"
+              />
+              @if (upsertTrialForm.hasLinkedTrial().value()) {
+                <div class="flex-1">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                    <input
+                      id="linked-trial"
+                      matInput
+                      [formField]="upsertTrialForm.linkedTrialView"
+                      [placeholder]="'TRIAL_CREATE_MODIFY_FORM.LINKED_TRIAL' | translate"
+                    />
+                    <button
+                      mat-icon-button
+                      class="!absolute right-0 top-0 bottom-0 m-auto !text-gray-500"
+                      (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.LINKED_TITLE', 'linkedTrial')"
+                    >
+                      <mat-icon matSuffix>add</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
           <label for="trial-description" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_CREATE_MODIFY_FORM.OBSERVATIONS' | translate }}
+            {{ 'TRIAL_CREATE_MODIFY_FORM.DESCRIPTION' | translate }}
           </label>
-          <mat-form-field appearance="outline" class="w-full">
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <textarea
               id="trial-description"
               matInput
               rows="4"
               class="resize-none"
-              [formField]="upsertTrialForm.observations"
-              [placeholder]="'TRIAL_CREATE_MODIFY_FORM.OBSERVATIONS_PLACEHOLDER' | translate"
+              [formField]="upsertTrialForm.description"
+              [placeholder]="'TRIAL_CREATE_MODIFY_FORM.DESCRIPTION_PLACEHOLDER' | translate"
             ></textarea>
           </mat-form-field>
         </div>
-      </div>
-      @if (trialId()) {
-        @defer (on idle) {
-          <inta-trial-docs [trialId]="trialId()!" (viewDocument)="viewDocument.emit($event)" />
-        } @placeholder {
-          <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
-        } @error {
-          <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {{ 'TRIAL_CREATE_MODIFY_FORM.DOCUMENTS_LOAD_ERROR' | translate }}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'trial-type'"
+            [valueKey]="'id'"
+            [labelKey]="'name'"
+            [formField]="upsertTrialForm.type"
+            [label]="'TRIAL_CREATE_MODIFY_FORM.TYPE' | translate"
+            [placeholder]="'TRIAL_CREATE_MODIFY_FORM.TYPE_PLACEHOLDER' | translate"
+            [options]="trialTypeOptions()"
+          />
+
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'trial-client'"
+            [valueKey]="'id'"
+            [labelKey]="'name'"
+            [formField]="upsertTrialForm.client"
+            [label]="'TRIAL_CREATE_MODIFY_FORM.CLIENT' | translate"
+            [searchable]="true"
+            [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CLIENT_PLACEHOLDER' | translate"
+            [options]="clientsService.clients()"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label for="client-reference" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.CLIENT_REFERENCE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="client-reference"
+                matInput
+                [formField]="upsertTrialForm.clientReference"
+                [placeholder]="'TRIAL_CREATE_MODIFY_FORM.CLIENT_REFERENCE_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div>
+            <label for="requested-date" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.REQUESTED_DATE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="requested-date"
+                matInput
+                [formField]="upsertTrialForm.requestedDate"
+                [matDatepicker]="picker"
+                [placeholder]="'TRIAL_CREATE_MODIFY_FORM.REQUESTED_DATE_PLACEHOLDER' | translate"
+                (click)="picker.open()"
+                #dateInput
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker (closed)="dateInput.blur()" #picker></mat-datepicker>
+            </mat-form-field>
+            @if (upsertTrialForm.requestedDate().touched() && upsertTrialForm.requestedDate().errors()) {
+              @for (error of upsertTrialForm.requestedDate().errors(); track error) {
+                <mat-error>{{ error.message | translate }}</mat-error>
+              }
+            }
+          </div>
+        </div>
+        @if (trialId()) {
+          <div class="w-full mb-6">
+            @defer (on idle) {
+              <inta-trial-scheduler-inline
+                [trialId]="trialId()!"
+                [trialNumber]="upsertTrialModel().code"
+                [trialStatus]="trialStatus()"
+              ></inta-trial-scheduler-inline>
+            } @placeholder {
+              <div class="h-10 bg-gray-100 rounded animate-pulse"></div>
+            } @error {
+              <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {{ 'TRIAL_CREATE_MODIFY_FORM.SCHEDULER_LOAD_ERROR' | translate }}
+              </div>
+            }
           </div>
         }
-      }
-    </div>
+        <div>
+          <div>
+            <label for="trial-description" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.OBSERVATIONS' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <textarea
+                id="trial-description"
+                matInput
+                rows="4"
+                class="resize-none"
+                [formField]="upsertTrialForm.observations"
+                [placeholder]="'TRIAL_CREATE_MODIFY_FORM.OBSERVATIONS_PLACEHOLDER' | translate"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+        @if (trialId()) {
+          @defer (on idle) {
+            <inta-trial-docs [trialId]="trialId()!" (viewDocument)="viewDocument.emit($event)" />
+          } @placeholder {
+            <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
+          } @error {
+            <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {{ 'TRIAL_CREATE_MODIFY_FORM.DOCUMENTS_LOAD_ERROR' | translate }}
+            </div>
+          }
+        }
+      </div>
+    }
   `,
   styles: ``,
 })
@@ -258,8 +352,22 @@ export class FeatureTrialCreateFormComponent {
 
   viewDocument = output<string>();
 
-  protected readonly clientsService = inject(ClientsDataService);
-  protected readonly trialsTypeResource = inject(TrialTypeService).fireTrialTypesResource;
+  readonly #clientsService = inject(ClientsDataService);
+  readonly #trialTypeService = inject(TrialTypeService);
+
+  readonly clientsService = this.#clientsService;
+  readonly trialsTypeResource = this.#trialTypeService.fireTrialTypesResource;
+
+  readonly isLoadingView = computed(
+    () =>
+      this.#clientsService.clientResource.isLoading() ||
+      this.#trialTypeService.fireTrialTypesResource.isLoading() ||
+      (!!this.trialId() && !this.formData()),
+  );
+
+  readonly viewError = computed(
+    () => !!this.#clientsService.clientResource.error() || !!this.#trialTypeService.fireTrialTypesResource.error(),
+  );
 
   readonly trialTypeOptions = computed(() => {
     const typesResp = this.trialsTypeResource.value();

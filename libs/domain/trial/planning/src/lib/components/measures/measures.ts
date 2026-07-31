@@ -18,9 +18,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Badge } from '@intaqalab/ui';
-import { TrialStatusLabelPipe } from '@intaqalab/utils';
+import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
+import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { type MasterDataMeasureItem, MeasuresStore } from '../../+state/measures.store';
@@ -38,7 +37,6 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
     MatExpansionModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
@@ -48,14 +46,61 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
     Badge,
     TrialStatusLabelPipe,
     MatCheckbox,
+    Skeleton,
+    ErrorState,
+    RangePipe,
   ],
   providers: [MeasuresStore, SeriesAndShotsStore],
   template: `
     <div class="py-6">
-      @if (isLoading()) {
-        <div class="flex justify-center items-center h-64">
-          <mat-spinner diameter="40"></mat-spinner>
+      @if (isLoadingView()) {
+        <div class="space-y-6">
+          <!-- Top header skeleton -->
+          <div class="flex justify-between items-center mb-6">
+            <div class="flex gap-2">
+              <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+              <ui-skeleton variant="rectangle" width="100px" height="36px" animation="wave" />
+            </div>
+            <ui-skeleton variant="rectangle" width="180px" height="24px" animation="wave" />
+          </div>
+
+          <!-- Global / Single Card Skeleton -->
+          <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+            @for (cat of 4 | range; track cat) {
+              <div class="space-y-3">
+                <ui-skeleton variant="text" width="260px" height="1.25rem" animation="wave" />
+                <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                @if (cat === 0 || cat === 3) {
+                  <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                      <ui-skeleton variant="text" width="320px" height="1.25rem" animation="wave" />
+                      <div class="flex items-center gap-2">
+                        <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                        <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Bottom buttons skeleton -->
+          <div class="flex justify-end gap-3 mt-6">
+            <ui-skeleton variant="button" width="100px" height="40px" animation="wave" />
+            <ui-skeleton variant="button" width="150px" height="40px" animation="wave" />
+          </div>
         </div>
+      } @else if (viewError()) {
+        <ui-error-state
+          [title]="'TRIAL_PLANNING.MEASURES.ERRORS.LOAD_FAILED_TITLE' | translate"
+          [message]="'TRIAL_PLANNING.MEASURES.ERRORS.LOAD_FAILED_DETAIL' | translate"
+        />
       } @else {
         <div class="flex justify-between items-center mb-6">
           <div class="flex gap-2">
@@ -391,6 +436,20 @@ export class Measures {
   readonly #measuresStore = inject(MeasuresStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly #seriesStore = inject(SeriesAndShotsStore);
+
+  readonly isLoadingView = computed(
+    () =>
+      this.#measuresStore.isLoadingMeasures() ||
+      this.#planningGeneralDataStore.isLoadingPlanningInfo() ||
+      this.#seriesStore.isLoadingSeries(),
+  );
+
+  readonly viewError = computed(
+    () =>
+      !!this.#measuresStore.measuresError() ||
+      !!this.#planningGeneralDataStore.planningInfoError() ||
+      !!this.#seriesStore.seriesError(),
+  );
 
   readonly seriesConfiguration = signal<boolean>(false);
 
