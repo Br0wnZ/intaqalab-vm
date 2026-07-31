@@ -253,6 +253,7 @@ export function withGeneralData() {
     withHooks({
       onInit(store) {
         const trialsService = inject(TrialsDataService);
+        const executionService = inject(ExecutionService);
 
         // Sincroniza FireTrial del resource → estado del store para isTrialReadOnly y planning compat
         effect(() => {
@@ -261,6 +262,27 @@ export function withGeneralData() {
             patchState(store, { fireTrial: mapFireTrialToForm(trial) });
           }
         });
+
+        // Refresca estado tras cada transición de ciclo de vida de la prueba
+        const lifecycleResources = [
+          executionService.startResource,
+          executionService.pauseResource,
+          executionService.resumeResource,
+          executionService.interruptResource,
+          executionService.cancelResource,
+          executionService.finishResource,
+        ];
+        for (const resource of lifecycleResources) {
+          effect(() => {
+            if (resource.status() === 'resolved') {
+              const trialId = store.fireTrialId();
+              if (trialId) {
+                store.loadExecutionState(trialId);
+                trialsService.loadById(trialId);
+              }
+            }
+          });
+        }
 
         const fireTrialId = store.fireTrialId();
         if (fireTrialId) {
