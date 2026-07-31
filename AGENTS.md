@@ -94,6 +94,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 - **Convención de Nombres (2025 Style Guide):**
   - **Archivos:** Formato conciso sin sufijos técnicos para componentes/directivas/pipes (ej: `user-profile.ts` en vez de `user-profile.component.ts`). Los **servicios** deben mantener el sufijo `.service.ts` (ej: `user-profile.service.ts`).
   - **Clases:** Omitir sufijos técnicos en componentes/directivas/pipes (ej: `UserProfile` en lugar de `UserProfileComponent`). Los **servicios** deben mantener el sufijo `Service` (ej: `UserProfileService`). Combina con componentes sin selector (selector-less components) para etiquetas limpias.
+- **Abstracción de Mapeo y Lógica Pesada (`<feature>-mapper.service.ts`):** Toda la lógica de transformación y mapeo de datos entre el backend y el frontend (y viceversa), así como procesamientos complejos o de catálogos, DEBE ser extraída de los componentes a un servicio dedicado (ej. `ArmamentMapperService` en `armament-mapper.service.ts`). Los componentes deben ser delgados y enfocados únicamente en la interacción y la vista HTML.
 - **Inyección de Store en Componentes:** 🚫 **PROHIBIDO acceder a la store en la vista HTML (`store.prop()`).** La store siempre se inyectará como privada y readonly (`readonly #store = inject(Store)`). En la vista se accederá únicamente a sus propiedades/señales mediante `computed()` o propiedades expuestas por el componente.
 - **Jerarquía de decisión para estado:**
   1. `readonly #store = inject(Store)` — Inyección privada en el componente; el componente expone señales mediante `computed()` para la vista.
@@ -103,6 +104,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 
 ## Patrones Avanzados de Signals 🔬
 
+- **Clonado Profundo de Objetos:** 🚫 **PROHIBIDO el uso de `JSON.parse(JSON.stringify(obj))` para clonar.** Usar siempre la API nativa `structuredClone(obj)` en su lugar.
 - **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`, `actionTrigger`, `safeResourceValue`.
 - **Estado derivado writable:** Usa `linkedSignal()` en lugar de signal+effect. Ejemplo: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
 - **RxJS (Uso Restringido):**

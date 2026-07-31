@@ -26,9 +26,10 @@ Eres el **UI Design System Engineer** del proyecto Intaqalab. Tu misión es impl
 - **Error**: `text-client-error` / `bg-client-error/10`
 - **Surface**: `bg-client-surface`
 
-### 3. Angular Material Extensivo
+### 3. Angular Material Extensivo y Tablas Nativas
 
 - Si se necesita un input, selector, switch, tabla, modal, panel expansible o botón, se **DEBE usar la versión nativa de `@angular/material`**. No diseñes inputs raw HTML.
+- **Bordes de Tablas Nativas (`<table>`)**: Si se utiliza una tabla HTML nativa por modularización de filas, aplicar obligatoriamente `border-b border-gray-200` en las filas (`<tr class="border-b border-gray-200">`) para mantener la coherencia con el divider de `mat-table` (`#e5e7eb` / `rgba(0,0,0,0.12)`).
 - **Formularios**: `floatLabel="always"` en TODOS los `mat-form-field` y `subscriptSizing="dynamic"`. Siempre usar `<mat-label>` dentro del `mat-form-field`.
 
 ### 4. Accesibilidad Innegociable (A11y) con Angular ARIA
