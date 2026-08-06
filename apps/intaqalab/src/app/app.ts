@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FeatureFlagService } from '@intaqalab/config';
 import type { CommandTab } from '@intaqalab/core';
-import { AuthService, LoaderComponent, Role, TabsTopComponent } from '@intaqalab/core';
+import { AuthService, LoaderComponent, MutationProgressBar, Role, TabsTopComponent } from '@intaqalab/core';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { EMPTY, catchError, filter, of, switchMap, tap } from 'rxjs';
 
@@ -17,7 +17,7 @@ import { BreadcrumbService } from './services/breadcrumb/breadcrumb.service';
 import { CommandsTabService } from './services/tabs/commands-tab-service';
 
 @Component({
-  imports: [RouterModule, MenuLeftComponent, HeaderComponent, BreadcrumbComponent, LoaderComponent, TabsTopComponent],
+  imports: [RouterModule, MenuLeftComponent, HeaderComponent, BreadcrumbComponent, LoaderComponent, MutationProgressBar, TabsTopComponent],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',

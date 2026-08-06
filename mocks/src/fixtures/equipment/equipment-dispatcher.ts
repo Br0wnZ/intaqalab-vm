@@ -11,13 +11,18 @@ export interface EquipmentDenominationItem {
 }
 
 export interface EquipmentItem {
-  id: number | string;
-  name: string;
-  itemType?: string;
-  serialNumber?: string;
-  tag?: string;
+  id: string;
+  tag: string;
+  serialNumber: string;
+  denominationId: number;
+  denominationName: string;
+  modelName: string;
+}
+
+/** Forma interna del fixture: incluye campos usados solo para filtrar, no expuestos por el contrato público. */
+interface EquipmentItemFixtureEntry extends EquipmentItem {
+  itemType: string;
   familyId?: number;
-  denominationId?: number;
   active?: boolean;
 }
 
@@ -76,7 +81,10 @@ export function getEquipmentItemsDispatcher(req: Request): PaginatedEquipmentRes
   const denominationId = req.query.denominationId ? parseInt(req.query.denominationId as string) : undefined;
   const active = req.query.active !== undefined ? req.query.active === 'true' : undefined;
 
-  const rawData = getFixture<{ items: EquipmentItem[] }>('fixtures/equipment', 'equipment-items-fixture.json');
+  const rawData = getFixture<{ items: EquipmentItemFixtureEntry[] }>(
+    'fixtures/equipment',
+    'equipment-items-fixture.json',
+  );
   let filtered = [...rawData.items];
 
   if (itemTypes.length > 0) {
@@ -97,7 +105,16 @@ export function getEquipmentItemsDispatcher(req: Request): PaginatedEquipmentRes
 
   const totalElements = filtered.length;
   const startIndex = (page - 1) * pageSize;
-  const items = filtered.slice(startIndex, startIndex + pageSize);
+  const items = filtered.slice(startIndex, startIndex + pageSize).map(
+    ({ id, tag, serialNumber, denominationId: itemDenominationId, denominationName, modelName }) => ({
+      id,
+      tag,
+      serialNumber,
+      denominationId: itemDenominationId,
+      denominationName,
+      modelName,
+    }),
+  );
 
   return {
     page,

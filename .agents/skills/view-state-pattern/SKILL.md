@@ -106,7 +106,7 @@ export class MyFeatureShellComponent {
 <div class="flex flex-col gap-6 p-6">
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold">{{ title() }}</h1>
-    <button mat-flat-button (click)="create()">Crear</button>
+    <ui-save-button label="<FEATURE>.CREATE" [isSaving]="isCreating()" (save)="create()" />
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

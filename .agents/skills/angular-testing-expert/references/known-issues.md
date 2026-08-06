@@ -471,3 +471,25 @@ TestBed.flushEffects();
 ```
 
 ---
+
+## 18. `Argument of type '() => Promise<void>' is not assignable to parameter of type '() => never'` (async en `waitFor`)
+
+**Contexto:** Un test usa `await waitFor(async () => { ... })` pasando una función asíncrona que contiene llamadas `await` (como `loader.getAllHarnesses(...)`).
+
+**Causa:** `waitFor` de `@testing-library/angular` espera una función de aserción sincrónica (`() => void`). Al pasar `async () => { ... }`, la función retorna un `Promise<void>`, provocando un error de sobrecarga de tipos en TypeScript. Además, los Component Harnesses de Angular Material (`loader.getAllHarnesses`, `loader.getHarness`) ya son promesas asíncronas independientes.
+
+**Solución:** No envolver llamadas de Component Harnesses dentro de `waitFor(async () => ...)`. Ejecutar `view.fixture.detectChanges()` y llamar a los harnesses directamente con `await`:
+
+```typescript
+// ❌ INCORRECTO: async callback dentro de waitFor
+await waitFor(async () => {
+  const chips = await loader.getAllHarnesses(MatChipHarness);
+  expect(chips.length).toBe(1);
+});
+
+// ✅ CORRECTO: detectChanges + await directo al harness
+view.fixture.detectChanges();
+const chips = await loader.getAllHarnesses(MatChipHarness);
+expect(chips.length).toBe(1);
+```
+

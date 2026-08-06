@@ -19,7 +19,7 @@ export class ArmamentMapperService {
       shots: series.shots.map((shot) => ({
         shotId: shot.shotId,
         armament: {
-          weaponType: (shot.armament?.weaponType?.toLowerCase() as SpecimenType) ?? '',
+          weaponType: ((shot.armament?.itemType ?? shot.armament?.weaponType)?.toLowerCase() as SpecimenType) ?? '',
           weaponName: shot.armament?.weaponName ?? '',
           weaponExternalId: shot.armament?.weaponExternalId?.toString() ?? '',
           tubeName: shot.armament?.tubeName ?? '',
@@ -115,6 +115,7 @@ export class ArmamentMapperService {
       byId.set(id, {
         id,
         name: shot.armament[nameKey] || id,
+        modelName: shot.armament[nameKey] || id,
         type: fallbackType,
         active: true,
       });

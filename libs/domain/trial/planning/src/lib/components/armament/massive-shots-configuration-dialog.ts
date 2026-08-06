@@ -1,13 +1,13 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  signal,
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    computed,
+    effect,
+    inject,
+    signal,
 } from '@angular/core';
-import { FormField, disabled, form, max, min, required } from '@angular/forms/signals';
+import { FormField, disabled, form, max, min, required, requiredError, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -19,8 +19,8 @@ import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { safeResourceValue } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 import { ArmamentService } from '../../services/armament-service';
+import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 
 @Component({
@@ -155,45 +155,48 @@ import { SpecimenType } from '../../utils-models/specimen.model';
           </div>
         }
 
-        <!-- Instrumentado -->
-        <div>
-          <label for="instrumentado" class="block text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-select
-              clearable
-              id="instrumentado"
-              [formField]="configForm.instrumentado"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
-            >
-              <mat-option value="si">
-                {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_YES' | translate }}
-              </mat-option>
-              <mat-option value="no">
-                {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_NO' | translate }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
+        <!-- Instrumentado y Vida Útil — SOLO si el tipo es diferente de mortero -->
+        @if (isNotMortar()) {
+          <!-- Instrumentado -->
+          <div>
+            <label for="instrumentado" class="block text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <mat-select
+                clearable
+                id="instrumentado"
+                [formField]="configForm.instrumentado"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
+              >
+                <mat-option value="si">
+                  {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_YES' | translate }}
+                </mat-option>
+                <mat-option value="no">
+                  {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_NO' | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-        <!-- Vida útil -->
-        <div>
-          <label for="vidaUtil" class="block text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              matInput
-              id="vidaUtil"
-              type="number"
-              step="1"
-              [formField]="configForm.vidaUtil"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_PLACEHOLDER' | translate"
-            />
-            <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
-          </mat-form-field>
-        </div>
+          <!-- Vida útil -->
+          <div>
+            <label for="vidaUtil" class="block text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                matInput
+                id="vidaUtil"
+                type="number"
+                step="1"
+                [formField]="configForm.vidaUtil"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_PLACEHOLDER' | translate"
+              />
+              <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
+            </mat-form-field>
+          </div>
+        }
 
         <!-- Observaciones -->
         <div>
@@ -215,7 +218,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
 
     <!-- Actions -->
     <mat-dialog-actions>
-      <button mat-flat-button color="primary" (click)="onApply()">
+      <button mat-flat-button color="primary" [disabled]="configForm().invalid()" (click)="onApply()">
         {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.APPLY_BUTTON' | translate }}
       </button>
       <button mat-stroked-button (click)="onCancel()">
@@ -242,7 +245,6 @@ export class MassiveShotsConfigurationDialog {
 
   readonly typeOptions = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
-    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
     { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
   ] as const;
 
@@ -272,8 +274,8 @@ export class MassiveShotsConfigurationDialog {
   readonly #weaponDenominationsResource = this.#armamentService.weaponDenominationsResource;
 
   /**
-   * Denominaciones de tubo: reactivo al familyId del arma seleccionada.
-   * GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
+   * Equipos físicos de tubo: reactivo al familyId del arma seleccionada.
+   * GET /centers/{centerId}/equipment/items?itemType=TUBE&familyId={familyId}
    */
   readonly #tubeDenominationsResource = this.#armamentService.tubeDenominationsResource;
 
@@ -281,12 +283,32 @@ export class MassiveShotsConfigurationDialog {
   readonly isLoadingTubes = computed(() => this.#tubeDenominationsResource.isLoading());
 
   readonly isMortar = computed(() => this.configModel().tipo?.toLowerCase() === SpecimenType.Mortar);
+  readonly isNotMortar = computed(() => !!this.configModel().tipo && this.configModel().tipo?.toLowerCase() !== SpecimenType.Mortar);
 
   readonly configForm = form(this.configModel, (path) => {
+    validate(path.series, ({ value }) => {
+      const selected = value();
+      return !selected || selected.length === 0 ? requiredError() : undefined;
+    });
     required(path.tipo);
     required(path.denominacionArma);
     required(path.denominacionTubo, {
-      when: ({ valueOf }) => valueOf(path.tipo)?.toLowerCase() !== SpecimenType.Mortar,
+      when: ({ valueOf }) => {
+        const tipo = valueOf(path.tipo)?.toLowerCase();
+        return !!tipo && tipo !== SpecimenType.Mortar;
+      },
+    });
+    required(path.instrumentado, {
+      when: ({ valueOf }) => {
+        const tipo = valueOf(path.tipo)?.toLowerCase();
+        return !!tipo && tipo !== SpecimenType.Mortar;
+      },
+    });
+    required(path.vidaUtil, {
+      when: ({ valueOf }) => {
+        const tipo = valueOf(path.tipo)?.toLowerCase();
+        return !!tipo && tipo !== SpecimenType.Mortar;
+      },
     });
 
     disabled(path.denominacionArma, ({ valueOf }) => !valueOf(path.tipo) || this.isLoadingWeapons());
@@ -328,9 +350,11 @@ export class MassiveShotsConfigurationDialog {
    * Limpia arma y tubo seleccionados previamente.
    */
   onTypeChange(itemType: string | null | undefined): void {
-    // Reset campos dependientes
-    const current = this.configModel();
-    this.configModel.set({ ...current, denominacionArma: '', denominacionTubo: '' });
+    // Reset campos dependientes via Signal Forms FieldState.reset()
+    this.configForm.denominacionArma().reset('');
+    this.configForm.denominacionTubo().reset('');
+    this.configForm.instrumentado().reset('');
+    this.configForm.vidaUtil().reset('');
     this.selectedWeaponId.set(null);
     this.#selectedWeaponFamilyId.set(null);
 
@@ -346,9 +370,8 @@ export class MassiveShotsConfigurationDialog {
    * Extrae familyId del arma seleccionada y dispara la carga de tubos.
    */
   onWeaponChange(weaponId: string | null | undefined): void {
-    // Reset tubo seleccionado
-    const current = this.configModel();
-    this.configModel.set({ ...current, denominacionTubo: '' });
+    // Reset tubo seleccionado via Signal Forms FieldState.reset()
+    this.configForm.denominacionTubo().reset('');
 
     if (!weaponId) {
       this.selectedWeaponId.set(null);

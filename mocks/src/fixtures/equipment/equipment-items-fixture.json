@@ -2,39 +2,47 @@
   "totalElements": 4,
   "items": [
     {
-      "id": 101,
-      "name": "Cañón 120mm L44 #01",
-      "itemType": "WEAPON",
+      "id": "3f1a2b10-0000-4000-8000-000000000101",
+      "tag": "ARM-101",
       "serialNumber": "SN-W120-01",
       "denominationId": 1,
+      "denominationName": "Cañón 120mm L44",
+      "modelName": "Cañón 120mm L44 #01",
+      "itemType": "WEAPON",
       "familyId": 10,
       "active": true
     },
     {
-      "id": 102,
-      "name": "Obús 105mm #02",
-      "itemType": "WEAPON",
+      "id": "3f1a2b10-0000-4000-8000-000000000102",
+      "tag": "ARM-102",
       "serialNumber": "SN-W105-02",
       "denominationId": 2,
+      "denominationName": "Obús 105/37 mm L118 Light Gun",
+      "modelName": "Obús 105mm #02",
+      "itemType": "WEAPON",
       "familyId": 10,
       "active": true
     },
     {
-      "id": 201,
-      "name": "Tubo T-1 #01",
-      "itemType": "TUBE",
+      "id": "3f1a2b10-0000-4000-8000-000000000201",
+      "tag": "TUB-201",
       "serialNumber": "SN-T1-01",
       "denominationId": 5,
-      "familyId": 11,
+      "denominationName": "Tubo de ensayo T-1",
+      "modelName": "Tubo T-1 #01",
+      "itemType": "TUBE",
+      "familyId": 10,
       "active": true
     },
     {
-      "id": 202,
-      "name": "Tubo T-2 #02",
-      "itemType": "TUBE",
+      "id": "3f1a2b10-0000-4000-8000-000000000202",
+      "tag": "TUB-202",
       "serialNumber": "SN-T2-02",
       "denominationId": 6,
-      "familyId": 11,
+      "denominationName": "Tubo calibrador T-2",
+      "modelName": "Tubo T-2 #02",
+      "itemType": "TUBE",
+      "familyId": 10,
       "active": true
     }
   ]

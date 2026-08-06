@@ -194,7 +194,6 @@ export class SpecimensManagmentDialog {
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
     { value: SpecimenType.Tube, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_TUBE' },
     { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
-    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
     { value: SpecimenType.Munition, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MUNITION' },
   ] as const;
 

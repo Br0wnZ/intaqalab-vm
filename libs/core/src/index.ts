@@ -14,6 +14,8 @@ export * from '@intaqalab/config';
 
 // Site utils
 export * from './lib/loader/components/loader/loader.component';
+export * from './lib/loader/components/mutation-progress-bar/mutation-progress-bar';
+export * from './lib/loader/services/mutation-loader.service';
 export * from './lib/utils-site/components/tabs-top/tabs-top.component';
 export * from './lib/utils-site/components/tabs-top/taps-top.model';
 

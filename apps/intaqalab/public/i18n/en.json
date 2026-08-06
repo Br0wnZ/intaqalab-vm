@@ -2473,6 +2473,10 @@
   "UI": {
     "SKELETON": {
       "LOADING": "Loading..."
+    },
+    "SAVE_BUTTON": {
+      "LABEL": "Save",
+      "SAVING_TOOLTIP": "Saving changes..."
     }
   },
   "UTILS_TRIALS": {

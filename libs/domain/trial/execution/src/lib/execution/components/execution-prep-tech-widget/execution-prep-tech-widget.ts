@@ -1,23 +1,22 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { TECH_PROFILE_TO_API } from '../../../+state/features/readiness.feature';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import type { WidgetFormState } from '../../models/execution-grid.models';
-import type { TechProfile } from '../../models/execution-grid.models';
+import type { TechProfile, WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 
 /**
- * 🎯 Modelo de estado por serie
+ * 🎯 Modelo de estado por serie (interno al widget)
  */
 interface SerieReadiness {
   serieId: string;
@@ -27,7 +26,7 @@ interface SerieReadiness {
 }
 
 /**
- * 🗂️ Configuración de un perfil técnico
+ * 🗂️ Configuración visual de un perfil técnico
  */
 interface TechProfileConfig {
   icon: string;
@@ -80,7 +79,10 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
  * - Municiones
  * - Armamento
  *
- * Campos: checkbox de preparado por serie + observaciones libre.
+ * Conecta con el ExecutionStore (única fuente de verdad):
+ * - GET: las series se cargan desde `store.profilesReadiness` filtrado por perfil.
+ * - PUT: `saveForm()` llama a `store.saveProfileReadiness()`.
+ * - Los nombres de serie se derivan de `store.executionProgress()` (secuencia 1-based).
  */
 @Component({
   selector: 'inta-execution-prep-tech-widget',
@@ -90,11 +92,11 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
     ReadonlyContentDirective,
     MatIconModule,
     MatTooltipModule,
     IntaIconComponent,
+    SaveButton,
   ],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-auto">
@@ -116,64 +118,75 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
 
       <!-- 📋 Content -->
       <mat-card-content intaReadonlyContent class="flex-1 !pt-3 overflow-auto flex flex-col">
-        <!-- Seleccionar todas -->
-        <div class="flex items-center h-7 mb-1 border-b border-slate-50 shrink-0">
-          <mat-checkbox
-            color="primary"
-            class="ultra-compact-checkbox"
-            [id]="'select-all-' + widgetId()"
-            [checked]="allSeriesReady()"
-            [indeterminate]="someSeriesReady() && !allSeriesReady()"
-            (change)="toggleSelectAll($event.checked)"
-          >
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-              {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.SELECT_ALL' | translate }}
-            </span>
-          </mat-checkbox>
-        </div>
+        <!-- Estado de carga -->
+        @if (isLoadingReadiness()) {
+          <div class="flex items-center justify-center h-full text-slate-400 text-xs gap-2">
+            <span class="animate-spin text-base">⏳</span>
+            <span>{{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.LOADING' | translate }}</span>
+          </div>
+        } @else {
+          <!-- Seleccionar todas -->
+          <div class="flex items-center h-7 mb-1 border-b border-slate-50 shrink-0">
+            <mat-checkbox
+              color="primary"
+              class="ultra-compact-checkbox"
+              [id]="'select-all-' + widgetId()"
+              [checked]="allSeriesReady()"
+              [indeterminate]="someSeriesReady() && !allSeriesReady()"
+              (change)="toggleSelectAll($event.checked)"
+            >
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.SELECT_ALL' | translate }}
+              </span>
+            </mat-checkbox>
+          </div>
 
-        <!-- Lista de series -->
-        <div class="flex-1 flex flex-col gap-2 justify-between py-1 overflow-hidden">
-          @for (serie of seriesReadiness(); track serie.serieId; let i = $index) {
-            <div class="flex items-center gap-2">
-              <!-- Checkbox y Nombre -->
-              <div class="shrink-0 w-34 flex items-center">
-                <mat-checkbox
-                  color="primary"
-                  class="ultra-compact-checkbox"
-                  [id]="'serie-ready-' + widgetId() + '-' + i"
-                  [checked]="serie.ready"
-                  (change)="toggleSerie(i, $event.checked)"
-                >
-                  <span
-                    class="text-xs font-semibold text-slate-600 truncate block w-full"
-                    [class.text-purple-600]="serie.ready"
+          <!-- Lista de series -->
+          <div class="flex-1 flex flex-col gap-2 justify-between py-1 overflow-hidden">
+            @for (serie of seriesReadiness(); track serie.serieId; let i = $index) {
+              <div class="flex items-center gap-2">
+                <!-- Checkbox y Nombre -->
+                <div class="shrink-0 w-34 flex items-center">
+                  <mat-checkbox
+                    color="primary"
+                    class="ultra-compact-checkbox"
+                    [id]="'serie-ready-' + widgetId() + '-' + i"
+                    [checked]="serie.ready"
+                    (change)="toggleSerie(i, $event.checked)"
                   >
-                    {{ serie.serieName }}
-                  </span>
-                </mat-checkbox>
-              </div>
+                    <span
+                      class="text-xs font-semibold text-slate-600 truncate block w-full"
+                      [class.text-purple-600]="serie.ready"
+                    >
+                      {{ serie.serieName }}
+                    </span>
+                  </mat-checkbox>
+                </div>
 
-              <!-- Input Observaciones -->
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-input">
-                <input
-                  matInput
-                  [id]="'obs-' + widgetId() + '-' + i"
-                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.OBSERVATIONS_PLACEHOLDER' | translate"
-                  [value]="serie.observations"
-                  (input)="onObservationsChange(i, $event)"
-                />
-              </mat-form-field>
+                <!-- Input Observaciones -->
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-input">
+                  <input
+                    matInput
+                    [id]="'obs-' + widgetId() + '-' + i"
+                    [placeholder]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.OBSERVATIONS_PLACEHOLDER' | translate"
+                    [value]="serie.observations"
+                    (input)="onObservationsChange(i, $event)"
+                  />
+                </mat-form-field>
+              </div>
+            }
+          </div>
+
+          <!-- Footer: botón de guardar -->
+          @if (formState().dirty) {
+            <div class="flex justify-end gap-2 pt-2 shrink-0 border-t border-slate-100">
+              <button type="button" class="text-xs text-slate-400 hover:text-slate-600 px-2" (click)="resetForm()">
+                {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.CANCEL' | translate }}
+              </button>
+              <ui-save-button [isSaving]="isSavingReadiness()" (save)="saveForm()" />
             </div>
           }
-        </div>
-
-        <!-- Indicador -->
-        <div class="flex justify-center gap-1.5 py-1 shrink-0 hidden">
-          <span class="size-1 rounded-full bg-purple-500"></span>
-          <span class="size-1 rounded-full bg-slate-200"></span>
-          <span class="size-1 rounded-full bg-slate-200"></span>
-        </div>
+        }
       </mat-card-content>
     </mat-card>
   `,
@@ -262,20 +275,63 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
 
   // 💉
   override readonly widgetStateService = inject(WidgetStateService);
-  readonly #executionStore = inject(ExecutionStore);
+  readonly #store = inject(ExecutionStore);
 
   /**
    * ⚙️ Computed: Configuración visual del perfil activo
    */
   readonly profileConfig = computed(() => TECH_PROFILE_CONFIG[this.profile()]);
 
-  // 📦 Estado mutable de series
-  // En producción este signal se inicializaría con las series reales del ensayo
-  readonly seriesReadiness = signal<SerieReadiness[]>([
-    { serieId: 'serie-1', serieName: 'Calentamiento', ready: false, observations: '' },
-    { serieId: 'serie-2', serieName: 'Funcionamiento I', ready: false, observations: '' },
-    { serieId: 'serie-3', serieName: 'Funcionamiento II', ready: false, observations: '' },
-  ]);
+  /** Indica si está cargando el readiness desde la API */
+  readonly isLoadingReadiness = computed(() => this.#store.isLoadingReadiness());
+
+  /** Indica si está guardando en la API */
+  readonly isSavingReadiness = computed(() => this.#store.isSavingReadiness());
+
+  /**
+   * 📦 Estado mutable de series — linkedSignal derivado del store.
+   *
+   * Se inicializa (y resincroniza cuando el store cambia) leyendo
+   * `profilesReadiness` filtrado por el perfil de este widget.
+   * Los nombres de serie se derivan del `executionProgress` (Serie N).
+   */
+  readonly seriesReadiness = linkedSignal<SerieReadiness[]>(() => {
+    const apiProfile = TECH_PROFILE_TO_API[this.profile()];
+    const profilesReadiness = this.#store.profilesReadiness();
+    const planningSeries = this.#store.planningSeries();
+    const progress = this.#store.executionProgress();
+
+    // Mapa de seriesId → nombre real (de planificación) o fallback a progreso/secuencia
+    const seriesNameMap = new Map<string, string>();
+    if (planningSeries) {
+      planningSeries.forEach((serie) => {
+        if (serie.id && serie.name) {
+          seriesNameMap.set(serie.id, serie.name);
+        }
+      });
+    }
+    if (progress) {
+      progress.series.forEach((serie, idx) => {
+        if (!seriesNameMap.has(serie.seriesId)) {
+          seriesNameMap.set(serie.seriesId, `Serie ${idx + 1}`);
+        }
+      });
+    }
+
+    const profileItem = profilesReadiness?.find((p) => p.profile === apiProfile);
+
+    if (!profileItem) {
+      // Sin datos del API aún: retornar vacío (se muestra loading)
+      return [];
+    }
+
+    return profileItem.seriesReadiness.map((s) => ({
+      serieId: s.seriesId,
+      serieName: seriesNameMap.get(s.seriesId) ?? `Serie ${s.seriesId.slice(-4)}`,
+      ready: s.isReady,
+      observations: s.observations ?? '',
+    }));
+  });
 
   // ──────────────────────────────────────────────────────────────────────────
   // Computed helpers
@@ -286,18 +342,30 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
   readonly someSeriesReady = computed(() => this.seriesReadiness().some((s) => s.ready));
 
   /**
-   * 📊 Computed: Estado del formulario (requerido por BaseFormWidgetComponent)
+   * 📊 Computed: Estado del formulario.
+   * `dirty` = si el estado local difiere del estado guardado en el store.
    */
   readonly formState = computed((): WidgetFormState => {
-    const series = this.seriesReadiness();
-    const hasChanges = series.some((s) => s.ready || s.observations.trim().length > 0);
+    const local = this.seriesReadiness();
+    const apiProfile = TECH_PROFILE_TO_API[this.profile()];
+    const storedItem = this.#store.profilesReadiness()?.find((p) => p.profile === apiProfile);
+
+    let dirty = false;
+    if (storedItem && local.length === storedItem.seriesReadiness.length) {
+      dirty = local.some((s, i) => {
+        const stored = storedItem.seriesReadiness[i];
+        return s.ready !== stored?.isReady || s.observations !== (stored?.observations ?? '');
+      });
+    } else if (!storedItem && local.some((s) => s.ready || s.observations.trim().length > 0)) {
+      dirty = true;
+    }
 
     return {
       widgetId: this.widgetId(),
-      dirty: hasChanges,
-      touched: hasChanges,
-      valid: true, // No hay validaciones estrictas — observaciones son opcionales
-      hasChanges,
+      dirty,
+      touched: dirty,
+      valid: true,
+      hasChanges: dirty,
     };
   });
 
@@ -317,7 +385,7 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
 
   /** Actualizar observaciones de una serie */
   onObservationsChange(index: number, event: Event): void {
-    const value = (event.target as HTMLTextAreaElement).value;
+    const value = (event.target as HTMLInputElement).value;
     this.seriesReadiness.update((series) => series.map((s, i) => (i === index ? { ...s, observations: value } : s)));
   }
 
@@ -325,27 +393,64 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
   // BaseFormWidgetComponent contract
   // ──────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Resetea el estado local del widget sincronizándolo con el store
+   * (descarta cambios no guardados).
+   */
   resetForm(): void {
-    this.seriesReadiness.update((series) => series.map((s) => ({ ...s, ready: false, observations: '' })));
+    // Al resetear el linkedSignal, Angular re-ejecuta el computation del store
+    // y lo restablece al último valor guardado.
+    const apiProfile = TECH_PROFILE_TO_API[this.profile()];
+    const storedItem = this.#store.profilesReadiness()?.find((p) => p.profile === apiProfile);
+    const planningSeries = this.#store.planningSeries();
+    const progress = this.#store.executionProgress();
+
+    const seriesNameMap = new Map<string, string>();
+    if (planningSeries) {
+      planningSeries.forEach((serie) => {
+        if (serie.id && serie.name) {
+          seriesNameMap.set(serie.id, serie.name);
+        }
+      });
+    }
+    if (progress) {
+      progress.series.forEach((serie, idx) => {
+        if (!seriesNameMap.has(serie.seriesId)) {
+          seriesNameMap.set(serie.seriesId, `Serie ${idx + 1}`);
+        }
+      });
+    }
+
+    if (storedItem) {
+      this.seriesReadiness.set(
+        storedItem.seriesReadiness.map((s) => ({
+          serieId: s.seriesId,
+          serieName: seriesNameMap.get(s.seriesId) ?? `Serie ${s.seriesId.slice(-4)}`,
+          ready: s.isReady,
+          observations: s.observations ?? '',
+        })),
+      );
+    }
   }
 
+  /**
+   * Guarda el readiness del perfil vía PUT a la API.
+   * El store actualiza `profilesReadiness` con la respuesta y sincroniza `techUnits[]`.
+   */
   async saveForm(): Promise<void> {
-    const data = {
-      profile: this.profile(),
-      widgetId: this.widgetId(),
-      series: this.seriesReadiness(),
-    };
+    const fireTrialId = this.#store.fireTrialId();
+    if (!fireTrialId) return;
 
-    console.log('💾 Guardando Preparación ejecución – Unidades técnicas:', data);
+    const apiProfile = TECH_PROFILE_TO_API[this.profile()];
 
-    // Actualizar el estado global en el ExecutionStore
-    this.#executionStore.updateTechUnit(this.profile(), {
-      ready: this.allSeriesReady(),
-      observations: this.someSeriesReady() ? 'Series preparadas' : '', // Demo: actualizar observaciones
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    console.log('✅ Preparación guardada y estado global actualizado');
+    this.#store.saveProfileReadiness(
+      fireTrialId,
+      apiProfile,
+      this.seriesReadiness().map((s) => ({
+        seriesId: s.serieId,
+        isReady: s.ready,
+        observations: s.observations || undefined,
+      })),
+    );
   }
 }

@@ -69,7 +69,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-select clearable [formField]="formPath().armament.tubeExternalId">
             @for (tube of tubeOptions(); track tube.id) {
-              <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
+              <mat-option [value]="tube.id">{{ tube.modelName }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -135,7 +135,6 @@ export class ArmamentRow {
 
   readonly typeOptions = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
-    { value: SpecimenType.Bundle, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_BUNDLE' },
     { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
   ] as const;
 

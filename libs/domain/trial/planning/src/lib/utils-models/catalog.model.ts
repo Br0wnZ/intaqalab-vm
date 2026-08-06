@@ -24,6 +24,8 @@ export type SpecimenItem = {
   active: boolean;
   /** ID de familia devuelto por la API — necesario para filtrar tubos asociados al arma seleccionada */
   familyId?: number;
+  /** Nombre del modelo físico del equipo (proviene de `/equipment/items`, usado para tubos) */
+  modelName?: string;
 };
 
 export type SpecimenListResponse = {

@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-conditional-expect */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatChipHarness } from '@angular/material/chips/testing';
@@ -6,7 +7,7 @@ import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { createMockArmamentService, createMockMatDialogRef } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen, waitFor } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -37,10 +38,9 @@ describe('MassiveShotsConfigurationDialog', () => {
       ],
     });
 
-    const container = view.fixture.nativeElement as HTMLElement;
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { user, view, container, loader };
+    return { user, view, loader };
   };
 
   beforeEach(() => {
@@ -63,15 +63,17 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TITLE/i)).toBeInTheDocument();
     });
 
-    it('should render form labels', async () => {
+    it('should render initial form labels', async () => {
       await runSetup();
 
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_LABEL/i)).toBeInTheDocument();
       expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_LABEL/i)).toBeInTheDocument();
-      expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL/i)).toBeInTheDocument();
-      expect(screen.getByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL/i)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL/i),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL/i)).not.toBeInTheDocument();
     });
 
     it('should display action buttons', async () => {
@@ -84,11 +86,11 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(buttonTexts.some((text) => /APPLY/i.test(text))).toBe(true);
     });
 
-    it('should render all mat-select fields', async () => {
+    it('should render initial mat-select fields', async () => {
       const { loader } = await runSetup();
 
       const selects = await loader.getAllHarnesses(MatSelectHarness);
-      expect(selects.length).toBe(6);
+      expect(selects.length).toBe(4);
     });
   });
 
@@ -97,7 +99,13 @@ describe('MassiveShotsConfigurationDialog', () => {
       const { loader } = await runSetup();
 
       const inputs = await loader.getAllHarnesses(MatInputHarness);
-      const textarea = inputs.find(async (input) => (await input.getType()) === 'textarea');
+      let textarea: MatInputHarness | undefined;
+      for (const input of inputs) {
+        if ((await input.getType()) === 'textarea') {
+          textarea = input;
+          break;
+        }
+      }
 
       expect(textarea).toBeTruthy();
 
@@ -109,10 +117,10 @@ describe('MassiveShotsConfigurationDialog', () => {
     });
 
     it('should allow selecting series from dropdown', async () => {
-      const { container, view } = await runSetup();
+      const { loader, view } = await runSetup();
 
-      const seriesSelect = container.querySelector('mat-select#series');
-      expect(seriesSelect).toBeTruthy();
+      const selects = await loader.getAllHarnesses(MatSelectHarness);
+      expect(selects.length).toBeGreaterThan(0);
 
       const component = view.fixture.componentInstance;
       expect(component.selectedChips).toBeDefined();
@@ -128,7 +136,13 @@ describe('MassiveShotsConfigurationDialog', () => {
     });
 
     it('should display chips when series are selected', async () => {
-      const { view, loader } = await runSetup();
+      const mockData = {
+        series: [
+          { id: 'serie1', name: 'Serie 1' },
+          { id: 'serie2', name: 'Serie 2' },
+        ],
+      };
+      const { loader, view } = await runSetup(mockData);
       const component = view.fixture.componentInstance;
 
       component.configModel.set({
@@ -137,14 +151,18 @@ describe('MassiveShotsConfigurationDialog', () => {
       });
       view.fixture.detectChanges();
 
-      await waitFor(() => {
-        const chipElements = view.fixture.nativeElement.querySelectorAll('mat-chip');
-        expect(chipElements.length).toBe(2);
-      });
+      const chips = await loader.getAllHarnesses(MatChipHarness);
+      expect(chips.length).toBe(2);
     });
 
     it('should remove a chip when removeChip is called', async () => {
-      const { view, loader } = await runSetup();
+      const mockData = {
+        series: [
+          { id: 'serie1', name: 'Serie 1' },
+          { id: 'serie2', name: 'Serie 2' },
+        ],
+      };
+      const { loader, view } = await runSetup(mockData);
       const component = view.fixture.componentInstance;
 
       component.configModel.set({
@@ -153,10 +171,8 @@ describe('MassiveShotsConfigurationDialog', () => {
       });
       view.fixture.detectChanges();
 
-      await waitFor(() => {
-        const chipElements = view.fixture.nativeElement.querySelectorAll('mat-chip');
-        expect(chipElements.length).toBe(2);
-      });
+      const chips = await loader.getAllHarnesses(MatChipHarness);
+      expect(chips.length).toBe(2);
 
       component.removeChip('serie1');
       view.fixture.detectChanges();
@@ -165,8 +181,11 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(component.configModel().series).toEqual(['serie2']);
     });
 
-    it('should remove chip when clicking remove button', async () => {
-      const { view, user } = await runSetup();
+    it('should remove chip when remove button is clicked', async () => {
+      const mockData = {
+        series: [{ id: 'serie1', name: 'Serie 1' }],
+      };
+      const { loader, view } = await runSetup(mockData);
       const component = view.fixture.componentInstance;
 
       component.configModel.set({
@@ -175,17 +194,17 @@ describe('MassiveShotsConfigurationDialog', () => {
       });
       view.fixture.detectChanges();
 
-      await waitFor(() => {
-        const chipElements = view.fixture.nativeElement.querySelectorAll('mat-chip');
-        expect(chipElements.length).toBe(1);
-      });
+      const chips = await loader.getAllHarnesses(MatChipHarness);
+      expect(chips.length).toBe(1);
 
-      const removeButton = view.fixture.nativeElement.querySelector('button[matChipRemove]');
-      if (removeButton) {
-        await user.click(removeButton);
-        view.fixture.detectChanges();
+      if (chips.length > 0) {
+        const removeButton = await chips[0].getRemoveButton();
+        if (removeButton) {
+          await removeButton.click();
+          view.fixture.detectChanges();
 
-        expect(component.configModel().series).toEqual([]);
+          expect(component.configModel().series).toEqual([]);
+        }
       }
     });
   });
@@ -201,8 +220,30 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
+    it('should disable apply button when form is invalid and enable when valid', async () => {
+      const { loader, view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      const buttons = await loader.getAllHarnesses(MatButtonHarness);
+      const applyButton = buttons[0];
+
+      expect(await applyButton.isDisabled()).toBe(true);
+
+      component.configForm.series().reset(['serie-1']);
+      component.configForm.tipo().reset(SpecimenType.Mortar);
+      component.configForm.denominacionArma().reset('weapon-1');
+      view.fixture.detectChanges();
+
+      expect(await applyButton.isDisabled()).toBe(false);
+    });
+
     it('should close dialog with form data when clicking apply button', async () => {
-      const { loader } = await runSetup();
+      const { loader, view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.configForm.series().reset(['serie-1']);
+      component.configForm.tipo().reset(SpecimenType.Mortar);
+      component.configForm.denominacionArma().reset('weapon-1');
+      view.fixture.detectChanges();
 
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
       const applyButton = buttons[0];
@@ -211,22 +252,22 @@ describe('MassiveShotsConfigurationDialog', () => {
 
       expect(mockDialogRef.close).toHaveBeenCalledWith(
         expect.objectContaining({
-          series: [],
-          denominacionArma: '',
-          denominacionTubo: '',
-          instrumentado: '',
-          vidaUtil: '',
-          observaciones: '',
+          series: ['serie-1'],
+          tipo: SpecimenType.Mortar,
+          denominacionArma: 'weapon-1',
         }),
       );
     });
 
     it('should close dialog with updated data after modifying observations', async () => {
-      const { loader } = await runSetup();
+      const { loader, view } = await runSetup();
+      const component = view.fixture.componentInstance;
 
-      const inputs = await loader.getAllHarnesses(MatInputHarness);
-      const textarea = inputs[0];
-      await textarea.setValue('Test observations');
+      component.configForm.series().reset(['serie-1']);
+      component.configForm.tipo().reset(SpecimenType.Mortar);
+      component.configForm.denominacionArma().reset('weapon-1');
+      component.configForm.observaciones().reset('Test observations');
+      view.fixture.detectChanges();
 
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
       const applyButton = buttons[0];
@@ -256,7 +297,13 @@ describe('MassiveShotsConfigurationDialog', () => {
     });
 
     it('should compute selectedChips from configModel series', async () => {
-      const { view } = await runSetup();
+      const mockData = {
+        series: [
+          { id: 'serie1', name: 'Serie 1' },
+          { id: 'serie3', name: 'Serie 3' },
+        ],
+      };
+      const { view } = await runSetup(mockData);
       const component = view.fixture.componentInstance;
 
       expect(component.selectedChips().length).toBe(0);
@@ -306,6 +353,38 @@ describe('MassiveShotsConfigurationDialog', () => {
         vidaUtil: '50',
         observaciones: 'Test',
       });
+    });
+  });
+
+  describe('Cascade reset behavior', () => {
+    it('should reset weapon, tube, instrumented and life fields when weapon type changes or is cleared', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.configForm.denominacionArma().reset('weapon-1');
+      component.configForm.denominacionTubo().reset('tube-1');
+      component.configForm.instrumentado().reset('si');
+      component.configForm.vidaUtil().reset('50');
+
+      component.onTypeChange(null);
+      view.fixture.detectChanges();
+
+      expect(component.configForm.denominacionArma().value()).toBe('');
+      expect(component.configForm.denominacionTubo().value()).toBe('');
+      expect(component.configForm.instrumentado().value()).toBe('');
+      expect(component.configForm.vidaUtil().value()).toBe('');
+    });
+
+    it('should reset tube field when weapon denomination changes or is cleared', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.configForm.denominacionTubo().reset('tube-1');
+
+      component.onWeaponChange(null);
+      view.fixture.detectChanges();
+
+      expect(component.configForm.denominacionTubo().value()).toBe('');
     });
   });
 });

@@ -170,7 +170,8 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
                             [readonly]="readonly()"
                             [serieIndex]="i"
                             [shotIndex]="j"
-                            [(shot)]="serie.shots[j]"
+                            [shot]="shot"
+                            (shotChange)="onShotChange(i, j, $event)"
                           ></tr>
                         }
                       </tbody>
@@ -330,10 +331,23 @@ export class Armament implements OnInit {
   readonly armamentForm = form(this.armamentSignal, (root) => {
     applyEach(root, (serie) => {
       applyEach(serie.shots, (shotPath) => {
-        required(shotPath.armament.weaponType);
-        required(shotPath.armament.weaponExternalId);
-        required(shotPath.armament.tubeExternalId, {
-          when: ({ valueOf }) => valueOf(shotPath.armament.weaponType)?.toLowerCase() !== SpecimenType.Mortar,
+        required(shotPath.armament.weaponExternalId, {
+          when: ({ valueOf }) => {
+            const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
+            return !!weaponType && weaponType !== SpecimenType.Weapon;
+          },
+        });
+        required(shotPath.armament.isInstrumented, {
+          when: ({ valueOf }) => {
+            const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
+            return !!weaponType && weaponType !== SpecimenType.Weapon;
+          },
+        });
+        required(shotPath.armament.tubeLifePercentage, {
+          when: ({ valueOf }) => {
+            const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
+            return !!weaponType && weaponType !== SpecimenType.Weapon;
+          },
         });
 
         disabled(shotPath.armament.weaponType, () => this.readonly());
@@ -358,6 +372,20 @@ export class Armament implements OnInit {
   protected getShotPath(i: number, j: number): ShotFormPath {
     const root = this.armamentForm as unknown as ArmamentFormType;
     return root[i].shots[j] as unknown as ShotFormPath;
+  }
+
+  onShotChange(serieIndex: number, shotIndex: number, updatedShot: ArmamentSerieShot): void {
+    this.armamentSignal.update((series) => {
+      // Mutate armament in-place to preserve FieldTree node identity in Signal Forms.
+      // Creating new object references forces Signal Forms to rebuild FieldTree nodes,
+      // causing a timing issue where formPath is stale when conditional templates re-render.
+      const shot = series[serieIndex]?.shots[shotIndex];
+      if (shot) {
+        Object.assign(shot.armament, updatedShot.armament);
+      }
+      // Return a new top-level array reference to trigger Angular change detection
+      return [...series];
+    });
   }
 
   async openMassiveConfiguration(): Promise<void> {

@@ -1,13 +1,13 @@
 import { httpResource } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { injectExecutionEndpoint } from '@intaqalab/config';
+import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
 import type {
   EquipmentMagnitudeTagEnum,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
-  WidgetId
+  WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -125,6 +125,14 @@ export interface PlanningApprovalRequest {
   comments?: string | null;
 }
 
+export interface PlanningSeriesItem {
+  id: string;
+  name: string;
+  shotQuantity?: number;
+  executionOrder?: number;
+  observations?: string;
+}
+
 // ============= Params Signals =============
 
 interface ExecutionParams {
@@ -230,6 +238,24 @@ interface EquipmentSelectorUpdateParams extends ExecutionParams {
 export class ExecutionService {
   readonly #lifecycleService = inject(FireTrialLifecycleService);
   readonly #executionUrl = injectExecutionEndpoint();
+  readonly #planningUrl = injectPlanningEndpoint();
+
+  // ── PLANNING SERIES ──────────────────────────────────────────────────────
+
+  readonly #getPlanningSeriesParams = signal<ExecutionParams | null>(null);
+
+  readonly planningSeriesResource = httpResource<PlanningSeriesItem[]>(() => {
+    const params = this.#getPlanningSeriesParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/series`,
+      method: 'GET',
+    };
+  });
+
+  getPlanningSeries(fireTrialId: FireTrial['id']): void {
+    this.#getPlanningSeriesParams.set({ fireTrialId, _t: Date.now() });
+  }
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
 

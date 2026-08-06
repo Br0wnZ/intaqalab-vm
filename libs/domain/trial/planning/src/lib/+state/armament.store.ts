@@ -92,7 +92,7 @@ export const ArmamentStore = signalStore(
 
       isLoadingWeaponDenominations: computed(() => armamentService.weaponDenominationsResource.isLoading()),
 
-      // Denominaciones tubo reactivas (filtradas por familyId del arma seleccionada)
+      // Equipos físicos de tubo reactivos (filtrados por familyId del arma seleccionada)
       tubeDenominations: computed<SpecimenItem[]>(() => {
         const response = safeResourceValue(armamentService.tubeDenominationsResource);
         return response?.items ?? [];

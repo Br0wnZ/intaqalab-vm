@@ -1,13 +1,14 @@
 import { HttpContext, HttpParams, httpResource } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
-import { TOAST_FEEDBACK } from '@intaqalab/config';
+import { injectFireTrialsEndpoint, TOAST_FEEDBACK } from '@intaqalab/config';
 import type { FireTrial, PaginatedApiResponse, TrialSearchFilters, UpsertFireTrial } from '@intaqalab/models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TrialsDataService {
+  readonly #REQUEST_TIMESTAMP = () => Date.now();
+
   readonly #searchFilters = signal<Partial<TrialSearchFilters> | null>(null);
 
   readonly #url = injectFireTrialsEndpoint();
@@ -55,16 +56,16 @@ export class TrialsDataService {
 
   // ── FIRE TRIAL BY ID ──────────────────────────────────────────────────────
 
-  readonly #byIdTrigger = signal<string | null>(null);
+  readonly #byIdTrigger = signal<{ id: string; _t: number } | null>(null);
 
   readonly byIdResource = httpResource<FireTrial>(() => {
-    const id = this.#byIdTrigger();
-    if (!id) return undefined;
-    return { url: `${this.#url}/${id}` };
+    const trigger = this.#byIdTrigger();
+    if (!trigger) return undefined;
+    return { url: `${this.#url}/${trigger.id}` };
   });
 
   loadById(id: string): void {
-    this.#byIdTrigger.set(id);
+    this.#byIdTrigger.set({ id, _t: this.#REQUEST_TIMESTAMP() });
   }
 
   readonly source = httpResource<PaginatedApiResponse<FireTrial>>(() => {

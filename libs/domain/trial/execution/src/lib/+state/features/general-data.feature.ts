@@ -129,6 +129,11 @@ export function withGeneralData() {
 
       isApprovingPlanning: computed(() => executionService.approvePlanningResource.isLoading()),
 
+      // Planning Series
+      planningSeries: computed(() => safeResourceValue(executionService.planningSeriesResource)),
+
+      isLoadingPlanningSeries: computed(() => executionService.planningSeriesResource.isLoading()),
+
       // Widget Preferences
       preferencesByRole: computed(() => safeResourceValue(executionService.preferencesByRoleResource)),
 
@@ -150,6 +155,8 @@ export function withGeneralData() {
         this.loadSecurityCountdown(fireTrialId);
         this.loadPlanning(fireTrialId);
         this.loadPlanningState(fireTrialId);
+        this.loadProfilesReadiness(fireTrialId);
+        this.loadPlanningSeries(fireTrialId);
       },
 
       setFireTrialId(fireTrialId: string | null): void {
@@ -161,6 +168,8 @@ export function withGeneralData() {
           this.loadSecurityCountdown(fireTrialId);
           this.loadPlanning(fireTrialId);
           this.loadPlanningState(fireTrialId);
+          this.loadProfilesReadiness(fireTrialId);
+          this.loadPlanningSeries(fireTrialId);
         }
       },
 
@@ -224,6 +233,14 @@ export function withGeneralData() {
         body: Parameters<typeof executionService.approveExecutionPlanning>[1],
       ): void {
         executionService.approveExecutionPlanning(fireTrialId, body);
+      },
+
+      loadProfilesReadiness(fireTrialId: string): void {
+        executionService.getProfilesReadiness(fireTrialId);
+      },
+
+      loadPlanningSeries(fireTrialId: string): void {
+        executionService.getPlanningSeries(fireTrialId);
       },
 
       loadPreferencesByRole(fireTrialId: string, roleName: string): void {
@@ -292,6 +309,8 @@ export function withGeneralData() {
           store.loadSecurityCountdown(fireTrialId);
           store.loadPlanning(fireTrialId);
           store.loadPlanningState(fireTrialId);
+          store.loadProfilesReadiness(fireTrialId);
+          store.loadPlanningSeries(fireTrialId);
         }
       },
     }),

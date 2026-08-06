@@ -3,6 +3,8 @@ import type { SpecimenType } from './specimen.model';
 
 export type ArmamentData = {
   weaponType?: SpecimenType | '';
+  /** Alias que devuelve el backend en el GET en lugar de weaponType */
+  itemType?: string;
   weaponName?: string;
   /** ID numérico del arma en Calibry (integer según contrato Swagger) */
   weaponExternalId?: number;

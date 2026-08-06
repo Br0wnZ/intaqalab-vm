@@ -27,3 +27,5 @@ export * from './lib/skeleton/skeleton-card';
 export * from './lib/skeleton/skeleton-table';
 export * from './lib/skeleton/skeleton-form';
 export * from './lib/error-state/error-state';
+
+export * from './lib/save-button/save-button';

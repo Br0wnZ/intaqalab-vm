@@ -39,7 +39,7 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440003",
           "armament": {
-            "weaponType": "BUNDLE",
+            "weaponType": "WEAPON",
             "weaponName": "Obús M107",
             "weaponExternalId": 3,
             "tubeName": "Tubo calibrador T-2",
@@ -52,7 +52,7 @@
         {
           "shotId": "750e8400-e29b-41d4-a716-446655440004",
           "armament": {
-            "weaponType": "BUNDLE",
+            "weaponType": "WEAPON",
             "weaponName": "Obús M107",
             "weaponExternalId": 3,
             "tubeName": "Tubo calibrador T-2",

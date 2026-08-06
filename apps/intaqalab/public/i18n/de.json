@@ -995,6 +995,10 @@
   "UI": {
     "SKELETON": {
       "LOADING": "Wird geladen..."
+    },
+    "SAVE_BUTTON": {
+      "LABEL": "Speichern",
+      "SAVING_TOOLTIP": "Änderungen werden gespeichert..."
     }
   },
   "UTILS_TRIALS": {

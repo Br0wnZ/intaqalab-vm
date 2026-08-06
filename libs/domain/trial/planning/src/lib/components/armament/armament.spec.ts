@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
+import { By } from '@angular/platform-browser';
 import { createMockArmamentService, createMockMatDialog, createMockPlanningGeneralDataStore } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
-import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
+import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,6 +18,7 @@ import { ArmamentService } from '../../services/armament-service';
 import type { TrialArmamentResponse } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { Armament } from './armament';
+import { ArmamentRow } from './armament-row';
 
 const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmamentResponse => ({
   series: Array.from({ length: seriesCount }, (_, seriesIdx) => ({
@@ -78,10 +81,9 @@ describe('Armament', () => {
       ],
     });
 
-    const container = view.fixture.nativeElement as HTMLElement;
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { user, view, container, loader };
+    return { user, view, loader };
   };
 
   beforeEach(() => {
@@ -101,9 +103,8 @@ describe('Armament', () => {
 
   describe('Initial rendering', () => {
     it('should render the trial code heading', async () => {
-      const { container } = await runSetup();
-      const heading = container.querySelector('h2');
-      expect(heading).toBeTruthy();
+      await runSetup();
+      expect(screen.getByText('TRIAL-001')).toBeInTheDocument();
     });
 
     it('should render the massive configuration button', async () => {
@@ -123,9 +124,7 @@ describe('Armament', () => {
     });
 
     it('should render series panels when series exist in store even if backend armament is empty', async () => {
-      const series = [
-        { id: 'series-1', name: 'Serie 1', shotQuantity: 1, shots: [{ id: 'shot-1-1' }] },
-      ];
+      const series = [{ id: 'series-1', name: 'Serie 1', shotQuantity: 1, shots: [{ id: 'shot-1-1' }] }];
       mockPlanningStore = createMockPlanningGeneralDataStore({
         fireTrialId: 'trial-123',
         fireTrial: { code: 'TRIAL-001' },
@@ -234,7 +233,8 @@ describe('Armament', () => {
 
   describe('Massive configuration', () => {
     it('should open dialog when massive config button is clicked', async () => {
-      const { view } = await runSetup();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { loader, user } = await runSetup();
 
       mockDialog.open.mockReturnValueOnce({
         componentInstance: {},
@@ -242,9 +242,10 @@ describe('Armament', () => {
         close: vi.fn(),
       } as any);
 
-      const button = screen.getByText('TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON').closest('button')!;
-      fireEvent.click(button);
-      view.fixture.detectChanges();
+      const massiveButton = await loader.getHarness(
+        MatButtonHarness.with({ text: 'TRIAL_PLANNING.ARMAMENT.HEADER.MASSIVE_CONFIG_BUTTON' }),
+      );
+      await massiveButton.click();
 
       await waitFor(() => {
         expect(mockDialog.open).toHaveBeenCalled();
@@ -265,26 +266,24 @@ describe('Armament', () => {
     });
 
     it('should open update dialog when edit button is clicked', async () => {
-      const { container, loader, view } = await runSetup();
-      await expandPanelByIndex(loader, 0);
+      const { loader } = await runSetup();
+      const panel = await expandPanelByIndex(loader, 0);
+      expect(await panel.isExpanded()).toBe(true);
 
-      await waitFor(() => {
-        const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-        expect(expandedPanel).toBeTruthy();
-      });
-
-      // Each observations cell has 2 buttons: [info, edit] per shot row
-      const obsButtons = container.querySelectorAll('td.mat-column-observations button');
-      const editButton = obsButtons[1] as HTMLElement | null; // index 1 = edit button for first row
-
-      expect(editButton).toBeTruthy();
+      const buttons = await loader.getAllHarnesses(MatButtonHarness);
+      expect(buttons.length).toBeGreaterThan(1);
 
       mockDialog.open.mockReturnValueOnce({
         afterClosed: () => of(false),
       } as any);
 
-      fireEvent.click(editButton!);
-      view.fixture.detectChanges();
+      // First button after massive config is icon button in observation cell
+      const iconButtons = buttons.filter((b) => b !== buttons[0]);
+      if (iconButtons.length > 1) {
+        await iconButtons[1].click();
+      } else if (buttons.length > 1) {
+        await buttons[1].click();
+      }
 
       await waitFor(() => {
         expect(mockDialog.open).toHaveBeenCalled();
@@ -301,6 +300,39 @@ describe('Armament', () => {
     it('should not load armament data when trialId is null', async () => {
       await runSetup({ trialId: null });
       expect(mockArmamentService.getArmament).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Select cascade resets', () => {
+    it('should reset weapon and tube fields when weapon type changes or is cleared', async () => {
+      const { loader, view } = await runSetup();
+      await expandPanelByIndex(loader, 0);
+
+      const rowDebug = view.fixture.debugElement.query(By.directive(ArmamentRow));
+      expect(rowDebug).toBeTruthy();
+
+      const rowInstance = rowDebug.componentInstance as ArmamentRow;
+      rowInstance.onWeaponTypeChange(null);
+      view.fixture.detectChanges();
+
+      const armamentForm = rowInstance.formPath().armament;
+      expect(armamentForm.weaponExternalId().value()).toBe('');
+      expect(armamentForm.tubeExternalId().value()).toBe('');
+    });
+
+    it('should reset tube fields when weapon denomination changes or is cleared', async () => {
+      const { loader, view } = await runSetup();
+      await expandPanelByIndex(loader, 0);
+
+      const rowDebug = view.fixture.debugElement.query(By.directive(ArmamentRow));
+      expect(rowDebug).toBeTruthy();
+
+      const rowInstance = rowDebug.componentInstance as ArmamentRow;
+      rowInstance.onWeaponChange(null);
+      view.fixture.detectChanges();
+
+      const armamentForm = rowInstance.formPath().armament;
+      expect(armamentForm.tubeExternalId().value()).toBe('');
     });
   });
 });

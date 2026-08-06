@@ -141,9 +141,11 @@ export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto 
       <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
         {{ 'COMMONS.CANCEL' | translate }}
       </button>
-      <button mat-flat-button color="primary" [disabled]="form.invalid()" (click)="submit()">
-        {{ 'COMMONS.CREATE' | translate }}
-      </button>
+      <ui-save-button
+        label="COMMONS.CREATE"
+        [isSaving]="isSubmitting()"
+        (save)="submit()"
+      />
     </mat-dialog-actions>
   `,
 })
@@ -184,4 +186,5 @@ this.#dialog.open(MyDialogComponent, {
 - `afterClosed().subscribe()` siempre valida `result?.action` antes de actuar.
 - `mat-dialog-close` en el botón cancelar (shorthand sin lógica).
 - `(click)="confirm()"` en el botón de acción principal (lógica en el método).
+- Para acciones de guardado, creación o confirmación con estado de envío en diálogos de formulario, usa **SIEMPRE** `<ui-save-button>` (`SaveButton` de `@intaqalab/ui`).
 - NUNCA uses `private` — usa `#` para privado y `protected` para lo expuesto al template.

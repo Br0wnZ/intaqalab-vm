@@ -2302,6 +2302,10 @@
   "UI": {
     "SKELETON": {
       "LOADING": "Cargando..."
+    },
+    "SAVE_BUTTON": {
+      "LABEL": "Guardar",
+      "SAVING_TOOLTIP": "Guardando cambios..."
     }
   },
   "UTILS_TRIALS": {
