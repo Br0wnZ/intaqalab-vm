@@ -93,7 +93,7 @@ const baseConfig = [
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.ts', '*.mts', '*.cts', '*.js', '*.mjs', '*.cjs'],
+          allowDefaultProject: ['*.ts', '*.mts', '*.cts', '*.js', '*.mjs', '*.cjs', '.opencode/*.ts', '.opencode/*/*.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },

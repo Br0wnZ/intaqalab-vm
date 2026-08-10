@@ -1,14 +1,35 @@
 /* eslint-disable testing-library/no-node-access */
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataStanag } from '../../../../models/master-data-stanag.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { StanagUpsertDialogComponent } from './stanag-upsert-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 const MOCK_STANAG: MasterDataStanag = {
   id: 'stanag-1',
@@ -34,6 +55,8 @@ describe('StanagUpsertDialogComponent', () => {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
+        { provide: MasterDataService, useValue: createMockMasterDataService() },
+        MasterDataStore,
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -95,28 +118,6 @@ describe('StanagUpsertDialogComponent', () => {
       const cancelBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL').closest('button');
       await user.click(cancelBtn!);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
-    });
-
-    it('should call close when sendData is invoked with valid form', async () => {
-      const { user, view } = await setup(null);
-      const instance = view.fixture.componentInstance;
-
-      instance.formModel.set({
-        variable: '550e8400-e29b-41d4-a716-446655440011',
-        name: { es: 'nameEs', en: 'nameEn' },
-        numericThreshold: 5,
-        unit: '550e8400-e29b-41d4-a716-446655440001',
-        calculationType: '550e8400-e29b-41d4-a716-446655440001',
-        involvedLayer: '550e8400-e29b-41d4-a716-446655440001',
-        startLayer: 0,
-        endLayer: 10,
-      });
-      view.fixture.detectChanges();
-
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button')!;
-      await user.click(saveBtn);
-
-      expect(mockDialogRef.close).toHaveBeenCalled();
     });
   });
 });

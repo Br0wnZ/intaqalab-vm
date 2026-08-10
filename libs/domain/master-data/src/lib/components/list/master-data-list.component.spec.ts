@@ -11,7 +11,6 @@ import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
 
 import { MasterDataStore } from '../../+state/master-data.store';
 import { MODAL_COMPONENT } from '../../modal.token';
@@ -25,8 +24,6 @@ const MOCK_ITEMS = [
   { id: 'id-2', label: 'Material 2', name: { es: 'Material 2', en: 'Material 2' }, active: false },
 ];
 
-type DialogCloseResult = (typeof MOCK_ITEMS)[number] | null;
-
 function paginate<T>(items: T[]) {
   return { page: 1, pageSize: 10, totalElements: items.length, items };
 }
@@ -39,8 +36,11 @@ function makeMockService() {
     updateResource: createMockResource(),
     deleteById: createMockResource(),
     create: vi.fn(),
-    updateItem: vi.fn(),
-    deleteItem: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
   };
 }
 
@@ -58,7 +58,7 @@ const MOCK_VIEW: MasterView = {
   },
 };
 
-const mockDialogRef = { afterClosed: vi.fn(() => of<DialogCloseResult>(null)), close: vi.fn() };
+const mockDialogRef = { afterClosed: vi.fn(), close: vi.fn() };
 const mockMatDialog = { open: vi.fn(() => mockDialogRef) };
 
 const setup = async (masterView: MasterView = MOCK_VIEW) => {
@@ -83,7 +83,6 @@ const setup = async (masterView: MasterView = MOCK_VIEW) => {
 describe('MasterDataListComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDialogRef.afterClosed.mockReturnValue(of(null));
     mockMatDialog.open.mockReturnValue(mockDialogRef);
   });
 
@@ -135,8 +134,10 @@ describe('MasterDataListComponent', () => {
     it('should display totalElements from store in the paginator', async () => {
       const { view } = await setup();
       view.fixture.detectChanges();
-      const instance = view.fixture.componentInstance;
-      expect(instance.store.totalElements()).toBe(MOCK_ITEMS.length);
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const paginator = await loader.getHarness(MatPaginatorHarness);
+      const rangeLabel = await paginator.getRangeLabel();
+      expect(rangeLabel).toContain(String(MOCK_ITEMS.length));
     });
   });
 
@@ -146,17 +147,6 @@ describe('MasterDataListComponent', () => {
       const createBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE').closest('button')!;
       await user.click(createBtn);
       expect(mockMatDialog.open).toHaveBeenCalled();
-    });
-
-    it('should call store.createItem when dialog closes with result', async () => {
-      const newItem = { ...MOCK_ITEMS[0], id: 'new-id' };
-      mockDialogRef.afterClosed.mockReturnValue(of(newItem));
-
-      const { user, view } = await setup();
-      const createBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE').closest('button')!;
-      await user.click(createBtn);
-
-      expect(view.fixture.componentInstance.store.items()).toBeDefined();
     });
 
     it('should open edit dialog when edit button is clicked', async () => {
@@ -175,6 +165,69 @@ describe('MasterDataListComponent', () => {
         }
       }
       expect(mockMatDialog.open).toHaveBeenCalled();
+    });
+  });
+
+  describe('View States', () => {
+    async function renderWithService(mockService: ReturnType<typeof makeMockService>) {
+      return render(MasterDataListComponent, {
+        imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+        componentInputs: { masterView: MOCK_VIEW },
+        providers: [
+          provideTestingEnvironment(),
+          { provide: MasterDataService, useValue: mockService },
+          { provide: MODAL_COMPONENT, useValue: MasterDataDefaultUpsertDialogComponent },
+          { provide: MatDialog, useValue: mockMatDialog },
+          MasterDataStore,
+        ],
+      });
+    }
+
+    it('should show skeleton table while loading', async () => {
+      const mockService = makeMockService();
+      mockService.paginatedResponse._setLoading(true);
+
+      await renderWithService(mockService);
+
+      // ui-skeleton renders aria-label="UI.SKELETON.LOADING" on each cell
+      expect(screen.getAllByLabelText('UI.SKELETON.LOADING').length).toBeGreaterThan(0);
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    });
+
+    it('should not show skeleton table when not loading', async () => {
+      const mockService = makeMockService();
+      mockService.paginatedResponse._setLoading(false);
+
+      await renderWithService(mockService);
+
+      expect(screen.queryByLabelText('UI.SKELETON.LOADING')).not.toBeInTheDocument();
+    });
+
+    it('should show error title when data fails to load', async () => {
+      const mockService = makeMockService();
+      mockService.paginatedResponse._setError(new Error('Server error'));
+
+      await renderWithService(mockService);
+
+      expect(screen.getByText('MASTER_DATA.ERRORS.LOAD_FAILED_TITLE')).toBeInTheDocument();
+    });
+
+    it('should show error detail message when data fails to load', async () => {
+      const mockService = makeMockService();
+      mockService.paginatedResponse._setError(new Error('Server error'));
+
+      await renderWithService(mockService);
+
+      expect(screen.getByText('MASTER_DATA.ERRORS.LOAD_FAILED_DETAIL')).toBeInTheDocument();
+    });
+
+    it('should hide data table when error occurs', async () => {
+      const mockService = makeMockService();
+      mockService.paginatedResponse._setError(new Error('Server error'));
+
+      await renderWithService(mockService);
+
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
   });
 });

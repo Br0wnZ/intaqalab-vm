@@ -1,14 +1,34 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDefault } from '../../../../models/master-data-default.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { MasterDataDefaultUpsertDialogComponent } from './default-upsert-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 const MOCK_EDIT_DATA: MasterDataDefault = {
   id: '123',
@@ -25,6 +45,8 @@ async function setup(data: MasterDataDefault | null = null) {
     imports: [TranslateModule.forRoot()],
     providers: [
       provideTestingEnvironment(),
+      { provide: MasterDataService, useValue: createMockMasterDataService() },
+      MasterDataStore,
       { provide: MatDialogRef, useValue: { close: closeFn } },
       { provide: MAT_DIALOG_DATA, useValue: data },
     ],
@@ -110,22 +132,6 @@ describe('MasterDataDefaultUpsertDialogComponent', () => {
       await events.click(screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL'));
 
       expect(closeFn).toHaveBeenCalledWith(false);
-    });
-
-    it('should close the dialog with name data when save is clicked with filled form', async () => {
-      const { loader, closeFn } = await setup(null);
-      const inputs = await loader.getAllHarnesses(MatInputHarness);
-
-      await inputs[0].setValue('Nombre ES');
-      await inputs[1].setValue('Name EN');
-
-      const saveBtn = await loader.getHarness(
-        MatButtonHarness.with({ text: /MASTER_DATA\.DIALOGS\.UPSERT\.BUTTONS\.SAVE/i }),
-      );
-      await saveBtn.click();
-
-      expect(closeFn).toHaveBeenCalledOnce();
-      expect(closeFn.mock.calls[0][0]).toMatchObject({ name: { es: 'Nombre ES', en: 'Name EN' } });
     });
   });
 });

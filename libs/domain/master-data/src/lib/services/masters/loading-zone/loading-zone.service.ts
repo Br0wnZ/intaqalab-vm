@@ -22,11 +22,24 @@ export class LoadingZoneService implements MasterDataService<MasterDataLoadingZo
     this.#crud.create(record);
   }
 
-  updateItem(record: MasterDataLoadingZone): void {
-    this.#crud.updateItem(record);
+  update(record: MasterDataLoadingZone): void {
+    this.#crud.update(record);
   }
 
-  deleteItem(id: string): void {
-    this.#crud.deleteItem(id);
+  resetUpsert() {
+    this.#crud.resetSaveItem();
+    this.#crud.resetUpdateItem();
+  }
+
+  resetSwitchStatus() {
+    this.#crud.resetUpdateItem();
+  }
+
+  delete(id: string): void {
+    this.#crud.delete(id);
+  }
+
+  resetDelete() {
+    this.#crud.resetDeleteItem();
   }
 }

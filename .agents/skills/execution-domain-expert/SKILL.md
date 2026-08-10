@@ -85,12 +85,18 @@ Usa `injectExecutionEndpoint()` de `@intaqalab/config` para construir la URL bas
 
 ### Tag: Execution Readiness
 
-| operationId          | Método | Path                                    | Descripción                                          |
-| -------------------- | ------ | --------------------------------------- | ---------------------------------------------------- |
-| getProfilesReadiness | GET    | /execution/readiness                    | Filtra según rol. Responde ProfilesReadinessResponse |
-| setProfileReadiness  | PUT    | /execution/readiness/profiles/{profile} | Solo series en estado PENDING                        |
+| operationId               | Método | Path                                                      | Descripción                                          |
+| ------------------------- | ------ | --------------------------------------------------------- | ---------------------------------------------------- |
+| getProfilesReadiness      | GET    | /execution/readiness                                      | Filtra según rol. Responde ProfilesReadinessResponse |
+| setProfileReadiness       | PUT    | /execution/readiness/profiles/{profile}                   | Solo series en estado PENDING                        |
+| setSeriesProfileReadiness | PUT    | /execution/readiness/profiles/{profile}/series/{seriesId} | Actualización de readiness por serie individual      |
 
 Profiles enum: VELOCITIES, PRESSURES, VIDEO, TRAJECTOGRAPHY, MUNITIONS, ARMAMENT
+
+> **📌 Nota de Arquitectura de Widgets & Guardado**:
+> Todos los widgets de la Execution Grid heredan de `BaseFormWidgetComponent`. En `ngOnInit`/`ngOnDestroy` registran su instancia en `WidgetStateService` (`registerWidgetInstance` / `unregisterWidgetInstance`).
+> El botón "Guardar" en la cabecera del contenedor `execution.ts` llama a `WidgetStateService.saveAllDirtyForms()`, ejecutando en paralelo (`Promise.all`) la función `saveForm()` de cada widget dirty.
+> En `saveForm()`, se invoca la mutación correspondiente (ej. `setSeriesProfileReadiness` por cada serie modificada).
 
 ### Tag: Execution Preferences
 

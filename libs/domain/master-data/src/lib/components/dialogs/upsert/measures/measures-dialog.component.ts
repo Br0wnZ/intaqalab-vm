@@ -8,10 +8,11 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
-import { IntaSignalSelectComponent } from '@intaqalab/ui';
+import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import { MEASUREMENTS_AND_RECORDS_UNITS } from '../../../../data/measures.constants';
 import {
   type MasterDataMeasures,
@@ -19,6 +20,7 @@ import {
   type MeasurementsAndRecordsQualificationType,
   injectMeasuresEquipments,
 } from '../../../../models/master-data-measures.model';
+import type { MasterDataResponseType } from '../../../../models/utils.model';
 
 @Component({
   imports: [
@@ -37,6 +39,7 @@ import {
     MatSelectModule,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -322,15 +325,12 @@ import {
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-raised-button
-        cdkFocusInitial
-        class="!bg-purple-600 hover:bg-purple-700 cursor-pointer !text-white disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="sendData()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="sendData()"
+      />
     </mat-dialog-actions>
   `,
   styles: ``,
@@ -341,12 +341,24 @@ export class MeasurementsAndRecordsDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MeasurementsAndRecordsDialogComponent>);
   readonly data = inject<MasterDataMeasures | null>(MAT_DIALOG_DATA);
   readonly #translate = inject(TranslateService);
+  readonly store = inject(MasterDataStore);
 
   constructor() {
     effect(() => {
       const data = this.data;
 
       if (data) this.formModel.set(data);
+    });
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
     });
   }
 
@@ -464,14 +476,16 @@ export class MeasurementsAndRecordsDialogComponent {
       dataToSend[key as keyof MasterDataMeasures] =
         key in specialOptionsToCast ? specialOptionsToCast[key as string](value) : value;
 
-      // REMOVE WITH NEW API
       if (form.qualificationType === 'QUALITATIVE') {
-        dataToSend['uncertainty' as keyof MasterDataMeasures] = 'string';
         dataToSend['grubbs' as keyof MasterDataMeasures] = false;
       }
     });
 
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...(dataToSend as unknown as MasterDataResponseType), active: true });
+    } else {
+      this.store.update(dataToSend as unknown as MasterDataResponseType);
+    }
   }
 
   #castToValueCode(nameEn: string) {

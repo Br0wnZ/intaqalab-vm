@@ -1,7 +1,8 @@
-import { httpResource } from '@angular/common/http';
+import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
+import { firstValueFrom } from 'rxjs';
 
 import type {
   EquipmentMagnitudeTagEnum,
@@ -164,6 +165,11 @@ export type ExecutionWidgetLayout = {
   widgetsLayout: string[];
 };
 
+export type SeriesReadinessRequest = {
+  isReady: boolean;
+  observations?: string;
+};
+
 export type SeriesReadinessItem = {
   seriesId: string;
   isReady: boolean;
@@ -236,9 +242,11 @@ interface EquipmentSelectorUpdateParams extends ExecutionParams {
   providedIn: 'root',
 })
 export class ExecutionService {
+  readonly #http = inject(HttpClient);
   readonly #lifecycleService = inject(FireTrialLifecycleService);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
+
 
   // ── PLANNING SERIES ──────────────────────────────────────────────────────
 
@@ -555,7 +563,7 @@ export class ExecutionService {
     this.#getReadinessParams.set({ fireTrialId, _t: Date.now() });
   }
 
-  // ── EXECUTION READINESS: SET BY PROFILE ────────────────────────────────
+  // ── EXECUTION READINESS: SET BY PROFILE & SERIES ────────────────────────
 
   readonly #setReadinessProfileParams = signal<ReadinessProfileParams | null>(null);
 
@@ -569,17 +577,48 @@ export class ExecutionService {
     };
   });
 
-  setProfileReadiness(
+  /**
+   * Registra el readiness de un perfil para una serie individual en la API.
+   */
+  setSeriesProfileReadiness(
     fireTrialId: FireTrial['id'],
     profile: ExecutionTechnicalProfile,
-    body: ProfileReadinessRequest,
-  ): void {
-    this.#setReadinessProfileParams.set({ fireTrialId, profile, body, _t: Date.now() });
+    seriesId: string,
+    body: SeriesReadinessRequest,
+  ): Promise<SeriesReadinessItem> {
+    const url = `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/readiness/profiles/${profile}/series/${seriesId}`;
+    return firstValueFrom(this.#http.put<SeriesReadinessItem>(url, body));
+  }
+
+  /**
+   * Registra el readiness de un perfil ejecutando una llamada individual por cada serie de forma óptima y paralela.
+   */
+  async setProfileReadiness(
+    fireTrialId: FireTrial['id'],
+    profile: ExecutionTechnicalProfile,
+    bodyOrItems: ProfileReadinessRequest | SeriesReadinessItem[],
+  ): Promise<SeriesReadinessItem[]> {
+    const items = Array.isArray(bodyOrItems) ? bodyOrItems : bodyOrItems.seriesReadiness;
+    const requests = items.map((item) =>
+      this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
+        isReady: item.isReady,
+        observations: item.observations,
+      }),
+    );
+    // Disparar legacy trigger resource también por compatibilidad si es necesario
+    this.#setReadinessProfileParams.set({
+      fireTrialId,
+      profile,
+      body: Array.isArray(bodyOrItems) ? { seriesReadiness: bodyOrItems } : bodyOrItems,
+      _t: Date.now(),
+    });
+    return Promise.all(requests);
   }
 
   resetSetProfileReadiness(): void {
     this.#setReadinessProfileParams.set(null);
   }
+
 
   // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
 

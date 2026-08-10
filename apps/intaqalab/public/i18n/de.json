@@ -1115,5 +1115,11 @@
       "LOAD_FAILED_TITLE": "Fehler beim Laden des Testformulars",
       "LOAD_FAILED_DETAIL": "Die Testformulardaten konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
     }
+  },
+  "MASTER_DATA": {
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Fehler beim Laden der Daten",
+      "LOAD_FAILED_DETAIL": "Die erforderlichen Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
+    }
   }
 }

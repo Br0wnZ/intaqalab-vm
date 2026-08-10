@@ -18,15 +18,28 @@ export class DimensionService implements MasterDataService<MasterDataDimension> 
   readonly updateResource = this.#crud.updateResource;
   readonly deleteById = this.#crud.deleteById;
 
-  create(record: MasterDataCreateItemType<MasterDataDimension>): void {
+  create(record: MasterDataCreateItemType<MasterDataDimension>) {
     this.#crud.create(record);
   }
 
-  updateItem(record: MasterDataDimension): void {
-    this.#crud.updateItem(record);
+  update(record: MasterDataDimension) {
+    this.#crud.update(record);
   }
 
-  deleteItem(id: string): void {
-    this.#crud.deleteItem(id);
+  resetUpsert() {
+    this.#crud.resetSaveItem();
+    this.#crud.resetUpdateItem();
+  }
+
+  resetSwitchStatus() {
+    this.#crud.resetUpdateItem();
+  }
+
+  delete(id: string) {
+    this.#crud.delete(id);
+  }
+
+  resetDelete() {
+    this.#crud.resetDeleteItem();
   }
 }

@@ -13,10 +13,11 @@ import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
-import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { IntaIconComponent, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataStanag } from '../../../../models/master-data-stanag.model';
 import type { MasterDataUpsertDialogType } from '../../../../models/utils.model';
 
@@ -34,6 +35,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     IntaIconComponent,
     NoNegativeValuesDirective,
     NoLeadingZerosDirective,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -164,15 +166,12 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-raised-button
-        cdkFocusInitial
-        class="!bg-purple-600 hover:bg-purple-700 cursor-pointer !text-white disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="sendData()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="sendData()"
+      />
     </mat-dialog-actions>
   `,
   styles: `
@@ -197,6 +196,7 @@ export class StanagUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<StanagUpsertDialogComponent>);
   readonly data = inject<MasterDataStanag | null>(MAT_DIALOG_DATA);
   readonly #translate = inject(TranslateService);
+  readonly store = inject(MasterDataStore);
 
   readonly variableNamesList = [
     {
@@ -271,6 +271,17 @@ export class StanagUpsertDialogComponent {
         this.formModel.set({
           ...data,
         });
+    });
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
     });
 
     effect(() => {
@@ -369,22 +380,22 @@ export class StanagUpsertDialogComponent {
   protected sendData() {
     const { variable, name, numericThreshold, unit, calculationType, involvedLayer, startLayer, endLayer } =
       this.formModel();
+    const payload = {
+      ...this.data,
+      variable,
+      name: { es: name.es, en: name.es },
+      numericThreshold,
+      unit,
+      calculationType,
+      involvedLayer,
+      startLayer,
+      endLayer,
+    };
 
-    const dataToSend =
-      this.form().touched() && this.form().dirty()
-        ? {
-            ...this.data,
-            variable,
-            name: { es: name.es, en: name.es },
-            numericThreshold,
-            unit,
-            calculationType,
-            involvedLayer,
-            startLayer,
-            endLayer,
-          }
-        : null;
-
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...payload, active: true });
+    } else {
+      this.store.update(payload as MasterDataStanag);
+    }
   }
 }

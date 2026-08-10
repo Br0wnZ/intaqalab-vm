@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -43,7 +37,7 @@ import { TranslateModule } from '@ngx-translate/core';
       mat-flat-button
       type="button"
       class="save-btn"
-      [disabled]="isSaving()"
+      [disabled]="isSaving() || isDisabled()"
       [attr.aria-busy]="isSaving()"
       [matTooltip]="isSaving() ? ('UI.SAVE_BUTTON.SAVING_TOOLTIP' | translate) : ''"
       (click)="save.emit()"
@@ -91,6 +85,9 @@ export class SaveButton {
 
   /** true mientras la petición PUT/POST está en vuelo */
   readonly isSaving = input.required<boolean>();
+
+  /** Boleano para deshabilitar botón. Por defecto false */
+  readonly isDisabled = input<boolean>(false);
 
   /** Emitido al hacer click (solo cuando no está guardando) */
   readonly save = output<void>();

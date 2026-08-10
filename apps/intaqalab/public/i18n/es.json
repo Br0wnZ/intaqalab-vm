@@ -301,6 +301,10 @@
     "UNAUTHORIZED": "Tu sesión ha expirado o no tienes permisos."
   },
   "MASTER_DATA": {
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Error al cargar los datos",
+      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información requerida. Inténtelo de nuevo más tarde."
+    },
     "DIALOGS": {
       "DELETE": {
         "BUTTONS": {

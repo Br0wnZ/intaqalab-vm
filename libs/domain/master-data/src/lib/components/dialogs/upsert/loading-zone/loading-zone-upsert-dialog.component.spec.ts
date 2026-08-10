@@ -1,15 +1,36 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /* eslint-disable testing-library/no-node-access */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataLoadingZone } from '../../../../models/master-data-loading-zone.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { LoadingZoneUpsertDialogComponent } from './loading-zone-upsert-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 describe('LoadingZoneUpsertDialogComponent', () => {
   const mockDialogRef = { close: vi.fn() };
@@ -31,6 +52,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MasterDataService, useValue: createMockMasterDataService() },
+        MasterDataStore,
       ],
     });
     return { user, view };
@@ -105,45 +128,6 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       const cancelBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL').closest('button');
       await user.click(cancelBtn!);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
-    });
-
-    it('should close dialog with data when save is clicked on a touched and dirty form', async () => {
-      const { user, view } = await setup(null);
-
-      // Type in zone — marks form touched and dirty
-      const zoneInput = screen.getByPlaceholderText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER');
-      await user.type(zoneInput, '1M');
-
-      // Set denominationId directly (IntaSignalSelectComponent is complex in JSDOM)
-      view.fixture.componentInstance.formModel.update((m) => ({
-        ...m,
-        denominationId: '550e8400-e29b-41d4-a716-446655440031',
-      }));
-      view.fixture.detectChanges();
-
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      await user.click(saveBtn!);
-
-      expect(mockDialogRef.close).toHaveBeenCalled();
-      const callArg = mockDialogRef.close.mock.calls[0][0];
-      expect(callArg).not.toBeNull();
-    });
-
-    it('should close dialog with null when form has not been interacted with', async () => {
-      const { view } = await setup(null);
-
-      // Set valid values via signal (no user interaction → not touched/dirty)
-      view.fixture.componentInstance.formModel.set({
-        denominationId: '550e8400-e29b-41d4-a716-446655440031',
-        zone: '1M',
-        caliber: '105',
-      });
-      view.fixture.detectChanges();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (view.fixture.componentInstance as any).sendData();
-
-      expect(mockDialogRef.close).toHaveBeenCalledWith(null);
     });
   });
 });

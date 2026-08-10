@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -9,8 +9,10 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../+state/master-data.store';
 import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-switch-status-dialog.model';
 
 @Component({
@@ -22,6 +24,7 @@ import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-s
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title>
@@ -36,9 +39,11 @@ import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-s
       <button mat-flat-button [mat-dialog-close]="false">
         {{ 'MASTER_DATA.DIALOGS.SWITCH_STATUS.BUTTONS.CANCEL' | translate }}
       </button>
-      <button mat-stroked-button [mat-dialog-close]="true">
-        {{ 'MASTER_DATA.DIALOGS.SWITCH_STATUS.BUTTONS.SWITCH' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.SWITCH_STATUS.BUTTONS.SWITCH"
+        [isSaving]="store.isUpdating()"
+        (save)="onConfirm()"
+      />
     </mat-dialog-actions>
   `,
   styles: ``,
@@ -47,6 +52,23 @@ import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-s
 })
 export class MasterDataSwitchStatusDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MasterDataSwitchStatusDialogComponent>);
-
   readonly dialog = inject<MasterDataSwitchStatusDialog>(MAT_DIALOG_DATA);
+  protected readonly store = inject(MasterDataStore);
+
+  constructor() {
+    effect(() => {
+      const hasBeenUpdate = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenUpdate) return;
+
+      this.store.resetSwitchStatus();
+
+      this.dialogRef.close(true);
+    });
+  }
+
+  protected onConfirm(): void {
+    const { item } = this.dialog;
+    this.store.update({ ...item, active: item.active });
+  }
 }

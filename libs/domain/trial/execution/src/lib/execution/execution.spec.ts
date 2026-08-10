@@ -33,7 +33,7 @@ function createMockExecutionService(
     executionProgressResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     securityCountdownResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     updateSecurityCountdownResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
-    startResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
+    startResource: { value: signal(null), isLoading: signal(false), error: signal(null), status: signal('idle') },
     pauseResource: { value: signal(null), isLoading: signal(false), error: signal(null), status: signal('idle') },
     interruptResource: {
       value: signal(null),
@@ -61,10 +61,11 @@ function createMockExecutionService(
       error: signal(null),
     },
     profilesReadinessResource: {
-      value: signal({ profiles: [] }),
+      value: signal({ profilesReadiness: [] }),
       isLoading: signal(false),
       error: signal(null),
     },
+
     setProfileReadinessResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     equipmentSelectorResource: {
       value: signal({
@@ -81,8 +82,16 @@ function createMockExecutionService(
     updateEquipmentSelectorResource: { value: signal(null), isLoading: signal(false), error: signal(null) },
     getExecutionState: vi.fn(),
     getExecutionProgress: vi.fn(),
+    getPlanningSeries: vi.fn(),
     getSecurityCountdownState: vi.fn(),
     updateSecurityCountdown: vi.fn(),
+    getProfilesReadiness: vi.fn(),
+    setSeriesProfileReadiness: vi.fn().mockResolvedValue([]),
+    setProfileReadiness: vi.fn().mockResolvedValue([]),
+    resetSetProfileReadiness: vi.fn(),
+
+
+
     startExecution: vi.fn(),
     pauseExecution: vi.fn(),
     interruptExecution: vi.fn(),

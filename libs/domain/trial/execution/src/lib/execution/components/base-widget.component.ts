@@ -10,7 +10,7 @@ import { WidgetStateService } from '../services/widget-state.service';
  * Proporciona funcionalidad común para tracking de estado
  */
 @Directive()
-export abstract class BaseFormWidgetComponent implements FormWidget, OnInit {
+export abstract class BaseFormWidgetComponent implements FormWidget, OnInit, OnDestroy {
   protected readonly widgetStateService = inject(WidgetStateService);
 
   // 🆔 ID del widget (debe ser establecido por la clase hija)
@@ -29,8 +29,14 @@ export abstract class BaseFormWidgetComponent implements FormWidget, OnInit {
   }
 
   ngOnInit(): void {
-    // Inicializar estado
-    this.widgetStateService.updateWidgetFormState(this.widgetId(), this.formState());
+    const id = this.widgetId();
+    this.widgetStateService?.registerWidgetInstance?.(id, this);
+    this.widgetStateService?.updateWidgetFormState?.(id, this.formState());
+  }
+
+  ngOnDestroy(): void {
+    const id = this.widgetId();
+    this.widgetStateService?.unregisterWidgetInstance?.(id);
   }
 
   /**
@@ -43,3 +49,4 @@ export abstract class BaseFormWidgetComponent implements FormWidget, OnInit {
    */
   abstract saveForm(): Promise<void>;
 }
+

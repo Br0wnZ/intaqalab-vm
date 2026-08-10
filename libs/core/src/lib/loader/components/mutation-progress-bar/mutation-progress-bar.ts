@@ -11,7 +11,7 @@ import { MutationLoaderService } from '../../services/mutation-loader.service';
  * Colocar en app.html sobre el <main> una única vez.
  */
 @Component({
-  selector: 'core-mutation-progress-bar',
+  selector: 'lib-mutation-progress-bar',
   imports: [MatProgressBarModule],
   template: `
     @if (mutationLoader.isMutating()) {

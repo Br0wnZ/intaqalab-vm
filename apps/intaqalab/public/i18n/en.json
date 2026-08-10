@@ -300,6 +300,10 @@
     "UNAUTHORIZED": "Your session has expired or you don't have permissions."
   },
   "MASTER_DATA": {
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Failed to load data",
+      "LOAD_FAILED_DETAIL": "The required information could not be retrieved. Please try again later."
+    },
     "CREATE_EDIT_DIALOG": {
       "TITLE_CREATE": "Create record",
       "TITLE_CREATE1": "Name",

@@ -75,7 +75,11 @@ function fromEquipmentSelectionApi(
   apiGroups: EquipmentSelectionApiList,
   items: EquipmentSelectorState['items'],
 ): EquipmentMagnitudeSelectionGroup[] {
+  if (!Array.isArray(apiGroups)) {
+    return [];
+  }
   return apiGroups.map((group: EquipmentMeasurementGroupApi) => ({
+
     id: group.measurementGroup,
     selections: group.selections
       .filter((selection) => isEquipmentTypeEnum(selection.categoryId))

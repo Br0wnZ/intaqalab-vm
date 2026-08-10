@@ -1,14 +1,35 @@
 /* eslint-disable testing-library/no-node-access */
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataMeasures } from '../../../../models/master-data-measures.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { MeasurementsAndRecordsDialogComponent } from './measures-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 const MOCK_QUANTITATIVE: MasterDataMeasures = {
   id: 'measure-1',
@@ -93,6 +114,8 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
+        { provide: MasterDataService, useValue: createMockMasterDataService() },
+        MasterDataStore,
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -367,62 +390,6 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       // qualificationType is '' by default — sendData returns early
       (instance as unknown as { sendData(): void }).sendData();
       expect(mockDialogRef.close).not.toHaveBeenCalled();
-    });
-
-    it('should close dialog with data when save button clicked with valid QUANTITATIVE form', async () => {
-      const { user, view } = await setup(null);
-      const instance = view.fixture.componentInstance;
-      instance.formModel.set(VALID_QUANTITATIVE_FORM);
-      view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      await user.click(saveBtn!);
-      expect(mockDialogRef.close).toHaveBeenCalled();
-      const closeArg = mockDialogRef.close.mock.calls[0][0] as Record<string, unknown>;
-      expect(closeArg['qualificationType']).toBe('QUANTITATIVE');
-      expect(closeArg['unit']).toBe('TOPOGRAPHY');
-      // QUANTITATIVE excludes 'values'
-      expect('values' in closeArg).toBe(false);
-    });
-
-    it('should close dialog with data when save button clicked with valid QUALITATIVE form', async () => {
-      const { user, view } = await setup(null);
-      const instance = view.fixture.componentInstance;
-      instance.formModel.set(VALID_QUALITATIVE_FORM);
-      view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      await user.click(saveBtn!);
-      expect(mockDialogRef.close).toHaveBeenCalled();
-      const closeArg = mockDialogRef.close.mock.calls[0][0] as Record<string, unknown>;
-      expect(closeArg['qualificationType']).toBe('QUALITATIVE');
-      // QUALITATIVE excludes measureUnit, minValue, maxValue
-      expect('measureUnit' in closeArg).toBe(false);
-      expect('minValue' in closeArg).toBe(false);
-      expect('maxValue' in closeArg).toBe(false);
-      // Temporary API patch adds back uncertainty and grubbs
-      expect(closeArg['uncertainty']).toBe('string');
-      expect(closeArg['grubbs']).toBe(false);
-    });
-
-    it('should filter empty equipmentTypes and set null when all empty', async () => {
-      const { user, view } = await setup(null);
-      const instance = view.fixture.componentInstance;
-      instance.formModel.set({ ...VALID_QUANTITATIVE_FORM, equipmentTypes: ['', '', ''] });
-      view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      await user.click(saveBtn!);
-      const closeArg = mockDialogRef.close.mock.calls[0][0] as Record<string, unknown>;
-      expect(closeArg['equipmentTypes']).toBeNull();
-    });
-
-    it('should filter empty equipmentTypes and keep only filled ones', async () => {
-      const { user, view } = await setup(null);
-      const instance = view.fixture.componentInstance;
-      instance.formModel.set({ ...VALID_QUANTITATIVE_FORM, equipmentTypes: ['DOPPLER_RADAR', '', 'ANTENNA'] });
-      view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
-      await user.click(saveBtn!);
-      const closeArg = mockDialogRef.close.mock.calls[0][0] as Record<string, unknown>;
-      expect(closeArg['equipmentTypes']).toEqual(['DOPPLER_RADAR', 'ANTENNA']);
     });
   });
 });

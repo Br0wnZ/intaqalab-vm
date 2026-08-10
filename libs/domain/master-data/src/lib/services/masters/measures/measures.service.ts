@@ -22,11 +22,24 @@ export class MeasurementsAndRecordsService implements MasterDataService<MasterDa
     this.#crud.create(record);
   }
 
-  updateItem(record: MasterDataMeasures): void {
-    this.#crud.updateItem(record);
+  update(record: MasterDataMeasures): void {
+    this.#crud.update(record);
   }
 
-  deleteItem(id: string): void {
-    this.#crud.deleteItem(id);
+  resetUpsert() {
+    this.#crud.resetSaveItem();
+    this.#crud.resetUpdateItem();
+  }
+
+  resetSwitchStatus() {
+    this.#crud.resetUpdateItem();
+  }
+
+  delete(id: string): void {
+    this.#crud.delete(id);
+  }
+
+  resetDelete() {
+    this.#crud.resetDeleteItem();
   }
 }

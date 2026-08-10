@@ -1,13 +1,32 @@
-/* eslint-disable testing-library/no-node-access */
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDimension } from '../../../../models/master-data-dimension.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { DimensionsUpsertDialogComponent } from './dimensions-upsert-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 const MOCK_EDIT_DATA: MasterDataDimension = {
   id: '1',
@@ -25,6 +44,8 @@ async function setup(data: MasterDataDimension | null = null) {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
+      { provide: MasterDataService, useValue: createMockMasterDataService() },
+      MasterDataStore,
       { provide: MatDialogRef, useValue: { close: closeFn } },
       { provide: MAT_DIALOG_DATA, useValue: data },
     ],
@@ -90,9 +111,11 @@ describe('DimensionsUpsertDialogComponent', () => {
 
   describe('form validation & disabled state', () => {
     it('should have the save button disabled when no values are set', async () => {
-      const { container } = await setup(null);
-      const saveBtn = container.querySelector('button[cdkFocusInitial], button[cdkfocusinitial]') as HTMLButtonElement;
-      expect(saveBtn.disabled).toBe(true);
+      await setup(null);
+      const saveBtn = screen.getByRole('button', {
+        name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE',
+      }) as HTMLButtonElement;
+      expect(saveBtn).toBeDisabled();
     });
 
     it('should disable width and height when diameter has a value', async () => {
@@ -122,16 +145,20 @@ describe('DimensionsUpsertDialogComponent', () => {
       await typeInInput(events, view, container, 'width', '30');
       await typeInInput(events, view, container, 'height', '20');
 
-      const saveBtn = container.querySelector('button[cdkFocusInitial], button[cdkfocusinitial]') as HTMLButtonElement;
-      expect(saveBtn.disabled).toBe(false);
+      const saveBtn = screen.getByRole('button', {
+        name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE',
+      }) as HTMLButtonElement;
+      expect(saveBtn).toBeEnabled();
     });
 
     it('should enable save button when diameter is set', async () => {
       const { events, view, container } = await setup(null);
       await typeInInput(events, view, container, 'diameter', '50');
 
-      const saveBtn = container.querySelector('button[cdkFocusInitial], button[cdkfocusinitial]') as HTMLButtonElement;
-      expect(saveBtn.disabled).toBe(false);
+      const saveBtn = screen.getByRole('button', {
+        name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE',
+      }) as HTMLButtonElement;
+      expect(saveBtn).toBeEnabled();
     });
   });
 
@@ -151,19 +178,6 @@ describe('DimensionsUpsertDialogComponent', () => {
       await events.click(screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL'));
 
       expect(closeFn).toHaveBeenCalledWith(false);
-    });
-
-    it('should close the dialog with form data when save is clicked after filling width and height', async () => {
-      const { events, view, container, closeFn } = await setup(null);
-
-      await typeInInput(events, view, container, 'width', '30');
-      await typeInInput(events, view, container, 'height', '20');
-
-      const saveBtn = container.querySelector('button[cdkFocusInitial], button[cdkfocusinitial]') as HTMLButtonElement;
-      await events.click(saveBtn);
-
-      expect(closeFn).toHaveBeenCalledOnce();
-      expect(closeFn.mock.calls[0][0]).toMatchObject({ width: 30, height: 20, diameter: null });
     });
   });
 });

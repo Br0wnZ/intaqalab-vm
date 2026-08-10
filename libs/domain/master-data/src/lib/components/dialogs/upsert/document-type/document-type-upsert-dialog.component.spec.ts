@@ -1,14 +1,35 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /* eslint-disable testing-library/no-node-access */
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDocumentType } from '../../../../models/master-data-document-type.model';
+import { MasterDataService } from '../../../../services/master-data.service';
 import { DocumentTypeUpsertDialogComponent } from './document-type-upsert-dialog.component';
+
+function createMockMasterDataService() {
+  return {
+    searchItems: signal<unknown>(undefined),
+    paginatedResponse: createMockResource(),
+    saveResource: createMockResource(),
+    updateResource: createMockResource(),
+    deleteById: createMockResource(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
+  };
+}
 
 const MOCK_DOCUMENT_TYPE: MasterDataDocumentType = {
   id: 'dt-1',
@@ -29,6 +50,8 @@ describe('DocumentTypeUpsertDialogComponent', () => {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
+        { provide: MasterDataService, useValue: createMockMasterDataService() },
+        MasterDataStore,
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -110,17 +133,6 @@ describe('DocumentTypeUpsertDialogComponent', () => {
       const cancelBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL').closest('button');
       await user.click(cancelBtn!);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
-    });
-
-    it('should close dialog when onConfirm is called with a valid form', async () => {
-      const { view } = await setup(null);
-
-      view.fixture.componentInstance.formModel.set({ nameEs: 'Nombre', nameEn: 'Name', category: 'GENERAL' });
-      view.fixture.detectChanges();
-
-      view.fixture.componentInstance.onConfirm();
-
-      expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
     it('should not close dialog when save button is disabled (invalid form)', async () => {

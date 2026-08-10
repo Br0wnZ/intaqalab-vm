@@ -22,11 +22,24 @@ export class StanagService implements MasterDataService<MasterDataStanag> {
     this.#crud.create(record);
   }
 
-  updateItem(record: MasterDataStanag) {
-    this.#crud.updateItem(record);
+  update(record: MasterDataStanag) {
+    this.#crud.update(record);
   }
 
-  deleteItem(id: string) {
-    this.#crud.deleteItem(id);
+  resetUpsert() {
+    this.#crud.resetSaveItem();
+    this.#crud.resetUpdateItem();
+  }
+
+  resetSwitchStatus() {
+    this.#crud.resetUpdateItem();
+  }
+
+  delete(id: string) {
+    this.#crud.delete(id);
+  }
+
+  resetDelete() {
+    this.#crud.resetDeleteItem();
   }
 }

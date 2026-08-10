@@ -3,12 +3,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
-import { IntaSignalSelectComponent } from '@intaqalab/ui';
+import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataLoadingZone } from '../../../../models/master-data-loading-zone.model';
 import type { MasterDataUpsertDialogType } from '../../../../models/utils.model';
-//import { LoadingZoneDenominationsService } from '../../../../services/masters/loading-zone/denominations/loading-zone-denominations.service';
 
 @Component({
   imports: [
@@ -21,6 +21,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     MatButtonModule,
     MatIconModule,
     MatInputModule,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -77,15 +78,12 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-raised-button
-        cdkFocusInitial
-        class="!bg-purple-600 hover:bg-purple-700 cursor-pointer !text-white disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="sendData()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="sendData()"
+      />
     </mat-dialog-actions>
   `,
   styles: ``,
@@ -95,14 +93,24 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
 export class LoadingZoneUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<LoadingZoneUpsertDialogComponent>);
   readonly data = inject<MasterDataLoadingZone | null>(MAT_DIALOG_DATA);
-
-  // #loadingZoneDenominationsService = inject(LoadingZoneDenominationsService);
+  readonly store = inject(MasterDataStore);
 
   constructor() {
     effect(() => {
       const data = this.data;
 
       if (data) this.formModel.set({ ...data, denominationId: data.denomination.id });
+    });
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
     });
   }
 
@@ -113,13 +121,7 @@ export class LoadingZoneUpsertDialogComponent {
     { id: '550e8400-e29b-41d4-a716-446655440034', name: 'M200A1' },
     { id: '550e8400-e29b-41d4-a716-446655440035', name: 'L45' },
     { id: '550e8400-e29b-41d4-a716-446655440036', name: 'L35' },
-  ]
-
-  // readonly getDenominationsList = computed(() => {
-  //   const denominations = this.#loadingZoneDenominationsService.getDenominationsResponse.value();
-
-  //   return denominations || [];
-  // });
+  ];
 
   readonly defaultFormValues = {
     denominationId: '',
@@ -139,11 +141,12 @@ export class LoadingZoneUpsertDialogComponent {
   protected sendData() {
     const { denominationId, caliber } = this.formModel();
     const zone = Array.isArray(this.formModel().zone) ? this.formModel().zone : this.formModel().zone?.split(',');
+    const payload = { ...this.data, denominationId, zone, caliber };
 
-    const dataToSend = this.form().touched() && this.form().dirty()
-      ? { ...this.data, denominationId, zone, caliber }
-      : null
-
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...payload, active: true });
+    } else {
+      this.store.update(payload as MasterDataLoadingZone);
+    }
   }
 }

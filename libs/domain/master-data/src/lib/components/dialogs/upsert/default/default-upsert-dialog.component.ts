@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDefault } from '../../../../models/master-data-default.model';
 
 @Component({
@@ -18,6 +19,7 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
     TranslateModule,
     FormField,
     IntaIconComponent,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -62,15 +64,12 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-raised-button
-        cdkFocusInitial
-        class="!bg-purple-600 hover:bg-purple-700 cursor-pointer !text-white disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="onConfirm()"
+      />
     </mat-dialog-actions>
   `,
   styles: ``,
@@ -80,6 +79,7 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
 export class MasterDataDefaultUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MasterDataDefaultUpsertDialogComponent>);
   readonly data = inject<MasterDataDefault | null>(MAT_DIALOG_DATA);
+  readonly store = inject(MasterDataStore);
 
   readonly formModel = signal<{
     nameEs: string;
@@ -101,15 +101,27 @@ export class MasterDataDefaultUpsertDialogComponent {
         nameEn: this.data.name.en,
       });
     }
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
+    });
   }
 
   onConfirm() {
     const { nameEn, nameEs } = this.formModel();
+    const payload = { ...this.data, name: { en: nameEn, es: nameEs } };
 
-    const dataToSend = this.form().touched() && this.form().dirty()
-      ? { ...this.data, name: { en: nameEn, es: nameEs } }
-      : null
-
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...payload, active: true });
+    } else {
+      this.store.update(payload as MasterDataDefault);
+    }
   }
 }

@@ -21,8 +21,11 @@ function createMockMasterDataService() {
     updateResource: createMockResource(),
     deleteById: createMockResource(),
     create: vi.fn(),
-    updateItem: vi.fn(),
-    deleteItem: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    resetUpsert: vi.fn(),
+    resetSwitchStatus: vi.fn(),
+    resetDelete: vi.fn(),
   };
 }
 
@@ -66,27 +69,27 @@ describe('MasterDataStore', () => {
   });
 
   it('should delegate createItem to the service', () => {
-    const record = { name: { es: 'Nuevo', en: 'New' } };
-    store.createItem(record);
+    const record = { name: { es: 'Nuevo', en: 'New' }, active: true };
+    store.create({ ...record, active: true });
     expect(mockService.create).toHaveBeenCalledWith(record);
   });
 
   it('should delegate updateItem to the service', () => {
-    const record = { id: '1', name: { es: 'Editado', en: 'Edited' } };
-    store.updateItem(record);
-    expect(mockService.updateItem).toHaveBeenCalledWith(record);
+    const record = { id: '1', name: { es: 'Editado', en: 'Edited' }, active: true };
+    store.update({ ...record, active: true });
+    expect(mockService.update).toHaveBeenCalledWith(record);
   });
 
   it('should delegate deleteItem to the service', () => {
-    store.deleteItem('1');
-    expect(mockService.deleteItem).toHaveBeenCalledWith('1');
+    store.delete('1');
+    expect(mockService.delete).toHaveBeenCalledWith('1');
   });
 
   it('should reset state on reset()', () => {
     store.search({ page: 1, pageSize: 10 });
     expect(store.isInitialized()).toBe(true);
 
-    store.reset();
+    store.resetAll();
     expect(store.isInitialized()).toBe(false);
   });
 });

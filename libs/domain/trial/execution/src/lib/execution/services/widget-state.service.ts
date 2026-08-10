@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import type {
+  FormWidget,
   GridPosition,
   PlacedWidget,
   TechProfile,
@@ -319,6 +320,23 @@ export class WidgetStateService {
     return null;
   }
 
+  // 🔌 Mapa de instancias de widgets registradas (widgetId -> FormWidget)
+  readonly #widgetInstances = new Map<string, FormWidget>();
+
+  /**
+   * 🔌 Registrar una instancia de FormWidget
+   */
+  registerWidgetInstance(widgetId: string, instance: FormWidget): void {
+    this.#widgetInstances.set(widgetId, instance);
+  }
+
+  /**
+   * 🔌 Desregistrar una instancia de FormWidget
+   */
+  unregisterWidgetInstance(widgetId: string): void {
+    this.#widgetInstances.delete(widgetId);
+  }
+
   /**
    * 🎲 Generar ID único para widget
    */
@@ -333,11 +351,15 @@ export class WidgetStateService {
     const dirtyWidgets = this.dirtyWidgets();
     console.log(`Guardando ${dirtyWidgets.length} formularios...`);
 
-    // Aquí llamarías a los métodos save de cada widget
-    // Por ahora solo logueamos
-    for (const widget of dirtyWidgets) {
-      console.log(`Guardando widget: ${widget.widgetId}`);
-    }
+    const savePromises = dirtyWidgets.map((widgetState) => {
+      const instance = this.#widgetInstances.get(widgetState.widgetId);
+      if (instance && typeof instance.saveForm === 'function') {
+        return instance.saveForm();
+      }
+      return Promise.resolve();
+    });
+
+    await Promise.all(savePromises);
   }
 
   /**
@@ -356,5 +378,12 @@ export class WidgetStateService {
       });
       return newStates;
     });
+
+    this.#widgetInstances.forEach((instance) => {
+      if (typeof instance.resetForm === 'function') {
+        instance.resetForm();
+      }
+    });
   }
 }
+

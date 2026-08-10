@@ -54,30 +54,44 @@ export const MasterDataStore = signalStore(
       }
     },
 
-    createItem(record: MasterDataCreateItemType<MasterDataResponseType>): void {
+    create(record: MasterDataCreateItemType<MasterDataResponseType>): void {
       service.create(record);
     },
 
-    updateItem(record: MasterDataResponseType): void {
-      service.updateItem(record);
+    update(record: MasterDataResponseType): void {
+      service.update(record);
     },
 
-    deleteItem(id: string | number): void {
-      service.deleteItem(id);
+    delete(id: string | number): void {
+      service.delete(id);
+    },
+
+    resetUpsert(): void {
+      service.resetUpsert();
+    },
+
+    resetSwitchStatus(): void {
+      service.resetSwitchStatus();
+    },
+
+    resetDelete(): void {
+      service.resetDelete();
+    },
+
+    resetAll(): void {
+      service.resetUpsert();
+      service.resetDelete();
+      patchState(store, initialState);
     },
 
     reload(): void {
       service.paginatedResponse.reload();
     },
-
-    reset(): void {
-      patchState(store, initialState);
-    },
   })),
 
   withHooks({
     onDestroy(store) {
-      store.reset();
+      store.resetAll();
     },
   }),
 );

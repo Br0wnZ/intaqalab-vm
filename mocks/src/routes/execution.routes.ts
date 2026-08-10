@@ -13,8 +13,10 @@ import {
     getReadiness,
     setExecutionStatus,
     setProfileReadiness,
+    setSeriesProfileReadiness,
     updateCountdownState,
 } from '../fixtures/execution/execution-store';
+
 import { getFixture } from '../utils';
 
 export const executionRouter = Router();
@@ -164,7 +166,38 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/readiness', (
   res.status(200).json(readiness);
 });
 
-// Registrar readiness de un perfil
+// Registrar readiness de un perfil para una serie individual
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/readiness/profiles/:profile/series/:seriesId',
+  (req, res) => {
+    const { profile, fireTrialId, seriesId } = req.params as {
+      profile: string;
+      fireTrialId: string;
+      seriesId: string;
+    };
+    const { isReady, observations } = req.body as { isReady?: boolean; observations?: string };
+
+    if (typeof isReady !== 'boolean') {
+      res.status(400).json({
+        title: 'Bad Request',
+        status: 400,
+        detail: "El campo 'isReady' es obligatorio y debe ser un booleano",
+      });
+      return;
+    }
+
+    const updated = setSeriesProfileReadiness(
+      fireTrialId,
+      profile as never,
+      seriesId,
+      isReady,
+      observations,
+    );
+    res.status(200).json(updated);
+  },
+);
+
+// Registrar readiness de un perfil (legacy batch array)
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/profiles/:profile', (req, res) => {
   const { profile, fireTrialId } = req.params as { profile: string; fireTrialId: string };
   const { seriesReadiness } = req.body as { seriesReadiness?: unknown[] };
@@ -181,6 +214,7 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/pro
   const updated = setProfileReadiness(fireTrialId, profile as never, seriesReadiness as never);
   res.status(200).json(updated);
 });
+
 
 // ==========================================
 // EQUIPMENT SELECTOR / SELECTION

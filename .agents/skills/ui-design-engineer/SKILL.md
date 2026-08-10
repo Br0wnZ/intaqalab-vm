@@ -72,8 +72,9 @@ Si el usuario solicita un **Widget para el panel de ejecución de ensayos (`exec
 
 1. **Paso A**: En `execution.store.ts`, exporta la interfaz `<WidgetName>State`, añádela a `ExecutionState`, `initialState`, e incluye los métodos/computed pertinentes.
 2. **Paso B**: El componente Angular extiende `BaseFormWidgetComponent`. **Todos los datos provienen de `ExecutionStore` usando `computed()`**. NO uses `input()` locales para recibir datos de dominio.
-3. **Paso C**: El Signal Form se inicializa con el valor del store. Implementa `formState`, `resetForm()` y `saveForm()`.
-4. El widget **NO muestra un badge de "cambios pendientes"**; esto lo hace el padre (`execution-grid.ts`) al suscribirse al `WidgetStateService`.
+3. **Registro Automático & Ciclo de Vida**: `BaseFormWidgetComponent` registra la instancia en `WidgetStateService` (`registerWidgetInstance` / `unregisterWidgetInstance`). Esto permite que el botón "Guardar" del contenedor padre (`execution.ts`) ejecute `WidgetStateService.saveAllDirtyForms()`, llamando a `saveForm()` de todas las instancias con `dirty === true` concurrentemente (`Promise.all`).
+4. **Paso C**: El Signal Form se inicializa con el valor del store. Implementa `formState`, `resetForm()` y `saveForm()`. En `saveForm()`, actualiza la fuente de verdad (store) y despacha mutaciones HTTP.
+5. El widget **NO muestra un botón de guardar ni badge de "cambios pendientes"** en su interior; esto es responsabilidad exclusiva del padre (`execution.ts` / `execution-grid.ts`) al suscribirse al `WidgetStateService`.
 
 ### Layout y Registro del Widget
 

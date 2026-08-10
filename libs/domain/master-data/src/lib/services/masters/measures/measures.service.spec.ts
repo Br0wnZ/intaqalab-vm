@@ -25,7 +25,7 @@ describe('MeasurementsAndRecordsService', () => {
     expect(service.searchItems).toBeDefined();
     expect(service.paginatedResponse).toBeDefined();
     expect(service.create).toBeDefined();
-    expect(service.updateItem).toBeDefined();
-    expect(service.deleteItem).toBeDefined();
+    expect(service.update).toBeDefined();
+    expect(service.delete).toBeDefined();
   });
 });

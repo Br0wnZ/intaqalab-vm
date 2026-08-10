@@ -330,24 +330,44 @@ describe('ExecutionService', () => {
       expect(service.profilesReadinessResource.value()).toEqual(mockReadiness);
     });
 
-    // PUT readiness profile
-    const profileReq = { seriesReadiness: [{ seriesId: 's-1', isReady: true, observations: 'ok' }] };
-    service.setProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', profileReq);
+    // PUT single series readiness
+    const singleSeriesBody = { isReady: true, observations: 'ok' };
+    const singleSeriesPromise = service.setSeriesProfileReadiness(
+      DEMO_TRIAL_ID,
+      'VELOCITIES',
+      's-1',
+      singleSeriesBody,
+    );
     TestBed.tick();
 
-    const putReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES`);
-    expect(putReq.request.method).toBe('PUT');
-    expect(putReq.request.body).toEqual(profileReq);
-    putReq.flush({ profile: 'VELOCITIES', seriesReadiness: profileReq.seriesReadiness });
+    const putSingleReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
+    expect(putSingleReq.request.method).toBe('PUT');
+    expect(putSingleReq.request.body).toEqual(singleSeriesBody);
+    putSingleReq.flush({ seriesId: 's-1', isReady: true, observations: 'ok' });
 
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.setProfileReadinessResource.value()).toEqual({
-        profile: 'VELOCITIES',
-        seriesReadiness: profileReq.seriesReadiness,
-      });
-    });
+    const singleResult = await singleSeriesPromise;
+    expect(singleResult).toEqual({ seriesId: 's-1', isReady: true, observations: 'ok' });
+
+    // PUT profile readiness batch per-series
+    const seriesItems = [{ seriesId: 's-1', isReady: true, observations: 'ok' }];
+    const batchPromise = service.setProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', seriesItems);
+    TestBed.tick();
+
+    const putBatchReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
+    expect(putBatchReq.request.method).toBe('PUT');
+    expect(putBatchReq.request.body).toEqual({ isReady: true, observations: 'ok' });
+    putBatchReq.flush({ seriesId: 's-1', isReady: true, observations: 'ok' });
+
+    // flush legacy resource req if present
+    const legacyReq = httpMock.match(`${BASE_URL}/readiness/profiles/VELOCITIES`);
+    if (legacyReq.length > 0) {
+      legacyReq[0].flush({ profile: 'VELOCITIES', seriesReadiness: seriesItems });
+    }
+
+    const batchResult = await batchPromise;
+    expect(batchResult).toEqual([{ seriesId: 's-1', isReady: true, observations: 'ok' }]);
   });
+
 
   it('should GET and PUT equipment selection using the new aligned URL', async () => {
     const mockResponse = [];

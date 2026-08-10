@@ -70,11 +70,14 @@ const initialState: ReadinessSlice = {
 
 // ─── Helper: ProfilesReadinessResponse → techUnits[] ──────────────────────────
 
-function mapProfilesReadinessToTechUnits(profilesReadiness: ProfileReadinessItem[]): TechUnitStatus[] {
+function mapProfilesReadinessToTechUnits(profilesReadiness?: ProfileReadinessItem[] | null): TechUnitStatus[] {
+  if (!profilesReadiness || !Array.isArray(profilesReadiness)) {
+    return initialState.techUnits;
+  }
   return Object.entries(TECH_PROFILE_TO_API).map(([uiId, apiProfile]) => {
     const item = profilesReadiness.find((p) => p.profile === apiProfile);
-    const allReady = item ? item.seriesReadiness.every((s) => s.isReady) : false;
-    const observations = item
+    const allReady = item ? item.seriesReadiness?.every((s) => s.isReady) ?? false : false;
+    const observations = item?.seriesReadiness
       ? item.seriesReadiness
           .filter((s) => s.observations)
           .map((s) => s.observations)
@@ -89,6 +92,7 @@ function mapProfilesReadinessToTechUnits(profilesReadiness: ProfileReadinessItem
     };
   });
 }
+
 
 // ─── Feature ───────────────────────────────────────────────────────────────────
 
@@ -133,21 +137,36 @@ export function withReadiness() {
 
       /** Carga el readiness de todos los perfiles desde la API. */
       loadProfilesReadiness(fireTrialId: string): void {
-        executionService.getProfilesReadiness(fireTrialId);
+        if (typeof executionService?.getProfilesReadiness === 'function') {
+          executionService.getProfilesReadiness(fireTrialId);
+        }
       },
 
+
       /**
-       * Envía el PUT para actualizar el readiness de un perfil concreto.
+       * Envía peticiones PUT por cada serie para actualizar el readiness de un perfil concreto.
        * @param fireTrialId UUID del ensayo
        * @param profile Perfil técnico en formato API (VELOCITIES, PRESSURES, etc.)
        * @param seriesReadiness Array con el estado de preparación por serie
        */
-      saveProfileReadiness(
+      async saveProfileReadiness(
         fireTrialId: string,
         profile: ExecutionTechnicalProfile,
         seriesReadiness: Array<{ seriesId: string; isReady: boolean; observations?: string }>,
-      ): void {
-        executionService.setProfileReadiness(fireTrialId, profile, { seriesReadiness });
+      ): Promise<void> {
+        const updatedSeries = await executionService.setProfileReadiness(fireTrialId, profile, seriesReadiness);
+        const item: ProfileReadinessItem = {
+          profile,
+          seriesReadiness: updatedSeries,
+        };
+        const current = store.profilesReadiness() ?? [];
+        const idx = current.findIndex((p) => p.profile === item.profile);
+        const updated = idx >= 0 ? current.map((p, i) => (i === idx ? item : p)) : [...current, item];
+
+        patchState(store, {
+          profilesReadiness: updated,
+          techUnits: mapProfilesReadinessToTechUnits(updated),
+        });
       },
 
       /**
@@ -157,13 +176,16 @@ export function withReadiness() {
         executionService.resetSetProfileReadiness();
       },
 
+
       /** Sincroniza profilesReadiness en el store a partir de la respuesta API. */
       _patchProfilesReadiness(data: ProfilesReadinessResponse): void {
+        const items = data?.profilesReadiness ?? [];
         patchState(store, {
-          profilesReadiness: data.profilesReadiness,
-          techUnits: mapProfilesReadinessToTechUnits(data.profilesReadiness),
+          profilesReadiness: items,
+          techUnits: mapProfilesReadinessToTechUnits(items),
         });
       },
+
 
       /** Actualiza solo el perfil que acaba de guardarse (respuesta del PUT). */
       _patchSingleProfile(item: ProfileReadinessItem): void {
@@ -192,13 +214,17 @@ export function withReadiness() {
 
         // ── PUT: Actualizar perfil individual tras guardado exitoso ───────────────
         effect(() => {
-          if (executionService.setProfileReadinessResource.status() === 'resolved') {
+          if (
+            typeof executionService.setProfileReadinessResource?.status === 'function' &&
+            executionService.setProfileReadinessResource.status() === 'resolved'
+          ) {
             const item = safeResourceValue(executionService.setProfileReadinessResource);
             if (item) {
               store._patchSingleProfile(item);
             }
           }
         });
+
       },
     }),
   );

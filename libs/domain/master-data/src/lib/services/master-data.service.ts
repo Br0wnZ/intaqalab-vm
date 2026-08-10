@@ -10,8 +10,12 @@ export abstract class MasterDataService<T = MasterDataDefault> {
   abstract readonly paginatedResponse: HttpResourceRef<PaginatedApiResponse<T> | undefined>;
 
   abstract create(record: MasterDataCreateItemType<T>): void;
-  abstract updateItem(record: T): void;
-  abstract deleteItem(id: string | number | T): void;
+  abstract update(record: T): void;
+  abstract delete(id: string | number | T): void;
+
+  abstract resetUpsert(): void;
+  abstract resetSwitchStatus(): void;
+  abstract resetDelete(): void;
 
   abstract readonly saveResource: HttpResourceRef<T | undefined>;
   abstract readonly updateResource: HttpResourceRef<T | undefined>;

@@ -26,11 +26,24 @@ export class DocumentTypeService implements MasterDataService<MasterDataDocument
     this.#crud.create(record);
   }
 
-  updateItem(record: MasterDataDocumentType): void {
-    this.#crud.updateItem(record);
+  resetUpsert() {
+    this.#crud.resetSaveItem();
+    this.#crud.resetUpdateItem();
   }
 
-  deleteItem(id: string): void {
-    this.#crud.deleteItem(id);
+  resetSwitchStatus() {
+    this.#crud.resetUpdateItem();
+  }
+
+  update(record: MasterDataDocumentType): void {
+    this.#crud.update(record);
+  }
+
+  delete(id: string): void {
+    this.#crud.delete(id);
+  }
+
+  resetDelete() {
+    this.#crud.resetDeleteItem();
   }
 }

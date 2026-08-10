@@ -118,7 +118,13 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
             </button>
 
             <!-- Botón Guardar -->
-            <button mat-flat-button color="primary" class="!px-4 !min-w-auto" (click)="saveAllChanges()">
+            <button
+              mat-flat-button
+              color="primary"
+              class="!px-4 !min-w-auto"
+              [disabled]="!widgetStateService.hasUnsavedChanges()"
+              (click)="saveAllChanges()"
+            >
               <ui-inta-icon name="save" />
             </button>
 

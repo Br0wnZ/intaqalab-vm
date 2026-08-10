@@ -42,7 +42,7 @@ describe('injectMasterDataResource', () => {
 
       expect(resource.searchItems()).toEqual({});
 
-      resource.paginatedResponse.value();
+      resource.searchItems.set({ page: 0, pageSize: 10 });
       TestBed.flushEffects();
 
       const req = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
@@ -60,24 +60,24 @@ describe('injectMasterDataResource', () => {
       const endpoint = `${BASE_URL}/dimension`;
       const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
 
-      resource.paginatedResponse.value();
+      resource.searchItems.set({ page: 0, pageSize: 10 });
       TestBed.flushEffects();
       const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
       reqGet.flush({ items: [], totalElements: 0 });
       await Promise.resolve();
 
-      resource.create({ id: '1', name: 'New Item' });
+      resource.create({ name: 'New Item' });
       TestBed.flushEffects();
 
       const reqPost = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'POST');
-      expect(reqPost.request.body).toEqual({ id: '1', name: 'New Item' });
-      reqPost.flush({ id: '1', name: 'New Item' });
+      expect(reqPost.request.body).toEqual({ name: 'New Item' });
+      reqPost.flush({ name: 'New Item' });
 
       await Promise.resolve();
       TestBed.flushEffects();
 
       const reqReload = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
-      reqReload.flush({ items: [{ id: '1', name: 'New Item' }], totalElements: 1 });
+      reqReload.flush({ items: [{ name: 'New Item' }], totalElements: 1 });
       await Promise.resolve();
     });
   });
@@ -87,13 +87,13 @@ describe('injectMasterDataResource', () => {
       const endpoint = `${BASE_URL}/dimension`;
       const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
 
-      resource.paginatedResponse.value();
+      resource.searchItems.set({ page: 0, pageSize: 10 });
       TestBed.flushEffects();
       const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
       reqGet.flush({ items: [], totalElements: 0 });
       await Promise.resolve();
 
-      resource.updateItem({ id: '1', name: 'Updated Item' });
+      resource.update({ id: '1', name: 'Updated Item' });
       TestBed.flushEffects();
 
       const reqPut = httpTesting.expectOne((r) => r.url.includes('/dimension/1') && r.method === 'PUT');
@@ -114,13 +114,13 @@ describe('injectMasterDataResource', () => {
       const endpoint = `${BASE_URL}/dimension`;
       const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
 
-      resource.paginatedResponse.value();
+      resource.searchItems.set({ page: 0, pageSize: 10 });
       TestBed.flushEffects();
       const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
       reqGet.flush({ items: [], totalElements: 0 });
       await Promise.resolve();
 
-      resource.deleteItem('1');
+      resource.delete('1');
       TestBed.flushEffects();
 
       const reqDel = httpTesting.expectOne((r) => r.url.includes('/dimension/1') && r.method === 'DELETE');

@@ -240,8 +240,11 @@ export function withGeneralData() {
       },
 
       loadPlanningSeries(fireTrialId: string): void {
-        executionService.getPlanningSeries(fireTrialId);
+        if (typeof executionService?.getPlanningSeries === 'function') {
+          executionService.getPlanningSeries(fireTrialId);
+        }
       },
+
 
       loadPreferencesByRole(fireTrialId: string, roleName: string): void {
         executionService.getPreferencesByRole(fireTrialId, roleName);
@@ -291,7 +294,7 @@ export function withGeneralData() {
         ];
         for (const resource of lifecycleResources) {
           effect(() => {
-            if (resource.status() === 'resolved') {
+            if (typeof resource?.status === 'function' && resource.status() === 'resolved') {
               const trialId = store.fireTrialId();
               if (trialId) {
                 store.loadExecutionState(trialId);
@@ -300,6 +303,8 @@ export function withGeneralData() {
             }
           });
         }
+
+
 
         const fireTrialId = store.fireTrialId();
         if (fireTrialId) {

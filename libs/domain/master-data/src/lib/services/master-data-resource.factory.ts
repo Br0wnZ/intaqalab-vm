@@ -2,17 +2,21 @@ import { HttpContext, httpResource } from '@angular/common/http';
 import { effect, signal } from '@angular/core';
 import type { PaginatedApiResponse, PaginatedSortedViewRequest } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
+import { actionTrigger } from '@intaqalab/utils';
 
 import type { MasterDataCreateItemType } from '../models/utils.model';
 
 export function injectMasterDataResource<T>(endpointUrl: string, context: HttpContext = new HttpContext()) {
   const searchItems = signal<PaginatedSortedViewRequest>({});
-  const saveItem = signal<MasterDataCreateItemType<T> | null>(null);
-  const updateItemSrc = signal<T | null>(null);
-  const deleteItemSrc = signal<string | number | T | null>(null);
+  const _saveItem = actionTrigger<MasterDataCreateItemType<T> | null>();
+  const _updateItem = actionTrigger<T | null>();
+  const _deleteItem = actionTrigger<string | number | T | null>();
 
   const paginatedResponse = httpResource<PaginatedApiResponse<T>>(() => {
     const params = searchItems();
+
+    if (!Object.keys(params).length) return;
+
     const apiParams = paginatedSortedParamsToSend(params);
 
     return {
@@ -24,7 +28,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
   });
 
   const saveResource = httpResource<T>(() => {
-    const params = saveItem();
+    const params = _saveItem.value();
     if (!params) return undefined;
 
     return {
@@ -36,7 +40,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
   });
 
   const updateResource = httpResource<T>(() => {
-    const params = updateItemSrc();
+    const params = _updateItem.value();
     if (!params) return undefined;
 
     return {
@@ -48,7 +52,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
   });
 
   const deleteById = httpResource<T>(() => {
-    const params = deleteItemSrc();
+    const params = _deleteItem.value();
     if (!params) return undefined;
 
     return {
@@ -62,7 +66,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
     const save = saveResource.statusCode();
     const update = updateResource.statusCode();
     const deleteId = deleteById.statusCode();
-    
+
     if (save || update || deleteId) {
       paginatedResponse.reload();
     }
@@ -71,9 +75,15 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
   return {
     searchItems,
     paginatedResponse,
-    create: (record: MasterDataCreateItemType<T>) => saveItem.set(record),
-    updateItem: (record: T) => updateItemSrc.set(record),
-    deleteItem: (item: string | number | T) => deleteItemSrc.set(item),
+
+    create: (record: MasterDataCreateItemType<T>) => _saveItem.fire(record),
+    resetSaveItem: () => _saveItem.reset(),
+
+    update: (record: T) => _updateItem.fire(record),
+    resetUpdateItem: () => _updateItem.reset(),
+
+    delete: (item: string | number | T) => _deleteItem.fire(item),
+    resetDeleteItem: () => _deleteItem.reset(),
 
     saveResource,
     updateResource,

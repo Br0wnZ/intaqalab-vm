@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDimension } from '../../../../models/master-data-dimension.model';
 
 @Component({
@@ -21,6 +22,7 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -108,15 +110,12 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [mat-dialog-close]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-flat-button
-        cdkFocusInitial
-        class="disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="onConfirm()"
+      />
     </mat-dialog-actions>
   `,
   styles: `
@@ -140,6 +139,7 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
 export class DimensionsUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<DimensionsUpsertDialogComponent>);
   readonly data = inject<MasterDataDimension | null>(MAT_DIALOG_DATA);
+  readonly store = inject(MasterDataStore);
 
   readonly formModel = signal<{
     width: number;
@@ -171,6 +171,8 @@ export class DimensionsUpsertDialogComponent {
       if (height < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
 
       const width = valueOf(f.width) > 0;
+
+      console.log(`height: ${height} --- width: ${width}`);
       if (!height && width)
         return { kind: 'heightRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.HEIGHT' };
 
@@ -197,15 +199,29 @@ export class DimensionsUpsertDialogComponent {
         diameter: this.data.diameter || 0,
       });
     }
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
+    });
   }
 
   onConfirm() {
     const width = this.formModel().width || null;
     const height = this.formModel().height || null;
     const diameter = this.formModel().diameter || null;
+    const payload = { ...this.data, width, height, diameter };
 
-    const dataToSend = this.form().touched() && this.form().dirty() ? { ...this.data, width, height, diameter } : null;
-
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...payload, active: true });
+    } else {
+      this.store.update(payload as MasterDataDimension);
+    }
   }
 }

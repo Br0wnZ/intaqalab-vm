@@ -4,9 +4,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { IntaIconComponent, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDocumentType } from '../../../../models/master-data-document-type.model';
 
 @Component({
@@ -19,6 +20,7 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
     TranslateModule,
     FormField,
     IntaIconComponent,
+    SaveButton,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -73,15 +75,12 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
       <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
         {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
       </button>
-      <button
-        mat-raised-button
-        cdkFocusInitial
-        class="!bg-purple-600 hover:bg-purple-700 cursor-pointer !text-white disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' | translate }}
-      </button>
+      <ui-save-button
+        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+        [isDisabled]="form().invalid()"
+        [isSaving]="store.isMutating()"
+        (save)="onConfirm()"
+      />
     </mat-dialog-actions>
   `,
   styles: ``,
@@ -91,6 +90,7 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
 export class DocumentTypeUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<DocumentTypeUpsertDialogComponent>);
   readonly data = inject<MasterDataDocumentType | null>(MAT_DIALOG_DATA);
+  readonly store = inject(MasterDataStore);
 
   readonly categoryOptions = [
     { id: 'GENERAL', name: 'General' },
@@ -123,14 +123,27 @@ export class DocumentTypeUpsertDialogComponent {
 
       this.formModel.set(data);
     });
+
+    effect(() => {
+      const hasBeenSaved = this.store.saveStatus() === 'resolved';
+      const hasBeenUpdated = this.store.updateStatus() === 'resolved';
+
+      if (!hasBeenSaved && !hasBeenUpdated) return;
+
+      this.store.resetUpsert();
+
+      this.dialogRef.close(true);
+    });
   }
 
   onConfirm() {
     const { nameEs, nameEn, category } = this.formModel();
+    const payload = { ...this.data, name: { en: nameEn, es: nameEs }, category };
 
-    const dataToSend =
-      this.formModel() !== this.#defaultFormModel ? { ...this.data, name: { en: nameEn, es: nameEs }, category } : null;
-
-    this.dialogRef.close(dataToSend);
+    if (!this.data) {
+      this.store.create({ ...payload, active: true });
+    } else {
+      this.store.update(payload as MasterDataDocumentType);
+    }
   }
 }

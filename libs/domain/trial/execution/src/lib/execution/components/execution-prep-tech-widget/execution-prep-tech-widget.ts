@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -96,7 +96,6 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
     MatIconModule,
     MatTooltipModule,
     IntaIconComponent,
-    SaveButton,
   ],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-auto">
@@ -176,16 +175,6 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
               </div>
             }
           </div>
-
-          <!-- Footer: botón de guardar -->
-          @if (formState().dirty) {
-            <div class="flex justify-end gap-2 pt-2 shrink-0 border-t border-slate-100">
-              <button type="button" class="text-xs text-slate-400 hover:text-slate-600 px-2" (click)="resetForm()">
-                {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.CANCEL' | translate }}
-              </button>
-              <ui-save-button [isSaving]="isSavingReadiness()" (save)="saveForm()" />
-            </div>
-          }
         }
       </mat-card-content>
     </mat-card>

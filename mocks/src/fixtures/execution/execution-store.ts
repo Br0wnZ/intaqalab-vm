@@ -175,6 +175,30 @@ export function getReadiness(fireTrialId: string): ProfilesReadinessState {
   return readinessStateMap.get(fireTrialId) ?? defaultReadinessState();
 }
 
+export function setSeriesProfileReadiness(
+  fireTrialId: string,
+  profile: ExecutionProfile,
+  seriesId: string,
+  isReady: boolean,
+  observations?: string,
+): SeriesReadinessItem {
+  const state = getReadiness(fireTrialId);
+  let profileItem = state.profilesReadiness.find((p) => p.profile === profile);
+  if (!profileItem) {
+    profileItem = { profile, seriesReadiness: [] };
+    state.profilesReadiness.push(profileItem);
+  }
+  const sIdx = profileItem.seriesReadiness.findIndex((s) => s.seriesId === seriesId);
+  const updatedSeriesItem: SeriesReadinessItem = { seriesId, isReady, observations };
+  if (sIdx >= 0) {
+    profileItem.seriesReadiness[sIdx] = updatedSeriesItem;
+  } else {
+    profileItem.seriesReadiness.push(updatedSeriesItem);
+  }
+  readinessStateMap.set(fireTrialId, state);
+  return updatedSeriesItem;
+}
+
 export function setProfileReadiness(
   fireTrialId: string,
   profile: ExecutionProfile,
@@ -191,3 +215,4 @@ export function setProfileReadiness(
   readinessStateMap.set(fireTrialId, state);
   return updated;
 }
+
