@@ -742,12 +742,10 @@ export class Execution implements OnInit, OnDestroy {
         minWidth: '900px',
         maxHeight: '90vh',
         data: {
-          categories: selector.categories,
-          items: selector.items,
+          fireTrialId: trialId,
           serieOptions: selector.serieOptions,
           disparoOptions: selector.disparoOptions,
           serieDisparoMap: selector.serieDisparoMap,
-          initialEquipments: selector.equipments,
         },
       },
     );

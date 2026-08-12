@@ -1,14 +1,14 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
-import type { FireTrial } from '@intaqalab/models';
+import type { DistanceUnitEnum, FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
 
 import type {
-  EquipmentMagnitudeTagEnum,
-  EquipmentSelectionApiList,
-  EquipmentTypeEnum,
-  WidgetId,
+    EquipmentMagnitudeTagEnum,
+    EquipmentSelectionApiList,
+    EquipmentTypeEnum,
+    WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -134,6 +134,22 @@ export interface PlanningSeriesItem {
   observations?: string;
 }
 
+export interface JltShotDataPayload {
+  jet: string;
+  pieceOperator: string;
+  attackDistance: number | null;
+  attackDistanceUnit?: DistanceUnitEnum;
+  recoilDistance: number | null;
+  recoilDistanceUnit?: DistanceUnitEnum;
+  observations?: string | null;
+}
+
+export type JltShotDataRequest = JltShotDataPayload;
+
+export interface JltShotDataResponse {
+  jltData: JltShotDataPayload;
+}
+
 // ============= Params Signals =============
 
 interface ExecutionParams {
@@ -236,6 +252,15 @@ interface EquipmentSelectorUpdateParams extends ExecutionParams {
   body: EquipmentSelectorUpdateRequest;
 }
 
+interface JltShotDataParams extends ExecutionParams {
+  seriesId: string;
+  shotId: string;
+}
+
+interface JltShotDataUpdateParams extends JltShotDataParams {
+  body: JltShotDataRequest;
+}
+
 // ============= Service =============
 
 @Injectable({
@@ -246,7 +271,8 @@ export class ExecutionService {
   readonly #lifecycleService = inject(FireTrialLifecycleService);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
-
+  #lastReadinessSaveStatus = 'idle';
+  #lastHandledReadinessSaveRequestId: number | null = null;
 
   // ── PLANNING SERIES ──────────────────────────────────────────────────────
 
@@ -619,6 +645,29 @@ export class ExecutionService {
     this.#setReadinessProfileParams.set(null);
   }
 
+  // Tras cada PUT exitoso, recargar el GET para resincronizar store y widgets.
+  // eslint-disable-next-line no-unused-private-class-members
+  readonly #reloadProfilesReadinessAfterSave = effect(
+    () => {
+      const params = this.#setReadinessProfileParams();
+      const status = this.setProfileReadinessResource.status();
+      const shouldReload =
+        !!params &&
+        status === 'resolved' &&
+        this.#lastHandledReadinessSaveRequestId !== params._t &&
+        this.#lastReadinessSaveStatus !== 'resolved';
+
+      this.#lastReadinessSaveStatus = status;
+
+      if (!shouldReload) {
+        return;
+      }
+
+      this.#lastHandledReadinessSaveRequestId = params._t;
+      this.getProfilesReadiness(params.fireTrialId);
+    },
+    { allowSignalWrites: true },
+  );
 
   // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
 
@@ -637,6 +686,32 @@ export class ExecutionService {
     this.#getEquipmentSelectorParams.set({ fireTrialId, _t: Date.now() });
   }
 
+  // ── EQUIPMENT ITEMS BY CATEGORY ──────────────────────────────────────────
+
+  /**
+   * Carga items de equipo para múltiples categorías en paralelo desde /equipment/items?categoryId=X
+   * Devuelve un map categoryId → opciones de select { id: denominationId, label }
+   */
+  loadEquipmentItemsByCategories(
+    categories: EquipmentTypeEnum[],
+  ): Promise<Record<string, Array<{ id: string; label: string }>>> {
+    const requests = categories.map((cat) =>
+      firstValueFrom(
+        this.#http.get<{ totalElements: number; items: Array<{ denominationId: number; denominationName: string; tag: string }> }>(
+          `${this.#planningUrl}/equipment/items`,
+          { params: { categoryId: cat } },
+        ),
+      ).then((response) => [
+        cat,
+        response.items.map((item) => ({
+          id: String(item.denominationId),
+          label: `${item.denominationName} / ${item.tag}`,
+        })),
+      ] as const),
+    );
+    return Promise.all(requests).then((results) => Object.fromEntries(results));
+  }
+
   // ── EQUIPMENT SELECTOR: PUT ─────────────────────────────────────────────
 
   readonly #updateEquipmentSelectorParams = signal<EquipmentSelectorUpdateParams | null>(null);
@@ -653,5 +728,48 @@ export class ExecutionService {
 
   updateEquipmentSelector(fireTrialId: FireTrial['id'], body: EquipmentSelectorUpdateRequest): void {
     this.#updateEquipmentSelectorParams.set({ fireTrialId, body, _t: Date.now() });
+  }
+
+  // ── JLT SHOT DATA: GET ───────────────────────────────────────────────────
+
+  readonly #getJltShotDataParams = signal<JltShotDataParams | null>(null);
+
+  readonly jltShotDataResource = httpResource<JltShotDataResponse>(() => {
+    const params = this.#getJltShotDataParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-shot-data/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getJltShotDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
+    return firstValueFrom(
+      this.#http.get<JltShotDataResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-shot-data/series/${seriesId}/shots/${shotId}`,
+      ),
+    );
+  }
+
+  // ── JLT SHOT DATA: PUT ───────────────────────────────────────────────────
+
+  readonly #updateJltShotDataParams = signal<JltShotDataUpdateParams | null>(null);
+
+  readonly updateJltShotDataResource = httpResource<JltShotDataResponse>(() => {
+    const params = this.#updateJltShotDataParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-shot-data/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: JltShotDataRequest): void {
+    this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
   }
 }

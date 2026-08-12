@@ -1608,6 +1608,7 @@
         "CURRENT_SHOT_BTN": "Current shot",
         "DESCRIPTION": "JET, operator, equipment attacked, attacked, recoil and observations of the shot",
         "DISPARO_PLACEHOLDER": "Shot",
+        "ENABLE_EDIT": "Edit",
         "EQUIPO_ATACADO_LABEL": "Team Attacked",
         "EQUIPO_ATACADO_PLACEHOLDER": "Equipment",
         "EQUIPO_RETROCESO_LABEL": "recoil equipment",

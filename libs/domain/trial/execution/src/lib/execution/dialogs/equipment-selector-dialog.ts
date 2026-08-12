@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,15 +9,19 @@ import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { Role, injectCurrentUserRole } from '@intaqalab/core';
+import type { FireTrial } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { ExecutionService } from '../../services/execution.service';
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
-import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../models';
+import type {
+  EquipmentItemSelection, EquipmentMagnitudeSelectionGroup,
+  EquipmentMeasurementGroupApi
+} from '../models';
 import {
   EquipmentMagnitudeTagEnum,
   EquipmentTypeEnum,
-  LEGACY_CATEGORY_TO_EQUIPMENT_TYPE,
-  isEquipmentTypeEnum,
+  isEquipmentTypeEnum
 } from '../models';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
@@ -25,11 +29,15 @@ import {
 export type EquipmentItemSelectionEntry = EquipmentItemSelection;
 
 export type EquipmentSelectorDialogData = {
-  categories: Array<{ id: string; label: string; maxSelection: number }>;
-  items: Array<{ id: string; label: string; categoryId?: string; equipmentType?: EquipmentTypeEnum }>;
+  fireTrialId: FireTrial['id'];
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];
   serieDisparoMap?: Record<string, string[]>;
+  /** @deprecated Items now loaded from /equipment/items API */
+  categories?: Array<{ id: string; label: string; maxSelection: number }>;
+  /** @deprecated Items now loaded from /equipment/items API */
+  items?: Array<{ id: string; label: string; categoryId?: string; equipmentType?: EquipmentTypeEnum }>;
+  /** @deprecated Loaded from /execution/equipment-selection API */
   initialEquipments?: EquipmentMagnitudeSelectionGroup[];
 };
 
@@ -69,7 +77,22 @@ const TOPOGRAPHY_ROLES: Role[] = [Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD, Role.INT
 
 const SELECT_ALL_SERIES_VALUE = '__ALL_SERIES__';
 
-// LEGACY_CATEGORY_TO_EQUIPMENT_TYPE is imported from execution/models
+
+// ── Mappers: API ↔ Dialog Format ──────────────────────────────────────────────
+
+function apiToDialogFormat(
+  apiGroups: EquipmentMeasurementGroupApi[],
+): EquipmentMagnitudeSelectionGroup[] {
+  return apiGroups.map((apiGroup) => ({
+    id: apiGroup.measurementGroup,
+    selections: apiGroup.selections.map((sel) => ({
+      itemId: String(sel.equipmentDenominationId),
+      categoryId: sel.categoryId,
+      series: sel.seriesIds ?? [],
+      disparos: sel.shotIds ?? [],
+    })),
+  }));
+}
 
 // ── Canonical Tag Definitions ─────────────────────────────────────────────────
 
@@ -423,6 +446,7 @@ const INIT_STATE = (): TagTableState => ({ rows: [EMPTY_ROW()], nextId: 1, pageI
 export class EquipmentSelectorDialog {
   readonly #dialogRef = inject<MatDialogRef<EquipmentSelectorDialog, EquipmentSelectorDialogResult>>(MatDialogRef);
   readonly data = inject<EquipmentSelectorDialogData>(MAT_DIALOG_DATA);
+  readonly #executionService = inject(ExecutionService);
   readonly #userRoles = injectCurrentUserRole();
   readonly selectAllSeriesValue = SELECT_ALL_SERIES_VALUE;
 
@@ -430,9 +454,42 @@ export class EquipmentSelectorDialog {
 
   readonly #selectedTagId = signal<string>('');
   readonly #tagStates = signal<Record<string, TagTableState>>({});
+  readonly #isInitialized = signal(false);
+  readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
 
   constructor() {
-    this.#hydrateFromInitialEquipments();
+    // Trigger GET for current equipment selection
+    this.#executionService.getEquipmentSelector(this.data.fireTrialId);
+
+    // Load items from API for all measurement equipment categories needed by visible tags
+    this.#executionService
+      .loadEquipmentItemsByCategories(this.#collectNeededCategories())
+      .then((result) => this.#itemsByCategory.set(result));
+
+    // Wait for GET to settle — only hydrate on success (not 404/error)
+    effect(
+      () => {
+        if (this.#isInitialized()) return;
+
+        const status = this.#executionService.equipmentSelectorResource.status();
+        if (status !== 'resolved' && status !== 'error') return;
+
+        if (status === 'resolved') {
+          const apiData = this.#executionService.equipmentSelectorResource.value();
+          if (apiData?.length) {
+            this.#hydrateFromInitialEquipments(apiToDialogFormat(apiData));
+          }
+        }
+
+        if (!this.#selectedTagId()) {
+          const firstVisible = this.visibleTags()[0]?.id;
+          if (firstVisible) this.selectTag(firstVisible);
+        }
+
+        this.#isInitialized.set(true);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   // ── Computed ─────────────────────────────────────────────────────────────────
@@ -480,20 +537,21 @@ export class EquipmentSelectorDialog {
 
   // ── Methods ──────────────────────────────────────────────────────────────────
 
-  getItemsByCategory(
-    categoryId: EquipmentTypeEnum | string | '',
-  ): Array<{ id: string; label: string; categoryId?: string }> {
+  getItemsByCategory(categoryId: EquipmentTypeEnum | string | ''): Array<{ id: string; label: string }> {
     if (!categoryId) return [];
-    return this.data.items.filter((i) => {
-      if (this.#resolveEquipmentType(i) === categoryId) return true;
-      return i.categoryId === categoryId;
-    });
+    return this.#itemsByCategory()[categoryId] ?? [];
   }
 
-  #resolveEquipmentType(item: { categoryId?: string; equipmentType?: EquipmentTypeEnum }): EquipmentTypeEnum | null {
-    if (item.equipmentType) return item.equipmentType;
-    if (!item.categoryId) return null;
-    return LEGACY_CATEGORY_TO_EQUIPMENT_TYPE[item.categoryId] ?? null;
+  #collectNeededCategories(): EquipmentTypeEnum[] {
+    const seen = new Set<EquipmentTypeEnum>();
+    for (const tag of TAG_CONFIGS) {
+      for (const field of tag.fields) {
+        if (field.type === 'select' && isEquipmentTypeEnum(field.sourceCategoryId as string)) {
+          seen.add(field.sourceCategoryId as EquipmentTypeEnum);
+        }
+      }
+    }
+    return [...seen];
   }
 
   #getAllSeriesValues(): string[] {
@@ -511,8 +569,7 @@ export class EquipmentSelectorDialog {
     return [...new Set(disparos)];
   }
 
-  #hydrateFromInitialEquipments(): void {
-    const initialEquipments = this.data.initialEquipments;
+  #hydrateFromInitialEquipments(initialEquipments?: EquipmentMagnitudeSelectionGroup[]): void {
     if (!initialEquipments?.length) {
       const firstVisible = this.visibleTags()[0]?.id;
       if (firstVisible) this.selectTag(firstVisible);
@@ -525,22 +582,43 @@ export class EquipmentSelectorDialog {
       const tag = TAG_CONFIGS.find((t) => t.id === group.id);
       if (!tag) continue;
 
-      const rows: TagRow[] = [];
+      // Group selections by (series + disparos) to create one row per unique combination
+      const rowMap = new Map<string, { fieldValues: Record<string, string>; series: string[]; disparos: string[] }>();
 
       for (const selection of group.selections) {
+        // Find the field that matches this selection's categoryId
         const field = tag.fields.find(
           (f) => f.type === 'select' && f.sourceCategoryId && f.sourceCategoryId === selection.categoryId,
         );
 
         if (!field) continue;
 
-        rows.push({
-          rowId: `row-${rows.length}`,
-          fieldValues: { [field.key]: selection.itemId },
-          series: selection.series ?? [],
-          disparos: selection.disparos ?? [],
-        });
+        // Create a key based on (series + disparos) for grouping
+        const rowKey = `${(selection.series ?? []).sort().join('|')}:${(selection.disparos ?? []).sort().join('|')}`;
+
+        if (!rowMap.has(rowKey)) {
+          rowMap.set(rowKey, {
+            fieldValues: {},
+            series: selection.series ?? [],
+            disparos: selection.disparos ?? [],
+          });
+        }
+
+        const rowData = rowMap.get(rowKey);
+        if (!rowData) continue;
+        rowData.fieldValues[field.key] = selection.itemId;
       }
+
+      // Convert map to rows array
+      const rows: TagRow[] = Array.from(rowMap.entries()).map((entry, index) => {
+        const [, data] = entry;
+        return {
+          rowId: `row-${index}`,
+          fieldValues: data.fieldValues,
+          series: data.series,
+          disparos: data.disparos,
+        };
+      });
 
       states[group.id] = {
         rows: rows.length ? rows : [EMPTY_ROW()],
@@ -634,7 +712,7 @@ export class EquipmentSelectorDialog {
     this.#updateTag(tagId, (s) => ({ ...s, pageIndex: event.pageIndex }));
   }
 
-  /** Collects entries from ALL tags that have at least one filled field. */
+  /** Collects entries from ALL tags and closes the dialog. The store handles the API call. */
   save(): void {
     const equipments: EquipmentMagnitudeSelectionGroup[] = [];
 
@@ -648,11 +726,11 @@ export class EquipmentSelectorDialog {
         for (const field of tag.fields) {
           if (field.type !== 'select' || !field.sourceCategoryId) continue;
 
-          const sourceCategoryId = field.sourceCategoryId;
-          if (!isEquipmentTypeEnum(sourceCategoryId)) continue;
-
           const itemId = row.fieldValues[field.key];
           if (!itemId) continue;
+
+          const sourceCategoryId = field.sourceCategoryId;
+          if (!isEquipmentTypeEnum(sourceCategoryId)) continue;
 
           selections.push({
             itemId,
@@ -664,10 +742,7 @@ export class EquipmentSelectorDialog {
       }
 
       if (selections.length) {
-        equipments.push({
-          id: tagId,
-          selections,
-        });
+        equipments.push({ id: tagId, selections });
       }
     }
 

@@ -23,6 +23,7 @@ export interface EquipmentItem {
 interface EquipmentItemFixtureEntry extends EquipmentItem {
   itemType: string;
   familyId?: number;
+  categoryId?: string;
   active?: boolean;
 }
 
@@ -101,6 +102,11 @@ export function getEquipmentItemsDispatcher(req: Request): PaginatedEquipmentRes
 
   if (active !== undefined) {
     filtered = filtered.filter((item) => item.active === active);
+  }
+
+  const categoryId = req.query.categoryId as string | undefined;
+  if (categoryId) {
+    filtered = filtered.filter((item) => item.categoryId === categoryId);
   }
 
   const totalElements = filtered.length;

@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { AuthService, Role } from '@intaqalab/core';
@@ -5,16 +6,40 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ExecutionService } from '../../services/execution.service';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum } from '../models';
 import { EquipmentSelectorDialog, type EquipmentSelectorDialogData } from './equipment-selector-dialog';
 
-const mockData: EquipmentSelectorDialogData = {
-  categories: [],
-  items: [
-    { id: 'rd-001', label: 'RD-001', equipmentType: EquipmentTypeEnum.DOPPLER_RADAR },
-    { id: 'rd-002', label: 'RD-002', equipmentType: EquipmentTypeEnum.DOPPLER_RADAR },
-    { id: 'ant-001', label: 'ANT-001', equipmentType: EquipmentTypeEnum.ANTENNA },
+// Items returned by the mocked loadEquipmentItemsByCategories
+const mockItemsByCategory = {
+  [EquipmentTypeEnum.DOPPLER_RADAR]: [
+    { id: 'rd-001', label: 'RD-001 / DOP-001' },
+    { id: 'rd-002', label: 'RD-002 / DOP-002' },
   ],
+  [EquipmentTypeEnum.ANTENNA]: [{ id: 'ant-001', label: 'ANT-001 / ANT-001' }],
+};
+
+function createMockExecutionService() {
+  // Simulates a 404 (no existing equipment selection)
+  const statusSignal = signal<'idle' | 'loading' | 'resolved' | 'error'>('error');
+  return {
+    getEquipmentSelector: vi.fn(),
+    loadEquipmentItemsByCategories: vi.fn().mockResolvedValue(mockItemsByCategory),
+    updateEquipmentSelector: vi.fn(),
+    equipmentSelectorResource: {
+      status: statusSignal.asReadonly(),
+      value: () => undefined,
+      isLoading: () => false,
+    },
+    updateEquipmentSelectorResource: {
+      status: signal<'idle' | 'loading' | 'resolved' | 'error'>('idle').asReadonly(),
+      isLoading: () => false,
+    },
+  };
+}
+
+const mockData: EquipmentSelectorDialogData = {
+  fireTrialId: 'trial-001',
   serieOptions: [
     { value: 's1', label: 'Serie 1' },
     { value: 's2', label: 'Serie 2' },
@@ -24,7 +49,6 @@ const mockData: EquipmentSelectorDialogData = {
     { value: 'd2', label: 'Disparo 2' },
   ],
   serieDisparoMap: { s1: ['d1'], s2: ['d2'] },
-  initialEquipments: [],
 };
 
 describe('EquipmentSelectorDialog', () => {
@@ -43,6 +67,7 @@ describe('EquipmentSelectorDialog', () => {
             return auth;
           },
         },
+        { provide: ExecutionService, useValue: createMockExecutionService() },
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -140,8 +165,10 @@ describe('EquipmentSelectorDialog', () => {
     expect(row.disparos).toEqual(['d2']);
   });
 
-  it('getItemsByCategory filters items by equipment type', async () => {
+  it('getItemsByCategory returns items loaded from the service', async () => {
     const { component } = await setup();
+    // Simulate service promise resolving with mock items
+    await vi.waitFor(() => component.getItemsByCategory(EquipmentTypeEnum.DOPPLER_RADAR).length > 0);
     const items = component.getItemsByCategory(EquipmentTypeEnum.DOPPLER_RADAR);
     expect(items.map((i) => i.id)).toEqual(['rd-001', 'rd-002']);
   });
@@ -179,27 +206,50 @@ describe('EquipmentSelectorDialog', () => {
     });
   });
 
-  it('hydrates rows and selected tag from initialEquipments', async () => {
-    const { component } = await setup({
-      ...mockData,
-      initialEquipments: [
+  it('hydrates rows from API data when GET resolves with equipment', async () => {
+    const resolvedStatus = signal<'idle' | 'loading' | 'resolved' | 'error'>('resolved');
+    const apiData = [
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
+        selections: [{ equipmentDenominationId: 9876, categoryId: EquipmentTypeEnum.DOPPLER_RADAR, seriesIds: ['s2'], shotIds: ['d2'] }],
+      },
+    ];
+    const mockService = {
+      getEquipmentSelector: vi.fn(),
+      loadEquipmentItemsByCategories: vi.fn().mockResolvedValue(mockItemsByCategory),
+      updateEquipmentSelector: vi.fn(),
+      equipmentSelectorResource: {
+        status: resolvedStatus.asReadonly(),
+        value: () => apiData,
+        isLoading: () => false,
+      },
+      updateEquipmentSelectorResource: {
+        status: signal<'idle' | 'loading' | 'resolved' | 'error'>('idle').asReadonly(),
+        isLoading: () => false,
+      },
+    };
+
+    const { component } = await render(EquipmentSelectorDialog, {
+      providers: [
+        provideNoopAnimations(),
         {
-          id: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
-          selections: [
-            {
-              itemId: 'rd-002',
-              categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
-              series: ['s2'],
-              disparos: ['d2'],
-            },
-          ],
+          provide: AuthService,
+          useFactory: () => {
+            const auth = new AuthService();
+            auth.setRoles([Role.INTAQALAB_ADMIN]);
+            return auth;
+          },
         },
+        { provide: ExecutionService, useValue: mockService },
+        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+        { provide: MAT_DIALOG_DATA, useValue: mockData },
       ],
-    });
+      imports: [TranslateModule.forRoot()],
+    }).then((v) => ({ ...v, component: v.fixture.componentInstance }));
 
     expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);
     const row = component.activeTagRows()[0];
-    expect(row.fieldValues['radar_doppler']).toBe('rd-002');
+    expect(row.fieldValues['radar_doppler']).toBe('9876');
     expect(row.series).toEqual(['s2']);
     expect(row.disparos).toEqual(['d2']);
   });

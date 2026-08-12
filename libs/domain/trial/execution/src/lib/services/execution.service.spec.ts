@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -332,45 +333,20 @@ describe('ExecutionService', () => {
 
     // PUT single series readiness
     const singleSeriesBody = { isReady: true, observations: 'ok' };
-    const singleSeriesPromise = service.setSeriesProfileReadiness(
-      DEMO_TRIAL_ID,
-      'VELOCITIES',
-      's-1',
-      singleSeriesBody,
-    );
+    const singleSeriesResponse = { seriesId: 's-1', ...singleSeriesBody };
+    const singleSeriesPromise = service.setSeriesProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', 's-1', singleSeriesBody);
     TestBed.tick();
 
-    const putSingleReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
-    expect(putSingleReq.request.method).toBe('PUT');
-    expect(putSingleReq.request.body).toEqual(singleSeriesBody);
-    putSingleReq.flush({ seriesId: 's-1', isReady: true, observations: 'ok' });
+    const putReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(singleSeriesBody);
+    putReq.flush(singleSeriesResponse);
 
-    const singleResult = await singleSeriesPromise;
-    expect(singleResult).toEqual({ seriesId: 's-1', isReady: true, observations: 'ok' });
-
-    // PUT profile readiness batch per-series
-    const seriesItems = [{ seriesId: 's-1', isReady: true, observations: 'ok' }];
-    const batchPromise = service.setProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', seriesItems);
-    TestBed.tick();
-
-    const putBatchReq = httpMock.expectOne(`${BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
-    expect(putBatchReq.request.method).toBe('PUT');
-    expect(putBatchReq.request.body).toEqual({ isReady: true, observations: 'ok' });
-    putBatchReq.flush({ seriesId: 's-1', isReady: true, observations: 'ok' });
-
-    // flush legacy resource req if present
-    const legacyReq = httpMock.match(`${BASE_URL}/readiness/profiles/VELOCITIES`);
-    if (legacyReq.length > 0) {
-      legacyReq[0].flush({ profile: 'VELOCITIES', seriesReadiness: seriesItems });
-    }
-
-    const batchResult = await batchPromise;
-    expect(batchResult).toEqual([{ seriesId: 's-1', isReady: true, observations: 'ok' }]);
+    await expect(singleSeriesPromise).resolves.toEqual(singleSeriesResponse);
   });
 
-
   it('should GET and PUT equipment selection using the new aligned URL', async () => {
-    const mockResponse = [];
+    const mockResponse: string | number | boolean | object | null = [];
 
     // GET equipment selection
     service.getEquipmentSelector(DEMO_TRIAL_ID);
@@ -386,7 +362,7 @@ describe('ExecutionService', () => {
     });
 
     // PUT equipment selection
-    const putReqBody = [];
+    const putReqBody: any[] = [];
     service.updateEquipmentSelector(DEMO_TRIAL_ID, putReqBody);
     TestBed.tick();
 
@@ -398,6 +374,47 @@ describe('ExecutionService', () => {
     await waitFor(() => {
       TestBed.tick();
       expect(service.updateEquipmentSelectorResource.value()).toBeUndefined();
+    });
+  });
+
+  it('should GET and PUT JLT shot data using series and shot ids', async () => {
+    const seriesId = 'series-1';
+    const shotId = 'shot-1';
+    const mockResponse = {
+      jltData: {
+        jet: 'JET-001',
+        pieceOperator: 'OP-42',
+        attackDistance: 12.5,
+        attackDistanceUnit: 'MM',
+        recoilDistance: 8.3,
+        recoilDistanceUnit: 'MM',
+        observations: 'Sin incidencias.',
+      },
+    };
+
+    service.getJltShotData(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${BASE_URL}/jlt-shot-data/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.jltShotDataResource.value()).toEqual(mockResponse);
+    });
+
+    service.setJltShotData(DEMO_TRIAL_ID, seriesId, shotId, mockResponse.jltData);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${BASE_URL}/jlt-shot-data/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(mockResponse.jltData);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateJltShotDataResource.value()).toEqual(mockResponse);
     });
   });
 });

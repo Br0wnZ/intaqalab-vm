@@ -1430,6 +1430,7 @@
         "CURRENT_SHOT_BTN": "Disparo actual",
         "DESCRIPTION": "JET, operador, equipo atacado, atacado, retroceso y observaciones del disparo",
         "DISPARO_PLACEHOLDER": "Disparo",
+        "ENABLE_EDIT": "Editar",
         "EQUIPO_ATACADO_LABEL": "Equipo Atacado",
         "EQUIPO_ATACADO_PLACEHOLDER": "Equipo",
         "EQUIPO_RETROCESO_LABEL": "Equipo retroceso",

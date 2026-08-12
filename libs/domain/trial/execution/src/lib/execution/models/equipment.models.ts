@@ -16,6 +16,23 @@ export enum EquipmentTypeEnum {
   PROBE = 'PROBE',
   IPG_SENSOR = 'IPG_SENSOR',
   MICROMDULE = 'MICROMDULE',
+  RECORDER = 'RECORDER',
+  DATA_ACQUISITION_SYSTEM = 'DATA_ACQUISITION_SYSTEM',
+}
+
+/** Physical equipment item returned by /equipment/items (individual unit from Calibry). */
+export interface EquipmentItemApiEntry {
+  id: string;
+  tag: string;
+  serialNumber: string;
+  denominationId: number;
+  denominationName: string;
+  modelName: string;
+}
+
+export interface EquipmentItemsApiResponse {
+  totalElements: number;
+  items: EquipmentItemApiEntry[];
 }
 
 export enum EquipmentMagnitudeTagEnum {

@@ -14,9 +14,11 @@ export enum EquipmentTypeEnum {
   PRESSURE_GAUGE = 'PRESSURE_GAUGE',
   CRUSHER = 'CRUSHER',
   PROBE = 'PROBE',
+  IPG_SENSOR = 'IPG_SENSOR',
+  MICROMDULE = 'MICROMDULE',
 }
 
-export interface EquipmentSelectionDto {
+export interface EquipmentSelectionApiItem {
   equipmentDenominationId: number;
   categoryId: EquipmentTypeEnum;
   seriesIds?: string[];
@@ -38,20 +40,20 @@ export enum EquipmentMagnitudeTagEnum {
   TIEMPO = 'TIME',
 }
 
-export interface EquipmentMagnitudeGroupDto {
+export interface EquipmentMeasurementGroupApi {
   measurementGroup: EquipmentMagnitudeTagEnum | string;
-  selections: EquipmentSelectionDto[];
+  selections: EquipmentSelectionApiItem[];
 }
 
-export type EquipmentSelectorGetResponse = EquipmentMagnitudeGroupDto[];
+export type EquipmentSelectorGetResponse = EquipmentMeasurementGroupApi[];
 
-export type EquipmentSelectorPutRequest = EquipmentMagnitudeGroupDto[];
+export type EquipmentSelectorPutRequest = EquipmentMeasurementGroupApi[];
 
-export type EquipmentSelectorPutResponse = EquipmentMagnitudeGroupDto[];
+export type EquipmentSelectorPutResponse = EquipmentMeasurementGroupApi[];
 
 const equipmentSelectorMap = new Map<string, EquipmentSelectorGetResponse>();
 
-function cloneEquipmentSelection(selection: EquipmentSelectionDto): EquipmentSelectionDto {
+function cloneEquipmentSelection(selection: EquipmentSelectionApiItem): EquipmentSelectionApiItem {
   return {
     equipmentDenominationId: selection.equipmentDenominationId,
     categoryId: selection.categoryId,
@@ -60,7 +62,7 @@ function cloneEquipmentSelection(selection: EquipmentSelectionDto): EquipmentSel
   };
 }
 
-function cloneEquipmentMagnitudeGroup(group: EquipmentMagnitudeGroupDto): EquipmentMagnitudeGroupDto {
+function cloneEquipmentMeasurementGroup(group: EquipmentMeasurementGroupApi): EquipmentMeasurementGroupApi {
   return {
     measurementGroup: group.measurementGroup,
     selections: group.selections.map(cloneEquipmentSelection),
@@ -68,7 +70,7 @@ function cloneEquipmentMagnitudeGroup(group: EquipmentMagnitudeGroupDto): Equipm
 }
 
 function cloneEquipmentSelectorState(state: EquipmentSelectorGetResponse): EquipmentSelectorGetResponse {
-  return state.map(cloneEquipmentMagnitudeGroup);
+  return state.map(cloneEquipmentMeasurementGroup);
 }
 
 function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
@@ -140,7 +142,7 @@ export function updateEquipmentSelectorState(
   fireTrialId: string,
   payload: EquipmentSelectorPutRequest,
 ): EquipmentSelectorPutResponse {
-  const persistedSelection = payload.map(cloneEquipmentMagnitudeGroup);
+  const persistedSelection = payload.map(cloneEquipmentMeasurementGroup);
   equipmentSelectorMap.set(fireTrialId, persistedSelection);
-  return persistedSelection.map(cloneEquipmentMagnitudeGroup);
+  return persistedSelection.map(cloneEquipmentMeasurementGroup);
 }
