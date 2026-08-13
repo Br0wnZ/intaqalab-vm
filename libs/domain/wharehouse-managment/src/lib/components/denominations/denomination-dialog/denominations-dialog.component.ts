@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form, min, required } from '@angular/forms/signals';
+import { FormField, disabled, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import { MatSelectModule } from '@angular/material/select';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -36,9 +37,9 @@ interface DenominationForm {
     MatButtonModule,
     MatIconModule,
     MatInputModule,
+    MatSelectModule,
     TranslateModule,
     FormField,
-    IntaSignalSelectComponent,
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
@@ -57,28 +58,32 @@ interface DenominationForm {
     <mat-dialog-content>
       <div class="flex flex-col gap-4 pb-8">
         <div>
-          <ui-inta-signal-select
-            appearance="outline"
-            [id]="'trial-category'"
-            [valueKey]="'id'"
-            [labelKey]="'label'"
-            [formField]="form.category"
-            [label]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_LABEL' | translate"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_PLACEHOLDER' | translate"
-            [options]="categoryOptions"
-          />
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_LABEL' | translate }}</mat-label>
+            <mat-select
+              id="trial-category"
+              [formField]="form.category"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_PLACEHOLDER' | translate"
+            >
+              @for (option of categoryOptions; track option.id) {
+                <mat-option [value]="option.id">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
         <div>
-          <ui-inta-signal-select
-            appearance="outline"
-            [id]="'munitionType'"
-            [valueKey]="'id'"
-            [labelKey]="'label'"
-            [formField]="form.munitionTypeId"
-            [label]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_LABEL' | translate"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_PLACEHOLDER' | translate"
-            [options]="munitionTypeOptions()"
-          />
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'" [hideRequiredMarker]="true">
+            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_LABEL' | translate }}</mat-label>
+            <mat-select
+              id="munitionType"
+              [formField]="form.munitionTypeId"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_PLACEHOLDER' | translate"
+            >
+              @for (option of munitionTypeOptions(); track option.id) {
+                <mat-option [value]="option.id">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
         <div>
           <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -143,26 +148,30 @@ interface DenominationForm {
             />
           </mat-form-field>
         </div>
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'riskGroups'"
-          [valueKey]="'id'"
-          [labelKey]="'id'"
-          [formField]="form.riskGroups"
-          [label]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_PLACEHOLDER' | translate"
-          [options]="riskGroups"
-        />
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'compatibility'"
-          [valueKey]="'id'"
-          [labelKey]="'id'"
-          [formField]="form.compatibility"
-          [label]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_PLACEHOLDER' | translate"
-          [options]="compatibilities"
-        />
+        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+          <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_LABEL' | translate }}</mat-label>
+          <mat-select
+            id="riskGroups"
+            [formField]="form.riskGroups"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_PLACEHOLDER' | translate"
+          >
+            @for (option of riskGroups; track option.id) {
+              <mat-option [value]="option.id">{{ option.id }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+          <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_LABEL' | translate }}</mat-label>
+          <mat-select
+            id="compatibility"
+            [formField]="form.compatibility"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_PLACEHOLDER' | translate"
+          >
+            @for (option of compatibilities; track option.id) {
+              <mat-option [value]="option.id">{{ option.id }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
       </div>
     </mat-dialog-content>
 
@@ -230,6 +239,7 @@ export class DenominationsDialogComponent {
 
   readonly form = form(this.formModel, (f) => {
     required(f.name);
+    disabled(f.munitionTypeId, () => !this.formModel().category);
     required(f.munitionTypeId);
     required(f.weight);
     min(f.weight, 0.1);

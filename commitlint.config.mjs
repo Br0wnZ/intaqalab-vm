@@ -1,3 +1,4 @@
+
 export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
@@ -9,7 +10,7 @@ export default {
       ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'],
     ],
     'scope-case': [2, 'always', 'kebab-case'],
-    'scope-enum': [2, 'always', ['intaqalab', 'admin', 'calendar', 'master-data', 'trial', 'ware-house', 'event-log']],
+    'scope-enum': [2, 'always', ['intaqalab', 'admin', 'calendar', 'master-data', 'trial', 'ware-house', 'event-log', 'execution']],
     'subject-max-length': [2, 'always', 100],
   },
 };

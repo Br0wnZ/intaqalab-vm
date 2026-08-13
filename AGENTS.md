@@ -4,8 +4,9 @@
 # General Guidelines for working with Nx
 
 - For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
+- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `npx nx run`, `npm exec nx test`) instead of using the underlying tooling directly or using pnpm (this project uses `npm` / `npx`).
+- Prefix nx commands with `npx` or `npm exec` (e.g., `npx nx test execution`, `npm exec nx test <project>`). NEVER use `pnpm` (fails with `EPERM` / `configured to use npm`).
+- Nx project names match exact `name` in `project.json` or `nx show projects` output (e.g., `execution` instead of import path `domain-trial-execution`). Run `npx nx show projects` or `npx nx show project <name>` to inspect exact names and configurations.
 - You have access to the Nx MCP server and its tools, use them to help the user
 - For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
 - NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
@@ -94,6 +95,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 - **Convención de Nombres (2025 Style Guide):**
   - **Archivos:** Formato conciso sin sufijos técnicos para componentes/directivas/pipes (ej: `user-profile.ts` en vez de `user-profile.component.ts`). Los **servicios** deben mantener el sufijo `.service.ts` (ej: `user-profile.service.ts`).
   - **Clases:** Omitir sufijos técnicos en componentes/directivas/pipes (ej: `UserProfile` en lugar de `UserProfileComponent`). Los **servicios** deben mantener el sufijo `Service` (ej: `UserProfileService`). Combina con componentes sin selector (selector-less components) para etiquetas limpias.
+  - **Tipos, Interfaces y Enums:** Todos los tipos, interfaces y enums DEBEN declararse obligatoriamente en la carpeta `models` o `utils-models` de la librería respectiva. Está prohibida su definición en componentes, servicios o mappers.
 - **Abstracción de Mapeo y Lógica Pesada (`<feature>-mapper.service.ts`):** Toda la lógica de transformación y mapeo de datos entre el backend y el frontend (y viceversa), así como procesamientos complejos o de catálogos, DEBE ser extraída de los componentes a un servicio dedicado (ej. `ArmamentMapperService` en `armament-mapper.service.ts`). Los componentes deben ser delgados y enfocados únicamente en la interacción y la vista HTML.
 - **Botón de Guardado/Submit (`SaveButton` / `ui-save-button`):** ⚡ **OBLIGATORIO.** Para acciones de guardado, actualización, envío de formularios o cualquier botón de tipo submit/mutación, es **OBLIGATORIO** usar el componente `<ui-save-button>` de `@intaqalab/ui` (`SaveButton`) pasando `[isSaving]="resource.isLoading()"` (o la señal de carga correspondiente) en lugar de usar un `button` o `mat-flat-button` plano.
 - **Inyección de Store en Componentes:** 🚫 **PROHIBIDO acceder a la store en la vista HTML (`store.prop()`).** La store siempre se inyectará como privada y readonly (`readonly #store = inject(Store)`). En la vista se accederá únicamente a sus propiedades/señales mediante `computed()` o propiedades expuestas por el componente.
@@ -132,6 +134,7 @@ Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes c
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
 Rules:
+
 - Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging
 - Fragments OK. Short synonyms. Technical terms exact. Code unchanged.
 - Pattern: [thing] [action] [reason]. [next step].

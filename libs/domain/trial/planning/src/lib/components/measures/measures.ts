@@ -25,9 +25,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { type MasterDataMeasureItem, MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type { MagnitudesOptions, MeasureSelectionData, SerieData } from '../../utils-models/measure-serie.model';
-import type { MeasureData, MeasuresBulkUpdateRequest, SeriesMeasuresData } from '../../utils-models/measures.model';
-import type { Serie } from '../../utils-models/series-and-shots.model';
+import type { MagnitudesOptions, MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import { mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
 import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
 @Component({
@@ -463,7 +462,7 @@ export class Measures {
     source: () => this.#backendData(),
     computation: (data) => {
       if (!data.planningSeries) return [];
-      return this.#mapResponseToLocal(data.planningSeries, data.measuresSeries);
+      return mapResponseToLocal(data.planningSeries, data.measuresSeries);
     },
   });
 
@@ -671,7 +670,7 @@ export class Measures {
     if (!this.seriesForm().valid()) {
       return;
     }
-    const request = this.#mapLocalToRequest(this.seriesSignal());
+    const request = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration());
     this.#measuresStore.updateMeasures(request);
   }
 
@@ -681,91 +680,7 @@ export class Measures {
     }
     const data = this.#backendData();
     if (data.planningSeries) {
-      this.seriesSignal.set(this.#mapResponseToLocal(data.planningSeries, data.measuresSeries));
+      this.seriesSignal.set(mapResponseToLocal(data.planningSeries, data.measuresSeries));
     }
-  }
-
-  #mapResponseToLocal(planningSeries: Serie[], measuresSeries?: SeriesMeasuresData[]): SerieData[] {
-    return planningSeries.map((pSerie) => {
-      const config = measuresSeries?.find((mSerie) => mSerie.seriesId === pSerie.id);
-
-      return {
-        id: pSerie.id,
-        nombre: pSerie.name,
-        expanded: false,
-        topografia:
-          config?.measures?.topographyMeasures?.map((m: MeasureData) => ({
-            id: m.id,
-            minLimit: m.minLimit ?? null,
-            maxLimit: m.maxLimit ?? null,
-            deviation: m.deviation ?? null,
-            expanded: true,
-          })) ?? [],
-        municiones:
-          config?.measures?.munitionsMeasures?.map((m: MeasureData) => ({
-            id: m.id,
-            minLimit: m.minLimit ?? null,
-            maxLimit: m.maxLimit ?? null,
-            deviation: m.deviation ?? null,
-            expanded: true,
-          })) ?? [],
-        armamento:
-          config?.measures?.armamentMeasures?.map((m: MeasureData) => ({
-            id: m.id,
-            minLimit: m.minLimit ?? null,
-            maxLimit: m.maxLimit ?? null,
-            deviation: m.deviation ?? null,
-            expanded: true,
-          })) ?? [],
-        balistica:
-          config?.measures?.ballisticsMeasures?.map((m: MeasureData) => ({
-            id: m.id,
-            minLimit: m.minLimit ?? null,
-            maxLimit: m.maxLimit ?? null,
-            deviation: m.deviation ?? null,
-            expanded: true,
-          })) ?? [],
-      };
-    });
-  }
-
-  #mapLocalToRequest(data: SerieData[]): MeasuresBulkUpdateRequest {
-    const useCommonConfig = !this.seriesConfiguration();
-    const commonSource = useCommonConfig && data.length > 0 ? data[0] : null;
-
-    return {
-      series: data.map((item) => {
-        const source = commonSource ?? item;
-        return {
-          seriesId: item.id,
-          measures: {
-            topographyMeasures: source.topografia.map((m) => ({
-              id: m.id,
-              minLimit: m.minLimit,
-              maxLimit: m.maxLimit,
-              deviation: m.deviation,
-            })),
-            munitionsMeasures: source.municiones.map((m) => ({
-              id: m.id,
-              minLimit: m.minLimit,
-              maxLimit: m.maxLimit,
-              deviation: m.deviation,
-            })),
-            armamentMeasures: source.armamento.map((m) => ({
-              id: m.id,
-              minLimit: m.minLimit,
-              maxLimit: m.maxLimit,
-              deviation: m.deviation,
-            })),
-            ballisticsMeasures: source.balistica.map((m) => ({
-              id: m.id,
-              minLimit: m.minLimit,
-              maxLimit: m.maxLimit,
-              deviation: m.deviation,
-            })),
-          },
-        };
-      }),
-    };
   }
 }

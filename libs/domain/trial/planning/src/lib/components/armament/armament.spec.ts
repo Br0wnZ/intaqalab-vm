@@ -315,9 +315,9 @@ describe('Armament', () => {
       rowInstance.onWeaponTypeChange(null);
       view.fixture.detectChanges();
 
-      const armamentForm = rowInstance.formPath().armament;
-      expect(armamentForm.weaponExternalId().value()).toBe('');
-      expect(armamentForm.tubeExternalId().value()).toBe('');
+      const updatedShot = rowInstance.shot();
+      expect(updatedShot.armament.weaponExternalId).toBe('');
+      expect(updatedShot.armament.tubeExternalId).toBe('');
     });
 
     it('should reset tube fields when weapon denomination changes or is cleared', async () => {
@@ -331,8 +331,8 @@ describe('Armament', () => {
       rowInstance.onWeaponChange(null);
       view.fixture.detectChanges();
 
-      const armamentForm = rowInstance.formPath().armament;
-      expect(armamentForm.tubeExternalId().value()).toBe('');
+      const updatedShot = rowInstance.shot();
+      expect(updatedShot.armament.tubeExternalId).toBe('');
     });
   });
 });

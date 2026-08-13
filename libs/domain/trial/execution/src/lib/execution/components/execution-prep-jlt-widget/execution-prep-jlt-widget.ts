@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -11,7 +11,7 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltStatus } from '../../../+state/execution.store';
-import { ExecutionStore, TechUnitStatus } from '../../../+state/execution.store';
+import { ExecutionStore } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -52,9 +52,8 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 
             <!-- Selector de serie -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select ml-2">
-              <mat-select [value]="selectedSerie()">
-                <mat-option value="funcionamiento-1">Funcionamiento I</mat-option>
-                <mat-option value="funcionamiento-2">Funcionamiento II</mat-option>
+              <mat-select [value]="selectedSerie()" (valueChange)="setActiveSerie($event)">
+                <mat-option [value]="selectedSerie()">{{ selectedSerieLabel() }}</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -159,15 +158,14 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 
             <div class="flex items-center gap-2 mb-3 shrink-0">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
-                <mat-select [value]="selectedSerie()">
-                  <mat-option value="funcionamiento-1">Funcionamiento I</mat-option>
+                <mat-select [value]="selectedSerie()" (valueChange)="setActiveSerie($event)">
+                  <mat-option [value]="selectedSerie()">{{ selectedSerieLabel() }}</mat-option>
                 </mat-select>
               </mat-form-field>
 
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
-                <mat-select [value]="selectedShot()">
-                  <mat-option value="shot-3">Disparo 3</mat-option>
-                  <mat-option value="shot-4">Disparo 4</mat-option>
+                <mat-select [value]="selectedShot()" (valueChange)="setActiveShot($event)">
+                  <mat-option [value]="selectedShot()">{{ selectedShotLabel() }}</mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -175,10 +173,10 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             <div class="border-t border-slate-100 mb-3 shrink-0"></div>
 
             <div class="grid grid-cols-2 gap-2 mt-auto shrink-0">
-              <button mat-flat-button color="primary">
+              <button mat-flat-button color="primary" [disabled]="!canExecuteActions()" (click)="selectCurrentShot()">
                 {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SELECT_SHOT' | translate }}
               </button>
-              <button mat-flat-button>
+              <button mat-flat-button [disabled]="!canExecuteActions() || !isAllReady()" (click)="fireSelectedShot()">
                 {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.FIRE' | translate }}
               </button>
             </div>
@@ -215,6 +213,37 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   readonly selectedSerie = this.#executionStore.activeSerieId;
   readonly selectedShot = this.#executionStore.activeShotId;
 
+  readonly resolvedSerieId = computed(() => {
+    const activeSerieId = this.selectedSerie();
+    if (activeSerieId) {
+      return activeSerieId;
+    }
+
+    const planningSerieId = this.#executionStore.planningSeries()?.[0]?.id;
+    if (planningSerieId) {
+      return planningSerieId;
+    }
+
+    return this.#executionStore.executionProgress()?.series[0]?.seriesId ?? null;
+  });
+
+  readonly resolvedShotId = computed(() => {
+    const activeShotId = this.selectedShot();
+    if (activeShotId) {
+      return activeShotId;
+    }
+
+    const serieId = this.resolvedSerieId();
+    if (!serieId) {
+      return null;
+    }
+
+    return (
+      this.#executionStore.executionProgress()?.series.find((serie) => serie.seriesId === serieId)?.shots[0]?.shotId ??
+      null
+    );
+  });
+
   // 📥 Inputs JLT
   readonly jltStatus = this.#executionStore.jltStatus;
 
@@ -223,6 +252,16 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   // 🏁 Computed: ¿Está todo preparado?
   readonly isAllReady = this.#executionStore.isReadyForExecution;
+
+  readonly fireTrialId = this.#executionStore.fireTrialId;
+
+  readonly selectedSerieLabel = computed(() => this.#mapSerieLabel(this.resolvedSerieId()));
+
+  readonly selectedShotLabel = computed(() => this.#mapShotLabel(this.resolvedShotId()));
+
+  readonly canExecuteActions = computed(() => !!this.fireTrialId() && !!this.resolvedSerieId());
+
+  #lastLoadedJltPreparationKey: string | null = null;
 
   // 📊 Form State
   readonly formState = computed((): WidgetFormState => {
@@ -238,12 +277,50 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     };
   });
 
+  constructor() {
+    super();
+
+    effect(() => {
+      this.#loadJltPreparationIfReady();
+    });
+  }
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.#loadJltPreparationIfReady();
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // Acciones
   // ──────────────────────────────────────────────────────────────────────────
 
   updateJlt(field: keyof JltStatus, value: boolean): void {
     this.#executionStore.updateJltStatus({ [field]: value });
+  }
+
+  setActiveSerie(serieId: string): void {
+    this.#executionStore.setActiveSerie(serieId);
+  }
+
+  setActiveShot(shotId: string): void {
+    this.#executionStore.setActiveShot(shotId);
+  }
+
+  selectCurrentShot(): void {
+    const trialId = this.fireTrialId();
+    const shotId = this.resolvedShotId();
+    if (!trialId || !shotId) {
+      return;
+    }
+    this.#executionStore.selectJltShot(trialId, shotId);
+  }
+
+  fireSelectedShot(): void {
+    const trialId = this.fireTrialId();
+    if (!trialId) {
+      return;
+    }
+    this.#executionStore.fireJltShot(trialId);
   }
 
   updateJltObservations(event: Event): void {
@@ -261,7 +338,43 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   }
 
   async saveForm(): Promise<void> {
-    console.log('💾 Guardando Preparación JLT:', this.jltStatus());
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const trialId = this.fireTrialId();
+    const serieId = this.resolvedSerieId();
+    if (!trialId || !serieId) {
+      return;
+    }
+    this.#executionStore.saveJltReadiness(trialId, serieId);
+  }
+
+  #mapSerieLabel(serieId: string | null): string {
+    if (!serieId) {
+      return 'Serie';
+    }
+    const shortId = serieId.slice(0, 8).toUpperCase();
+    return `Serie ${shortId}`;
+  }
+
+  #mapShotLabel(shotId: string | null): string {
+    if (!shotId) {
+      return 'Disparo';
+    }
+    const shortId = shotId.slice(0, 8).toUpperCase();
+    return `Disparo ${shortId}`;
+  }
+
+  #loadJltPreparationIfReady(): void {
+    const trialId = this.fireTrialId();
+    const serieId = this.resolvedSerieId();
+    if (!trialId || !serieId) {
+      return;
+    }
+
+    const requestKey = `${trialId}:${serieId}`;
+    if (this.#lastLoadedJltPreparationKey === requestKey) {
+      return;
+    }
+
+    this.#lastLoadedJltPreparationKey = requestKey;
+    this.#executionStore.loadJltPreparation(trialId, serieId);
   }
 }

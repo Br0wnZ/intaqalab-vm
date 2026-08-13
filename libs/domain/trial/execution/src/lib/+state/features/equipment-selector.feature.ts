@@ -2,13 +2,13 @@ import { computed, effect, inject, untracked } from '@angular/core';
 import { patchState, signalStoreFeature, type, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
-    EquipmentItemSelection,
-    EquipmentMagnitudeSelectionGroup,
-    EquipmentMeasurementGroupApi,
-    EquipmentSelectionApiList,
+  EquipmentItemSelection,
+  EquipmentMagnitudeSelectionGroup,
+  EquipmentMeasurementGroupApi,
+  EquipmentSelectionApiList,
 } from '../../execution/models';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../../execution/models';
-import { ExecutionService } from '../../services/execution.service';
+import { ExecutionService, type PlanningSeriesItem } from '../../services/execution.service';
 import type { EquipmentSelectorState } from '../execution-state.models';
 
 function flattenGroupedEquipments(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentItemSelection[] {
@@ -63,6 +63,8 @@ function toEquipmentSelectionApi(equipments: EquipmentMagnitudeSelectionGroup[])
         return {
           equipmentDenominationId,
           categoryId: selection.categoryId,
+          magnitude: selection.magnitude ?? null,
+          channel: selection.channel ?? null,
           seriesIds: selection.series,
           shotIds: selection.disparos,
         };
@@ -79,17 +81,72 @@ function fromEquipmentSelectionApi(
     return [];
   }
   return apiGroups.map((group: EquipmentMeasurementGroupApi) => ({
-
     id: group.measurementGroup,
     selections: group.selections
       .filter((selection) => isEquipmentTypeEnum(selection.categoryId))
       .map((selection) => ({
         itemId: resolveItemIdFromDenomination(selection.equipmentDenominationId, items, selection.categoryId),
         categoryId: selection.categoryId as EquipmentTypeEnum,
+        magnitude: selection.magnitude ?? null,
+        channel: selection.channel ?? null,
         series: selection.seriesIds ?? [],
-        disparos: selection.shotIds ?? [],
+        disparos: selection.shotIds ?? selection.shootIds ?? [],
       })),
   }));
+}
+
+function buildSeriesSelectionData(
+  planningSeries: PlanningSeriesItem[] | null | undefined,
+): Pick<EquipmentSelectorState, 'serieOptions' | 'disparoOptions' | 'serieDisparoMap'> {
+  if (!planningSeries?.length) {
+    return {
+      serieOptions: [],
+      disparoOptions: [],
+      serieDisparoMap: {},
+    };
+  }
+
+  const serieOptions = planningSeries.map((serie, index) => ({
+    value: serie.id,
+    label: serie.name?.trim() || `Serie ${serie.executionOrder ?? index + 1}`,
+  }));
+
+  const seenShotIds = new Set<string>();
+  const disparoOptions: EquipmentSelectorState['disparoOptions'] = [];
+  const serieDisparoMap: Record<string, string[]> = {};
+
+  planningSeries.forEach((serie, serieIndex) => {
+    const shots = serie.shots ?? [];
+
+    serieDisparoMap[serie.id] = shots.map((shot, shotIndex) => {
+      if (!seenShotIds.has(shot.id)) {
+        disparoOptions.push({
+          value: shot.id,
+          label: `Disparo ${shot.globalNumber ?? shotIndex + 1}`,
+        });
+        seenShotIds.add(shot.id);
+      }
+
+      return shot.id;
+    });
+
+    if (!shots.length && !(serie.id in serieDisparoMap)) {
+      serieDisparoMap[serie.id] = [];
+    }
+
+    if (!serie.name?.trim() && serieOptions[serieIndex]) {
+      serieOptions[serieIndex] = {
+        value: serie.id,
+        label: `Serie ${serie.executionOrder ?? serieIndex + 1}`,
+      };
+    }
+  });
+
+  return {
+    serieOptions,
+    disparoOptions,
+    serieDisparoMap,
+  };
 }
 
 interface EquipmentSelectorSlice {
@@ -311,19 +368,9 @@ const initialState: EquipmentSelectorSlice = {
         disparos: ['disparo-3'],
       },
     ],
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
-    serieDisparoMap: {
-      'funcionamiento-1': ['disparo-1', 'disparo-2'],
-      'funcionamiento-2': ['disparo-3'],
-    },
+    serieOptions: [],
+    disparoOptions: [],
+    serieDisparoMap: {},
   },
 };
 
@@ -340,10 +387,6 @@ export function withEquipmentSelector() {
       isUpdatingEquipmentSelector: computed(() => executionService.updateEquipmentSelectorResource.isLoading()),
     })),
     withMethods((store, executionService = inject(ExecutionService)) => ({
-      loadEquipmentSelector(fireTrialId: string): void {
-        executionService.getEquipmentSelector(fireTrialId);
-      },
-
       /** Persiste las selecciones del diálogo selector de equipos */
       updateEquipmentSelections(equipments: EquipmentMagnitudeSelectionGroup[]): void {
         const fireTrialId = store.fireTrialId();
@@ -362,10 +405,7 @@ export function withEquipmentSelector() {
     })),
     withHooks({
       onInit(store) {
-        const fireTrialId = store.fireTrialId();
-        if (fireTrialId) {
-          store.loadEquipmentSelector(fireTrialId);
-        }
+        const executionService = inject(ExecutionService);
 
         effect(() => {
           const remote = store.equipmentSelectorRemote();
@@ -381,6 +421,31 @@ export function withEquipmentSelector() {
               ...state.equipmentSelector,
               equipments,
               selections: flattenGroupedEquipments(equipments),
+            },
+          }));
+        });
+
+        let lastUpdateStatus = executionService.updateEquipmentSelectorResource.status();
+
+        effect(() => {
+          const updateStatus = executionService.updateEquipmentSelectorResource.status();
+          const fireTrialId = store.fireTrialId();
+
+          if (updateStatus === 'resolved' && lastUpdateStatus !== 'resolved' && fireTrialId) {
+            executionService.getEquipmentSelector(fireTrialId);
+          }
+
+          lastUpdateStatus = updateStatus;
+        });
+
+        effect(() => {
+          const planningSeries = executionService.planningSeriesResource.value();
+          const seriesSelectionData = buildSeriesSelectionData(planningSeries);
+
+          patchState(store, (state) => ({
+            equipmentSelector: {
+              ...state.equipmentSelector,
+              ...seriesSelectionData,
             },
           }));
         });

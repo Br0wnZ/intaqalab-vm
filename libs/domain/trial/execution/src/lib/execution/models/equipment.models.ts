@@ -1,3 +1,6 @@
+import type { Role } from '@intaqalab/core';
+import type { FireTrial } from '@intaqalab/models';
+
 export enum EquipmentTypeEnum {
   DOPPLER_RADAR = 'DOPPLER_RADAR',
   TRAJECTOGRAPHY_RADAR = 'TRAJECTOGRAPHY_RADAR',
@@ -50,9 +53,13 @@ export enum EquipmentMagnitudeTagEnum {
   TIEMPO = 'TIME',
 }
 
+export type EquipmentMeasureMagnitude = 'ATTACK' | 'RECOIL';
+
 export interface EquipmentItemSelection {
   itemId: string;
   categoryId: EquipmentTypeEnum;
+  magnitude?: EquipmentMeasureMagnitude | null;
+  channel?: number | null;
   series: string[];
   disparos: string[];
 }
@@ -65,8 +72,11 @@ export interface EquipmentMagnitudeSelectionGroup {
 export interface EquipmentSelectionApiItem {
   equipmentDenominationId: number;
   categoryId: EquipmentTypeEnum;
+  magnitude?: EquipmentMeasureMagnitude | null;
+  channel?: number | null;
   seriesIds?: string[];
   shotIds?: string[];
+  shootIds?: string[];
 }
 
 export interface EquipmentMeasurementGroupApi {
@@ -117,3 +127,52 @@ export const LEGACY_CATEGORY_TO_EQUIPMENT_TYPE: Record<string, EquipmentTypeEnum
   cronometro: EquipmentTypeEnum.CHRONOMETER,
   sonometro: EquipmentTypeEnum.SOUND_LEVEL_METER,
 };
+
+// ── Equipment Selector Types ──────────────────────────────────────────────────
+
+export type TagFieldConfig = {
+  key: string;
+  label: string;
+  /** Maps to item.categoryId in data.items for options */
+  sourceCategoryId: EquipmentTypeEnum | string | '';
+  type: 'select' | 'number';
+  maxValue?: number;
+};
+
+export type TagConfig = {
+  id: string;
+  label: string;
+  allowedRoles: Role[];
+  fields: TagFieldConfig[];
+};
+
+export type TagRow = {
+  rowId: string;
+  fieldValues: Record<string, string>;
+  series: string[];
+  disparos: string[];
+};
+
+export type TagTableState = {
+  rows: TagRow[];
+  nextId: number;
+  pageIndex: number;
+};
+
+export type EquipmentSelectorDialogData = {
+  fireTrialId: FireTrial['id'];
+  serieOptions: { value: string; label: string }[];
+  disparoOptions: { value: string; label: string }[];
+  serieDisparoMap?: Record<string, string[]>;
+  /** @deprecated Items now loaded from /equipment/items API */
+  categories?: Array<{ id: string; label: string; maxSelection: number }>;
+  /** @deprecated Items now loaded from /equipment/items API */
+  items?: Array<{ id: string; label: string; categoryId?: string; equipmentType?: EquipmentTypeEnum }>;
+  /** @deprecated Loaded from /execution/equipment-selection API */
+  initialEquipments?: EquipmentMagnitudeSelectionGroup[];
+};
+
+export type EquipmentSelectorDialogResult =
+  | { action: 'save'; equipments: EquipmentMagnitudeSelectionGroup[] }
+  | { action: 'back' };
+

@@ -1,0 +1,35 @@
+{
+  "jltReadiness": {
+    "sanitaryServicesReady": false,
+    "securityReady": true,
+    "vesselReady": false,
+    "observations": "Pendiente comprobación sanitaria"
+  },
+  "technicalUnitsReadiness": {
+    "velocities": {
+      "isReady": true,
+      "observations": "Equipos calibrados"
+    },
+    "pressures": {
+      "isReady": true,
+      "observations": "Sin incidencias"
+    },
+    "video": {
+      "isReady": true,
+      "observations": "Cámaras listas"
+    },
+    "trajectography": {
+      "isReady": false,
+      "observations": "Ajuste de radar pendiente"
+    },
+    "munitions": {
+      "isReady": true,
+      "observations": "Lote verificado"
+    },
+    "armament": {
+      "isReady": true,
+      "observations": "Arma validada"
+    }
+  },
+  "seriesIsReadyForExecution": false
+}

@@ -245,7 +245,6 @@ export function withGeneralData() {
         }
       },
 
-
       loadPreferencesByRole(fireTrialId: string, roleName: string): void {
         executionService.getPreferencesByRole(fireTrialId, roleName);
       },
@@ -283,6 +282,18 @@ export function withGeneralData() {
           }
         });
 
+        // Sincroniza selección activa de serie/disparo desde estado de ejecución API.
+        effect(() => {
+          const state = safeResourceValue(executionService.executionStateResource);
+          if (!state) {
+            return;
+          }
+          patchState(store, {
+            activeSerieId: state.activeSeriesId,
+            activeShotId: state.activeShotId ?? state.activeShootId ?? null,
+          });
+        });
+
         // Refresca estado tras cada transición de ciclo de vida de la prueba
         const lifecycleResources = [
           executionService.startResource,
@@ -303,8 +314,6 @@ export function withGeneralData() {
             }
           });
         }
-
-
 
         const fireTrialId = store.fireTrialId();
         if (fireTrialId) {

@@ -4,6 +4,8 @@ import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, w
 
 import type {
   ExecutionTechnicalProfile,
+  JltPreparationResponse,
+  ProfileReadinessFlag,
   ProfileReadinessItem,
   ProfilesReadinessResponse,
 } from '../../services/execution.service';
@@ -76,7 +78,7 @@ function mapProfilesReadinessToTechUnits(profilesReadiness?: ProfileReadinessIte
   }
   return Object.entries(TECH_PROFILE_TO_API).map(([uiId, apiProfile]) => {
     const item = profilesReadiness.find((p) => p.profile === apiProfile);
-    const allReady = item ? item.seriesReadiness?.every((s) => s.isReady) ?? false : false;
+    const allReady = item ? (item.seriesReadiness?.every((s) => s.isReady) ?? false) : false;
     const observations = item?.seriesReadiness
       ? item.seriesReadiness
           .filter((s) => s.observations)
@@ -93,6 +95,26 @@ function mapProfilesReadinessToTechUnits(profilesReadiness?: ProfileReadinessIte
   });
 }
 
+function mapFlagToTechUnit(id: string, labelKey: string, flag?: ProfileReadinessFlag): TechUnitStatus {
+  return {
+    id,
+    labelKey,
+    ready: flag?.isReady ?? false,
+    observations: flag?.observations ?? '',
+  };
+}
+
+function mapJltPreparationToTechUnits(data: JltPreparationResponse): TechUnitStatus[] {
+  const technical = data.technicalUnitsReadiness;
+  return [
+    mapFlagToTechUnit('velocidades', TECH_UNIT_LABEL_KEYS['velocidades'], technical?.velocities),
+    mapFlagToTechUnit('trayectografia', TECH_UNIT_LABEL_KEYS['trayectografia'], technical?.trajectography),
+    mapFlagToTechUnit('presiones', TECH_UNIT_LABEL_KEYS['presiones'], technical?.pressures),
+    mapFlagToTechUnit('municiones', TECH_UNIT_LABEL_KEYS['municiones'], technical?.munitions),
+    mapFlagToTechUnit('video', TECH_UNIT_LABEL_KEYS['video'], technical?.video),
+    mapFlagToTechUnit('armamento', TECH_UNIT_LABEL_KEYS['armamento'], technical?.armament),
+  ];
+}
 
 // ─── Feature ───────────────────────────────────────────────────────────────────
 
@@ -111,7 +133,15 @@ export function withReadiness() {
       // ── Loading / Saving states expuestos desde los resources ─────────────────
       isLoadingReadiness: computed(() => executionService.profilesReadinessResource.isLoading()),
 
+      isLoadingJltPreparation: computed(() => executionService.jltPreparationResource.isLoading()),
+
       isSavingReadiness: computed(() => executionService.setProfileReadinessResource.isLoading()),
+
+      isSavingJltPreparation: computed(() => executionService.setJltReadinessResource.isLoading()),
+
+      isSelectingJltShot: computed(() => executionService.selectShotResource.isLoading()),
+
+      isFiringJltShot: computed(() => executionService.fireShotResource.isLoading()),
 
       readinessLoadError: computed(() => executionService.profilesReadinessResource.error()),
 
@@ -142,6 +172,27 @@ export function withReadiness() {
         }
       },
 
+      loadJltPreparation(fireTrialId: string, seriesId: string): void {
+        executionService.getJltPreparation(fireTrialId, seriesId);
+      },
+
+      saveJltReadiness(fireTrialId: string, seriesId: string): void {
+        const jlt = store.jltStatus();
+        executionService.setJltReadiness(fireTrialId, seriesId, {
+          sanitaryServicesReady: jlt.sanitary,
+          securityReady: jlt.security,
+          vessel: jlt.boat,
+          observations: jlt.observations || null,
+        });
+      },
+
+      selectJltShot(fireTrialId: string, shotId: string): void {
+        executionService.selectShot(fireTrialId, shotId);
+      },
+
+      fireJltShot(fireTrialId: string): void {
+        executionService.fireShot(fireTrialId);
+      },
 
       /**
        * Envía peticiones PUT por cada serie para actualizar el readiness de un perfil concreto.
@@ -176,7 +227,6 @@ export function withReadiness() {
         executionService.resetSetProfileReadiness();
       },
 
-
       /** Sincroniza profilesReadiness en el store a partir de la respuesta API. */
       _patchProfilesReadiness(data: ProfilesReadinessResponse): void {
         const items = data?.profilesReadiness ?? [];
@@ -185,7 +235,6 @@ export function withReadiness() {
           techUnits: mapProfilesReadinessToTechUnits(items),
         });
       },
-
 
       /** Actualiza solo el perfil que acaba de guardarse (respuesta del PUT). */
       _patchSingleProfile(item: ProfileReadinessItem): void {
@@ -212,6 +261,53 @@ export function withReadiness() {
           }
         });
 
+        // ── W2 GET: Sincronizar estado JLT + unidades técnicas ──────────────────
+        effect(() => {
+          const data = safeResourceValue(executionService.jltPreparationResource);
+          if (data) {
+            patchState(store, {
+              jltStatus: {
+                sanitary: data.jltReadiness?.sanitaryServicesReady ?? false,
+                security: data.jltReadiness?.securityReady ?? false,
+                boat: data.jltReadiness?.vesselReady ?? false,
+                observations: data.jltReadiness?.observations ?? '',
+              },
+              techUnits: mapJltPreparationToTechUnits(data),
+            });
+          }
+        });
+
+        // ── W2 PUT/POST: recargar estado dinámico tras acciones exitosas ───────
+        effect(() => {
+          const jltSaveResolved = executionService.setJltReadinessResource.status() === 'resolved';
+          const selectShotResolved = executionService.selectShotResource.status() === 'resolved';
+          const fireShotResolved = executionService.fireShotResource.status() === 'resolved';
+          if (!jltSaveResolved && !selectShotResolved && !fireShotResolved) {
+            return;
+          }
+
+          const storeAny = store as unknown as {
+            fireTrialId?: () => string | null;
+            activeSerieId?: () => string | null;
+            loadExecutionState?: (id: string) => void;
+            loadExecutionProgress?: (id: string) => void;
+            loadJltPreparation?: (trialId: string, seriesId: string) => void;
+          };
+
+          const trialId = storeAny.fireTrialId?.();
+          const serieId = storeAny.activeSerieId?.();
+
+          if (trialId && typeof storeAny.loadExecutionState === 'function') {
+            storeAny.loadExecutionState(trialId);
+          }
+          if (trialId && typeof storeAny.loadExecutionProgress === 'function') {
+            storeAny.loadExecutionProgress(trialId);
+          }
+          if (trialId && serieId && typeof storeAny.loadJltPreparation === 'function') {
+            storeAny.loadJltPreparation(trialId, serieId);
+          }
+        });
+
         // ── PUT: Actualizar perfil individual tras guardado exitoso ───────────────
         effect(() => {
           if (
@@ -224,7 +320,6 @@ export function withReadiness() {
             }
           }
         });
-
       },
     }),
   );

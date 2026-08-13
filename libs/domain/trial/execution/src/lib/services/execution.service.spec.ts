@@ -2,15 +2,21 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideTestingEnvironment } from '@intaqalab/config';
+import { DistanceUnitEnum } from '@intaqalab/models';
 import { waitFor } from '@testing-library/angular';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WidgetId } from '../execution/models/widget-id.enum';
 import { ExecutionService } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
 const BASE_URL = `http://localhost:3000/api/execution/fire-trials/${DEMO_TRIAL_ID}/execution`;
+
+vi.mock('@intaqalab/config', () => ({
+  injectExecutionEndpoint: () => 'http://localhost:3000/api/execution',
+  injectPlanningEndpoint: () => 'http://localhost:3000/api/planning',
+  injectFireTrialsEndpoint: () => 'http://localhost:3000/api/fire-trials',
+}));
 
 describe('ExecutionService', () => {
   let service: ExecutionService;
@@ -19,7 +25,7 @@ describe('ExecutionService', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), ExecutionService],
+      providers: [provideHttpClient(), provideHttpClientTesting(), ExecutionService],
     });
     service = TestBed.inject(ExecutionService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -345,6 +351,88 @@ describe('ExecutionService', () => {
     await expect(singleSeriesPromise).resolves.toEqual(singleSeriesResponse);
   });
 
+  it('should GET and mutate JLT preparation for widget 2', async () => {
+    const seriesId = '3fa85f64-5717-4562-b3fc-2c963f66afa1';
+    const shotId = '3fa85f64-5717-4562-b3fc-2c963f66bfa3';
+    const mockPreparation = {
+      jltReadiness: {
+        sanitaryServicesReady: true,
+        securityReady: true,
+        vesselReady: false,
+        observations: 'Pendiente validacion final',
+      },
+      technicalUnitsReadiness: {
+        velocities: { isReady: true, observations: 'OK' },
+      },
+      seriesIsReadyForExecution: false,
+    };
+
+    service.getJltPreparation(DEMO_TRIAL_ID, seriesId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${BASE_URL}/jlt-preparation?seriesId=${encodeURIComponent(seriesId)}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockPreparation);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.jltPreparationResource.value()).toEqual(mockPreparation);
+    });
+
+    const jltBody = {
+      sanitaryServicesReady: true,
+      securityReady: true,
+      vessel: true,
+      observations: 'Serie lista',
+    };
+    service.setJltReadiness(DEMO_TRIAL_ID, seriesId, jltBody);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${BASE_URL}/jlt-preparation/series/${seriesId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(jltBody);
+    putReq.flush({
+      sanitaryServicesReady: true,
+      securityReady: true,
+      vesselReady: true,
+      observations: 'Serie lista',
+    });
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.setJltReadinessResource.value()).toEqual({
+        sanitaryServicesReady: true,
+        securityReady: true,
+        vesselReady: true,
+        observations: 'Serie lista',
+      });
+    });
+
+    service.selectShot(DEMO_TRIAL_ID, shotId);
+    TestBed.tick();
+
+    const selectReq = httpMock.expectOne(`${BASE_URL}/jlt-preparation/shots/${shotId}/active`);
+    expect(selectReq.request.method).toBe('POST');
+    selectReq.flush(null, { status: 200, statusText: 'OK' });
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.selectShotResource.status()).toBe('resolved');
+    });
+
+    service.fireShot(DEMO_TRIAL_ID);
+    TestBed.tick();
+
+    const fireReq = httpMock.expectOne(`${BASE_URL}/jlt-preparation/fire`);
+    expect(fireReq.request.method).toBe('POST');
+    fireReq.flush(null, { status: 200, statusText: 'OK' });
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.fireShotResource.status()).toBe('resolved');
+    });
+  });
+
   it('should GET and PUT equipment selection using the new aligned URL', async () => {
     const mockResponse: string | number | boolean | object | null = [];
 
@@ -385,9 +473,9 @@ describe('ExecutionService', () => {
         jet: 'JET-001',
         pieceOperator: 'OP-42',
         attackDistance: 12.5,
-        attackDistanceUnit: 'MM',
+        attackDistanceUnit: DistanceUnitEnum.MM,
         recoilDistance: 8.3,
-        recoilDistanceUnit: 'MM',
+        recoilDistanceUnit: DistanceUnitEnum.MM,
         observations: 'Sin incidencias.',
       },
     };

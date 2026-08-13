@@ -79,7 +79,9 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
 
 4. **Genera el archivo `.spec.ts`** siguiendo el patrón de setup y estructura docuementados.
 
-5. **Ejecuta los tests** con `npx nx test <project-name>` para verificar que pasan.
+5. **Ejecuta los tests** con `npx nx test <project-name>` (e.g., `npx nx test execution` para `libs/domain/trial/execution`) para verificar que pasan.
+   - **IMPORTANTE:** Usa siempre `npx` / `npm exec` (NO usar `pnpm` en este proyecto).
+   - **Nombres de proyectos:** Usa el nombre exacto registrado en Nx (`npx nx show projects`), ej: `execution` en vez de `domain-trial-execution` o `@intaqalab/domain-trial-execution`.
 
 ## 📂 References por Tipo de Test
 

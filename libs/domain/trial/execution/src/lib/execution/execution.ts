@@ -2,14 +2,14 @@
 import { DatePipe, Location, NgClass } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    signal,
-    untracked,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,17 +24,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { injectCurrentUser } from '@intaqalab/core';
 import { IntaIconComponent, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../+state/execution.store';
 import { ExecutionGridComponent } from './components/execution-grid/execution-grid';
 import { CancelExecutionDialog } from './dialogs/cancel-execution-dialog';
-import type { EquipmentSelectorDialogResult } from './dialogs/equipment-selector-dialog';
 import { EquipmentSelectorDialog } from './dialogs/equipment-selector-dialog';
 import { InterruptExecutionDialog } from './dialogs/interrupt-execution-dialog';
 import { PauseExecutionDialog } from './dialogs/pause-execution-dialog';
 import type { TrialSelectorDialogResult } from './dialogs/trial-selector-dialog';
 import { TrialSelectorDialog } from './dialogs/trial-selector-dialog';
+import type { EquipmentSelectorDialogResult } from './models';
 import type { Widget } from './models/execution-grid.models';
 import { WidgetStateService } from './services/widget-state.service';
 import { injectWidgets } from './utils/inject-widgets';
@@ -533,7 +533,7 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   /** ⚡ Opens trial selector dialog before loading the execution view. */
-  #openTrialSelectorDialog(): void {
+  async #openTrialSelectorDialog(): Promise<void> {
     const dialogRef = this.#dialog.open<TrialSelectorDialog, void, TrialSelectorDialogResult>(TrialSelectorDialog, {
       width: '1100px',
       maxWidth: '95vw',
@@ -541,14 +541,13 @@ export class Execution implements OnInit, OnDestroy {
       disableClose: true,
     });
 
-    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-      if (!result || result.action === 'cancel') {
-        this.#location.back();
-        return;
-      }
-      // Navigate to parameterized URL — triggers a fresh route load with the trial ID
-      this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action === 'cancel') {
+      this.#location.back();
+      return;
+    }
+    this.#router.navigate(['/execution', result.trial.id], { replaceUrl: true });
   }
 
   /** ⚙️ Initializes store and polling after trial is selected. */
@@ -642,17 +641,18 @@ export class Execution implements OnInit, OnDestroy {
     this.#store.startExecution(trialId);
   }
 
-  pauseExecution(): void {
+  async pauseExecution(): Promise<void> {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(PauseExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code, trialId: this.#fireTrialId },
     });
-    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-      if (!result || result.action === 'back') return;
-      console.log('Pausing execution with reason:', result.action);
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action === 'back') return;
+    console.log('Pausing execution with reason:', result.action);
   }
 
   resumeExecution(): void {
@@ -667,30 +667,32 @@ export class Execution implements OnInit, OnDestroy {
     this.#store.finishExecution(trialId);
   }
 
-  openInterruptDialog(): void {
+  async openInterruptDialog(): Promise<void> {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(InterruptExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code },
     });
-    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-      if (!result || result.action === 'back') return;
-      this.#store.interruptExecution(trialId, result.reason);
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action === 'back') return;
+    this.#store.interruptExecution(trialId, result.reason);
   }
 
-  openCancelDialog(): void {
+  async openCancelDialog(): Promise<void> {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
     const dialogRef = this.#dialog.open(CancelExecutionDialog, {
       width: '600px',
       data: { trialName: this.executionData().code },
     });
-    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-      if (!result || result.action === 'back') return;
-      this.#store.cancelExecution(trialId, result.reason);
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action === 'back') return;
+    this.#store.cancelExecution(trialId, result.reason);
   }
 
   addWidget(widgetId: string): void {
@@ -730,10 +732,9 @@ export class Execution implements OnInit, OnDestroy {
     console.log('Widget removido:', widgetId);
   }
 
-  openEquipmentSelectorDialog(): void {
+  async openEquipmentSelectorDialog(): Promise<void> {
     const trialId = this.#fireTrialId();
     if (!trialId) return;
-    this.#store.loadEquipmentSelector(trialId);
     const selector = this.#store.equipmentSelector();
     const dialogRef = this.#dialog.open<EquipmentSelectorDialog, unknown, EquipmentSelectorDialogResult>(
       EquipmentSelectorDialog,
@@ -749,10 +750,10 @@ export class Execution implements OnInit, OnDestroy {
         },
       },
     );
-    dialogRef.afterClosed().pipe(take(1)).subscribe((result) => {
-      if (!result || result.action === 'back') return;
-      this.#store.updateEquipmentSelections(result.equipments);
-    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result || result.action === 'back') return;
+    this.#store.updateEquipmentSelections(result.equipments);
   }
 
   async saveAllChanges(): Promise<void> {

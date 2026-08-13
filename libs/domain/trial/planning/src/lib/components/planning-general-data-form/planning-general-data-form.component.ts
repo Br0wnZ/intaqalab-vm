@@ -21,11 +21,11 @@ import type {
   RatingCriteria as RatingCriteriaModel,
   RatingCriteriaUnits,
   TrialPlanningInfo,
-  UpsertTrialPlanningInfo,
 } from '../../utils-models/trial-planing-info.model';
 import { PlanningScheduledDatesComponent } from '../planning-scheduled-dates/planning-scheduled-dates.component';
 import { RatingCriteria } from '../rating-criteria/rating-criteria';
 import { SpecimensManagmentDialog } from '../specimens-managment-dialog/specimens-managment-dialog';
+import { mapDataToFormModel, mapFormDataToUpsertModel } from './planning-general-data-form.mapper';
 
 export type PlanningGeneralData = {
   goal: string;
@@ -653,7 +653,7 @@ export class PlanningGeneralDataFormComponent {
     effect(() => {
       const planningInfo: TrialPlanningInfo | undefined = this.#store.planningInfo();
       if (planningInfo) {
-        const mappedModel = this.#mapDataToFormModel(planningInfo);
+        const mappedModel = mapDataToFormModel(planningInfo, DEFAULT_REQUERIMENTS);
         const selectedSpecimens = planningInfo.specimens.map((s) => ({
           specimenId: s.specimenId,
           batch: s.batch ?? '',
@@ -757,7 +757,15 @@ export class PlanningGeneralDataFormComponent {
   }
 
   saveDraft(): void {
-    this.#store.updatePlanningInfo(this.#mapFormDataToUpsertModel());
+    const mappedItem = mapFormDataToUpsertModel(
+      this.generalDataForm().value(),
+      this.#store.selectedSpecimens(),
+      this.showRatingCriteria(),
+      this.ratingCriteriaState(),
+      this.ratingCriteriaUnitsState(),
+    );
+
+    this.#store.updatePlanningInfo(mappedItem);
   }
 
   #deepClone(data: PlanningGeneralData): PlanningGeneralData {
@@ -767,56 +775,5 @@ export class PlanningGeneralDataFormComponent {
   #hasRatingCriteriaValues(criteria: RatingCriteriaModel | undefined): boolean {
     if (!criteria) return false;
     return Object.values(criteria).some((row) => Object.values(row ?? {}).some((value) => !!value));
-  }
-
-  #mapFormDataToUpsertModel(): UpsertTrialPlanningInfo {
-    const formValue = this.generalDataForm().value();
-    const basePayload: UpsertTrialPlanningInfo = {
-      goal: formValue.goal,
-      specimens: this.#store.selectedSpecimens() ?? [],
-      planningUserId: formValue.planningUser,
-      observations: formValue.observations,
-      requirements: formValue.requeriments,
-      additionalInfo: formValue.additionalInfo,
-      dateControl: {
-        maxEmissionDates: Number(formValue.maxEmissionDates),
-        percentageTechnicalUnits: Number(formValue.percentageTechnicalUnits),
-        percentageEndTrial: Number(formValue.percentageEndTrial),
-        daysSignReport: Number(formValue.daysSignReport),
-      },
-      hypochelometricReviewBefore: formValue.hypochelometricReviewBefore,
-      hypochelometricReviewAfter: formValue.hypochelometricReviewAfter,
-    };
-
-    // Solo incluir ratingCriteria y ratingCriteriaUnits si el checkbox está habilitado
-    if (this.showRatingCriteria()) {
-      basePayload.ratingCriteria = this.ratingCriteriaState();
-      basePayload.ratingCriteriaUnits = this.ratingCriteriaUnitsState() || {
-        speedUnit: 'M_S',
-        pressureUnit: 'BAR',
-      };
-    }
-
-    return basePayload;
-  }
-
-  #mapDataToFormModel(data: TrialPlanningInfo): PlanningGeneralData {
-    return {
-      goal: data.goal,
-      specimen: data.specimens.map((s) => ({
-        specimenId: s.specimenId,
-        batch: s.batch ?? '',
-      })),
-      planningUser: data.planningUser.id,
-      observations: data.observations,
-      requeriments: data.requirements || DEFAULT_REQUERIMENTS,
-      additionalInfo: data.additionalInfo,
-      maxEmissionDates: String(data.dateControl.maxEmissionDates),
-      percentageTechnicalUnits: String(data.dateControl.percentageTechnicalUnits),
-      percentageEndTrial: String(data.dateControl.percentageEndTrial),
-      daysSignReport: String(data.dateControl.daysSignReport),
-      hypochelometricReviewBefore: !!data.hypochelometricReviewBefore,
-      hypochelometricReviewAfter: !!data.hypochelometricReviewAfter,
-    };
   }
 }

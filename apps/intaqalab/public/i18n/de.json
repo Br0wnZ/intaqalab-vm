@@ -217,6 +217,10 @@
         "COL_SHOTS": "Schüsse",
         "DELETE": "Löschen",
         "EQUIPMENT_HEADING": "Geräte",
+        "ERRORS": {
+          "LOAD_FAILED_TITLE": "Fehler beim Laden der Geräteauswahl",
+          "LOAD_FAILED_DETAIL": "Die Geräteinformationen für den Versuch konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
+        },
         "FIELDS": {
           "AMPLIFICADOR": "Verstärker",
           "ANTENA": "Antenne",

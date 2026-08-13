@@ -5,10 +5,11 @@ import type { DistanceUnitEnum, FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
 
 import type {
-    EquipmentMagnitudeTagEnum,
-    EquipmentSelectionApiList,
-    EquipmentTypeEnum,
-    WidgetId,
+  EquipmentMagnitudeTagEnum,
+  EquipmentMeasureMagnitude,
+  EquipmentSelectionApiList,
+  EquipmentTypeEnum,
+  WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -132,6 +133,13 @@ export interface PlanningSeriesItem {
   shotQuantity?: number;
   executionOrder?: number;
   observations?: string;
+  shots?: PlanningSeriesShotItem[];
+}
+
+export interface PlanningSeriesShotItem {
+  id: string;
+  globalNumber?: number;
+  observation?: string | null;
 }
 
 export interface JltShotDataPayload {
@@ -205,6 +213,40 @@ export type ProfileReadinessRequest = {
   seriesReadiness: SeriesReadinessItem[];
 };
 
+export type JltReadinessRequest = {
+  sanitaryServicesReady: boolean;
+  securityReady: boolean;
+  vessel: boolean;
+  observations?: string | null;
+};
+
+export type JltReadinessItem = {
+  sanitaryServicesReady: boolean;
+  securityReady: boolean;
+  vesselReady: boolean;
+  observations?: string | null;
+};
+
+export type ProfileReadinessFlag = {
+  isReady: boolean;
+  observations?: string | null;
+};
+
+export type TechnicalUnitsReadinessItem = {
+  velocities?: ProfileReadinessFlag;
+  pressures?: ProfileReadinessFlag;
+  video?: ProfileReadinessFlag;
+  trajectography?: ProfileReadinessFlag;
+  munitions?: ProfileReadinessFlag;
+  armament?: ProfileReadinessFlag;
+};
+
+export type JltPreparationResponse = {
+  jltReadiness?: JltReadinessItem;
+  technicalUnitsReadiness?: TechnicalUnitsReadinessItem;
+  seriesIsReadyForExecution: boolean;
+};
+
 export type EquipmentSelectorCategory = {
   id: string;
   label: string;
@@ -222,8 +264,11 @@ export type EquipmentSelectorItem = {
 export type EquipmentSelectorSelection = {
   equipmentDenominationId: number;
   categoryId: EquipmentTypeEnum;
+  magnitude?: EquipmentMeasureMagnitude | null;
+  channel?: number | null;
   seriesIds?: string[];
   shotIds?: string[];
+  shootIds?: string[];
 };
 
 export type EquipmentSelectorMagnitudeGroup = {
@@ -259,6 +304,18 @@ interface JltShotDataParams extends ExecutionParams {
 
 interface JltShotDataUpdateParams extends JltShotDataParams {
   body: JltShotDataRequest;
+}
+
+interface JltPreparationParams extends ExecutionParams {
+  seriesId: string;
+}
+
+interface JltReadinessParams extends JltPreparationParams {
+  body: JltReadinessRequest;
+}
+
+interface SelectShotParams extends ExecutionParams {
+  shotId: string;
 }
 
 // ============= Service =============
@@ -645,6 +702,72 @@ export class ExecutionService {
     this.#setReadinessProfileParams.set(null);
   }
 
+  // ── EXECUTION READINESS: WIDGET 2 JLT PREPARATION ─────────────────────
+
+  readonly #getJltPreparationParams = signal<JltPreparationParams | null>(null);
+
+  readonly jltPreparationResource = httpResource<JltPreparationResponse>(() => {
+    const params = this.#getJltPreparationParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation`,
+      method: 'GET',
+      params: {
+        seriesId: params.seriesId,
+      },
+    };
+  });
+
+  getJltPreparation(fireTrialId: FireTrial['id'], seriesId: string): void {
+    this.#getJltPreparationParams.set({ fireTrialId, seriesId, _t: Date.now() });
+  }
+
+  readonly #setJltReadinessParams = signal<JltReadinessParams | null>(null);
+
+  readonly setJltReadinessResource = httpResource<JltReadinessItem>(() => {
+    const params = this.#setJltReadinessParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/series/${params.seriesId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setJltReadiness(fireTrialId: FireTrial['id'], seriesId: string, body: JltReadinessRequest): void {
+    this.#setJltReadinessParams.set({ fireTrialId, seriesId, body, _t: Date.now() });
+  }
+
+  readonly #selectShotParams = signal<SelectShotParams | null>(null);
+
+  readonly selectShotResource = httpResource<void>(() => {
+    const params = this.#selectShotParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/shots/${params.shotId}/active`,
+      method: 'POST',
+    };
+  });
+
+  selectShot(fireTrialId: FireTrial['id'], shotId: string): void {
+    this.#selectShotParams.set({ fireTrialId, shotId, _t: Date.now() });
+  }
+
+  readonly #fireShotParams = signal<ExecutionParams | null>(null);
+
+  readonly fireShotResource = httpResource<void>(() => {
+    const params = this.#fireShotParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/fire`,
+      method: 'POST',
+    };
+  });
+
+  fireShot(fireTrialId: FireTrial['id']): void {
+    this.#fireShotParams.set({ fireTrialId, _t: Date.now() });
+  }
+
   // Tras cada PUT exitoso, recargar el GET para resincronizar store y widgets.
   // eslint-disable-next-line no-unused-private-class-members
   readonly #reloadProfilesReadinessAfterSave = effect(
@@ -697,17 +820,20 @@ export class ExecutionService {
   ): Promise<Record<string, Array<{ id: string; label: string }>>> {
     const requests = categories.map((cat) =>
       firstValueFrom(
-        this.#http.get<{ totalElements: number; items: Array<{ denominationId: number; denominationName: string; tag: string }> }>(
-          `${this.#planningUrl}/equipment/items`,
-          { params: { categoryId: cat } },
-        ),
-      ).then((response) => [
-        cat,
-        response.items.map((item) => ({
-          id: String(item.denominationId),
-          label: `${item.denominationName} / ${item.tag}`,
-        })),
-      ] as const),
+        this.#http.get<{
+          totalElements: number;
+          items: Array<{ denominationId: number; denominationName: string; tag: string }>;
+        }>(`${this.#planningUrl}/equipment/items`, { params: { categoryId: cat } }),
+      ).then(
+        (response) =>
+          [
+            cat,
+            response.items.map((item) => ({
+              id: String(item.denominationId),
+              label: `${item.denominationName} / ${item.tag}`,
+            })),
+          ] as const,
+      ),
     );
     return Promise.all(requests).then((results) => Object.fromEntries(results));
   }

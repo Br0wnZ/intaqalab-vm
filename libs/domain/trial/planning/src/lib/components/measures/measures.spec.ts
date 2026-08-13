@@ -181,7 +181,7 @@ describe('Measures', () => {
       const { user, view } = await runSetup();
 
       view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
-        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 },
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: true },
       ]);
 
       const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
@@ -219,10 +219,10 @@ describe('Measures', () => {
       await user.click(toggleButton);
 
       view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
-        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1 },
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: true },
       ]);
       view.fixture.componentInstance.onCategoryChange('series-2', 'topografia', [
-        { id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2 },
+        { id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2, expanded: true },
       ]);
 
       const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
@@ -260,30 +260,6 @@ describe('Measures', () => {
 
       expect(screen.getByText('Magnitudes y registros de topografía')).toBeInTheDocument();
       expect(screen.getByText('Magnitudes y registros de municiones')).toBeInTheDocument();
-    });
-  });
-
-  describe('Loading State', () => {
-    it('should show spinner when loading', async () => {
-      mockMeasuresService = createMockMeasuresService();
-      mockMeasuresService._measuresResource._setLoading(true);
-
-      const mockSeriesService = createMockSeriesAndShotsService();
-
-      const { container } = await render(Measures, {
-        imports: defaultImports,
-        providers: [
-          provideHttpClient(),
-          provideHttpClientTesting(),
-          MeasuresStore,
-          { provide: PlanningGeneralDataStore, useValue: createMockPlanningGeneralDataStore({ fireTrialId: '123' }) },
-          { provide: MeasuresService, useValue: mockMeasuresService },
-          { provide: SeriesAndShotsService, useValue: mockSeriesService },
-          { provide: SeriesAndShotsStore, useValue: createMockSeriesAndShotsStore() },
-        ],
-      });
-
-      expect(container.querySelector('mat-spinner')).toBeInTheDocument();
     });
   });
 

@@ -21,24 +21,10 @@ import { firstValueFrom } from 'rxjs';
 import { MunitionsStore } from '../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type { MasterDataI18nItem, MasterDataIItem } from '../../utils-models/catalog.model';
-import type {
-  BackendMunitionComponent,
-  ComponentDetail,
-  ComponentType,
-  Configuration,
-  Denomination,
-  FuseWorkingMode,
-  MunitionConfigRequest,
-  Serie,
-  SeriesMunitionsData,
-} from '../../utils-models/munitions.model';
-import {
-  createEmptyConfiguration,
-  createEmptySerie,
-  getSelectedComponentTypes,
-} from '../../utils-models/munitions.model';
+import type { ComponentDetail, Serie } from '../../utils-models/munitions.model';
+import { createEmptyConfiguration, createEmptySerie } from '../../utils-models/munitions.model';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog/massive-munitions-configuration-dialog';
+import { mapBackendToLocal, mapLocalToRequest } from './munition.mapper';
 import { SeriePanelComponent } from './serie-panel/serie-panel.component';
 
 @Component({
@@ -248,12 +234,7 @@ export class Munitions {
 
       if (!allSeries) return;
 
-      const mappedMunitions = this.#mapBackendToLocal(
-        seriesMunitions ?? [],
-        componentTypes,
-        denominations,
-        fuseWorkingModes,
-      );
+      const mappedMunitions = mapBackendToLocal(seriesMunitions ?? [], componentTypes, denominations, fuseWorkingModes);
       const munitionsById = new Map(mappedMunitions.map((s) => [s.seriesId, s]));
 
       const completeSeries = allSeries.map(
@@ -449,7 +430,7 @@ export class Munitions {
       return;
     }
 
-    const configurations = this.#mapLocalToRequest(this.seriesSignal());
+    const configurations = mapLocalToRequest(this.seriesSignal());
     this.#munitionsStore.updateMunitions({ configurations });
   }
 
@@ -479,7 +460,7 @@ export class Munitions {
       return;
     }
 
-    const configurations = this.#mapLocalToRequest(this.seriesSignal());
+    const configurations = mapLocalToRequest(this.seriesSignal());
     this.#munitionsStore.updateMunitions({ configurations });
   }
 
@@ -516,73 +497,8 @@ export class Munitions {
     this.loadConfiguration(defaultData);
   }
 
-  #resolveDenominationId(denomination: string | null | undefined, denominations: MasterDataI18nItem[]): string {
-    if (!denomination) return '';
-    const found = denominations.find((d) => d.label === denomination || d.id === denomination);
-    return found?.id ?? denomination;
-  }
-
   #deepClone(data: Serie[]): Serie[] {
     return structuredClone(data);
-  }
-
-  #mapBackendToLocal(
-    seriesMunitions: SeriesMunitionsData[],
-    componentTypes: MasterDataI18nItem[],
-    denominations: MasterDataI18nItem[],
-    fuseWorkingModes: MasterDataIItem[],
-  ): Serie[] {
-    return seriesMunitions.map((series) => ({
-      seriesId: series.seriesId,
-      seriesName: series.seriesName,
-      configurations: series.configurations.map((config): Configuration => {
-        let powderCount = 0;
-        const components = config.components.map((comp) => {
-          const detail = this.#mapComponentToDetail(comp, componentTypes, denominations, fuseWorkingModes);
-          const typeNormalized = detail.type.type
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '');
-          if (typeNormalized === 'polvora' || typeNormalized.startsWith('polvora-')) {
-            powderCount++;
-            if (powderCount > 1) {
-              detail.type.type = `polvora-${powderCount - 1}`;
-              detail.type.label = `Pólvora ${powderCount - 1}`;
-            } else {
-              detail.type.type = 'pólvora';
-              detail.type.label = 'Pólvora';
-            }
-          }
-          return detail;
-        });
-
-        const denomination = this.#resolveDenominationId(config.denomination?.id, denominations);
-
-        return {
-          id: config.id,
-          seriesId: config.seriesId,
-          munitionTypeId: config.munitionTypeId ?? '',
-          denomination,
-          batch: config.batch ?? '',
-          reconditioning: config.reconditioning ?? undefined,
-          maxAllowedErrors: config.maxAllowedErrors ?? 0,
-          observations: config.observations ?? '',
-          assignedShotIds: config.assignedShotIds ?? null,
-          components,
-          selectedComponents: getSelectedComponentTypes({
-            id: config.id,
-            seriesId: config.seriesId,
-            munitionTypeId: config.munitionTypeId ?? '',
-            denomination,
-            batch: config.batch ?? '',
-            maxAllowedErrors: config.maxAllowedErrors ?? 0,
-            observations: config.observations ?? '',
-            assignedShotIds: config.assignedShotIds ?? null,
-            components,
-          }),
-        };
-      }),
-    }));
   }
 
   // checkear si hay configuraciones en munitions
@@ -590,100 +506,6 @@ export class Munitions {
     const series = this.seriesSignal();
     return series.some((s) =>
       s.configurations.some((c) => c.denomination || c.batch || (c.components && c.components.length > 0)),
-    );
-  }
-
-  #mapComponentToDetail(
-    component: BackendMunitionComponent,
-    componentTypes: MasterDataI18nItem[],
-    denominations: MasterDataI18nItem[],
-    fuseWorkingModes: MasterDataIItem[],
-  ): ComponentDetail {
-    return {
-      id: component.id,
-      type: this.#resolveComponentType(component, componentTypes),
-      denomination: this.#resolveDenomination(component, denominations),
-      batch: component.batch ?? '',
-      reconditioning: component.reconditioning ?? undefined,
-      clientNumber:
-        component.clientNumber !== undefined && component.clientNumber !== null ? String(component.clientNumber) : '',
-      observations: component.observations ?? '',
-      fuseWorkingMode: this.#resolveFuseWorkingMode(component, fuseWorkingModes),
-      fuseMeasurement: component.fuseMeasurement ?? 0,
-      maxAllowedErrors: component.maxAllowedErrors ?? 0,
-      manufacturerNumber: '',
-    };
-  }
-
-  #resolveComponentType(component: BackendMunitionComponent, componentTypes: MasterDataI18nItem[]): ComponentType {
-    if (component.type?.id) {
-      const typeId = component.type.id;
-      const catalogType = componentTypes.find((ct) => ct.id === typeId);
-      const label = catalogType?.label ?? component.type.label ?? '';
-      return { id: component.type.id, type: label.toLowerCase(), label };
-    }
-
-    const typeId = component.typeId?.id?.value ?? '';
-    const matchedType = componentTypes.find((item) => item.id === typeId);
-    const label = matchedType?.label ?? component.typeId?.label ?? component.typeId?.type ?? '';
-
-    return { id: typeId, label, type: label.toLowerCase() };
-  }
-
-  #resolveDenomination(component: BackendMunitionComponent, denominations: MasterDataI18nItem[]): Denomination {
-    if (component.denomination?.id) {
-      return { id: component.denomination.id, name: component.denomination.name ?? '' };
-    }
-
-    const denominationId = component.denominationId?.id?.value ?? '';
-    const matchedDenomination = denominations.find((item) => item.id === denominationId);
-    const name = matchedDenomination?.label ?? component.denominationId?.name ?? '';
-
-    return { id: denominationId, name: name ?? '' };
-  }
-
-  #resolveFuseWorkingMode(
-    component: BackendMunitionComponent,
-    fuseWorkingModes: MasterDataIItem[],
-  ): FuseWorkingMode | undefined {
-    if (component.fuseWorkingMode?.id) {
-      return component.fuseWorkingMode;
-    }
-
-    const fuseWorkingModeId = component.fuseWorkingModeId ?? '';
-    if (!fuseWorkingModeId) return undefined;
-
-    const matchedMode = fuseWorkingModes.find((item) => item.id === fuseWorkingModeId);
-    const label = matchedMode?.label ?? '';
-
-    return { id: fuseWorkingModeId, type: label, label };
-  }
-
-  #mapLocalToRequest(series: Serie[]): MunitionConfigRequest[] {
-    return series.flatMap((serie) =>
-      serie.configurations.map(
-        (config): MunitionConfigRequest => ({
-          id: config.id,
-          seriesId: serie.seriesId,
-          denominationId: config.denomination,
-          batch: config.batch,
-          observations: config.observations,
-          reconditioning: config.reconditioning,
-          maxAllowedErrors: config.maxAllowedErrors,
-          components: config.components.map((comp) => ({
-            typeId: comp.type.id,
-            denominationId: comp.denomination.id,
-            batch: comp.batch,
-            reconditioning: comp.reconditioning,
-            clientNumber: comp.clientNumber,
-            observations: comp.observations,
-            fuseWorkingModeId: comp.fuseWorkingMode?.id,
-            fuseMeasurement: comp.fuseMeasurement,
-            maxAllowedErrors: comp.maxAllowedErrors,
-          })),
-          assignedShotIds: config.assignedShotIds ?? undefined,
-        }),
-      ),
     );
   }
 }

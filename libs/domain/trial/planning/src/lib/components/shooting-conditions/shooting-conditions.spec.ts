@@ -147,7 +147,7 @@ describe('ShootingConditionsComponent', () => {
 
   describe('Button State', () => {
     it('should disable buttons when updating', async () => {
-      mockStore._shootingConditionsResource._setLoading(true);
+      mockStore._updateConditionsResource._setLoading(true);
       fixture.detectChanges();
 
       await waitFor(() => {

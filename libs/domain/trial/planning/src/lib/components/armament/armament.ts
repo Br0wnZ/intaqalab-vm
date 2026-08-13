@@ -24,8 +24,14 @@ import { PlanningGeneralDataStore } from '../../+state/planning-general-data.sto
 import type { ArmamentSerie, ArmamentSerieShot, MassiveConfigData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { ArmamentDialogService } from './armament-dialog.service';
-import { ArmamentMapperService } from './armament-mapper.service';
 import { ArmamentRow, type ShotFormPath } from './armament-row';
+import {
+  buildSeriesFromStore,
+  deepClone,
+  mapBackendToLocal,
+  mapLocalToRequest,
+  mergeCatalogOptions,
+} from './armament.mapper';
 import type { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 
 type ArmamentFormType = FieldTree<ArmamentSerie[]>;
@@ -206,7 +212,6 @@ export class Armament implements OnInit {
 
   readonly #armamentStore = inject(ArmamentStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
-  readonly #armamentMapperService = inject(ArmamentMapperService);
   readonly #armamentDialogService = inject(ArmamentDialogService);
   readonly #destroyRef = inject(DestroyRef);
 
@@ -236,13 +241,7 @@ export class Armament implements OnInit {
   readonly weaponOptions = computed(() => {
     const denominations = this.#armamentStore.weaponDenominations();
     const existing = this.armamentSignal().flatMap((serie) => serie.shots);
-    return this.#armamentMapperService.mergeCatalogOptions(
-      denominations,
-      existing,
-      'weaponExternalId',
-      'weaponName',
-      'WEAPON',
-    );
+    return mergeCatalogOptions(denominations, existing, 'weaponExternalId', 'weaponName', 'WEAPON');
   });
 
   /**
@@ -252,13 +251,7 @@ export class Armament implements OnInit {
   readonly tubeOptions = computed(() => {
     const denominations = this.#armamentStore.tubeDenominations();
     const existing = this.armamentSignal().flatMap((serie) => serie.shots);
-    return this.#armamentMapperService.mergeCatalogOptions(
-      denominations,
-      existing,
-      'tubeExternalId',
-      'tubeName',
-      'TUBE',
-    );
+    return mergeCatalogOptions(denominations, existing, 'tubeExternalId', 'tubeName', 'TUBE');
   });
 
   #initialArmamentData: ArmamentSerie[] = [];
@@ -288,15 +281,15 @@ export class Armament implements OnInit {
         if (!seriesArmament) {
           return;
         }
-        mergedSeries = this.#armamentMapperService.mapBackendToLocal(seriesArmament);
+        mergedSeries = mapBackendToLocal(seriesArmament);
       } else if (series && series.length > 0) {
-        mergedSeries = this.#armamentMapperService.buildSeriesFromStore(series, undefined);
+        mergedSeries = buildSeriesFromStore(series, undefined);
       } else {
         return;
       }
 
       this.armamentSignal.set(mergedSeries);
-      this.#initialArmamentData = this.#armamentMapperService.deepClone(mergedSeries);
+      this.#initialArmamentData = deepClone(mergedSeries);
 
       if (hasArmament) {
         this.#armamentApplied = true;
@@ -400,7 +393,7 @@ export class Armament implements OnInit {
 
     if (result) {
       this.#applyMassiveConfiguration(result);
-      const shots = this.#armamentMapperService.mapLocalToRequest(this.armamentSignal());
+      const shots = mapLocalToRequest(this.armamentSignal());
       this.#armamentStore.updateArmament({ shots });
     }
   }
@@ -508,7 +501,7 @@ export class Armament implements OnInit {
       return;
     }
 
-    const shots = this.#armamentMapperService.mapLocalToRequest(this.armamentSignal());
+    const shots = mapLocalToRequest(this.armamentSignal());
     this.#armamentStore.updateArmament({ shots });
   }
 
@@ -516,6 +509,6 @@ export class Armament implements OnInit {
     if (this.readonly()) {
       return;
     }
-    this.armamentSignal.set(this.#armamentMapperService.deepClone(this.#initialArmamentData));
+    this.armamentSignal.set(deepClone(this.#initialArmamentData));
   }
 }

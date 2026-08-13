@@ -15,7 +15,7 @@ import { PlanningGeneralDataStore } from '../../+state/planning-general-data.sto
 import type { ArmamentSerieShot, ArmamentSerieShotDetail } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { ArmamentDialogService } from './armament-dialog.service';
-import { ArmamentMapperService } from './armament-mapper.service';
+import { mergeCatalogOptions } from './armament.mapper';
 
 export type ShotFormPath = FieldTree<ArmamentSerieShot>;
 
@@ -130,7 +130,6 @@ export class ArmamentRow {
 
   readonly #armamentStore = inject(ArmamentStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
-  readonly #armamentMapperService = inject(ArmamentMapperService);
   readonly #armamentDialogService = inject(ArmamentDialogService);
 
   readonly typeOptions = [
@@ -141,25 +140,13 @@ export class ArmamentRow {
   readonly weaponOptions = computed(() => {
     const denominations = this.#armamentStore.weaponDenominations();
     const singleShotArray = [this.shot()];
-    return this.#armamentMapperService.mergeCatalogOptions(
-      denominations,
-      singleShotArray,
-      'weaponExternalId',
-      'weaponName',
-      'WEAPON',
-    );
+    return mergeCatalogOptions(denominations, singleShotArray, 'weaponExternalId', 'weaponName', 'WEAPON');
   });
 
   readonly tubeOptions = computed(() => {
     const denominations = this.#armamentStore.tubeDenominations();
     const singleShotArray = [this.shot()];
-    return this.#armamentMapperService.mergeCatalogOptions(
-      denominations,
-      singleShotArray,
-      'tubeExternalId',
-      'tubeName',
-      'TUBE',
-    );
+    return mergeCatalogOptions(denominations, singleShotArray, 'tubeExternalId', 'tubeName', 'TUBE');
   });
 
   onWeaponTypeChange(itemType: string | null | undefined): void {

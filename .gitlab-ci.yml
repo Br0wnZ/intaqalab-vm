@@ -15,7 +15,7 @@ variables:
   INTA_REGISTRY_IMAGE_NAME: "$CI_PROJECT_NAME"
   KANIKO_IMAGE: "registry.tools.inta.es/builders/kaniko-executor:v1.23.2-debug" 
   KUBERNETES_MEMORY_REQUEST: "4Gi"
-  KUBERNETES_MEMORY_LIMIT: "8Gi"
+  KUBERNETES_MEMORY_LIMIT: "12Gi"
 
 
 blackduck:
@@ -158,22 +158,19 @@ unit-test-pro:
 
 build-des:
   stage: build
-  tags: [k8s-des]    
+  tags: [k8s-des]
   image: registry.tools.inta.es/builders/node:22.14.0
   script:
-      - npm install --cache .npm --prefer-offline
-      - npm run build -- --configuration des
-      - find dist/ -type f | head -30
+    - npm ci --prefer-offline --no-audit --no-fund --ignore-scripts
+    - npm run build -- --configuration des
   artifacts:
-      paths:
+    paths:
       - dist/
-      expire_in: 1 hour
-  cache:
-      key: ${CI_COMMIT_REF_SLUG}
-      paths:
-      - .npm/
+    exclude:
+      - dist/**/*.map
+    expire_in: 1 hour
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"      
+    - if: $CI_COMMIT_BRANCH == "develop"     
 
 build-pre:
   stage: build
@@ -182,7 +179,7 @@ build-pre:
   script:
       - npm install --cache .npm --prefer-offline
       - npm run build -- --configuration pre
-      - find dist/ -type f | head -30
+      - find dist/ -type f | head -30 || true
   artifacts:
       paths:
       - dist/
@@ -201,7 +198,7 @@ build-pro:
   script:
       - npm install --cache .npm --prefer-offline
       - npm run build -- --configuration pro
-      - find dist/ -type f | head -30
+      - find dist/ -type f | head -30 || true
   artifacts:
       paths:
       - dist/

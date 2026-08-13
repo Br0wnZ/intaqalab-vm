@@ -32,6 +32,33 @@ interface ProfilesReadinessState {
   profilesReadiness: ProfileReadinessItem[];
 }
 
+interface ProfileReadinessFlag {
+  isReady: boolean;
+  observations?: string | null;
+}
+
+interface JltReadinessItem {
+  sanitaryServicesReady: boolean;
+  securityReady: boolean;
+  vesselReady: boolean;
+  observations?: string | null;
+}
+
+interface TechnicalUnitsReadinessItem {
+  velocities?: ProfileReadinessFlag;
+  pressures?: ProfileReadinessFlag;
+  video?: ProfileReadinessFlag;
+  trajectography?: ProfileReadinessFlag;
+  munitions?: ProfileReadinessFlag;
+  armament?: ProfileReadinessFlag;
+}
+
+interface JltPreparationState {
+  jltReadiness: JltReadinessItem;
+  technicalUnitsReadiness: TechnicalUnitsReadinessItem;
+  seriesIsReadyForExecution: boolean;
+}
+
 interface ExecutionState {
   status: ExecutionStatus;
   activeSeriesId: string | null;
@@ -56,6 +83,7 @@ const executionStateMap = new Map<string, ExecutionState>();
 const countdownStateMap = new Map<string, SecurityCountdownState>();
 const planningStateMap = new Map<string, PlanningState>();
 const readinessStateMap = new Map<string, ProfilesReadinessState>();
+const jltPreparationStateMap = new Map<string, JltPreparationState>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -71,6 +99,10 @@ function defaultPlanningState(): PlanningState {
 
 function defaultReadinessState(): ProfilesReadinessState {
   return getFixture<ProfilesReadinessState>('fixtures/execution', 'execution-readiness-fixture.json');
+}
+
+function defaultJltPreparationState(): JltPreparationState {
+  return getFixture<JltPreparationState>('fixtures/execution', 'execution-jlt-preparation-fixture.json');
 }
 
 export function getExecutionState(fireTrialId: string): ExecutionState {
@@ -214,5 +246,60 @@ export function setProfileReadiness(
   }
   readinessStateMap.set(fireTrialId, state);
   return updated;
+}
+
+export function getJltPreparation(fireTrialId: string, _seriesId: string): JltPreparationState {
+  if (!jltPreparationStateMap.has(fireTrialId)) {
+    jltPreparationStateMap.set(fireTrialId, structuredClone(defaultJltPreparationState()));
+  }
+  const state = jltPreparationStateMap.get(fireTrialId) ?? defaultJltPreparationState();
+  return structuredClone(state);
+}
+
+export function setJltReadiness(
+  fireTrialId: string,
+  sanitaryServicesReady: boolean,
+  securityReady: boolean,
+  vessel: boolean,
+  observations?: string | null,
+): JltReadinessItem {
+  const current = getJltPreparation(fireTrialId, '');
+  const updated: JltPreparationState = {
+    ...current,
+    jltReadiness: {
+      sanitaryServicesReady,
+      securityReady,
+      vesselReady: vessel,
+      observations: observations ?? null,
+    },
+  };
+
+  const allTechnicalReady = Object.values(updated.technicalUnitsReadiness).every((flag) => !!flag?.isReady);
+  updated.seriesIsReadyForExecution =
+    updated.jltReadiness.sanitaryServicesReady &&
+    updated.jltReadiness.securityReady &&
+    updated.jltReadiness.vesselReady &&
+    allTechnicalReady;
+
+  jltPreparationStateMap.set(fireTrialId, updated);
+  return updated.jltReadiness;
+}
+
+export function selectActiveShot(fireTrialId: string, shotId: string): void {
+  const current = getExecutionState(fireTrialId);
+  executionStateMap.set(fireTrialId, {
+    ...current,
+    activeShotId: shotId,
+    activeShootId: shotId,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+export function registerFireShot(fireTrialId: string): void {
+  const current = getExecutionState(fireTrialId);
+  executionStateMap.set(fireTrialId, {
+    ...current,
+    updatedAt: new Date().toISOString(),
+  });
 }
 

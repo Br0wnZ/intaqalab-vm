@@ -9,9 +9,13 @@ import {
     bumpPlanningVersion,
     getCountdownState,
     getExecutionState,
+    getJltPreparation,
     getPlanningState,
     getReadiness,
+    registerFireShot,
+    selectActiveShot,
     setExecutionStatus,
+    setJltReadiness,
     setProfileReadiness,
     setSeriesProfileReadiness,
     updateCountdownState,
@@ -213,6 +217,66 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/pro
 
   const updated = setProfileReadiness(fireTrialId, profile as never, seriesReadiness as never);
   res.status(200).json(updated);
+});
+
+// Obtener preparación JLT + unidades técnicas para una serie
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation', (req, res) => {
+  const fireTrialId = req.params['fireTrialId'] as string;
+  const seriesId = req.query['seriesId'] as string | undefined;
+
+  if (!seriesId) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "El query param 'seriesId' es obligatorio",
+    });
+    return;
+  }
+
+  const readiness = getJltPreparation(fireTrialId, seriesId);
+  res.status(200).json(readiness);
+});
+
+// Registrar readiness del JLT para una serie
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/series/:seriesId', (req, res) => {
+  const fireTrialId = req.params['fireTrialId'] as string;
+  const { sanitaryServicesReady, securityReady, vessel, observations } = req.body as {
+    sanitaryServicesReady?: boolean;
+    securityReady?: boolean;
+    vessel?: boolean;
+    observations?: string;
+  };
+
+  if (
+    typeof sanitaryServicesReady !== 'boolean' ||
+    typeof securityReady !== 'boolean' ||
+    typeof vessel !== 'boolean'
+  ) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "Los campos 'sanitaryServicesReady', 'securityReady' y 'vessel' son obligatorios y booleanos",
+    });
+    return;
+  }
+
+  const updated = setJltReadiness(fireTrialId, sanitaryServicesReady, securityReady, vessel, observations);
+  res.status(200).json(updated);
+});
+
+// Seleccionar disparo activo
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/shots/:shotId/active', (req, res) => {
+  const fireTrialId = req.params['fireTrialId'] as string;
+  const shotId = req.params['shotId'] as string;
+  selectActiveShot(fireTrialId, shotId);
+  res.status(200).send();
+});
+
+// Registrar disparo del shot activo
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/fire', (req, res) => {
+  const fireTrialId = req.params['fireTrialId'] as string;
+  registerFireShot(fireTrialId);
+  res.status(200).send();
 });
 
 

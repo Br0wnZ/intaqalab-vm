@@ -1362,6 +1362,10 @@
         "COL_SHOTS": "Shots",
         "DELETE": "Delete",
         "EQUIPMENT_HEADING": "Equipment",
+        "ERRORS": {
+          "LOAD_FAILED_TITLE": "Error loading equipment selection",
+          "LOAD_FAILED_DETAIL": "Could not retrieve trial equipment information. Please try again later."
+        },
         "FIELDS": {
           "AMPLIFICADOR": "Amplifier",
           "ANTENA": "Antenna",

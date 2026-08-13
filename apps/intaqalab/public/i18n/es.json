@@ -1184,6 +1184,10 @@
         "COL_SHOTS": "Disparos",
         "DELETE": "Eliminar",
         "EQUIPMENT_HEADING": "Equipo",
+        "ERRORS": {
+          "LOAD_FAILED_TITLE": "Error al cargar la selección de equipos",
+          "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de los equipos del ensayo. Intente de nuevo más tarde."
+        },
         "FIELDS": {
           "AMPLIFICADOR": "Amplificador",
           "ANTENA": "Antena",
