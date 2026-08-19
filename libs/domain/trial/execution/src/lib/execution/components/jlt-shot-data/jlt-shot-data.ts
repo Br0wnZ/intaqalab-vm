@@ -1,5 +1,5 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,12 +8,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { safeResourceValue } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import type { JltShotDataResponse } from '../../../services/execution.service';
+import type { JltShotDataPayload, JltShotDataResponse } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -209,22 +208,30 @@ export class JltShotData extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
   readonly #selectionKey = computed(() => `${this.formModel().serie ?? ''}|${this.formModel().disparo ?? ''}`);
+  readonly #loadRequestVersion = signal(0);
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
   constructor() {
     super();
 
     effect(() => {
-      const response = safeResourceValue(this.#executionService.jltShotDataResource);
-      if (response) {
-        this.#applyRemoteShotData(response);
-      }
-    });
+      const fireTrialId = this.#store.fireTrialId();
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
 
-    effect(() => {
-      const response = safeResourceValue(this.#executionService.updateJltShotDataResource);
-      if (response) {
-        this.#applyRemoteShotData(response);
+      if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
       }
+
+      const selectionKey = `${activeSerieId}|${activeShotId}`;
+      if (this.#lastLoadedActiveSelection() === selectionKey) {
+        return;
+      }
+
+      untracked(() => {
+        this.#setSelection(activeSerieId, activeShotId);
+        this.#lastLoadedActiveSelection.set(selectionKey);
+      });
     });
 
     effect(() => {
@@ -282,7 +289,20 @@ export class JltShotData extends BaseFormWidgetComponent {
     () => this.formModel().serie === this.#store.activeSerieId() && this.formModel().disparo === this.#store.activeShotId(),
   );
 
-  protected readonly isFutureShot = computed(() => !this.isCurrentShot() && this.selectedShotProgress()?.status === 'PENDING');
+  protected readonly selectedShotOrder = computed(() => this.#getShotOrder(this.formModel().serie, this.formModel().disparo));
+
+  protected readonly activeShotOrder = computed(() => this.#getShotOrder(this.#store.activeSerieId(), this.#store.activeShotId()));
+
+  protected readonly isFutureShot = computed(() => {
+    const selectedShotOrder = this.selectedShotOrder();
+    const activeShotOrder = this.activeShotOrder();
+
+    if (selectedShotOrder !== null && activeShotOrder !== null) {
+      return selectedShotOrder > activeShotOrder;
+    }
+
+    return !this.isCurrentShot() && this.selectedShotProgress()?.status === 'PENDING';
+  });
 
   protected readonly isHistoricalFiredShot = computed(
     () => !this.isCurrentShot() && this.selectedShotProgress()?.status === 'FIRED',
@@ -294,9 +314,17 @@ export class JltShotData extends BaseFormWidgetComponent {
     () => !this.#store.isTrialReadOnly() && this.isHistoricalFiredShot() && !this.historicalEditEnabled(),
   );
 
-  protected readonly readOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.isFutureShot() || (this.isHistoricalFiredShot() && !this.historicalEditEnabled()),
-  );
+  protected readonly readOnly = computed(() => {
+    const { serie, disparo } = this.formModel();
+
+    return (
+      !serie ||
+      !disparo ||
+      this.#store.isTrialReadOnly() ||
+      this.isFutureShot() ||
+      (this.isHistoricalFiredShot() && !this.historicalEditEnabled())
+    );
+  });
 
   protected readonly inheritedDefaults = signal<{ jet: string | null; pieceOperator: string | null }>({
     jet: null,
@@ -406,7 +434,6 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   override ngOnInit(): void {
     super.ngOnInit();
-    void this.#loadSelectedShotData();
   }
 
   onSerieSelected(serie: string | null): void {
@@ -438,6 +465,10 @@ export class JltShotData extends BaseFormWidgetComponent {
     const serie = this.#store.activeSerieId() ?? this.formModel().serie;
     const disparo = this.#store.activeShotId() ?? this.formModel().disparo;
 
+    this.#setSelection(serie, disparo);
+  }
+
+  #setSelection(serie: string | null, disparo: string | null): void {
     this.formModel.update((m) => ({
       ...m,
       serie,
@@ -480,19 +511,6 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     this.#store.updateJltShotData(updates);
 
-    const fireTrialId = this.#store.fireTrialId();
-    if (fireTrialId && serie && disparo) {
-      this.#executionService.setJltShotData(fireTrialId, serie, disparo, {
-        jet: jet ?? '',
-        pieceOperator: operadorPieza ?? '',
-        attackDistance: updates.atacado ?? null,
-        attackDistanceUnit: MeasureUnitEnum.MM,
-        recoilDistance: updates.retroceso ?? null,
-        recoilDistanceUnit: MeasureUnitEnum.MM,
-        observations: this.observacionesField(),
-      });
-    }
-
     this.#syncSnapshot();
   }
 
@@ -520,19 +538,54 @@ export class JltShotData extends BaseFormWidgetComponent {
   async #loadSelectedShotData(): Promise<void> {
     const fireTrialId = this.#store.fireTrialId();
     const { serie, disparo } = this.formModel();
+    const requestVersion = this.#loadRequestVersion() + 1;
+    this.#loadRequestVersion.set(requestVersion);
+
     if (!fireTrialId || !serie || !disparo) {
       this.inheritedDefaults.set({ jet: null, pieceOperator: null });
       return;
     }
 
     const selectionKey = `${serie}|${disparo}`;
-    await this.#loadInheritedDefaults(fireTrialId, serie);
+    const lastShotId = this.#findLastShotId(serie);
+    const [currentShotResult, lastShotResult] = await Promise.allSettled([
+      this.#executionService.fetchJltShotData(fireTrialId, serie, disparo),
+      lastShotId ? this.#executionService.fetchJltShotData(fireTrialId, serie, lastShotId) : Promise.resolve(null),
+    ]);
 
-    if (this.#selectionKey() !== selectionKey) {
+    if (this.#loadRequestVersion() !== requestVersion || this.#selectionKey() !== selectionKey) {
       return;
     }
 
-    this.#executionService.getJltShotData(fireTrialId, serie, disparo);
+    const inheritedDefaults =
+      lastShotResult.status === 'fulfilled' && lastShotResult.value
+        ? {
+            jet: this.#getJltData(lastShotResult.value).jet || null,
+            pieceOperator: this.#getJltData(lastShotResult.value).pieceOperator || null,
+          }
+        : { jet: null, pieceOperator: null };
+
+    this.inheritedDefaults.set(inheritedDefaults);
+
+    if (currentShotResult.status === 'fulfilled') {
+      this.#applyRemoteShotData(currentShotResult.value, inheritedDefaults);
+      return;
+    }
+
+    this.#applyRemoteShotData(
+      {
+        jltData: {
+          jet: '',
+          pieceOperator: '',
+          attackDistance: null,
+          attackDistanceUnit: MeasureUnitEnum.MM,
+          recoilDistance: null,
+          recoilDistanceUnit: MeasureUnitEnum.MM,
+          observations: null,
+        },
+      },
+      inheritedDefaults,
+    );
   }
 
   #syncSelectionToStore(serie: string | null, disparo: string | null): void {
@@ -553,32 +606,28 @@ export class JltShotData extends BaseFormWidgetComponent {
     ) ?? false;
   }
 
-  async #loadInheritedDefaults(fireTrialId: string, serie: string): Promise<void> {
-    const lastShotId = this.#findLastShotId(serie);
-    if (!lastShotId) {
-      this.inheritedDefaults.set({ jet: null, pieceOperator: null });
-      return;
-    }
-
-    try {
-      const response = await this.#executionService.fetchJltShotData(fireTrialId, serie, lastShotId);
-
-      if (this.formModel().serie !== serie) {
-        return;
-      }
-
-      this.inheritedDefaults.set({
-        jet: response.jltData.jet || null,
-        pieceOperator: response.jltData.pieceOperator || null,
-      });
-    } catch {
-      this.inheritedDefaults.set({ jet: null, pieceOperator: null });
-    }
-  }
-
   #findLastShotId(serie: string): string | null {
     const shots = this.#store.executionProgress()?.series.find((item) => item.seriesId === serie)?.shots ?? [];
     return shots.length > 0 ? shots[shots.length - 1]?.shotId ?? null : null;
+  }
+
+  #getShotOrder(serie: string | null, disparo: string | null): number | null {
+    if (!serie || !disparo) {
+      return null;
+    }
+
+    let shotOrder = 0;
+    for (const series of this.#store.executionProgress()?.series ?? []) {
+      for (const shot of series.shots) {
+        if (series.seriesId === serie && shot.shotId === disparo) {
+          return shotOrder;
+        }
+
+        shotOrder += 1;
+      }
+    }
+
+    return null;
   }
 
   #resolvedJet(): string | null {
@@ -603,17 +652,19 @@ export class JltShotData extends BaseFormWidgetComponent {
     });
   }
 
-  #applyRemoteShotData(response: JltShotDataResponse): void {
+  #applyRemoteShotData(
+    response: JltShotDataResponse,
+    inheritedDefaults: { jet: string | null; pieceOperator: string | null } = this.inheritedDefaults(),
+  ): void {
     const { serie, disparo, equipoAtacado, equipoRetroceso } = this.formModel();
-    const data = response.jltData;
-    const inheritedDefaults = this.inheritedDefaults();
+    const data = this.#getJltData(response);
     const nextState: Partial<JltShotDataState> = {
       serie,
       disparo,
       equipoAtacado,
       equipoRetroceso,
-      jet: inheritedDefaults.jet ?? data.jet ?? null,
-      operadorPieza: inheritedDefaults.pieceOperator ?? data.pieceOperator ?? null,
+      jet: data.jet || inheritedDefaults.jet || null,
+      operadorPieza: data.pieceOperator || inheritedDefaults.pieceOperator || null,
       observaciones: data.observations ?? null,
       atacado: data.attackDistance ?? null,
       retroceso: data.recoilDistance ?? null,
@@ -633,5 +684,9 @@ export class JltShotData extends BaseFormWidgetComponent {
       retroceso: nextState.retroceso ?? null,
     });
     this.#syncSnapshot();
+  }
+
+  #getJltData(response: JltShotDataResponse): JltShotDataPayload {
+    return 'jltData' in response ? response.jltData : response;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -53,7 +53,9 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             <!-- Selector de serie -->
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select ml-2">
               <mat-select [value]="selectedSerie()" (valueChange)="setActiveSerie($event)">
-                <mat-option [value]="selectedSerie()">{{ selectedSerieLabel() }}</mat-option>
+                @for (serie of serieOptions(); track serie.value) {
+                  <mat-option [value]="serie.value">{{ serie.label }}</mat-option>
+                }
               </mat-select>
             </mat-form-field>
           </div>
@@ -159,13 +161,17 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             <div class="flex items-center gap-2 mb-3 shrink-0">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
                 <mat-select [value]="selectedSerie()" (valueChange)="setActiveSerie($event)">
-                  <mat-option [value]="selectedSerie()">{{ selectedSerieLabel() }}</mat-option>
+                  @for (serie of serieOptions(); track serie.value) {
+                    <mat-option [value]="serie.value">{{ serie.label }}</mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
 
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
                 <mat-select [value]="selectedShot()" (valueChange)="setActiveShot($event)">
-                  <mat-option [value]="selectedShot()">{{ selectedShotLabel() }}</mat-option>
+                  @for (shot of shotOptions(); track shot.value) {
+                    <mat-option [value]="shot.value">{{ shot.label }}</mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
             </div>
@@ -209,9 +215,26 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #executionStore = inject(ExecutionStore);
 
-  // 🔄 Selectores
-  readonly selectedSerie = this.#executionStore.activeSerieId;
-  readonly selectedShot = this.#executionStore.activeShotId;
+  // 🔄 Selectores (estado LOCAL desacoplado, inicializado desde store)
+  readonly selectedSerie = linkedSignal(() => this.#executionStore.activeSerieId());
+  readonly selectedShot = linkedSignal(() => this.#executionStore.activeShotId());
+
+  readonly serieOptions = computed(() =>
+    (this.#executionStore.planningSeries() ?? []).map((serie, index) => ({
+      value: serie.id,
+      label: serie.name?.trim() || `Serie ${index + 1}`,
+    })),
+  );
+
+  readonly shotOptions = computed(() => {
+    const serieId = this.selectedSerie() ?? this.serieOptions()[0]?.value;
+    const serie = this.#executionStore.planningSeries()?.find((item) => item.id === serieId);
+
+    return (serie?.shots ?? []).map((shot, index) => ({
+      value: shot.id,
+      label: `Disparo ${shot.globalNumber ?? index + 1}`,
+    }));
+  });
 
   readonly resolvedSerieId = computed(() => {
     const activeSerieId = this.selectedSerie();
@@ -224,7 +247,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
       return planningSerieId;
     }
 
-    return this.#executionStore.executionProgress()?.series[0]?.seriesId ?? null;
+    return null;
   });
 
   readonly resolvedShotId = computed(() => {
@@ -238,10 +261,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
       return null;
     }
 
-    return (
-      this.#executionStore.executionProgress()?.series.find((serie) => serie.seriesId === serieId)?.shots[0]?.shotId ??
-      null
-    );
+    return this.#executionStore.planningSeries()?.find((serie) => serie.id === serieId)?.shots?.[0]?.id ?? null;
   });
 
   // 📥 Inputs JLT
@@ -299,19 +319,27 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   }
 
   setActiveSerie(serieId: string): void {
-    this.#executionStore.setActiveSerie(serieId);
+    this.selectedSerie.set(serieId);
+
+    const firstShotId = this.#executionStore.planningSeries()?.find((serie) => serie.id === serieId)?.shots?.[0]?.id;
+    if (firstShotId) {
+      this.selectedShot.set(firstShotId);
+    }
   }
 
   setActiveShot(shotId: string): void {
-    this.#executionStore.setActiveShot(shotId);
+    this.selectedShot.set(shotId);
   }
 
   selectCurrentShot(): void {
     const trialId = this.fireTrialId();
+    const serieId = this.resolvedSerieId();
     const shotId = this.resolvedShotId();
     if (!trialId || !shotId) {
       return;
     }
+    // Actualización optimista: header reacciona inmediatamente sin esperar POST→GET
+    this.#executionStore.setOptimisticActiveShot(serieId, shotId);
     this.#executionStore.selectJltShot(trialId, shotId);
   }
 

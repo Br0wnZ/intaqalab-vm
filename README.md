@@ -165,7 +165,7 @@ El workspace sigue la filosofía de Nx:
   - `core`
   - `utils`
   - `shared-theme`
-  - `wharehouse-managment`
+  - `warehouse-management`
   - etc.
 
 ---

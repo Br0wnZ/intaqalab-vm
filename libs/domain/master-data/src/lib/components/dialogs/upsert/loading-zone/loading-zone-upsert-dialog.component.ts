@@ -4,6 +4,8 @@ import { FormField, form, required } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
+import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
+import { DenominationsStore } from '@intaqalab/warehouse-management';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
@@ -42,7 +44,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
         [formField]="form.denominationId"
         [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
         [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
-        [options]="mockedDenominationsList"
+        [options]="denominationsStore.items() || []"
       />
 
       <div>
@@ -94,8 +96,11 @@ export class LoadingZoneUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<LoadingZoneUpsertDialogComponent>);
   readonly data = inject<MasterDataLoadingZone | null>(MAT_DIALOG_DATA);
   readonly store = inject(MasterDataStore);
+  readonly denominationsStore: DenominationsStoreType = inject(DenominationsStore);
 
   constructor() {
+    this.denominationsStore.search({ active: true });
+
     effect(() => {
       const data = this.data;
 
@@ -113,15 +118,6 @@ export class LoadingZoneUpsertDialogComponent {
       this.dialogRef.close(true);
     });
   }
-
-  readonly mockedDenominationsList = [
-    { id: '550e8400-e29b-41d4-a716-446655440031', name: '105/51' },
-    { id: '550e8400-e29b-41d4-a716-446655440032', name: 'M67' },
-    { id: '550e8400-e29b-41d4-a716-446655440033', name: 'M200A1' },
-    { id: '550e8400-e29b-41d4-a716-446655440034', name: 'M200A1' },
-    { id: '550e8400-e29b-41d4-a716-446655440035', name: 'L45' },
-    { id: '550e8400-e29b-41d4-a716-446655440036', name: 'L35' },
-  ];
 
   readonly defaultFormValues = {
     denominationId: '',

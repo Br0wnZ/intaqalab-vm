@@ -96,7 +96,7 @@ nx-intaqalab/
 │   │   ├── trial/
 │   │   │   ├── planning/       # Planificación de ensayos (armamento, municiones, series)
 │   │   │   └── trial-management/ # CRUD de ensayos, documentación
-│   │   └── wharehouse-managment/ # Gestión de almacén
+│   │   └── warehouse-management/ # Gestión de almacén
 │   └── shared/                 # Código compartido transversal
 │       ├── config/             # Configuración de entorno y tokens
 │       ├── data-access/        # Servicios HTTP compartidos
@@ -119,7 +119,7 @@ graph TD
         TP["trial/planning"]
         CT["calendar-trials"]
         MD["master-data"]
-        WM["wharehouse-managment"]
+        WM["warehouse-management"]
         AD["admin"]
     end
 
@@ -201,7 +201,7 @@ La aplicación se configura de forma **standalone** sin módulos, utilizando pro
 | `/trial2/document/:id`  | `@intaqalab/trial-management`     | Documentación de un ensayo            |
 | `/calendar-trials`      | `@intaqalab/calendar-trials`      | Calendario de ensayos                 |
 | `/master-data/*`        | `@intaqalab/master-data`          | Catálogos maestros (CRUD genérico)    |
-| `/wharehouse-managment` | `@intaqalab/wharehouse-managment` | Gestión de almacén                    |
+| `/warehouse-management` | `@intaqalab/warehouse-management` | Gestión de almacén                    |
 | `/demos`                | `@intaqalab/demos`                | Componentes de demo                   |
 
 Todas las rutas utilizan **lazy loading** a través de `loadChildren()` con `resolveLazyModule()`.
@@ -706,7 +706,7 @@ mocks/src/
 │   ├── calendar-events/   # Fixtures de calendario
 │   ├── clients/           # Fixtures de clientes
 │   ├── trial-schedule/    # Fixtures de programación
-│   └── wharehouse-managment/ # Fixtures de almacén
+│   └── warehouse-management/ # Fixtures de almacén
 ├── routes/
 │   ├── trials.routes.ts        # Rutas de ensayos
 │   ├── documents.routes.ts     # Rutas de documentos

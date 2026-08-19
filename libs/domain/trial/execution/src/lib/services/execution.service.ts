@@ -1,15 +1,15 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, effect, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
-import type { DistanceUnitEnum, FireTrial } from '@intaqalab/models';
+import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
 
 import type {
-  EquipmentMagnitudeTagEnum,
-  EquipmentMeasureMagnitude,
-  EquipmentSelectionApiList,
-  EquipmentTypeEnum,
-  WidgetId,
+    EquipmentMagnitudeTagEnum,
+    EquipmentMeasureMagnitude,
+    EquipmentSelectionApiList,
+    EquipmentTypeEnum,
+    WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -154,8 +154,26 @@ export interface JltShotDataPayload {
 
 export type JltShotDataRequest = JltShotDataPayload;
 
-export interface JltShotDataResponse {
-  jltData: JltShotDataPayload;
+export type JltShotDataResponse = JltShotDataPayload | { jltData: JltShotDataPayload };
+
+export interface ShotVelocityItem {
+  radarDopplerId?: number | null;
+  antennaId?: number | null;
+  initialVelocity?: number | null;
+  initialVelocityUnit?: SpeedUnitEnum;
+  softwareUncertainty?: number | null;
+  softwareUncertaintyUnit?: SpeedUnitEnum;
+  cadence?: number | null;
+  cadenceUnit?: CadenceUnitEnum;
+  velocityLoss?: number | null;
+  velocityLossUnit?: SpeedUnitEnum;
+  observations?: string | null;
+}
+
+export type ShotVelocitiesRequest = ShotVelocityItem[];
+
+export interface ShotVelocitiesResponse {
+  velocities: ShotVelocityItem[];
 }
 
 // ============= Params Signals =============
@@ -163,6 +181,91 @@ export interface JltShotDataResponse {
 interface ExecutionParams {
   fireTrialId: FireTrial['id'];
   _t: number;
+}
+
+interface ShotVelocitiesParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotVelocitiesUpdateParams extends ShotVelocitiesParams {
+  body: ShotVelocitiesRequest;
+}
+
+// ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
+
+export interface ShotPressuresData {
+  piezoelectricSensorId?: number | null;
+  amplifierId?: number | null;
+  dataAcquisitionSystemId?: number | null;
+  closingMaxPressure?: number | null;
+  closingMaxPressureUnit?: string;
+  halfMaxPressure?: number | null;
+  halfMaxPressureUnit?: string;
+  shellMaxPressure?: number | null;
+  shellMaxPressureUnit?: string;
+  observations?: string | null;
+}
+
+export type ShotPressuresRequest = ShotPressuresData;
+
+export interface ShotPressuresResponse {
+  pressuresData: ShotPressuresData;
+}
+
+export interface ArmamentEquipmentItem {
+  id: number | string;
+  tag: string;
+  serialNumber: string;
+  denominationId: number;
+  denominationName: string;
+  modelName: string;
+}
+
+export interface PlanningShotArmament {
+  weaponExternalId?: number;
+  tubeExternalId?: number;
+  isInstrumented?: boolean;
+  tubeLifePercentage?: number;
+  observations?: string;
+}
+
+export interface PlanningArmamentResponse {
+  series: Array<{
+    seriesId: string;
+    shots: Array<{ shotId: string; armament?: PlanningShotArmament }>;
+  }>;
+}
+
+export interface ShotArmamentRequest {
+  weaponId: number | null;
+  tubeId: number | null;
+  observations: string | null;
+}
+
+export interface ShotArmamentResponse {
+  armamentData?: {
+    weapon?: ArmamentEquipmentItem | null;
+    tube?: ArmamentEquipmentItem | null;
+    observations?: string | null;
+  };
+}
+
+interface ShotPressuresParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotPressuresUpdateParams extends ShotPressuresParams {
+  body: ShotPressuresRequest;
+}
+
+interface ShotArmamentUpdateParams extends ShotPressuresParams {
+  body: ShotArmamentRequest;
 }
 
 interface ExecutionWithReasonParams extends ExecutionParams {
@@ -241,11 +344,15 @@ export type TechnicalUnitsReadinessItem = {
   armament?: ProfileReadinessFlag;
 };
 
-export type JltPreparationResponse = {
+export type JltPreparationData = {
   jltReadiness?: JltReadinessItem;
   technicalUnitsReadiness?: TechnicalUnitsReadinessItem;
   seriesIsReadyForExecution: boolean;
 };
+
+export type JltPreparationResponse =
+  | JltPreparationData
+  | { series: Array<JltPreparationData & { seriesId: string }> };
 
 export type EquipmentSelectorCategory = {
   id: string;
@@ -897,5 +1004,158 @@ export class ExecutionService {
 
   setJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: JltShotDataRequest): void {
     this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  // ── SHOT VELOCITIES: GET ─────────────────────────────────────────────────
+
+  readonly #getShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
+
+  readonly shotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
+    const params = this.#getShotVelocitiesParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocities/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotVelocities(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  fetchShotVelocities(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotVelocitiesResponse> {
+    return firstValueFrom(
+      this.#http.get<ShotVelocitiesResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/velocities/series/${seriesId}/shots/${shotId}`,
+      ),
+    );
+  }
+
+  // ── SHOT VELOCITIES: PUT ─────────────────────────────────────────────────
+
+  readonly #updateShotVelocitiesParams = signal<ShotVelocitiesUpdateParams | null>(null);
+
+  readonly updateShotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
+    const params = this.#updateShotVelocitiesParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocities/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotVelocity(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotVelocitiesRequest,
+  ): void {
+    this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  // ── SHOT PRESSURES: GET ──────────────────────────────────────────────────────
+
+  readonly #getShotPressuresParams = signal<ShotPressuresParams | null>(null);
+
+  readonly shotPressuresResource = httpResource<ShotPressuresResponse>(() => {
+    const params = this.#getShotPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  fetchShotPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotPressuresResponse> {
+    return firstValueFrom(
+      this.#http.get<ShotPressuresResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pressures/series/${seriesId}/shots/${shotId}`,
+      ),
+    );
+  }
+
+  // ── SHOT PRESSURES: PUT ──────────────────────────────────────────────────────
+
+  readonly #updateShotPressuresParams = signal<ShotPressuresUpdateParams | null>(null);
+
+  readonly updateShotPressuresResource = httpResource<ShotPressuresResponse>(() => {
+    const params = this.#updateShotPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotPressure(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotPressuresRequest,
+  ): void {
+    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────
+
+  loadArmamentEquipmentItems(itemType: 'WEAPON' | 'TUBE'): Promise<ArmamentEquipmentItem[]> {
+    return firstValueFrom(
+      this.#http.get<{ items: ArmamentEquipmentItem[] }>(`${this.#planningUrl}/equipment/items`, {
+        params: { itemType },
+      }),
+    ).then((response) => response.items);
+  }
+
+  fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
+    return firstValueFrom(
+      this.#http.get<PlanningArmamentResponse>(`${this.#planningUrl}/fire-trials/${fireTrialId}/planning/armament`),
+    );
+  }
+
+  fetchShotArmament(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotArmamentResponse> {
+    return firstValueFrom(
+      this.#http.get<ShotArmamentResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/armament/series/${seriesId}/shots/${shotId}`,
+      ),
+    );
+  }
+
+  readonly #updateShotArmamentParams = signal<ShotArmamentUpdateParams | null>(null);
+
+  readonly updateShotArmamentResource = httpResource<ShotArmamentResponse>(() => {
+    const params = this.#updateShotArmamentParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/armament/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotArmament(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotArmamentRequest,
+  ): void {
+    this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
   }
 }

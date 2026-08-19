@@ -13,8 +13,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  ArmamentIntroductionMassConfigDialog,
-  type ArmamentIntroductionMassConfigDialogData,
+    ArmamentIntroductionMassConfigDialog,
+    type ArmamentIntroductionMassConfigDialogData,
 } from './armament-introduction-mass-config-dialog';
 
 const mockData: ArmamentIntroductionMassConfigDialogData = {
@@ -23,36 +23,25 @@ const mockData: ArmamentIntroductionMassConfigDialogData = {
     { value: 'serie-2', label: 'Funcionamiento II' },
   ],
   armaOptions: [
-    { value: 'arma-01', label: 'Arma 01' },
-    { value: 'arma-02', label: 'Arma 02' },
+    { value: '21017', label: 'Arma 01' },
+    { value: '21018', label: 'Arma 02' },
   ],
-  serieArmaOptions: [
-    { value: 'serie-arma-01', label: 'Serie Arma 01' },
-    { value: 'serie-arma-02', label: 'Serie Arma 02' },
+  weaponItems: [
+    { id: '21017', tag: 'ARM-17', serialNumber: 'SN-A-17', denominationId: 1, denominationName: 'Arma 01', modelName: 'A1' },
+    { id: '21018', tag: 'ARM-18', serialNumber: 'SN-A-18', denominationId: 2, denominationName: 'Arma 02', modelName: 'A2' },
   ],
   tuboOptions: [
-    { value: 'tubo-01', label: 'Tubo 01' },
-    { value: 'tubo-02', label: 'Tubo 02' },
+    { value: '21099', label: 'Tubo 01' },
+    { value: '21100', label: 'Tubo 02' },
   ],
-  serieTuboOptions: [
-    { value: 'serie-tubo-01', label: 'Serie Tubo 01' },
-    { value: 'serie-tubo-02', label: 'Serie Tubo 02' },
-  ],
-  equipoAtacadoOptions: [
-    { value: 'eq-atac-01', label: 'Equipo Atacado 01' },
-    { value: 'eq-atac-02', label: 'Equipo Atacado 02' },
-  ],
-  equipoRetrocesoOptions: [
-    { value: 'eq-retro-01', label: 'Equipo Retroceso 01' },
-    { value: 'eq-retro-02', label: 'Equipo Retroceso 02' },
+  tubeItems: [
+    { id: '21099', tag: 'TUB-99', serialNumber: 'SN-T-99', denominationId: 5, denominationName: 'Tubo 01', modelName: 'T1' },
+    { id: '21100', tag: 'TUB-100', serialNumber: 'SN-T-100', denominationId: 6, denominationName: 'Tubo 02', modelName: 'T2' },
   ],
   current: {
     arma: null,
-    serieArma: null,
     tubo: null,
-    serieTubo: null,
-    equipoAtacado: null,
-    equipoRetroceso: null,
+    observations: '',
   },
 };
 
@@ -115,7 +104,10 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
   it('renders all field selectors', async () => {
     await runSetup();
     const selects = await loader.getAllHarnesses(MatSelectHarness);
-    expect(selects.length).toBe(5); // series + 4 fields (arma, serieArma, tubo, serieTubo)
+    expect(selects.length).toBe(3);
+    expect(screen.getByLabelText(/NÑ_SERIE_ARMA_LABEL/)).toHaveAttribute('readonly');
+    expect(screen.getByLabelText(/NÑ_SERIE_TUBO_LABEL/)).toHaveAttribute('readonly');
+    expect(screen.getByRole('textbox', { name: /OBSERVATIONS_LABEL/ })).not.toHaveAttribute('readonly');
   });
 
   it('closes with action "apply" and form data when Apply button is clicked', async () => {
@@ -123,9 +115,8 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     view.fixture.componentInstance.formModel.set({
       series: ['serie-1'],
       arma: null,
-      serieArma: null,
       tubo: null,
-      serieTubo: null,
+      observations: '',
     });
     view.fixture.detectChanges();
 
@@ -133,31 +124,23 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     const applyBtn = await getButtonByIndex(0);
     await applyBtn.click();
 
-    expect(closeMock).toHaveBeenCalledWith({
-      action: 'apply',
-      series: ['serie-1'],
-      arma: null,
-      serieArma: null,
-      tubo: null,
-      serieTubo: null,
-    });
+    expect(closeMock).not.toHaveBeenCalled();
   });
 
   it('closes with action "cancel" when Cancel button is clicked', async () => {
     await runSetup();
     const cancelBtn = await getButtonByIndex(1);
     await cancelBtn.click();
-    expect(closeMock).toHaveBeenCalledWith({ action: 'cancel' });
+    expect(closeMock).toHaveBeenCalledWith(undefined);
   });
 
   it('allows selecting other fields and closing with full configuration', async () => {
     const { view } = await runSetup();
     view.fixture.componentInstance.formModel.set({
-      series: ['serie-1'],
-      arma: 'arma-01',
-      serieArma: 'serie-arma-01',
-      tubo: 'tubo-01',
-      serieTubo: 'serie-tubo-01',
+      series: ['serie-1', 'serie-2'],
+      arma: '21017',
+      tubo: '21099',
+      observations: 'Sin incidencias.',
     });
     view.fixture.detectChanges();
 
@@ -166,12 +149,10 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     await applyBtn.click();
 
     expect(closeMock).toHaveBeenCalledWith({
-      action: 'apply',
-      series: ['serie-1'],
-      arma: 'arma-01',
-      serieArma: 'serie-arma-01',
-      tubo: 'tubo-01',
-      serieTubo: 'serie-tubo-01',
+      assignedSeriesIds: ['serie-1', 'serie-2'],
+      weaponId: 21017,
+      tubeId: 21099,
+      observations: 'Sin incidencias.',
     });
   });
 

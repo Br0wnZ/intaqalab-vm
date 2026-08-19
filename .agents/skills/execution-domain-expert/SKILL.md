@@ -95,8 +95,10 @@ Profiles enum: VELOCITIES, PRESSURES, VIDEO, TRAJECTOGRAPHY, MUNITIONS, ARMAMENT
 
 > **📌 Nota de Arquitectura de Widgets & Guardado**:
 > Todos los widgets de la Execution Grid heredan de `BaseFormWidgetComponent`. En `ngOnInit`/`ngOnDestroy` registran su instancia en `WidgetStateService` (`registerWidgetInstance` / `unregisterWidgetInstance`).
-> El botón "Guardar" en la cabecera del contenedor `execution.ts` llama a `WidgetStateService.saveAllDirtyForms()`, ejecutando en paralelo (`Promise.all`) la función `saveForm()` de cada widget dirty.
-> En `saveForm()`, se invoca la mutación correspondiente (ej. `setSeriesProfileReadiness` por cada serie modificada).
+>
+> - **GET al iniciar:** Al colocarse en el grid, el widget debe auto-seleccionar la serie y disparo activos (o iniciales) y lanzar inmediatamente la petición `GET` para cargar los datos del disparo.
+> - **Dirty tracking independiente de selectores:** Los selectores de `serie` y `disparo` son controles de navegación; **NUNCA deben marcar el formulario como dirty ni como touched**. El estado `dirty` debe responder únicamente a modificaciones en los datos/equipos editables.
+> - **Guardado (PUT) desde el padre:** El botón "Guardar" en la cabecera del contenedor `execution.ts` llama a `WidgetStateService.saveAllDirtyForms()`, ejecutando en paralelo (`Promise.all`) la función `saveForm()` de cada widget dirty, donde se invoca la mutación remota correspondiente (ej. `setShotPressure` o `setSeriesProfileReadiness`).
 
 ### Tag: Execution Preferences
 
@@ -254,6 +256,13 @@ readonly online = injectNetworkStatus();
 
 ## 🔑 Tabla de Sincronización Store ↔ API (CRÍTICO)
 
+### Catálogo estable de series y disparos
+
+- `GET /planning/series` es fuente única del catálogo de series y disparos de los selects de ejecución. Consumir `planningSeries()`; las series usan `id`/`name` y disparos `shots[].id`/`globalNumber`.
+- `GET /execution/state` sólo actualiza selección activa con `activeSerieId` y `activeShotId`. Nunca reemplaza, recarga ni deriva opciones de los selects.
+- `GET /execution/progress` representa estado operativo (`PENDING`/`ACTIVE`/`FIRED`), no catálogo. No usarlo como fallback de opciones.
+- Cambiar selección de serie debe limitar opciones de disparo a `planningSeries().find(serie => serie.id === serieId)?.shots`; no volver a llamar `GET /planning/series`.
+
 | Evento API                   | Acción en Store                             | Reload requerido    |
 | ---------------------------- | ------------------------------------------- | ------------------- |
 | getExecutionState OK         | patchState({ activeSerieId, activeShotId }) | Polling o manual    |
@@ -267,6 +276,20 @@ readonly online = injectNetworkStatus();
 | updateSecurityCountdown 200  | Patch countdown                             | Sí                  |
 | setProfileReadiness 200      | Patch techUnits[]                           | readiness           |
 | updateEquipmentSelection 200 | —                                           | equipment selection |
+
+### Decoupled Widget Selectors & Optimistic Updates (Patrón UI/Store)
+
+Para mantener una arquitectura limpia y evitar sobreingeniería:
+
+1. **Independencia de Selectores en Widgets**:
+   - Los selectores de serie/disparo que se muestran dentro de los widgets individuales (como `execution-prep-jlt-widget`) son para uso local del widget (ej: marcar un disparo para ejecutar).
+   - **PROHIBIDO** enlazar estos selectores directamente a las señales globales `activeSerieId()` y `activeShotId()` del store.
+   - En su lugar, usa un estado reactivo local en el componente (`linkedSignal()`) que tome su valor inicial del store global, permitiendo cambios independientes del usuario.
+
+2. **Actualización Optimista del Header**:
+   - Para evitar latencias visuales en el header global de `execution.ts` debido al flujo asíncrono (`POST /select -> GET /state -> patchState`), implementa una actualización optimista.
+   - Añade un método al store global (ej. `setOptimisticActiveShot(serieId, shotId)`) que ejecute un `patchState` inmediato.
+   - Invoca este método en el controlador del widget de forma optimista **justo antes** de disparar la acción del servicio HTTP (`selectJltShot(trialId, shotId)`). El posterior GET `/state` servirá para confirmar o corregir el estado.
 
 ### Anti-patrones prohibidos
 

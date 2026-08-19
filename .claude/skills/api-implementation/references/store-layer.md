@@ -148,7 +148,7 @@ export type ArmamentStoreType = InstanceType<typeof ArmamentStore>;
 
 ## Ejemplo Real: Store con Búsqueda y Paginación (Warehouse)
 
-Archivo: `libs/domain/wharehouse-managment/src/lib/+state/stock-list.store.ts`
+Archivo: `libs/domain/warehouse-management/src/lib/+state/stock-list.store.ts`
 
 ```typescript
 import { computed, inject } from '@angular/core';

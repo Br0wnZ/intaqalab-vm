@@ -156,6 +156,28 @@
       "active": true
     },
     {
+      "id": "meas-daq-001",
+      "tag": "DAQ-001",
+      "serialNumber": "SN-DAQ-001",
+      "denominationId": 4101,
+      "denominationName": "Sistema Adquisición Yokogawa DL850",
+      "modelName": "Yokogawa DL850",
+      "itemType": "MEASUREMENT",
+      "categoryId": "DATA_ACQUISITION_SYSTEM",
+      "active": true
+    },
+    {
+      "id": "meas-daq-002",
+      "tag": "DAQ-002",
+      "serialNumber": "SN-DAQ-002",
+      "denominationId": 4102,
+      "denominationName": "Sistema Adquisición Yokogawa DL9040",
+      "modelName": "Yokogawa DL9040",
+      "itemType": "MEASUREMENT",
+      "categoryId": "DATA_ACQUISITION_SYSTEM",
+      "active": true
+    },
+    {
       "id": "meas-tr-001",
       "tag": "RAD-TR-001",
       "serialNumber": "SN-TR-001",

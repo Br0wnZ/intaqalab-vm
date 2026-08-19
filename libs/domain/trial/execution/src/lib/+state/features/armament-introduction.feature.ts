@@ -1,12 +1,12 @@
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
 import type {
-  ArmamentIntroductionState,
-  CalibryEquipmentOption,
-  CalibryTubeOption,
-  CalibryTubeSerialOption,
-  CalibryWeaponOption,
-  CalibryWeaponSerialOption,
+    ArmamentIntroductionState,
+    CalibryEquipmentOption,
+    CalibryTubeOption,
+    CalibryTubeSerialOption,
+    CalibryWeaponOption,
+    CalibryWeaponSerialOption,
 } from '../execution-state.models';
 
 interface ArmamentIntroductionSlice {
@@ -21,6 +21,7 @@ const initialState: ArmamentIntroductionSlice = {
     serieArma: null,
     tubo: null,
     serieTubo: null,
+    observations: '',
     equipoAtacado: null,
     equipoRetroceso: null,
     armaOptions: [

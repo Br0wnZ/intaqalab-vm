@@ -227,8 +227,8 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             <label for="specimen" class="block text-sm font-medium text-gray-700 mb-2">
               {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_LABEL' | translate }}
             </label>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-[2rem]">
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <div class="relative flex items-center gap-2 mb-[2rem] max-w-2xl">
+              <mat-form-field appearance="outline" class="flex-1 min-w-0" [subscriptSizing]="'dynamic'">
                 <input
                   id="specimen"
                   matInput
@@ -236,6 +236,8 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   [disabled]="generalDataForm.specimen().disabled()"
                   [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_PLACEHOLDER' | translate"
                   [value]="specimenSummary()"
+                  (mouseenter)="showSpecimenInfoTooltip = true"
+                  (mouseleave)="showSpecimenInfoTooltip = false"
                 />
                 @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
                   @for (error of generalDataForm.specimen().errors(); track error) {
@@ -252,6 +254,21 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               >
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MANAGE_SPECIMEN_BUTTON' | translate }}
               </button>
+              @if (showSpecimenInfoTooltip) {
+                <div
+                  class="absolute bottom-full left-0 right-0 mb-2 p-4 bg-slate-800 text-white text-xs rounded-xl shadow-xl z-50 pointer-events-none"
+                >
+                  <div
+                    class="absolute bottom-0 left-6 translate-y-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-slate-800"
+                  ></div>
+                  <div class="font-semibold mb-3">
+                    {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_TOOLTIP' | translate }}
+                  </div>
+                  <div class="leading-relaxed">
+                    {{ specimenSummary() }}
+                  </div>
+                </div>
+              }
             </div>
           </div>
 
@@ -546,6 +563,7 @@ export class PlanningGeneralDataFormComponent {
 
   readonly #translate = inject(TranslateService);
   protected showValidationErrorsTooltip = false;
+  protected showSpecimenInfoTooltip = false;
   readonly validationErrors = computed(() => this.#store.planningValidationErrors());
   readonly validationErrorsTitle = computed(() =>
     this.#translate.instant('TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATION_ERRORS_TITLE'),
@@ -632,7 +650,7 @@ export class PlanningGeneralDataFormComponent {
     };
 
     const labelMap = new Map(specimenList.map((s) => [String(s.id), getName(s)]));
-    return selectedIds.map((id) => labelMap.get(id) ?? id).join(', ');
+    return selectedIds.map((id) => labelMap.get(String(id)) ?? id).join(', ');
   });
 
   constructor() {
@@ -711,10 +729,7 @@ export class PlanningGeneralDataFormComponent {
   }
 
   async openSpecimenManagement(): Promise<void> {
-    const specimensSource = this.#store.typedSpecimens() ?? [];
-    const specimens = specimensSource.length ? specimensSource : this.#cachedSpecimens();
-    const planningInfo = this.#store.planningInfo();
-    const fireTrialId = this.#store.fireTrialId();
+    const specimens = this.#cachedSpecimens();
 
     const dialogRef = this.dialog.open(SpecimensManagmentDialog, {
       width: '600px',
@@ -725,8 +740,6 @@ export class PlanningGeneralDataFormComponent {
           .value()
           .map((entry) => entry.specimenId),
         selectedSpecimens: this.#store.selectedSpecimens(),
-        planningInfo,
-        fireTrialId,
       },
     });
 

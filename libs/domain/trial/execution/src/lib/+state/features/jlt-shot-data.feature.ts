@@ -1,4 +1,9 @@
+import { inject } from '@angular/core';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
+
+import { MeasureUnitEnum } from '@intaqalab/models';
+
+import { ExecutionService } from '../../services/execution.service';
 
 import type { JltShotDataState } from '../execution-state.models';
 
@@ -41,12 +46,30 @@ const initialState: JltShotDataSlice = {
 export function withJltShotData() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store) => ({
+    withMethods((store, executionService = inject(ExecutionService)) => ({
       /** Actualiza los campos del widget Introducción de datos JLT */
       updateJltShotData(updates: Partial<JltShotDataState>): void {
         patchState(store, (state) => ({
           jltShotData: { ...state.jltShotData, ...updates },
         }));
+      },
+
+      saveJltShotData(fireTrialId: string): void {
+        const jltShotData = store.jltShotData();
+
+        if (!jltShotData.serie || !jltShotData.disparo) {
+          return;
+        }
+
+        executionService.setJltShotData(fireTrialId, jltShotData.serie, jltShotData.disparo, {
+          jet: jltShotData.jet ?? '',
+          pieceOperator: jltShotData.operadorPieza ?? '',
+          attackDistance: jltShotData.atacado,
+          attackDistanceUnit: MeasureUnitEnum.MM,
+          recoilDistance: jltShotData.retroceso,
+          recoilDistanceUnit: MeasureUnitEnum.MM,
+          observations: jltShotData.observaciones,
+        });
       },
     })),
   );

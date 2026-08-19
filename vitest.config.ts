@@ -27,7 +27,7 @@ export default defineConfig({
       'libs/domain/trial/execution/vite.config.mts',
       'libs/domain/trial/planning/vite.config.mts',
       'libs/domain/trial/trial-management/vite.config.mts',
-      'libs/domain/wharehouse-managment/vite.config.mts',
+      'libs/domain/warehouse-management/vite.config.mts',
       'libs/shared/config/vite.config.mts',
       'libs/shared/data-access/vite.config.mts',
       'libs/shared/models/vite.config.mts',

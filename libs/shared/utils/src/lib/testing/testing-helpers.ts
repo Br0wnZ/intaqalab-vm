@@ -539,6 +539,7 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     setSelectedSpecimens: vi.fn(),
     loadSpecimens: vi.fn(),
     loadSpecimensByType: vi.fn(),
+    getCachedSpecimensByType: vi.fn(),
     createSpecimen: vi.fn(),
     updateSpecimen: vi.fn(),
     deleteSpecimen: vi.fn(),
@@ -938,7 +939,6 @@ export function createMockArmamentService(initialData?: {
     _tubeDenominationsResource: tubeDenominationsResource,
   };
 }
-
 
 /**
  * Factory para crear datos de prueba de armamento

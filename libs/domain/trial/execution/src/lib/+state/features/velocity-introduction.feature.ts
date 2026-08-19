@@ -1,5 +1,8 @@
+import { inject } from '@angular/core';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
+import { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 
+import { ExecutionService } from '../../services/execution.service';
 import type { VelocityIntroductionState } from '../execution-state.models';
 
 interface VelocityIntroductionSlice {
@@ -14,13 +17,13 @@ const initialState: VelocityIntroductionSlice = {
     radarDoppler: null,
     antena: null,
     velocidad: null,
-    velocidadUnit: 'm/s',
+    velocidadUnit: SpeedUnitEnum.M_S,
     incertidumbreSoftware: null,
-    incertidumbreSoftwareUnit: 'm/s',
+    incertidumbreSoftwareUnit: SpeedUnitEnum.M_S,
     perdida: null,
-    perdidaUnit: 'm/s',
+    perdidaUnit: SpeedUnitEnum.M_S,
     cadencia: null,
-    cadenciaUnit: 'dpm',
+    cadenciaUnit: CadenceUnitEnum.SPM,
     observaciones: null,
     serieOptions: [
       { value: 'funcionamiento-1', label: 'Funcionamiento I' },
@@ -45,12 +48,36 @@ const initialState: VelocityIntroductionSlice = {
 export function withVelocityIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store) => ({
+    withMethods((store, executionService = inject(ExecutionService)) => ({
       /** Actualiza los campos del widget Introducción datos velocidades */
       updateVelocityIntroduction(updates: Partial<VelocityIntroductionState>): void {
         patchState(store, (state) => ({
           velocityIntroduction: { ...state.velocityIntroduction, ...updates },
         }));
+      },
+
+      /** Guarda los datos de velocidad del disparo en el backend */
+      saveVelocityIntroduction(fireTrialId: string): void {
+        const vel = store.velocityIntroduction();
+        if (!vel.serie || !vel.disparo) {
+          return;
+        }
+
+        executionService.setShotVelocity(fireTrialId, vel.serie, vel.disparo, [
+          {
+            radarDopplerId: vel.radarDoppler ? Number(vel.radarDoppler) || null : null,
+            antennaId: vel.antena ? Number(vel.antena) || null : null,
+            initialVelocity: vel.velocidad,
+            initialVelocityUnit: vel.velocidadUnit || SpeedUnitEnum.M_S,
+            softwareUncertainty: vel.incertidumbreSoftware,
+            softwareUncertaintyUnit: vel.incertidumbreSoftwareUnit || SpeedUnitEnum.M_S,
+            velocityLoss: vel.perdida,
+            velocityLossUnit: vel.perdidaUnit || SpeedUnitEnum.M_S,
+            cadence: vel.cadencia,
+            cadenceUnit: vel.cadenciaUnit || CadenceUnitEnum.SPM,
+            observations: vel.observaciones,
+          },
+        ]);
       },
     })),
   );

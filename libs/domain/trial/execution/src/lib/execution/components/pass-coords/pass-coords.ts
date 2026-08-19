@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -154,8 +154,22 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
 
   // ── Options from store ────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.passCoords().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.passCoords().disparoOptions);
+  protected readonly serieOptions = computed(() => {
+    const planningSeries = this.#store.planningSeries();
+    if (!planningSeries?.length) return this.#store.passCoords().serieOptions;
+    return planningSeries.map((serie, index) => ({
+      value: serie.id,
+      label: serie.name?.trim() || `Serie ${index + 1}`,
+    }));
+  });
+  protected readonly disparoOptions = computed(() => {
+    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.formModel().serie)?.shots;
+    if (!shots?.length) return this.#store.passCoords().disparoOptions;
+    return shots.map((shot, index) => ({
+      value: shot.id,
+      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
+    }));
+  });
 
   // ── Calculated output fields (read-only from store) ───────────────────────
   protected readonly alturaBocaBolaPieza = computed(() => this.#store.passCoords().alturaBocaBolaPieza);
@@ -177,6 +191,16 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
     disparo: this.#store.passCoords().disparo,
   });
   protected readonly selectForm = form(this.formModel);
+
+  constructor() {
+    super();
+    effect(() => {
+      const serie = this.#store.activeSerieId();
+      const disparo = this.#store.activeShotId();
+      if (!serie || !disparo) return;
+      untracked(() => this.formModel.set({ serie, disparo }));
+    });
+  }
 
   // ── FormWidget implementation ─────────────────────────────────────────────
   readonly formState: Signal<WidgetFormState> = computed(() => ({

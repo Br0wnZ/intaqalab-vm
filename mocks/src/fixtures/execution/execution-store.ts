@@ -1,5 +1,7 @@
 import { getFixture } from '../../utils';
 
+import { getTrialById } from '../trials/trial-transitions-store';
+
 type ExecutionStatus =
   | 'ACTIVE'
   | 'PAUSED'
@@ -79,11 +81,65 @@ interface PlanningState {
   updatedAt: string;
 }
 
+interface JltShotDataPayload {
+  jet: string;
+  pieceOperator: string;
+  attackDistance: number | null;
+  attackDistanceUnit?: string;
+  recoilDistance: number | null;
+  recoilDistanceUnit?: string;
+  observations?: string | null;
+}
+
+interface JltShotDataResponse {
+  jltData: JltShotDataPayload;
+}
+
+export interface ShotVelocityItem {
+  radarDopplerId?: number | null;
+  antennaId?: number | null;
+  initialVelocity?: number | null;
+  initialVelocityUnit?: string;
+  softwareUncertainty?: number | null;
+  softwareUncertaintyUnit?: string;
+  cadence?: number | null;
+  cadenceUnit?: string;
+  velocityLoss?: number | null;
+  velocityLossUnit?: string;
+  observations?: string | null;
+}
+
+export interface ShotVelocitiesResponse {
+  velocities: ShotVelocityItem[];
+}
+
+// ── SHOT PRESSURES tipos ───────────────────────────────────────────────────
+
+export interface ShotPressuresData {
+  piezoelectricSensorId?: number | null;
+  amplifierId?: number | null;
+  dataAcquisitionSystemId?: number | null;
+  closingMaxPressure?: number | null;
+  closingMaxPressureUnit?: string;
+  halfMaxPressure?: number | null;
+  halfMaxPressureUnit?: string;
+  shellMaxPressure?: number | null;
+  shellMaxPressureUnit?: string;
+  observations?: string | null;
+}
+
+export interface ShotPressuresResponse {
+  pressuresData: ShotPressuresData;
+}
+
 const executionStateMap = new Map<string, ExecutionState>();
 const countdownStateMap = new Map<string, SecurityCountdownState>();
 const planningStateMap = new Map<string, PlanningState>();
 const readinessStateMap = new Map<string, ProfilesReadinessState>();
 const jltPreparationStateMap = new Map<string, JltPreparationState>();
+const jltShotDataStateMap = new Map<string, Map<string, JltShotDataResponse>>();
+const velocitiesStateMap = new Map<string, Map<string, ShotVelocitiesResponse>>();
+const pressuresStateMap = new Map<string, Map<string, ShotPressuresResponse>>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -105,15 +161,125 @@ function defaultJltPreparationState(): JltPreparationState {
   return getFixture<JltPreparationState>('fixtures/execution', 'execution-jlt-preparation-fixture.json');
 }
 
+function defaultJltShotDataState(): JltShotDataResponse {
+  return getFixture<JltShotDataResponse>('fixtures/execution', 'execution-jlt-shot-data-fixture.json');
+}
+
+function cloneJltShotDataState(state: JltShotDataResponse): JltShotDataResponse {
+  return structuredClone(state);
+}
+
+function getShotProgress(seriesId: string, shotId: string): { status: string } | null {
+  const progress = getFixture<{
+    series: Array<{ seriesId: string; shots: Array<{ shotId: string; status: string }> }>;
+  }>('fixtures/execution', 'execution-progress-fixture.json');
+
+  const series = progress.series.find((item) => item.seriesId === seriesId);
+  return series?.shots.find((shot) => shot.shotId === shotId) ?? null;
+}
+
+function getOrCreateJltShotDataMap(fireTrialId: string): Map<string, JltShotDataResponse> {
+  let state = jltShotDataStateMap.get(fireTrialId);
+
+  if (!state) {
+    state = new Map<string, JltShotDataResponse>();
+    jltShotDataStateMap.set(fireTrialId, state);
+  }
+
+  return state;
+}
+
+function getExecutionProgressFixture(): {
+  series: Array<{ seriesId: string; shots: Array<{ shotId: string; status: string; updatedAt: string }> }>;
+} {
+  return getFixture('fixtures/execution', 'execution-progress-fixture.json');
+}
+
+function resolveExecutionStatusForTrial(fireTrialId: string): ExecutionStatus {
+  const trial = getTrialById(fireTrialId) as { status?: string } | null;
+
+  switch (trial?.status) {
+    case 'PLANNED':
+    case 'PREPARED':
+    case 'UNDER_REVIEW':
+      return 'PLANNED';
+    case 'STARTED':
+      return 'STARTED';
+    case 'IN_PROGRESS':
+      return 'ACTIVE';
+    case 'INTERRUPTED':
+      return 'INTERRUPTED';
+    case 'EXECUTED':
+      return 'EXECUTED';
+    case 'FINALIZING':
+      return 'FINISHED';
+    case 'CLOSED':
+      return 'CLOSED';
+    case 'CANCELLED':
+      return 'CANCELED';
+    case 'ANALYZING':
+      return 'ANALYZING';
+    default:
+      return defaultExecutionState().status;
+  }
+}
+
+function resolveActiveShotState(): Pick<ExecutionState, 'activeSeriesId' | 'activeShotId'> {
+  const progress = getExecutionProgressFixture();
+
+  for (const series of progress.series) {
+    const activeShot = series.shots.find((shot) => shot.status === 'ACTIVE');
+    if (activeShot) {
+      return {
+        activeSeriesId: series.seriesId,
+        activeShotId: activeShot.shotId,
+      };
+    }
+  }
+
+  for (const series of progress.series) {
+    const pendingShot = series.shots.find((shot) => shot.status === 'PENDING');
+    if (pendingShot) {
+      return {
+        activeSeriesId: series.seriesId,
+        activeShotId: pendingShot.shotId,
+      };
+    }
+  }
+
+  const lastSeries = progress.series[progress.series.length - 1] ?? null;
+  const lastShot = lastSeries?.shots[lastSeries.shots.length - 1] ?? null;
+
+  return {
+    activeSeriesId: lastSeries?.seriesId ?? null,
+    activeShotId: lastShot?.shotId ?? null,
+  };
+}
+
 export function getExecutionState(fireTrialId: string): ExecutionState {
   if (!executionStateMap.has(fireTrialId)) {
-    const initial = { ...defaultExecutionState() };
+    const initial = {
+      ...defaultExecutionState(),
+      ...resolveActiveShotState(),
+      status: resolveExecutionStatusForTrial(fireTrialId),
+    };
     executionStateMap.set(fireTrialId, {
       ...initial,
       activeShootId: initial.activeShotId,
     });
   }
-  const state = executionStateMap.get(fireTrialId) ?? defaultExecutionState();
+
+  const persisted = executionStateMap.get(fireTrialId);
+  const state = persisted
+    ? { ...persisted, status: resolveExecutionStatusForTrial(fireTrialId) }
+    : {
+        ...defaultExecutionState(),
+        ...resolveActiveShotState(),
+        status: resolveExecutionStatusForTrial(fireTrialId),
+      };
+
+  executionStateMap.set(fireTrialId, state);
+
   return {
     ...state,
     activeShootId: state.activeShotId,
@@ -303,3 +469,194 @@ export function registerFireShot(fireTrialId: string): void {
   });
 }
 
+export function getJltShotData(fireTrialId: string, seriesId: string, shotId: string): JltShotDataResponse {
+  const state = getOrCreateJltShotDataMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneJltShotDataState(defaultJltShotDataState());
+    state.set(key, initial);
+    return cloneJltShotDataState(initial);
+  }
+
+  return cloneJltShotDataState(current);
+}
+
+export function setJltShotData(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: JltShotDataPayload,
+): JltShotDataResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateJltShotDataMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated = cloneJltShotDataState({
+    jltData: {
+      jet: payload.jet,
+      pieceOperator: payload.pieceOperator,
+      attackDistance: payload.attackDistance,
+      attackDistanceUnit: payload.attackDistanceUnit,
+      recoilDistance: payload.recoilDistance,
+      recoilDistanceUnit: payload.recoilDistanceUnit,
+      observations: payload.observations ?? null,
+    },
+  });
+
+  state.set(key, updated);
+  return cloneJltShotDataState(updated);
+}
+
+function defaultVelocitiesState(): ShotVelocitiesResponse {
+  return getFixture<ShotVelocitiesResponse>('fixtures/execution', 'execution-velocities-fixture.json');
+}
+
+function cloneVelocitiesState(state: ShotVelocitiesResponse): ShotVelocitiesResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateVelocitiesMap(fireTrialId: string): Map<string, ShotVelocitiesResponse> {
+  let state = velocitiesStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotVelocitiesResponse>();
+    velocitiesStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotVelocities(fireTrialId: string, seriesId: string, shotId: string): ShotVelocitiesResponse {
+  const state = getOrCreateVelocitiesMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneVelocitiesState(defaultVelocitiesState());
+    state.set(key, initial);
+    return cloneVelocitiesState(initial);
+  }
+
+  return cloneVelocitiesState(current);
+}
+
+export function setShotVelocity(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotVelocityItem[] | ShotVelocitiesResponse,
+): ShotVelocitiesResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const velocities: ShotVelocityItem[] = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.velocities)
+      ? payload.velocities
+      : [];
+
+  const state = getOrCreateVelocitiesMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotVelocitiesResponse = {
+    velocities: velocities.map((v) => ({
+      radarDopplerId: v.radarDopplerId ?? null,
+      antennaId: v.antennaId ?? null,
+      initialVelocity: v.initialVelocity ?? null,
+      initialVelocityUnit: v.initialVelocityUnit ?? 'M_S',
+      softwareUncertainty: v.softwareUncertainty ?? null,
+      softwareUncertaintyUnit: v.softwareUncertaintyUnit ?? 'M_S',
+      cadence: v.cadence ?? null,
+      cadenceUnit: v.cadenceUnit ?? 'SPM',
+      velocityLoss: v.velocityLoss ?? null,
+      velocityLossUnit: v.velocityLossUnit ?? 'M_S',
+      observations: v.observations ?? null,
+    })),
+  };
+
+  state.set(key, updated);
+  return cloneVelocitiesState(updated);
+}
+
+// ==========================================
+// DATA ENTRY - WIDGET 5 PRESSURES
+// ==========================================
+
+function defaultPressuresState(): ShotPressuresResponse {
+  return getFixture<ShotPressuresResponse>('fixtures/execution', 'execution-pressures-fixture.json');
+}
+
+function clonePressuresState(state: ShotPressuresResponse): ShotPressuresResponse {
+  return structuredClone(state);
+}
+
+function getOrCreatePressuresMap(fireTrialId: string): Map<string, ShotPressuresResponse> {
+  let state = pressuresStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotPressuresResponse>();
+    pressuresStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotPressures(fireTrialId: string, seriesId: string, shotId: string): ShotPressuresResponse {
+  const state = getOrCreatePressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = clonePressuresState(defaultPressuresState());
+    state.set(key, initial);
+    return clonePressuresState(initial);
+  }
+
+  return clonePressuresState(current);
+}
+
+export function setShotPressure(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotPressuresData,
+): ShotPressuresResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreatePressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotPressuresResponse = {
+    pressuresData: {
+      piezoelectricSensorId: payload.piezoelectricSensorId ?? null,
+      amplifierId: payload.amplifierId ?? null,
+      dataAcquisitionSystemId: payload.dataAcquisitionSystemId ?? null,
+      closingMaxPressure: payload.closingMaxPressure ?? null,
+      closingMaxPressureUnit: payload.closingMaxPressureUnit ?? 'BAR',
+      halfMaxPressure: payload.halfMaxPressure ?? null,
+      halfMaxPressureUnit: payload.halfMaxPressureUnit ?? 'BAR',
+      shellMaxPressure: payload.shellMaxPressure ?? null,
+      shellMaxPressureUnit: payload.shellMaxPressureUnit ?? 'BAR',
+      observations: payload.observations ?? null,
+    },
+  };
+
+  state.set(key, updated);
+  return clonePressuresState(updated);
+}

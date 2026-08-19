@@ -306,6 +306,12 @@ export const PlanningGeneralDataStore = signalStore(
         dataPlanningService.getSpecimens();
       },
 
+      getCachedSpecimensByType(type: SpecimenType) {
+        const specimens = store.specimens();
+
+        return specimens.filter((specimen) => type === specimen.type);
+      },
+
       loadSpecimensByType(specimenType: SpecimenType): void {
         dataPlanningService.getSpecimensByType(specimenType, { active: true });
       },

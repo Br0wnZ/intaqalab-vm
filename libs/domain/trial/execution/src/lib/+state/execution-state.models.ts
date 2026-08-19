@@ -1,3 +1,4 @@
+import type { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../execution/models';
 
 export interface TechUnitStatus {
@@ -145,6 +146,8 @@ export interface ArmamentIntroductionState {
   tubo: string | null;
   /** Número de serie del tubo (id de Calibry) */
   serieTubo: string | null;
+  /** Observaciones del armamento para el disparo */
+  observations: string;
   /** Equipo Atacado seleccionado (id de Calibry) */
   equipoAtacado: string | null;
   /** Equipo Retroceso seleccionado (id de Calibry) */
@@ -748,19 +751,19 @@ export interface VelocityIntroductionState {
   /** Velocidad (m/s) */
   velocidad: number | null;
   /** Unidad de velocidad */
-  velocidadUnit: string;
+  velocidadUnit: SpeedUnitEnum;
   /** Incertidumbre del software (m/s) — read-only, procede del tarado */
   incertidumbreSoftware: number | null;
   /** Unidad de incertidumbre del software */
-  incertidumbreSoftwareUnit: string;
+  incertidumbreSoftwareUnit: SpeedUnitEnum;
   /** Pérdida (m/s) */
   perdida: number | null;
   /** Unidad de pérdida */
-  perdidaUnit: string;
+  perdidaUnit: SpeedUnitEnum;
   /** Cadencia (dpm) */
   cadencia: number | null;
   /** Unidad de cadencia */
-  cadenciaUnit: string;
+  cadenciaUnit: CadenceUnitEnum;
   /** Observaciones libres */
   observaciones: string | null;
   /** Lista de series disponibles */

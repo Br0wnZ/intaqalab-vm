@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,7 +10,6 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -143,7 +143,14 @@ export class GrubbsCriterionWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
 
   // ── Options from store ────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.grubbsCriterion().serieOptions);
+  protected readonly serieOptions = computed(() => {
+    const planningSeries = this.#store.planningSeries();
+    if (!planningSeries?.length) return this.#store.grubbsCriterion().serieOptions;
+    return planningSeries.map((serie, index) => ({
+      value: serie.id,
+      label: serie.name?.trim() || `Serie ${index + 1}`,
+    }));
+  });
   protected readonly variableOptions = computed(() => this.#store.grubbsCriterion().variableOptions);
 
   // ── Outliers from store ───────────────────────────────────────────────────
@@ -166,6 +173,12 @@ export class GrubbsCriterionWidget extends BaseFormWidgetComponent {
   // ── Mock computation: simulate Grubbs when selection changes ──────────────
   constructor() {
     super();
+    effect(() => {
+      const activeSerieId = this.#store.activeSerieId();
+      if (!activeSerieId) return;
+      untracked(() => this.formModel.update((value) => ({ ...value, serie: activeSerieId })));
+    });
+
     effect(() => {
       const { serie, variable } = this.formModel();
       untracked(() => {

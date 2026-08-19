@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import { wharehouseManagmentComponentTypesDispatcher } from '../fixtures/wharehouse-managment/component-types/component-types-dispatcher';
-import { wharehouseManagmentDenominationsDispatcher } from '../fixtures/wharehouse-managment/denominations/denominations-dispatcher';
-import { wharehouseManagmentMunitionsDumpsDispatcher } from '../fixtures/wharehouse-managment/munitions-dumps/munitions-dumps-dispatcher';
+import { wharehouseManagmentComponentTypesDispatcher } from '../fixtures/warehouse-management/component-types/component-types-dispatcher';
+import { wharehouseManagmentDenominationsDispatcher } from '../fixtures/warehouse-management/denominations/denominations-dispatcher';
+import { wharehouseManagmentMunitionsDumpsDispatcher } from '../fixtures/warehouse-management/munitions-dumps/munitions-dumps-dispatcher';
 import { getFixture } from '../utils';
 
 export const whareHouseRouter = Router();
@@ -87,22 +87,22 @@ whareHouseRouter.post('/:centerId/warehouse/stock/munitions', (req, res) => {
 });
 
 whareHouseRouter.get('/:centerId/warehouse/stock/munitions/:id', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/munition-detail', 'munition-detail-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/munition-detail', 'munition-detail-fixture.json');
   res.status(200).send(data);
 });
 
 whareHouseRouter.patch('/:centerId/warehouse/stock/munitions/:id', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/munition-detail', 'munition-detail-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/munition-detail', 'munition-detail-fixture.json');
   res.status(200).send(data);
 });
 
 whareHouseRouter.get('/:centerId/warehouse/stock/munition-components/:id', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/munition-detail', 'munition-component-detail-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/munition-detail', 'munition-component-detail-fixture.json');
   res.status(200).send(data);
 });
 
 whareHouseRouter.get('/:centerId/warehouse/stock/:id/certificates', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/certificates', 'certificate-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/certificates', 'certificate-fixture.json');
   res.status(200).send(data);
   // res.status(200).send({
   //   page: 1,
@@ -113,11 +113,11 @@ whareHouseRouter.get('/:centerId/warehouse/stock/:id/certificates', (req, res) =
 });
 
 whareHouseRouter.get('/:centerId/warehouse/stock/', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/stock-list', 'stock-list-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/stock-list', 'stock-list-fixture.json');
   res.status(200).send(data);
 });
 
 whareHouseRouter.get('/:centerId/warehouse/movements/', (req, res) => {
-  const data = getFixture('fixtures/wharehouse-managment/movements', 'movements-list-fixture.json');
+  const data = getFixture('fixtures/warehouse-management/movements', 'movements-list-fixture.json');
   res.status(200).send(data);
 });

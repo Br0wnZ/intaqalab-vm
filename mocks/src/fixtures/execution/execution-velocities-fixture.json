@@ -1,0 +1,17 @@
+{
+  "velocities": [
+    {
+      "radarDopplerId": 1,
+      "antennaId": 4,
+      "initialVelocity": 850.5,
+      "initialVelocityUnit": "M_S",
+      "softwareUncertainty": 0.5,
+      "softwareUncertaintyUnit": "M_S",
+      "cadence": 600,
+      "cadenceUnit": "SPM",
+      "velocityLoss": 2.1,
+      "velocityLossUnit": "M_S",
+      "observations": "Sin incidencias."
+    }
+  ]
+}

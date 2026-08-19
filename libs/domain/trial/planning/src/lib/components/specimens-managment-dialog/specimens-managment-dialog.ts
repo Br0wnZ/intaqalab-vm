@@ -52,8 +52,8 @@ import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../..
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="specimenType"
+              clearable
               [value]="selectedSpecimenType()"
               [placeholder]="'SPECIMENS_MANAGMENT_DIALOG.TYPE_PLACEHOLDER' | translate"
               (valueChange)="onSpecimenTypeChange($event)"
@@ -183,12 +183,12 @@ export class SpecimensManagmentDialog {
 
   readonly #dialogRef = inject(MatDialogRef<SpecimensManagmentDialog>);
   readonly #dialogData = inject<{
-    fireTrialId?: string | null;
+    specimens: SpecimenOption[];
     selectedSpecimens?: { specimenId: string; batch: string }[];
   } | null>(MAT_DIALOG_DATA, { optional: true });
   readonly store = inject(PlanningGeneralDataStore);
 
-  readonly specimens = computed(() => this.store.typedSpecimens());
+  readonly specimens = computed(() => this.#dialogData?.specimens || []);
 
   readonly specimenTypes = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
@@ -283,12 +283,11 @@ export class SpecimensManagmentDialog {
   }
 
   onSave(): void {
-    const type = this.selectedSpecimenType();
     this.#dialogRef.close(
       this.selectedSpecimens().map((i) => ({
         specimenId: i.id,
         batch: i.serialNumber || i.lot || '',
-        type: type === SpecimenType.Munition ? 'MUNITION' : type?.toUpperCase(),
+        type: i.type === SpecimenType.Munition ? 'MUNITION' : i.type.toUpperCase(),
       })),
     );
   }
@@ -305,10 +304,10 @@ export class SpecimensManagmentDialog {
     this.resetSelection();
     if (!specimenType) return;
     if (specimenType === SpecimenType.Munition) {
-      this.store.loadSpecimensByType(SpecimenType.Munition);
+      this.store.getCachedSpecimensByType(SpecimenType.Munition);
       return;
     }
-    this.store.loadSpecimensByType(specimenType);
+    this.store.getCachedSpecimensByType(specimenType);
   }
 
   onSelectOption(specimenId: string): void {
@@ -375,7 +374,8 @@ export class SpecimensManagmentDialog {
 
       const selections = initialSelections
         .map((s) => {
-          const specimen = specimensList.find((sp) => sp.id === s.specimenId);
+          const specimen = specimensList.find((sp) => String(sp.id) === String(s.specimenId));
+
           if (!specimen) return null;
 
           const type = this.#getUiType(specimen);

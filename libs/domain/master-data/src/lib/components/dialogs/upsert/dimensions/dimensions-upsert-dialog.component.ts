@@ -172,7 +172,6 @@ export class DimensionsUpsertDialogComponent {
 
       const width = valueOf(f.width) > 0;
 
-      console.log(`height: ${height} --- width: ${width}`);
       if (!height && width)
         return { kind: 'heightRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.HEIGHT' };
 

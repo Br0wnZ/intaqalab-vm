@@ -21,7 +21,7 @@ nx-intaqalab/
 │   │   ├── trial/
 │   │   │   ├── planning/
 │   │   │   └── trial-management/
-│   │   └── wharehouse-managment/
+│   │   └── warehouse-management/
 │   └── shared/                 # Código compartido transversal
 │       ├── config/             # Configuración de entorno y tokens
 │       ├── data-access/        # Servicios HTTP compartidos

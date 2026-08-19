@@ -3,11 +3,12 @@ import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
-  ExecutionTechnicalProfile,
-  JltPreparationResponse,
-  ProfileReadinessFlag,
-  ProfileReadinessItem,
-  ProfilesReadinessResponse,
+    ExecutionTechnicalProfile,
+    JltPreparationData,
+    JltPreparationResponse,
+    ProfileReadinessFlag,
+    ProfileReadinessItem,
+    ProfilesReadinessResponse,
 } from '../../services/execution.service';
 import { ExecutionService } from '../../services/execution.service';
 import type { JltStatus, TechUnitStatus } from '../execution-state.models';
@@ -104,7 +105,7 @@ function mapFlagToTechUnit(id: string, labelKey: string, flag?: ProfileReadiness
   };
 }
 
-function mapJltPreparationToTechUnits(data: JltPreparationResponse): TechUnitStatus[] {
+function mapJltPreparationToTechUnits(data: JltPreparationData): TechUnitStatus[] {
   const technical = data.technicalUnitsReadiness;
   return [
     mapFlagToTechUnit('velocidades', TECH_UNIT_LABEL_KEYS['velocidades'], technical?.velocities),
@@ -114,6 +115,14 @@ function mapJltPreparationToTechUnits(data: JltPreparationResponse): TechUnitSta
     mapFlagToTechUnit('video', TECH_UNIT_LABEL_KEYS['video'], technical?.video),
     mapFlagToTechUnit('armamento', TECH_UNIT_LABEL_KEYS['armamento'], technical?.armament),
   ];
+}
+
+function selectJltPreparation(data: JltPreparationResponse, seriesId: string | null): JltPreparationData | null {
+  if (!('series' in data)) {
+    return data;
+  }
+
+  return data.series.find((series) => series.seriesId === seriesId) ?? null;
 }
 
 // ─── Feature ───────────────────────────────────────────────────────────────────
@@ -264,15 +273,17 @@ export function withReadiness() {
         // ── W2 GET: Sincronizar estado JLT + unidades técnicas ──────────────────
         effect(() => {
           const data = safeResourceValue(executionService.jltPreparationResource);
-          if (data) {
+          const storeAny = store as unknown as { activeSerieId?: () => string | null };
+          const preparation = data ? selectJltPreparation(data, storeAny.activeSerieId?.() ?? null) : null;
+          if (preparation) {
             patchState(store, {
               jltStatus: {
-                sanitary: data.jltReadiness?.sanitaryServicesReady ?? false,
-                security: data.jltReadiness?.securityReady ?? false,
-                boat: data.jltReadiness?.vesselReady ?? false,
-                observations: data.jltReadiness?.observations ?? '',
+                sanitary: preparation.jltReadiness?.sanitaryServicesReady ?? false,
+                security: preparation.jltReadiness?.securityReady ?? false,
+                boat: preparation.jltReadiness?.vesselReady ?? false,
+                observations: preparation.jltReadiness?.observations ?? '',
               },
-              techUnits: mapJltPreparationToTechUnits(data),
+              techUnits: mapJltPreparationToTechUnits(preparation),
             });
           }
         });

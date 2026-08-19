@@ -1,5 +1,5 @@
 import type { ComponentFixture } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { createMockPlanningGeneralDataStore, createSpecimens } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -51,7 +51,10 @@ describe('SpecimensManagmentDialog', () => {
 
     const renderResult = await render(SpecimensManagmentDialog, {
       imports: [TranslateModule.forRoot()],
-      providers: [{ provide: MatDialogRef, useValue: mockDialogRef }],
+      providers: [
+        { provide: MatDialogRef, useValue: mockDialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: { specimens: specimensResponse.items } },
+      ],
       componentProviders: [{ provide: PlanningGeneralDataStore, useValue: mockStore }],
     });
 
@@ -191,14 +194,14 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Store Interaction', () => {
-    it('should call loadSpecimensByType when specimen type changes', () => {
+    it('should call getCachedSpecimensByType when specimen type changes', () => {
       component.onSpecimenTypeChange(SpecimenType.Weapon);
-      expect(mockStore.loadSpecimensByType).toHaveBeenCalledWith(SpecimenType.Weapon);
+      expect(mockStore.getCachedSpecimensByType).toHaveBeenCalledWith(SpecimenType.Weapon);
     });
 
-    it('should call loadSpecimensByType with Munition when specimen type is Munition', () => {
+    it('should call getCachedSpecimensByType with Munition when specimen type is Munition', () => {
       component.onSpecimenTypeChange(SpecimenType.Munition);
-      expect(mockStore.loadSpecimensByType).toHaveBeenCalledWith(SpecimenType.Munition);
+      expect(mockStore.getCachedSpecimensByType).toHaveBeenCalledWith(SpecimenType.Munition);
     });
 
     it('should get specimens from store', () => {

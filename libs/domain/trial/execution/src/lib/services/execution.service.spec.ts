@@ -2,12 +2,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { DistanceUnitEnum } from '@intaqalab/models';
+import { CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WidgetId } from '../execution/models/widget-id.enum';
-import { ExecutionService } from './execution.service';
+import { ExecutionService, type ShotVelocitiesResponse } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
 const BASE_URL = `http://localhost:3000/api/execution/fire-trials/${DEMO_TRIAL_ID}/execution`;
@@ -504,5 +504,110 @@ describe('ExecutionService', () => {
       TestBed.tick();
       expect(service.updateJltShotDataResource.value()).toEqual(mockResponse);
     });
+  });
+
+  it('handles shot velocities data entry GET and PUT resources and direct fetch', async () => {
+    const seriesId = '550e8400-e29b-41d4-a716-446655440100';
+    const shotId = '550e8400-e29b-41d4-a716-446655440200';
+    const mockVelocitiesResponse: ShotVelocitiesResponse = {
+      velocities: [
+        {
+          radarDopplerId: 1,
+          antennaId: 4,
+          initialVelocity: 850.5,
+          initialVelocityUnit: SpeedUnitEnum.M_S,
+          softwareUncertainty: 0.5,
+          softwareUncertaintyUnit: SpeedUnitEnum.M_S,
+          cadence: 600,
+          cadenceUnit: CadenceUnitEnum.SPM,
+          velocityLoss: 2.1,
+          velocityLossUnit: SpeedUnitEnum.M_S,
+          observations: 'Sin incidencias.',
+        },
+      ],
+    };
+
+    service.getShotVelocities(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${BASE_URL}/velocities/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockVelocitiesResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotVelocitiesResource.value()).toEqual(mockVelocitiesResponse);
+    });
+
+    service.setShotVelocity(DEMO_TRIAL_ID, seriesId, shotId, mockVelocitiesResponse.velocities);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${BASE_URL}/velocities/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(mockVelocitiesResponse.velocities);
+    putReq.flush(mockVelocitiesResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotVelocitiesResource.value()).toEqual(mockVelocitiesResponse);
+    });
+
+    const fetchPromise = service.fetchShotVelocities(DEMO_TRIAL_ID, seriesId, shotId);
+    const fetchReq = httpMock.expectOne(`${BASE_URL}/velocities/series/${seriesId}/shots/${shotId}`);
+    expect(fetchReq.request.method).toBe('GET');
+    const directResult = await fetchPromise;
+    expect(directResult).toEqual(mockVelocitiesResponse);
+  });
+
+  it('handles shot pressures data entry GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-1';
+    const shotId = 'shot-1';
+    const mockPressuresResponse = {
+      pressuresData: {
+        piezoelectricSensorId: 12,
+        amplifierId: 15,
+        dataAcquisitionSystemId: 20,
+        closingMaxPressure: 3200.5,
+        closingMaxPressureUnit: 'BAR',
+        halfMaxPressure: 2800,
+        halfMaxPressureUnit: 'BAR',
+        shellMaxPressure: 2500.75,
+        shellMaxPressureUnit: 'BAR',
+        observations: 'Sin incidencias.',
+      },
+    };
+
+    service.getShotPressures(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${BASE_URL}/pressures/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockPressuresResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotPressuresResource.value()).toEqual(mockPressuresResponse);
+    });
+
+    service.setShotPressure(DEMO_TRIAL_ID, seriesId, shotId, mockPressuresResponse.pressuresData);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${BASE_URL}/pressures/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(mockPressuresResponse.pressuresData);
+    putReq.flush(mockPressuresResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotPressuresResource.value()).toEqual(mockPressuresResponse);
+    });
+
+    const fetchPromise = service.fetchShotPressures(DEMO_TRIAL_ID, seriesId, shotId);
+    const fetchReq = httpMock.expectOne(`${BASE_URL}/pressures/series/${seriesId}/shots/${shotId}`);
+    expect(fetchReq.request.method).toBe('GET');
+    fetchReq.flush(mockPressuresResponse);
+
+    const directResult = await fetchPromise;
+    expect(directResult).toEqual(mockPressuresResponse);
   });
 });

@@ -158,11 +158,11 @@ describe('MenuLeftService', () => {
       [{ name: 'MENU_LEFT.CATALOG.OPTIONS.FUZE_TYPE', id: 'MASTER_DATA_FUZE_TYPE' as const }, '/master-data/fuze-type'],
       [
         { name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.MUNITION_NEW', id: 'WHAREHOUSE_MUNITION_NEW' as const },
-        '/wharehouse-managment/munitions',
+        '/warehouse-management/munitions',
       ],
       [
         { name: 'MENU_LEFT.WHAREHOUSE.OPTIONS.DENOMINATIONS', id: 'WHAREHOUSE_DENOMINATIONS' as const },
-        '/wharehouse-managment/denominations',
+        '/warehouse-management/denominations',
       ],
       [{ name: 'MENU_LEFT.EXECUTION', id: 'EXECUTION' as const }, '/execution'],
     ])('node "%s" → should call router.navigateByUrl with "%s"', (node, expectedUrl) => {

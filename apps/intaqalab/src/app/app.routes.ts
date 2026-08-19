@@ -6,7 +6,6 @@ import {
   MENU_STOCK_MUNITION_ROLES,
   MENU_TRIAL_LIST_ROLES,
   MENU_WAREHOUSE_ROLES,
-  Role,
   canMatchRole,
 } from '@intaqalab/core';
 
@@ -64,8 +63,8 @@ export const appRoutes: Route[] = [
   },
   {
     // Alta de de munición / Stock: solo Admin + Municiones, y Stock para roles en MENU_STOCK_MUNITION_ROLES
-    path: 'wharehouse-managment',
-    loadChildren: () => resolveLazyModule(import('@intaqalab/wharehouse-managment')),
+    path: 'warehouse-management',
+    loadChildren: () => resolveLazyModule(import('@intaqalab/warehouse-management')),
     data: {
       breadcrumb: 'BREADCRUMB.WAREHOUSE',
       roles: [...MENU_STOCK_MUNITION_ROLES],

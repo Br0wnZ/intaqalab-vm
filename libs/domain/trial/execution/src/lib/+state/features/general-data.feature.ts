@@ -18,8 +18,8 @@ interface GeneralDataSlice {
 const initialState: GeneralDataSlice = {
   fireTrialId: null,
   fireTrial: null,
-  activeSerieId: 'funcionamiento-1',
-  activeShotId: 'shot-3',
+  activeSerieId: null,
+  activeShotId: null,
 };
 
 /** Mapea FireTrial (modelo API) al formato TrialCreateModifyForm del store. */
@@ -177,6 +177,15 @@ export function withGeneralData() {
         executionService.getExecutionState(fireTrialId);
       },
 
+      /**
+       * Actualización optimista de la selección activa de serie/disparo.
+       * Permite que el header reaccione de inmediato (sin esperar POST + GET).
+       * El GET /state confirmará o corregirá el valor en el siguiente ciclo.
+       */
+      setOptimisticActiveShot(serieId: string | null, shotId: string | null): void {
+        patchState(store, { activeSerieId: serieId, activeShotId: shotId });
+      },
+
       loadExecutionProgress(fireTrialId: string): void {
         executionService.getExecutionProgress(fireTrialId);
       },
@@ -260,14 +269,6 @@ export function withGeneralData() {
       updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetId[]): void {
         executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
       },
-
-      setActiveSerie(serieId: string): void {
-        patchState(store, { activeSerieId: serieId });
-      },
-
-      setActiveShot(shotId: string): void {
-        patchState(store, { activeShotId: shotId });
-      },
     })),
     withHooks({
       onInit(store) {
@@ -288,9 +289,15 @@ export function withGeneralData() {
           if (!state) {
             return;
           }
+
+          const activeShotId = state.activeShotId ?? state.activeShootId ?? null;
+          if (!state.activeSeriesId || !activeShotId) {
+            return;
+          }
+
           patchState(store, {
             activeSerieId: state.activeSeriesId,
-            activeShotId: state.activeShotId ?? state.activeShootId ?? null,
+            activeShotId,
           });
         });
 

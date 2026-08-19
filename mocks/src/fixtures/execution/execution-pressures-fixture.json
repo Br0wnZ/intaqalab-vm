@@ -1,0 +1,14 @@
+{
+  "pressuresData": {
+    "piezoelectricSensorId": 2001,
+    "amplifierId": 3001,
+    "dataAcquisitionSystemId": 4101,
+    "closingMaxPressure": 3250.5,
+    "closingMaxPressureUnit": "BAR",
+    "halfMaxPressure": 2840.0,
+    "halfMaxPressureUnit": "BAR",
+    "shellMaxPressure": 2510.2,
+    "shellMaxPressureUnit": "BAR",
+    "observations": "Registro nominal sin anomalías en sensores."
+  }
+}

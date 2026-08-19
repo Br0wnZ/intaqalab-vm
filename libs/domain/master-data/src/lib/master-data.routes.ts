@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { DenominationsStore } from '@intaqalab/warehouse-management';
 
 import { MasterDataStore } from './+state/master-data.store';
 import { MasterDataDefaultUpsertDialogComponent } from './components/dialogs/upsert/default/default-upsert-dialog.component';
@@ -86,6 +87,7 @@ export const routes: Routes = [
           { provide: MasterDataService, useExisting: LoadingZoneService },
           { provide: MODAL_COMPONENT, useValue: LoadingZoneUpsertDialogComponent },
           MasterDataStore,
+          DenominationsStore,
         ],
       },
       {

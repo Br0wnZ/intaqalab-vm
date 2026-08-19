@@ -387,7 +387,7 @@ export class SeriesAndShotsService {
 
 ## Ejemplo Real: Servicio con HttpParams (Warehouse)
 
-Archivo: `libs/domain/wharehouse-managment/src/lib/services/denominations.service.ts`
+Archivo: `libs/domain/warehouse-management/src/lib/services/denominations.service.ts`
 
 ```typescript
 import { httpResource } from '@angular/common/http';

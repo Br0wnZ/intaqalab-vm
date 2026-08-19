@@ -7,6 +7,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
+import type { DenominationsStoreType } from '@intaqalab/wharehouse-managment';
+import { DenominationsStore } from '@intaqalab/wharehouse-managment';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -32,6 +34,36 @@ function createMockMasterDataService() {
   };
 }
 
+function createMockDenominationsStore(): Partial<DenominationsStoreType> {
+  return {
+    items: signal([
+      {
+        id: '550e8400-e29b-41d4-a716-446655440031',
+        name: '105/51',
+        category: 'MUNITION' as const,
+        munitionType: { id: 'mt-1', name: 'Artillery' },
+        active: true,
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440032',
+        name: 'M67',
+        category: 'MUNITION' as const,
+        munitionType: { id: 'mt-2', name: 'Hand Grenade' },
+        active: true,
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440033',
+        name: 'M200A1',
+        category: 'MUNITION' as const,
+        munitionType: { id: 'mt-3', name: 'Projectile' },
+        active: true,
+      },
+    ]),
+    isLoading: signal(false),
+    search: vi.fn(),
+  };
+}
+
 describe('LoadingZoneUpsertDialogComponent', () => {
   const mockDialogRef = { close: vi.fn() };
 
@@ -53,6 +85,7 @@ describe('LoadingZoneUpsertDialogComponent', () => {
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: MasterDataService, useValue: createMockMasterDataService() },
+        { provide: DenominationsStore, useValue: createMockDenominationsStore() },
         MasterDataStore,
       ],
     });

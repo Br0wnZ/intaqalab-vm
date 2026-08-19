@@ -1,0 +1,11 @@
+{
+  "jltData": {
+    "jet": "JET-001",
+    "pieceOperator": "OP-42",
+    "attackDistance": 12.5,
+    "attackDistanceUnit": "MM",
+    "recoilDistance": 8.3,
+    "recoilDistanceUnit": "MM",
+    "observations": "Sin incidencias."
+  }
+}

@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,7 +8,6 @@ import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -275,8 +274,19 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   // ── Datos desde el store — opciones y valores de otros widgets ────────────
 
   protected readonly radarOptions = computed(() => this.#store.radarTrayectographyOrientation().radarOptions);
-  protected readonly serieOptions = computed<{ value: string; label: string }[]>(() => []);
-  protected readonly disparoOptions = computed<{ value: string; label: string }[]>(() => []);
+  protected readonly serieOptions = computed(() =>
+    (this.#store.planningSeries() ?? []).map((serie, index) => ({
+      value: serie.id,
+      label: serie.name?.trim() || `Serie ${index + 1}`,
+    })),
+  );
+  protected readonly disparoOptions = computed(() => {
+    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.formModel().serie)?.shots ?? [];
+    return shots.map((shot, index) => ({
+      value: shot.id,
+      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
+    }));
+  });
 
   /** Valores de entrada de otros widgets MAO (formateados para display) */
   protected readonly xPieza = computed(() => this.#store.radarTrayectographyOrientation().xPieza?.toFixed(1) ?? null);
@@ -404,6 +414,16 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   });
 
   protected readonly radarForm = form(this.formModel);
+
+  constructor() {
+    super();
+    effect(() => {
+      const serie = this.#store.activeSerieId();
+      const disparo = this.#store.activeShotId();
+      if (!serie || !disparo) return;
+      untracked(() => this.formModel.update((value) => ({ ...value, serie, disparo })));
+    });
+  }
 
   // ── FormWidget implementation ─────────────────────────────────────────────
 

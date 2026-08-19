@@ -2,14 +2,14 @@
 import { DatePipe, Location, NgClass } from '@angular/common';
 import type { OnDestroy, OnInit } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    computed,
+    effect,
+    inject,
+    signal,
+    untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -36,6 +36,7 @@ import type { TrialSelectorDialogResult } from './dialogs/trial-selector-dialog'
 import { TrialSelectorDialog } from './dialogs/trial-selector-dialog';
 import type { EquipmentSelectorDialogResult } from './models';
 import type { Widget } from './models/execution-grid.models';
+import { WidgetId } from './models/widget-id.enum';
 import { WidgetStateService } from './services/widget-state.service';
 import { injectWidgets } from './utils/inject-widgets';
 
@@ -424,16 +425,20 @@ export class Execution implements OnInit, OnDestroy {
     };
   });
 
-  /** Información de series/disparos derivada del progress del store. */
+  /** Cabecera activa desde /state, con etiquetas resueltas desde /planning/series. */
   readonly shotInfo = computed(() => {
     const progress = this.#store.executionProgress();
-    const execState = this.#store.executionState();
+    const planningSeries = this.#store.planningSeries() ?? [];
+    const activeSerieId = this.#store.activeSerieId();
+    const activeShotId = this.#store.activeShotId();
+    const activeSerie = planningSeries.find((serie) => serie.id === activeSerieId);
+    const activeShot =
+      activeSerie?.shots?.find((shot) => shot.id === activeShotId) ??
+      planningSeries.flatMap((serie) => serie.shots ?? []).find((shot) => shot.id === activeShotId);
+    const activeShotIndex = activeSerie?.shots?.findIndex((shot) => shot.id === activeShotId) ?? -1;
+    const progressSeries = progress?.series ?? [];
 
-    if (!progress?.series?.length) {
-      return { actual: { serie: '—', shot: '—', percentaje: '0' }, all: [] };
-    }
-
-    const allSeries = progress.series.map((s, si) => ({
+    const allSeries = progressSeries.map((s, si) => ({
       serie: `Serie ${si + 1}`,
       shots: s.shots.map((sh, hi) => ({
         shot: `Disparo #${String(hi + 1).padStart(2, '0')}`,
@@ -443,18 +448,8 @@ export class Execution implements OnInit, OnDestroy {
       timestamp: s.shots[0]?.updatedAt ?? '',
     }));
 
-    // Disparo/serie activa según executionState
-    const activeSerieIdx = execState?.activeSeriesId
-      ? progress.series.findIndex((s) => s.seriesId === execState.activeSeriesId)
-      : 0;
-    const activeSerie = allSeries[Math.max(activeSerieIdx, 0)];
-    const activeShotId = execState?.activeShotId ?? execState?.activeShootId ?? null;
-    const activeShotInSerie = activeShotId
-      ? progress.series[Math.max(activeSerieIdx, 0)]?.shots.findIndex((sh) => sh.shotId === activeShotId)
-      : 0;
-
-    const totalShots = progress.series.reduce((acc, s) => acc + s.shots.length, 0);
-    const firedShots = progress.series.reduce(
+    const totalShots = progressSeries.reduce((acc, s) => acc + s.shots.length, 0);
+    const firedShots = progressSeries.reduce(
       (acc, s) => acc + s.shots.filter((sh) => sh.status === 'FIRED').length,
       0,
     );
@@ -462,8 +457,8 @@ export class Execution implements OnInit, OnDestroy {
 
     return {
       actual: {
-        serie: activeSerie?.serie ?? '—',
-        shot: `Disparo #${String(Math.max(activeShotInSerie ?? 0, 0) + 1).padStart(2, '0')}`,
+        serie: activeSerie?.name?.trim() || '—',
+        shot: activeShot ? `Disparo #${String(activeShot.globalNumber ?? activeShotIndex + 1).padStart(2, '0')}` : '—',
         percentaje: String(percentaje),
       },
       all: allSeries,
@@ -757,7 +752,29 @@ export class Execution implements OnInit, OnDestroy {
   }
 
   async saveAllChanges(): Promise<void> {
+    const shouldSaveJltShotData = this.widgetStateService
+      .dirtyWidgets()
+      .some((widgetState) => this.#findPlacedWidgetType(widgetState.widgetId) === WidgetId.JLT_SHOT_DATA);
+
     await this.widgetStateService.saveAllDirtyForms();
+
+    if (shouldSaveJltShotData) {
+      this.#saveJltShotData();
+    }
+
     console.log('Todos los cambios guardados');
+  }
+
+  #findPlacedWidgetType(widgetInstanceId: string): WidgetId | null {
+    return this.widgetStateService.placedWidgets().find((widget) => widget.id === widgetInstanceId)?.type ?? null;
+  }
+
+  #saveJltShotData(): void {
+    const trialId = this.#fireTrialId();
+    if (!trialId) {
+      return;
+    }
+
+    this.#store.saveJltShotData(trialId);
   }
 }

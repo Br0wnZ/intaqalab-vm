@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,7 +9,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { RadarMetcmqState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -114,8 +113,22 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
 
   // Data from store
-  protected readonly serieOptions = computed(() => this.#store.radarMetcmq().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.radarMetcmq().disparoOptions);
+  protected readonly serieOptions = computed(() => {
+    const planningSeries = this.#store.planningSeries();
+    if (!planningSeries?.length) return this.#store.radarMetcmq().serieOptions;
+    return planningSeries.map((serie, index) => ({
+      value: serie.id,
+      label: serie.name?.trim() || `Serie ${index + 1}`,
+    }));
+  });
+  protected readonly disparoOptions = computed(() => {
+    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.formModel().serie)?.shots;
+    if (!shots?.length) return this.#store.radarMetcmq().disparoOptions;
+    return shots.map((shot, index) => ({
+      value: shot.id,
+      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
+    }));
+  });
   protected readonly texto = computed(() => this.#store.radarMetcmq().texto);
 
   // Signal Form — initialized from store
@@ -124,6 +137,16 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
     disparo: this.#store.radarMetcmq().disparo,
   });
   protected readonly metcmqForm = form(this.formModel);
+
+  constructor() {
+    super();
+    effect(() => {
+      const serie = this.#store.activeSerieId();
+      const disparo = this.#store.activeShotId();
+      if (!serie || !disparo) return;
+      untracked(() => this.formModel.set({ serie, disparo }));
+    });
+  }
 
   // FormWidget implementation
   readonly formState: Signal<WidgetFormState> = computed(() => ({

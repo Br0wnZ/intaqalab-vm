@@ -73,6 +73,11 @@ export const DistanceUnitEnum = {
   KM: MeasureUnitEnum.KM,
 } as const;
 
+export type CadenceUnitEnum = MeasureUnitEnum.SPM;
+export const CadenceUnitEnum = {
+  SPM: MeasureUnitEnum.SPM,
+} as const;
+
 // ── Labels legibles para el usuario ──────────────────────────────────────────
 
 /**
@@ -101,7 +106,7 @@ export const MEASURE_UNIT_LABELS: Record<MeasureUnitEnum, string> = {
   [MeasureUnitEnum.M]: 'm',
   [MeasureUnitEnum.KM]: 'km',
   [MeasureUnitEnum.DB]: 'dB',
-  [MeasureUnitEnum.SPM]: 'spm',
+  [MeasureUnitEnum.SPM]: 'dpm',
   [MeasureUnitEnum.QUANTITY]: 'ud',
 };
 

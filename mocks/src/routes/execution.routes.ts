@@ -10,14 +10,20 @@ import {
     getCountdownState,
     getExecutionState,
     getJltPreparation,
+    getJltShotData,
     getPlanningState,
     getReadiness,
+    getShotPressures,
+    getShotVelocities,
     registerFireShot,
     selectActiveShot,
     setExecutionStatus,
     setJltReadiness,
+    setJltShotData,
     setProfileReadiness,
     setSeriesProfileReadiness,
+    setShotPressure,
+    setShotVelocity,
     updateCountdownState,
 } from '../fixtures/execution/execution-store';
 
@@ -277,6 +283,123 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparat
   const fireTrialId = req.params['fireTrialId'] as string;
   registerFireShot(fireTrialId);
   res.status(200).send();
+});
+
+// ==========================================
+// DATA ENTRY - WIDGET 3 JLT SHOT DATA
+// ==========================================
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  res.status(200).json(getJltShotData(fireTrialId, seriesId, shotId));
+});
+
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  try {
+    const updated = setJltShotData(fireTrialId, seriesId, shotId, req.body);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+
+    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid JLT shot data payload' });
+  }
+});
+
+// ==========================================
+// DATA ENTRY - WIDGET 4 VELOCITIES
+// ==========================================
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  res.status(200).json(getShotVelocities(fireTrialId, seriesId, shotId));
+});
+
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  try {
+    const updated = setShotVelocity(fireTrialId, seriesId, shotId, req.body);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+
+    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid velocities payload' });
+  }
+});
+
+// ==========================================
+// DATA ENTRY - WIDGET 5 PRESSURES
+// ==========================================
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  res.status(200).json(getShotPressures(fireTrialId, seriesId, shotId));
+});
+
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  try {
+    const updated = setShotPressure(fireTrialId, seriesId, shotId, req.body);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+
+    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid pressures payload' });
+  }
 });
 
 

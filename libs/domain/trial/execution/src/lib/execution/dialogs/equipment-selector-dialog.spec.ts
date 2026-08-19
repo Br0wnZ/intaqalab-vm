@@ -197,6 +197,8 @@ describe('EquipmentSelectorDialog', () => {
             {
               itemId: 'rd-001',
               categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+              channel: null,
+              magnitude: null,
               series: ['s1'],
               disparos: ['d1'],
             },
