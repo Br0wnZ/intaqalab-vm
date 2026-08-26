@@ -11,7 +11,7 @@ import type {
   EquipmentMeasureMagnitude,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
-  WidgetId,
+  WidgetId
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 

@@ -56,7 +56,9 @@ describe('PiezoPressureIntroduction', () => {
     const { fixture } = await renderWidget();
     fixture.componentInstance.resetForm();
     const stored = TestBed.inject(ExecutionStore).piezoPressureIntroduction();
-    expect(fixture.componentInstance['cierrePresionField']()?.value).toBe(stored.cierre.presionMaxima?.toString() ?? undefined);
+    expect(fixture.componentInstance['cierrePresionField']()?.value).toBe(
+      stored.cierre.presionMaxima?.toString() ?? undefined,
+    );
   });
 
   it('widgetId is set correctly', async () => {

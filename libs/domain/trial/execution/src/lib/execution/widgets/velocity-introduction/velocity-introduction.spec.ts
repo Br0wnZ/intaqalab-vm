@@ -197,11 +197,7 @@ describe('VelocityIntroduction', () => {
       serie: ACTIVE_SERIE_ID,
       disparo: ACTIVE_SHOT_ID,
     });
-    expect(mockExecutionService.fetchShotVelocities).toHaveBeenCalledWith(
-      'trial-123',
-      ACTIVE_SERIE_ID,
-      ACTIVE_SHOT_ID,
-    );
+    expect(mockExecutionService.fetchShotVelocities).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID);
   });
 
   it('hydrates form fields from remote shot velocities response', async () => {
@@ -222,9 +218,7 @@ describe('VelocityIntroduction', () => {
       unit: MeasureUnitEnum.SPM,
     });
     expect(fixture.componentInstance['incertidumbreSoftwareDisplay']()).toBe('0.5');
-    expect(fixture.componentInstance['observacionesField']()).toBe(
-      'Velocidad dentro del rango esperado',
-    );
+    expect(fixture.componentInstance['observacionesField']()).toBe('Velocidad dentro del rango esperado');
   });
 
   it('saveForm sends payload to executionService.setShotVelocity and updates snapshot', async () => {
@@ -236,20 +230,15 @@ describe('VelocityIntroduction', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setShotVelocity).toHaveBeenCalledWith(
-      'trial-123',
-      ACTIVE_SERIE_ID,
-      ACTIVE_SHOT_ID,
-      [
-        expect.objectContaining({
-          radarDopplerId: 1,
-          antennaId: 4,
-          initialVelocity: 860,
-          initialVelocityUnit: MeasureUnitEnum.M_S,
-          observations: 'Actualizado con éxito',
-        }),
-      ],
-    );
+    expect(mockExecutionService.setShotVelocity).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID, [
+      expect.objectContaining({
+        radarDopplerId: 1,
+        antennaId: 4,
+        initialVelocity: 860,
+        initialVelocityUnit: MeasureUnitEnum.M_S,
+        observations: 'Actualizado con éxito',
+      }),
+    ]);
     expect(fixture.componentInstance.formState().dirty).toBe(false);
   });
 
@@ -262,9 +251,7 @@ describe('VelocityIntroduction', () => {
 
     fixture.componentInstance.resetForm();
 
-    expect(fixture.componentInstance['observacionesField']()).toBe(
-      'Velocidad dentro del rango esperado',
-    );
+    expect(fixture.componentInstance['observacionesField']()).toBe('Velocidad dentro del rango esperado');
     expect(fixture.componentInstance.formState().dirty).toBe(false);
   });
 

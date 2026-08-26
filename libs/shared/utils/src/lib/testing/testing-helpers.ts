@@ -261,6 +261,7 @@ export function createMockDataPlanningService(initialData?: {
     deleteSpecimen: vi.fn(),
     refreshSpecimens: vi.fn(),
     refreshUsers: vi.fn(),
+    resetPlanningData: vi.fn(),
   };
 }
 

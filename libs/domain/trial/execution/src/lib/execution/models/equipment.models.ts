@@ -175,4 +175,3 @@ export type EquipmentSelectorDialogData = {
 export type EquipmentSelectorDialogResult =
   | { action: 'save'; equipments: EquipmentMagnitudeSelectionGroup[] }
   | { action: 'back' };
-

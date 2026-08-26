@@ -240,7 +240,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   (mouseleave)="showSpecimenInfoTooltip = false"
                 />
                 @if (generalDataForm.specimen().touched() && generalDataForm.specimen().errors()) {
-                  @for (error of generalDataForm.specimen().errors(); track error) {
+                  @for (error of generalDataForm.specimen().errors(); track error.kind) {
                     <mat-error class="text-sm mt-[8px]">{{ error.message | translate }}</mat-error>
                   }
                 }

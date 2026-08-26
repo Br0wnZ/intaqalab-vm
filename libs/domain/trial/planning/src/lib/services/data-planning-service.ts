@@ -191,6 +191,11 @@ export class DataPlanningService {
     this.#usersTrigger.set(0);
   }
 
+  resetPlanningData(): void {
+    this.#getPlanningDataParams.set(null);
+    this.#updatePlanningDataParams.set(null);
+  }
+
   #buildQueryParams(params: CatalogQueryParams): Record<string, string | number | boolean> {
     const result: Record<string, string | number | boolean> = {};
     if (params.name) result['name'] = params.name;

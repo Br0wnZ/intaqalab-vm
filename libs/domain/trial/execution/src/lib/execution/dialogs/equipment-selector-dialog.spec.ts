@@ -213,7 +213,14 @@ describe('EquipmentSelectorDialog', () => {
     const apiData = [
       {
         measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
-        selections: [{ equipmentDenominationId: 9876, categoryId: EquipmentTypeEnum.DOPPLER_RADAR, seriesIds: ['s2'], shotIds: ['d2'] }],
+        selections: [
+          {
+            equipmentDenominationId: 9876,
+            categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+            seriesIds: ['s2'],
+            shotIds: ['d2'],
+          },
+        ],
       },
     ];
     const mockService = {

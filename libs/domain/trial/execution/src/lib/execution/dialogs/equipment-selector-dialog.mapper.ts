@@ -1,5 +1,6 @@
 import type { Role } from '@intaqalab/core';
 import { Role as RoleEnum } from '@intaqalab/core';
+
 import type {
   EquipmentItemSelection,
   EquipmentMagnitudeSelectionGroup,
@@ -7,7 +8,7 @@ import type {
   EquipmentMeasurementGroupApi,
 } from '../models';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../models';
-import type { TagFieldConfig, TagConfig, TagRow, TagTableState } from '../models';
+import type { TagConfig, TagFieldConfig, TagRow, TagTableState } from '../models';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
 
@@ -19,8 +20,6 @@ export const MAGNITUDE_OPTIONS: Array<{ id: EquipmentMeasureMagnitude; label: st
 ];
 
 export type EquipmentItemSelectionEntry = EquipmentItemSelection;
-
-
 
 // ── Role Groups ────────────────────────────────────────────────────────────────
 
@@ -205,8 +204,6 @@ export const TAG_CONFIGS: TagConfig[] = [
   },
 ];
 
-
-
 export const EMPTY_ROW = (): TagRow => ({ rowId: 'row-0', fieldValues: {}, series: [], disparos: [] });
 export const INIT_STATE = (): TagTableState => ({ rows: [EMPTY_ROW()], nextId: 1, pageIndex: 0 });
 
@@ -298,9 +295,7 @@ export function hydrateFromInitialEquipments(
 /**
  * Mapea el estado actual de las tablas al formato esperado para guardar.
  */
-export function dialogStatesToApiFormat(
-  tagStates: Record<string, TagTableState>,
-): EquipmentMagnitudeSelectionGroup[] {
+export function dialogStatesToApiFormat(tagStates: Record<string, TagTableState>): EquipmentMagnitudeSelectionGroup[] {
   const equipments: EquipmentMagnitudeSelectionGroup[] = [];
 
   for (const [tagId, state] of Object.entries(tagStates)) {

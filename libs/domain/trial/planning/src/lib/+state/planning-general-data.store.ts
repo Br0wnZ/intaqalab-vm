@@ -26,12 +26,14 @@ import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie
 interface PlanningState {
   fireTrialId: string | null;
   fireTrial: TrialCreateModifyForm | null;
+  hasPlanningUsers: boolean;
   selectedSpecimens: UpsertTrialPlanningInfo['specimens'];
 }
 
 const initialState: PlanningState = {
   fireTrialId: null,
   fireTrial: null,
+  hasPlanningUsers: false,
   selectedSpecimens: [],
 };
 export const PlanningGeneralDataStore = signalStore(
@@ -289,8 +291,11 @@ export const PlanningGeneralDataStore = signalStore(
       usersService = inject(UsersService),
       lifecycleService = inject(PlanningLifecycleService),
     ) => ({
-      setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
-        patchState(store, { fireTrialId, fireTrial, selectedSpecimens: [] });
+      setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm, hasPlanniUsers: boolean): void {
+        patchState(store, { fireTrialId, fireTrial, hasPlanningUsers: hasPlanniUsers, selectedSpecimens: [] });
+
+        if (!hasPlanniUsers) return;
+
         dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
       },
 
@@ -348,7 +353,9 @@ export const PlanningGeneralDataStore = signalStore(
 
       reloadPlanningInfo(): void {
         const fireTrialId = store.fireTrialId();
-        if (fireTrialId) dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
+        const hasSavedData = store.hasPlanningUsers();
+
+        if (fireTrialId && hasSavedData) dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
       },
 
       reloadSpecimens(): void {
@@ -469,50 +476,57 @@ export const PlanningGeneralDataStore = signalStore(
     }),
   ),
 
-  withHooks({
-    onInit(store, seriesService = inject(SeriesAndShotsService), lifecycleService = inject(PlanningLifecycleService)) {
-      // Whenever the trial has general info loaded, series & shots are
-      // auto-loaded so downstream tabs (shooting conditions, munitions,
-      // armament, measures) can react to the latest data.
-      effect(() => {
-        const hasInfo = store.hasPlanningInfo();
-        const id = store.fireTrialId();
-        if (hasInfo && id) {
-          seriesService.getSeriesAndShots(id);
-        }
-      });
+  withHooks((store) => {
+    const seriesService = inject(SeriesAndShotsService);
+    const lifecycleService = inject(PlanningLifecycleService);
+    const dataPlanningService = inject(DataPlanningService);
 
-      // The store is the single source of truth for the trial status, so
-      // once validate/unlock resolve, patch it here instead of leaving
-      // components to re-derive it from the raw resource.
-      // `fireTrial` is read via `untracked` and the trigger is reset right after
-      // patching — otherwise the patch itself would re-run this same effect
-      // (it depends on `fireTrial`) while `status()` is still 'resolved', looping forever.
-      effect(() => {
-        if (lifecycleService.validateResource.status() !== 'resolved') return;
-        untracked(() => {
-          const fireTrial = store.fireTrial();
-          if (fireTrial) {
-            patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.PLANNED } });
+    return {
+      onInit() {
+        // Whenever the trial has general info loaded, series & shots are
+        // auto-loaded so downstream tabs (shooting conditions, munitions,
+        // armament, measures) can react to the latest data.
+        effect(() => {
+          const hasInfo = store.hasPlanningInfo();
+          const id = store.fireTrialId();
+          if (hasInfo && id) {
+            seriesService.getSeriesAndShots(id);
           }
-          lifecycleService.resetValidate();
         });
-      });
 
-      effect(() => {
-        if (lifecycleService.unlockResource.status() !== 'resolved') return;
-        untracked(() => {
-          const fireTrial = store.fireTrial();
-          if (fireTrial) {
-            patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.UNDER_REVIEW } });
-          }
-          lifecycleService.resetUnlock();
+        // The store is the single source of truth for the trial status, so
+        // once validate/unlock resolve, patch it here instead of leaving
+        // components to re-derive it from the raw resource.
+        // `fireTrial` is read via `untracked` and the trigger is reset right after
+        // patching — otherwise the patch itself would re-run this same effect
+        // (it depends on `fireTrial`) while `status()` is still 'resolved', looping forever.
+        effect(() => {
+          if (lifecycleService.validateResource.status() !== 'resolved') return;
+          untracked(() => {
+            const fireTrial = store.fireTrial();
+            if (fireTrial) {
+              patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.PLANNED } });
+            }
+            lifecycleService.resetValidate();
+          });
         });
-      });
-    },
-    onDestroy(store) {
-      store.reset();
-    },
+
+        effect(() => {
+          if (lifecycleService.unlockResource.status() !== 'resolved') return;
+          untracked(() => {
+            const fireTrial = store.fireTrial();
+            if (fireTrial) {
+              patchState(store, { fireTrial: { ...fireTrial, status: TrialStatus.UNDER_REVIEW } });
+            }
+            lifecycleService.resetUnlock();
+          });
+        });
+      },
+      onDestroy() {
+        dataPlanningService.resetPlanningData();
+        store.reset();
+      },
+    };
   }),
 );
 

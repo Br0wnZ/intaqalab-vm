@@ -1,5 +1,4 @@
 import { getFixture } from '../../utils';
-
 import { getTrialById } from '../trials/trial-transitions-store';
 
 type ExecutionStatus =

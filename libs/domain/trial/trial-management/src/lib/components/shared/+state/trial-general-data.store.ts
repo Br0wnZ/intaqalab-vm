@@ -11,12 +11,14 @@ import { mapTrialDetailsToState } from './state-helper';
 type TrialGeneralDataState = {
   trialId: string | null;
   trial: TrialCreateModifyForm | null;
+  hasPlanniUser: boolean;
   isLoading: boolean;
 };
 
 const initialState: TrialGeneralDataState = {
   trialId: null,
   trial: null,
+  hasPlanniUser: false,
   isLoading: false,
 };
 
@@ -39,7 +41,8 @@ export const TrialGeneralDataStore = signalStore(
       const trialDetails: FireTrial = trialResource.value() as FireTrial;
       if (trialDetails) {
         const trial = mapTrialDetailsToState(trialDetails);
-        patchState(store, { trial });
+        const hasPlanniUser = !!trialDetails.planningUsers?.length;
+        patchState(store, { trial, hasPlanniUser });
       }
     });
 

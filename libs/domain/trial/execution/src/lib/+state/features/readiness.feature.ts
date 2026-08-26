@@ -3,12 +3,12 @@ import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
-    ExecutionTechnicalProfile,
-    JltPreparationData,
-    JltPreparationResponse,
-    ProfileReadinessFlag,
-    ProfileReadinessItem,
-    ProfilesReadinessResponse,
+  ExecutionTechnicalProfile,
+  JltPreparationData,
+  JltPreparationResponse,
+  ProfileReadinessFlag,
+  ProfileReadinessItem,
+  ProfilesReadinessResponse,
 } from '../../services/execution.service';
 import { ExecutionService } from '../../services/execution.service';
 import type { JltStatus, TechUnitStatus } from '../execution-state.models';

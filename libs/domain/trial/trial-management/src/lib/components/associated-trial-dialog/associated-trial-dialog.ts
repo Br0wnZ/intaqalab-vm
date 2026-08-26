@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
-import type { TrialSearchFilters } from '@intaqalab/models';
+import { type TrialSearchFilters, TrialStatus } from '@intaqalab/models';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -151,6 +150,18 @@ export class AssociatedTrialDialog {
         year: this.associatedTrialForm.year().value(),
         clientId: this.associatedTrialForm.clientId().value(),
         description: this.associatedTrialForm.searchTerm().value(),
+        status: [
+          TrialStatus.UNDER_REVIEW,
+          TrialStatus.PLANNED,
+          TrialStatus.PREPARED,
+          TrialStatus.IN_PROGRESS,
+          TrialStatus.INTERRUPTED,
+          TrialStatus.STARTED,
+          TrialStatus.EXECUTED,
+          TrialStatus.ANALYZING,
+          TrialStatus.FINALIZING,
+          TrialStatus.CLOSED,
+        ],
       };
     },
     {

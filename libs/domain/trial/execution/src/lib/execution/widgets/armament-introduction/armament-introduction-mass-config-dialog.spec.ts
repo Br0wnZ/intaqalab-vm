@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExecutionService } from '../../../services/execution.service';
 import {
   ArmamentIntroductionMassConfigDialog,
-  type ArmamentIntroductionMassConfigDialogData,
+  type ArmamentIntroductionMassConfigDialogData
 } from './armament-introduction-mass-config-dialog';
 
 const mockData: ArmamentIntroductionMassConfigDialogData = {

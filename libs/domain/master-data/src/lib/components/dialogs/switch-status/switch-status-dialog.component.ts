@@ -69,6 +69,6 @@ export class MasterDataSwitchStatusDialogComponent {
 
   protected onConfirm(): void {
     const { item } = this.dialog;
-    this.store.update({ ...item, active: item.active });
+    this.store.update({ ...item, active: !item.active });
   }
 }

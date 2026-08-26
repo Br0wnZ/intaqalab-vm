@@ -1,6 +1,10 @@
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum, PressureUnitEnum } from '@intaqalab/models';
 
-import type { ShotPressuresData, ShotPressuresRequest, ShotPressuresResponse } from '../../../services/execution.service';
+import type {
+  ShotPressuresData,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+} from '../../../services/execution.service';
 
 /** Unidad de presión por defecto */
 export const DEFAULT_PRESSURE_UNIT = MeasureUnitEnum.BAR;

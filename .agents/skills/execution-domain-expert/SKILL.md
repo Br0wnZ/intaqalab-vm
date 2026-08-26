@@ -98,7 +98,57 @@ Profiles enum: VELOCITIES, PRESSURES, VIDEO, TRAJECTOGRAPHY, MUNITIONS, ARMAMENT
 >
 > - **GET al iniciar:** Al colocarse en el grid, el widget debe auto-seleccionar la serie y disparo activos (o iniciales) y lanzar inmediatamente la petición `GET` para cargar los datos del disparo.
 > - **Dirty tracking independiente de selectores:** Los selectores de `serie` y `disparo` son controles de navegación; **NUNCA deben marcar el formulario como dirty ni como touched**. El estado `dirty` debe responder únicamente a modificaciones en los datos/equipos editables.
-> - **Guardado (PUT) desde el padre:** El botón "Guardar" en la cabecera del contenedor `execution.ts` llama a `WidgetStateService.saveAllDirtyForms()`, ejecutando en paralelo (`Promise.all`) la función `saveForm()` de cada widget dirty, donde se invoca la mutación remota correspondiente (ej. `setShotPressure` o `setSeriesProfileReadiness`).
+> - **Dirty SIEMPRE por valor, nunca `form().dirty()`:** `form().dirty()` de Signal Forms es pegajoso — una vez marcado no se limpia si el usuario revierte el campo a su valor guardado (el botón Guardar quedaría habilitado sin cambios reales). Usa `createDirtyTracker` + `deepEqual` de `@intaqalab/utils` (`libs/shared/utils/src/lib/signals/dirty-tracker.ts`) comparando los campos editables contra un snapshot:
+>   ```ts
+>   readonly #dirtyTracker = createDirtyTracker(() => ({
+>     campo1: this.campo1Field(),
+>     campo2: this.formModel().campo2,
+>   }));
+>   protected readonly isDirty = this.#dirtyTracker.isDirty;
+>   // Tras guardar o al aplicar datos del GET: this.#dirtyTracker.syncSnapshot();
+>   ```
+>   Widgets migrados a este patrón: armament-introduction, velocity-introduction, manometer-introduction, munition-introduction (tabs ident/pesos/acond), piezo-pressure-introduction, jlt-shot-data, shot-widget.
+> - **Touched real por interacción del usuario — `FormTouchDirective`:** Las flags internas de Signal Forms (`form().touched()`) se marcan también con el patch programático tras el GET → no sirven. Usa la directiva `intaFormTouch` (`widgets/directives/form-touch.directive.ts`, exportAs `intaFormTouch`): escucha `focusout` sobre inputs del host y solo reacciona a interacción real. En el template envuelve los campos editables:
+>   ```html
+>   <div intaReadonlyContent intaFormTouch #touch="intaFormTouch" class="...">
+>     <!-- campos -->
+>   </div>
+>   ```
+>   ```ts
+>   protected readonly touchRef = viewChild('touch', { read: FormTouchDirective });
+>   // formState:
+>   touched: this.touchRef()?.touched() ?? false,
+>   ```
+>   ⚠️ `viewChild` NO admite miembros ES-private (`#`) — usa `protected readonly touchRef`. La directiva expone `reset()` y `[intaFormTouchDisabled]` para modo readonly.
+> - **Guard anti-carrera en GETs de selectores — `createSelectionGuard`:** Cambiar serie/disparo dispara un GET; si el usuario cambia de nuevo con una petición en vuelo, su respuesta debe descartarse. Usa `widgets/utils/selection-guard.ts`:
+>   ```ts
+>   readonly #selectorKey = computed(() =>
+>     shotSelectionKey(this.formModel().serie, this.formModel().disparo),
+>   );
+>   readonly #selectionGuard = createSelectionGuard(() => this.#selectorKey());
+>
+>   async #loadSelectedShotData(): Promise<void> {
+>     const selectionKey = this.#selectorKey();
+>     const ticket = this.#selectionGuard.begin();
+>     const response = await this.#executionService.fetchShot...(fireTrialId, serie, disparo);
+>     if (!ticket.isFresh(selectionKey)) return; // respuesta stale
+>     // aplicar datos + syncSnapshot()
+>   }
+>   ```
+> - **saveForm() SIEMPRE await + try/catch:** Toda mutación remota (`setShotVelocity`, `setShotPressure`, `setShotArmament`, `setJltShotData`…) debe hacerse con `await`, `syncSnapshot()` SOLO si el PUT tiene éxito, y rethrow del error. Si el PUT falla, el widget debe seguir apareciendo dirty:
+>   ```ts
+>   try {
+>     await this.#executionService.setShotVelocity(fireTrialId, serie, disparo, payload);
+>     this.#syncSnapshot();
+>   } catch (error) {
+>     console.error('Failed to save shot velocity', error);
+>     throw error;
+>   }
+>   ```
+>   Prohibido fire-and-forget (`this.#service.put(...)` sin await) — desincroniza el snapshot y oculta fallos.
+> - **Campos persistidos ⊆ campos del tracker:** Todo campo que `saveForm()` envíe al backend DEBE estar en el `createDirtyTracker`. Si falta, el usuario puede guardar cambios sin señal visual de dirty (bug detectado en jlt-shot-data con equipoAtacado/equipoRetroceso).
+> - **Widgets que editan el store directamente** (ej. `execution-prep-jlt-widget`): usa un borrador local `linkedSignal(() => store.estado())` y calcula `dirty = !deepEqual(draft(), store.estado())`. En `saveForm()` vuelca el draft al store antes del PUT. Prohibido derivar dirty de "el dato tiene contenido" (ej. `observations.length > 0`) — eso marca dirty tras el GET inicial y habilita Guardar sin cambios del usuario.
+> - **Guardado (PUT) desde el padre:** El botón "Guardar" en la cabecera (`execution-header.ts`, `[disabled]="isSaving() || !hasUnsavedChanges()"`) llama a `WidgetStateService.saveAllDirtyForms()` vía facade, ejecutando en paralelo (`Promise.all`) la función `saveForm()` de cada widget dirty, donde se invoca la mutación remota correspondiente (ej. `setShotPressure` o `setSeriesProfileReadiness`). Tras guardar con éxito cada widget DEBE llamar `syncSnapshot()` para resetear su dirty.
 
 ### Tag: Execution Preferences
 

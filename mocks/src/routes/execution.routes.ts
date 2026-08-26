@@ -1,35 +1,34 @@
 import { Router } from 'express';
 
 import {
-    getEquipmentSelectorState,
-    updateEquipmentSelectorState,
+  getEquipmentSelectorState,
+  updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
-    applyArmamentBulkConfiguration,
-    approvePlanning,
-    bumpPlanningVersion,
-    getCountdownState,
-    getExecutionState,
-    getJltPreparation,
-    getJltShotData,
-    getPlanningState,
-    getReadiness,
-    getShotArmament,
-    getShotPressures,
-    getShotVelocities,
-    registerFireShot,
-    selectActiveShot,
-    setExecutionStatus,
-    setJltReadiness,
-    setJltShotData,
-    setProfileReadiness,
-    setSeriesProfileReadiness,
-    setShotArmament,
-    setShotPressure,
-    setShotVelocity,
-    updateCountdownState,
+  applyArmamentBulkConfiguration,
+  approvePlanning,
+  bumpPlanningVersion,
+  getCountdownState,
+  getExecutionState,
+  getJltPreparation,
+  getJltShotData,
+  getPlanningState,
+  getReadiness,
+  getShotArmament,
+  getShotPressures,
+  getShotVelocities,
+  registerFireShot,
+  selectActiveShot,
+  setExecutionStatus,
+  setJltReadiness,
+  setJltShotData,
+  setProfileReadiness,
+  setSeriesProfileReadiness,
+  setShotArmament,
+  setShotPressure,
+  setShotVelocity,
+  updateCountdownState,
 } from '../fixtures/execution/execution-store';
-
 import { getFixture } from '../utils';
 
 export const executionRouter = Router();
@@ -199,13 +198,7 @@ executionRouter.put(
       return;
     }
 
-    const updated = setSeriesProfileReadiness(
-      fireTrialId,
-      profile as never,
-      seriesId,
-      isReady,
-      observations,
-    );
+    const updated = setSeriesProfileReadiness(fireTrialId, profile as never, seriesId, isReady, observations);
     res.status(200).json(updated);
   },
 );
@@ -256,11 +249,7 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparati
     observations?: string;
   };
 
-  if (
-    typeof sanitaryServicesReady !== 'boolean' ||
-    typeof securityReady !== 'boolean' ||
-    typeof vessel !== 'boolean'
-  ) {
+  if (typeof sanitaryServicesReady !== 'boolean' || typeof securityReady !== 'boolean' || typeof vessel !== 'boolean') {
     res.status(400).json({
       title: 'Bad Request',
       status: 400,
@@ -274,12 +263,15 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparati
 });
 
 // Seleccionar disparo activo
-executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/shots/:shotId/active', (req, res) => {
-  const fireTrialId = req.params['fireTrialId'] as string;
-  const shotId = req.params['shotId'] as string;
-  selectActiveShot(fireTrialId, shotId);
-  res.status(200).send();
-});
+executionRouter.post(
+  '/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/shots/:shotId/active',
+  (req, res) => {
+    const fireTrialId = req.params['fireTrialId'] as string;
+    const shotId = req.params['shotId'] as string;
+    selectActiveShot(fireTrialId, shotId);
+    res.status(200).send();
+  },
+);
 
 // Registrar disparo del shot activo
 executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/fire', (req, res) => {
@@ -292,119 +284,136 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparat
 // DATA ENTRY - WIDGET 3 JLT SHOT DATA
 // ==========================================
 
-executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  res.status(200).json(getJltShotData(fireTrialId, seriesId, shotId));
-});
+    res.status(200).json(getJltShotData(fireTrialId, seriesId, shotId));
+  },
+);
 
-executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/jlt-shot-data/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  try {
-    const updated = setJltShotData(fireTrialId, seriesId, shotId, req.body);
-    res.status(200).json(updated);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
-      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
-      return;
+    try {
+      const updated = setJltShotData(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid JLT shot data payload' });
     }
-
-    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
-      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
-      return;
-    }
-
-    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid JLT shot data payload' });
-  }
-});
+  },
+);
 
 // ==========================================
 // DATA ENTRY - WIDGET 4 VELOCITIES
 // ==========================================
 
-executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  res.status(200).json(getShotVelocities(fireTrialId, seriesId, shotId));
-});
+    res.status(200).json(getShotVelocities(fireTrialId, seriesId, shotId));
+  },
+);
 
-executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/velocities/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  try {
-    const updated = setShotVelocity(fireTrialId, seriesId, shotId, req.body);
-    res.status(200).json(updated);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
-      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
-      return;
+    try {
+      const updated = setShotVelocity(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid velocities payload' });
     }
-
-    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
-      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
-      return;
-    }
-
-    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid velocities payload' });
-  }
-});
+  },
+);
 
 // ==========================================
 // DATA ENTRY - WIDGET 5 PRESSURES
 // ==========================================
 
-executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  res.status(200).json(getShotPressures(fireTrialId, seriesId, shotId));
-});
+    res.status(200).json(getShotPressures(fireTrialId, seriesId, shotId));
+  },
+);
 
-executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/pressures/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  try {
-    const updated = setShotPressure(fireTrialId, seriesId, shotId, req.body);
-    res.status(200).json(updated);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
-      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
-      return;
+    try {
+      const updated = setShotPressure(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid pressures payload' });
     }
-
-    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
-      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
-      return;
-    }
-
-    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid pressures payload' });
-  }
-});
-
+  },
+);
 
 // ==========================================
 // EQUIPMENT SELECTOR / SELECTION
@@ -454,40 +463,46 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-sel
 // DATA ENTRY - WIDGET 22 ARMAMENT
 // ==========================================
 
-executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  res.status(200).json(getShotArmament(fireTrialId, seriesId, shotId));
-});
+    res.status(200).json(getShotArmament(fireTrialId, seriesId, shotId));
+  },
+);
 
-executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId', (req, res) => {
-  const { fireTrialId, seriesId, shotId } = req.params as {
-    fireTrialId: string;
-    seriesId: string;
-    shotId: string;
-  };
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
 
-  try {
-    const updated = setShotArmament(fireTrialId, seriesId, shotId, req.body);
-    res.status(200).json(updated);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
-      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
-      return;
+    try {
+      const updated = setShotArmament(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid armament payload' });
     }
-
-    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
-      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
-      return;
-    }
-
-    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid armament payload' });
-  }
-});
+  },
+);
 
 executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/armament/bulk-configuration', (req, res) => {
   const { fireTrialId } = req.params as { fireTrialId: string };

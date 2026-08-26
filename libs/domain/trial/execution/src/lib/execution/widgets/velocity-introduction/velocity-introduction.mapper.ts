@@ -1,7 +1,11 @@
 import { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 
 import type { VelocityIntroductionState } from '../../../+state/execution-state.models';
-import type { ShotVelocitiesRequest, ShotVelocitiesResponse, ShotVelocityItem } from '../../../services/execution.service';
+import type {
+  ShotVelocitiesRequest,
+  ShotVelocitiesResponse,
+  ShotVelocityItem,
+} from '../../../services/execution.service';
 
 export type InputFieldValue = { value: string; unit: string } | null;
 

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
-import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 import { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
 import { ExecutionService } from '../../services/execution.service';
 import type { VelocityIntroductionState } from '../execution-state.models';

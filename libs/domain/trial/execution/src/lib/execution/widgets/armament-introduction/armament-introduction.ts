@@ -1,15 +1,15 @@
 import type { Signal } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
-    viewChild,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,9 +25,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -131,7 +131,7 @@ interface ArmamentIntroductionSelectForm {
         <!-- Nº serie del arma -->
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_ARMA_LABEL' | translate }}</mat-label>
-          <input matInput id="armament-weapon-serial" readonly [value]="selectedWeaponSerial()" />
+          <input id="armament-weapon-serial" matInput readonly [value]="selectedWeaponSerial()" />
         </mat-form-field>
 
         <!-- Tubo -->
@@ -150,29 +150,24 @@ interface ArmamentIntroductionSelectForm {
         <!-- Nº serie del tubo -->
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.NÑ_SERIE_TUBO_LABEL' | translate }}</mat-label>
-          <input matInput id="armament-tube-serial" readonly [value]="selectedTubeSerial()" />
+          <input id="armament-tube-serial" matInput readonly [value]="selectedTubeSerial()" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.INSTRUMENTED_LABEL' | translate }}</mat-label>
-          <input
-            matInput
-            id="armament-instrumented"
-            readonly
-            [value]="instrumentedLabel() | translate"
-          />
+          <input id="armament-instrumented" matInput readonly [value]="instrumentedLabel() | translate" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.USEFUL_LIFE_LABEL' | translate }}</mat-label>
-          <input matInput id="armament-useful-life" readonly [value]="usefulLifeLabel()" />
+          <input id="armament-useful-life" matInput readonly [value]="usefulLifeLabel()" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="col-span-2 w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_LABEL' | translate }}</mat-label>
           <textarea
-            matInput
             id="armament-observations"
+            matInput
             rows="1"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_PLACEHOLDER' | translate"
             [formField]="selectForm.observations"
@@ -436,7 +431,9 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
 
   #resolveEquipmentItemId(items: ArmamentEquipmentItem[], externalId: number | undefined): string | null {
     if (externalId === undefined) return null;
-    const item = items.find((candidate) => Number(candidate.id) === externalId || candidate.denominationId === externalId);
+    const item = items.find(
+      (candidate) => Number(candidate.id) === externalId || candidate.denominationId === externalId,
+    );
     return item ? String(item.id) : null;
   }
 
@@ -461,18 +458,18 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const result = await firstValueFrom(
       this.#dialog
         .open(ArmamentIntroductionMassConfigDialog, {
-        data: {
-          serieOptions: state.serieOptions,
-          armaOptions: this.armaOptions(),
-          weaponItems: this.#weaponItems(),
-          tuboOptions: this.tuboOptions(),
-          tubeItems: this.#tubeItems(),
-          current: {
-            arma: state.arma,
-            tubo: state.tubo,
-            observations: state.observations,
+          data: {
+            serieOptions: state.serieOptions,
+            armaOptions: this.armaOptions(),
+            weaponItems: this.#weaponItems(),
+            tuboOptions: this.tuboOptions(),
+            tubeItems: this.#tubeItems(),
+            current: {
+              arma: state.arma,
+              tubo: state.tubo,
+              observations: state.observations,
+            },
           },
-        },
         })
         .afterClosed(),
     );

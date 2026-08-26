@@ -1,10 +1,8 @@
 import { inject } from '@angular/core';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import { MeasureUnitEnum } from '@intaqalab/models';
-
 import { ExecutionService } from '../../services/execution.service';
-
 import type { JltShotDataState } from '../execution-state.models';
 
 interface JltShotDataSlice {

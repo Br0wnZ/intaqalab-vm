@@ -22,6 +22,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
 import { BooleanStatusBadge, ErrorState, SkeletonTable } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { MasterDataStore } from '../../+state/master-data.store';
 import { MASTERS_ACTIONS, MASTER_LIST_COLUMN_TRANSFORM } from '../../data/master-data.constants';
@@ -108,7 +109,7 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
                     @case (ACTIONS.SWITCH_STATUS) {
                       <mat-slide-toggle
                         class="scale-90"
-                        [(ngModel)]="rowData['active']"
+                        [checked]="getCheckedState(rowData)"
                         (change)="onClickSwitchStatus(rowData)"
                       ></mat-slide-toggle>
                     }
@@ -157,6 +158,8 @@ export class MasterDataListComponent {
   readonly isLoading = computed(() => this.store.isLoading());
   readonly hasError = computed(() => this.store.error());
 
+  readonly #overrideItemId = signal<string | null>(null);
+
   readonly ACTIONS = MASTERS_ACTIONS;
 
   columnsIds = computed(() => {
@@ -179,6 +182,14 @@ export class MasterDataListComponent {
       const sortDirection = this.sortDirection();
       const sortField = sortDirection ? this.sortField() : undefined;
       this.store.search({ page, pageSize, sortDirection, sortField });
+    });
+
+    effect(() => {
+      const isLoading = this.isLoading();
+
+      if (!isLoading) return;
+
+      this.#overrideItemId.set(null);
     });
   }
 
@@ -204,17 +215,29 @@ export class MasterDataListComponent {
     this.#dialog.open(this.modalComponent, { ...this.#dialogStylesConfig, data: itemToEdit });
   }
 
-  protected onClickSwitchStatus(itemToEdit: MasterDataResponseType): void {
+  protected getCheckedState(rowData: MasterDataResponseType) {
+    const overrideItemId = this.#overrideItemId();
+
+    return !overrideItemId || overrideItemId !== rowData.id ? rowData.active : !rowData.active;
+  }
+
+  protected async onClickSwitchStatus(itemToEdit: MasterDataResponseType) {
+    const id = itemToEdit.id;
+    this.#overrideItemId.set(id);
+
     const switchStatusItem: MasterDataSwitchStatusDialog = {
       title: this.masterView().dialogs[this.ACTIONS.SWITCH_STATUS].title,
       description: this.masterView().dialogs[this.ACTIONS.SWITCH_STATUS].description,
       item: itemToEdit,
     };
 
-    this.#dialog.open(MasterDataSwitchStatusDialogComponent, {
+    const dialogRef = this.#dialog.open(MasterDataSwitchStatusDialogComponent, {
       ...this.#dialogStylesConfig,
       data: switchStatusItem,
     });
+
+    const confirmed = await firstValueFrom(dialogRef.afterClosed());
+    if (!confirmed) this.#overrideItemId.set(null);
   }
 
   protected onClickDelete(id: string): void {

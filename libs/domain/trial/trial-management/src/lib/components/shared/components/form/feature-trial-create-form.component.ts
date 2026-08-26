@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormField, disabled, form, readonly, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -203,7 +203,8 @@ import type { TrialCreateModifyForm } from './trial-create.model';
                     />
                     <button
                       mat-icon-button
-                      class="!absolute right-0 top-0 bottom-0 m-auto !text-gray-500"
+                      matIconSuffix
+                      type="button"
                       (click)="openTrialDialog('ASSOCIATED_TRIAL_DIALOG.LINKED_TITLE', 'linkedTrial')"
                     >
                       <mat-icon matSuffix>add</mat-icon>
@@ -400,6 +401,8 @@ export class FeatureTrialCreateFormComponent {
     disabled(f.client, () => this.clientsService.hasError());
     disabled(f.associatedTrialView, ({ valueOf }) => valueOf(f.hasAssociatedTrial));
     readonly(f.associatedTrialView, ({ valueOf }) => valueOf(f.hasAssociatedTrial));
+    disabled(f.linkedTrialView, ({ valueOf }) => valueOf(f.hasLinkedTrial));
+    readonly(f.linkedTrialView, ({ valueOf }) => valueOf(f.hasLinkedTrial));
     disabled(f.linkedTrial, ({ valueOf }) => valueOf(f.hasLinkedTrial));
     readonly(f.linkedTrial, ({ valueOf }) => valueOf(f.hasLinkedTrial));
     readonly(f.requestedDate);
@@ -413,6 +416,21 @@ export class FeatureTrialCreateFormComponent {
       } else {
         this.upsertTrialModel.set({ ...this.#emptyTrialModel });
       }
+    });
+
+    effect(() => {
+      const hasLinkedTrial = this.upsertTrialForm.hasLinkedTrial().value();
+
+      if (hasLinkedTrial) return;
+
+      untracked(() => {
+        this.upsertTrialModel.update((current) => ({
+          ...current,
+          linkedTrial: this.#emptyTrialModel.linkedTrial,
+          linkedTrialView: this.#emptyTrialModel.linkedTrialView,
+          hasLinkedTrial: this.#emptyTrialModel.hasLinkedTrial,
+        }));
+      });
     });
   }
 

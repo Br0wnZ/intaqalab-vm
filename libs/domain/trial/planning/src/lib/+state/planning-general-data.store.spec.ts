@@ -45,6 +45,7 @@ describe('PlanningGeneralDataStore', () => {
         error: signal(undefined),
       },
       load: vi.fn(),
+      resetPlanningData: vi.fn(),
       queryParams: signal(null),
       associatedPlanningUserId: signal(null),
     };
@@ -87,7 +88,7 @@ describe('PlanningGeneralDataStore', () => {
       associatedTrialView: '',
     };
 
-    store.setFireTrialData(trialId, trial);
+    store.setFireTrialData(trialId, trial, true);
 
     expect(store.fireTrialId()).toBe(trialId);
     expect(store.fireTrial()).toEqual(trial);

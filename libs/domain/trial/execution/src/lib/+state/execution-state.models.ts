@@ -1,4 +1,5 @@
 import type { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+
 import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../execution/models';
 
 export interface TechUnitStatus {

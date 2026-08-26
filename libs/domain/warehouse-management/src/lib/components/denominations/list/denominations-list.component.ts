@@ -239,9 +239,9 @@ export class DenominationsListComponent {
     effect(() => {
       const page = this.pageIndex() + 1;
       const pageSize = this.pageSize();
-      const sortField = this.sortField();
       const active = this.showOnlyActive();
       const sortDirection = this.sortDirection();
+      const sortField = sortDirection ? this.sortField() : undefined;
       const { name, munitionTypeId } = this.filters();
 
       this.store.search({ page, pageSize, sortDirection, sortField, active, name, munitionTypeId });

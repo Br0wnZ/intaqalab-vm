@@ -114,9 +114,9 @@ interface JltShotDataSelectForm {
 
       <!-- Fields grid: 4 cols, 2 rows (last col = Observaciones spanning 2 rows) -->
       <div
+        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start"
         [attr.inert]="readOnly() ? '' : null"
         [class.inta-readonly-content]="readOnly()"
-        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start"
       >
         <!-- ── Row 1 ──────────────────────────────────────────────── -->
 
@@ -281,23 +281,28 @@ export class JltShotData extends BaseFormWidgetComponent {
   protected readonly selectedSeriesProgress = computed(() => {
     const selectedSerie = this.formModel().serie;
     return selectedSerie
-      ? this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie) ?? null
+      ? (this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie) ?? null)
       : null;
   });
 
   protected readonly selectedShotProgress = computed(() => {
     const selectedShot = this.formModel().disparo;
     const series = this.selectedSeriesProgress();
-    return selectedShot ? series?.shots.find((shot) => shot.shotId === selectedShot) ?? null : null;
+    return selectedShot ? (series?.shots.find((shot) => shot.shotId === selectedShot) ?? null) : null;
   });
 
   protected readonly isCurrentShot = computed(
-    () => this.formModel().serie === this.#store.activeSerieId() && this.formModel().disparo === this.#store.activeShotId(),
+    () =>
+      this.formModel().serie === this.#store.activeSerieId() && this.formModel().disparo === this.#store.activeShotId(),
   );
 
-  protected readonly selectedShotOrder = computed(() => this.#getShotOrder(this.formModel().serie, this.formModel().disparo));
+  protected readonly selectedShotOrder = computed(() =>
+    this.#getShotOrder(this.formModel().serie, this.formModel().disparo),
+  );
 
-  protected readonly activeShotOrder = computed(() => this.#getShotOrder(this.#store.activeSerieId(), this.#store.activeShotId()));
+  protected readonly activeShotOrder = computed(() =>
+    this.#getShotOrder(this.#store.activeSerieId(), this.#store.activeShotId()),
+  );
 
   protected readonly isFutureShot = computed(() => {
     const selectedShotOrder = this.selectedShotOrder();
@@ -591,14 +596,17 @@ export class JltShotData extends BaseFormWidgetComponent {
       return false;
     }
 
-    return this.#store.executionProgress()?.series.some(
-      (series) => series.seriesId === serie && series.shots.some((shot) => shot.shotId === disparo),
-    ) ?? false;
+    return (
+      this.#store
+        .executionProgress()
+        ?.series.some((series) => series.seriesId === serie && series.shots.some((shot) => shot.shotId === disparo)) ??
+      false
+    );
   }
 
   #findLastShotId(serie: string): string | null {
     const shots = this.#store.executionProgress()?.series.find((item) => item.seriesId === serie)?.shots ?? [];
-    return shots.length > 0 ? shots[shots.length - 1]?.shotId ?? null : null;
+    return shots.length > 0 ? (shots[shots.length - 1]?.shotId ?? null) : null;
   }
 
   #getShotOrder(serie: string | null, disparo: string | null): number | null {
@@ -628,7 +636,20 @@ export class JltShotData extends BaseFormWidgetComponent {
     return this.operadorPiezaField() ?? this.inheritedDefaults().pieceOperator ?? null;
   }
 
-  #hydrateLocalState(stored: Pick<JltShotDataState, 'serie' | 'disparo' | 'equipoAtacado' | 'equipoRetroceso' | 'jet' | 'operadorPieza' | 'observaciones' | 'atacado' | 'retroceso'>): void {
+  #hydrateLocalState(
+    stored: Pick<
+      JltShotDataState,
+      | 'serie'
+      | 'disparo'
+      | 'equipoAtacado'
+      | 'equipoRetroceso'
+      | 'jet'
+      | 'operadorPieza'
+      | 'observaciones'
+      | 'atacado'
+      | 'retroceso'
+    >,
+  ): void {
     this.jetField.set(stored.jet);
     this.operadorPiezaField.set(stored.operadorPieza);
     this.observacionesField.set(stored.observaciones);
