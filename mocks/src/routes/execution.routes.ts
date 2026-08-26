@@ -5,6 +5,7 @@ import {
     updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
+    applyArmamentBulkConfiguration,
     approvePlanning,
     bumpPlanningVersion,
     getCountdownState,
@@ -13,6 +14,7 @@ import {
     getJltShotData,
     getPlanningState,
     getReadiness,
+    getShotArmament,
     getShotPressures,
     getShotVelocities,
     registerFireShot,
@@ -22,6 +24,7 @@ import {
     setJltShotData,
     setProfileReadiness,
     setSeriesProfileReadiness,
+    setShotArmament,
     setShotPressure,
     setShotVelocity,
     updateCountdownState,
@@ -445,4 +448,64 @@ executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/equipment-sel
 
   const updated = updateEquipmentSelectorState(req.params['fireTrialId'], req.body);
   res.status(200).json(updated);
+});
+
+// ==========================================
+// DATA ENTRY - WIDGET 22 ARMAMENT
+// ==========================================
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  res.status(200).json(getShotArmament(fireTrialId, seriesId, shotId));
+});
+
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/armament/series/:seriesId/shots/:shotId', (req, res) => {
+  const { fireTrialId, seriesId, shotId } = req.params as {
+    fireTrialId: string;
+    seriesId: string;
+    shotId: string;
+  };
+
+  try {
+    const updated = setShotArmament(fireTrialId, seriesId, shotId, req.body);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+
+    if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+      res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid armament payload' });
+  }
+});
+
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/armament/bulk-configuration', (req, res) => {
+  const { fireTrialId } = req.params as { fireTrialId: string };
+  const body = req.body;
+
+  if (!body?.assignedSeriesIds || !Array.isArray(body.assignedSeriesIds) || body.assignedSeriesIds.length === 0) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: 'El campo assignedSeriesIds es obligatorio y no puede estar vacío',
+    });
+    return;
+  }
+
+  try {
+    applyArmamentBulkConfiguration(fireTrialId, body);
+    res.status(200).json({ message: 'Configuración de armamento aplicada correctamente.' });
+  } catch {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Error applying bulk armament configuration' });
+  }
 });

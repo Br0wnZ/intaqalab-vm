@@ -1,0 +1,21 @@
+{
+  "armamentData": {
+    "weapon": {
+      "id": 21017,
+      "tag": "IT-00012820",
+      "serialNumber": "3312",
+      "denominationId": 415,
+      "denominationName": "ARMA M1",
+      "modelName": "M1"
+    },
+    "tube": {
+      "id": 21099,
+      "tag": "IT-00012821",
+      "serialNumber": "4847",
+      "denominationId": 416,
+      "denominationName": "TUBO M1",
+      "modelName": "M1"
+    },
+    "observations": "Sin incidencias."
+  }
+}

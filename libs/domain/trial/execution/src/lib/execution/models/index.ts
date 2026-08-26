@@ -1,27 +1,27 @@
 // Widget ID enum
-export { WidgetId, ALL_WIDGET_IDS, isValidWidgetId } from './widget-id.enum';
+export { ALL_WIDGET_IDS, WidgetId, isValidWidgetId } from './widget-id.enum';
 
 // Widget registry
-export { WIDGET_REGISTRY, getWidgetConfig, getAllWidgetConfigs } from './widget-registry';
+export { WIDGET_REGISTRY, getAllWidgetConfigs, getWidgetConfig } from './widget-registry';
 export type { WidgetConfig as WidgetConfigType } from './widget-registry';
 
 // Execution grid models
 export type {
+  FormWidget,
   GridPosition,
   PlacedWidget,
-  WidgetFormState,
-  FormWidget,
-  WidgetType,
   TechProfile,
-  WidgetWidth,
+  WidgetFormState,
   WidgetHeight,
+  WidgetType,
+  WidgetWidth,
 } from './execution-grid.models';
 
 // Widget preferences models
 export type {
-  WidgetPreferences,
   SavedWidgetConfig,
   UpsertWidgetPreferencesRequest,
+  WidgetPreferences,
   WidgetPreferencesResponse,
 } from './widget-preferences.model';
 

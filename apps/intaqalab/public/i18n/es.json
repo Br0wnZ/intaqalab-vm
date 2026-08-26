@@ -1253,9 +1253,20 @@
     "FREE_SPACE_DESC_2": "para añadir más módulos",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Tienes espacio en tu panel",
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Error al cargar la ejecución",
+      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de ejecución. Inténtelo de nuevo más tarde."
+    },
+    "HISTORY": {
+      "SERIES": "Series",
+      "SHOT": "Disparo",
+      "STATUS": "Estado",
+      "EXECUTION_DATE": "Fecha de ejecución"
+    },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No se encontraron widgets",
     "SEARCH_WIDGET_PLACEHOLDER": "Buscar widget...",
+    "PROGRESS": "% avance prueba",
     "SHOT_HISTORY_DESC": "Últimos registros de la ejecución",
     "SHOT_HISTORY_TITLE": "Historial de Disparos",
     "TITLE": "Ejecución",

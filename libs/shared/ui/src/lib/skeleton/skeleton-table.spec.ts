@@ -1,76 +1,99 @@
+import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { SkeletonTable } from './skeleton-table';
 
-const withTranslate = {
-  imports: [TranslateModule.forRoot({ defaultLanguage: 'es' })],
+const baseConfig = {
+  imports: [TranslateModule.forRoot()],
+  providers: [provideTestingEnvironment()],
 };
 
 describe('SkeletonTable', () => {
-  it('renders with role="status" and aria-busy', async () => {
-    const { container } = await render(SkeletonTable, withTranslate);
-    const wrapper = container.querySelector('[role="status"]');
-    expect(wrapper).toBeTruthy();
-    expect(wrapper?.getAttribute('aria-busy')).toBe('true');
+  it('renders with role="status" and aria-busy="true"', async () => {
+    await render(SkeletonTable, baseConfig);
+
+    const [tableStatus] = screen.getAllByRole('status');
+    expect(tableStatus).toBeInTheDocument();
+    expect(tableStatus).toHaveAttribute('aria-busy', 'true');
   });
 
-  it('renders default 4 columns x 5 rows', async () => {
-    const { container } = await render(SkeletonTable, withTranslate);
-    const skeletons = container.querySelectorAll('ui-skeleton');
-    // header: 4 + body: 5*4 = 24
-    expect(skeletons.length).toBe(24);
+  it('renders default 4 columns x 5 rows plus header (24 skeletons in total)', async () => {
+    await render(SkeletonTable, baseConfig);
+
+    const skeletons = screen.getAllByLabelText('UI.SKELETON.LOADING');
+    // Header: 4 cols + Body: 5 rows * 4 cols = 24 skeletons
+    expect(skeletons).toHaveLength(24);
   });
 
   it('renders correct number of columns and rows with custom values', async () => {
-    const { container } = await render(SkeletonTable, {
-      ...withTranslate,
+    await render(SkeletonTable, {
+      ...baseConfig,
       componentInputs: { columns: 3, rows: 2 },
     });
-    const skeletons = container.querySelectorAll('ui-skeleton');
-    // header: 3 + body: 2*3 = 9
-    expect(skeletons.length).toBe(9);
+
+    const skeletons = screen.getAllByLabelText('UI.SKELETON.LOADING');
+    // Header: 3 cols + Body: 2 rows * 3 cols = 9 skeletons
+    expect(skeletons).toHaveLength(9);
+  });
+
+  it('renders header skeletons when showHeader is true by default', async () => {
+    await render(SkeletonTable, {
+      ...baseConfig,
+      componentInputs: { columns: 3, rows: 2, showHeader: true },
+    });
+
+    const skeletons = screen.getAllByLabelText('UI.SKELETON.LOADING');
+    // 3 header + 6 body = 9 skeletons
+    expect(skeletons).toHaveLength(9);
   });
 
   it('hides header row when showHeader is false', async () => {
-    const { container } = await render(SkeletonTable, {
-      ...withTranslate,
+    await render(SkeletonTable, {
+      ...baseConfig,
       componentInputs: { columns: 3, rows: 2, showHeader: false },
     });
-    const skeletons = container.querySelectorAll('ui-skeleton');
-    // body only: 2*3 = 6
-    expect(skeletons.length).toBe(6);
-  });
 
-  it('renders header row with bg-client-neutral-50 when showHeader is true', async () => {
-    const { container } = await render(SkeletonTable, withTranslate);
-    const headerRow = container.querySelector('.bg-client-neutral-50');
-    expect(headerRow).toBeTruthy();
+    const skeletons = screen.getAllByLabelText('UI.SKELETON.LOADING');
+    // Body only: 2 rows * 3 cols = 6 skeletons (no header)
+    expect(skeletons).toHaveLength(6);
   });
 
   it('applies wave animation class to skeletons by default', async () => {
-    const { container } = await render(SkeletonTable, withTranslate);
-    const firstSkeleton = container.querySelector('ui-skeleton');
-    expect(firstSkeleton?.className).toContain('inta-skeleton-wave');
+    await render(SkeletonTable, baseConfig);
+
+    const [, ...skeletons] = screen.getAllByRole('status');
+    expect(skeletons[0]).toHaveClass('inta-skeleton-wave');
   });
 
   it('applies pulse animation when configured', async () => {
-    const { container } = await render(SkeletonTable, {
-      ...withTranslate,
+    await render(SkeletonTable, {
+      ...baseConfig,
       componentInputs: { animation: 'pulse' as const },
     });
-    const firstSkeleton = container.querySelector('ui-skeleton');
-    expect(firstSkeleton?.className).toContain('animate-pulse');
+
+    const [, ...skeletons] = screen.getAllByRole('status');
+    expect(skeletons[0]).toHaveClass('animate-pulse');
   });
 
-  it('renders border separators between rows', async () => {
-    const { container } = await render(SkeletonTable, {
-      ...withTranslate,
-      componentInputs: { rows: 3 },
+  it('applies no animation class when animation="none"', async () => {
+    await render(SkeletonTable, {
+      ...baseConfig,
+      componentInputs: { animation: 'none' as const },
     });
-    const borderedRows = container.querySelectorAll('.border-b');
-    // Header has border-b (1) + First 2 body rows have border-b (2) = 3
-    expect(borderedRows.length).toBe(3);
+
+    const [, ...skeletons] = screen.getAllByRole('status');
+    expect(skeletons[0]).not.toHaveClass('animate-pulse');
+    expect(skeletons[0]).not.toHaveClass('inta-skeleton-wave');
+  });
+
+  it('calculates dynamic header and cell widths correctly', async () => {
+    const { fixture } = await render(SkeletonTable, baseConfig);
+    const component = fixture.componentInstance;
+
+    expect(component.headerWidth(1)).toBe('45%');
+    expect(component.headerWidth(2)).toBe('60%');
+    expect(component.cellWidth(1, 1)).toBe('90%');
   });
 });

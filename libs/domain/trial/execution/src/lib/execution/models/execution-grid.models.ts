@@ -1,4 +1,4 @@
-import type { Signal } from '@angular/core';
+import type { Signal, Type } from '@angular/core';
 
 import type { WidgetId } from './widget-id.enum';
 
@@ -85,6 +85,7 @@ export interface FormWidget {
 export interface Widget {
   id: string;
   widgetId: WidgetId;
+  widgetComponent: Type<unknown>;
   title: string;
   description: string;
   category: string;

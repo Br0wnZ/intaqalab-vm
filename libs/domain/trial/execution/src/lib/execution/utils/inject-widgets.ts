@@ -1,3 +1,36 @@
+import type { Type } from '@angular/core';
+
+import { AcousticLevelIntroduction } from '../widgets/acoustic-level-introduction/acoustic-level-introduction';
+import { ArmamentIntroductionComponent } from '../widgets/armament-introduction/armament-introduction';
+import { DatosBlancoBola } from '../widgets/datos-blanco-bola/datos-blanco-bola';
+import { ExecutionPrepJltWidgetComponent } from '../widgets/execution-prep-jlt-widget/execution-prep-jlt-widget';
+import { ExecutionPrepTechWidgetComponent } from '../widgets/execution-prep-tech-widget/execution-prep-tech-widget';
+import { GrubbsCriterionWidget } from '../widgets/grubbs-criterion/grubbs-criterion';
+import { InformacionTaradoWidget } from '../widgets/informacion-tarado/informacion-tarado';
+import { JltMao } from '../widgets/jlt-mao/jlt-mao';
+import { JltShotData } from '../widgets/jlt-shot-data/jlt-shot-data';
+import { ManometerIntroduction } from '../widgets/manometer-introduction/manometer-introduction';
+import { MaoTopography } from '../widgets/mao-topography/mao-topography';
+import { MunitionIntroduction } from '../widgets/munition-introduction/munition-introduction';
+import { OverpressureChartWidget } from '../widgets/overpressure-chart/overpressure-chart';
+import { OverpressureInfoWidget } from '../widgets/overpressure-info/overpressure-info';
+import { PassCoordsWidget } from '../widgets/pass-coords/pass-coords';
+import { PiezoPressureIntroduction } from '../widgets/piezo-pressure-introduction/piezo-pressure-introduction';
+import { RadarMetcmq } from '../widgets/radar-metcmq/radar-metcmq';
+import { RadarTrayectographyOrientation } from '../widgets/radar-trayectography-orientation/radar-trayectography-orientation';
+import { SeguimientoWidget } from '../widgets/seguimiento/seguimiento';
+import { SeguridadWidget } from '../widgets/seguridad/seguridad';
+import { ShotWidgetComponent } from '../widgets/shot-widget/shot-widget';
+import { StanagCriteriosWidget } from '../widgets/stanag-criterios/stanag-criterios';
+import { TaradoPresionChartWidget } from '../widgets/tarado-presion-chart/tarado-presion-chart';
+import { TaradoVelocidadChartWidget } from '../widgets/tarado-velocidad-chart/tarado-velocidad-chart';
+import { TargetDataWidget } from '../widgets/target-data/target-data';
+import { TopographyIntroductionWidget } from '../widgets/topography-introduction/topography-introduction';
+import { TrayectografiaIntroductionWidget } from '../widgets/trayectografia-introduction/trayectografia-introduction';
+import { UniformidadChartWidget } from '../widgets/uniformidad-chart/uniformidad-chart';
+import { VelocityIntroduction } from '../widgets/velocity-introduction/velocity-introduction';
+import { VideoCameraOrientation } from '../widgets/video-camera-orientation/video-camera-orientation';
+import { VigilanciaWidget } from '../widgets/vigilancia/vigilancia';
 import { WidgetId } from '../models';
 import type { Widget } from '../models/execution-grid.models';
 
@@ -5,6 +38,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'disparo',
     widgetId: WidgetId.SHOT,
+    widgetComponent: ShotWidgetComponent,
     title: 'Disparo',
     description: 'Introducción de datos del disparo seleccionado',
     category: 'Genéricos',
@@ -15,6 +49,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-velocidades',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'velocidades',
     title: 'Preparación ejecución – Velocidades',
     description: 'Indicar preparación del técnico de balistíca (velocidades) para el inicio de series',
@@ -26,6 +61,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-presiones',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'presiones',
     title: 'Preparación ejecución – Presiones',
     description: 'Indicar preparación del técnico de balistíca (presiones) para el inicio de series',
@@ -37,6 +73,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-video',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'video',
     title: 'Preparación ejecución – Vídeo',
     description: 'Indicar preparación del técnico de balistíca (cámaras de vídeo) para el inicio de series',
@@ -48,6 +85,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-trayectografia',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'trayectografia',
     title: 'Preparación ejecución – Trayectografía',
     description: 'Indicar preparación del técnico de balistíca (radar) para el inicio de series',
@@ -59,6 +97,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-municiones',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'municiones',
     title: 'Preparación ejecución – Municiones',
     description: 'Indicar preparación del técnico de municiones para el inicio de series',
@@ -70,6 +109,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-tech-armamento',
     widgetId: WidgetId.EXECUTION_PREP_TECH,
+    widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'armamento',
     title: 'Preparación ejecución – Armamento',
     description: 'Indicar preparación del técnico de armamento para el inicio de series',
@@ -81,6 +121,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'prep-jlt',
     widgetId: WidgetId.EXECUTION_PREP_JLT,
+    widgetComponent: ExecutionPrepJltWidgetComponent,
     title: 'Preparación ejecución – JLT',
     description: 'Control de preparación de series y disparos para el Jefe de Línea de Tiro',
     category: 'Jefe línea de tiro',
@@ -90,6 +131,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'orientacion-camaras-video',
     widgetId: WidgetId.VIDEO_CAMERA_ORIENTATION,
+    widgetComponent: VideoCameraOrientation,
     title: 'Orientación cámaras de vídeo',
     description: 'Configuración de cámara, distancia, altura, alcance y diferencia angular',
     category: 'Balística',
@@ -101,6 +143,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'orientacion-radar-trayectografia',
     widgetId: WidgetId.RADAR_TRAYECTOGRAPHY_ORIENTATION,
+    widgetComponent: RadarTrayectographyOrientation,
     title: 'Orientación radar de trayectografía',
     description: 'Coordenadas pieza, puntos de caída calculados, OLT geográfico y diferencia angular del radar',
     category: 'Balística',
@@ -112,6 +155,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-topografia-mao',
     widgetId: WidgetId.MAO_TOPOGRAPHY,
+    widgetComponent: MaoTopography,
     title: 'Introducción de datos Topografía MAO',
     description: 'OLT, coordenadas de pieza y blanco, observador',
     category: 'Topografía',
@@ -123,6 +167,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-jlt-mao',
     widgetId: WidgetId.JLT_MAO,
+    widgetComponent: JltMao,
     title: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DESCRIPTION',
     category: 'Jefe línea de tiro',
@@ -134,6 +179,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-armamento',
     widgetId: WidgetId.ARMAMENT_INTRODUCTION,
+    widgetComponent: ArmamentIntroductionComponent,
     title: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.DESCRIPTION',
     category: 'Municiones',
@@ -145,6 +191,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-municion',
     widgetId: WidgetId.MUNITION_INTRODUCTION,
+    widgetComponent: MunitionIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DESCRIPTION',
     category: 'Municiones',
@@ -156,6 +203,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'radar-trayectografia-metcmq',
     widgetId: WidgetId.RADAR_METCMQ,
+    widgetComponent: RadarMetcmq,
     title: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.DESCRIPTION',
     category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
@@ -167,6 +215,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-jlt',
     widgetId: WidgetId.JLT_SHOT_DATA,
+    widgetComponent: JltShotData,
     title: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.DESCRIPTION',
     category: 'Jefe línea de tiro',
@@ -178,6 +227,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-presion-manometros',
     widgetId: WidgetId.MANOMETER_INTRODUCTION,
+    widgetComponent: ManometerIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DESCRIPTION',
     category: 'Balística',
@@ -189,6 +239,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-presion-piezo',
     widgetId: WidgetId.PIEZO_PRESSURE_INTRODUCTION,
+    widgetComponent: PiezoPressureIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.DESCRIPTION',
     category: 'Balística',
@@ -200,6 +251,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-velocidades',
     widgetId: WidgetId.VELOCITY_INTRODUCTION,
+    widgetComponent: VelocityIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.DESCRIPTION',
     category: 'Balística',
@@ -211,6 +263,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'tarado-velocidad-chart',
     widgetId: WidgetId.TARADO_VELOCIDAD_CHART,
+    widgetComponent: TaradoVelocidadChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.DESCRIPTION',
     category: 'Balística',
@@ -222,6 +275,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'tarado-presion-chart',
     widgetId: WidgetId.TARADO_PRESION_CHART,
+    widgetComponent: TaradoPresionChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.DESCRIPTION',
     category: 'Balística',
@@ -233,6 +287,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'trayectografia-introduction',
     widgetId: WidgetId.TRAYECTOGRAFIA_INTRODUCTION,
+    widgetComponent: TrayectografiaIntroductionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.DESCRIPTION',
     category: 'Trayectografía',
@@ -244,6 +299,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'stanag-criterios',
     widgetId: WidgetId.STANAG_CRITERIOS,
+    widgetComponent: StanagCriteriosWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.DESCRIPTION',
     category: 'Balística',
@@ -255,6 +311,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'uniformidad-chart',
     widgetId: WidgetId.UNIFORMIDAD_CHART,
+    widgetComponent: UniformidadChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESCRIPTION',
     category: 'Balística',
@@ -266,6 +323,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'seguimiento',
     widgetId: WidgetId.SEGUIMIENTO,
+    widgetComponent: SeguimientoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.DESCRIPTION',
     category: 'Balística',
@@ -277,6 +335,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'informacion-tarado',
     widgetId: WidgetId.INFORMACION_TARADO,
+    widgetComponent: InformacionTaradoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.DESCRIPTION',
     category: 'Balística',
@@ -288,6 +347,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'overpressure-info',
     widgetId: WidgetId.OVERPRESSURE_INFO,
+    widgetComponent: OverpressureInfoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.DESCRIPTION',
     category: 'Presiones',
@@ -299,6 +359,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'overpressure-chart',
     widgetId: WidgetId.OVERPRESSURE_CHART,
+    widgetComponent: OverpressureChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.DESCRIPTION',
     category: 'Presiones',
@@ -310,6 +371,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'calculo-coordenadas-paso',
     widgetId: WidgetId.PASS_COORDS,
+    widgetComponent: PassCoordsWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DESCRIPTION',
     category: 'TRIAL_EXECUTION.CATEGORIES.BALISTICA',
@@ -321,6 +383,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'criterio-grubbs',
     widgetId: WidgetId.GRUBBS_CRITERION,
+    widgetComponent: GrubbsCriterionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.DESCRIPTION',
     category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
@@ -332,6 +395,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-topografia',
     widgetId: WidgetId.TOPOGRAPHY_INTRODUCTION,
+    widgetComponent: TopographyIntroductionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.DESCRIPTION',
     category: 'Topografía',
@@ -343,6 +407,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'datos-del-blanco',
     widgetId: WidgetId.TARGET_DATA,
+    widgetComponent: TargetDataWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DESCRIPTION',
     category: 'Armamento',
@@ -354,6 +419,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'introduccion-datos-nivel-acustico',
     widgetId: WidgetId.ACOUSTIC_LEVEL_INTRODUCTION,
+    widgetComponent: AcousticLevelIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.DESCRIPTION',
     category: 'Balística',
@@ -365,6 +431,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'vigilancia',
     widgetId: WidgetId.VIGILANCIA,
+    widgetComponent: VigilanciaWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.DESCRIPTION',
     category: 'TRIAL_EXECUTION.CATEGORIES.ESTADISTICA',
@@ -376,6 +443,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'datos-blanco-bola',
     widgetId: WidgetId.DATOS_BLANCO_BOLA,
+    widgetComponent: DatosBlancoBola,
     title: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DESCRIPTION',
     category: 'Topografía',
@@ -387,6 +455,7 @@ export const injectWidgets = (): Widget[] => [
   {
     id: 'seguridad',
     widgetId: WidgetId.SEGURIDAD,
+    widgetComponent: SeguridadWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.DESCRIPTION',
     category: 'Balística',
@@ -396,3 +465,9 @@ export const injectWidgets = (): Widget[] => [
     defaultHeight: 2,
   },
 ];
+
+export const injectWidgetCatalog = (): ReadonlyMap<WidgetId, Type<unknown>> => {
+  return new Map<WidgetId, Type<unknown>>(
+    injectWidgets().map(({ widgetId, widgetComponent }) => [widgetId, widgetComponent] as const),
+  );
+};

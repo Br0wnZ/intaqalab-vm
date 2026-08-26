@@ -17,20 +17,21 @@ import { vi } from 'vitest';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
 import { FeatureTrialCreateFormComponent } from './feature-trial-create-form.component';
+import type { TrialCreateModifyForm } from './trial-create.model';
 
-// Debe hoistarse antes de que los módulos de TrialDocs → DocViewer importen ng2-pdf-viewer.
-// Usar factory síncrona para evitar errores de transpilación/hoisting de Vitest.
 vi.mock('ng2-pdf-viewer', () => ({
   PdfViewerModule: class PdfViewerModule {},
 }));
 
 describe('FeatureTrialCreateFormComponent', () => {
-  const defaultFormData = {
+  const defaultFormData: TrialCreateModifyForm = {
     code: 'T-001',
     hasAssociatedTrial: false,
     hasLinkedTrial: false,
     associatedTrial: '',
+    associatedTrialView: '',
     linkedTrial: '',
+    linkedTrialView: '',
     description: '',
     type: '',
     client: '',
@@ -42,11 +43,25 @@ describe('FeatureTrialCreateFormComponent', () => {
 
   const defaultInputs = {
     editable: true,
-    trialId: undefined,
-    formData: defaultFormData,
+    trialId: undefined as string | undefined,
+    formData: defaultFormData as TrialCreateModifyForm | null,
   };
 
-  async function setup(options: { inputs?: Record<string, unknown>; dialogResult?: unknown } = {}) {
+  interface SetupOptions {
+    inputs?: Partial<{
+      editable: boolean;
+      trialId: string | undefined;
+      formData: TrialCreateModifyForm | null;
+    }>;
+    dialogResult?: unknown;
+    clientsLoading?: boolean;
+    clientsError?: Error;
+    trialTypesLoading?: boolean;
+    trialTypesError?: Error;
+    onViewDocument?: (docId: string) => void;
+  }
+
+  async function setup(options: SetupOptions = {}) {
     const defaultResult = options.dialogResult ?? null;
     const mockDialog = {
       open: vi.fn().mockImplementation(() => ({
@@ -55,10 +70,22 @@ describe('FeatureTrialCreateFormComponent', () => {
     };
     const user = userEvent.setup();
 
-    const mockClientsResource = createMockResource([{ id: 'c-001', name: 'Client 1' }]);
+    const mockClientsResource = createMockResource({
+      items: [{ id: 'c-001', name: 'Client 1' }],
+      totalElements: 1,
+    });
+    if (options.clientsLoading) {
+      mockClientsResource._setStatus('loading');
+    } else if (options.clientsError) {
+      mockClientsResource._setError(options.clientsError);
+    } else {
+      mockClientsResource._setStatus('resolved');
+    }
+
     const mockClientsService = {
-      clients: mockClientsResource.value,
-      hasError: signal(false),
+      clientResource: mockClientsResource,
+      clients: signal([{ id: 'c-001', name: 'Client 1' }]),
+      hasError: signal(!!options.clientsError),
     };
 
     const mockTrialTypesResource = createMockResource({
@@ -67,7 +94,13 @@ describe('FeatureTrialCreateFormComponent', () => {
       pageSize: 10,
       totalElements: 1,
     });
-    mockTrialTypesResource._setStatus('resolved');
+    if (options.trialTypesLoading) {
+      mockTrialTypesResource._setStatus('loading');
+    } else if (options.trialTypesError) {
+      mockTrialTypesResource._setError(options.trialTypesError);
+    } else {
+      mockTrialTypesResource._setStatus('resolved');
+    }
 
     const mockTrialTypeService = {
       fireTrialTypesResource: mockTrialTypesResource,
@@ -75,6 +108,9 @@ describe('FeatureTrialCreateFormComponent', () => {
 
     const view = await render(FeatureTrialCreateFormComponent, {
       inputs: { ...defaultInputs, ...options.inputs },
+      on: {
+        viewDocument: options.onViewDocument ?? vi.fn(),
+      },
       imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
@@ -87,7 +123,14 @@ describe('FeatureTrialCreateFormComponent', () => {
       ],
     });
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
-    return { user, view, mockDialog, loader };
+    return {
+      user,
+      view,
+      mockDialog,
+      loader,
+      mockClientsResource,
+      mockTrialTypesResource,
+    };
   }
 
   beforeEach(() => {
@@ -96,6 +139,40 @@ describe('FeatureTrialCreateFormComponent', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe('Loading and Error States', () => {
+    it('should show skeletons when clients resource is loading', async () => {
+      const { view } = await setup({ clientsLoading: true });
+      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      expect(skeletons.length).toBeGreaterThan(0);
+      expect(screen.queryByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.CODE')).not.toBeInTheDocument();
+    });
+
+    it('should show skeletons when trial types resource is loading', async () => {
+      const { view } = await setup({ trialTypesLoading: true });
+      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      expect(skeletons.length).toBeGreaterThan(0);
+      expect(screen.queryByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.CODE')).not.toBeInTheDocument();
+    });
+
+    it('should show skeletons when editing trial (trialId provided) but formData is not yet loaded', async () => {
+      const { view } = await setup({ inputs: { trialId: 'trial-123', formData: null } });
+      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+
+    it('should show error state when clients resource fails with error', async () => {
+      const { view } = await setup({ clientsError: new Error('Network error') });
+      const errorState = view.fixture.nativeElement.querySelector('ui-error-state');
+      expect(errorState).toBeInTheDocument();
+    });
+
+    it('should show error state when trial types resource fails with error', async () => {
+      const { view } = await setup({ trialTypesError: new Error('Trial types failed') });
+      const errorState = view.fixture.nativeElement.querySelector('ui-error-state');
+      expect(errorState).toBeInTheDocument();
+    });
   });
 
   describe('Rendering', () => {
@@ -133,6 +210,13 @@ describe('FeatureTrialCreateFormComponent', () => {
       expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.OBSERVATIONS_PLACEHOLDER')).toHaveValue(
         'Some notes',
       );
+    });
+
+    it('should reset to empty model when formData is null and trialId is undefined', async () => {
+      const { view } = await setup({ inputs: { formData: null } });
+      expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.CODE')).toHaveValue('');
+      expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.DESCRIPTION_PLACEHOLDER')).toHaveValue('');
+      expect(view.fixture.componentInstance.upsertTrialModel().code).toBe('');
     });
   });
 
@@ -231,8 +315,6 @@ describe('FeatureTrialCreateFormComponent', () => {
       await checkbox.toggle();
       TestBed.flushEffects();
 
-      // both linked and assoc use the same "add" icon text in our mock environment,
-      // but there'll be multiple "add" buttons if both are checked. Since only linked is checked here, it's fine.
       await user.click(screen.getByText('add'));
       expect(mockDialog.open).toHaveBeenCalledWith(
         expect.anything(),
@@ -282,5 +364,28 @@ describe('FeatureTrialCreateFormComponent', () => {
       TestBed.flushEffects();
       expect(screen.getByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.ASSOCIATED_TRIAL')).toHaveValue('');
     });
+
+    it('should not open dialog when editable is false', async () => {
+      const { view, mockDialog } = await setup({ inputs: { editable: false } });
+      await view.fixture.componentInstance.openTrialDialog('TITLE', 'associatedTrial');
+      expect(mockDialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Outputs and child components', () => {
+    it('should emit viewDocument output when triggered', async () => {
+      const spy = vi.fn();
+      const { view } = await setup({ onViewDocument: spy });
+      view.fixture.componentInstance.viewDocument.emit('doc-123');
+      expect(spy).toHaveBeenCalledWith('doc-123');
+    });
+
+    it('should compute trialStatus from formData input', async () => {
+      const { view } = await setup({
+        inputs: { formData: { ...defaultFormData, status: TrialStatus.EXECUTED } },
+      });
+      expect(view.fixture.componentInstance.trialStatus()).toBe(TrialStatus.EXECUTED);
+    });
   });
 });
+

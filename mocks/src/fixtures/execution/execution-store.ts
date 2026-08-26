@@ -140,6 +140,7 @@ const jltPreparationStateMap = new Map<string, JltPreparationState>();
 const jltShotDataStateMap = new Map<string, Map<string, JltShotDataResponse>>();
 const velocitiesStateMap = new Map<string, Map<string, ShotVelocitiesResponse>>();
 const pressuresStateMap = new Map<string, Map<string, ShotPressuresResponse>>();
+const armamentStateMap = new Map<string, Map<string, ShotArmamentResponse>>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -659,4 +660,165 @@ export function setShotPressure(
 
   state.set(key, updated);
   return clonePressuresState(updated);
+}
+
+// ── SHOT ARMAMENT tipos y store ───────────────────────────────────────────
+
+export interface ArmamentEquipmentItem {
+  id?: number;
+  tag?: string;
+  serialNumber?: string;
+  denominationId?: number;
+  denominationName?: string;
+  modelName?: string;
+}
+
+export interface ShotArmamentData {
+  weapon?: ArmamentEquipmentItem | null;
+  tube?: ArmamentEquipmentItem | null;
+  observations?: string | null;
+}
+
+export interface ShotArmamentResponse {
+  armamentData?: ShotArmamentData;
+}
+
+export interface ArmamentBulkConfigurationRequest {
+  assignedSeriesIds: string[];
+  weaponId?: number | null;
+  tubeId?: number | null;
+  observations?: string | null;
+}
+
+function defaultArmamentState(): ShotArmamentResponse {
+  return getFixture<ShotArmamentResponse>('fixtures/execution', 'execution-armament-fixture.json');
+}
+
+function cloneArmamentState(state: ShotArmamentResponse): ShotArmamentResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateArmamentMap(fireTrialId: string): Map<string, ShotArmamentResponse> {
+  let state = armamentStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotArmamentResponse>();
+    armamentStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotArmament(fireTrialId: string, seriesId: string, shotId: string): ShotArmamentResponse {
+  const state = getOrCreateArmamentMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneArmamentState(defaultArmamentState());
+    state.set(key, initial);
+    return cloneArmamentState(initial);
+  }
+
+  return cloneArmamentState(current);
+}
+
+export function setShotArmament(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: { weaponId?: number | null; tubeId?: number | null; observations?: string | null },
+): ShotArmamentResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateArmamentMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key) ?? defaultArmamentState();
+
+  const weapon: ArmamentEquipmentItem | null = payload.weaponId
+    ? {
+        id: payload.weaponId,
+        tag: `IT-000${payload.weaponId}`,
+        serialNumber: `SN-W-${payload.weaponId}`,
+        denominationId: payload.weaponId,
+        denominationName: `ARMA ${payload.weaponId}`,
+        modelName: 'M1',
+      }
+    : null;
+
+  const tube: ArmamentEquipmentItem | null = payload.tubeId
+    ? {
+        id: payload.tubeId,
+        tag: `IT-000${payload.tubeId}`,
+        serialNumber: `SN-T-${payload.tubeId}`,
+        denominationId: payload.tubeId,
+        denominationName: `TUBO ${payload.tubeId}`,
+        modelName: 'M1',
+      }
+    : null;
+
+  const updated: ShotArmamentResponse = {
+    armamentData: {
+      weapon: payload.weaponId !== undefined ? weapon : (current.armamentData?.weapon ?? null),
+      tube: payload.tubeId !== undefined ? tube : (current.armamentData?.tube ?? null),
+      observations: payload.observations !== undefined ? payload.observations : (current.armamentData?.observations ?? null),
+    },
+  };
+
+  state.set(key, updated);
+  return cloneArmamentState(updated);
+}
+
+export function applyArmamentBulkConfiguration(
+  fireTrialId: string,
+  payload: ArmamentBulkConfigurationRequest,
+): void {
+  const progress = getExecutionProgressFixture();
+  const state = getOrCreateArmamentMap(fireTrialId);
+
+  const weapon: ArmamentEquipmentItem | null = payload.weaponId
+    ? {
+        id: payload.weaponId,
+        tag: `IT-000${payload.weaponId}`,
+        serialNumber: `SN-W-${payload.weaponId}`,
+        denominationId: payload.weaponId,
+        denominationName: `ARMA ${payload.weaponId}`,
+        modelName: 'M1',
+      }
+    : null;
+
+  const tube: ArmamentEquipmentItem | null = payload.tubeId
+    ? {
+        id: payload.tubeId,
+        tag: `IT-000${payload.tubeId}`,
+        serialNumber: `SN-T-${payload.tubeId}`,
+        denominationId: payload.tubeId,
+        denominationName: `TUBO ${payload.tubeId}`,
+        modelName: 'M1',
+      }
+    : null;
+
+  for (const series of progress.series) {
+    if (payload.assignedSeriesIds.includes(series.seriesId)) {
+      for (const shot of series.shots) {
+        if (shot.status !== 'FIRED') {
+          const key = `${series.seriesId}|${shot.shotId}`;
+          const current = state.get(key) ?? defaultArmamentState();
+          const updated: ShotArmamentResponse = {
+            armamentData: {
+              weapon: payload.weaponId !== undefined ? weapon : (current.armamentData?.weapon ?? null),
+              tube: payload.tubeId !== undefined ? tube : (current.armamentData?.tube ?? null),
+              observations: payload.observations !== undefined ? payload.observations : (current.armamentData?.observations ?? null),
+            },
+          };
+          state.set(key, updated);
+        }
+      }
+    }
+  }
 }

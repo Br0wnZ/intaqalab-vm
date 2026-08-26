@@ -7,7 +7,7 @@
 
 ## Codebase Intelligence for intaqalab-vm (Repowise)
 
-Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-08-10 (commit 89c93b2). Confidence: 99%.
+Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-08-26 (commit 4e79e13). Confidence: 99%.
 The MCP tools below serve pre-verified docs, symbols, history, and health from that index. Every response carries `_meta` freshness fields; a `stale_warning` appears only when a file the response actually serves changed after indexing — silence means current.
 
 ### How to work in this repo
@@ -55,7 +55,7 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 - `libs/domain/trial` — The libs/domain/trial/execution subsystem coordinates trial execution workflows by managing specialized form widgets, runtime grids, and…
 - `libs/shared/models/src/lib/trials` — The **Shared Trial Document Models** subsystem defines the typescript data structures, enums, and filtering criteria for trial…
 - `libs/shared/models` — The shared data foundation for cross-domain TypeScript types—covering calendar events, confirmation dialog data, execution states, form…
-- `libs/domain/warehouse-management/src/lib` — The warehouse management domain subsystem heads the library subsystem, acting as the primary hub for inventory control, munitions tracking…
+- `libs/domain/wharehouse-managment/src/lib` — The warehouse management domain subsystem heads the library subsystem, acting as the primary hub for inventory control, munitions tracking…
 - `libs/shared/utils/src/lib` — The utility support layer heads the Lib subsystem by supplying foundational shared functions, parsing logic, reactive primitives, and…
 
 ### Entry points
@@ -66,23 +66,23 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 
 ### Files that need care (bug-fix history first, then churn — check `get_risk` before editing)
 
-- `libs/domain/trial/planning/src/lib/components/armament/armament.ts` — 11 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament.ts` — 12 commits/90d
+- `package-lock.json` — 7 commits/90d
+- `libs/domain/trial/execution/src/lib/execution/execution.ts` — 16 commits/90d
 - `libs/domain/trial/planning/src/lib/components/shooting-conditions/massive-configuration-dialog/massive-configuration-dialog.ts` — 7 commits/90d
-- `libs/domain/trial/execution/src/lib/execution/execution.ts` — 12 commits/90d
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 16 commits/90d
-- `libs/domain/trial/planning/src/lib/components/planning-general-data-form/planning-general-data-form.component.ts` — 20 commits/90d
+- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 17 commits/90d
 
 ### Code health
 
-Three co-equal signals: defect risk 8.72/10 avg, hotspot health 6.93/10 (stable), worst `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` at 1.9/10 · maintainability 9.31/10 · performance risk 2 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
+Three co-equal signals: defect risk 8.57/10 avg, hotspot health 6.47/10 (stable), worst `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` at 1.9/10 · maintainability 9.33/10 · performance risk 3 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
 
 Critical files:
 
-- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.ts` — change entropy — impact −3.0
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/massive-configuration-dialog/massive-configuration-dialog.spec.ts` — churn risk — impact −2.4
-- `apps/intaqalab/src/app/components/menu-left/menu-left.config.ts` — change entropy — impact −2.0
-- `libs/domain/trial/execution/src/lib/execution/services/widget-state.service.ts` — untested hotspot — impact −2.0
-- `libs/domain/trial/planning/src/lib/utils-models/munitions.model.ts` — untested hotspot — impact −2.0
+- `package.json` — change entropy — impact −3.0
+- `libs/core/src/lib/utils-auth/models/role-groups.constants.ts` — change entropy — impact −3.0
+- `libs/domain/calendar-trials/src/lib/components/templates/calendar-shared-templates.component.ts` — change entropy — impact −3.0
+- `libs/domain/trial/planning/src/lib/+state/munitions.store.ts` — change entropy — impact −3.0
+- `libs/domain/trial/planning/src/lib/components/munitions/configuration-form/configuration-form.component.spec.ts` — change entropy — impact −3.0
 
 ### Commands
 

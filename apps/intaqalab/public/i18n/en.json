@@ -1431,9 +1431,20 @@
     "FREE_SPACE_DESC_2": "to add more modules",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "You have space on your panel",
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Error loading execution",
+      "LOAD_FAILED_DETAIL": "Execution information could not be retrieved. Please try again later."
+    },
+    "HISTORY": {
+      "SERIES": "Series",
+      "SHOT": "Shot",
+      "STATUS": "Status",
+      "EXECUTION_DATE": "Execution date"
+    },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No widgets found",
     "SEARCH_WIDGET_PLACEHOLDER": "Search widget...",
+    "PROGRESS": "% test progress",
     "SHOT_HISTORY_DESC": "Latest run records",
     "SHOT_HISTORY_TITLE": "Shooting History",
     "TITLE": "Execution",

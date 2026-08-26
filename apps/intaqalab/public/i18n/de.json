@@ -286,9 +286,20 @@
     "FREE_SPACE_DESC_2": "um weitere Module hinzuzufügen",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Sie haben Platz auf Ihrem Panel",
+    "ERRORS": {
+      "LOAD_FAILED_TITLE": "Fehler beim Laden der Ausführung",
+      "LOAD_FAILED_DETAIL": "Die Ausführungsinformationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
+    },
+    "HISTORY": {
+      "SERIES": "Serien",
+      "SHOT": "Schuss",
+      "STATUS": "Status",
+      "EXECUTION_DATE": "Ausführungsdatum"
+    },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "Keine Widgets gefunden",
     "SEARCH_WIDGET_PLACEHOLDER": "Widget suchen...",
+    "PROGRESS": "% Testfortschritt",
     "SHOT_HISTORY_DESC": "Letzte Aufzeichnungen der Ausführung",
     "SHOT_HISTORY_TITLE": "Schussverlauf",
     "TITLE": "Ausführung",

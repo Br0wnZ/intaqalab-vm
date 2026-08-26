@@ -1,7 +1,7 @@
 import type { Route } from '@angular/router';
 
 import { ExecutionStore } from './+state/execution.store';
-import { Execution } from './execution/execution';
+import { Execution } from './execution/components/execution/execution';
 import { ExecutionProfileService } from './execution/services/execution-profile.service';
 
 export const executionRoutes: Route[] = [

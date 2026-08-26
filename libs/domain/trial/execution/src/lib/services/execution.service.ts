@@ -1,15 +1,17 @@
-import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, effect, inject, signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { Signal } from '@angular/core';
+import { Injectable, Injector, effect, inject, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-    EquipmentMagnitudeTagEnum,
-    EquipmentMeasureMagnitude,
-    EquipmentSelectionApiList,
-    EquipmentTypeEnum,
-    WidgetId,
+  EquipmentMagnitudeTagEnum,
+  EquipmentMeasureMagnitude,
+  EquipmentSelectionApiList,
+  EquipmentTypeEnum,
+  WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -245,6 +247,13 @@ export interface ShotArmamentRequest {
   observations: string | null;
 }
 
+export interface ArmamentBulkConfigurationRequest {
+  assignedSeriesIds: string[];
+  weaponId?: number | null;
+  tubeId?: number | null;
+  observations?: string | null;
+}
+
 export interface ShotArmamentResponse {
   armamentData?: {
     weapon?: ArmamentEquipmentItem | null;
@@ -266,6 +275,10 @@ interface ShotPressuresUpdateParams extends ShotPressuresParams {
 
 interface ShotArmamentUpdateParams extends ShotPressuresParams {
   body: ShotArmamentRequest;
+}
+
+interface ArmamentBulkConfigurationParams extends ExecutionParams {
+  body: ArmamentBulkConfigurationRequest;
 }
 
 interface ExecutionWithReasonParams extends ExecutionParams {
@@ -350,9 +363,7 @@ export type JltPreparationData = {
   seriesIsReadyForExecution: boolean;
 };
 
-export type JltPreparationResponse =
-  | JltPreparationData
-  | { series: Array<JltPreparationData & { seriesId: string }> };
+export type JltPreparationResponse = JltPreparationData | { series: Array<JltPreparationData & { seriesId: string }> };
 
 export type EquipmentSelectorCategory = {
   id: string;
@@ -425,14 +436,32 @@ interface SelectShotParams extends ExecutionParams {
   shotId: string;
 }
 
+interface SeriesReadinessOneParams {
+  fireTrialId: FireTrial['id'];
+  profile: ExecutionTechnicalProfile;
+  seriesId: string;
+  body: SeriesReadinessRequest;
+  _t: number;
+}
+
+interface EquipmentByCategoryParams {
+  categoryId: string;
+  _t: number;
+}
+
+interface LoadEquipmentByTypeParams {
+  itemType: 'WEAPON' | 'TUBE';
+  _t: number;
+}
+
 // ============= Service =============
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExecutionService {
-  readonly #http = inject(HttpClient);
   readonly #lifecycleService = inject(FireTrialLifecycleService);
+  readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
   #lastReadinessSaveStatus = 'idle';
@@ -767,21 +796,34 @@ export class ExecutionService {
     };
   });
 
+  readonly #setSeriesReadinessOneParams = signal<SeriesReadinessOneParams | null>(null);
+
+  readonly #setSeriesReadinessOneResource = httpResource<SeriesReadinessItem>(() => {
+    const p = this.#setSeriesReadinessOneParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/readiness/profiles/${p.profile}/series/${p.seriesId}`,
+      method: 'PUT',
+      body: p.body,
+    };
+  });
+
   /**
    * Registra el readiness de un perfil para una serie individual en la API.
    */
-  setSeriesProfileReadiness(
+  async setSeriesProfileReadiness(
     fireTrialId: FireTrial['id'],
     profile: ExecutionTechnicalProfile,
     seriesId: string,
     body: SeriesReadinessRequest,
   ): Promise<SeriesReadinessItem> {
-    const url = `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/readiness/profiles/${profile}/series/${seriesId}`;
-    return firstValueFrom(this.#http.put<SeriesReadinessItem>(url, body));
+    this.#setSeriesReadinessOneParams.set({ fireTrialId, profile, seriesId, body, _t: Date.now() });
+    await this.#awaitResource(this.#setSeriesReadinessOneResource);
+    return this.#setSeriesReadinessOneResource.value()!;
   }
 
   /**
-   * Registra el readiness de un perfil ejecutando una llamada individual por cada serie de forma óptima y paralela.
+   * Registra el readiness de un perfil ejecutando una llamada individual por cada serie de forma secuencial.
    */
   async setProfileReadiness(
     fireTrialId: FireTrial['id'],
@@ -789,20 +831,22 @@ export class ExecutionService {
     bodyOrItems: ProfileReadinessRequest | SeriesReadinessItem[],
   ): Promise<SeriesReadinessItem[]> {
     const items = Array.isArray(bodyOrItems) ? bodyOrItems : bodyOrItems.seriesReadiness;
-    const requests = items.map((item) =>
-      this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
-        isReady: item.isReady,
-        observations: item.observations,
-      }),
-    );
-    // Disparar legacy trigger resource también por compatibilidad si es necesario
+    // Disparar legacy trigger resource también por compatibilidad
     this.#setReadinessProfileParams.set({
       fireTrialId,
       profile,
       body: Array.isArray(bodyOrItems) ? { seriesReadiness: bodyOrItems } : bodyOrItems,
       _t: Date.now(),
     });
-    return Promise.all(requests);
+    const results: SeriesReadinessItem[] = [];
+    for (const item of items) {
+      const result = await this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
+        isReady: item.isReady,
+        observations: item.observations,
+      });
+      results.push(result);
+    }
+    return results;
   }
 
   resetSetProfileReadiness(): void {
@@ -918,31 +962,42 @@ export class ExecutionService {
 
   // ── EQUIPMENT ITEMS BY CATEGORY ──────────────────────────────────────────
 
+  readonly #loadByCategoryParams = signal<EquipmentByCategoryParams | null>(null);
+
+  readonly #loadByCategoryResource = httpResource<{
+    totalElements: number;
+    items: Array<{ denominationId: number; denominationName: string; tag: string }>;
+  }>(() => {
+    const p = this.#loadByCategoryParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#planningUrl}/equipment/items`,
+      method: 'GET',
+      params: { categoryId: p.categoryId },
+    };
+  });
+
   /**
-   * Carga items de equipo para múltiples categorías en paralelo desde /equipment/items?categoryId=X
+   * Carga items de equipo para múltiples categorías de forma secuencial desde /equipment/items?categoryId=X.
    * Devuelve un map categoryId → opciones de select { id: denominationId, label }
    */
-  loadEquipmentItemsByCategories(
+  async loadEquipmentItemsByCategories(
     categories: EquipmentTypeEnum[],
   ): Promise<Record<string, Array<{ id: string; label: string }>>> {
-    const requests = categories.map((cat) =>
-      firstValueFrom(
-        this.#http.get<{
-          totalElements: number;
-          items: Array<{ denominationId: number; denominationName: string; tag: string }>;
-        }>(`${this.#planningUrl}/equipment/items`, { params: { categoryId: cat } }),
-      ).then(
-        (response) =>
-          [
-            cat,
-            response.items.map((item) => ({
-              id: String(item.denominationId),
-              label: `${item.denominationName} / ${item.tag}`,
-            })),
-          ] as const,
-      ),
-    );
-    return Promise.all(requests).then((results) => Object.fromEntries(results));
+    const results: Array<readonly [string, Array<{ id: string; label: string }>]> = [];
+    for (const cat of categories) {
+      this.#loadByCategoryParams.set({ categoryId: cat, _t: Date.now() });
+      await this.#awaitResource(this.#loadByCategoryResource);
+      const response = this.#loadByCategoryResource.value()!;
+      results.push([
+        cat,
+        response.items.map((item) => ({
+          id: String(item.denominationId),
+          label: `${item.denominationName} / ${item.tag}`,
+        })),
+      ] as const);
+    }
+    return Object.fromEntries(results);
   }
 
   // ── EQUIPMENT SELECTOR: PUT ─────────────────────────────────────────────
@@ -980,12 +1035,21 @@ export class ExecutionService {
     this.#getJltShotDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
   }
 
-  fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
-    return firstValueFrom(
-      this.#http.get<JltShotDataResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-shot-data/series/${seriesId}/shots/${shotId}`,
-      ),
-    );
+  readonly #fetchJltShotDataParams = signal<JltShotDataParams | null>(null);
+
+  readonly #fetchJltShotDataResource = httpResource<JltShotDataResponse>(() => {
+    const p = this.#fetchJltShotDataParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/jlt-shot-data/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
+    this.#fetchJltShotDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchJltShotDataResource);
+    return this.#fetchJltShotDataResource.value()!;
   }
 
   // ── JLT SHOT DATA: PUT ───────────────────────────────────────────────────
@@ -1023,16 +1087,25 @@ export class ExecutionService {
     this.#getShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
   }
 
-  fetchShotVelocities(
+  readonly #fetchShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
+
+  readonly #fetchShotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
+    const p = this.#fetchShotVelocitiesParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/velocities/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotVelocities(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotVelocitiesResponse> {
-    return firstValueFrom(
-      this.#http.get<ShotVelocitiesResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/velocities/series/${seriesId}/shots/${shotId}`,
-      ),
-    );
+    this.#fetchShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotVelocitiesResource);
+    return this.#fetchShotVelocitiesResource.value()!;
   }
 
   // ── SHOT VELOCITIES: PUT ─────────────────────────────────────────────────
@@ -1049,12 +1122,7 @@ export class ExecutionService {
     };
   });
 
-  setShotVelocity(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotVelocitiesRequest,
-  ): void {
+  setShotVelocity(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVelocitiesRequest): void {
     this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
   }
 
@@ -1075,16 +1143,25 @@ export class ExecutionService {
     this.#getShotPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
   }
 
-  fetchShotPressures(
+  readonly #fetchShotPressuresParams = signal<ShotPressuresParams | null>(null);
+
+  readonly #fetchShotPressuresResource = httpResource<ShotPressuresResponse>(() => {
+    const p = this.#fetchShotPressuresParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/pressures/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotPressures(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotPressuresResponse> {
-    return firstValueFrom(
-      this.#http.get<ShotPressuresResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pressures/series/${seriesId}/shots/${shotId}`,
-      ),
-    );
+    this.#fetchShotPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotPressuresResource);
+    return this.#fetchShotPressuresResource.value()!;
   }
 
   // ── SHOT PRESSURES: PUT ──────────────────────────────────────────────────────
@@ -1101,41 +1178,66 @@ export class ExecutionService {
     };
   });
 
-  setShotPressure(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotPressuresRequest,
-  ): void {
+  setShotPressure(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotPressuresRequest): void {
     this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
   }
 
   // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────
 
-  loadArmamentEquipmentItems(itemType: 'WEAPON' | 'TUBE'): Promise<ArmamentEquipmentItem[]> {
-    return firstValueFrom(
-      this.#http.get<{ items: ArmamentEquipmentItem[] }>(`${this.#planningUrl}/equipment/items`, {
-        params: { itemType },
-      }),
-    ).then((response) => response.items);
+  readonly #loadArmamentItemsParams = signal<LoadEquipmentByTypeParams | null>(null);
+
+  readonly #loadArmamentItemsResource = httpResource<{ items: ArmamentEquipmentItem[] }>(() => {
+    const p = this.#loadArmamentItemsParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#planningUrl}/equipment/items`,
+      method: 'GET',
+      params: { itemType: p.itemType },
+    };
+  });
+
+  async loadArmamentEquipmentItems(itemType: 'WEAPON' | 'TUBE'): Promise<ArmamentEquipmentItem[]> {
+    this.#loadArmamentItemsParams.set({ itemType, _t: Date.now() });
+    await this.#awaitResource(this.#loadArmamentItemsResource);
+    return this.#loadArmamentItemsResource.value()!.items;
   }
 
-  fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
-    return firstValueFrom(
-      this.#http.get<PlanningArmamentResponse>(`${this.#planningUrl}/fire-trials/${fireTrialId}/planning/armament`),
-    );
+  readonly #fetchPlanningArmamentParams = signal<ExecutionParams | null>(null);
+
+  readonly #fetchPlanningArmamentResource = httpResource<PlanningArmamentResponse>(() => {
+    const p = this.#fetchPlanningArmamentParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#planningUrl}/fire-trials/${p.fireTrialId}/planning/armament`,
+      method: 'GET',
+    };
+  });
+
+  async fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
+    this.#fetchPlanningArmamentParams.set({ fireTrialId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchPlanningArmamentResource);
+    return this.#fetchPlanningArmamentResource.value()!;
   }
 
-  fetchShotArmament(
+  readonly #fetchShotArmamentParams = signal<ShotPressuresParams | null>(null);
+
+  readonly #fetchShotArmamentResource = httpResource<ShotArmamentResponse>(() => {
+    const p = this.#fetchShotArmamentParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/armament/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotArmament(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotArmamentResponse> {
-    return firstValueFrom(
-      this.#http.get<ShotArmamentResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/armament/series/${seriesId}/shots/${shotId}`,
-      ),
-    );
+    this.#fetchShotArmamentParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotArmamentResource);
+    return this.#fetchShotArmamentResource.value()!;
   }
 
   readonly #updateShotArmamentParams = signal<ShotArmamentUpdateParams | null>(null);
@@ -1150,12 +1252,59 @@ export class ExecutionService {
     };
   });
 
-  setShotArmament(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotArmamentRequest,
-  ): void {
+  setShotArmament(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotArmamentRequest): void {
     this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  // ── ARMAMENT BULK CONFIGURATION ──────────────────────────────────────────
+
+  readonly #applyArmamentBulkConfigurationParams = signal<ArmamentBulkConfigurationParams | null>(null);
+
+  readonly applyArmamentBulkConfigurationResource = httpResource<void>(() => {
+    const params = this.#applyArmamentBulkConfigurationParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/armament/bulk-configuration`,
+      method: 'POST',
+      body: params.body,
+    };
+  });
+
+  applyArmamentBulkConfiguration(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): void {
+    this.#applyArmamentBulkConfigurationParams.set({ fireTrialId, body, _t: Date.now() });
+  }
+
+  readonly #bulkConfigureArmamentParams = signal<ArmamentBulkConfigurationParams | null>(null);
+
+  readonly #bulkConfigureArmamentResource = httpResource<void>(() => {
+    const p = this.#bulkConfigureArmamentParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/armament/bulk-configuration`,
+      method: 'POST',
+      body: p.body,
+    };
+  });
+
+  async bulkConfigureArmament(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): Promise<void> {
+    this.#bulkConfigureArmamentParams.set({ fireTrialId, body, _t: Date.now() });
+    await this.#awaitResource(this.#bulkConfigureArmamentResource);
+  }
+
+  /**
+   * Espera a que un httpResource complete su carga actual.
+   * Detecta la transición de carga y lanza si hay error.
+   */
+  async #awaitResource(resource: { isLoading: Signal<boolean>; error: Signal<unknown> }): Promise<void> {
+    await firstValueFrom(
+      toObservable(resource.isLoading, { injector: this.#injector }).pipe(
+        filter((_, index) => index > 0 || resource.isLoading()),
+        filter((loading) => !loading),
+        take(1),
+      ),
+    );
+    if (resource.error()) {
+      throw resource.error();
+    }
   }
 }

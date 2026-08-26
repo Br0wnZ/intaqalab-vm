@@ -50,7 +50,13 @@ export function withGeneralData() {
 
       isLoadingFireTrial: computed(() => trialsService.byIdResource.isLoading()),
       // Execution State
-      executionState: computed(() => safeResourceValue(executionService.executionStateResource)),
+      // Comparador por updatedAt: aunque httpResource siempre devuelve un objeto
+      // nuevo, el computed solo propaga el cambio cuando updatedAt difiere,
+      // evitando re-renders en widgets que lean este computed durante el polling.
+      executionState: computed(
+        () => safeResourceValue(executionService.executionStateResource),
+        { equal: (a, b) => (a?.updatedAt ?? null) === (b?.updatedAt ?? null) },
+      ),
 
       isLoadingExecutionState: computed(() => executionService.executionStateResource.isLoading()),
 
@@ -284,11 +290,20 @@ export function withGeneralData() {
         });
 
         // Sincroniza selección activa de serie/disparo desde estado de ejecución API.
+        // Guard de updatedAt: solo aplica patchState si el servidor devuelve un
+        // estado más reciente, evitando re-renders del grid en cada ciclo de polling.
+        let lastProcessedUpdatedAt: string | null = null;
         effect(() => {
           const state = safeResourceValue(executionService.executionStateResource);
           if (!state) {
             return;
           }
+
+          // Sin cambio en updatedAt → los datos son idénticos, no re-renderizar.
+          if (state.updatedAt === lastProcessedUpdatedAt) {
+            return;
+          }
+          lastProcessedUpdatedAt = state.updatedAt;
 
           const activeShotId = state.activeShotId ?? state.activeShootId ?? null;
           if (!state.activeSeriesId || !activeShotId) {

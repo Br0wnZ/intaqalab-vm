@@ -1,19 +1,18 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { loaderInterceptor } from './loader-interceptor';
-import { LoaderService } from './services/loader.service';
+import { MutationLoaderService } from './services/mutation-loader.service';
 
-/** Matches the debounce delay in LoaderService */
+/** Matches debounce delay in MutationLoaderService */
 const SHOW_DEBOUNCE_MS = 150;
 
 describe('loaderInterceptor', () => {
   let httpClient: HttpClient;
   let httpTesting: HttpTestingController;
-  let loaderService: LoaderService;
+  let mutationLoaderService: MutationLoaderService;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -23,194 +22,203 @@ describe('loaderInterceptor', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpTesting = TestBed.inject(HttpTestingController);
-    loaderService = TestBed.inject(LoaderService);
-    loaderService.reset();
+    mutationLoaderService = TestBed.inject(MutationLoaderService);
+    mutationLoaderService.reset();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     httpTesting.verify();
-    loaderService.reset();
+    mutationLoaderService.reset();
   });
 
-  it('should display loader after the debounce delay when a request starts', fakeAsync(() => {
-    expect(loaderService.isLoading()).toBe(false);
+  describe('mutation methods (POST, PUT, DELETE)', () => {
+    it('should display mutation loader on POST request after debounce delay', fakeAsync(() => {
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    httpClient.get('/api/data').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      httpClient.post('/api/items', { name: 'New Item' }).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-    expect(loaderService.isLoading()).toBe(true);
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    httpTesting.expectOne('/api/data').flush({ data: 'test' });
-    tick();
-  }));
+      httpTesting.expectOne('/api/items').flush({ id: 1, name: 'New Item' });
+      tick();
 
-  it('should hide loader when a request completes', fakeAsync(() => {
-    httpClient.get('/api/data').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(true);
+    it('should display mutation loader on PUT request after debounce delay', fakeAsync(() => {
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    httpTesting.expectOne('/api/data').flush({ data: 'test' });
-    tick();
+      httpClient.put('/api/items/1', { name: 'Updated Item' }).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-  it('should hide loader when a request fails', fakeAsync(() => {
-    httpClient.get('/api/data').subscribe({ error: () => {} });
-    tick(SHOW_DEBOUNCE_MS);
+      httpTesting.expectOne('/api/items/1').flush({ id: 1, name: 'Updated Item' });
+      tick();
 
-    expect(loaderService.isLoading()).toBe(true);
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    httpTesting.expectOne('/api/data').error(new ProgressEvent('error'), { status: 500 });
-    tick();
+    it('should display mutation loader on DELETE request after debounce delay', fakeAsync(() => {
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+      httpClient.delete('/api/items/1').subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should keep loader visible with multiple active requests', fakeAsync(() => {
-    httpClient.get('/api/first').subscribe();
-    httpClient.get('/api/second').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    expect(loaderService.isLoading()).toBe(true);
+      httpTesting.expectOne('/api/items/1').flush(null);
+      tick();
 
-    httpTesting.expectOne('/api/first').flush({ data: 'first' });
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(true);
+    it('should hide mutation loader when mutation request fails', fakeAsync(() => {
+      httpClient.post('/api/items', {}).subscribe({
+        next: vi.fn(),
+        error: vi.fn(),
+      });
+      tick(SHOW_DEBOUNCE_MS);
 
-    httpTesting.expectOne('/api/second').flush({ data: 'second' });
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+      httpTesting.expectOne('/api/items').error(new ProgressEvent('error'), { status: 500 });
+      tick();
 
-  it('should handle correctly when one request fails and another completes', fakeAsync(() => {
-    httpClient.get('/api/success').subscribe();
-    httpClient.get('/api/error').subscribe({ error: () => {} });
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(true);
+    it('should keep mutation loader visible until all concurrent mutation requests finish', fakeAsync(() => {
+      httpClient.post('/api/first', {}).subscribe();
+      httpClient.put('/api/second', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-    httpTesting.expectOne('/api/error').error(new ProgressEvent('error'), { status: 404 });
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    expect(loaderService.isLoading()).toBe(true);
+      httpTesting.expectOne('/api/first').flush({});
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    httpTesting.expectOne('/api/success').flush({ data: 'ok' });
-    tick();
+      httpTesting.expectOne('/api/second').flush({});
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+    it('should handle correctly when one mutation request fails and another succeeds', fakeAsync(() => {
+      httpClient.post('/api/success', {}).subscribe();
+      httpClient.delete('/api/error').subscribe({
+        next: vi.fn(),
+        error: vi.fn(),
+      });
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should exclude requests to /i18n/', fakeAsync(() => {
-    httpClient.get('/i18n/en.json').subscribe();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    expect(loaderService.isLoading()).toBe(false);
+      httpTesting.expectOne('/api/error').error(new ProgressEvent('error'), { status: 404 });
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    httpTesting.expectOne('/i18n/en.json').flush({});
-    tick();
+      httpTesting.expectOne('/api/success').flush({});
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
+  });
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+  describe('non-mutation methods (GET, HEAD, etc.)', () => {
+    it('should not show mutation loader for GET requests', fakeAsync(() => {
+      httpClient.get('/api/items').subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should exclude requests to /assets/', fakeAsync(() => {
-    httpClient.get('/assets/config.json').subscribe();
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(false);
+      httpTesting.expectOne('/api/items').flush([]);
+      tick();
 
-    httpTesting.expectOne('/assets/config.json').flush({});
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+    it('should not show mutation loader for PATCH requests not in mutation list', fakeAsync(() => {
+      httpClient.patch('/api/items/1', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should exclude requests to /execution/state', fakeAsync(() => {
-    httpClient.get('/execution/state').subscribe();
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(false);
+      httpTesting.expectOne('/api/items/1').flush({});
+      tick();
 
-    httpTesting.expectOne('/execution/state').flush({});
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
+  });
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+  describe('excluded URLs', () => {
+    it('should exclude requests matching /i18n/', fakeAsync(() => {
+      httpClient.post('/i18n/es.json', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should exclude requests to /openid-connect/token', fakeAsync(() => {
-    httpClient.post('/openid-connect/token', {}).subscribe();
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(false);
+      httpTesting.expectOne('/i18n/es.json').flush({});
+      tick();
 
-    httpTesting.expectOne('/openid-connect/token').flush({});
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+    it('should exclude requests matching /assets/', fakeAsync(() => {
+      httpClient.post('/assets/upload', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should display loader for normal API routes', fakeAsync(() => {
-    httpClient.get('/api/users').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(true);
+      httpTesting.expectOne('/assets/upload').flush({});
+      tick();
 
-    httpTesting.expectOne('/api/users').flush([]);
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+    it('should exclude requests matching /execution/state', fakeAsync(() => {
+      httpClient.post('/execution/state', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-  it('should handle mixed requests (excluded and non-excluded)', fakeAsync(() => {
-    httpClient.get('/i18n/es.json').subscribe();
-    httpClient.get('/api/data').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(true);
+      httpTesting.expectOne('/execution/state').flush({});
+      tick();
 
-    httpTesting.expectOne('/i18n/es.json').flush({});
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
 
-    expect(loaderService.isLoading()).toBe(true);
+    it('should exclude requests matching /openid-connect/token', fakeAsync(() => {
+      httpClient.post('/openid-connect/token', {}).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-    httpTesting.expectOne('/api/data').flush({});
-    tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
 
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+      httpTesting.expectOne('/openid-connect/token').flush({});
+      tick();
 
-  it('should handle three or more concurrent requests', fakeAsync(() => {
-    httpClient.get('/api/one').subscribe();
-    httpClient.get('/api/two').subscribe();
-    httpClient.get('/api/three').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
+  });
 
-    expect(loaderService.isLoading()).toBe(true);
+  describe('mixed requests flow', () => {
+    it('should activate mutation loader only for mutation requests in mixed traffic', fakeAsync(() => {
+      httpClient.get('/api/read-only').subscribe();
+      httpClient.post('/i18n/update', {}).subscribe();
+      httpClient.post('/api/create-item', { name: 'Item' }).subscribe();
+      tick(SHOW_DEBOUNCE_MS);
 
-    httpTesting.expectOne('/api/one').flush({});
-    tick();
-    expect(loaderService.isLoading()).toBe(true);
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    httpTesting.expectOne('/api/two').flush({});
-    tick();
-    expect(loaderService.isLoading()).toBe(true);
+      httpTesting.expectOne('/api/read-only').flush([]);
+      httpTesting.expectOne('/i18n/update').flush({});
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(true);
 
-    httpTesting.expectOne('/api/three').flush({});
-    tick();
-    expect(loaderService.isLoading()).toBe(false);
-  }));
-
-  it('should not show loader if only excluded requests are active', fakeAsync(() => {
-    httpClient.get('/i18n/en.json').subscribe();
-    httpClient.get('/assets/logo.svg').subscribe();
-    tick(SHOW_DEBOUNCE_MS);
-
-    expect(loaderService.isLoading()).toBe(false);
-
-    httpTesting.expectOne('/i18n/en.json').flush({});
-    httpTesting.expectOne('/assets/logo.svg').flush({});
-    tick();
-
-    expect(loaderService.isLoading()).toBe(false);
-  }));
+      httpTesting.expectOne('/api/create-item').flush({ id: 1 });
+      tick();
+      expect(mutationLoaderService.isMutating()).toBe(false);
+    }));
+  });
 });
