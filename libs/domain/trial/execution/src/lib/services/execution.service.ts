@@ -11,7 +11,9 @@ import type {
   EquipmentMeasureMagnitude,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
-  WidgetId
+  ShotMunitionRequest,
+  ShotMunitionResponse,
+  WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -194,6 +196,17 @@ interface ShotVelocitiesParams {
 
 interface ShotVelocitiesUpdateParams extends ShotVelocitiesParams {
   body: ShotVelocitiesRequest;
+}
+
+interface ShotMunitionParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotMunitionUpdateParams extends ShotMunitionParams {
+  body: ShotMunitionRequest;
 }
 
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
@@ -1289,6 +1302,73 @@ export class ExecutionService {
   async bulkConfigureArmament(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): Promise<void> {
     this.#bulkConfigureArmamentParams.set({ fireTrialId, body, _t: Date.now() });
     await this.#awaitResource(this.#bulkConfigureArmamentResource);
+  }
+
+  // ── SHOT MUNITIONS: GET (Widget 20) ──────────────────────────────────────────
+
+  readonly #getShotMunitionParams = signal<ShotMunitionParams | null>(null);
+
+  readonly shotMunitionResource = httpResource<ShotMunitionResponse>(() => {
+    const params = this.#getShotMunitionParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotMunitionParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotMunitionParams = signal<ShotMunitionParams | null>(null);
+
+  readonly #fetchShotMunitionResource = httpResource<ShotMunitionResponse>(() => {
+    const p = this.#fetchShotMunitionParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/munitions/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotMunition(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotMunitionResponse> {
+    this.#fetchShotMunitionParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotMunitionResource);
+    return this.#fetchShotMunitionResource.value()!;
+  }
+
+  // ── SHOT MUNITIONS: PUT (Widget 20) ──────────────────────────────────────────
+
+  readonly #updateShotMunitionParams = signal<ShotMunitionUpdateParams | null>(null);
+
+  readonly updateShotMunitionResource = httpResource<ShotMunitionResponse>(() => {
+    const params = this.#updateShotMunitionParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotMunitionRequest): void {
+    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotMunition(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotMunitionRequest,
+  ): Promise<ShotMunitionResponse> {
+    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotMunitionResource);
+    return this.updateShotMunitionResource.value()!;
   }
 
   /**

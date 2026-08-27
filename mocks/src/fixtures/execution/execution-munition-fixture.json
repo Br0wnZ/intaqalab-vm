@@ -1,0 +1,74 @@
+{
+  "munitionData": [
+    {
+      "componentId": "granada-01",
+      "identificationData": {
+        "denominationId": "den-01",
+        "batch": "lote-01",
+        "clientNumber": "CL-00123",
+        "fuseWorkingModeId": "percusion",
+        "fuseGraduation": 5.5,
+        "fuseGraduationUnit": "S",
+        "observations": "Identificación de granada 155mm verificada."
+      },
+      "weightData": {
+        "balanceId": 21031,
+        "weight": 43.5,
+        "weightUnit": "KG",
+        "weightAdded": 0,
+        "weightAddedUnit": "G",
+        "weightRemoved": 0,
+        "weightRemovedUnit": "G",
+        "weighingDateTime": "2026-08-21T10:34:12Z",
+        "weighingRange": "0 - 500g",
+        "observations": "Pesada de granada correcta."
+      },
+      "conditioningData": {
+        "climaticChamberId": 21045,
+        "chamberEntryDateTime": "2026-08-21T08:00:00Z",
+        "chamberExitDateTime": "2026-08-21T10:30:00Z",
+        "temperature": 20,
+        "temperatureUnit": "CELSIUS",
+        "programmedTemperature": 21,
+        "programmedTemperatureUnit": "CELSIUS",
+        "chamberTime": "02:30:00",
+        "observations": "Acondicionamiento de granada completado."
+      }
+    },
+    {
+      "componentId": "espoleta-01",
+      "identificationData": {
+        "denominationId": "den-02",
+        "batch": "lote-03",
+        "clientNumber": "CL-00456",
+        "fuseWorkingModeId": "tiempo",
+        "fuseGraduation": 12.0,
+        "fuseGraduationUnit": "S",
+        "observations": "Espoleta graduada a 12s."
+      },
+      "weightData": {
+        "balanceId": 21031,
+        "weight": 520.0,
+        "weightUnit": "G",
+        "weightAdded": 0,
+        "weightAddedUnit": "G",
+        "weightRemoved": 0,
+        "weightRemovedUnit": "G",
+        "weighingDateTime": "2026-08-21T09:15:00Z",
+        "weighingRange": "0 - 500g",
+        "observations": "Pesada de espoleta."
+      },
+      "conditioningData": {
+        "climaticChamberId": 21045,
+        "chamberEntryDateTime": "2026-08-21T08:00:00Z",
+        "chamberExitDateTime": "2026-08-21T10:30:00Z",
+        "temperature": 20,
+        "temperatureUnit": "CELSIUS",
+        "programmedTemperature": 21,
+        "programmedTemperatureUnit": "CELSIUS",
+        "chamberTime": "02:30:00",
+        "observations": "Espoleta acondicionada."
+      }
+    }
+  ]
+}

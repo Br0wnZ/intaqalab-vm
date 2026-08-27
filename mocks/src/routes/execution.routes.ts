@@ -15,6 +15,7 @@ import {
   getPlanningState,
   getReadiness,
   getShotArmament,
+  getShotMunition,
   getShotPressures,
   getShotVelocities,
   registerFireShot,
@@ -25,6 +26,7 @@ import {
   setProfileReadiness,
   setSeriesProfileReadiness,
   setShotArmament,
+  setShotMunition,
   setShotPressure,
   setShotVelocity,
   updateCountdownState,
@@ -524,3 +526,48 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/armament/bul
     res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Error applying bulk armament configuration' });
   }
 });
+
+// ==========================================
+// DATA ENTRY - WIDGET 20 MUNITIONS
+// ==========================================
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/munitions/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotMunition(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/munitions/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotMunition(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid munitions payload' });
+    }
+  },
+);

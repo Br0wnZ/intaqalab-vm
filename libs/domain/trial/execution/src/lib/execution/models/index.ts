@@ -27,3 +27,6 @@ export type {
 
 // Equipment models
 export * from './equipment.models';
+
+// Shot munition models (Widget 20)
+export * from './shot-munition.models';

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -186,20 +186,28 @@ export class MunitionIdentificacionTabComponent {
   });
 
   constructor() {
+    // Cascada: si el componente cambia y la denominación actual no es válida, la limpia
+    effect(() => {
+      const denOpts = this.filteredDenominacionOptions();
+      const currentDen = this.identFormModel().denominacion;
+      if (currentDen && !denOpts.some((d) => d.value === currentDen)) {
+        untracked(() => this.identFormModel.update((m) => ({ ...m, denominacion: null, lote: null })));
+      }
+    });
+
+    // Cascada: si la denominación cambia y el lote actual no es válido, lo limpia o auto-llena si solo hay 1
     effect(() => {
       const opts = this.filteredLoteOptions();
-      if (opts.length === 1) {
-        const onlyLote = opts[0].value;
-        if (this.identFormModel().lote !== onlyLote) {
-          this.identFormModel.update((m) => ({ ...m, lote: onlyLote }));
-        }
+      const currentLote = this.identFormModel().lote;
+      if (currentLote && !opts.some((l) => l.value === currentLote)) {
+        untracked(() => this.identFormModel.update((m) => ({ ...m, lote: opts.length === 1 ? opts[0].value : null })));
       }
     });
   }
 
-  save(): void {
+  getFormUpdates(): Partial<MunitionIntroIdentificationState> {
     const { componente, denominacion, lote, modoFuncionamiento } = this.identFormModel();
-    const identUpdates: Partial<MunitionIntroIdentificationState> = {
+    return {
       componente,
       denominacion,
       lote,
@@ -208,10 +216,27 @@ export class MunitionIdentificacionTabComponent {
       observaciones: this.observacionesField(),
       graduacionEspoleta: this.#parseNum(this.graduacionEspoletaField()),
     };
-    this.#store.updateMunitionIntroductionIdentification(identUpdates);
+  }
 
+  applyData(data: Partial<MunitionIntroIdentificationState>): void {
+    this.identFormModel.update((m) => ({
+      ...m,
+      componente: data.componente !== undefined ? data.componente : m.componente,
+      denominacion: data.denominacion !== undefined ? data.denominacion : m.denominacion,
+      lote: data.lote !== undefined ? data.lote : m.lote,
+      modoFuncionamiento: data.modoFuncionamiento !== undefined ? data.modoFuncionamiento : m.modoFuncionamiento,
+    }));
+    if (data.numeroCliente !== undefined) this.numeroClienteField.set(data.numeroCliente);
+    if (data.observaciones !== undefined) this.observacionesField.set(data.observaciones);
+    if (data.graduacionEspoleta !== undefined)
+      this.graduacionEspoletaField.set(this.#numToField(data.graduacionEspoleta, 's'));
     this.#dirtyTracker.syncSnapshot();
-    this.identForm().reset();
+  }
+
+  save(): void {
+    const identUpdates = this.getFormUpdates();
+    this.#store.updateMunitionIntroductionIdentification(identUpdates);
+    this.#dirtyTracker.syncSnapshot();
   }
 
   reset(): void {
@@ -226,6 +251,5 @@ export class MunitionIdentificacionTabComponent {
     this.observacionesField.set(stored.observaciones);
     this.graduacionEspoletaField.set(this.#numToField(stored.graduacionEspoleta, 's'));
     this.#dirtyTracker.syncSnapshot();
-    this.identForm().reset();
   }
 }

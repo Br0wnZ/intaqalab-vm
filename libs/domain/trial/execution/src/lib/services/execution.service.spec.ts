@@ -7,7 +7,7 @@ import { CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/mod
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EquipmentTypeEnum, WidgetId } from '../execution/models';
+import { EquipmentTypeEnum, type ShotMunitionRequest, type ShotMunitionResponse, WidgetId } from '../execution/models';
 import {
   type ArmamentBulkConfigurationRequest,
   type ArmamentEquipmentItem,
@@ -861,5 +861,99 @@ describe('ExecutionService', () => {
     TestBed.tick();
 
     await expect(directPromise).resolves.toBeUndefined();
+  });
+
+  it('handles shot munitions (Widget 20) GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-10';
+    const shotId = 'shot-20';
+    const mockMunitionResponse: ShotMunitionResponse = {
+      munitionData: [
+        {
+          componentId: '550e8400-e29b-41d4-a716-446655440210',
+          identificationData: {
+            denominationId: '550e8400-e29b-41d4-a716-446655440212',
+            batch: 'LOT-HE-2026-01',
+            clientNumber: 'CL-00123',
+            observations: 'Ident OK',
+          },
+          weightData: {
+            balanceId: 21031,
+            weight: 41.2,
+            weightUnit: 'G',
+            weighingDateTime: '2026-08-21T10:34:12Z',
+          },
+          conditioningData: {
+            climaticChamberId: 21045,
+            chamberEntryDateTime: '2026-08-21T08:00:00Z',
+            chamberExitDateTime: '2026-08-21T10:30:00Z',
+          },
+        },
+      ],
+    };
+
+    // getShotMunition (httpResource)
+    service.getShotMunition(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/munitions/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockMunitionResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotMunitionResource.value()).toEqual(mockMunitionResponse);
+    });
+
+    // fetchShotMunition (Promise)
+    const directFetchPromise = service.fetchShotMunition(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/munitions/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockMunitionResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockMunitionResponse);
+
+    // setShotMunition (httpResource)
+    const updateBody: ShotMunitionRequest = {
+      components: [
+        {
+          componentId: '550e8400-e29b-41d4-a716-446655440210',
+          identificationData: {
+            denominationId: '550e8400-e29b-41d4-a716-446655440212',
+            batch: 'LOT-HE-2026-02',
+            clientNumber: 'CL-00124',
+          },
+        },
+      ],
+    };
+
+    service.setShotMunition(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/munitions/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockMunitionResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotMunitionResource.value()).toEqual(mockMunitionResponse);
+    });
+
+    // updateShotMunition (Promise)
+    const updatePromise = service.updateShotMunition(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/munitions/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockMunitionResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockMunitionResponse);
   });
 });

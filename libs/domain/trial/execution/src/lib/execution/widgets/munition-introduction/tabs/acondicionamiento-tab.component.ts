@@ -240,26 +240,44 @@ export class MunitionAcondicionamientoTabComponent {
   });
 
   captureFechaHoraEntrada(): void {
-    this.fechaHoraEntradaField.set(new Date().toISOString());
+    this.fechaHoraEntradaField.set(new Date().toISOString().substring(0, 16));
   }
 
   captureFechaHoraSalida(): void {
-    this.fechaHoraSalidaField.set(new Date().toISOString());
+    this.fechaHoraSalidaField.set(new Date().toISOString().substring(0, 16));
   }
 
-  save(): void {
+  getFormUpdates(): Partial<MunitionIntroAcondicionamientoState> {
     const { camara, componente } = this.acondFormModel();
-    const acondUpdates: Partial<MunitionIntroAcondicionamientoState> = {
+    return {
       camara,
       componente,
       fechaHoraEntrada: this.fechaHoraEntradaField(),
       fechaHoraSalida: this.fechaHoraSalidaField(),
       observaciones: this.observacionesField(),
     };
-    this.#store.updateMunitionIntroductionAcondicionamiento(acondUpdates);
+  }
 
+  applyData(data: Partial<MunitionIntroAcondicionamientoState>): void {
+    this.acondFormModel.update((m) => ({
+      ...m,
+      camara: data.camara !== undefined ? data.camara : m.camara,
+      componente: data.componente !== undefined ? data.componente : m.componente,
+    }));
+    if (data.observaciones !== undefined) this.observacionesField.set(data.observaciones);
+    if (data.fechaHoraEntrada !== undefined) {
+      this.fechaHoraEntradaField.set(data.fechaHoraEntrada ? data.fechaHoraEntrada.substring(0, 16) : null);
+    }
+    if (data.fechaHoraSalida !== undefined) {
+      this.fechaHoraSalidaField.set(data.fechaHoraSalida ? data.fechaHoraSalida.substring(0, 16) : null);
+    }
     this.#dirtyTracker.syncSnapshot();
-    this.acondForm().reset();
+  }
+
+  save(): void {
+    const acondUpdates = this.getFormUpdates();
+    this.#store.updateMunitionIntroductionAcondicionamiento(acondUpdates);
+    this.#dirtyTracker.syncSnapshot();
   }
 
   reset(): void {
@@ -269,10 +287,9 @@ export class MunitionAcondicionamientoTabComponent {
       componente: stored.componente,
     });
     this.observacionesField.set(stored.observaciones);
-    this.fechaHoraEntradaField.set(stored.fechaHoraEntrada);
-    this.fechaHoraSalidaField.set(stored.fechaHoraSalida);
+    this.fechaHoraEntradaField.set(stored.fechaHoraEntrada ? stored.fechaHoraEntrada.substring(0, 16) : null);
+    this.fechaHoraSalidaField.set(stored.fechaHoraSalida ? stored.fechaHoraSalida.substring(0, 16) : null);
     this.#dirtyTracker.syncSnapshot();
-    this.acondForm().reset();
   }
 
   // Se expone el model de formulario por si el padre lo necesita para config masiva

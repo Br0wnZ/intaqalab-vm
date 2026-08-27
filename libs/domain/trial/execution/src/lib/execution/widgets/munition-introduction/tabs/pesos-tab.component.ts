@@ -218,9 +218,9 @@ export class MunitionPesosTabComponent {
     this.fechaHoraPesosField.set(new Date().toLocaleString('es-ES'));
   }
 
-  save(): void {
+  getFormUpdates(): Partial<MunitionIntroPesosState> {
     const { componente, balanza } = this.pesosFormModel();
-    const pesosUpdates: Partial<MunitionIntroPesosState> = {
+    return {
       componente,
       balanza,
       peso: this.#parseNum(this.pesoField()),
@@ -229,10 +229,28 @@ export class MunitionPesosTabComponent {
       fechaHora: this.fechaHoraPesosField(),
       observaciones: this.observacionesField(),
     };
-    this.#store.updateMunitionIntroductionPesos(pesosUpdates);
+  }
 
+  applyData(data: Partial<MunitionIntroPesosState>): void {
+    this.pesosFormModel.update((m) => ({
+      ...m,
+      componente: data.componente !== undefined ? data.componente : m.componente,
+      balanza: data.balanza !== undefined ? data.balanza : m.balanza,
+    }));
+    if (data.peso !== undefined) this.pesoField.set(this.#numToField(data.peso, 'g'));
+    if (data.pesoAnadido !== undefined) this.pesoAnadidoField.set(this.#numToField(data.pesoAnadido, 'g'));
+    if (data.pesoRetirado !== undefined) this.pesoRetiradoField.set(this.#numToField(data.pesoRetirado, 'g'));
+    if (data.observaciones !== undefined) this.observacionesField.set(data.observaciones);
+    if (data.fechaHora !== undefined) {
+      this.fechaHoraPesosField.set(data.fechaHora ? data.fechaHora.substring(0, 16) : null);
+    }
     this.#dirtyTracker.syncSnapshot();
-    this.pesosForm().reset();
+  }
+
+  save(): void {
+    const pesosUpdates = this.getFormUpdates();
+    this.#store.updateMunitionIntroductionPesos(pesosUpdates);
+    this.#dirtyTracker.syncSnapshot();
   }
 
   reset(): void {
@@ -242,11 +260,10 @@ export class MunitionPesosTabComponent {
       balanza: stored.balanza,
     });
     this.observacionesField.set(stored.observaciones);
-    this.fechaHoraPesosField.set(stored.fechaHora);
+    this.fechaHoraPesosField.set(stored.fechaHora ? stored.fechaHora.substring(0, 16) : null);
     this.pesoField.set(this.#numToField(stored.peso, 'g'));
     this.pesoAnadidoField.set(this.#numToField(stored.pesoAnadido, 'g'));
     this.pesoRetiradoField.set(this.#numToField(stored.pesoRetirado, 'g'));
     this.#dirtyTracker.syncSnapshot();
-    this.pesosForm().reset();
   }
 }

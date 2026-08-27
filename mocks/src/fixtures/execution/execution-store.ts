@@ -140,6 +140,7 @@ const jltShotDataStateMap = new Map<string, Map<string, JltShotDataResponse>>();
 const velocitiesStateMap = new Map<string, Map<string, ShotVelocitiesResponse>>();
 const pressuresStateMap = new Map<string, Map<string, ShotPressuresResponse>>();
 const armamentStateMap = new Map<string, Map<string, ShotArmamentResponse>>();
+const munitionStateMap = new Map<string, Map<string, ShotMunitionResponse>>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -174,8 +175,13 @@ function getShotProgress(seriesId: string, shotId: string): { status: string } |
     series: Array<{ seriesId: string; shots: Array<{ shotId: string; status: string }> }>;
   }>('fixtures/execution', 'execution-progress-fixture.json');
 
-  const series = progress.series.find((item) => item.seriesId === seriesId);
-  return series?.shots.find((shot) => shot.shotId === shotId) ?? null;
+  const series = progress?.series?.find((item) => item.seriesId === seriesId);
+  const foundShot = series?.shots?.find((shot) => shot.shotId === shotId);
+  if (foundShot) {
+    return foundShot;
+  }
+
+  return { status: 'ACTIVE' };
 }
 
 function getOrCreateJltShotDataMap(fireTrialId: string): Map<string, JltShotDataResponse> {
@@ -765,7 +771,8 @@ export function setShotArmament(
     armamentData: {
       weapon: payload.weaponId !== undefined ? weapon : (current.armamentData?.weapon ?? null),
       tube: payload.tubeId !== undefined ? tube : (current.armamentData?.tube ?? null),
-      observations: payload.observations !== undefined ? payload.observations : (current.armamentData?.observations ?? null),
+      observations:
+        payload.observations !== undefined ? payload.observations : (current.armamentData?.observations ?? null),
     },
   };
 
@@ -773,10 +780,7 @@ export function setShotArmament(
   return cloneArmamentState(updated);
 }
 
-export function applyArmamentBulkConfiguration(
-  fireTrialId: string,
-  payload: ArmamentBulkConfigurationRequest,
-): void {
+export function applyArmamentBulkConfiguration(fireTrialId: string, payload: ArmamentBulkConfigurationRequest): void {
   const progress = getExecutionProgressFixture();
   const state = getOrCreateArmamentMap(fireTrialId);
 
@@ -812,7 +816,10 @@ export function applyArmamentBulkConfiguration(
             armamentData: {
               weapon: payload.weaponId !== undefined ? weapon : (current.armamentData?.weapon ?? null),
               tube: payload.tubeId !== undefined ? tube : (current.armamentData?.tube ?? null),
-              observations: payload.observations !== undefined ? payload.observations : (current.armamentData?.observations ?? null),
+              observations:
+                payload.observations !== undefined
+                  ? payload.observations
+                  : (current.armamentData?.observations ?? null),
             },
           };
           state.set(key, updated);
@@ -820,4 +827,134 @@ export function applyArmamentBulkConfiguration(
       }
     }
   }
+}
+
+// ── SHOT MUNITION tipos y store (Widget 20) ────────────────────────────────
+
+export interface ShotMunitionIdentificationData {
+  denominationId?: string | null;
+  batch?: string | null;
+  clientNumber?: string | null;
+  fuseWorkingModeId?: string | null;
+  fuseGraduation?: number | null;
+  fuseGraduationUnit?: string | null;
+  loadingZone?: string | null;
+  modules?: number | null;
+  observations?: string | null;
+}
+
+export interface ShotMunitionWeightData {
+  balanceId?: number | null;
+  weight?: number | null;
+  weightUnit?: string | null;
+  weightAdded?: number | null;
+  weightAddedUnit?: string | null;
+  weightRemoved?: number | null;
+  weightRemovedUnit?: string | null;
+  weighingDateTime?: string | null;
+  weighingRange?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotMunitionConditioningData {
+  climaticChamberId?: number | null;
+  chamberEntryDateTime?: string | null;
+  chamberExitDateTime?: string | null;
+  temperature?: number | null;
+  temperatureUnit?: string | null;
+  programmedTemperature?: number | null;
+  programmedTemperatureUnit?: string | null;
+  chamberTime?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotMunitionComponent {
+  componentId: string;
+  identificationData?: ShotMunitionIdentificationData | null;
+  weightData?: ShotMunitionWeightData | null;
+  conditioningData?: ShotMunitionConditioningData | null;
+}
+
+export interface ShotMunitionResponse {
+  munitionData: ShotMunitionComponent[];
+}
+
+export interface ShotMunitionRequest {
+  components: ShotMunitionComponent[];
+}
+
+function defaultMunitionState(): ShotMunitionResponse {
+  return getFixture<ShotMunitionResponse>('fixtures/execution', 'execution-munition-fixture.json');
+}
+
+function cloneMunitionState(state: ShotMunitionResponse): ShotMunitionResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateMunitionMap(fireTrialId: string): Map<string, ShotMunitionResponse> {
+  let state = munitionStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotMunitionResponse>();
+    munitionStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotMunition(fireTrialId: string, seriesId: string, shotId: string): ShotMunitionResponse {
+  const state = getOrCreateMunitionMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneMunitionState(defaultMunitionState());
+    state.set(key, initial);
+    return cloneMunitionState(initial);
+  }
+
+  return cloneMunitionState(current);
+}
+
+export function setShotMunition(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotMunitionRequest,
+): ShotMunitionResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED' && shotProgress.status !== 'PENDING') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateMunitionMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+
+  const updated: ShotMunitionResponse = {
+    munitionData: (payload.components || []).map((comp) => ({
+      componentId: comp.componentId,
+      identificationData: comp.identificationData ?? null,
+      weightData: comp.weightData
+        ? {
+            ...comp.weightData,
+            weighingRange: comp.weightData.weighingRange ?? '300,00-500,00g',
+          }
+        : null,
+      conditioningData: comp.conditioningData
+        ? {
+            ...comp.conditioningData,
+            temperature: comp.conditioningData.temperature ?? 20,
+            temperatureUnit: comp.conditioningData.temperatureUnit ?? 'CELSIUS',
+            programmedTemperature: comp.conditioningData.programmedTemperature ?? 21,
+            programmedTemperatureUnit: comp.conditioningData.programmedTemperatureUnit ?? 'CELSIUS',
+            chamberTime: comp.conditioningData.chamberTime ?? '02:30:00',
+          }
+        : null,
+    })),
+  };
+
+  state.set(key, updated);
+  return cloneMunitionState(updated);
 }
