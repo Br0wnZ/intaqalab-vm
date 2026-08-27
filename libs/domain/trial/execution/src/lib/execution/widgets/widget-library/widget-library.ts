@@ -9,7 +9,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import type { Widget } from '../../models/execution-grid.models';
 
 @Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'inta-widget-library',
   imports: [MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, TranslateModule, IntaIconComponent],
   template: `

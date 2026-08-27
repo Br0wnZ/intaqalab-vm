@@ -25,6 +25,29 @@
     border-color: var(--inta-color-primary-hover) !important;
     background-color: var(--inta-color-primary-hover) !important;
   }
+
+  // Variante verde — usa el mismo verde que el success-toast (#51a351)
+  // Debe ir DESPUÉS de las reglas primarias para ganar por orden de cascada
+  // dentro del mismo layer (mayor especificidad también ayuda)
+  .mat-mdc-checkbox.green-checkbox {
+    --mdc-checkbox-selected-checkmark-color: #ffffff !important;
+    --mdc-checkbox-selected-focus-icon-color: #51a351 !important;
+    --mdc-checkbox-selected-hover-icon-color: #51a351 !important;
+    --mdc-checkbox-selected-icon-color: #51a351 !important;
+    --mdc-checkbox-selected-pressed-icon-color: #51a351 !important;
+    --mdc-checkbox-unselected-hover-icon-color: #51a351 !important;
+    --mdc-checkbox-unselected-focus-icon-color: #51a351 !important;
+    --mdc-checkbox-unselected-pressed-icon-color: #51a351 !important;
+    --mat-checkbox-ripple-color: color-mix(in srgb, #51a351 22%, transparent) !important;
+  }
+
+  .mat-mdc-checkbox.green-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__background,
+  .mat-mdc-checkbox.green-checkbox .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background,
+  .mat-mdc-checkbox.green-checkbox .mdc-checkbox__native-control:enabled:focus:checked ~ .mdc-checkbox__background,
+  .mat-mdc-checkbox.green-checkbox .mdc-checkbox__native-control:enabled:hover:checked ~ .mdc-checkbox__background {
+    border-color: #51a351 !important;
+    background-color: #51a351 !important;
+  }
 }
 
 html body .mat-mdc-checkbox.small-checkbox {

@@ -86,8 +86,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           <div class="flex flex-col min-w-0 h-full border-r border-slate-100 pr-4">
             <div class="flex items-center gap-2 justify-between mb-1 shrink-0">
               <mat-checkbox
-                color="primary"
-                class="small-checkbox"
+                class="small-checkbox green-checkbox"
                 [checked]="jltDraft().sanitary"
                 (change)="updateJlt('sanitary', $event.checked)"
               >
@@ -96,8 +95,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
                 </span>
               </mat-checkbox>
               <mat-checkbox
-                color="primary"
-                class="small-checkbox"
+                class="small-checkbox green-checkbox"
                 [checked]="jltDraft().security"
                 (change)="updateJlt('security', $event.checked)"
               >
@@ -106,8 +104,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
                 </span>
               </mat-checkbox>
               <mat-checkbox
-                color="primary"
-                class="small-checkbox"
+                class="small-checkbox green-checkbox"
                 [checked]="jltDraft().boat"
                 (change)="updateJlt('boat', $event.checked)"
               >
@@ -135,10 +132,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             @for (unit of techUnits(); track unit.id) {
               <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                  <mat-icon
-                    class="!w-4 !h-4 !text-[16px]"
-                    [class]="unit.ready ? '!text-[var(--inta-button)]' : '!text-gray-700'"
-                  >
+                  <mat-icon class="!w-4 !h-4 !text-[16px]" [class]="unit.ready ? '!text-[#51a351]' : '!text-gray-700'">
                     {{ unit.ready ? 'check_box' : 'check_box_outline_blank' }}
                   </mat-icon>
                   <span class="text-[11px] font-bold text-slate-700">{{ unit.labelKey | translate }}</span>
