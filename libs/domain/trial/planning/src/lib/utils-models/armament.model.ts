@@ -56,6 +56,7 @@ export type ArmamentSerie = {
 export type ArmamentSerieShot = {
   shotId: string;
   armament: ArmamentSerieShotDetail;
+  globalNumber?: number;
 };
 
 export type ArmamentSerieShotDetail = {

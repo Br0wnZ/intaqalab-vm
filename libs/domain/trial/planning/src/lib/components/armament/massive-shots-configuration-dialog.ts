@@ -1,12 +1,4 @@
-import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, max, min, required, requiredError, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -53,8 +45,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="series"
+              clearable
               multiple
               [formField]="configForm.series"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_PLACEHOLDER' | translate"
@@ -93,8 +85,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="tipo"
+              clearable
               [formField]="configForm.tipo"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_PLACEHOLDER' | translate"
               (valueChange)="onTypeChange($event)"
@@ -113,8 +105,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="denominacionArma"
+              clearable
               [formField]="configForm.denominacionArma"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_PLACEHOLDER' | translate"
               (valueChange)="onWeaponChange($event)"
@@ -138,8 +130,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="denominacionTubo"
+                clearable
                 [formField]="configForm.denominacionTubo"
                 [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_PLACEHOLDER' | translate"
               >
@@ -164,8 +156,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="instrumentado"
+                clearable
                 [formField]="configForm.instrumentado"
                 [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
               >
@@ -186,8 +178,8 @@ import { SpecimenType } from '../../utils-models/specimen.model';
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <input
-                matInput
                 id="vidaUtil"
+                matInput
                 type="number"
                 step="1"
                 [formField]="configForm.vidaUtil"
@@ -283,7 +275,9 @@ export class MassiveShotsConfigurationDialog {
   readonly isLoadingTubes = computed(() => this.#tubeDenominationsResource.isLoading());
 
   readonly isMortar = computed(() => this.configModel().tipo?.toLowerCase() === SpecimenType.Mortar);
-  readonly isNotMortar = computed(() => !!this.configModel().tipo && this.configModel().tipo?.toLowerCase() !== SpecimenType.Mortar);
+  readonly isNotMortar = computed(
+    () => !!this.configModel().tipo && this.configModel().tipo?.toLowerCase() !== SpecimenType.Mortar,
+  );
 
   readonly configForm = form(this.configModel, (path) => {
     validate(path.series, ({ value }) => {
@@ -324,7 +318,8 @@ export class MassiveShotsConfigurationDialog {
 
   readonly tubesOptions = computed<{ value: string; label: string }[]>(() => {
     const response = safeResourceValue(this.#tubeDenominationsResource);
-    return (response?.items ?? []).map((t) => ({ value: t.id, label: t.name }));
+
+    return (response?.items ?? []).map((t) => ({ value: t.id, label: t.modelName || '' }));
   });
 
   readonly selectedChips = computed(() => {

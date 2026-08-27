@@ -142,9 +142,6 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
                       <thead>
                         <tr class="border-b border-gray-200 bg-gray-100">
                           <th class="text-xs font-medium text-gray-600 px-6 py-3">
-                            {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SERIE' | translate }}
-                          </th>
-                          <th class="text-xs font-medium text-gray-600 px-6 py-3">
                             {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SHOT' | translate }}
                           </th>
                           <th class="text-xs font-medium text-gray-600 px-6 py-3">
@@ -174,8 +171,7 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
                             class="border-b border-gray-200 hover:bg-gray-50"
                             [formPath]="getShotPath(i, j)"
                             [readonly]="readonly()"
-                            [serieIndex]="i"
-                            [shotIndex]="j"
+                            [shotIndex]="shot.globalNumber || j + 1"
                             [shot]="shot"
                             (shotChange)="onShotChange(i, j, $event)"
                           ></tr>
@@ -325,12 +321,6 @@ export class Armament implements OnInit {
     applyEach(root, (serie) => {
       applyEach(serie.shots, (shotPath) => {
         required(shotPath.armament.weaponExternalId, {
-          when: ({ valueOf }) => {
-            const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
-            return !!weaponType && weaponType !== SpecimenType.Weapon;
-          },
-        });
-        required(shotPath.armament.isInstrumented, {
           when: ({ valueOf }) => {
             const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
             return !!weaponType && weaponType !== SpecimenType.Weapon;

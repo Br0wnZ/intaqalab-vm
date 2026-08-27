@@ -114,7 +114,7 @@ export class AssociatedTrialDialog {
     if (!trials) return [];
     return (trials.items ?? []).map((trial) => ({
       ...trial,
-      description: `${trial.trialNumber} - ${trial.description}`,
+      description: trial.trialNumber + (trial.description ? ` - ${trial.description}` : ''),
     }));
   });
 

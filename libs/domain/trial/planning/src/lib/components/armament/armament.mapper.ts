@@ -50,6 +50,7 @@ export function buildSeriesFromStore(
       const existing = armamentByShotId.get(shot.id);
       return {
         shotId: shot.id,
+        globalNumber: shot.globalNumber,
         armament: {
           weaponType: existing?.weaponType ?? '',
           weaponName: existing?.weaponName ?? '',

@@ -35,11 +35,8 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     IntaIconComponent,
   ],
   template: `
-    <!-- Serie Column -->
-    <td class="py-2 px-6 text-gray-700 font-medium">{{ serieIndex() + 1 }}</td>
-
     <!-- Shot Column -->
-    <td class="py-2 px-6 text-gray-700 font-medium">{{ shotIndex() + 1 }}</td>
+    <td class="py-2 px-6 text-gray-700 font-medium">{{ shotIndex() }}</td>
 
     <!-- Type Column -->
     <td class="py-2 px-1">
@@ -125,7 +122,6 @@ export class ArmamentRow {
   readonly shot = model.required<ArmamentSerieShot>();
   readonly formPath = input.required<ShotFormPath>();
   readonly readonly = input<boolean>(false);
-  readonly serieIndex = input.required<number>();
   readonly shotIndex = input.required<number>();
 
   readonly #armamentStore = inject(ArmamentStore);
