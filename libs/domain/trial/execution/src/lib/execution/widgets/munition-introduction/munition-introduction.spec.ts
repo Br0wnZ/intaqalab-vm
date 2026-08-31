@@ -3,8 +3,6 @@
 /* eslint-disable testing-library/no-node-access */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Provider } from '@angular/core';

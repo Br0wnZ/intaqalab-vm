@@ -29,6 +29,7 @@ export enum WidgetId {
 
   // Velocidad y presión
   VELOCITY_INTRODUCTION = 'velocity-introduction',
+  VIDEO_DATA_INTRODUCTION = 'video-data-introduction',
   MANOMETER_INTRODUCTION = 'manometer-introduction',
   PIEZO_PRESSURE_INTRODUCTION = 'piezo-pressure-introduction',
 

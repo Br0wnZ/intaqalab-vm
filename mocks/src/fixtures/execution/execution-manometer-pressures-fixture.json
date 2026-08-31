@@ -1,0 +1,18 @@
+{
+  "manometerPressuresData": {
+    "pressureGaugeId": "6e5c0c80-1547-4ccf-92fa-ec4df8850f40",
+    "crusherId": "a4f3507a-a711-4741-b5dc-85e83d2d8b70",
+    "probeId": "3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4",
+    "h1": 125.4,
+    "h1Unit": "UM",
+    "h2": 126.1,
+    "h2Unit": "UM",
+    "h3": 125.8,
+    "h3Unit": "UM",
+    "h4": 126.0,
+    "h4Unit": "UM",
+    "h5": 125.6,
+    "h5Unit": "UM",
+    "observations": "Lecturas registradas pendientes de cálculo en Calibry."
+  }
+}

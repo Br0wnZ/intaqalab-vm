@@ -1,5 +1,16 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,20 +22,33 @@ import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTrac
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
+import type { ShotManometerPressuresResponse } from '../../models/shot-manometer-pressures.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
+import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import type { InputFieldValue } from './manometer-introduction.mapper';
+import {
+  buildShotManometerPressuresRequest,
+  mapPlanningSeriesToOptions,
+  mapRemoteToManometerState,
+  mapShotsToDisparoOptions,
+  numToField,
+  parseNum,
+} from './manometer-introduction.mapper';
 
-type InputFieldValue = { value: string; unit: string } | null;
+export type { InputFieldValue };
 
-interface SelectorFormModel {
+export interface SelectorFormModel {
   serie: string | null;
   disparo: string | null;
 }
 
-interface DataFormModel {
+export interface DataFormModel {
   manometro: string | null;
   crusher: string | null;
   micrometroPalpador: string | null;
@@ -61,7 +85,11 @@ interface DataFormModel {
         <!-- Serie -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.SERIE_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectorForm.serie">
+          <mat-select
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
+            [formField]="selectorForm.serie"
+            (selectionChange)="onSerieSelected($event.value)"
+          >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -71,7 +99,11 @@ interface DataFormModel {
         <!-- Disparo -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectorForm.disparo">
+          <mat-select
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
+            [formField]="selectorForm.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
+          >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -95,7 +127,7 @@ interface DataFormModel {
       <div class=""></div>
 
       <!-- ── Body: flex container (data grid + observaciones) ──────────────── -->
-      <div intaReadonlyContent intaFormTouch #touch="intaFormTouch" class="flex-1 flex-wrap flex gap-2 min-h-0">
+      <div intaReadonlyContent intaFormTouch class="flex-1 flex-wrap flex gap-2 min-h-0" #touch="intaFormTouch">
         <!-- Data grid: two explicit rows inside a flex column -->
         <div class="flex-1 flex justify-end flex-col gap-4">
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
@@ -304,6 +336,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #executionService = inject(ExecutionService);
 
   // ── Unit options ───────────────────────────────────────────────────────────
   protected readonly mumOptions = [
@@ -311,14 +344,57 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     { value: 'mm', label: 'mm' },
   ];
 
-  // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.manometerIntroduction().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.manometerIntroduction().disparoOptions);
-  protected readonly manometroOptions = computed(() => this.#store.manometerIntroduction().manometroOptions);
-  protected readonly crusherOptions = computed(() => this.#store.manometerIntroduction().crusherOptions);
-  protected readonly micrometroPalpadorOptions = computed(
-    () => this.#store.manometerIntroduction().micrometroPalpadorOptions,
+  // ── Carga remota y catálogo ────────────────────────────────────────────────
+  readonly #selectionKey = computed(() =>
+    shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
   );
+  readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
+
+  // ── Options from store & API ───────────────────────────────────────────────
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.manometerIntroduction().serieOptions),
+  );
+
+  protected readonly disparoOptions = computed(() => {
+    const selectedSerie = this.selectorFormModel().serie;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, this.#store.manometerIntroduction().disparoOptions);
+    }
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, this.#store.manometerIntroduction().disparoOptions);
+    }
+    return this.#store.manometerIntroduction().disparoOptions;
+  });
+
+  protected readonly manometroOptions = computed(() => {
+    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PRESSURE_GAUGE];
+    if (apiItems?.length) {
+      return apiItems.map((item) => ({ value: item.id, label: item.label }));
+    }
+    return this.#store.manometerIntroduction().manometroOptions;
+  });
+
+  protected readonly crusherOptions = computed(() => {
+    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.CRUSHER];
+    if (apiItems?.length) {
+      return apiItems.map((item) => ({ value: item.id, label: item.label }));
+    }
+    return this.#store.manometerIntroduction().crusherOptions;
+  });
+
+  protected readonly micrometroPalpadorOptions = computed(() => {
+    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PROBE];
+    if (apiItems?.length) {
+      return apiItems.map((item) => ({ value: item.id, label: item.label }));
+    }
+    return this.#store.manometerIntroduction().micrometroPalpadorOptions;
+  });
 
   // ── Read-only outputs ──────────────────────────────────────────────────────
   protected readonly presionUnit = computed(() => this.#store.manometerIntroduction().presionUnit);
@@ -370,19 +446,19 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
 
   // ── H1–H5 plain signals (InputFieldValue) ─────────────────────────────────
   protected readonly h1Field = signal<InputFieldValue>(
-    this.#numToField(this.#store.manometerIntroduction().h1, this.#store.manometerIntroduction().h1Unit),
+    numToField(this.#store.manometerIntroduction().h1, this.#store.manometerIntroduction().h1Unit),
   );
   protected readonly h2Field = signal<InputFieldValue>(
-    this.#numToField(this.#store.manometerIntroduction().h2, this.#store.manometerIntroduction().h2Unit),
+    numToField(this.#store.manometerIntroduction().h2, this.#store.manometerIntroduction().h2Unit),
   );
   protected readonly h3Field = signal<InputFieldValue>(
-    this.#numToField(this.#store.manometerIntroduction().h3, this.#store.manometerIntroduction().h3Unit),
+    numToField(this.#store.manometerIntroduction().h3, this.#store.manometerIntroduction().h3Unit),
   );
   protected readonly h4Field = signal<InputFieldValue>(
-    this.#numToField(this.#store.manometerIntroduction().h4, this.#store.manometerIntroduction().h4Unit),
+    numToField(this.#store.manometerIntroduction().h4, this.#store.manometerIntroduction().h4Unit),
   );
   protected readonly h5Field = signal<InputFieldValue>(
-    this.#numToField(this.#store.manometerIntroduction().h5, this.#store.manometerIntroduction().h5Unit),
+    numToField(this.#store.manometerIntroduction().h5, this.#store.manometerIntroduction().h5Unit),
   );
 
   protected readonly observacionesField = signal<string | null>(this.#store.manometerIntroduction().observaciones);
@@ -390,7 +466,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   // ── Altura media (computed from H1–H5) ────────────────────────────────────
   protected readonly alturaMedia = computed<number | null>(() => {
     const vals = [this.h1Field(), this.h2Field(), this.h3Field(), this.h4Field(), this.h5Field()]
-      .map((f) => (f ? parseFloat(f.value) : null))
+      .map((f) => parseNum(f))
       .filter((v): v is number => v !== null && !isNaN(v));
     if (vals.length === 0) return null;
     return vals.reduce((a, b) => a + b, 0) / vals.length;
@@ -402,8 +478,10 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   });
 
   // ── Snapshot for dirty tracking (selectores serie/disparo excluidos) ────────
-  // Solo comparación por valor: el patch tras el GET no marca dirty.
   readonly #dirtyTracker = createDirtyTracker(() => ({
+    manometro: this.dataFormModel().manometro,
+    crusher: this.dataFormModel().crusher,
+    micrometroPalpador: this.dataFormModel().micrometroPalpador,
     h1: this.h1Field(),
     h2: this.h2Field(),
     h3: this.h3Field(),
@@ -425,12 +503,79 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     hasChanges: this.isDirty(),
   }));
 
+  constructor() {
+    super();
+
+    // Cargar catálogo de equipos de manómetros
+    this.#executionService
+      ?.loadEquipmentItemsByCategories?.([
+        EquipmentTypeEnum.PRESSURE_GAUGE,
+        EquipmentTypeEnum.CRUSHER,
+        EquipmentTypeEnum.PROBE,
+      ])
+      ?.then((result) => this.#itemsByCategory.set(result));
+
+    // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
+      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+
+      if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
+      }
+
+      const selectionKey = `${activeSerieId}|${activeShotId}`;
+      if (this.#lastLoadedActiveSelection() === selectionKey) {
+        return;
+      }
+
+      untracked(() => {
+        this.#lastLoadedActiveSelection.set(selectionKey);
+        this.#setSelection(activeSerieId, activeShotId);
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    const current = this.selectorFormModel();
+    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : null;
+
+    this.selectorFormModel.set({
+      serie,
+      disparo,
+    });
+
+    this.#syncSelectionToStore(serie, disparo);
+    void this.#loadSelectedShotData();
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    const current = this.selectorFormModel();
+    this.selectorFormModel.set({
+      ...current,
+      disparo,
+    });
+
+    this.#syncSelectionToStore(current.serie, disparo);
+    void this.#loadSelectedShotData();
+  }
+
   setCurrentShot(): void {
-    this.selectorFormModel.update((m) => ({
-      ...m,
-      serie: this.#store.activeSerieId() ?? m.serie,
-      disparo: this.#store.activeShotId() ?? m.disparo,
-    }));
+    const serie = this.#store.activeSerieId() ?? this.selectorFormModel().serie;
+    const disparo = this.#store.activeShotId() ?? this.selectorFormModel().disparo;
+
+    this.#setSelection(serie, disparo);
+  }
+
+  #setSelection(serie: string | null, disparo: string | null): void {
+    this.selectorFormModel.set({
+      serie,
+      disparo,
+    });
+
+    this.#syncSelectionToStore(serie, disparo);
+    void this.#loadSelectedShotData();
   }
 
   resetForm(): void {
@@ -441,11 +586,11 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       crusher: stored.crusher,
       micrometroPalpador: stored.micrometroPalpador,
     });
-    this.h1Field.set(this.#numToField(stored.h1, stored.h1Unit));
-    this.h2Field.set(this.#numToField(stored.h2, stored.h2Unit));
-    this.h3Field.set(this.#numToField(stored.h3, stored.h3Unit));
-    this.h4Field.set(this.#numToField(stored.h4, stored.h4Unit));
-    this.h5Field.set(this.#numToField(stored.h5, stored.h5Unit));
+    this.h1Field.set(numToField(stored.h1, stored.h1Unit));
+    this.h2Field.set(numToField(stored.h2, stored.h2Unit));
+    this.h3Field.set(numToField(stored.h3, stored.h3Unit));
+    this.h4Field.set(numToField(stored.h4, stored.h4Unit));
+    this.h5Field.set(numToField(stored.h5, stored.h5Unit));
     this.observacionesField.set(stored.observaciones);
     this.#syncSnapshot();
   }
@@ -453,36 +598,110 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   async saveForm(): Promise<void> {
     const { serie, disparo } = this.selectorFormModel();
     const { manometro, crusher, micrometroPalpador } = this.dataFormModel();
+    const fireTrialId = this.#store.fireTrialId();
+
     this.#store.updateManometerIntroduction({
       serie,
       disparo,
       manometro,
       crusher,
       micrometroPalpador,
-      h1: this.#parseNum(this.h1Field()),
+      h1: parseNum(this.h1Field()),
       h1Unit: this.h1Field()?.unit ?? 'μm',
-      h2: this.#parseNum(this.h2Field()),
+      h2: parseNum(this.h2Field()),
       h2Unit: this.h2Field()?.unit ?? 'μm',
-      h3: this.#parseNum(this.h3Field()),
+      h3: parseNum(this.h3Field()),
       h3Unit: this.h3Field()?.unit ?? 'μm',
-      h4: this.#parseNum(this.h4Field()),
+      h4: parseNum(this.h4Field()),
       h4Unit: this.h4Field()?.unit ?? 'μm',
-      h5: this.#parseNum(this.h5Field()),
+      h5: parseNum(this.h5Field()),
       h5Unit: this.h5Field()?.unit ?? 'μm',
       observaciones: this.observacionesField(),
     });
+
+    if (fireTrialId && serie && disparo) {
+      const payload = buildShotManometerPressuresRequest({
+        manometro,
+        crusher,
+        micrometroPalpador,
+        h1Field: this.h1Field(),
+        h2Field: this.h2Field(),
+        h3Field: this.h3Field(),
+        h4Field: this.h4Field(),
+        h5Field: this.h5Field(),
+        observaciones: this.observacionesField(),
+      });
+
+      try {
+        await this.#executionService.updateShotManometerPressures(fireTrialId, serie, disparo, payload);
+        this.#syncSnapshot();
+      } catch (error) {
+        console.error('Failed to save shot manometer pressures', error);
+        throw error;
+      }
+    } else {
+      this.#syncSnapshot();
+    }
+  }
+
+  async #loadSelectedShotData(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    const { serie, disparo } = this.selectorFormModel();
+    const selectionKey = this.#selectionKey();
+    const ticket = this.#selectionGuard.begin();
+
+    if (!fireTrialId || !serie || !disparo) {
+      return;
+    }
+
+    try {
+      const response = await this.#executionService.fetchShotManometerPressures(fireTrialId, serie, disparo);
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData(response);
+    } catch {
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData({ manometerPressuresData: null });
+    }
+  }
+
+  #syncSelectionToStore(serie: string | null, disparo: string | null): void {
+    this.#store.updateManometerIntroductionSelector({
+      serie,
+      disparo,
+    });
+  }
+
+  #isShotInSerie(disparo: string | null, serie: string | null): boolean {
+    if (!disparo || !serie) {
+      return false;
+    }
+
+    return (
+      this.#store
+        .executionProgress()
+        ?.series.some((s) => s.seriesId === serie && s.shots.some((shot) => shot.shotId === disparo)) ?? false
+    );
+  }
+
+  #applyRemoteShotData(response: ShotManometerPressuresResponse): void {
+    const mapped = mapRemoteToManometerState(response);
+    this.#store.updateManometerIntroduction(mapped);
+    this.dataFormModel.set({
+      manometro: mapped.manometro,
+      crusher: mapped.crusher,
+      micrometroPalpador: mapped.micrometroPalpador,
+    });
+    this.h1Field.set(numToField(mapped.h1, mapped.h1Unit));
+    this.h2Field.set(numToField(mapped.h2, mapped.h2Unit));
+    this.h3Field.set(numToField(mapped.h3, mapped.h3Unit));
+    this.h4Field.set(numToField(mapped.h4, mapped.h4Unit));
+    this.h5Field.set(numToField(mapped.h5, mapped.h5Unit));
+    this.observacionesField.set(mapped.observaciones);
     this.#syncSnapshot();
-  }
-
-  // ── Private helpers ────────────────────────────────────────────────────────
-  #numToField(value: number | null, unit: string): InputFieldValue {
-    return value !== null ? { value: value.toString(), unit } : null;
-  }
-
-  #parseNum(field: InputFieldValue): number | null {
-    if (!field) return null;
-    const n = parseFloat(field.value);
-    return isNaN(n) ? null : n;
   }
 
   #syncSnapshot(): void {

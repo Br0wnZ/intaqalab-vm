@@ -4,6 +4,11 @@ import { baseEnvironment } from './environment.base';
 
 export const environment: AppEnvironment = {
   ...baseEnvironment,
+  authConfig: {
+    ...baseEnvironment.authConfig,
+    authority: 'https://iam.pre.inta.es/realms/intaqalab',
+    secureRoutes: ['https://apis.pre.inta.es/intaqalab/'],
+  },
   production: false,
   apiUrl: 'https://apis.pre.inta.es/intaqalab',
   endpoints: {

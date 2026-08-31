@@ -11,6 +11,8 @@ import type {
   EquipmentMeasureMagnitude,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
+  ShotManometerPressuresRequest,
+  ShotManometerPressuresResponse,
   ShotMunitionRequest,
   ShotMunitionResponse,
   WidgetId,
@@ -207,6 +209,17 @@ interface ShotMunitionParams {
 
 interface ShotMunitionUpdateParams extends ShotMunitionParams {
   body: ShotMunitionRequest;
+}
+
+interface ShotManometerPressuresParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotManometerPressuresUpdateParams extends ShotManometerPressuresParams {
+  body: ShotManometerPressuresRequest;
 }
 
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
@@ -1369,6 +1382,78 @@ export class ExecutionService {
     this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
     await this.#awaitResource(this.updateShotMunitionResource);
     return this.updateShotMunitionResource.value()!;
+  }
+
+  // ── SHOT MANOMETER PRESSURES: GET (Widget 21) ────────────────────────────────
+
+  readonly #getShotManometerPressuresParams = signal<ShotManometerPressuresParams | null>(null);
+
+  readonly shotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
+    const params = this.#getShotManometerPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/manometer-pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotManometerPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotManometerPressuresParams = signal<ShotManometerPressuresParams | null>(null);
+
+  readonly #fetchShotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
+    const p = this.#fetchShotManometerPressuresParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/manometer-pressures/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotManometerPressuresResponse> {
+    this.#fetchShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotManometerPressuresResource);
+    return this.#fetchShotManometerPressuresResource.value()!;
+  }
+
+  // ── SHOT MANOMETER PRESSURES: PUT (Widget 21) ────────────────────────────────
+
+  readonly #updateShotManometerPressuresParams = signal<ShotManometerPressuresUpdateParams | null>(null);
+
+  readonly updateShotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
+    const params = this.#updateShotManometerPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/manometer-pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotManometerPressuresRequest,
+  ): void {
+    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotManometerPressuresRequest,
+  ): Promise<ShotManometerPressuresResponse> {
+    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotManometerPressuresResource);
+    return this.updateShotManometerPressuresResource.value()!;
   }
 
   /**

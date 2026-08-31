@@ -1,5 +1,7 @@
 import type { Type } from '@angular/core';
 
+import { WidgetId } from '../models';
+import type { Widget } from '../models/execution-grid.models';
 import { AcousticLevelIntroduction } from '../widgets/acoustic-level-introduction/acoustic-level-introduction';
 import { ArmamentIntroductionComponent } from '../widgets/armament-introduction/armament-introduction';
 import { DatosBlancoBola } from '../widgets/datos-blanco-bola/datos-blanco-bola';
@@ -30,9 +32,8 @@ import { TrayectografiaIntroductionWidget } from '../widgets/trayectografia-intr
 import { UniformidadChartWidget } from '../widgets/uniformidad-chart/uniformidad-chart';
 import { VelocityIntroduction } from '../widgets/velocity-introduction/velocity-introduction';
 import { VideoCameraOrientation } from '../widgets/video-camera-orientation/video-camera-orientation';
+import { VideoDataIntroduction } from '../widgets/video-data-introduction/video-data-introduction';
 import { VigilanciaWidget } from '../widgets/vigilancia/vigilancia';
-import { WidgetId } from '../models';
-import type { Widget } from '../models/execution-grid.models';
 
 export const injectWidgets = (): Widget[] => [
   {
@@ -137,6 +138,18 @@ export const injectWidgets = (): Widget[] => [
     category: 'Balística',
     badge: 'S',
     badgeColor: 'purple',
+    defaultWidth: 1,
+    defaultHeight: 2,
+  },
+  {
+    id: 'introduccion-datos-video',
+    widgetId: WidgetId.VIDEO_DATA_INTRODUCTION,
+    widgetComponent: VideoDataIntroduction,
+    title: 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TITLE',
+    description: 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DESCRIPTION',
+    category: 'Balística',
+    badge: 'S',
+    badgeColor: 'blue',
     defaultWidth: 1,
     defaultHeight: 2,
   },

@@ -30,3 +30,6 @@ export * from './equipment.models';
 
 // Shot munition models (Widget 20)
 export * from './shot-munition.models';
+
+// Shot manometer pressures models (Widget 21)
+export * from './shot-manometer-pressures.models';

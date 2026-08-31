@@ -55,6 +55,15 @@ export function withManometerIntroduction() {
   return signalStoreFeature(
     withState(initialState),
     withMethods((store) => ({
+      /** Actualiza selector de serie/disparo del widget Introducción datos presión manómetros */
+      updateManometerIntroductionSelector(
+        updates: Partial<Pick<ManometerIntroductionState, 'serie' | 'disparo'>>,
+      ): void {
+        patchState(store, (state) => ({
+          manometerIntroduction: { ...state.manometerIntroduction, ...updates },
+        }));
+      },
+
       /** Actualiza los campos del widget Introducción datos presión manómetros */
       updateManometerIntroduction(updates: Partial<ManometerIntroductionState>): void {
         patchState(store, (state) => ({

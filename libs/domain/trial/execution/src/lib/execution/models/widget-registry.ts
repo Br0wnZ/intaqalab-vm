@@ -126,6 +126,13 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetConfig> = {
     defaultWidth: 2,
     hasForm: true,
   },
+  [WidgetId.VIDEO_DATA_INTRODUCTION]: {
+    id: WidgetId.VIDEO_DATA_INTRODUCTION,
+    titleKey: 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TITLE',
+    descriptionKey: 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DESCRIPTION',
+    defaultWidth: 1,
+    hasForm: true,
+  },
   [WidgetId.MANOMETER_INTRODUCTION]: {
     id: WidgetId.MANOMETER_INTRODUCTION,
     titleKey: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE',

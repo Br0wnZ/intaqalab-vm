@@ -7,7 +7,14 @@ import { CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/mod
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EquipmentTypeEnum, type ShotMunitionRequest, type ShotMunitionResponse, WidgetId } from '../execution/models';
+import {
+  EquipmentTypeEnum,
+  type ShotManometerPressuresRequest,
+  type ShotManometerPressuresResponse,
+  type ShotMunitionRequest,
+  type ShotMunitionResponse,
+  WidgetId,
+} from '../execution/models';
 import {
   type ArmamentBulkConfigurationRequest,
   type ArmamentEquipmentItem,
@@ -955,5 +962,101 @@ describe('ExecutionService', () => {
 
     const updateResult = await updatePromise;
     expect(updateResult).toEqual(mockMunitionResponse);
+  });
+
+  it('handles shot manometer pressures (Widget 21) GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-21';
+    const shotId = 'shot-21';
+    const mockManometerResponse: ShotManometerPressuresResponse = {
+      manometerPressuresData: {
+        pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
+        crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
+        probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
+        h1: 125.4,
+        h1Unit: DistanceUnitEnum.UM,
+        h2: 126.1,
+        h2Unit: DistanceUnitEnum.UM,
+        h3: 125.8,
+        h3Unit: DistanceUnitEnum.UM,
+        h4: 126.0,
+        h4Unit: DistanceUnitEnum.UM,
+        h5: 125.6,
+        h5Unit: DistanceUnitEnum.UM,
+        observations: 'Lecturas registradas',
+      },
+    };
+
+    // getShotManometerPressures (httpResource)
+    service.getShotManometerPressures(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/manometer-pressures/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockManometerResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotManometerPressuresResource.value()).toEqual(mockManometerResponse);
+    });
+
+    // fetchShotManometerPressures (Promise)
+    const directFetchPromise = service.fetchShotManometerPressures(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(
+      `${EXECUTION_BASE_URL}/manometer-pressures/series/${seriesId}/shots/${shotId}`,
+    );
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockManometerResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockManometerResponse);
+
+    // setShotManometerPressures (httpResource)
+    const updateBody: ShotManometerPressuresRequest = {
+      pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
+      crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
+      probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
+      h1: 125.4,
+      h1Unit: DistanceUnitEnum.UM,
+      h2: 126.1,
+      h2Unit: DistanceUnitEnum.UM,
+      h3: 125.8,
+      h3Unit: DistanceUnitEnum.UM,
+      h4: 126.0,
+      h4Unit: DistanceUnitEnum.UM,
+      h5: 125.6,
+      h5Unit: DistanceUnitEnum.UM,
+      observations: 'Lecturas registradas',
+    };
+
+    service.setShotManometerPressures(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/manometer-pressures/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockManometerResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotManometerPressuresResource.value()).toEqual(mockManometerResponse);
+    });
+
+    // updateShotManometerPressures (Promise)
+    const updatePromise = service.updateShotManometerPressures(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(
+      `${EXECUTION_BASE_URL}/manometer-pressures/series/${seriesId}/shots/${shotId}`,
+    );
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockManometerResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockManometerResponse);
   });
 });

@@ -7,6 +7,7 @@ import { withMunitionIntroduction } from './munition-introduction.feature';
 import { withPiezoPressureIntroduction } from './piezo-pressure-introduction.feature';
 import { withTrayectografiaIntroduction } from './trayectografia-introduction.feature';
 import { withVelocityIntroduction } from './velocity-introduction.feature';
+import { withVideoDataIntroduction } from './video-data-introduction.feature';
 
 export function withDataIntroductionWidgets() {
   return signalStoreFeature(
@@ -17,5 +18,6 @@ export function withDataIntroductionWidgets() {
     withPiezoPressureIntroduction(),
     withManometerIntroduction(),
     withTrayectografiaIntroduction(),
+    withVideoDataIntroduction(),
   );
 }

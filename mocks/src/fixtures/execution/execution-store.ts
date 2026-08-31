@@ -141,6 +141,7 @@ const velocitiesStateMap = new Map<string, Map<string, ShotVelocitiesResponse>>(
 const pressuresStateMap = new Map<string, Map<string, ShotPressuresResponse>>();
 const armamentStateMap = new Map<string, Map<string, ShotArmamentResponse>>();
 const munitionStateMap = new Map<string, Map<string, ShotMunitionResponse>>();
+const manometerPressuresStateMap = new Map<string, Map<string, ShotManometerPressuresResponse>>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -957,4 +958,105 @@ export function setShotMunition(
 
   state.set(key, updated);
   return cloneMunitionState(updated);
+}
+
+// ── SHOT MANOMETER PRESSURES tipos y store (Widget 21) ───────────────────────
+
+export interface ShotManometerPressures {
+  pressureGaugeId?: string | null;
+  crusherId?: string | null;
+  probeId?: string | null;
+  h1?: number | null;
+  h1Unit?: string | null;
+  h2?: number | null;
+  h2Unit?: string | null;
+  h3?: number | null;
+  h3Unit?: string | null;
+  h4?: number | null;
+  h4Unit?: string | null;
+  h5?: number | null;
+  h5Unit?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotManometerPressuresResponse {
+  manometerPressuresData?: ShotManometerPressures | null;
+}
+
+export type ShotManometerPressuresRequest = ShotManometerPressures;
+
+function defaultManometerPressuresState(): ShotManometerPressuresResponse {
+  return getFixture<ShotManometerPressuresResponse>('fixtures/execution', 'execution-manometer-pressures-fixture.json');
+}
+
+function cloneManometerPressuresState(state: ShotManometerPressuresResponse): ShotManometerPressuresResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateManometerPressuresMap(fireTrialId: string): Map<string, ShotManometerPressuresResponse> {
+  let state = manometerPressuresStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotManometerPressuresResponse>();
+    manometerPressuresStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotManometerPressures(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+): ShotManometerPressuresResponse {
+  const state = getOrCreateManometerPressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneManometerPressuresState(defaultManometerPressuresState());
+    state.set(key, initial);
+    return cloneManometerPressuresState(initial);
+  }
+
+  return cloneManometerPressuresState(current);
+}
+
+export function setShotManometerPressures(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotManometerPressuresRequest,
+): ShotManometerPressuresResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED' && shotProgress.status !== 'PENDING') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateManometerPressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+
+  const updated: ShotManometerPressuresResponse = {
+    manometerPressuresData: {
+      pressureGaugeId: payload.pressureGaugeId ?? null,
+      crusherId: payload.crusherId ?? null,
+      probeId: payload.probeId ?? null,
+      h1: payload.h1 ?? null,
+      h1Unit: payload.h1Unit ?? 'UM',
+      h2: payload.h2 ?? null,
+      h2Unit: payload.h2Unit ?? 'UM',
+      h3: payload.h3 ?? null,
+      h3Unit: payload.h3Unit ?? 'UM',
+      h4: payload.h4 ?? null,
+      h4Unit: payload.h4Unit ?? 'UM',
+      h5: payload.h5 ?? null,
+      h5Unit: payload.h5Unit ?? 'UM',
+      observations: payload.observations ?? null,
+    },
+  };
+
+  state.set(key, updated);
+  return cloneManometerPressuresState(updated);
 }

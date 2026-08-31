@@ -15,6 +15,7 @@ import {
   getPlanningState,
   getReadiness,
   getShotArmament,
+  getShotManometerPressures,
   getShotMunition,
   getShotPressures,
   getShotVelocities,
@@ -26,6 +27,7 @@ import {
   setProfileReadiness,
   setSeriesProfileReadiness,
   setShotArmament,
+  setShotManometerPressures,
   setShotMunition,
   setShotPressure,
   setShotVelocity,
@@ -568,6 +570,51 @@ executionRouter.put(
       }
 
       res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid munitions payload' });
+    }
+  },
+);
+
+// ==========================================
+// DATA ENTRY - WIDGET 21 MANOMETER PRESSURES
+// ==========================================
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/manometer-pressures/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotManometerPressures(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/manometer-pressures/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotManometerPressures(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid manometer pressures payload' });
     }
   },
 );
