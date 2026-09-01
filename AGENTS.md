@@ -34,103 +34,98 @@
 
 ---
 
-# ⚙️ Configuración del Sistema (Antigravity & Codificación)
+# ⚙️ System Configuration & Execution Rules
 
-- **Codificación de Comentarios:** Todos los comentarios generados en el código (HTML, TS, etc.) y respuestas en español por cualquier agente/IA DEBEN estar en formato **UTF-8** estricto (cuidar ñ, tildes y caracteres especiales).
-- **Auto-Carga de Reglas y Skills:** Antigravity debe aplicar automáticamente y de forma implícita todas las directrices de `AGENTS.md`, los skills definidos en `.agents/skills/` en todas las interacciones, sin necesidad de que el usuario lo solicite de manera explícita.
+- **Comments & Encoding:** Strict **UTF-8** format for all code and docs (accent marks, ñ, special chars).
+- **Auto-Load Rules & Skills:** Antigravity, Claude Code, GitHub Copilot, and Cursor implicitly follow all instructions in `AGENTS.md` and dynamically load skills from `.agents/skills/`.
+- **Definition of Done:** Zero lint errors, passing Vitest unit tests (`npx nx test <project>`), and zero broken imports.
 
 ---
 
 # 🤖 Central AI Orchestrator Routing
 
-Act as the **Central AI Orchestrator** to route tasks to specialized skills located in `.agents/skills/`:
+Route tasks to specialized skills in `.agents/skills/`:
 
-- **Signals Audit/Improvement:** Load `angular-architect` skill.
-- **Vitest/ATL Testing:** Load `angular-testing-expert` skill.
-- **Swagger API integration:** Load `swagger-api-architect` skill.
-- **Chart.js v4 graphs:** Load `chartjs-expert` skill.
-- **Maquetación, Tailwind & A11y UI:** Load `ui-design-engineer` skill.
-- **Widgets:** Load `ui-design-engineer` skill.
-- **i18n & Translations:** Load `i18n-expert` skill.
-- **Express Mock Server:** Load `mock-server-expert` skill.
-- **NgRx SignalStore:** Load `signalstore-expert` skill.
-- **Scaffolding / nx generate CLI:** Load `nx-generator-expert` skill.
-- **Modernizing Legacy Angular:** Load `angular-architect` skill.
-- **Data Fetching / httpResource:** Load `signal-trigger-pattern` skill.
-- **Task Delegation to Subagents:** Load `cavecrew` skill.
+- **Signals Audit / Modernization:** `angular-architect`
+- **Vitest & ATL Testing:** `angular-testing-expert`
+- **Swagger / OpenAPI Integration:** `swagger-api-architect`
+- **Chart.js v4 Visualizations:** `chartjs-expert`
+- **UI Layout, Tailwind & A11y:** `ui-design-engineer`
+- **Execution Grid Widgets:** `ui-design-engineer`
+- **i18n & Translations (`es/en/de`):** `i18n-expert`
+- **Express Mock Server & Fixtures:** `mock-server-expert`
+- **NgRx SignalStore:** `signalstore-expert`
+- **Nx Scaffolding & CLI (`nx generate`):** `nx-generator-expert`
+- **Data Fetching (`httpResource`):** `signal-trigger-pattern`
+- **Numeric Constraints & Directives:** `numeric-input-constraints`
+- **3-State Views (Skeleton):** `view-state-pattern`
+- **Trial Planning Domain:** `planning-specialist`
+- **Trial Execution Domain:** `execution-domain-expert`
+- **Master Data Domain:** `master-data-specialist`
 
-## 🚀 Skills Optimizados (Prompts Ligeros)
+## 🚀 Optimized Fast Prompts (Lightweight Mode)
 
-Usa estas skills ligeras ubicadas en `.agents/skills/` en lugar de los agentes completos cuando sea posible para ahorrar contexto:
+Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subsection to output direct code without explanations when saving context:
 
-- `angular-signals-refactor-prompt`: Para refactorizar a Angular 21 y Signals.
-- `generate-ui-widget-prompt`: Para generar widgets UI con Material + Tailwind.
-- `swagger-api-mock-prompt`: Para generar Mocks, Modelos y Servicios httpResource desde un JSON de Swagger.
-- `express-mock-routes-prompt`: Para generar exclusivamente mocks en ExpressJS y fixtures JSON desde Swagger.
-- `ngrx-signal-store-prompt`: Para crear tiendas locales con NgRx SignalStore.
-- `vitest-angular-testing-prompt`: Para crear tests (Componentes/Servicios) con Vitest y ATL.
+- **Refactoring to Signals:** Quick mode in `angular-architect`.
+- **UI Widgets (Material + Tailwind):** Quick mode in `ui-design-engineer`.
+- **Mocks & Models from Swagger:** Quick mode in `swagger-api-architect`.
+- **Express Routes & JSON Fixtures:** Quick mode in `mock-server-expert`.
+- **Local NgRx SignalStore:** Quick mode in `signalstore-expert`.
+- **Vitest + ATL Testing:** Quick mode in `angular-testing-expert`.
 
 ---
 
-# 🏗️ Arquitectura y Angular 21 (Zoneless & Signals-first)
+# 🏗️ Architecture & Angular 21 Standards (Zoneless & Signals-first)
 
-## 🌟 Golden Path (Implementación de Referencia)
+## 🌟 Golden Path Reference
 
 > [!IMPORTANT]
-> La carpeta `libs/domain/master-data` es el **Golden Path** del repositorio INTAQALAB.
->
-> Todo agente que vaya a generar un nuevo dominio, construir features asíncronas, implementar `httpResource` o definir un `SignalStore`, **DEBE OBLIGATORIAMENTE** usar el código de `libs/domain/master-data` como plantilla y leer su `README.md` antes de empezar. No importes código legacy como referencia.
+> `libs/domain/master-data` is the **Golden Path** of the INTAQALAB repository.
+> Every agent building new domains, async features, `httpResource` integrations, or `SignalStores` **MUST** use `libs/domain/master-data` as the canonical template and review its `README.md`.
 
-## Stack Tecnológico 🛠️
+## Technology Stack 🛠️
 
-- **Angular 21:** `signals`, `httpResource` para peticiones asíncronas, y `signal-forms`. Angular 21 usa standalone por defecto (NO especificar `standalone: true`).
-- **Nx Monorepo:** Estructura modular basada en librerías (`data-access`, `feature`, `ui`, `util`). Mantén la lógica de negocio en `data-access`.
-- **Tailwind CSS 4.1:** Configuración CSS-first usando `@theme` y colores OKLCH. Utiliza clases inline y Angular Material (Aria/Headless).
-- **Testing:** Vitest para unitarias y Angular Testing Library (ATL) para componentes. **IMPORTANTE:** Todos los casos de prueba (`it()`) deben tener sus descripciones redactadas obligatoriamente en inglés.
-- **Backend:** API ExpressJS limpia con validación estricta (Zod).
+- **Angular 21:** `signals`, `httpResource`, `signal-forms`. Standalone by default (omit `standalone: true`).
+- **Nx Monorepo:** Layered modular libraries (`data-access`, `feature`, `ui`, `util`). Keep business logic in `data-access`.
+- **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
+- **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
+- **Backend:** Clean ExpressJS mock server with Zod schema validation.
 
-## Diseño de Componentes 🧩
+## Component Design & Best Practices 🧩
 
-- **Componentizar al máximo.** Componentes pequeños, cohesivos y legibles (Clean Code & SOLID, cero sobreingeniería).
-- **Convención de Nombres (2025 Style Guide):**
-  - **Archivos:** Formato conciso sin sufijos técnicos para componentes/directivas/pipes (ej: `user-profile.ts` en vez de `user-profile.component.ts`). Los **servicios** deben mantener el sufijo `.service.ts` (ej: `user-profile.service.ts`).
-  - **Clases:** Omitir sufijos técnicos en componentes/directivas/pipes (ej: `UserProfile` en lugar de `UserProfileComponent`). Los **servicios** deben mantener el sufijo `Service` (ej: `UserProfileService`). Combina con componentes sin selector (selector-less components) para etiquetas limpias.
-  - **Tipos, Interfaces y Enums:** Todos los tipos, interfaces y enums DEBEN declararse obligatoriamente en la carpeta `models` o `utils-models` de la librería respectiva. Está prohibida su definición en componentes, servicios o mappers.
-- **Abstracción de Mapeo y Lógica Pesada (`<feature>-mapper.service.ts`):** Toda la lógica de transformación y mapeo de datos entre el backend y el frontend (y viceversa), así como procesamientos complejos o de catálogos, DEBE ser extraída de los componentes a un servicio dedicado (ej. `ArmamentMapperService` en `armament-mapper.service.ts`). Los componentes deben ser delgados y enfocados únicamente en la interacción y la vista HTML.
-- **Botón de Guardado/Submit (`SaveButton` / `ui-save-button`):** ⚡ **OBLIGATORIO.** Para acciones de guardado, actualización, envío de formularios o cualquier botón de tipo submit/mutación, es **OBLIGATORIO** usar el componente `<ui-save-button>` de `@intaqalab/ui` (`SaveButton`) pasando `[isSaving]="resource.isLoading()"` (o la señal de carga correspondiente) en lugar de usar un `button` o `mat-flat-button` plano.
-- **Inputs y Selects (Labels Flotantes y Placeholders):** ⚡ **OBLIGATORIO.** Todos los inputs (`matInput`) y selectores (`mat-select`) DEBEN tener siempre su etiqueta flotante mediante `<mat-label>{{ '...' | translate }}</mat-label>` dentro del `<mat-form-field>` y su correspondiente placeholder i18n (`[placeholder]="'...' | translate"`). Prohibido usar `<label>` o `<span>` externos fuera del `mat-form-field`.
-- **Inyección de Store en Componentes:** 🚫 **PROHIBIDO acceder a la store en la vista HTML (`store.prop()`).** La store siempre se inyectará como privada y readonly (`readonly #store = inject(Store)`). En la vista se accederá únicamente a sus propiedades/señales mediante `computed()` o propiedades expuestas por el componente.
-- **Jerarquía de decisión para estado:**
-  1. `readonly #store = inject(Store)` — Inyección privada en el componente; el componente expone señales mediante `computed()` para la vista.
-  2. `model()` — Estado local bidireccional (formularios, toggles).
-  3. `linkedSignal()` — Estado local dependiente de la store pero modificable localmente.
-  4. `input()` + `output()` — Exclusivo para componentes UI puros o librerías sin contexto de negocio.
+- **Maximal Cohesion:** Small, single-responsibility components (Clean Code & SOLID, zero over-engineering).
+- **Naming Conventions (2025/2026 Style Guide):**
+  - **Files:** Omit technical type suffixes for components/directives/pipes (e.g. `user-profile.ts` instead of `user-profile.component.ts`). **Services** maintain `.service.ts` (e.g. `user-profile.service.ts`).
+  - **Classes:** Omit technical suffixes for components/directives/pipes (e.g. `UserProfile` instead of `UserProfileComponent`). **Services** maintain `Service` suffix (e.g. `UserProfileService`).
+  - **Types & Enums:** MUST be declared under the `models` or `utils-models` directory of the respective library. Never inline in components or services.
+- **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim.
+- **Save/Submit Button (`ui-save-button`):** ⚡ **MANDATORY.** For form mutations, submissions, and save actions, use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) with `[isSaving]="resource.isLoading()"`. Never use raw `mat-flat-button` for form submissions.
+- **Inputs & Selects:** ⚡ **MANDATORY.** All `matInput` and `mat-select` controls MUST have floating labels via `<mat-label>{{ '...' | translate }}</mat-label>` inside `<mat-form-field>` and placeholder i18n (`[placeholder]="'...' | translate"`).
+- **Store Injection in Components:** 🚫 **PROHIBITED accessing stores in templates (`store.prop()`).** Stores are injected privately (`readonly #store = inject(Store)`). Templates access data exclusively through exposed computed signals.
+- **State Decision Hierarchy:**
+  1. `readonly #store = inject(Store)` — Private store injection; component exposes computed signals for template.
+  2. `model()` — Two-way local state (forms, toggles).
+  3. `linkedSignal()` — Derived writable state synchronized with store.
+  4. `input()` + `output()` — Pure UI presentational components.
 
-## Patrones Avanzados de Signals 🔬
+## Advanced Reactive Patterns 🔬
 
-- **Clonado Profundo de Objetos:** 🚫 **PROHIBIDO el uso de `JSON.parse(JSON.stringify(obj))` para clonar.** Usar siempre la API nativa `structuredClone(obj)` en su lugar.
-- **Utilidades del Proyecto (`@intaqalab/utils`):** Antes de implementar a mano o proponer instalar librerías externas para helpers reactivos (debounce, throttle, params de ruta como signal, persistencia en storage, countdown, idle, undo…), es **obligatorio** usar las utilidades de `@intaqalab/utils` definidas en [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md). Ejemplos: `explicitEffect`, `computedPrevious`, `debouncedSignal`, `throttledSignal`, `storageSignal`, `signalHistory`, `injectNetworkStatus`, `injectPageVisibility`, `injectIdleStatus`, `createCountdown`, `injectParams`, `injectQueryParams`, `linkedQueryParam`, `actionTrigger`, `safeResourceValue`.
-- **Estado derivado writable:** Usa `linkedSignal()` en lugar de signal+effect. Ejemplo: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
-- **RxJS (Uso Restringido):**
-  - ✅ Permitido interop: `toSignal(observable$)`, `firstValueFrom(observable$)`.
-  - ❌ **PROHIBIDO:** `.subscribe()` en componentes sin `takeUntilDestroyed()`.
-- **Formularios Signal Forms:** Usa la API `form()`. **ELIMINA** `ReactiveFormsModule` y `FormBuilder`. La fuente de verdad siempre es el modelo (signal). Para acceder a los valores del formulario o resetearlo, se hará siempre a través de dicho modelo (ej. `this.model()` para leer, `this.model.set(initial)` para resetear), no a través de `form().value()` o `form().reset()`.
-- **Effects Seguros:** Lee **todas** las señales antes del primer `await`. Usa `untracked()` para leer sin crear dependencia reactiva. Para manipular DOM usa `afterRenderEffect()`.
-- **httpResource:** Usa `resource.hasValue()` como type guard.
-- **SignalStore:** Servicios exponen read-only: `readonly mySignal = this.#_signal.asReadonly()`. Usa `withProps()` para inyección a nivel de store. Usa `withEntities()` para colecciones.
-- **Vistas / Control Flow:** Usa nativo `@if`, `@for` (con atributo `track` obligatorio), `@switch`, `@empty`. Usa `@defer` (con `@placeholder` y `@loading`) para carga perezosa.
+- **Deep Cloning:** 🚫 **PROHIBITED:** `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
+- **Project Utilities (`@intaqalab/utils`):** It is **MANDATORY** to use utilities from `@intaqalab/utils` (see [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)) for debounce, throttle, query parameters as signals, storage persistence, countdowns, and idle tracking.
+- **Derived Writable State:** Use `linkedSignal()` instead of signal+effect. E.g.: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
+- **RxJS (Restricted Interop Only):**
+  - ✅ Permitted: `toSignal(observable$)`, `firstValueFrom(observable$)`.
+  - ❌ **PROHIBITED:** `.subscribe()` in components without `takeUntilDestroyed()`.
+- **Signal Forms:** Use modern `form()` API. **ELIMINATE** `ReactiveFormsModule` and `FormBuilder`. The model (`signal`) is the source of truth. Read and reset state via the model (`this.model()`, `this.model.set(initial)`), never via `form().reset()`.
+- **Safe Effects:** Read all signals before the first `await`. Use `untracked()` for non-reactive reads. For DOM manipulation, use `afterRenderEffect()`.
+- **httpResource:** Use `resource.hasValue()` as type guard.
+- **Control Flow:** Use native `@if`, `@for` (with mandatory `track`), `@switch`, `@empty`. Use `@defer` (`@placeholder`, `@loading`) for lazy rendering.
 
 ## 🏛️ Architecture Decision Records (ADRs)
 
 > [!IMPORTANT]
-> Cuando ocurra algún cambio o se tome una decisión a nivel de arquitectura, **DEBE** quedar reflejado automáticamente creando o actualizando un documento en la carpeta `docs/adrs/`.
->
-> **Reglas:**
->
-> - Comprueba si existe un ADR aplicable antes de proponer la decisión.
-> - Registra un ADR solo cuando la decisión sea difícil de revertir, requiera contexto o implique un _trade-off_ real.
-> - Si la discusión contradice un ADR aceptado, propón actualizar el ADR en lugar de divergir en silencio.
-> - Si tienes acceso en tu contexto a un repositorio de referencia con un ADR equivalente, utiliza **exactamente el mismo nombre de fichero y la misma estructura de contenido** para mantener la consistencia.
+> When making significant architectural decisions or changes, create or update the appropriate document in `docs/adrs/`.
 
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 

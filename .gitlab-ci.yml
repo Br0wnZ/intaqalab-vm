@@ -18,7 +18,7 @@ variables:
   KUBERNETES_MEMORY_LIMIT: "12Gi"
 
 
-blackduck:
+blackduck-des:
   stage: security-tests
   image:
     name: registry.tools.inta.es/builders/java/maven:3.9.12-eclipse-temurin-25
@@ -37,7 +37,7 @@ blackduck:
     - npm install --ignore-scripts
     - echo "=== Install OK, Detect puede proceder ==="
   rules:
-    - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "preprod" || $CI_COMMIT_BRANCH == "main") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+    - if: ($CI_COMMIT_BRANCH == "develop") && $CI_PIPELINE_SOURCE != 'merge_request_event'
       variables:
         BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'true'
         BRIDGE_BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES: 'BLOCKER,CRITICAL'
@@ -45,7 +45,88 @@ blackduck:
         BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: $CI_PROJECT_DIR/report.sarif.json
         BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES: 'CRITICAL,HIGH'
         BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_GROUPSCAISSUES: 'true'
-    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event')
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "develop"
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'false'
+        BRIDGE_BLACKDUCKSCA_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN       
+  tags: [k8s-tools]
+  extends: .run-black-duck-tools
+  artifacts:
+    when: always
+    paths:
+      - $CI_PROJECT_DIR/report.sarif.json
+    expire_in: 1 hour
+  allow_failure: true
+
+blackduck-pre:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/builders/java/maven:3.9.12-eclipse-temurin-25
+    entrypoint: [""]
+  variables:
+    BRIDGE_BLACKDUCKSCA_URL: "https://blackduck.tools.inta.es"
+    BRIDGE_BLACKDUCKSCA_TOKEN: $BRIDGE_BLACKDUCKSCA_TOKEN
+    DETECT_PROJECT_NAME: $CI_PROJECT_NAME
+    DETECT_DETECTOR_SEARCH_DEPTH: "5"
+    DETECT_REQUIRED_DETECTOR_TYPES: "NPM"
+    DETECT_REQUIRE_ALL_DETECTORS_PASSED: "true"
+    INCLUDE_DIAGNOSTICS: 'true'
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - echo "=== Instalando dependencias npm ==="
+    - npm install --ignore-scripts
+    - echo "=== Install OK, Detect puede proceder ==="
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "preprod") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'true'
+        BRIDGE_BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES: 'BLOCKER,CRITICAL'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: $CI_PROJECT_DIR/report.sarif.json
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES: 'CRITICAL,HIGH'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_GROUPSCAISSUES: 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "preprod"
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'false'
+        BRIDGE_BLACKDUCKSCA_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN      
+  tags: [k8s-tools]
+  extends: .run-black-duck-tools
+  artifacts:
+    when: always
+    paths:
+      - $CI_PROJECT_DIR/report.sarif.json
+    expire_in: 1 hour
+
+blackduck-pro:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/builders/java/maven:3.9.12-eclipse-temurin-25
+    entrypoint: [""]
+  variables:
+    BRIDGE_BLACKDUCKSCA_URL: "https://blackduck.tools.inta.es"
+    BRIDGE_BLACKDUCKSCA_TOKEN: $BRIDGE_BLACKDUCKSCA_TOKEN
+    DETECT_PROJECT_NAME: $CI_PROJECT_NAME
+    DETECT_DETECTOR_SEARCH_DEPTH: "5"
+    DETECT_REQUIRED_DETECTOR_TYPES: "NPM"
+    DETECT_REQUIRE_ALL_DETECTORS_PASSED: "true"
+    INCLUDE_DIAGNOSTICS: 'true'
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - echo "=== Instalando dependencias npm ==="
+    - npm install --ignore-scripts
+    - echo "=== Install OK, Detect puede proceder ==="
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'true'
+        BRIDGE_BLACKDUCKSCA_SCAN_FAILURE_SEVERITIES: 'BLOCKER,CRITICAL'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: 'true'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_FILE_PATH: $CI_PROJECT_DIR/report.sarif.json
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_SEVERITIES: 'CRITICAL,HIGH'
+        BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_GROUPSCAISSUES: 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "master"
       variables:
         BRIDGE_BLACKDUCKSCA_SCAN_FULL: 'false'
         BRIDGE_BLACKDUCKSCA_AUTOMATION_PRCOMMENT: 'true'
@@ -56,10 +137,9 @@ blackduck:
     when: always
     paths:
       - $CI_PROJECT_DIR/report.sarif.json
-    expire_in: 1 hour
-  allow_failure: true  
+    expire_in: 1 hour 
 
-coverity:
+coverity-des:
   stage: security-tests
   image:
     name: registry.tools.inta.es/utils/coverity:2025.06.0
@@ -87,17 +167,17 @@ coverity:
     - export BRIDGE_BREAK="false"
     - env | grep BRIDGE_BREAK
     - |
-      cat <<EOF > coverity.yaml
+      cat <<'EOF' > coverity.yaml
       capture:
         files:
-          exclude-regex: ".*node_modules.*|.*[Ss]pec.*|.*[Mm]ock.*|.*__tests__.*"
+          exclude-regex: '.*node_modules.*|.*[Ss]pec\.(ts|js)$|.*\.(mock|stub|fixture)\.(ts|js)$|.*__tests__.*|.*\.test\.(ts|js)$|.*coverage.*|.*dist.*|.*build.*|.*/\.codegraph/.*|.*tmp/.*|.*vitest\.config.*|.*karma\.conf.*|.*jest\.config.*|.*webpack.*|.*/\.github/.*|.*/\.gitlab/.*|.*/\.vscode/.*|.*/docs/.*|.*openwiki/.*|.*nginx\.conf|.*Dockerfile.*|.*\.(md|mdx)$|.*package-lock\.json$|.*pnpm-lock\.yaml$|.*\.eslintrc.*|.*prettier\.config.*|.*lint-staged.*|.*apis/.*\.(json|yaml)$'
       EOF
   rules:
-    - if: ($CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "preprod" || $CI_COMMIT_BRANCH == "main") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+    - if: ($CI_COMMIT_BRANCH == "develop") && $CI_PIPELINE_SOURCE != 'merge_request_event'
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
         BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
-    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event')
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "develop" 
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
         BRIDGE_COVERITY_AUTOMATION_PRCOMMENT: 'true'
@@ -107,6 +187,102 @@ coverity:
     paths:
       - .bridge
   allow_failure: true
+
+coverity-pre:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/utils/coverity:2025.06.0
+    entrypoint: [""]
+  extends: .run-black-duck-tools
+  tags: [k8s-tools]
+  variables:
+    BRIDGE_COVERITY_CONNECT_URL: $COVERITY_URL
+    BRIDGE_COVERITY_CONNECT_USER_NAME: $COVERITY_USER
+    BRIDGE_COVERITY_CONNECT_USER_PASSWORD: $COVERITY_PASSWORD
+    BRIDGE_COVERITY_LOCAL: 'true'
+    BRIDGE_COVERITY_INSTALL_DIRECTORY: "/opt/coverity"
+    BRIDGE_COVERITY_CONNECT_PROJECT_NAME: $CI_PROJECT_NAME
+    MARK_BUILD_STATUS: "success"
+    BRIDGE_RUN_COMPONENTS: "coverity"
+    BRIDGE_BLACKDUCKSCA_SCAN_FULL: "false"
+    BRIDGE_BLACKDUCKSCA_FIXPR_ENABLED: "false"
+    BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
+    # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - npm ci --ignore-scripts
+    - mkdir -p /opt/coverity/bin
+    - cp "$COVERITY_LICENSE_FILE" /opt/coverity/bin/license.dat
+    - export BRIDGE_BREAK="false"
+    - env | grep BRIDGE_BREAK
+    - |
+      cat <<'EOF' > coverity.yaml
+      capture:
+        files:
+          exclude-regex: '.*node_modules.*|.*[Ss]pec\.(ts|js)$|.*\.(mock|stub|fixture)\.(ts|js)$|.*__tests__.*|.*\.test\.(ts|js)$|.*coverage.*|.*dist.*|.*build.*|.*/\.codegraph/.*|.*tmp/.*|.*vitest\.config.*|.*karma\.conf.*|.*jest\.config.*|.*webpack.*|.*/\.github/.*|.*/\.gitlab/.*|.*/\.vscode/.*|.*/docs/.*|.*openwiki/.*|.*nginx\.conf|.*Dockerfile.*|.*\.(md|mdx)$|.*package-lock\.json$|.*pnpm-lock\.yaml$|.*\.eslintrc.*|.*prettier\.config.*|.*lint-staged.*|.*apis/.*\.(json|yaml)$'
+      EOF
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "preprod") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "preprod"
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        BRIDGE_COVERITY_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN
+  artifacts:
+    when: always
+    paths:
+      - .bridge 
+
+coverity-pro:
+  stage: security-tests
+  image:
+    name: registry.tools.inta.es/utils/coverity:2025.06.0
+    entrypoint: [""]
+  extends: .run-black-duck-tools
+  tags: [k8s-tools]
+  variables:
+    BRIDGE_COVERITY_CONNECT_URL: $COVERITY_URL
+    BRIDGE_COVERITY_CONNECT_USER_NAME: $COVERITY_USER
+    BRIDGE_COVERITY_CONNECT_USER_PASSWORD: $COVERITY_PASSWORD
+    BRIDGE_COVERITY_LOCAL: 'true'
+    BRIDGE_COVERITY_INSTALL_DIRECTORY: "/opt/coverity"
+    BRIDGE_COVERITY_CONNECT_PROJECT_NAME: $CI_PROJECT_NAME
+    MARK_BUILD_STATUS: "success"
+    BRIDGE_RUN_COMPONENTS: "coverity"
+    BRIDGE_BLACKDUCKSCA_SCAN_FULL: "false"
+    BRIDGE_BLACKDUCKSCA_FIXPR_ENABLED: "false"
+    BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
+    # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
+  before_script:
+    - apt-get update && apt-get install -y curl unzip nodejs npm
+    - npm ci --ignore-scripts
+    - mkdir -p /opt/coverity/bin
+    - cp "$COVERITY_LICENSE_FILE" /opt/coverity/bin/license.dat
+    - export BRIDGE_BREAK="false"
+    - env | grep BRIDGE_BREAK
+    - |
+      cat <<'EOF' > coverity.yaml
+      capture:
+        files:
+          exclude-regex: '.*node_modules.*|.*[Ss]pec\.(ts|js)$|.*\.(mock|stub|fixture)\.(ts|js)$|.*__tests__.*|.*\.test\.(ts|js)$|.*coverage.*|.*dist.*|.*build.*|.*/\.codegraph/.*|.*tmp/.*|.*vitest\.config.*|.*karma\.conf.*|.*jest\.config.*|.*webpack.*|.*/\.github/.*|.*/\.gitlab/.*|.*/\.vscode/.*|.*/docs/.*|.*openwiki/.*|.*nginx\.conf|.*Dockerfile.*|.*\.(md|mdx)$|.*package-lock\.json$|.*pnpm-lock\.yaml$|.*\.eslintrc.*|.*prettier\.config.*|.*lint-staged.*|.*apis/.*\.(json|yaml)$'
+      EOF
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master") && $CI_PIPELINE_SOURCE != 'merge_request_event'
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "master"
+      variables:
+        BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        BRIDGE_COVERITY_AUTOMATION_PRCOMMENT: 'true'
+        BRIDGE_GITLAB_USER_TOKEN: $GITLAB_USER_TOKEN
+  artifacts:
+    when: always
+    paths:
+      - .bridge    
 
 unit-test-des:
   stage: unit-tests

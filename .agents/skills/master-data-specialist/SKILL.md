@@ -1,65 +1,68 @@
 ---
 name: master-data-specialist
 description: >
-  Agente experto en la arquitectura del módulo de Datos Maestros (Master Data) de INTAQALAB.
-  Conoce el patrón genérico Shell para catálogos y sabe cómo abstraer e implementar 
-  nuevos servicios de datos maestros rápidamente. Actívalo para `libs/domain/master-data`.
+  Master Data Domain Expert for INTAQALAB.
+  Expert in the generic Shell catalog pattern, data abstraction, and rapid implementation
+  of new master data services in `libs/domain/master-data`.
 ---
 
 # 🏗️ INTAQALAB: Master Data Specialist
 
-Eres el especialista del dominio de **Datos Maestros**.
+You are the domain specialist for **Master Data** (`libs/domain/master-data`).
 
-## 🧠 Conocimiento de Dominio (Master Data)
+## 🧠 Domain Architecture (Master Data)
 
-### 1. El Patrón Shell Genérico
+### 1. The Generic Shell Pattern
 
-El módulo de Master Data emplea un patrón altamente reutilizable llamado `MasterDataShellComponent`. Este componente de vista no sabe qué datos está mostrando, se parametriza mediante la inyección de dependencias a nivel de la ruta (`loadComponent` en el `ROUTES`).
+The Master Data module employs a reusable `MasterDataShellComponent`. This presentation container does not hardcode entity data; it is parametrized via dependency injection in routing (`loadComponent` in `ROUTES`).
 
-### 2. ¿Cómo agregar un nuevo catálogo?
+### 2. Adding a New Catalog
 
-Para incorporar un nuevo catálogo al sistema:
+To add a new catalog:
 
-1. **Crear el Modelo:** Define las respuestas y peticiones en `libs/shared/models`. Diferencia `XxxRequest` de `XxxResponse`.
-2. **Crear el Servicio Específico:**
-   - Debe extender o implementar la lógica necesaria (CRUD genérico).
-   - Utiliza `httpResource` para lectura.
-3. **Conectar en la Ruta (`routes.ts`):**
-   - Usa la ruta específica (ej: `/master-data/fuze-type`).
-   - Sobrescribe la provisión con `useExisting` apuntando a la clase abstracta o token genérico que espera el `MasterDataShellComponent`.
+1. **Create Models:** Define request and response types in `libs/shared/models`. Differentiate `XxxRequest` from `XxxResponse`.
+2. **Create the Entity Service:**
+   - Implements the generic CRUD catalog contract.
+   - Uses `httpResource` for data fetching.
+3. **Connect in Routing (`routes.ts`):**
+   - Configure route path (e.g. `/master-data/fuze-type`).
+   - Provide the service using `useExisting` mapped to the generic token expected by `MasterDataShellComponent`.
 
 ```typescript
-// Ejemplo típico en master-data.routes.ts
+// Typical routing pattern in master-data.routes.ts
 {
   path: 'fuze-type',
-  loadComponent: () => import('./master-data-shell/master-data-shell.component').then(m => m.MasterDataShellComponent),
+  loadComponent: () =>
+    import('./master-data-shell/master-data-shell.component').then(
+      (m) => m.MasterDataShellComponent
+    ),
   providers: [
     { provide: MasterDataGenericService, useExisting: FuzeTypeService }
   ]
 }
 ```
 
-### 3. Paginación y Filtrado
+### 3. Pagination & Filtering
 
-Los servicios de datos maestros implementan la construcción dinámica de parámetros `CatalogQueryParams`. Todo cambio en filtros o paginación actualiza un Signal privado en el servicio que dispara una nueva llamada al backend (`httpResource`).
+Master data services construct dynamic query parameters with `CatalogQueryParams`. All filter and pagination changes update a private trigger Signal in the service that automatically triggers a refetch via `httpResource`.
 
-Para filtros y paginación usa las utilidades propias de `@intaqalab/utils` (guía: `docs/UTILITIES.md`) — NO las reimplementes:
+Always use `@intaqalab/utils` (see `docs/UTILITIES.md`):
 
 ```typescript
 import { debouncedSignal, linkedQueryParam } from '@intaqalab/utils';
 
-// Filtro sincronizado con la URL (sobrevive F5, compartible, back restaura):
+// URL-synchronized filters (survives refresh, shareable, preserves history):
 readonly searchTerm = linkedQueryParam('q');
 readonly page = linkedQueryParam('page', {
   parse: (raw) => (raw ? Number(raw) : 1),
   serialize: (value) => (value === 1 ? null : String(value)),
 });
 
-// Debounce antes del trigger — sin refetch por tecla:
+// Debounce before trigger:
 readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 300);
 ```
 
-## 🛠️ Reglas de Intervención
+## 🛠️ Implementation Rules
 
-- Si el usuario te pide crear una pantalla para administrar una nueva entidad básica (ej: "Tipos de Vehículo"), **no crees componentes UI desde cero**. Implementa el modelo, el servicio y conéctalo al `MasterDataShellComponent`.
-- Evita estado global complejo para catálogos simples, apóyate en el patrón de recarga directa del recurso HTTP.
+- When requested to build a management screen for a new basic entity, **never build UI components from scratch**. Implement the models, the service, and wire them to `MasterDataShellComponent`.
+- Avoid complex global stores for simple CRUD catalogs; leverage direct HTTP resource reloading.

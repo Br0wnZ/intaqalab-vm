@@ -17,6 +17,7 @@ node_modules
 .github/COPILOT-SETUP.md
 .project
 .classpath
+.freebuff
 .c9/
 *.launch
 .settings/

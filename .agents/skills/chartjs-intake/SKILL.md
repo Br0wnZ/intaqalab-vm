@@ -1,60 +1,58 @@
 ---
-description: 'Intake estructurado para @chartjs-expert. Úsalo antes de crear un chart complejo para definir tipo, datos, plugins y contexto de framework.'
-argument-hint: "Describe brevemente el chart que necesitas (ej: 'line chart de temperatura en el tiempo con zoom')"
+description: 'Structured intake flow for @chartjs-expert. Use before creating a complex chart to define type, dataset, plugins, and framework context.'
+argument-hint: "Briefly describe the chart needed (e.g. 'time-series line chart for chamber pressure with zoom')"
 mode: agent
 ---
 
-Actúa como `@chartjs-expert`. Antes de generar cualquier código, necesito el siguiente contexto estructurado.
+# Chart.js Intake Flow
 
-## Solicitud inicial
+Act as `@chartjs-expert`. Before generating implementation code, gather the following structured requirements context.
 
-${input:Describe el chart que necesitas}
+## Initial Request
+
+${input:Describe the chart you need}
 
 ---
 
-## Intake de Requisitos
+## Requirements Intake
 
-Responde estas preguntas. Si la solicitud inicial ya cubre alguna, confirma el valor o ajusta.
+Answer the following points. If already covered in the initial prompt, confirm or adjust:
 
-### 1. Tipo de chart
-
-¿Qué tipo(s) de chart necesitas?
+### 1. Chart Type
 
 - [ ] `bar` | `line` | `pie` | `doughnut` | `scatter` | `bubble` | `radar` | `polarArea`
-- [ ] Mixed (combina tipos — indica cuáles)
+- [ ] Mixed (specify combined types)
 
-### 2. Datos
+### 2. Dataset Profile
 
-- **Volumen estimado de puntos**: < 100 / 100–10 000 / > 10 000 / streaming en tiempo real
-- **Esquema de datos**: ¿Cuál es la forma del dato? Ej: `{ x: Date, y: number, label: string }`
-- **Ejes de tiempo**: ¿Datos tienen eje temporal (`x: Date | ISO string`)? Sí / No
+- **Estimated data points**: < 100 / 100–10,000 / > 10,000 / real-time streaming
+- **Data shape**: e.g. `{ x: Date, y: number, label: string }`
+- **Time scale**: Temporal x-axis (`x: Date | ISO string`)? Yes / No
 
-### 3. Interactividad
+### 3. Interactivity & Plugins
 
-- [ ] Zoom / pan
-- [ ] Tooltips personalizados
-- [ ] Click en punto → acción
-- [ ] Líneas de referencia (annotation)
-- [ ] Etiquetas inline sobre barras/puntos (datalabels)
-- [ ] Ninguna
+- [ ] Zoom / pan (`chartjs-plugin-zoom`)
+- [ ] Custom tooltips
+- [ ] Point click event dispatch
+- [ ] Reference threshold lines (`chartjs-plugin-annotation`)
+- [ ] Inline value labels (`chartjs-plugin-datalabels`)
+- [ ] None
 
-### 4. Framework
+### 4. Framework Context
 
-- [ ] Vanilla HTML/JS
-- [ ] Angular (`ng2-charts` / `BaseChartDirective`)
-- [ ] React
-- [ ] Otro: \_\_\_
+- [ ] Vanilla HTML/JS Canvas
+- [ ] Angular (`ng2-charts` / standalone canvas with `@ViewChild` / Signal component)
+- [ ] Other
 
-### 5. Restricciones conocidas
+### 5. Known Constraints
 
-¿Hay librerías ya instaladas, restricciones de bundle, o constraints de accesibilidad que deba respetar?
+Bundle budget, performance decimation thresholds, or WCAG color contrast requirements.
 
 ---
 
-Con estas respuestas, genera la configuración completa con:
+Once specified, output the complete configuration:
 
-- Imports tree-shaken (`Chart.register(...)`)
-- `ChartConfiguration<T>` tipado
-- Plugins recomendados con justificación
-- Adapter de fecha si aplica
-- Snippet de integración para el framework indicado
+- Tree-shaken imports (`Chart.register(...)`)
+- Strictly-typed `ChartConfiguration<T>`
+- Configured plugins and date adapters
+- Component integration snippet

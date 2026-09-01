@@ -8,10 +8,11 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { UpdateArmamentDialogData } from '../../utils-models/armament.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 import { UpdateArmamentDialog } from './update-armament-dialog';
 
 vi.mock('@intaqalab/config', () => ({
-  injectFireTrialsEndpoint: () => 'http://api.test/fire-trials',
+  injectPlanningEndpoint: () => 'http://api.test/planning',
   injectApiUrl: () => 'http://api.test/center',
 }));
 
@@ -30,7 +31,7 @@ function createMockDialogData(overrides: Partial<UpdateArmamentDialogData> = {})
     shotNumber: 1,
     shotId: 'shot-001',
     armament: {
-      weaponType: 'WEAPON',
+      weaponType: SpecimenType.Weapon,
       weaponName: 'Obús 105mm',
       weaponExternalId: 'weapon-1',
       tubeName: 'Tubo 1',

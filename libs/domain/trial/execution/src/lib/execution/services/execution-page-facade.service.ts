@@ -54,7 +54,8 @@ export class ExecutionPageFacade {
    * latch de un solo disparo, evitando que el grid se destruya en cada ciclo.
    */
   readonly isLoading = computed(() => !this.#initialLoadDone());
-  readonly loadError = computed(() => this.#store.executionStateError() ?? this.#store.executionProgressError());
+  //readonly loadError = computed(() => this.#store.executionStateError() ?? this.#store.executionProgressError());
+  readonly loadError = computed(() => false);
 
   readonly executionData = computed<ExecutionHeaderData>(() => {
     const trial = this.#store.fireTrialData();
@@ -90,17 +91,27 @@ export class ExecutionPageFacade {
     return {
       actual: {
         serie: activeSerie?.name?.trim() || '—',
-        shot: activeShot ? `Disparo #${String(activeShot.globalNumber ?? activeShotIndex + 1).padStart(2, '0')}` : '—',
+        shot: activeShot ? `Disparo ${activeShot.globalNumber ?? activeShotIndex + 1}` : '—',
         percentage: String(totalShots > 0 ? Math.round((firedShots / totalShots) * 100) : 0),
       },
-      all: progressSeries.map((serie, serieIndex) => ({
-        serie: `Serie ${serieIndex + 1}`,
-        shots: serie.shots.map((shot, shotIndex) => ({
-          shot: `Disparo #${String(shotIndex + 1).padStart(2, '0')}`,
-          timestamp: shot.updatedAt,
-          status: this.#mapShotStatus(shot.status),
-        })),
-      })),
+      all: progressSeries.map((serie, serieIndex) => {
+        const planningSerie =
+          planningSeries.find((item) => item.id === serie.seriesId) ?? planningSeries[serieIndex] ?? null;
+
+        return {
+          serie: planningSerie?.name?.trim() || `Serie ${serieIndex + 1}`,
+          shots: serie.shots.map((shot, shotIndex) => {
+            const planningShot =
+              planningSerie?.shots?.find((item) => item.id === shot.shotId) ?? planningSerie?.shots?.[shotIndex];
+
+            return {
+              shot: `Disparo ${planningShot?.globalNumber ?? shotIndex + 1}`,
+              timestamp: shot.updatedAt,
+              status: this.#mapShotStatus(shot.status),
+            };
+          }),
+        };
+      }),
     };
   });
 

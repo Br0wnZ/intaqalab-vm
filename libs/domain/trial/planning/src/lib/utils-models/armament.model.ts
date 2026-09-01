@@ -41,6 +41,7 @@ export type ShotArmamentUpdateRequest = {
   isInstrumented?: boolean;
   lifeUsefulPercentage?: number;
   observations?: string;
+  itemType?: string;
 };
 
 export type ArmamentBulkUpdateRequest = {
@@ -123,4 +124,3 @@ export type MassiveConfigData = {
 export type MassiveShotsConfigurationDialogData = {
   series?: { id: string; name: string }[];
 };
-

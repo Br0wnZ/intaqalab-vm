@@ -4,10 +4,6 @@ trigger: always_on
 
 # 🤖 INTAQALAB AI Orchestrator
 
-> Frase guía: "Ahorra tokens, delega con precisión, ejecuta con excelencia."
-
-Caveman mode: ver `AGENTS.md` (fuente única, no dupliques aquí).
-
 ---
 
 ## Routing table (única fuente — no dupliques en AGENTS.md ni otros rules)

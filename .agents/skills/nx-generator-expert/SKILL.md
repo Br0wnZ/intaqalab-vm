@@ -1,101 +1,97 @@
 ---
 name: nx-generator-expert
-description: 'Experto en scaffolding de Nx. Usa esta skill ANTES de escribir código manualmente para generar librerías, componentes y servicios. Garantiza el correcto uso de directorios, flags `--tags` para ESLint Boundaries y compatibilidad Angular 21.'
-argument-hint: "Ej: 'Genera la librería feature para gestión de almacén', 'Crea el componente de tarjeta en la lib ui-shared', o '/create-feature'."
+description: 'Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility.'
+argument-hint: "E.g. 'Generate feature library for warehouse management', 'Create card component in ui-shared lib', or '/create-feature'."
 user-invocable: true
 ---
 
 # 🤖 Nx Generator Expert
 
-Eres el responsable de estructurar físicamente el monorepo usando **Nx Generators**, asegurando que las reglas de Module Boundaries (ESLint) y la arquitectura en capas se respeten de forma automática.
+You are responsible for scaffolding code in the monorepo using **Nx Generators**, ensuring that ESLint Module Boundaries and layered architecture rules are automatically enforced.
 
-## 🚀 Principios Clave
+## 🚀 Key Principles
 
-1. **Scaffolding Automático:** NUNCA sugieras crear archivos (TS/HTML) a mano si se trata de un nuevo módulo (feature, ui, data-access). Usa siempre el generador primero.
-2. **`--no-interactive`:** Añade siempre esta flag a los comandos Nx.
-3. **Dry-Run:** Antes de ejecutar un comando complejo, si dudas del directorio, puedes proponer `--dry-run` para validar.
-
----
-
-## 🏗️ Reglas Obligatorias para Nuevas Librerías (Capas de Dominio)
-
-El código de negocio no vive en `apps/`. Se encapsula en `libs/domain/<nombre-dominio>/<tipo-libreria>`.
-**CRÍTICO**: Siempre debes incluir `--directory` y `--tags`.
-
-### 1. Feature (Componentes Inteligentes y Contenedores)
-
-Contienen componentes que inyectan Stores e interactúan con la lógica.
-
-```bash
-nx g @nx/angular:library feature-[nombre-feature] \
-  --directory="libs/domain/[nombre-dominio]/feature-[nombre-feature]" \
-  --tags="scope:[nombre-dominio],type:feature" \
-  --no-interactive
-```
-
-_Si el usuario pide un "Create Feature" completo, proporciona el comando arriba, un componente shell con `ChangeDetectionStrategy.OnPush`, Tailwind inline, inyección de store (`#store = inject(...)`), configuración de rutas y ejemplos de claves i18n._
-
-### 2. UI (Componentes Puros Presentacionales)
-
-No saben de stores. Solo `input()`, `output()`, y estilos.
-
-```bash
-nx g @nx/angular:library ui-[nombre-ui] \
-  --directory="libs/domain/[nombre-dominio]/ui-[nombre-ui]" \
-  --tags="scope:[nombre-dominio],type:ui" \
-  --no-interactive
-```
-
-### 3. Data Access (State Management y Services)
-
-NgRx SignalStores y servicios HTTP (httpResource).
-
-```bash
-nx g @nx/angular:library data-access-[nombre-entidad] \
-  --directory="libs/domain/[nombre-dominio]/data-access-[nombre-entidad]" \
-  --tags="scope:[nombre-dominio],type:data-access" \
-  --no-interactive
-```
-
-### 4. Utils (Helpers Puros)
-
-Funciones compartidas y tipos genéricos de un dominio.
-
-```bash
-nx g @nx/angular:library util-[nombre-util] \
-  --directory="libs/domain/[nombre-dominio]/util-[nombre-util]" \
-  --tags="scope:[nombre-dominio],type:util" \
-  --no-interactive
-```
+1. **Automatic Scaffolding:** NEVER create full library directories or boilerplate files manually. Always execute the appropriate Nx generator first.
+2. **`--no-interactive`:** Always add this flag to CLI commands.
+3. **Dry-Run:** Use `--dry-run` to validate generator output and paths when unsure.
 
 ---
 
-## 🧩 Creación de Componentes/Servicios/Directivas Individuales
+## 🏗️ Mandatory Rules for New Libraries (Domain Layers)
 
-Si el proyecto (librería) ya existe y solo necesitas agregar elementos dentro, usa la bandera `--project`:
+Business code does not live in `apps/`. It is encapsulated under `libs/domain/<domain-name>/<library-type>`.
+**CRITICAL:** Always provide `--directory` and `--tags`.
 
-**Componente:**
+### 1. Feature (Smart Components & Containers)
 
-```bash
-nx g @nx/angular:component [nombre] --project=[nombre-proyecto-nx] --no-interactive
-```
-
-_⚠️ **REGLA DE NAMING (2025 Style Guide)**: Renombra el archivo generado para eliminar el sufijo de tipo técnico (ej. `example.component.ts` -> `example.ts`, `example.component.spec.ts` -> `example.spec.ts`) y elimina el sufijo de la clase (ej. `ExampleComponent` -> `Example`)._
-
-**Servicio:**
+Contains smart components that inject stores and coordinate user workflows.
 
 ```bash
-nx g @nx/angular:service [nombre] --project=[nombre-proyecto-nx] --no-interactive
+nx g @nx/angular:library feature-[feature-name] \
+  --directory="libs/domain/[domain-name]/feature-[feature-name]" \
+  --tags="scope:[domain-name],type:feature" \
+  --no-interactive
 ```
 
-_⚠️ **REGLA DE NAMING (2025 Style Guide)**: Los servicios mantienen su sufijo de tipo técnico (`example.service.ts` y la clase `ExampleService`). No los renombre._
+### 2. UI (Pure Presentational Components)
+
+Knows nothing about stores or data access. Only `input()`, `output()`, and template styling.
+
+```bash
+nx g @nx/angular:library ui-[ui-name] \
+  --directory="libs/domain/[domain-name]/ui-[ui-name]" \
+  --tags="scope:[domain-name],type:ui" \
+  --no-interactive
+```
+
+### 3. Data Access (State Management & Services)
+
+NgRx SignalStores and `httpResource` data services.
+
+```bash
+nx g @nx/angular:library data-access-[entity-name] \
+  --directory="libs/domain/[domain-name]/data-access-[entity-name]" \
+  --tags="scope:[domain-name],type:data-access" \
+  --no-interactive
+```
+
+### 4. Utils (Pure Helpers & Models)
+
+Domain types, interfaces, and pure helper functions.
+
+```bash
+nx g @nx/angular:library util-[util-name] \
+  --directory="libs/domain/[domain-name]/util-[util-name]" \
+  --tags="scope:[domain-name],type:util" \
+  --no-interactive
+```
 
 ---
 
-## 🛠️ Descubrimiento de Generadores
+## 🧩 Generating Individual Elements
 
-Si te piden scaffolding de algo diferente, descubre los generadores de la siguiente manera:
+When adding elements into an existing library, use `--project`:
 
-- Listar generadores de Angular: `npx nx list @nx/angular`
-- Verifica opciones con `npx nx g [generador] --help`
-- Para librerías, por defecto son **no-buildables** (consumidas por apps y compiladas por el bundler de la app) a menos que se indique explícitamente (`--bundler=vite`).
+**Component:**
+
+```bash
+nx g @nx/angular:component [name] --project=[nx-project-name] --no-interactive
+```
+
+_⚠️ **NAMING CONVENTION (2025 Style Guide)**: Strip technical type suffixes from generated file names (e.g. `example.component.ts` -> `example.ts`, `example.component.spec.ts` -> `example.spec.ts`) and class names (e.g. `ExampleComponent` -> `Example`)._
+
+**Service:**
+
+```bash
+nx g @nx/angular:service [name] --project=[nx-project-name] --no-interactive
+```
+
+_⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical suffix (`example.service.ts` and class `ExampleService`)._
+
+---
+
+## 🛠️ Generator Discovery
+
+- List available Angular generators: `npx nx list @nx/angular`
+- Check options: `npx nx g [generator] --help`
+- By default, libraries are **non-buildable** (bundled directly by consuming applications).

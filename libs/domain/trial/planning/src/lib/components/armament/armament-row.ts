@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, model } from '@angular/core';
+import type { OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -66,7 +76,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-select clearable [formField]="formPath().armament.tubeExternalId">
             @for (tube of tubeOptions(); track tube.id) {
-              <mat-option [value]="tube.id">{{ tube.modelName }}</mat-option>
+              <mat-option [value]="tube.denominationId">{{ tube.modelName }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -106,7 +116,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
         >
           <ui-inta-icon name="info" size="xxl" />
         </button>
-        @if (!readonly()) {
+        @if (!readonly() && hasWeaponType()) {
           <button mat-icon-button type="button" class="!text-gray-600 scale-90" (click)="openUpdateDialog()">
             <ui-inta-icon name="edit" size="xxl" />
           </button>
@@ -118,7 +128,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ArmamentRow {
+export class ArmamentRow implements OnInit {
   readonly shot = model.required<ArmamentSerieShot>();
   readonly formPath = input.required<ShotFormPath>();
   readonly readonly = input<boolean>(false);
@@ -127,6 +137,8 @@ export class ArmamentRow {
   readonly #armamentStore = inject(ArmamentStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly #armamentDialogService = inject(ArmamentDialogService);
+
+  readonly hasWeaponType = signal<boolean>(false);
 
   readonly typeOptions = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },
@@ -145,6 +157,12 @@ export class ArmamentRow {
     return mergeCatalogOptions(denominations, singleShotArray, 'tubeExternalId', 'tubeName', 'TUBE');
   });
 
+  ngOnInit(): void {
+    const hasWeaponType = !!this.shot().armament.weaponType;
+
+    this.hasWeaponType.set(hasWeaponType);
+  }
+
   onWeaponTypeChange(itemType: string | null | undefined): void {
     this.#updateShotArmament({
       weaponExternalId: '',
@@ -152,6 +170,8 @@ export class ArmamentRow {
       tubeExternalId: '',
       tubeName: '',
     });
+
+    this.hasWeaponType.set(!!itemType);
 
     if (itemType) {
       this.#armamentStore.loadWeaponDenominations(itemType.toUpperCase());

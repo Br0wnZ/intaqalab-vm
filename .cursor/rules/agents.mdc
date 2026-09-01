@@ -1,0 +1,10 @@
+---
+description: "Reglas maestras del proyecto Intaqalab: Angular 21+, Signals, Nx y catálogo de skills"
+alwaysApply: true
+---
+
+# INTAQALAB Master Rules
+
+- Read and follow all instructions in `AGENTS.md`.
+- Never contradict `AGENTS.md`.
+- Project skills are defined in `.agents/skills/`. Consult the respective `SKILL.md` before executing domain-specific tasks (e.g. testing, signalstore, ui widgets, swagger api).

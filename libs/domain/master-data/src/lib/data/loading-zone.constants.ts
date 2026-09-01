@@ -28,3 +28,5 @@ export const LOADING_ZONE_VIEW: MasterView = {
     },
   },
 };
+
+export const LOADING_ZONE_UPSERT_DENOMINATION_FILTER = '377f00ce-d595-42d5-b3a0-d3aa8bf8a0d0';

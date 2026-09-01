@@ -1,5 +1,16 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -45,7 +56,7 @@ interface JltShotDataSelectForm {
     IntaIconComponent,
   ],
   template: `
-    <div intaFormTouch #touch="intaFormTouch" class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto">
+    <div intaFormTouch class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2 overflow-auto" #touch="intaFormTouch">
       <!-- Header -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -211,9 +222,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
-  readonly #selectionKey = computed(() =>
-    shotSelectionKey(this.formModel().serie, this.formModel().disparo),
-  );
+  readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
@@ -697,7 +706,30 @@ export class JltShotData extends BaseFormWidgetComponent {
     this.#syncSnapshot();
   }
 
-  #getJltData(response: JltShotDataResponse): JltShotDataPayload {
-    return 'jltData' in response ? response.jltData : response;
+  #getJltData(response: JltShotDataResponse | null): JltShotDataPayload {
+    if (!response) {
+      return {
+        jet: '',
+        pieceOperator: '',
+        attackDistance: null,
+        attackDistanceUnit: MeasureUnitEnum.MM,
+        recoilDistance: null,
+        recoilDistanceUnit: MeasureUnitEnum.MM,
+        observations: null,
+      };
+    }
+
+    const data = 'jltData' in response ? response.jltData : response;
+    return (
+      data ?? {
+        jet: '',
+        pieceOperator: '',
+        attackDistance: null,
+        attackDistanceUnit: MeasureUnitEnum.MM,
+        recoilDistance: null,
+        recoilDistanceUnit: MeasureUnitEnum.MM,
+        observations: null,
+      }
+    );
   }
 }

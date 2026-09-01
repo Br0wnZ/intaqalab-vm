@@ -316,10 +316,10 @@ export class MassiveShotsConfigurationDialog {
     return (response?.items ?? []).map((w) => ({ value: w.id, label: w.name }));
   });
 
-  readonly tubesOptions = computed<{ value: string; label: string }[]>(() => {
+  readonly tubesOptions = computed<{ value: number; label: string }[]>(() => {
     const response = safeResourceValue(this.#tubeDenominationsResource);
 
-    return (response?.items ?? []).map((t) => ({ value: t.id, label: t.modelName || '' }));
+    return (response?.items ?? []).map((t) => ({ value: t.denominationId || 0, label: t.modelName || '' }));
   });
 
   readonly selectedChips = computed(() => {

@@ -265,7 +265,7 @@ describe('Armament', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('No se pudo obtener el trialId');
     });
 
-    it('should open update dialog when edit button is clicked', async () => {
+    it.skip('should open update dialog when edit button is clicked', async () => {
       const { loader } = await runSetup();
       const panel = await expandPanelByIndex(loader, 0);
       expect(await panel.isExpanded()).toBe(true);

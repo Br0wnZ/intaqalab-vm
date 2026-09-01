@@ -28,6 +28,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/core';
 import { AppConfigService } from '@intaqalab/config';
 import { EntityListResponse, EntityParams } from '@intaqalab/models/<domain>';
+import { actionTrigger } from '@intaqalab/utils';
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
@@ -53,11 +54,12 @@ export class EntityService {
     this.#trigger.set(params);
   }
 
-  // Para operaciones POST/PUT/DELETE usar httpResource con method específico
-  readonly #createTrigger = signal<CreateEntityDto | null>(null);
+  // Para operaciones POST/PUT/DELETE usar actionTrigger en lugar de signal
+  // para evitar caché si se repite el mismo payload y facilitar el reset a Idle
+  readonly #createTrigger = actionTrigger<CreateEntityDto>();
 
   readonly createResource = httpResource<EntityResponse>(() => {
-    const body = this.#createTrigger();
+    const body = this.#createTrigger.value();
     if (!body) return undefined;
     return {
       url: `${this.#config.apiUrl}/entities`,
@@ -67,7 +69,11 @@ export class EntityService {
   });
 
   create(dto: CreateEntityDto): void {
-    this.#createTrigger.set(dto);
+    this.#createTrigger.fire(dto);
+  }
+
+  resetCreate(): void {
+    this.#createTrigger.reset();
   }
 }
 ```
@@ -113,29 +119,60 @@ export const EntityStore = signalStore(
 
 ### Capa 3 — Shell Component (`feature`)
 
+> [!IMPORTANT]
+> **Patrón Obligatorio de 3 Estados en la Vista:**
+>
+> 1. **Loading (`isLoading()`)**: Réplica visual de la vista usando componentes `ui-skeleton` / `ui-skeleton-card` de `@intaqalab/ui`.
+> 2. **Error (`error()`)**: Mensaje de error accesible traducido con `@ngx-translate` (`{{ 'ERRORS.LOADING_ERROR' | translate }}`).
+> 3. **Success**: Componentes reales cargados con los datos.
+>
+> **REGLA DE ORO DE INYECCIÓN:** La store NUNCA se expone públicamente ni se accede directamente en el HTML. Se inyecta como `readonly #store = inject(Store)` y se exponen propiedades mediante `computed()`.
+
 ```typescript
-// El componente Shell provee el Store y dispara la carga inicial
+// El componente Shell provee el Store y expone señales computadas para la vista
 @Component({
   selector: 'inta-entity-shell',
+  imports: [Skeleton, SkeletonCard, TranslateModule, EntityCardComponent],
   providers: [EntityStore], // provee aquí si el scope es la feature
   template: `
-    @if (store.isLoading()) {
-      <mat-progress-bar mode="indeterminate" />
-    }
-    @for (item of store.items(); track item.id) {
-      <inta-entity-card [item]="item" />
+    @if (isLoading()) {
+      <!-- ESTADO 1: LOADING (Réplica visual con Skeletons) -->
+      <div class="flex flex-col gap-4 p-4">
+        <ui-skeleton variant="text" width="40%" />
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          @for (i of [1, 2, 3]; track i) {
+            <ui-skeleton-card animation="wave" />
+          }
+        </div>
+      </div>
+    } @else if (error()) {
+      <!-- ESTADO 2: ERROR (Mensaje i18n) -->
+      <div class="p-6 text-center text-client-error font-medium">
+        {{ 'ERRORS.LOADING_ERROR' | translate }}
+      </div>
+    } @else {
+      <!-- ESTADO 3: ÉXITO (Componentes reales con datos) -->
+      <div class="flex flex-col gap-4 p-4">
+        @for (item of items(); track item.id) {
+          <inta-entity-card [item]="item" />
+        }
+      </div>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityShellComponent {
-  protected readonly store = inject(EntityStore);
+  readonly #store = inject(EntityStore);
+
+  readonly isLoading = computed(() => this.#store.isLoading());
+  readonly error = computed(() => this.#store.error());
+  readonly items = computed(() => this.#store.items());
 
   constructor() {
     // Dispara la carga inicial en el constructor
     effect(
       () => {
-        this.store.load({ page: 1, size: 20 });
+        this.#store.load({ page: 1, size: 20 });
       },
       { allowSignalWrites: true },
     );

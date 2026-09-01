@@ -5,25 +5,25 @@ description: Implements Angular Material Dialog patterns for the Intaqalab proje
 
 # Material Dialog Patterns — Intaqalab Standard
 
-Patrón canónico para todos los diálogos del proyecto basado en `@angular/material/dialog` + Angular 21 Signal Architecture.
+Canonical pattern for all project dialogs based on `@angular/material/dialog` + Angular 21 Signal Architecture.
 
-## Estructura de un Dialog Component
+## Dialog Component Structure
 
 ```typescript
 // libs/domain/<domain>/feature-<name>/src/lib/dialogs/<action>-dialog.ts
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 
-// 1. Tipado explícito de los datos de entrada
+// 1. Explicit input data typing
 export type ConfirmDeleteDialogData = {
   entityName: string;
   entityId: string;
 };
 
-// 2. Tipado explícito del resultado
+// 2. Explicit result typing (discriminated union)
 export type ConfirmDeleteDialogResult = { action: 'confirm'; id: string } | { action: 'cancel' };
 
 @Component({
@@ -50,7 +50,7 @@ export type ConfirmDeleteDialogResult = { action: 'confirm'; id: string } | { ac
       <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
         {{ 'COMMONS.CANCEL' | translate }}
       </button>
-      <button mat-flat-button aria-label="Confirmar eliminación" class="bg-client-error text-white" (click)="confirm()">
+      <button mat-flat-button aria-label="Confirm deletion" class="bg-client-error text-white" (click)="confirm()">
         {{ 'COMMONS.DELETE_DATA' | translate }}
       </button>
     </mat-dialog-actions>
@@ -58,7 +58,6 @@ export type ConfirmDeleteDialogResult = { action: 'confirm'; id: string } | { ac
   styles: ``,
 })
 export class ConfirmDeleteDialogComponent {
-  // Inyección con campo privado nativo
   readonly #dialogRef = inject(MatDialogRef<ConfirmDeleteDialogComponent>);
   protected readonly data = inject<ConfirmDeleteDialogData>(MAT_DIALOG_DATA);
 
@@ -72,11 +71,11 @@ export class ConfirmDeleteDialogComponent {
 }
 ```
 
-## Patrón del Componente que Abre el Dialog
+## Opener Component Pattern
 
 ```typescript
-// En el componente/feature que lanza el dialog
 import { MatDialog } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 import {
   ConfirmDeleteDialogComponent,
   ConfirmDeleteDialogData,
@@ -88,7 +87,7 @@ export class EntityListComponent {
   readonly #dialog = inject(MatDialog);
   protected readonly store = inject(EntityStore);
 
-  openDeleteDialog(entity: Entity): void {
+  async openDeleteDialog(entity: Entity): Promise<void> {
     const data: ConfirmDeleteDialogData = {
       entityName: entity.name,
       entityId: entity.id,
@@ -103,37 +102,31 @@ export class EntityListComponent {
       data,
     });
 
-    // afterClosed devuelve undefined si se cierra con Escape/backdrop
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result?.action === 'confirm') {
-        this.store.delete(result.id);
-      }
-    });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result?.action === 'confirm') {
+      this.store.delete(result.id);
+    }
   }
 }
 ```
 
-## Variante: Dialog con Formulario
+## Form Dialog Pattern
 
 ```typescript
-export type CreateEntityDialogData = void; // sin datos de entrada
+export type CreateEntityDialogData = void;
 export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto } | { action: 'cancel' };
 
 @Component({
   selector: 'inta-create-entity-dialog',
-  imports: [MatDialogModule, MatButtonModule, ReactiveFormsModule /* Signal Forms */],
+  imports: [MatDialogModule, MatButtonModule, SaveButton /* Signal Forms */],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>{{ 'DOMAIN.DIALOGS.CREATE.TITLE' | translate }}</h2>
 
     <mat-dialog-content>
-      <!-- Signal Form fields -->
       <mat-form-field floatLabel="always" class="w-full">
         <mat-label>{{ 'DOMAIN.FIELDS.NAME' | translate }}</mat-label>
-        <input matInput [formControl]="form.controls.name" />
-        @if (form.controls.name.errors?.['required']) {
-          <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
-        }
+        <input matInput [placeholder]="'DOMAIN.FIELDS.NAME_PLACEHOLDER' | translate" [formField]="form.controls.name" />
       </mat-form-field>
     </mat-dialog-content>
 
@@ -141,17 +134,13 @@ export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto 
       <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
         {{ 'COMMONS.CANCEL' | translate }}
       </button>
-      <button mat-flat-button color="primary" [disabled]="form.invalid()" (click)="submit()">
-        {{ 'COMMONS.CREATE' | translate }}
-      </button>
+      <ui-save-button label="COMMONS.CREATE" [isSaving]="isSubmitting()" (save)="submit()" />
     </mat-dialog-actions>
   `,
 })
 export class CreateEntityDialogComponent {
   readonly #dialogRef = inject(MatDialogRef<CreateEntityDialogComponent>);
-
-  // Signal Form
-  protected readonly form = group({
+  protected readonly form = form({
     name: control('', { validators: [Validators.required] }),
   });
 
@@ -162,26 +151,10 @@ export class CreateEntityDialogComponent {
 }
 ```
 
-## Configuraciones de `MatDialog.open()`
+## Rules Summary
 
-```typescript
-this.#dialog.open(MyDialogComponent, {
-  width: '420px',       // Confirmaciones simples
-  width: '600px',       // Formularios medianos
-  width: '800px',       // Formularios complejos / tablas
-  maxWidth: '95vw',     // Siempre para responsividad mobile
-  disableClose: true,   // Cuando hay formulario con datos (evita pérdida accidental)
-  data: { ... },        // Tipado con el type de datos
-  panelClass: 'inta-dialog', // Clase global si necesitas estilos custom
-});
-```
-
-## Reglas
-
-- `#dialogRef` siempre privado nativo (`#`).
-- `data` inyectado con `inject<T>(MAT_DIALOG_DATA)` — tipado explícito.
-- El resultado SIEMPRE es un tipo union con `action` discriminante (`'confirm' | 'cancel'`).
-- `afterClosed().subscribe()` siempre valida `result?.action` antes de actuar.
-- `mat-dialog-close` en el botón cancelar (shorthand sin lógica).
-- `(click)="confirm()"` en el botón de acción principal (lógica en el método).
-- NUNCA uses `private` — usa `#` para privado y `protected` para lo expuesto al template.
+- `#dialogRef` always native private field (`#`).
+- `data` injected via `inject<T>(MAT_DIALOG_DATA)` with explicit typing.
+- Result is ALWAYS a discriminated union (`{ action: 'confirm' | 'cancel', ... }`).
+- For form save/create actions, ALWAYS use `<ui-save-button>` (`SaveButton` from `@intaqalab/ui`).
+- Never use TypeScript `private` keyword; use `#` for private members and `protected` for template-bound properties.

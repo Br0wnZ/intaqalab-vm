@@ -9,6 +9,7 @@ import { DenominationsStore } from '@intaqalab/warehouse-management';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
+import { LOADING_ZONE_UPSERT_DENOMINATION_FILTER } from '../../../../data/loading-zone.constants';
 import type { MasterDataLoadingZone } from '../../../../models/master-data-loading-zone.model';
 import type { MasterDataUpsertDialogType } from '../../../../models/utils.model';
 
@@ -42,6 +43,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
         [valueKey]="'id'"
         [labelKey]="'name'"
         [formField]="form.denominationId"
+        [searchable]="true"
         [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
         [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
         [options]="denominationsStore.items() || []"
@@ -99,7 +101,7 @@ export class LoadingZoneUpsertDialogComponent {
   readonly denominationsStore: DenominationsStoreType = inject(DenominationsStore);
 
   constructor() {
-    this.denominationsStore.search({ active: true });
+    this.denominationsStore.search({ active: true, munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER });
 
     effect(() => {
       const data = this.data;

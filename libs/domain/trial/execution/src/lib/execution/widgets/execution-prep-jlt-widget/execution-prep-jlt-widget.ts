@@ -155,7 +155,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 
             <div class="flex items-center gap-2 mb-3 shrink-0">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
-                <mat-select [value]="selectedSerie()" (valueChange)="setActiveSerie($event)">
+                <mat-select [value]="resolvedSerieId()" (valueChange)="setActiveSerie($event)">
                   @for (serie of serieOptions(); track serie.value) {
                     <mat-option [value]="serie.value">{{ serie.label }}</mat-option>
                   }
@@ -163,9 +163,9 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
               </mat-form-field>
 
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="small-select flex-1">
-                <mat-select [value]="selectedShot()" (valueChange)="setActiveShot($event)">
+                <mat-select [value]="resolvedShotId()" (valueChange)="setActiveShot($event)">
                   @for (shot of shotOptions(); track shot.value) {
-                    <mat-option [value]="shot.value">{{ shot.label }}</mat-option>
+                    <mat-option [value]="shot.value" [disabled]="shot.disabled">{{ shot.label }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -222,18 +222,41 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   );
 
   readonly shotOptions = computed(() => {
-    const serieId = this.selectedSerie() ?? this.serieOptions()[0]?.value;
-    const serie = this.#executionStore.planningSeries()?.find((item) => item.id === serieId);
+    const serieId = this.resolvedSerieId();
+    const planningSeries = this.#executionStore.planningSeries() ?? [];
+    const planningSerieIndex = planningSeries.findIndex((item) => item.id === serieId);
+    const progressSeries = this.#executionStore.executionProgress()?.series;
+    const progressShots = serieId
+      ? (progressSeries?.find((serie) => serie.seriesId === serieId)?.shots ??
+        progressSeries?.[planningSerieIndex]?.shots)
+      : undefined;
+    const firedShotIds = new Set(
+      (progressShots ?? []).filter((shot) => shot.status === 'FIRED').map((shot) => shot.shotId),
+    );
+    const serie = planningSeries.find((item) => item.id === serieId);
 
-    return (serie?.shots ?? []).map((shot, index) => ({
-      value: shot.id,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
-    }));
+    if (serie?.shots?.length) {
+      return serie.shots.map((shot, index) => ({
+        value: shot.id,
+        label: `Disparo ${shot.globalNumber ?? index + 1}`,
+        disabled: firedShotIds.has(shot.id) || progressShots?.[index]?.status === 'FIRED',
+      }));
+    }
+
+    if (progressShots?.length) {
+      return progressShots.map((shot, index) => ({
+        value: shot.shotId,
+        label: `Disparo ${index + 1}`,
+        disabled: shot.status === 'FIRED',
+      }));
+    }
+
+    return [];
   });
 
   readonly resolvedSerieId = computed(() => {
     const activeSerieId = this.selectedSerie();
-    if (activeSerieId) {
+    if (activeSerieId && this.serieOptions().some((serie) => serie.value === activeSerieId)) {
       return activeSerieId;
     }
 
@@ -247,7 +270,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   readonly resolvedShotId = computed(() => {
     const activeShotId = this.selectedShot();
-    if (activeShotId) {
+    if (activeShotId && !this.#isShotDisabled(activeShotId)) {
       return activeShotId;
     }
 
@@ -256,7 +279,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
       return null;
     }
 
-    return this.#executionStore.planningSeries()?.find((serie) => serie.id === serieId)?.shots?.[0]?.id ?? null;
+    return this.shotOptions().find((shot) => !shot.disabled)?.value ?? null;
   });
 
   // 📥 Inputs JLT
@@ -274,7 +297,9 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   readonly selectedShotLabel = computed(() => this.#mapShotLabel(this.resolvedShotId()));
 
-  readonly canExecuteActions = computed(() => !!this.fireTrialId() && !!this.resolvedSerieId());
+  readonly canExecuteActions = computed(
+    () => !!this.fireTrialId() && !!this.resolvedSerieId() && !!this.resolvedShotId(),
+  );
 
   #lastLoadedJltPreparationKey: string | null = null;
 
@@ -318,13 +343,14 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   setActiveSerie(serieId: string): void {
     this.selectedSerie.set(serieId);
 
-    const firstShotId = this.#executionStore.planningSeries()?.find((serie) => serie.id === serieId)?.shots?.[0]?.id;
-    if (firstShotId) {
-      this.selectedShot.set(firstShotId);
-    }
+    this.selectedShot.set(this.shotOptions().find((shot) => !shot.disabled)?.value ?? null);
   }
 
   setActiveShot(shotId: string): void {
+    if (this.#isShotDisabled(shotId)) {
+      return;
+    }
+
     this.selectedShot.set(shotId);
   }
 
@@ -382,6 +408,10 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     }
     const shortId = shotId.slice(0, 8).toUpperCase();
     return `Disparo ${shortId}`;
+  }
+
+  #isShotDisabled(shotId: string): boolean {
+    return this.shotOptions().some((shot) => shot.value === shotId && shot.disabled);
   }
 
   #loadJltPreparationIfReady(): void {

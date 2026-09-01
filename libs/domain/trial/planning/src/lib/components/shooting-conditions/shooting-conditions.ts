@@ -385,7 +385,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-header-cell
                         class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100"
                       >
-                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_INCLINATION' | translate }}
+                        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}
                       </th>
                       <td
                         *matCellDef="let shot; let i = index"
@@ -394,9 +394,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                       >
                         <ui-input-select
                           placeholder="0"
-                          label="{{
-                            'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_INCLINATION' | translate
-                          }}"
+                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
                           [opciones]="unitOptions.targetInclination"
                           [showLabel]="false"
                           [value]="{

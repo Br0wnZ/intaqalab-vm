@@ -171,7 +171,7 @@ export function getArmamentDispatcher(req: Request): TrialArmamentResponse {
   const storedData = trialArmamentStore.get(fireTrialId);
   if (storedData) return storedData;
 
-  const clonedFixture = JSON.parse(JSON.stringify(defaultFixture)) as TrialArmamentResponse;
+  const clonedFixture = structuredClone(defaultFixture);
   trialArmamentStore.set(fireTrialId, clonedFixture);
   return clonedFixture;
 }
@@ -182,7 +182,7 @@ export function updateArmamentDispatcher(req: Request): TrialArmamentResponse {
 
   let currentData = trialArmamentStore.get(fireTrialId);
   if (!currentData) {
-    currentData = JSON.parse(JSON.stringify(defaultFixture)) as TrialArmamentResponse;
+    currentData = structuredClone(defaultFixture);
   }
 
   // Actualizar shots con los datos del body
@@ -239,17 +239,17 @@ Archivo: `mocks/src/fixtures/armament/trial-armament-fixture.json`
 
 ## Cuándo Usar Cada Patrón
 
-| Necesidad                     | Patrón                                                 | Ejemplo                   |
-| ----------------------------- | ------------------------------------------------------ | ------------------------- |
-| Datos estáticos sin búsqueda  | `getFixture()` directo en la route                     | Target types, dimensions  |
-| Datos con paginación/filtrado | Dispatcher con `parseQueryParams`                      | Weapons catalog, measures |
-| Datos mutables (PUT/POST)     | Map in-memory + JSON.parse(JSON.stringify) para clonar | Trial armament            |
-| Datos con lista exportada     | Export de array TS (no JSON)                           | `MEASURES_CATALOG`        |
+| Necesidad                     | Patrón                                      | Ejemplo                   |
+| ----------------------------- | ------------------------------------------- | ------------------------- |
+| Datos estáticos sin búsqueda  | `getFixture()` directo en la route          | Target types, dimensions  |
+| Datos con paginación/filtrado | Dispatcher con `parseQueryParams`           | Weapons catalog, measures |
+| Datos mutables (PUT/POST)     | Map in-memory + structuredClone para clonar | Trial armament            |
+| Datos con lista exportada     | Export de array TS (no JSON)                | `MEASURES_CATALOG`        |
 
 ## Reglas Clave
 
 1. **JSON fixtures en la ruta correcta** — `mocks/src/fixtures/<domain>/<entity>-fixture.json`
 2. **Dispatchers junto al fixture** — Si el fixture necesita lógica, crea un `*-dispatcher.ts` al lado
-3. **Clonar antes de mutar** — `JSON.parse(JSON.stringify(fixture))` para evitar corromper el original
+3. **Clonar antes de mutar** — `structuredClone(fixture)` para evitar corromper el original
 4. **Datos realistas** — Usar ejemplos del Swagger y UUIDs reales
 5. **Mínimo 3-5 items** — En listas paginadas

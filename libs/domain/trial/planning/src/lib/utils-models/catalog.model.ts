@@ -26,6 +26,8 @@ export type SpecimenItem = {
   familyId?: number;
   /** Nombre del modelo físico del equipo (proviene de `/equipment/items`, usado para tubos) */
   modelName?: string;
+  /** ID del modelo de tubo (proviene de `/equipment/items`, usado para tubos en planificación) */
+  denominationId?: number;
 };
 
 export type SpecimenListResponse = {

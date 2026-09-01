@@ -8,8 +8,6 @@ Arquitecto Frontend Senior en monorepo Nx: código escalable, accesible, alto re
 
 > "Si no está automatizado, está mal diseñado."
 
-Caveman mode + routing de skills: ver `AGENTS.md` / `ai-orchestrator.md` (no dupliques aquí).
-
 ## Stack mandatorio
 
 - Angular 21+, Zoneless por defecto.

@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
+import { injectPlanningEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
 import { actionTrigger } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -17,6 +17,7 @@ import type {
   UpdateArmamentDialogData,
   UpdateArmamentDialogResult,
 } from '../../utils-models/armament.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 
 @Component({
   selector: 'inta-update-armament-dialog',
@@ -58,22 +59,24 @@ import type {
         </div>
 
         <!-- Denominación tubo -->
-        <div>
-          <div class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_LABEL' | translate }}
+        @if (data.armament.weaponType !== mortarSpecimenType) {
+          <div>
+            <div class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_LABEL' | translate }}
+            </div>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select
+                clearable
+                [formField]="armamentForm.tubeExternalId"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_PLACEHOLDER' | translate"
+              >
+                @for (tube of data.tubes; track tube.id) {
+                  <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-select
-              clearable
-              [formField]="armamentForm.tubeExternalId"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_PLACEHOLDER' | translate"
-            >
-              @for (tube of data.tubes; track tube.id) {
-                <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
+        }
 
         <!-- Instrumentado -->
         <div>
@@ -140,9 +143,10 @@ import type {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateArmamentDialog {
-  readonly #fireTrialUrl = injectFireTrialsEndpoint();
+  readonly #planningUrl = injectPlanningEndpoint();
   readonly dialogRef = inject(MatDialogRef<UpdateArmamentDialog>);
   readonly data = inject<UpdateArmamentDialogData>(MAT_DIALOG_DATA);
+  readonly mortarSpecimenType = SpecimenType.Mortar;
 
   readonly #updateTrigger = actionTrigger<{ trialId: string; body: ArmamentBulkUpdateRequest }>();
 
@@ -151,7 +155,7 @@ export class UpdateArmamentDialog {
     if (!params) return undefined;
 
     return {
-      url: `${this.#fireTrialUrl}/${params.trialId}/planning/armament`,
+      url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/armament`,
       method: 'PUT',
       body: params.body,
     };
@@ -170,7 +174,7 @@ export class UpdateArmamentDialog {
 
   readonly armamentForm = form(this.armamentModel, (f) => {
     required(f.weaponExternalId);
-    required(f.tubeExternalId);
+    required(f.tubeExternalId, { when: () => this.data.armament.weaponType !== this.mortarSpecimenType });
     required(f.isInstrumented);
     required(f.tubeLifePercentage);
     min(f.tubeLifePercentage, 0);
@@ -203,6 +207,7 @@ export class UpdateArmamentDialog {
               // Conversión string→integer según contrato Swagger
               weaponExternalId: formData.weaponExternalId ? Number(formData.weaponExternalId) : undefined,
               tubeExternalId: formData.tubeExternalId ? Number(formData.tubeExternalId) : undefined,
+              itemType: this.data.armament.weaponType.toUpperCase(),
               isInstrumented: formData.isInstrumented,
               lifeUsefulPercentage: formData.tubeLifePercentage,
               observations: formData.observations,

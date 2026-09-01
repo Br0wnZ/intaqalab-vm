@@ -43,6 +43,7 @@ When asked to create a new Angular project, you must determine the correct execu
 When working with Angular components, consult the following references based on the task:
 
 - **Fundamentals**: Anatomy, metadata, core concepts, and template control flow (@if, @for, @switch). Read [components.md](references/components.md)
+- **Deferrable Views Rule**: Every `@defer` block must include an explicit `@error` block with a user-facing fallback state.
 - **Inputs**: Signal-based inputs, transforms, and model inputs. Read [inputs.md](references/inputs.md)
 - **Outputs**: Signal-based outputs and custom event best practices. Read [outputs.md](references/outputs.md)
 - **Host Elements**: Host bindings and attribute injection. Read [host-elements.md](references/host-elements.md)
@@ -53,10 +54,17 @@ If you require deeper documentation not found in the references above, read the 
 
 When managing state and data reactivity, use Angular Signals and consult the following references:
 
+- **Project Utilities**: Custom reactive helpers (debounce, throttle, page visibility, network, idle status, storage, countdown). It is mandatory to use these instead of custom code or third-party packages. Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)
 - **Signals Overview**: Core signal concepts (`signal`, `computed`), reactive contexts, and `untracked`. Read [signals-overview.md](references/signals-overview.md)
 - **Dependent State (`linkedSignal`)**: Creating writable state linked to source signals. Read [linked-signal.md](references/linked-signal.md)
 - **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state. Read [resource.md](references/resource.md)
 - **Side Effects (`effect`)**: Logging, third-party DOM manipulation (`afterRenderEffect`), and when NOT to use effects. Read [effects.md](references/effects.md)
+
+## Measurement Units (Mandatory)
+
+- All measurement units MUST use `MeasureUnitEnum` from `@intaqalab/models` as single source of truth.
+- Do not hardcode unit literals (`'kg'`, `'MPa'`, `'bar'`, etc.) in component/store/service logic.
+- For UI labels/options, reuse `MEASURE_UNIT_LABELS` and typed subsets (`WeightUnitEnum`, `PressureUnitEnum`, etc.) from `@intaqalab/models`.
 
 ## Forms
 
@@ -89,6 +97,7 @@ When building accessible custom components for any of the following patterns: Ac
 
 When implementing navigation in Angular, consult the following references:
 
+- **Route Params as Signals**: Synchronized router params and query params (`injectParams`, `injectQueryParams`, `linkedQueryParam`). It is mandatory to use these instead of snapshots or manual subscriptions. Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)
 - **Define Routes**: URL paths, static vs dynamic segments, wildcards, and redirects. Read [define-routes.md](references/define-routes.md)
 - **Route Loading Strategies**: Eager vs lazy loading, and context-aware loading. Read [loading-strategies.md](references/loading-strategies.md)
 - **Show Routes with Outlets**: Using `<router-outlet>`, nested outlets, and named outlets. Read [show-routes-with-outlets.md](references/show-routes-with-outlets.md)

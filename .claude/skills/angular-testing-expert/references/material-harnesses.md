@@ -9,6 +9,7 @@ Usa **Component Harnesses** de Angular Material para interactuar con componentes
 - **Todos los métodos de harness son `async`**.
 - **Filtrado por atributos:** Usa `Harness.with({ ... })` para filtrar por texto, selector, etc.
 - **Si el filtrado no funciona** (HTML personalizado en headers, por ejemplo), usa `getAllHarnesses()` y accede por índice.
+- **NO envolver llamadas a harnesses en `waitFor(async () => ...)`**: `waitFor` espera una función sincrónica. Llama a `view.fixture.detectChanges()` y luego haz `await loader.getHarness(...)` o `await loader.getAllHarnesses(...)` directamente.
 
 ## Imports Necesarios
 

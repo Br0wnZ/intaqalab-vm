@@ -13,7 +13,7 @@ export function mapBackendToLocal(seriesArmament: SeriesArmamentData[]): Armamen
     shots: series.shots.map((shot) => ({
       shotId: shot.shotId,
       armament: {
-        weaponType: (shot.armament?.weaponType?.toLowerCase() as SpecimenType) ?? '',
+        weaponType: (shot.armament?.itemType?.toLowerCase() as SpecimenType) ?? '',
         weaponName: shot.armament?.weaponName ?? '',
         weaponExternalId: shot.armament?.weaponExternalId?.toString() ?? '',
         tubeName: shot.armament?.tubeName ?? '',
@@ -73,7 +73,7 @@ export function mapLocalToRequest(series: ArmamentSerie[]) {
   return series.flatMap((serie) =>
     serie.shots.map((shot) => ({
       shotId: shot.shotId,
-      weaponType: shot.armament.weaponType ? (shot.armament.weaponType.toUpperCase() as SpecimenType) : undefined,
+      itemType: shot.armament.weaponType ? (shot.armament.weaponType.toUpperCase() as SpecimenType) : undefined,
       weaponExternalId: shot.armament.weaponExternalId ? Number(shot.armament.weaponExternalId) : undefined,
       tubeExternalId: shot.armament.tubeExternalId ? Number(shot.armament.tubeExternalId) : undefined,
       isInstrumented: shot.armament.isInstrumented,

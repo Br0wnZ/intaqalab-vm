@@ -20,12 +20,13 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 
 ### 1. Filosofía de Testing 🧠
 
-- **Testea Comportamiento, no Implementación:** Usa queries accesibles (`getByRole`, `getByLabelText`, `getByText`) en lugar de selectores CSS o IDs.
+- **Testea Comportamiento, no Implementación:** Usa queries accesibles (`screen.getByRole`, `screen.getAllByRole`, `screen.getByLabelText`, `screen.getAllByLabelText`, `screen.getByText`, `within()`) en lugar de selectores CSS o IDs.
+- **PROHIBIDO usar `container` y navegación de nodos DOM:** NUNCA uses `container.querySelector`, `container.querySelectorAll` ni navegues propiedades de nodos (`firstElementChild`, `parentElement`, `children`, `childNodes`). Usa `screen` queries y matchers semánticos de Jest DOM (`toBeInTheDocument()`, `toHaveAttribute()`, `toHaveClass()`).
 - **Usuario Primero:** Simula interacciones reales usando `userEvent` (siempre asíncrono).
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
 - **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material.
 - **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
-- **Clean Code:** Tests descriptivos (`it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
+- **Clean Code:** Tests descriptivos. **IMPORTANTE:** Todas las descripciones de los casos de prueba (`it()`) deben ser redactadas obligatoriamente en inglés (e.g. `it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
 ### 2. Zonaless & Signals ⚡
 
@@ -79,7 +80,9 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
 
 4. **Genera el archivo `.spec.ts`** siguiendo el patrón de setup y estructura docuementados.
 
-5. **Ejecuta los tests** con `npx nx test <project-name>` para verificar que pasan.
+5. **Ejecuta los tests** con `npx nx test <project-name>` (e.g., `npx nx test execution` para `libs/domain/trial/execution`) para verificar que pasan.
+   - **IMPORTANTE:** Usa siempre `npx` / `npm exec` (NO usar `pnpm` en este proyecto).
+   - **Nombres de proyectos:** Usa el nombre exacto registrado en Nx (`npx nx show projects`), ej: `execution` en vez de `domain-trial-execution` o `@intaqalab/domain-trial-execution`.
 
 ## 📂 References por Tipo de Test
 

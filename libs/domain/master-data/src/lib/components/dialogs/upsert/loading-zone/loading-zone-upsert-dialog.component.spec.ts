@@ -11,6 +11,7 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
+import { LOADING_ZONE_UPSERT_DENOMINATION_FILTER } from '../../../../data/loading-zone.constants';
 import type { MasterDataLoadingZone } from '../../../../models/master-data-loading-zone.model';
 import { MasterDataService } from '../../../../services/master-data.service';
 import { LoadingZoneUpsertDialogComponent } from './loading-zone-upsert-dialog.component';
@@ -112,7 +113,10 @@ describe('LoadingZoneUpsertDialogComponent', () => {
 
     it('should search active denominations on initialization', async () => {
       const { mockDenominationsStore: store } = await setup(null);
-      expect(store.search).toHaveBeenCalledWith({ active: true });
+      expect(store.search).toHaveBeenCalledWith({
+        active: true,
+        munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER,
+      });
     });
 
     it('should render create title when no data is provided', async () => {
