@@ -1491,7 +1491,7 @@
       "MAO_TOPOGRAPHY": {
         "BLANCO_GROUP_LABEL": "Blanco",
         "CURRENT_SHOT_BTN": "Disparo actual",
-        "DESCRIPTION": "OLT, coordenadas de pieza y blanco, observador",
+        "DESCRIPTION": "Coordenadas de pieza y blanco, observador",
         "DISPARO_LABEL": "Disparo",
         "DISPARO_PLACEHOLDER": "Disparo",
         "MASS_CONFIG_APPLY_BTN": "Aplicar",
@@ -1502,8 +1502,6 @@
         "MASS_CONFIG_TITLE": "Extender configuración",
         "OBSERVADOR_LABEL": "Observador",
         "OBSERVADOR_PLACEHOLDER": "XXX",
-        "OLT_LABEL": "OLT para diferencia angular",
-        "OLT_PLACEHOLDER": "XXX",
         "PIEZA_GROUP_LABEL": "Pieza",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Funcionamiento",

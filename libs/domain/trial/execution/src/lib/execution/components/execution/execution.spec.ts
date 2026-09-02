@@ -30,6 +30,7 @@ import type {
   JltReadinessItem,
   JltShotDataResponse,
   PlanningArmamentResponse,
+  PlanningConditionsResponse,
   PlanningResponse,
   PlanningSeriesItem,
   PlanningStateResponse,
@@ -53,6 +54,7 @@ function createMockExecutionService(
 ) {
   return {
     planningSeriesResource: createMockResource<PlanningSeriesItem[]>([]),
+    planningConditionsResource: createMockResource<PlanningConditionsResponse>({ series: [] }),
     executionStateResource: createMockResource<ExecutionStateResponse>({
       status: 'IN_PROGRESS',
       activeSeriesId: 'serie-1',
@@ -117,6 +119,7 @@ function createMockExecutionService(
     updateShotArmamentResource: createMockResource<ShotArmamentResponse>(),
 
     getPlanningSeries: vi.fn(),
+    getPlanningConditions: vi.fn(),
     getExecutionState: vi.fn(),
     getExecutionProgress: vi.fn(),
     getSecurityCountdownState: vi.fn(),

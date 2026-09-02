@@ -177,8 +177,6 @@ export interface MaoTopographyState {
   serie: string | null;
   /** Disparo seleccionado */
   disparo: string | null;
-  /** OLT para diferencia angular (milésimas ºº), 3 decimales */
-  olt: number | null;
   /** Coordenada X del arma (metros) */
   xPieza: number | null;
   /** Coordenada Y del arma (metros) */

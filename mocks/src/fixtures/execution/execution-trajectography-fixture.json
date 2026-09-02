@@ -1,0 +1,22 @@
+{
+  "trajectographyData": {
+    "trajectographyRadarId": "RADAR-001",
+    "trajectoryData": {
+      "range": 15100.5,
+      "rangeUnit": "M",
+      "drift": 25.4,
+      "driftUnit": "M",
+      "flightTime": 46.2,
+      "flightTimeUnit": "S",
+      "observations": "Mock Trajectography data"
+    },
+    "functioningData": {
+      "fuseTrajectographyFunctioning": "OK"
+    },
+    "traceData": {
+      "traceTime": 45.0,
+      "traceTimeUnit": "S",
+      "radarTraceExistence": "YES"
+    }
+  }
+}

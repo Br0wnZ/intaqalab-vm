@@ -17,14 +17,6 @@ export type {
   WidgetWidth,
 } from './execution-grid.models';
 
-// Widget preferences models
-export type {
-  SavedWidgetConfig,
-  UpsertWidgetPreferencesRequest,
-  WidgetPreferences,
-  WidgetPreferencesResponse,
-} from './widget-preferences.model';
-
 // Equipment models
 export * from './equipment.models';
 
@@ -33,3 +25,8 @@ export * from './shot-munition.models';
 
 // Shot manometer pressures models (Widget 21)
 export * from './shot-manometer-pressures.models';
+export * from './shot-jlt-mao.models';
+export * from './shot-mao-topography.models';
+export * from './shot-topography.models';
+export * from './shot-trajectography.models';
+export * from './shot-acoustic-level.models';

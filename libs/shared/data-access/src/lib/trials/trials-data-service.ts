@@ -1,7 +1,10 @@
 import { HttpContext, HttpParams, httpResource } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import { injectFireTrialsEndpoint, TOAST_FEEDBACK } from '@intaqalab/config';
+import { TOAST_FEEDBACK, injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial, PaginatedApiResponse, TrialSearchFilters, UpsertFireTrial } from '@intaqalab/models';
+
+/** Extends TrialSearchFilters with API-level sort param (array of "field;asc|desc") */
+type TrialSearchRequest = Partial<TrialSearchFilters> & { sort?: string[] };
 
 @Injectable({
   providedIn: 'root',
@@ -9,7 +12,7 @@ import type { FireTrial, PaginatedApiResponse, TrialSearchFilters, UpsertFireTri
 export class TrialsDataService {
   readonly #REQUEST_TIMESTAMP = () => Date.now();
 
-  readonly #searchFilters = signal<Partial<TrialSearchFilters> | null>(null);
+  readonly #searchFilters = signal<TrialSearchRequest | null>(null);
 
   readonly #url = injectFireTrialsEndpoint();
 
@@ -78,16 +81,21 @@ export class TrialsDataService {
     };
   });
 
-  search(filters: Partial<TrialSearchFilters>) {
+  search(filters: TrialSearchRequest) {
     this.#searchFilters.set(filters);
   }
 
-  #getSearchParams(filters: Partial<TrialSearchFilters> | null): HttpParams | undefined {
+  #getSearchParams(filters: TrialSearchRequest | null): HttpParams | undefined {
     if (filters === null) return undefined;
     let params = new HttpParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
+      if (value === undefined || value === null || value === '') return;
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          params = params.append(key, String(item));
+        });
+      } else {
+        params = params.set(key, String(value));
       }
     });
     return params;

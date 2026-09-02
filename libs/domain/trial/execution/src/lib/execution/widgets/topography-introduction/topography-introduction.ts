@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,12 +21,24 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
+import type { ShotTopographyResponse } from '../../models/shot-topography.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-
-type InputFieldValue = { value: string; unit: string } | null;
+import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import {
+  type InputFieldValue,
+  mapPlanningSeriesToOptions,
+  mapRemoteToTopographyState,
+  mapShotStatusToClass,
+  mapShotStatusToLabel,
+  mapShotsToDisparoOptions,
+  mapTopographyStateToRequest,
+  numToField,
+  parseNum,
+} from './topography-introduction.mapper';
 
 interface TopographyFormModel {
   serie: string | null;
@@ -55,6 +77,7 @@ interface TopographyFormModel {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
             [formField]="selectForm.serie"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -67,6 +90,7 @@ interface TopographyFormModel {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectForm.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -132,7 +156,7 @@ interface TopographyFormModel {
             class="resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
-            (input)="observacionesField.set($any($event.target).value || null)"
+            (input)="onObservacionesInput($event)"
           ></textarea>
         </mat-form-field>
 
@@ -146,7 +170,7 @@ interface TopographyFormModel {
             type="number"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.NUM_ESTELAS_PLACEHOLDER' | translate"
             [value]="numeroEstelaHumoField() ?? ''"
-            (input)="numeroEstelaHumoField.set(+$any($event.target).value || null)"
+            (input)="onNumeroEstelaHumoInput($event)"
           />
         </mat-form-field>
       </div>
@@ -159,13 +183,33 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #executionService = inject(ExecutionService);
+
+  readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
+  readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
   protected readonly sOptions = [{ value: 's', label: 's' }];
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly equipoOptions = computed(() => this.#store.topographyIntroduction().equipoOptions);
-  protected readonly serieOptions = computed(() => this.#store.topographyIntroduction().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.topographyIntroduction().disparoOptions);
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.topographyIntroduction().serieOptions),
+  );
+  protected readonly disparoOptions = computed(() => {
+    const selectedSerie = this.formModel().serie;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, this.#store.topographyIntroduction().disparoOptions);
+    }
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, this.#store.topographyIntroduction().disparoOptions);
+    }
+    return this.#store.topographyIntroduction().disparoOptions;
+  });
 
   // ── Select form (Signal Forms for dirty tracking) ─────────────────────────
   protected readonly formModel = signal<TopographyFormModel>({
@@ -177,13 +221,10 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly tiempoVueloField = signal<InputFieldValue>(
-    this.#numToField(
-      this.#store.topographyIntroduction().tiempoVuelo,
-      this.#store.topographyIntroduction().tiempoVueloUnit,
-    ),
+    numToField(this.#store.topographyIntroduction().tiempoVuelo, this.#store.topographyIntroduction().tiempoVueloUnit),
   );
   protected readonly tiempoIluminacionField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.topographyIntroduction().tiempoIluminacion,
       this.#store.topographyIntroduction().tiempoIluminacionUnit,
     ),
@@ -213,21 +254,13 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    const estado = this.#store.topographyIntroduction().estadoDisparo;
-    if (estado === 'EN_CURSO') return 'En curso';
-    if (estado === 'PENDIENTE') return 'Pendiente';
-    if (estado === 'EJECUTADA') return 'Ejecutada';
-    return '—';
-  });
+  protected readonly estadoLabel = computed(() =>
+    mapShotStatusToLabel(this.#store.topographyIntroduction().estadoDisparo),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    const estado = this.#store.topographyIntroduction().estadoDisparo;
-    if (estado === 'EN_CURSO') return 'bg-green-100 text-green-700';
-    if (estado === 'PENDIENTE') return 'bg-yellow-100 text-yellow-700';
-    if (estado === 'EJECUTADA') return 'bg-blue-100 text-blue-700';
-    return 'bg-slate-100 text-slate-500';
-  });
+  protected readonly estadoClass = computed(() =>
+    mapShotStatusToClass(this.#store.topographyIntroduction().estadoDisparo),
+  );
 
   // ── FormWidget implementation ──────────────────────────────────────────────
   readonly formState: Signal<WidgetFormState> = computed(() => ({
@@ -238,13 +271,114 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
     hasChanges: this.isDirty(),
   }));
 
-  setCurrentShot(): void {
-    const { activeSerieId, activeShotId } = this.#store;
+  constructor() {
+    super();
+
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
+      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+
+      if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
+      }
+
+      const selectionKey = `${activeSerieId}|${activeShotId}`;
+      if (this.#lastLoadedActiveSelection() === selectionKey) {
+        return;
+      }
+
+      untracked(() => {
+        this.#lastLoadedActiveSelection.set(selectionKey);
+        this.#setSelection(activeSerieId, activeShotId);
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.formModel.update((m) => ({ ...m, serie }));
+    this.#store.updateTopographyIntroduction({ serie });
+    void this.#loadSelectedShotData();
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.formModel.update((m) => ({ ...m, disparo }));
+    this.#store.updateTopographyIntroduction({ disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  onObservacionesInput(event: Event): void {
+    const input = event.target as HTMLTextAreaElement | null;
+    this.observacionesField.set(input?.value || null);
+  }
+
+  onNumeroEstelaHumoInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.numeroEstelaHumoField.set(input?.value ? Number(input.value) : null);
+  }
+
+  #setSelection(serie: string | null, disparo: string | null): void {
     this.formModel.update((m) => ({
       ...m,
-      serie: activeSerieId() ?? m.serie,
-      disparo: activeShotId() ?? m.disparo,
+      serie,
+      disparo,
     }));
+    this.#store.updateTopographyIntroduction({ serie, disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  async #loadSelectedShotData(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    const { serie, disparo } = this.formModel();
+    const selectionKey = this.#selectionKey();
+    const ticket = this.#selectionGuard.begin();
+
+    if (!fireTrialId || !serie || !disparo) {
+      return;
+    }
+
+    try {
+      const response = await this.#executionService.fetchShotTopography(fireTrialId, serie, disparo);
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData(response);
+    } catch {
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+    }
+  }
+
+  #applyRemoteShotData(response: ShotTopographyResponse): void {
+    const remote = mapRemoteToTopographyState(response);
+    if (Object.keys(remote).length === 0) return;
+
+    this.#store.updateTopographyIntroduction(remote);
+
+    if (remote.equipo !== undefined) {
+      this.formModel.update((m) => ({ ...m, equipo: remote.equipo ?? null }));
+    }
+    if (remote.tiempoVuelo !== undefined) {
+      this.tiempoVueloField.set(numToField(remote.tiempoVuelo, remote.tiempoVueloUnit ?? 's'));
+    }
+    if (remote.tiempoIluminacion !== undefined) {
+      this.tiempoIluminacionField.set(numToField(remote.tiempoIluminacion, remote.tiempoIluminacionUnit ?? 's'));
+    }
+    if (remote.numeroEstelaHumo !== undefined) {
+      this.numeroEstelaHumoField.set(remote.numeroEstelaHumo ?? null);
+    }
+    if (remote.observaciones !== undefined) {
+      this.observacionesField.set(remote.observaciones ?? null);
+    }
+    this.#syncSnapshot();
+  }
+
+  setCurrentShot(): void {
+    const { activeSerieId, activeShotId } = this.#store;
+    const serie = activeSerieId() ?? this.formModel().serie;
+    const disparo = activeShotId() ?? this.formModel().disparo;
+    this.#setSelection(serie, disparo);
   }
 
   resetForm(): void {
@@ -254,8 +388,8 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
       disparo: stored.disparo,
       equipo: stored.equipo,
     });
-    this.tiempoVueloField.set(this.#numToField(stored.tiempoVuelo, stored.tiempoVueloUnit));
-    this.tiempoIluminacionField.set(this.#numToField(stored.tiempoIluminacion, stored.tiempoIluminacionUnit));
+    this.tiempoVueloField.set(numToField(stored.tiempoVuelo, stored.tiempoVueloUnit));
+    this.tiempoIluminacionField.set(numToField(stored.tiempoIluminacion, stored.tiempoIluminacionUnit));
     this.numeroEstelaHumoField.set(stored.numeroEstelaHumo);
     this.observacionesField.set(stored.observaciones);
     this.#syncSnapshot();
@@ -263,30 +397,31 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   async saveForm(): Promise<void> {
     const { serie, disparo, equipo } = this.formModel();
+    const tiempoVuelo = parseNum(this.tiempoVueloField());
+    const tiempoIluminacion = parseNum(this.tiempoIluminacionField());
+    const numeroEstelaHumo = this.numeroEstelaHumoField();
+    const observaciones = this.observacionesField();
+
     const updates: Partial<TopographyIntroductionState> = {
       serie,
       disparo,
       equipo,
-      tiempoVuelo: this.#parseNum(this.tiempoVueloField()),
+      tiempoVuelo,
       tiempoVueloUnit: this.tiempoVueloField()?.unit ?? 's',
-      tiempoIluminacion: this.#parseNum(this.tiempoIluminacionField()),
+      tiempoIluminacion,
       tiempoIluminacionUnit: this.tiempoIluminacionField()?.unit ?? 's',
-      numeroEstelaHumo: this.numeroEstelaHumoField(),
-      observaciones: this.observacionesField(),
+      numeroEstelaHumo,
+      observaciones,
     };
     this.#store.updateTopographyIntroduction(updates);
+
+    const fireTrialId = this.#store.fireTrialId();
+    if (fireTrialId && serie && disparo) {
+      const payload = mapTopographyStateToRequest(updates);
+      await this.#executionService.updateShotTopography(fireTrialId, serie, disparo, payload);
+    }
+
     this.#syncSnapshot();
-  }
-
-  #numToField(num: number | null, unit: string): InputFieldValue {
-    if (num === null) return null;
-    return { value: num.toString(), unit };
-  }
-
-  #parseNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const parsed = Number(field.value);
-    return isNaN(parsed) ? null : parsed;
   }
 
   #syncSnapshot(): void {

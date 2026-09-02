@@ -1,0 +1,16 @@
+{
+  "acousticLevelData": {
+    "soundLevelMeterId": "SLM-001",
+    "soundLevelMeterX": 10.5,
+    "soundLevelMeterXUnit": "M",
+    "soundLevelMeterY": -5.2,
+    "soundLevelMeterYUnit": "M",
+    "soundLevelMeterZ": 1.5,
+    "soundLevelMeterZUnit": "M",
+    "soundLevelMeterMuzzleDistance": 15.0,
+    "soundLevelMeterMuzzleDistanceUnit": "M",
+    "acousticLevel": 135.5,
+    "acousticLevelUnit": "DB",
+    "observations": "Mock Acoustic Level data"
+  }
+}

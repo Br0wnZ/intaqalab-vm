@@ -19,20 +19,18 @@ Sistema centralizado de gestión de widgets para el grid de ejecución. Incluye:
 models/
 ├── widget-id.enum.ts              # Enum WidgetId (única fuente de verdad)
 ├── widget-registry.ts              # Configuración de cada widget
-├── widget-preferences.model.ts     # Tipos para persistencia
 ├── execution-grid.models.ts        # Tipos del grid (usar WidgetId)
 └── index.ts                        # Exports centralizados
 ```
 
 ### Servicios & Stores
 
-```
-services/
-└── widget-preferences.service.ts   # HTTP requests
+Las preferencias se gestionan de forma centralizada en `ExecutionStore` (`withGeneralData`) y `ExecutionService` a través de los endpoints oficiales:
 
-+state/
-└── widget-preferences.store.ts     # SignalStore (persistencia)
-```
+- `/execution/preferences/roles/{roleName}`
+- `/execution/preferences/users/{username}`
+
+````
 
 ---
 
@@ -51,7 +49,7 @@ import { WidgetId } from '@intaqalab/domain-trial-execution';
     <inta-execution-prep-tech-widget [techProfile]="widget.techProfile" />
   }
 }
-```
+````
 
 ### Cargar preferencias guardadas
 
@@ -317,12 +315,11 @@ console.log('Registry:', WIDGET_REGISTRY);
 ### Verificar estado de preferencias
 
 ```typescript
-import { WidgetPreferencesStore } from '@intaqalab/domain-trial-execution';
+import { ExecutionStore } from '@intaqalab/domain-trial-execution';
 
-const store = inject(WidgetPreferencesStore);
-console.log('Preferences:', store.preferences());
-console.log('Error:', store.error());
-console.log('Loading:', store.isLoading());
+const store = inject(ExecutionStore);
+console.log('Preferences user:', store.preferencesByUser());
+console.log('Preferences role:', store.preferencesByRole());
 ```
 
 ### Validar IDs
@@ -345,6 +342,11 @@ if (isValidWidgetId(testId)) {
 - [WidgetId Enum](./models/widget-id.enum.ts)
 - [Widget Registry](./models/widget-registry.ts)
 - [Execution Grid Models](./models/execution-grid.models.ts)
-- [Widget Preferences Models](./models/widget-preferences.model.ts)
-- [Widget Preferences Service](./services/widget-preferences.service.ts)
-- [Widget Preferences Store](./+state/widget-preferences.store.ts)
+- [Execution Store](../../+state/execution.store.ts)
+- [Execution Service](../../services/execution.service.ts)
+
+## Patrón de diálogos de transición
+
+Las transiciones de estado (pausar, interrumpir, cancelar) se ejecutan directamente realizando la petición HTTP desde el propio diálogo (ej. \`PauseExecutionDialogComponent\`).
+El diálogo se cierra solo cuando el resource HTTP pasa al estado \`resolved\`.
+Por este motivo, la fachada (\`ExecutionFacade\` o \`ExecutionStore\`) NO necesita ni debe llamar a los endpoints de transición directamente. El simple acto de confirmar el diálogo completa la operación y el store recarga el estado dinámicamente al recibir un estado \`resolved\` en sus signals internos.

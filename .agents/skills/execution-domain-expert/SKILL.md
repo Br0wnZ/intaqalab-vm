@@ -16,11 +16,12 @@ description: >
 
 ## 📐 Domain Architecture
 
-## 📏 Measurement Unit Rules (Mandatory)
+## 📏 Measurement Unit & Strict Typing Rules (Mandatory)
 
 - All measurement units in the Execution domain must use `MeasureUnitEnum` from `@intaqalab/models`.
 - Hardcoded unit strings (`'g'`, `'kg'`, `'MPa'`, `'bar'`, etc.) are prohibited in components, stores, and services.
-- For unit labels and selectors, use `MEASURE_UNIT_LABELS` and specific subtypes (`WeightUnitEnum`, `PressureUnitEnum`, etc.) from the shared models package.
+- For unit labels and selectors, use `MEASURE_UNIT_LABELS` and specific subtypes (`WeightUnitEnum`, `PressureUnitEnum`, `DistanceUnitEnum`, `TimeUnitEnum`, etc.) from the shared models package.
+- **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All payload types, response types, store slices, mappers, and unit transformations MUST use explicit TypeScript types and enums from `@intaqalab/models` or local models.
 
 ### Root Directory Structure
 

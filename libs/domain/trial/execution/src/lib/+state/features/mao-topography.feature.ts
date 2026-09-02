@@ -1,6 +1,8 @@
-import { computed } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import type { ShotMaoTopographyRequest } from '../../execution/models/shot-mao-topography.models';
+import { ExecutionService } from '../../services/execution.service';
 import type { CalibryObserverOption, MaoTopographyState } from '../execution-state.models';
 
 interface MaoTopographySlice {
@@ -11,17 +13,17 @@ const initialState: MaoTopographySlice = {
   maoTopography: {
     serie: null,
     disparo: null,
-    olt: null,
+    observador: null,
     xPieza: null,
     yPieza: null,
     zPieza: null,
-    observador: null,
     xBlanco: null,
     yBlanco: null,
     zBlanco: null,
     observadorOptions: [
-      { value: 'obs-01', label: 'Observador 01' },
-      { value: 'obs-02', label: 'Observador 02' },
+      { value: 'obs-01', label: 'Observador 1 (OP-Norte)' },
+      { value: 'obs-02', label: 'Observador 2 (OP-Sur)' },
+      { value: 'obs-03', label: 'Observador 3 (OP-Este)' },
     ],
     blancoEnabled: true,
   },
@@ -30,7 +32,9 @@ const initialState: MaoTopographySlice = {
 export function withMaoTopography() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store) => ({
+    withComputed((store, executionService = inject(ExecutionService)) => ({
+      isLoadingMaoTopography: computed(() => executionService.shotMaoTopographyResource.isLoading()),
+      isSavingMaoTopography: computed(() => executionService.updateShotMaoTopographyResource.isLoading()),
       /** Distancia boca-blanco = sqrt((xB−xP)² + (yB−yP)² + (zB−zP)²) — salida de topografía */
       maoTopographyDistanciaBocaBlanco: computed((): number | null => {
         const s = store.maoTopography();
@@ -48,7 +52,36 @@ export function withMaoTopography() {
         );
       }),
     })),
-    withMethods((store) => ({
+    withMethods((store, executionService = inject(ExecutionService)) => ({
+      async loadShotMaoTopography(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
+        try {
+          const response = await executionService.fetchShotMaoTopography(fireTrialId, seriesId, shotId);
+          if (response?.maoTopographyData) {
+            const data = response.maoTopographyData;
+            patchState(store, (state) => ({
+              maoTopography: {
+                ...state.maoTopography,
+                xPieza: data.pieceX ?? state.maoTopography.xPieza,
+                yPieza: data.pieceY ?? state.maoTopography.yPieza,
+                zPieza: data.pieceZ ?? state.maoTopography.zPieza,
+                xBlanco: data.targetX ?? state.maoTopography.xBlanco,
+                yBlanco: data.targetY ?? state.maoTopography.yBlanco,
+                zBlanco: data.targetZ ?? state.maoTopography.zBlanco,
+              },
+            }));
+          }
+        } catch (e) {
+          console.error('Error loading MaoTopography', e);
+        }
+      },
+      async saveShotMaoTopography(
+        fireTrialId: string,
+        seriesId: string,
+        shotId: string,
+        requestBody: ShotMaoTopographyRequest,
+      ): Promise<void> {
+        await executionService.updateShotMaoTopography(fireTrialId, seriesId, shotId, requestBody);
+      },
       /** Actualiza los campos de entrada del widget MAO Topografía */
       updateMaoTopography(updates: Partial<MaoTopographyState>): void {
         patchState(store, (state) => ({

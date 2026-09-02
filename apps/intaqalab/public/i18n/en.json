@@ -1669,7 +1669,7 @@
       "MAO_TOPOGRAPHY": {
         "BLANCO_GROUP_LABEL": "Target",
         "CURRENT_SHOT_BTN": "Current shot",
-        "DESCRIPTION": "OLT, part and target coordinates, observer",
+        "DESCRIPTION": "Piece and target coordinates, observer",
         "DISPARO_LABEL": "Shot",
         "DISPARO_PLACEHOLDER": "Shot",
         "MASS_CONFIG_APPLY_BTN": "Apply",
@@ -1680,8 +1680,6 @@
         "MASS_CONFIG_TITLE": "Extend settings",
         "OBSERVADOR_LABEL": "Observer",
         "OBSERVADOR_PLACEHOLDER": "XXX",
-        "OLT_LABEL": "OLT for angular difference",
-        "OLT_PLACEHOLDER": "XXX",
         "PIEZA_GROUP_LABEL": "Piece",
         "SERIE_LABEL": "Series",
         "SERIE_PLACEHOLDER": "Operation",

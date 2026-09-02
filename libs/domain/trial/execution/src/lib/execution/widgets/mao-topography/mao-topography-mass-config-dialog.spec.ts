@@ -27,7 +27,6 @@ const mockDialogData: MaoTopographyMassConfigDialogData = {
     xBlanco: { value: '300.0', unit: 'm' },
     yBlanco: { value: '400.0', unit: 'm' },
     zBlanco: { value: '15.0', unit: 'm' },
-    olt: { value: '15.000', unit: 'oo' },
     observador: 'obs-01',
   },
 };
@@ -59,11 +58,9 @@ describe('MaoTopographyMassConfigDialog', () => {
     const { fixture } = await renderDialog();
     const component = fixture.componentInstance as unknown as {
       piezaPosition: () => { x: number | null; y: number | null; z: number | null; unit: string } | null;
-      oltField: () => { value: string; unit: string } | null;
     };
     expect(component.piezaPosition()?.x).toBe(100.0);
     expect(component.piezaPosition()?.y).toBe(200.0);
-    expect(component.oltField()?.value).toBe('15.000');
   });
 
   it('initializes observador from dialog data', async () => {
@@ -87,7 +84,6 @@ describe('MaoTopographyMassConfigDialog', () => {
     const result = mockDialogRef.close.mock.calls[0][0];
     expect(result.action).toBe('apply');
     expect(result.xPieza).toEqual({ value: '100.0', unit: 'm' });
-    expect(result.olt).toEqual({ value: '15.000', unit: 'oo' });
     expect(result.observador).toBe('obs-01');
     expect(result.series).toEqual([]);
   });
@@ -106,7 +102,7 @@ describe('MaoTopographyMassConfigDialog', () => {
     await renderDialog();
     const inputSelects = document.querySelectorAll('ui-input-select');
     const coordInputs = document.querySelectorAll('ui-sound-level-meter-input');
-    expect(inputSelects.length).toBe(1); // OLT
+    expect(inputSelects.length).toBe(0);
     expect(coordInputs.length).toBe(2); // pieza position, blanco position
   });
 
@@ -127,7 +123,6 @@ describe('MaoTopographyMassConfigDialog', () => {
         xBlanco: null,
         yBlanco: null,
         zBlanco: null,
-        olt: null,
         observador: null,
       },
     };

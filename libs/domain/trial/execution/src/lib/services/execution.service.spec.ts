@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+import { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -20,6 +20,7 @@ import {
   type ArmamentEquipmentItem,
   ExecutionService,
   type PlanningArmamentResponse,
+  type PlanningConditionsResponse,
   type PlanningResponse,
   type PlanningSeriesItem,
   type PlanningStateResponse,
@@ -88,6 +89,30 @@ describe('ExecutionService', () => {
     await waitFor(() => {
       TestBed.tick();
       expect(service.planningSeriesResource.value()).toEqual(mockSeries);
+    });
+  });
+
+  it('should GET planning conditions when getPlanningConditions() is called', async () => {
+    const mockConditions: PlanningConditionsResponse = {
+      units: { orientation: AngleUnitEnum.DEGREES },
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [{ shotId: 'shot-1', orientation: 15, orientationUnit: AngleUnitEnum.DEGREES }],
+        },
+      ],
+    };
+
+    service.getPlanningConditions(DEMO_TRIAL_ID);
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/conditions`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockConditions);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.planningConditionsResource.value()).toEqual(mockConditions);
     });
   });
 
@@ -1058,5 +1083,300 @@ describe('ExecutionService', () => {
 
     const updateResult = await updatePromise;
     expect(updateResult).toEqual(mockManometerResponse);
+  });
+
+  it('handles jlt-mao GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-jlt-mao';
+    const shotId = 'shot-jlt-mao';
+    const mockResponse = {}; // Mock vacío suficiente para el test de enrutamiento
+    const updateBody = {};
+
+    // GET (httpResource)
+    service.getShotJltMao(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-mao/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotShotJltMaoResource.value()).toEqual(mockResponse);
+    });
+
+    // fetch (Promise)
+    const directFetchPromise = service.fetchShotJltMao(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-mao/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockResponse);
+
+    // PUT (httpResource)
+    service.setShotJltMao(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-mao/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotJltMaoResource.value()).toEqual(mockResponse);
+    });
+
+    // update (Promise)
+    const updatePromise = service.updateShotJltMao(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-mao/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockResponse);
+  });
+
+  it('handles mao-topography GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-mao-topography';
+    const shotId = 'shot-mao-topography';
+    const mockResponse = {}; // Mock vacío suficiente para el test de enrutamiento
+    const updateBody = {};
+
+    // GET (httpResource)
+    service.getShotMaoTopography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/mao-topography/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotShotMaoTopographyResource.value()).toEqual(mockResponse);
+    });
+
+    // fetch (Promise)
+    const directFetchPromise = service.fetchShotMaoTopography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/mao-topography/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockResponse);
+
+    // PUT (httpResource)
+    service.setShotMaoTopography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/mao-topography/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotMaoTopographyResource.value()).toEqual(mockResponse);
+    });
+
+    // update (Promise)
+    const updatePromise = service.updateShotMaoTopography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/mao-topography/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockResponse);
+  });
+
+  it('handles topography GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-topography';
+    const shotId = 'shot-topography';
+    const mockResponse = {}; // Mock vacío suficiente para el test de enrutamiento
+    const updateBody = {};
+
+    // GET (httpResource)
+    service.getShotTopography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/topography/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotShotTopographyResource.value()).toEqual(mockResponse);
+    });
+
+    // fetch (Promise)
+    const directFetchPromise = service.fetchShotTopography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/topography/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockResponse);
+
+    // PUT (httpResource)
+    service.setShotTopography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/topography/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotTopographyResource.value()).toEqual(mockResponse);
+    });
+
+    // update (Promise)
+    const updatePromise = service.updateShotTopography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/topography/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockResponse);
+  });
+
+  it('handles trajectography GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-trajectography';
+    const shotId = 'shot-trajectography';
+    const mockResponse = {}; // Mock vacío suficiente para el test de enrutamiento
+    const updateBody = {};
+
+    // GET (httpResource)
+    service.getShotTrajectography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotShotTrajectographyResource.value()).toEqual(mockResponse);
+    });
+
+    // fetch (Promise)
+    const directFetchPromise = service.fetchShotTrajectography(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockResponse);
+
+    // PUT (httpResource)
+    service.setShotTrajectography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotTrajectographyResource.value()).toEqual(mockResponse);
+    });
+
+    // update (Promise)
+    const updatePromise = service.updateShotTrajectography(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockResponse);
+  });
+
+  it('handles acoustic-level GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-acoustic-level';
+    const shotId = 'shot-acoustic-level';
+    const mockResponse = {}; // Mock vacío suficiente para el test de enrutamiento
+    const updateBody = {};
+
+    // GET (httpResource)
+    service.getShotAcousticLevel(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/acoustic-level/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotShotAcousticLevelResource.value()).toEqual(mockResponse);
+    });
+
+    // fetch (Promise)
+    const directFetchPromise = service.fetchShotAcousticLevel(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/acoustic-level/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    const directResult = await directFetchPromise;
+    expect(directResult).toEqual(mockResponse);
+
+    // PUT (httpResource)
+    service.setShotAcousticLevel(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/acoustic-level/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.updateShotAcousticLevelResource.value()).toEqual(mockResponse);
+    });
+
+    // update (Promise)
+    const updatePromise = service.updateShotAcousticLevel(DEMO_TRIAL_ID, seriesId, shotId, updateBody as any);
+    TestBed.tick();
+
+    const putPromiseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/acoustic-level/series/${seriesId}/shots/${shotId}`);
+    expect(putPromiseReq.request.method).toBe('PUT');
+    expect(putPromiseReq.request.body).toEqual(updateBody);
+    putPromiseReq.flush(mockResponse);
+    TestBed.tick();
+
+    const updateResult = await updatePromise;
+    expect(updateResult).toEqual(mockResponse);
   });
 });

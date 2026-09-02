@@ -85,8 +85,8 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
-                  clearable
                   id="munitionType"
+                  clearable
                   data-testid="munition-type-select"
                   [value]="selectedMunitionTypeId()"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_PLACEHOLDER' | translate"
@@ -106,8 +106,8 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
-                  clearable
                   id="denomination"
+                  clearable
                   data-testid="denomination-select"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
                   [disabled]="!selectedMunitionTypeId()"
@@ -162,8 +162,8 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-select
-                  clearable
                   id="assignedShotIds"
+                  clearable
                   multiple
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS' | translate"
                   [(ngModel)]="formData.assignedShotIds"
@@ -370,8 +370,8 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="selectedComponents"
+                clearable
                 multiple
                 [placeholder]="
                   'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.COMPONENT_SELECTOR_PLACEHOLDER' | translate
@@ -1025,13 +1025,33 @@ export class MassiveMunitionsConfigurationDialog {
     this.formData.componentsData[component] = detail;
   }
 
+  hasValidComponents(): boolean {
+    const selected = this.formData.selectedComponents ?? [];
+    if (selected.length === 0) return false;
+
+    return selected.every((selType) => {
+      const normType = selType
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      // All powder types are always considered valid
+      if (normType === 'polvora' || normType.startsWith('polvora-') || normType.startsWith('polvora')) return true;
+
+      const comp = this.formData.componentsData[selType];
+      return !!comp?.denomination?.id;
+    });
+  }
+
   #validateForm(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    if (!this.formData.denomination) {
-      errors.push(
-        this.#translate.instant('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.DENOMINATION_REQUIRED'),
-      );
+    if (!this.hasValidComponents()) {
+      if (!this.formData.denomination) {
+        errors.push(
+          this.#translate.instant('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.DENOMINATION_REQUIRED'),
+        );
+      }
     }
 
     if (this.formData.reconditioning) {
@@ -1076,8 +1096,14 @@ export class MassiveMunitionsConfigurationDialog {
 
     if (this.formData.selectedComponents.length > 0) {
       this.formData.selectedComponents.forEach((component) => {
+        const normType = component
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        const isPowder = normType === 'polvora' || normType.startsWith('polvora-') || normType.startsWith('polvora');
         const componentData = this.formData.componentsData[component];
-        if (!componentData?.denomination) {
+
+        if (!isPowder && !componentData?.denomination?.id) {
           errors.push(
             this.#translate.instant(
               'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.COMPONENT_DENOMINATION_REQUIRED',
@@ -1087,16 +1113,7 @@ export class MassiveMunitionsConfigurationDialog {
             ),
           );
         }
-        if (!componentData?.batch) {
-          errors.push(
-            this.#translate.instant(
-              'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.COMPONENT_LOT_REQUIRED',
-              {
-                component: this.getComponentLabel(component),
-              },
-            ),
-          );
-        }
+
         if (componentData?.clientNumber) {
           const val = String(componentData.clientNumber).trim();
           if (val && val !== '0') {

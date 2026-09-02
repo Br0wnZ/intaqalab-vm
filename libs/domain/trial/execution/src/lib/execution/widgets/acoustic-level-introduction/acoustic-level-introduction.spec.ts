@@ -6,9 +6,10 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { AcousticLevelIntroduction } from './acoustic-level-introduction';
 
@@ -56,5 +57,25 @@ describe('AcousticLevelIntroduction', () => {
     fixture.componentInstance.resetForm();
     const stored = TestBed.inject(ExecutionStore).acousticLevelIntroduction();
     expect(fixture.componentInstance['observacionesField']()).toBe(stored.observaciones);
+  });
+
+  it('calls fetchShotAcousticLevel on selection when trialId, serie and shot are present', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotAcousticLevel').mockResolvedValue({
+      acousticLevelData: {
+        soundLevelMeterId: 'sonometro-1',
+        acousticLevel: 110.5,
+      },
+    });
+
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('s-1');
+    fixture.componentInstance.onDisparoSelected('d-1');
+
+    await vi.waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
+    });
   });
 });

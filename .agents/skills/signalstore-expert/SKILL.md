@@ -14,6 +14,7 @@ You are the **NgRx SignalStore Engineer** for the Intaqalab project. Your missio
 - State is NEVER fragmented into arbitrary local component variables.
 - Smart components consume domain state _exclusively_ from SignalStores.
 - HTTP services NEVER expose Observables to views; they use Angular's native `httpResource` API.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `(state: any)`). All store state slices, methods, arguments, and computed projections must be strictly typed with real TypeScript interfaces.
 
 ## ⚙️ The Signal Trigger Pattern (Mandatory)
 

@@ -75,6 +75,7 @@ import type { AssociatedTrialForm } from '../../utils-models/associated-trial-fo
           [id]="'trial-status'"
           [valueKey]="'trialNumber'"
           [labelKey]="'description'"
+          [searchable]="true"
           [formField]="associatedTrialForm.trialId"
           [label]="'ASSOCIATED_TRIAL_DIALOG.TRIAL_LABEL' | translate"
           [placeholder]="'ASSOCIATED_TRIAL_DIALOG.TRIAL_PLACEHOLDER' | translate"
@@ -145,9 +146,9 @@ export class AssociatedTrialDialog {
   });
 
   readonly searchParams = computed(
-    () => {
+    (): Partial<TrialSearchFilters> & { sort: string[] } => {
       return {
-        year: this.associatedTrialForm.year().value(),
+        year: this.associatedTrialForm.year().value() ?? undefined,
         clientId: this.associatedTrialForm.clientId().value(),
         description: this.associatedTrialForm.searchTerm().value(),
         status: [
@@ -162,6 +163,7 @@ export class AssociatedTrialDialog {
           TrialStatus.FINALIZING,
           TrialStatus.CLOSED,
         ],
+        sort: ['createdAt;desc'],
       };
     },
     {
@@ -185,7 +187,7 @@ export class AssociatedTrialDialog {
     effect(() => {
       const params = this.searchParams();
       if (params.year && (params.clientId || params.description)) {
-        this.trialsService.search(params as TrialSearchFilters);
+        this.trialsService.search(params);
       }
     });
   }

@@ -78,6 +78,11 @@ export const CadenceUnitEnum = {
   SPM: MeasureUnitEnum.SPM,
 } as const;
 
+export type AcousticLevelUnitEnum = MeasureUnitEnum.DB;
+export const AcousticLevelUnitEnum = {
+  DB: MeasureUnitEnum.DB,
+} as const;
+
 // ── Labels legibles para el usuario ──────────────────────────────────────────
 
 /**

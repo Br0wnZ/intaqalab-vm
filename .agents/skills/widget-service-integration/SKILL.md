@@ -17,6 +17,7 @@ Referencia real: **Widget 20 — `MunitionIntroduction`**.
 > [!IMPORTANT]
 > **Lee la skill `execution-domain-expert` ANTES de empezar** si no conoces bien la arquitectura del dominio de ejecución.
 > **Lee `signal-trigger-pattern`** para entender el patrón `httpResource` + trigger privado en `ExecutionService`.
+> **PROHIBIDO EL USO DE `any`:** Todos los modelos, requests, responses, mappers, servicios, stores y componentes deben usar tipado estricto (`DistanceUnitEnum`, `TimeUnitEnum`, etc.). Nunca usar `as any`, `: any` o `any[]`.
 
 ---
 
@@ -424,6 +425,11 @@ export type { <Widget>IdentificationState, <Widget>PesosState, <Widget>Acondicio
 ---
 
 ## Paso 5 — Crear el Mapper bidireccional
+
+> [!IMPORTANT]
+> **Fichero dedicado obligatorio:** El mapper DEBE ubicarse en un archivo independiente `<widget-name>.mapper.ts` en la carpeta del widget (ej. `trayectografia-introduction.mapper.ts`) junto con sus tests unitarios `<widget-name>.mapper.spec.ts`. NUNCA incluir funciones de mapeo, parseo o transformación pesadas directamente en el componente `.ts`. Mantener componentes delgados y limpios.
+>
+> **Regla de tipado estricto (Zero any):** El mapper DEBE estar 100% tipado con enums de dominio (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) y modelos de TypeScript. PROHIBIDO usar `any`, `as any` o `any[]`.
 
 ### 5a. Regla de resolución de IDs numéricos
 

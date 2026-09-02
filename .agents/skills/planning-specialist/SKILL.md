@@ -53,3 +53,4 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 
 - When developing in `libs/domain/trial/planning`, **NEVER** use `HttpClient.subscribe`. Enforce the Signal Trigger Pattern + `httpResource`.
 - Ensure mutations are coordinated through feature stores via `patchState` and synchronous service dispatch.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, DTOs, store slices, and service calls must use strict TypeScript interfaces and domain types.

@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
+import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { CalibryObserverOption } from '../../../+state/execution.store';
@@ -21,7 +21,6 @@ export interface MaoTopographyMassConfigDialogData {
     xBlanco: { value: string; unit: string } | null;
     yBlanco: { value: string; unit: string } | null;
     zBlanco: { value: string; unit: string } | null;
-    olt: { value: string; unit: string } | null;
     observador: string | null;
   };
 }
@@ -35,7 +34,6 @@ export interface MaoTopographyMassConfigDialogResult {
   xBlanco?: { value: string; unit: string } | null;
   yBlanco?: { value: string; unit: string } | null;
   zBlanco?: { value: string; unit: string } | null;
-  olt?: { value: string; unit: string } | null;
   observador?: string | null;
 }
 
@@ -51,7 +49,6 @@ type InputFieldValue = { value: string; unit: string } | null;
   imports: [
     FormField,
     ReadonlyContentDirective,
-    InputSelect,
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -101,16 +98,6 @@ type InputFieldValue = { value: string; unit: string } | null;
           (valueChange)="piezaPosition.set($event)"
         />
 
-        <!-- OLT para diferencia angular -->
-        <ui-input-select
-          class="col-span-1 md:col-span-1"
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_PLACEHOLDER' | translate"
-          [value]="oltField()"
-          (valueChange)="oltField.set($event)"
-        />
-
         <!-- Blanco Position -->
         <ui-sound-level-meter-input
           size="small"
@@ -157,7 +144,6 @@ export class MaoTopographyMassConfigDialog {
 
   // ── Unit options ─────────────────────────────────────────────────────────
   readonly metersOptions = [{ value: 'm', label: 'm' }];
-  readonly ooOptions = [{ value: 'oo', label: 'ºº' }];
 
   // ── Select form ──────────────────────────────────────────────────────────
   readonly formModel = signal<MassConfigForm>({
@@ -173,7 +159,6 @@ export class MaoTopographyMassConfigDialog {
   readonly blancoPosition = signal<SoundLevelMeterValue | null>(
     this.#toPosition(this.data.current.xBlanco, this.data.current.yBlanco, this.data.current.zBlanco),
   );
-  readonly oltField = signal<InputFieldValue>(this.data.current.olt);
 
   // Helper mappings
   #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
@@ -211,7 +196,6 @@ export class MaoTopographyMassConfigDialog {
       xBlanco: blanco.x,
       yBlanco: blanco.y,
       zBlanco: blanco.z,
-      olt: this.oltField(),
     });
   }
 }

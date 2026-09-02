@@ -1,0 +1,26 @@
+{
+  "jltMaoData": {
+    "numericFiringTable": "NFT-1234",
+    "lineOfFireOrientation": null,
+    "stakeId": null,
+    "theoreticalInitialVelocity": 820.5,
+    "theoreticalInitialVelocityUnit": "M_S",
+    "plannedImpactDistance": 15000,
+    "plannedImpactDistanceUnit": "M",
+    "tabularDrift": 2.5,
+    "tabularDriftUnit": "MIL",
+    "theoreticalFlightTime": 45.2,
+    "theoreticalFlightTimeUnit": "S",
+    "angularDifference": 1.2,
+    "angularDifferenceUnit": "MIL",
+    "shootingAngle": 350.0,
+    "shootingAngleUnit": "MIL",
+    "fuseGraduation": 44.5,
+    "fuseGraduationUnit": "S",
+    "functioningHeight": 250,
+    "functioningHeightUnit": "M",
+    "functioningDistance": 14900,
+    "functioningDistanceUnit": "M",
+    "observations": "Mock JLT MAO data"
+  }
+}

@@ -1,5 +1,9 @@
-import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import type { ShotTrajectographyRequest } from '../../execution/models/shot-trajectography.models';
+import { mapRemoteToTrayectografiaState } from '../../execution/widgets/trayectografia-introduction/trayectografia-introduction.mapper';
+import { ExecutionService } from '../../services/execution.service';
 import type {
   TrayectografiaFuncionamientosState,
   TrayectografiaIntroductionState,
@@ -70,7 +74,47 @@ const initialState: TrayectografiaIntroductionSlice = {
 export function withTrayectografiaIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store) => ({
+    withComputed((store, executionService = inject(ExecutionService)) => ({
+      isLoadingTrajectography: computed(() => executionService.shotTrajectographyResource.isLoading()),
+      isSavingTrajectography: computed(() => executionService.updateShotTrajectographyResource.isLoading()),
+    })),
+    withMethods((store, executionService = inject(ExecutionService)) => ({
+      async loadShotTrajectography(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
+        try {
+          const response = await executionService.fetchShotTrajectography(fireTrialId, seriesId, shotId);
+          if (response) {
+            const mapped = mapRemoteToTrayectografiaState(response);
+            patchState(store, (state) => ({
+              trayectografiaIntroduction: {
+                ...state.trayectografiaIntroduction,
+                equipo: mapped.equipo !== undefined ? mapped.equipo : state.trayectografiaIntroduction.equipo,
+                trayectorias: {
+                  ...state.trayectografiaIntroduction.trayectorias,
+                  ...(mapped.trayectorias ?? {}),
+                },
+                funcionamientos: {
+                  ...state.trayectografiaIntroduction.funcionamientos,
+                  ...(mapped.funcionamientos ?? {}),
+                },
+                trazas: {
+                  ...state.trayectografiaIntroduction.trazas,
+                  ...(mapped.trazas ?? {}),
+                },
+              },
+            }));
+          }
+        } catch (e) {
+          console.error('Error loading Trajectography', e);
+        }
+      },
+      async saveShotTrajectography(
+        fireTrialId: string,
+        seriesId: string,
+        shotId: string,
+        requestBody: ShotTrajectographyRequest,
+      ): Promise<void> {
+        await executionService.updateShotTrajectography(fireTrialId, seriesId, shotId, requestBody);
+      },
       /** Actualiza el selector (serie/disparo/equipo) del widget Introducción datos trayectografía */
       updateTrayectografiaSelector(
         updates: Partial<Pick<TrayectografiaIntroductionState, 'serie' | 'disparo' | 'equipo' | 'estadoDisparo'>>,

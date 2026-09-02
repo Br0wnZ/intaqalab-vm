@@ -81,7 +81,27 @@ export function trialsDispatch(req: Request): PaginatedApiResponse<FireTrial> {
         (Array.isArray(filters.status) ? filters.status.includes(trial.status) : trial.status === filters.status)),
   );
 
-  return paginate(filtered, paginationParams);
+  const sortParam = req.query.sort;
+  const sortValues = Array.isArray(sortParam) ? (sortParam as string[]) : sortParam ? [sortParam.toString()] : [];
+
+  let result = [...filtered];
+
+  for (const sortEntry of sortValues) {
+    const [field, direction] = sortEntry.split(';');
+    const dir = direction === 'desc' ? -1 : 1;
+    result = result.sort((a, b) => {
+      const aVal = (a as Record<string, unknown>)[field];
+      const bVal = (b as Record<string, unknown>)[field];
+      if (aVal === undefined || aVal === null) return dir;
+      if (bVal === undefined || bVal === null) return -dir;
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return aVal.localeCompare(bVal) * dir;
+      }
+      return (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) * dir;
+    });
+  }
+
+  return paginate(result, paginationParams);
 }
 
 export function trialsDispatchById(id: string) {

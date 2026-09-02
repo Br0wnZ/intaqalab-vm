@@ -53,10 +53,9 @@ export function withGeneralData() {
       // Comparador por updatedAt: aunque httpResource siempre devuelve un objeto
       // nuevo, el computed solo propaga el cambio cuando updatedAt difiere,
       // evitando re-renders en widgets que lean este computed durante el polling.
-      executionState: computed(
-        () => safeResourceValue(executionService.executionStateResource),
-        { equal: (a, b) => (a?.updatedAt ?? null) === (b?.updatedAt ?? null) },
-      ),
+      executionState: computed(() => safeResourceValue(executionService.executionStateResource), {
+        equal: (a, b) => (a?.updatedAt ?? null) === (b?.updatedAt ?? null),
+      }),
 
       isLoadingExecutionState: computed(() => executionService.executionStateResource.isLoading()),
 
@@ -140,6 +139,10 @@ export function withGeneralData() {
 
       isLoadingPlanningSeries: computed(() => executionService.planningSeriesResource.isLoading()),
 
+      planningConditions: computed(() => safeResourceValue(executionService.planningConditionsResource)),
+
+      isLoadingPlanningConditions: computed(() => executionService.planningConditionsResource.isLoading()),
+
       // Widget Preferences
       preferencesByRole: computed(() => safeResourceValue(executionService.preferencesByRoleResource)),
 
@@ -163,6 +166,7 @@ export function withGeneralData() {
         this.loadPlanningState(fireTrialId);
         this.loadProfilesReadiness(fireTrialId);
         this.loadPlanningSeries(fireTrialId);
+        this.loadPlanningConditions(fireTrialId);
       },
 
       setFireTrialId(fireTrialId: string | null): void {
@@ -176,6 +180,7 @@ export function withGeneralData() {
           this.loadPlanningState(fireTrialId);
           this.loadProfilesReadiness(fireTrialId);
           this.loadPlanningSeries(fireTrialId);
+          this.loadPlanningConditions(fireTrialId);
         }
       },
 
@@ -260,6 +265,12 @@ export function withGeneralData() {
         }
       },
 
+      loadPlanningConditions(fireTrialId: string): void {
+        if (typeof executionService?.getPlanningConditions === 'function') {
+          executionService.getPlanningConditions(fireTrialId);
+        }
+      },
+
       loadPreferencesByRole(fireTrialId: string, roleName: string): void {
         executionService.getPreferencesByRole(fireTrialId, roleName);
       },
@@ -305,6 +316,11 @@ export function withGeneralData() {
           }
           lastProcessedUpdatedAt = state.updatedAt;
 
+          const trialId = store.fireTrialId();
+          if (trialId) {
+            store.loadExecutionProgress(trialId);
+          }
+
           const activeShotId = state.activeShotId ?? state.activeShootId ?? null;
           if (!state.activeSeriesId || !activeShotId) {
             return;
@@ -331,6 +347,7 @@ export function withGeneralData() {
               const trialId = store.fireTrialId();
               if (trialId) {
                 store.loadExecutionState(trialId);
+                store.loadExecutionProgress(trialId);
                 trialsService.loadById(trialId);
               }
             }
@@ -347,6 +364,7 @@ export function withGeneralData() {
           store.loadPlanningState(fireTrialId);
           store.loadProfilesReadiness(fireTrialId);
           store.loadPlanningSeries(fireTrialId);
+          store.loadPlanningConditions(fireTrialId);
         }
       },
     }),

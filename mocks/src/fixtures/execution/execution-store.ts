@@ -1060,3 +1060,447 @@ export function setShotManometerPressures(
   state.set(key, updated);
   return cloneManometerPressuresState(updated);
 }
+
+// ── SHOTJLTMAO ───────────────────────────────────────────────────
+
+export interface ShotJltMao {
+  numericFiringTable?: string | null;
+  lineOfFireOrientation?: number | null;
+  stakeId?: string | null;
+  theoreticalInitialVelocity?: number | null;
+  theoreticalInitialVelocityUnit?: string | null;
+  plannedImpactDistance?: number | null;
+  plannedImpactDistanceUnit?: string | null;
+  tabularDrift?: number | null;
+  tabularDriftUnit?: string | null;
+  theoreticalFlightTime?: number | null;
+  theoreticalFlightTimeUnit?: string | null;
+  angularDifference?: number | null;
+  angularDifferenceUnit?: string | null;
+  shootingAngle?: number | null;
+  shootingAngleUnit?: string | null;
+  fuseGraduation?: number | null;
+  fuseGraduationUnit?: string | null;
+  functioningHeight?: number | null;
+  functioningHeightUnit?: string | null;
+  functioningDistance?: number | null;
+  functioningDistanceUnit?: string | null;
+  observations?: string | null;
+}
+
+export type ShotJltMaoRequest = ShotJltMao;
+
+export interface ShotJltMaoResponse {
+  jltMaoData?: ShotJltMao | null;
+}
+
+const jltMaoDataStateMap = new Map<string, Map<string, ShotJltMaoResponse>>();
+
+function defaultShotJltMaoState(): ShotJltMaoResponse {
+  return getFixture<ShotJltMaoResponse>('fixtures/execution', 'execution-jlt-mao-fixture.json') ?? {};
+}
+
+function cloneShotJltMaoState(state: ShotJltMaoResponse): ShotJltMaoResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotJltMaoMap(fireTrialId: string): Map<string, ShotJltMaoResponse> {
+  let state = jltMaoDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotJltMaoResponse>();
+    jltMaoDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotJltMao(fireTrialId: string, seriesId: string, shotId: string): ShotJltMaoResponse {
+  const state = getOrCreateShotJltMaoMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotJltMaoState(defaultShotJltMaoState());
+    state.set(key, initial);
+    return cloneShotJltMaoState(initial);
+  }
+
+  return cloneShotJltMaoState(current);
+}
+
+export function setShotJltMao(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotJltMaoRequest,
+): ShotJltMaoResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotJltMaoMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotJltMaoResponse = {
+    jltMaoData: structuredClone(payload),
+  };
+
+  state.set(key, updated);
+  return cloneShotJltMaoState(updated);
+}
+
+// ── SHOTMAOTOPOGRAPHY ───────────────────────────────────────────────────
+
+export interface ShotMaoTopography {
+  pieceX?: number | null;
+  pieceXUnit?: string | null;
+  pieceY?: number | null;
+  pieceYUnit?: string | null;
+  pieceZ?: number | null;
+  pieceZUnit?: string | null;
+  targetX?: number | null;
+  targetXUnit?: string | null;
+  targetY?: number | null;
+  targetYUnit?: string | null;
+  targetZ?: number | null;
+  targetZUnit?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotMaoTopographyResponse {
+  maoTopographyData?: ShotMaoTopography | null;
+}
+
+export type ShotMaoTopographyRequest = ShotMaoTopography;
+
+const maoTopographyDataStateMap = new Map<string, Map<string, ShotMaoTopographyResponse>>();
+
+function defaultShotMaoTopographyState(): ShotMaoTopographyResponse {
+  return getFixture<ShotMaoTopographyResponse>('fixtures/execution', 'execution-mao-topography-fixture.json') ?? {};
+}
+
+function cloneShotMaoTopographyState(state: ShotMaoTopographyResponse): ShotMaoTopographyResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotMaoTopographyMap(fireTrialId: string): Map<string, ShotMaoTopographyResponse> {
+  let state = maoTopographyDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotMaoTopographyResponse>();
+    maoTopographyDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotMaoTopography(fireTrialId: string, seriesId: string, shotId: string): ShotMaoTopographyResponse {
+  const state = getOrCreateShotMaoTopographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotMaoTopographyState(defaultShotMaoTopographyState());
+    state.set(key, initial);
+    return cloneShotMaoTopographyState(initial);
+  }
+
+  return cloneShotMaoTopographyState(current);
+}
+
+export function setShotMaoTopography(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotMaoTopographyRequest,
+): ShotMaoTopographyResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotMaoTopographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotMaoTopographyResponse = {
+    maoTopographyData: structuredClone(payload),
+  };
+
+  state.set(key, updated);
+  return cloneShotMaoTopographyState(updated);
+}
+
+// ── SHOTTOPOGRAPHY ───────────────────────────────────────────────────
+
+export interface ShotTopography {
+  chronometerId?: string | null;
+  flightTime?: number | null;
+  flightTimeUnit?: string | null;
+  illuminationTime?: number | null;
+  illuminationTimeUnit?: string | null;
+  smokeTrailCount?: number | null;
+  observations?: string | null;
+}
+
+export type ShotTopographyRequest = ShotTopography;
+
+export interface ShotTopographyResponse {
+  topographyData?: ShotTopography | null;
+}
+
+const topographyDataStateMap = new Map<string, Map<string, ShotTopographyResponse>>();
+
+function defaultShotTopographyState(): ShotTopographyResponse {
+  return getFixture<ShotTopographyResponse>('fixtures/execution', 'execution-topography-fixture.json') ?? {};
+}
+
+function cloneShotTopographyState(state: ShotTopographyResponse): ShotTopographyResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotTopographyMap(fireTrialId: string): Map<string, ShotTopographyResponse> {
+  let state = topographyDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotTopographyResponse>();
+    topographyDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotTopography(fireTrialId: string, seriesId: string, shotId: string): ShotTopographyResponse {
+  const state = getOrCreateShotTopographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotTopographyState(defaultShotTopographyState());
+    state.set(key, initial);
+    return cloneShotTopographyState(initial);
+  }
+
+  return cloneShotTopographyState(current);
+}
+
+export function setShotTopography(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotTopographyRequest,
+): ShotTopographyResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotTopographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotTopographyResponse = {
+    topographyData: structuredClone(payload),
+  };
+
+  state.set(key, updated);
+  return cloneShotTopographyState(updated);
+}
+
+// ── SHOTTRAJECTOGRAPHY ───────────────────────────────────────────────────
+
+export interface ShotTrajectographyTrajectoryData {
+  range?: number | null;
+  rangeUnit?: string | null;
+  drift?: number | null;
+  driftUnit?: string | null;
+  flightTime?: number | null;
+  flightTimeUnit?: string | null;
+  fuseFunctioningTime?: number | null;
+  fuseFunctioningTimeUnit?: string | null;
+  fuseFunctioningHeight?: number | null;
+  fuseFunctioningHeightUnit?: string | null;
+  fuseFunctioningRange?: number | null;
+  fuseFunctioningRangeUnit?: string | null;
+  arrow?: number | null;
+  arrowUnit?: string | null;
+  flightQualification?: string | null;
+  aerodynamicCoefficient?: number | null;
+  smokeCanisterEjectionTime?: number | null;
+  smokeCanisterEjectionTimeUnit?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotTrajectographyFunctioningData {
+  fuseTrajectographyFunctioning?: string | null;
+  smokeMunitionRadarFunctioning?: string | null;
+  illuminatingMunitionRadarFunctioning?: string | null;
+  ejectedCanisterCount?: number | null;
+  observations?: string | null;
+}
+
+export interface ShotTrajectographyTraceData {
+  traceTime?: number | null;
+  traceTimeUnit?: string | null;
+  radarTraceExistence?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotTrajectography {
+  trajectographyRadarId?: string | null;
+  trajectoryData?: ShotTrajectographyTrajectoryData | null;
+  functioningData?: ShotTrajectographyFunctioningData | null;
+  traceData?: ShotTrajectographyTraceData | null;
+}
+
+export type ShotTrajectographyRequest = ShotTrajectography;
+
+export interface ShotTrajectographyResponse {
+  trajectographyData?: ShotTrajectography | null;
+}
+
+const trajectographyDataStateMap = new Map<string, Map<string, ShotTrajectographyResponse>>();
+
+function defaultShotTrajectographyState(): ShotTrajectographyResponse {
+  return getFixture<ShotTrajectographyResponse>('fixtures/execution', 'execution-trajectography-fixture.json') ?? {};
+}
+
+function cloneShotTrajectographyState(state: ShotTrajectographyResponse): ShotTrajectographyResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotTrajectographyMap(fireTrialId: string): Map<string, ShotTrajectographyResponse> {
+  let state = trajectographyDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotTrajectographyResponse>();
+    trajectographyDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotTrajectography(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+): ShotTrajectographyResponse {
+  const state = getOrCreateShotTrajectographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotTrajectographyState(defaultShotTrajectographyState());
+    state.set(key, initial);
+    return cloneShotTrajectographyState(initial);
+  }
+
+  return cloneShotTrajectographyState(current);
+}
+
+export function setShotTrajectography(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotTrajectographyRequest,
+): ShotTrajectographyResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotTrajectographyMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotTrajectographyResponse = {
+    trajectographyData: structuredClone(payload),
+  };
+
+  state.set(key, updated);
+  return cloneShotTrajectographyState(updated);
+}
+
+// ── SHOTACOUSTICLEVEL ───────────────────────────────────────────────────
+
+export interface ShotAcousticLevel {
+  soundLevelMeterId?: string | null;
+  soundLevelMeterX?: number | null;
+  soundLevelMeterXUnit?: string | null;
+  soundLevelMeterY?: number | null;
+  soundLevelMeterYUnit?: string | null;
+  soundLevelMeterZ?: number | null;
+  soundLevelMeterZUnit?: string | null;
+  soundLevelMeterMuzzleDistance?: number | null;
+  soundLevelMeterMuzzleDistanceUnit?: string | null;
+  acousticLevel?: number | null;
+  acousticLevelUnit?: string | null;
+  observations?: string | null;
+}
+
+export type ShotAcousticLevelRequest = ShotAcousticLevel;
+
+export interface ShotAcousticLevelResponse {
+  acousticLevelData?: ShotAcousticLevel | null;
+}
+
+const acousticLevelDataStateMap = new Map<string, Map<string, ShotAcousticLevelResponse>>();
+
+function defaultShotAcousticLevelState(): ShotAcousticLevelResponse {
+  return getFixture<ShotAcousticLevelResponse>('fixtures/execution', 'execution-acoustic-level-fixture.json') ?? {};
+}
+
+function cloneShotAcousticLevelState(state: ShotAcousticLevelResponse): ShotAcousticLevelResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotAcousticLevelMap(fireTrialId: string): Map<string, ShotAcousticLevelResponse> {
+  let state = acousticLevelDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotAcousticLevelResponse>();
+    acousticLevelDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotAcousticLevel(fireTrialId: string, seriesId: string, shotId: string): ShotAcousticLevelResponse {
+  const state = getOrCreateShotAcousticLevelMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotAcousticLevelState(defaultShotAcousticLevelState());
+    state.set(key, initial);
+    return cloneShotAcousticLevelState(initial);
+  }
+
+  return cloneShotAcousticLevelState(current);
+}
+
+export function setShotAcousticLevel(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotAcousticLevelRequest,
+): ShotAcousticLevelResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotAcousticLevelMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated: ShotAcousticLevelResponse = {
+    acousticLevelData: structuredClone(payload),
+  };
+
+  state.set(key, updated);
+  return cloneShotAcousticLevelState(updated);
+}

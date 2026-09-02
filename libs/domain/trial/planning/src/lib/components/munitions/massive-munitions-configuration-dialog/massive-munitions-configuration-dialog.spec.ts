@@ -2,6 +2,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -10,6 +11,7 @@ import { vi } from 'vitest';
 import { MunitionsStore } from '../../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
+import { createEmptyComponentDetail } from '../../../utils-models/munitions.model';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog';
 
 describe('MassiveMunitionsConfigurationDialog Placeholder', () => {
@@ -46,6 +48,7 @@ const mockMunitionsStore = {
   munitionTypes: () => [{ id: 'type-1', label: 'Tipo 1' }],
   denominationsRaw: () => [{ id: 'option1', name: 'Opción 1', munitionType: { id: 'type-1' } }],
   denominations: () => [{ id: 'option1', label: 'Opción 1' }],
+  fuseWorkingModes: () => [],
   updateMunitionsStatus: () => 'idle',
   loadAllCatalogs: vi.fn(),
   updateMunitions: vi.fn(),
@@ -68,6 +71,7 @@ describe('MassiveMunitionsConfigurationDialog', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: dialogRefMock },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ],
@@ -441,6 +445,51 @@ describe('MassiveMunitionsConfigurationDialog', () => {
 
     expect(alertSpy).toHaveBeenCalled();
     expect(dialogRefMock.close).not.toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+  });
+
+  it('should allow applying when components have denomination without requiring top-level denomination or component lot', async () => {
+    const user = userEvent.setup();
+    const dialogRefMock = createFullMockDialogRef();
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {
+      /* empty */
+    });
+
+    const { fixture } = await renderDialog(dialogRefMock);
+
+    // Set component in dialog instance
+    const componentInstance = fixture.componentInstance;
+    componentInstance.formData.selectedComponents = ['espoleta'];
+    const detail = createEmptyComponentDetail('espoleta');
+    detail.type = { id: 'type-fuze', type: 'espoleta', label: 'Espoleta' };
+    detail.denomination = { id: 'denom-fuze-1', name: 'Espoleta Modelo A' };
+    detail.batch = ''; // No lot/batch
+    componentInstance.formData.componentsData = {
+      espoleta: detail,
+    };
+    fixture.detectChanges();
+
+    const applyButton = screen.getByRole('button', {
+      name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i,
+    });
+    await user.click(applyButton);
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(mockMunitionsStore.updateMunitions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        configurations: expect.arrayContaining([
+          expect.objectContaining({
+            components: expect.arrayContaining([
+              expect.objectContaining({
+                denominationId: 'denom-fuze-1',
+                batch: '',
+              }),
+            ]),
+          }),
+        ]),
+      }),
+    );
 
     alertSpy.mockRestore();
   });

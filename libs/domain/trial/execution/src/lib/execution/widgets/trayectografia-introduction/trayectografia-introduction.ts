@@ -3,9 +3,11 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { Signal } from '@angular/core';
@@ -13,19 +15,29 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
+import type { ShotTrajectographyResponse } from '../../models/shot-trajectography.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
+import {
+  mapPlanningSeriesToOptions,
+  mapRemoteToTrayectografiaState,
+  mapShotStatusToClass,
+  mapShotStatusToLabel,
+  mapShotsToDisparoOptions,
+  mapTrayectografiaStateToRequest,
+} from './trayectografia-introduction.mapper';
 
 export type TrayectografiaTab = 'trayectorias' | 'funcionamientos' | 'trazas';
 
@@ -42,7 +54,6 @@ interface SelectorFormModel {
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
     MatSelectModule,
     TranslateModule,
     TrayectografiasTrayectoriasTabComponent,
@@ -67,6 +78,7 @@ interface SelectorFormModel {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
             [formField]="selectorForm.serie"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -79,6 +91,7 @@ interface SelectorFormModel {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectorForm.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -170,6 +183,13 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #executionService = inject(ExecutionService);
+
+  readonly #selectionKey = computed(() =>
+    shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
+  );
+  readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
   // ── UI state ───────────────────────────────────────────────────────────────
   protected readonly activeTab = signal<TrayectografiaTab>('trayectorias');
@@ -180,35 +200,32 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   readonly trazasTab = viewChild(TrayectografiaTrazasTabComponent);
 
   // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.trayectografiaIntroduction().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.trayectografiaIntroduction().disparoOptions);
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.trayectografiaIntroduction().serieOptions),
+  );
+  protected readonly disparoOptions = computed(() => {
+    const selectedSerie = this.selectorFormModel().serie;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, this.#store.trayectografiaIntroduction().disparoOptions);
+    }
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, this.#store.trayectografiaIntroduction().disparoOptions);
+    }
+    return this.#store.trayectografiaIntroduction().disparoOptions;
+  });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.trayectografiaIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoLabel = computed(() =>
+    mapShotStatusToLabel(this.#store.trayectografiaIntroduction().estadoDisparo),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.trayectografiaIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoClass = computed(() =>
+    mapShotStatusToClass(this.#store.trayectografiaIntroduction().estadoDisparo),
+  );
 
   // ── Selector form (serie / disparo) ────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({
@@ -252,16 +269,109 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
     hasChanges: this.isDirty(),
   }));
 
+  constructor() {
+    super();
+
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
+      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+
+      if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
+      }
+
+      const selectionKey = `${activeSerieId}|${activeShotId}`;
+      if (this.#lastLoadedActiveSelection() === selectionKey) {
+        return;
+      }
+
+      untracked(() => {
+        this.#lastLoadedActiveSelection.set(selectionKey);
+        this.#setSelection(activeSerieId, activeShotId);
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.selectorFormModel.update((m) => ({ ...m, serie }));
+    this.#store.updateTrayectografiaSelector({ serie });
+    void this.#loadSelectedShotData();
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.selectorFormModel.update((m) => ({ ...m, disparo }));
+    this.#store.updateTrayectografiaSelector({ disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  #setSelection(serie: string | null, disparo: string | null): void {
+    this.selectorFormModel.update((m) => ({
+      ...m,
+      serie,
+      disparo,
+    }));
+    this.#store.updateTrayectografiaSelector({ serie, disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  async #loadSelectedShotData(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    const { serie, disparo } = this.selectorFormModel();
+    const selectionKey = this.#selectionKey();
+    const ticket = this.#selectionGuard.begin();
+
+    if (!fireTrialId || !serie || !disparo) {
+      return;
+    }
+
+    try {
+      const response = await this.#executionService.fetchShotTrajectography(fireTrialId, serie, disparo);
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData(response);
+    } catch {
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+    }
+  }
+
+  #applyRemoteShotData(response: ShotTrajectographyResponse): void {
+    const remote = mapRemoteToTrayectografiaState(response);
+
+    if (remote.equipo !== undefined) {
+      this.#store.updateTrayectografiaSelector({ equipo: remote.equipo });
+      this.equipoField.set(remote.equipo);
+      this.#equipoSnapshot.set(remote.equipo);
+    }
+
+    if (remote.trayectorias) {
+      this.#store.updateTrayectografiaTrayectorias(remote.trayectorias);
+      this.trayectoriasTab()?.reset();
+    }
+
+    if (remote.funcionamientos) {
+      this.#store.updateTrayectografiaFuncionamientos(remote.funcionamientos);
+      this.funcionamientosTab()?.reset();
+    }
+
+    if (remote.trazas) {
+      this.#store.updateTrayectografiaTrazas(remote.trazas);
+      this.trazasTab()?.reset();
+    }
+  }
+
   onEquipoChange(value: string | null): void {
     this.equipoField.set(value);
   }
 
   setCurrentShot(): void {
-    this.selectorFormModel.update((m) => ({
-      ...m,
-      serie: this.#store.activeSerieId() ?? m.serie,
-      disparo: this.#store.activeShotId() ?? m.disparo,
-    }));
+    const { activeSerieId, activeShotId } = this.#store;
+    const serie = activeSerieId() ?? this.selectorFormModel().serie;
+    const disparo = activeShotId() ?? this.selectorFormModel().disparo;
+    this.#setSelection(serie, disparo);
   }
 
   resetForm(): void {
@@ -281,5 +391,17 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
     this.trayectoriasTab()?.save();
     this.funcionamientosTab()?.save();
     this.trazasTab()?.save();
+
+    const fireTrialId = this.#store.fireTrialId();
+    if (fireTrialId && serie && disparo) {
+      const state = this.#store.trayectografiaIntroduction();
+      const payload = mapTrayectografiaStateToRequest({
+        equipo: this.equipoField(),
+        trayectorias: state.trayectorias,
+        funcionamientos: state.funcionamientos,
+        trazas: state.trazas,
+      });
+      await this.#executionService.updateShotTrajectography(fireTrialId, serie, disparo, payload);
+    }
   }
 }

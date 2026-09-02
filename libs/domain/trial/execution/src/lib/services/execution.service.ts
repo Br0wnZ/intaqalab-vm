@@ -3,7 +3,7 @@ import type { Signal } from '@angular/core';
 import { Injectable, Injector, effect, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
-import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
+import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
@@ -11,10 +11,20 @@ import type {
   EquipmentMeasureMagnitude,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
+  ShotAcousticLevelRequest,
+  ShotAcousticLevelResponse,
+  ShotJltMaoRequest,
+  ShotJltMaoResponse,
   ShotManometerPressuresRequest,
   ShotManometerPressuresResponse,
+  ShotMaoTopographyRequest,
+  ShotMaoTopographyResponse,
   ShotMunitionRequest,
   ShotMunitionResponse,
+  ShotTopographyRequest,
+  ShotTopographyResponse,
+  ShotTrajectographyRequest,
+  ShotTrajectographyResponse,
   WidgetId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
@@ -148,6 +158,24 @@ export interface PlanningSeriesShotItem {
   observation?: string | null;
 }
 
+export interface PlanningConditionsResponse {
+  units?: {
+    orientation?: AngleUnitEnum | null;
+  };
+  series: PlanningConditionsSeries[];
+}
+
+export interface PlanningConditionsSeries {
+  seriesId: string;
+  shots: PlanningConditionsShot[];
+}
+
+export interface PlanningConditionsShot {
+  shotId: string;
+  orientation?: number | null;
+  orientationUnit?: AngleUnitEnum | null;
+}
+
 export interface JltShotDataPayload {
   jet: string;
   pieceOperator: string;
@@ -220,6 +248,61 @@ interface ShotManometerPressuresParams {
 
 interface ShotManometerPressuresUpdateParams extends ShotManometerPressuresParams {
   body: ShotManometerPressuresRequest;
+}
+
+interface ShotJltMaoParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotJltMaoUpdateParams extends ShotJltMaoParams {
+  body: ShotJltMaoRequest;
+}
+
+interface ShotMaoTopographyParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotMaoTopographyUpdateParams extends ShotMaoTopographyParams {
+  body: ShotMaoTopographyRequest;
+}
+
+interface ShotTopographyParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotTopographyUpdateParams extends ShotTopographyParams {
+  body: ShotTopographyRequest;
+}
+
+interface ShotTrajectographyParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotTrajectographyUpdateParams extends ShotTrajectographyParams {
+  body: ShotTrajectographyRequest;
+}
+
+interface ShotAcousticLevelParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotAcousticLevelUpdateParams extends ShotAcousticLevelParams {
+  body: ShotAcousticLevelRequest;
 }
 
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
@@ -508,6 +591,21 @@ export class ExecutionService {
 
   getPlanningSeries(fireTrialId: FireTrial['id']): void {
     this.#getPlanningSeriesParams.set({ fireTrialId, _t: Date.now() });
+  }
+
+  readonly #getPlanningConditionsParams = signal<ExecutionParams | null>(null);
+
+  readonly planningConditionsResource = httpResource<PlanningConditionsResponse>(() => {
+    const params = this.#getPlanningConditionsParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/conditions`,
+      method: 'GET',
+    };
+  });
+
+  getPlanningConditions(fireTrialId: FireTrial['id']): void {
+    this.#getPlanningConditionsParams.set({ fireTrialId, _t: Date.now() });
   }
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
@@ -1456,6 +1554,356 @@ export class ExecutionService {
     return this.updateShotManometerPressuresResource.value()!;
   }
 
+  // ── SHOT JLT MAO: GET ────────────────────────────────
+
+  readonly #getShotJltMaoParams = signal<ShotJltMaoParams | null>(null);
+
+  readonly shotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
+    const params = this.#getShotJltMaoParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+  readonly shotShotJltMaoResource = this.shotJltMaoResource;
+
+  getShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotJltMaoParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotJltMaoParams = signal<ShotJltMaoParams | null>(null);
+
+  readonly #fetchShotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
+    const p = this.#fetchShotJltMaoParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/jlt-mao/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotJltMaoResponse> {
+    this.#fetchShotJltMaoParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotJltMaoResource);
+    return this.#fetchShotJltMaoResource.value()!;
+  }
+
+  // ── SHOT JLT MAO: PUT ────────────────────────────────
+
+  readonly #updateShotJltMaoParams = signal<ShotJltMaoUpdateParams | null>(null);
+
+  readonly updateShotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
+    const params = this.#updateShotJltMaoParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotJltMaoRequest): void {
+    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotJltMao(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotJltMaoRequest,
+  ): Promise<ShotJltMaoResponse> {
+    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotJltMaoResource);
+    return this.updateShotJltMaoResource.value()!;
+  }
+
+  // ── SHOT MAO TOPOGRAPHY: GET ────────────────────────────────
+
+  readonly #getShotMaoTopographyParams = signal<ShotMaoTopographyParams | null>(null);
+
+  readonly shotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
+    const params = this.#getShotMaoTopographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+  readonly shotShotMaoTopographyResource = this.shotMaoTopographyResource;
+
+  getShotMaoTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotMaoTopographyParams = signal<ShotMaoTopographyParams | null>(null);
+
+  readonly #fetchShotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
+    const p = this.#fetchShotMaoTopographyParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/mao-topography/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotMaoTopography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotMaoTopographyResponse> {
+    this.#fetchShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotMaoTopographyResource);
+    return this.#fetchShotMaoTopographyResource.value()!;
+  }
+
+  // ── SHOT MAO TOPOGRAPHY: PUT ────────────────────────────────
+
+  readonly #updateShotMaoTopographyParams = signal<ShotMaoTopographyUpdateParams | null>(null);
+
+  readonly updateShotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
+    const params = this.#updateShotMaoTopographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotMaoTopography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotMaoTopographyRequest,
+  ): void {
+    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotMaoTopography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotMaoTopographyRequest,
+  ): Promise<ShotMaoTopographyResponse> {
+    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotMaoTopographyResource);
+    return this.updateShotMaoTopographyResource.value()!;
+  }
+
+  // ── SHOT TOPOGRAPHY: GET ────────────────────────────────
+
+  readonly #getShotTopographyParams = signal<ShotTopographyParams | null>(null);
+
+  readonly shotTopographyResource = httpResource<ShotTopographyResponse>(() => {
+    const params = this.#getShotTopographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/topography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+  readonly shotShotTopographyResource = this.shotTopographyResource;
+
+  getShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotTopographyParams = signal<ShotTopographyParams | null>(null);
+
+  readonly #fetchShotTopographyResource = httpResource<ShotTopographyResponse>(() => {
+    const p = this.#fetchShotTopographyParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/topography/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotTopography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotTopographyResponse> {
+    this.#fetchShotTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotTopographyResource);
+    return this.#fetchShotTopographyResource.value()!;
+  }
+
+  // ── SHOT TOPOGRAPHY: PUT ────────────────────────────────
+
+  readonly #updateShotTopographyParams = signal<ShotTopographyUpdateParams | null>(null);
+
+  readonly updateShotTopographyResource = httpResource<ShotTopographyResponse>(() => {
+    const params = this.#updateShotTopographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/topography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotTopographyRequest): void {
+    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotTopography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotTopographyRequest,
+  ): Promise<ShotTopographyResponse> {
+    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotTopographyResource);
+    return this.updateShotTopographyResource.value()!;
+  }
+
+  // ── SHOT TRAJECTOGRAPHY: GET ────────────────────────────────
+
+  readonly #getShotTrajectographyParams = signal<ShotTrajectographyParams | null>(null);
+
+  readonly shotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
+    const params = this.#getShotTrajectographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+  readonly shotShotTrajectographyResource = this.shotTrajectographyResource;
+
+  getShotTrajectography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotTrajectographyParams = signal<ShotTrajectographyParams | null>(null);
+
+  readonly #fetchShotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
+    const p = this.#fetchShotTrajectographyParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/trajectography/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotTrajectography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotTrajectographyResponse> {
+    this.#fetchShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotTrajectographyResource);
+    return this.#fetchShotTrajectographyResource.value()!;
+  }
+
+  // ── SHOT TRAJECTOGRAPHY: PUT ────────────────────────────────
+
+  readonly #updateShotTrajectographyParams = signal<ShotTrajectographyUpdateParams | null>(null);
+
+  readonly updateShotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
+    const params = this.#updateShotTrajectographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotTrajectography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotTrajectographyRequest,
+  ): void {
+    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotTrajectography(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotTrajectographyRequest,
+  ): Promise<ShotTrajectographyResponse> {
+    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotTrajectographyResource);
+    return this.updateShotTrajectographyResource.value()!;
+  }
+
+  // ── SHOT ACOUSTIC LEVEL: GET ────────────────────────────────
+
+  readonly #getShotAcousticLevelParams = signal<ShotAcousticLevelParams | null>(null);
+
+  readonly shotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
+    const params = this.#getShotAcousticLevelParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/acoustic-level/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+  readonly shotShotAcousticLevelResource = this.shotAcousticLevelResource;
+
+  getShotAcousticLevel(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotAcousticLevelParams = signal<ShotAcousticLevelParams | null>(null);
+
+  readonly #fetchShotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
+    const p = this.#fetchShotAcousticLevelParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/acoustic-level/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotAcousticLevel(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotAcousticLevelResponse> {
+    this.#fetchShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotAcousticLevelResource);
+    return this.#fetchShotAcousticLevelResource.value()!;
+  }
+
+  // ── SHOT ACOUSTIC LEVEL: PUT ────────────────────────────────
+
+  readonly #updateShotAcousticLevelParams = signal<ShotAcousticLevelUpdateParams | null>(null);
+
+  readonly updateShotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
+    const params = this.#updateShotAcousticLevelParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/acoustic-level/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotAcousticLevel(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotAcousticLevelRequest,
+  ): void {
+    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotAcousticLevel(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotAcousticLevelRequest,
+  ): Promise<ShotAcousticLevelResponse> {
+    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotAcousticLevelResource);
+    return this.updateShotAcousticLevelResource.value()!;
+  }
   /**
    * Espera a que un httpResource complete su carga actual.
    * Detecta la transición de carga y lanza si hay error.

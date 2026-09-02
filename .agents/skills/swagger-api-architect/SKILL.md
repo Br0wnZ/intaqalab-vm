@@ -93,6 +93,7 @@ Cada capa tiene documentación detallada con ejemplos reales del proyecto. **Lee
 
 **Reglas:**
 
+- **NUNCA usar `any`:** PROHIBIDO el uso de `any` (e.g. `as any`, `: any`, `any[]`). Todos los schemas, requests, responses, mappers, servicios y mocks deben tener tipos TypeScript estrictos.
 - Usa `type` para DTOs y responses. Usa `interface` solo si hay herencia.
 - Exporta SIEMPRE con `export type`.
 - Nombra los archivos en **kebab-case**: `{entity}.model.ts`.

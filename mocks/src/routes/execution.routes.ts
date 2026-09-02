@@ -14,10 +14,15 @@ import {
   getJltShotData,
   getPlanningState,
   getReadiness,
+  getShotAcousticLevel,
   getShotArmament,
+  getShotJltMao,
   getShotManometerPressures,
+  getShotMaoTopography,
   getShotMunition,
   getShotPressures,
+  getShotTopography,
+  getShotTrajectography,
   getShotVelocities,
   registerFireShot,
   selectActiveShot,
@@ -26,10 +31,15 @@ import {
   setJltShotData,
   setProfileReadiness,
   setSeriesProfileReadiness,
+  setShotAcousticLevel,
   setShotArmament,
+  setShotJltMao,
   setShotManometerPressures,
+  setShotMaoTopography,
   setShotMunition,
   setShotPressure,
+  setShotTopography,
+  setShotTrajectography,
   setShotVelocity,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
@@ -615,6 +625,211 @@ executionRouter.put(
       }
 
       res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid manometer pressures payload' });
+    }
+  },
+);
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/jlt-mao/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotJltMao(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/jlt-mao/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotJltMao(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid payload' });
+    }
+  },
+);
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/mao-topography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotMaoTopography(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/mao-topography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotMaoTopography(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid payload' });
+    }
+  },
+);
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/topography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotTopography(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/topography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotTopography(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid payload' });
+    }
+  },
+);
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/trajectography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotTrajectography(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/trajectography/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotTrajectography(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid payload' });
+    }
+  },
+);
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/acoustic-level/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    res.status(200).json(getShotAcousticLevel(fireTrialId, seriesId, shotId));
+  },
+);
+
+executionRouter.put(
+  '/:centerId/fire-trials/:fireTrialId/execution/acoustic-level/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+
+    try {
+      const updated = setShotAcousticLevel(fireTrialId, seriesId, shotId, req.body);
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+        res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+        return;
+      }
+
+      if (error instanceof Error && error.message === 'SHOT_NOT_EDITABLE') {
+        res.status(409).json({ title: 'Conflict', status: 409, detail: 'Shot not editable in current status' });
+        return;
+      }
+
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid payload' });
     }
   },
 );

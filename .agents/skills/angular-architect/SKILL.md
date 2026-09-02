@@ -41,7 +41,7 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 - **Decorator:** Use `@Service()` from `@angular/core` for singleton services.
 - **Private Injection:** Use functional injection with native private fields: `readonly #myService = inject(MyService)`.
-- **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim and focused strictly on the view.
+- **Dedicated Mappers (`<feature>-mapper.service.ts` or `<widget-name>.mapper.ts`):** Extract all heavy backend ↔ frontend transformation logic, payload building, unit mapping, and catalog operations into a dedicated mapper (e.g. `ArmamentMapperService` or `trayectografia-introduction.mapper.ts`). Components must remain slim, clean, and focused strictly on the presentation/view. Each mapper MUST have a corresponding `.mapper.spec.ts`.
 
 ### 4. Control Flow & 3-State Views
 
@@ -54,6 +54,7 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 ### 5. Quality & Clean Code
 
+- **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). Always declare explicit types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) from `@intaqalab/models` or local domain models.
 - **Deep Cloning:** Prohibited: `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
 - **Strict Comparisons:** All comparisons MUST be strict (`===` or `!==`).
 - **Language:** All technical code (variables, functions, classes, comments, file names) MUST be written completely in **English**.

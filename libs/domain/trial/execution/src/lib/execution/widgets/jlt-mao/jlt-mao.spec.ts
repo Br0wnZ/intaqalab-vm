@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AngleUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { JltMao } from './jlt-mao';
 
@@ -59,11 +61,67 @@ describe('JltMao', () => {
     expect(fixture.componentInstance['formModel']().serie).toBe(stored.serie);
   });
 
-  it('setCurrentShot fills serie and disparo from active store values', async () => {
+  it('calls fetchShotJltMao on load when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
     const store = TestBed.inject(ExecutionStore);
-    fixture.componentInstance.setCurrentShot();
-    expect(fixture.componentInstance['formModel']().serie).toBe(store.activeSerieId());
-    expect(fixture.componentInstance['formModel']().disparo).toBe(store.activeShotId());
+    const fetchSpy = vi.spyOn(execService, 'fetchShotJltMao').mockResolvedValue({
+      jltMaoData: {
+        numericFiringTable: 'TTN-123',
+        theoreticalInitialVelocity: 850,
+      },
+    });
+
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('s-1');
+    fixture.componentInstance.onDisparoSelected('d-1');
+
+    await vi.waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
+    });
+  });
+
+  it('makes OLT read-only and clears OLT when a stake is selected', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+
+    component.onOltChanged({ value: '120', unit: 'oo' });
+    expect(component['piquetaDisabled']()).toBe(true);
+    expect(component['angularDifferenceReadOnly']()).toBe(true);
+
+    component.onOltChanged(null);
+    component.onPiquetaSelected('piq-01');
+
+    expect(component['oltField']()).toBeNull();
+    expect(component['oltReadOnly']()).toBe(true);
+    expect(component['angularDifferenceReadOnly']()).toBe(false);
+  });
+
+  it('uses planned OLT and calculates read-only angular difference', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+    service.getPlanningConditions('trial-123');
+    TestBed.tick();
+
+    const request = httpMock.expectOne((req) => req.url.endsWith('/fire-trials/trial-123/planning/conditions'));
+    request.flush({
+      units: { orientation: AngleUnitEnum.DEGREES },
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [{ shotId: 'shot-1', orientation: 15 }],
+        },
+      ],
+    });
+
+    await vi.waitFor(() => expect(component['plannedOlt']()).toBeCloseTo(266.667, 3));
+    expect(component['piquetaDisabled']()).toBe(true);
+    expect(component['angularDifferenceReadOnly']()).toBe(true);
+    expect(component['calculatedAngularDifference']()).toBe(0);
   });
 });

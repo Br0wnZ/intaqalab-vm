@@ -170,7 +170,7 @@ export const injectWidgets = (): Widget[] => [
     widgetId: WidgetId.MAO_TOPOGRAPHY,
     widgetComponent: MaoTopography,
     title: 'Introducción de datos Topografía MAO',
-    description: 'OLT, coordenadas de pieza y blanco, observador',
+    description: 'Coordenadas de pieza y blanco, observador',
     category: 'Topografía',
     badge: 'S',
     badgeColor: 'purple',

@@ -1,0 +1,11 @@
+{
+  "topographyData": {
+    "chronometerId": "CHRONO-001",
+    "flightTime": 45.8,
+    "flightTimeUnit": "S",
+    "illuminationTime": 30.5,
+    "illuminationTimeUnit": "S",
+    "smokeTrailCount": 3,
+    "observations": "Mock Topography data"
+  }
+}

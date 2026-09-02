@@ -1,0 +1,17 @@
+{
+  "maoTopographyData": {
+    "pieceX": 1000.5,
+    "pieceXUnit": "M",
+    "pieceY": 2000.5,
+    "pieceYUnit": "M",
+    "pieceZ": 300.0,
+    "pieceZUnit": "M",
+    "targetX": 15000.0,
+    "targetXUnit": "M",
+    "targetY": 18000.0,
+    "targetYUnit": "M",
+    "targetZ": 350.0,
+    "targetZUnit": "M",
+    "observations": "Mock MAO Topography data"
+  }
+}

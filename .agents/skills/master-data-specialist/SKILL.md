@@ -66,3 +66,4 @@ readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 3
 
 - When requested to build a management screen for a new basic entity, **never build UI components from scratch**. Implement the models, the service, and wire them to `MasterDataShellComponent`.
 - Avoid complex global stores for simple CRUD catalogs; leverage direct HTTP resource reloading.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All catalog models, DTOs, service responses, and query parameters must be strictly typed with real TypeScript types.

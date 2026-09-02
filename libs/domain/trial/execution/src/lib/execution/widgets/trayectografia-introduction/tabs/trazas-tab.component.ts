@@ -15,8 +15,7 @@ import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
-
-type InputFieldValue = { value: string; unit: string } | null;
+import { type InputFieldValue, numToField, parseNum } from '../trayectografia-introduction.mapper';
 
 @Component({
   selector: 'inta-trayectografia-trazas-tab',
@@ -87,7 +86,7 @@ export class TrayectografiaTrazasTabComponent {
 
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly tiempoTrazaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trazas.tiempoTraza,
       this.#store.trayectografiaIntroduction().trazas.tiempoTrazaUnit,
     ),
@@ -113,7 +112,7 @@ export class TrayectografiaTrazasTabComponent {
   save(): void {
     const t = this.#store.trayectografiaIntroduction().trazas;
     this.#store.updateTrayectografiaTrazas({
-      tiempoTraza: this.#fieldToNum(this.tiempoTrazaField()),
+      tiempoTraza: parseNum(this.tiempoTrazaField()),
       tiempoTrazaUnit: this.tiempoTrazaField()?.unit ?? t.tiempoTrazaUnit,
       existenciaTrazaRadar: this.existenciaTrazaField(),
       observaciones: this.observacionesField(),
@@ -123,7 +122,7 @@ export class TrayectografiaTrazasTabComponent {
 
   reset(): void {
     const trazas = this.#store.trayectografiaIntroduction().trazas;
-    this.tiempoTrazaField.set(this.#numToField(trazas.tiempoTraza, trazas.tiempoTrazaUnit));
+    this.tiempoTrazaField.set(numToField(trazas.tiempoTraza, trazas.tiempoTrazaUnit));
     this.existenciaTrazaField.set(trazas.existenciaTrazaRadar);
     this.observacionesField.set(trazas.observaciones);
     this.#syncSnapshot();
@@ -131,7 +130,7 @@ export class TrayectografiaTrazasTabComponent {
 
   #currentValues() {
     return {
-      tiempoTraza: this.#fieldToNum(this.tiempoTrazaField()),
+      tiempoTraza: parseNum(this.tiempoTrazaField()),
       tiempoTrazaUnit: this.tiempoTrazaField()?.unit,
       existenciaTraza: this.existenciaTrazaField(),
       observaciones: this.observacionesField(),
@@ -140,16 +139,5 @@ export class TrayectografiaTrazasTabComponent {
 
   #syncSnapshot(): void {
     this.#savedSnapshot.set(this.#currentValues());
-  }
-
-  #numToField(num: number | null, unit: string): InputFieldValue {
-    if (num === null) return null;
-    return { value: num.toString(), unit };
-  }
-
-  #fieldToNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const parsed = Number(field.value);
-    return isNaN(parsed) ? null : parsed;
   }
 }

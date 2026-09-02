@@ -1,21 +1,35 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
+import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { MaoTopographyState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
+import type { ShotMaoTopographyResponse } from '../../models/shot-mao-topography.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 import type { MaoTopographyMassConfigDialogResult } from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
 
@@ -37,7 +51,6 @@ interface MaoTopographySelectForm {
     MatIconModule,
     MatSelectModule,
     TranslateModule,
-    InputSelect,
     IntaIconComponent,
     SoundLevelMeterInput,
   ],
@@ -57,6 +70,7 @@ interface MaoTopographySelectForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.SERIE_PLACEHOLDER' | translate"
             [formField]="selectForm.serie"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -69,6 +83,7 @@ interface MaoTopographySelectForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.DISPARO_PLACEHOLDER' | translate"
             [formField]="selectForm.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -109,16 +124,6 @@ interface MaoTopographySelectForm {
           [disabled]="readOnly()"
           [value]="piezaPosition()"
           (valueChange)="piezaPosition.set($event)"
-        />
-
-        <!-- OLT para diferencia angular -->
-        <ui-input-select
-          class="col-span-1 md:col-span-1"
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OLT_PLACEHOLDER' | translate"
-          [value]="oltField()"
-          (valueChange)="oltField.set($event)"
         />
 
         <!-- Blanco Position -->
@@ -170,23 +175,38 @@ export class MaoTopography extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
+
+  readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
+  readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  readonly #remoteObservations = signal<string | null>(null);
 
   // ── Unit options ──────────────────────────────────────────────────────────
   protected readonly metersOptions = [{ value: 'm', label: 'm' }];
-  protected readonly ooOptions = [{ value: 'oo', label: 'ºº' }];
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly observadorOptions = computed(() => this.#store.maoTopography().observadorOptions);
   protected readonly blancoEnabled = computed(() => this.#store.maoTopography().blancoEnabled);
-  protected readonly serieOptions = computed<{ value: string; label: string }[]>(() => []);
-  protected readonly disparoOptions = computed<{ value: string; label: string }[]>(() => []);
+  protected readonly serieOptions = computed(() => mapPlanningSeriesToOptions(this.#store.planningSeries(), []));
+  protected readonly disparoOptions = computed(() => {
+    const selectedSerie = this.formModel().serie;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, []);
+    }
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, []);
+    }
+    return [];
+  });
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
-
-  // ── OLT Field signal ──────────────────────────────────────────────────────
-  protected readonly oltField = signal<InputFieldValue>(null);
 
   // ── Position signals ──────────────────────────────────────────────────────
   protected readonly piezaPosition = signal<SoundLevelMeterValue | null>(null);
@@ -202,11 +222,9 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   // ── Snapshot for numeric dirty tracking ───────────────────────────────────
   readonly #savedSnapshot = signal<{
-    olt: InputFieldValue;
     piezaPosition: SoundLevelMeterValue | null;
     blancoPosition: SoundLevelMeterValue | null;
   }>({
-    olt: this.oltField(),
     piezaPosition: this.piezaPosition(),
     blancoPosition: this.blancoPosition(),
   });
@@ -216,7 +234,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
   protected readonly isDirty = computed(() => {
     const snap = this.#savedSnapshot();
     return (
-      JSON.stringify(this.oltField()) !== JSON.stringify(snap.olt) ||
       JSON.stringify(this.piezaPosition()) !== JSON.stringify(snap.piezaPosition) ||
       JSON.stringify(this.blancoPosition()) !== JSON.stringify(snap.blancoPosition)
     );
@@ -235,6 +252,90 @@ export class MaoTopography extends BaseFormWidgetComponent {
     super();
     this.#applyFieldsFromStore();
     this.#syncSnapshot();
+
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
+      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+
+      if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
+      }
+
+      const selectionKey = `${activeSerieId}|${activeShotId}`;
+      if (this.#lastLoadedActiveSelection() === selectionKey) {
+        return;
+      }
+
+      untracked(() => {
+        this.#lastLoadedActiveSelection.set(selectionKey);
+        this.#setSelection(activeSerieId, activeShotId);
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.formModel.update((m) => ({ ...m, serie }));
+    this.#store.updateMaoTopography({ serie });
+    void this.#loadSelectedShotData();
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.formModel.update((m) => ({ ...m, disparo }));
+    this.#store.updateMaoTopography({ disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  #setSelection(serie: string | null, disparo: string | null): void {
+    this.formModel.update((m) => ({
+      ...m,
+      serie,
+      disparo,
+    }));
+    this.#store.updateMaoTopography({ serie, disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  async #loadSelectedShotData(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    const { serie, disparo } = this.formModel();
+    const selectionKey = this.#selectionKey();
+    const ticket = this.#selectionGuard.begin();
+
+    if (!fireTrialId || !serie || !disparo) {
+      return;
+    }
+
+    try {
+      const response = await this.#executionService.fetchShotMaoTopography(fireTrialId, serie, disparo);
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData(response);
+    } catch {
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+    }
+  }
+
+  #applyRemoteShotData(response: ShotMaoTopographyResponse): void {
+    const data = response?.maoTopographyData;
+    if (!data) return;
+
+    this.#remoteObservations.set(data.observations ?? null);
+
+    this.#store.updateMaoTopography({
+      xPieza: data.pieceX ?? null,
+      yPieza: data.pieceY ?? null,
+      zPieza: data.pieceZ ?? null,
+      xBlanco: data.targetX ?? null,
+      yBlanco: data.targetY ?? null,
+      zBlanco: data.targetZ ?? null,
+    });
+
+    this.#applyFieldsFromStore();
+    this.#syncSnapshot();
   }
 
   resetForm(): void {
@@ -250,7 +351,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   async saveForm(): Promise<void> {
     const { serie, disparo, observador } = this.formModel();
-    const olt = this.#parseNum(this.oltField());
     const pieza = this.#fromPosition(this.piezaPosition());
     const blanco = this.#fromPosition(this.blancoPosition());
 
@@ -265,7 +365,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
       serie,
       disparo,
       observador,
-      olt,
       xPieza,
       yPieza,
       zPieza,
@@ -281,19 +380,29 @@ export class MaoTopography extends BaseFormWidgetComponent {
       xPieza,
       yPieza,
       zPieza,
-      difAngularTopografia: olt,
     });
+
+    const fireTrialId = this.#store.fireTrialId();
+    if (fireTrialId && serie && disparo) {
+      await this.#executionService.updateShotMaoTopography(fireTrialId, serie, disparo, {
+        pieceX: xPieza,
+        pieceY: yPieza,
+        pieceZ: zPieza,
+        targetX: xBlanco,
+        targetY: yBlanco,
+        targetZ: zBlanco,
+        observations: this.#remoteObservations(),
+      });
+    }
 
     this.#syncSnapshot();
   }
 
   setCurrentShot(): void {
     const { activeSerieId, activeShotId } = this.#store;
-    this.formModel.update((m) => ({
-      ...m,
-      serie: activeSerieId() ?? m.serie,
-      disparo: activeShotId() ?? m.disparo,
-    }));
+    const serie = activeSerieId() ?? this.formModel().serie;
+    const disparo = activeShotId() ?? this.formModel().disparo;
+    this.#setSelection(serie, disparo);
   }
 
   async openMassConfig(): Promise<void> {
@@ -315,7 +424,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
             xBlanco: blanco.x,
             yBlanco: blanco.y,
             zBlanco: blanco.z,
-            olt: this.oltField(),
             observador: this.formModel().observador,
           },
         },
@@ -345,7 +453,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
         unit: result.xBlanco?.unit ?? result.yBlanco?.unit ?? result.zBlanco?.unit ?? currentBlanco?.unit ?? 'm',
       });
     }
-    if (result.olt !== undefined) this.oltField.set(result.olt);
     if (result.observador !== undefined) {
       this.formModel.update((m) => ({ ...m, observador: result.observador ?? null }));
     }
@@ -386,7 +493,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   #syncSnapshot(): void {
     this.#savedSnapshot.set({
-      olt: this.oltField(),
       piezaPosition: this.piezaPosition(),
       blancoPosition: this.blancoPosition(),
     });
@@ -394,7 +500,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   #applyFieldsFromStore(): void {
     const stored = this.#store.maoTopography();
-    this.oltField.set(this.#numToField(stored.olt, 'oo', 3));
     this.piezaPosition.set(
       this.#toPosition(
         this.#numToField(stored.xPieza, 'm', 1),

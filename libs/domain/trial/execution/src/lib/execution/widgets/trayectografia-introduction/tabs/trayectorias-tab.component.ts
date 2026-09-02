@@ -16,8 +16,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 import type { TrayectografiaTrayectoriaState } from '../../../../+state/execution.store';
-
-type InputFieldValue = { value: string; unit: string } | null;
+import { type InputFieldValue, numToField, parseNum } from '../trayectografia-introduction.mapper';
 
 @Component({
   selector: 'inta-trayectografia-trayectorias-tab',
@@ -164,43 +163,43 @@ export class TrayectografiasTrayectoriasTabComponent {
 
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly alcanceField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.alcance,
       this.#store.trayectografiaIntroduction().trayectorias.alcanceUnit,
     ),
   );
   protected readonly derivaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.deriva,
       this.#store.trayectografiaIntroduction().trayectorias.derivaUnit,
     ),
   );
   protected readonly tiempoVueloField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.tiempoVuelo,
       this.#store.trayectografiaIntroduction().trayectorias.tiempoVueloUnit,
     ),
   );
   protected readonly tiempoFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoleta,
       this.#store.trayectografiaIntroduction().trayectorias.tiempoFuncionamientoEspoletaUnit,
     ),
   );
   protected readonly altFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoleta,
       this.#store.trayectografiaIntroduction().trayectorias.alturaFuncionamientoEspoletaUnit,
     ),
   );
   protected readonly alcFuncEspoletaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoleta,
       this.#store.trayectografiaIntroduction().trayectorias.alcanceFuncionamientoEspoletaUnit,
     ),
   );
   protected readonly flechaField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.flecha,
       this.#store.trayectografiaIntroduction().trayectorias.flechaUnit,
     ),
@@ -212,7 +211,7 @@ export class TrayectografiasTrayectoriasTabComponent {
     this.#store.trayectografiaIntroduction().trayectorias.coeficienteAerodinamico,
   );
   protected readonly tiempoEyecBotesFumField = signal<InputFieldValue>(
-    this.#numToField(
+    numToField(
       this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenos,
       this.#store.trayectografiaIntroduction().trayectorias.tiempoEyeccionBotesFumigenosUnit,
     ),
@@ -235,23 +234,23 @@ export class TrayectografiasTrayectoriasTabComponent {
   save(): void {
     const t = this.#store.trayectografiaIntroduction().trayectorias;
     this.#store.updateTrayectografiaTrayectorias({
-      alcance: this.#fieldToNum(this.alcanceField()),
+      alcance: parseNum(this.alcanceField()),
       alcanceUnit: this.alcanceField()?.unit ?? t.alcanceUnit,
-      deriva: this.#fieldToNum(this.derivaField()),
+      deriva: parseNum(this.derivaField()),
       derivaUnit: this.derivaField()?.unit ?? t.derivaUnit,
-      tiempoVuelo: this.#fieldToNum(this.tiempoVueloField()),
+      tiempoVuelo: parseNum(this.tiempoVueloField()),
       tiempoVueloUnit: this.tiempoVueloField()?.unit ?? t.tiempoVueloUnit,
-      tiempoFuncionamientoEspoleta: this.#fieldToNum(this.tiempoFuncEspoletaField()),
+      tiempoFuncionamientoEspoleta: parseNum(this.tiempoFuncEspoletaField()),
       tiempoFuncionamientoEspoletaUnit: this.tiempoFuncEspoletaField()?.unit ?? t.tiempoFuncionamientoEspoletaUnit,
-      alturaFuncionamientoEspoleta: this.#fieldToNum(this.altFuncEspoletaField()),
+      alturaFuncionamientoEspoleta: parseNum(this.altFuncEspoletaField()),
       alturaFuncionamientoEspoletaUnit: this.altFuncEspoletaField()?.unit ?? t.alturaFuncionamientoEspoletaUnit,
-      alcanceFuncionamientoEspoleta: this.#fieldToNum(this.alcFuncEspoletaField()),
+      alcanceFuncionamientoEspoleta: parseNum(this.alcFuncEspoletaField()),
       alcanceFuncionamientoEspoletaUnit: this.alcFuncEspoletaField()?.unit ?? t.alcanceFuncionamientoEspoletaUnit,
-      flecha: this.#fieldToNum(this.flechaField()),
+      flecha: parseNum(this.flechaField()),
       flechaUnit: this.flechaField()?.unit ?? t.flechaUnit,
       calificacionVuelo: this.calificacionVueloField(),
       coeficienteAerodinamico: this.coefAerodinamicoField(),
-      tiempoEyeccionBotesFumigenos: this.#fieldToNum(this.tiempoEyecBotesFumField()),
+      tiempoEyeccionBotesFumigenos: parseNum(this.tiempoEyecBotesFumField()),
       tiempoEyeccionBotesFumigenosUnit: this.tiempoEyecBotesFumField()?.unit ?? t.tiempoEyeccionBotesFumigenosUnit,
       observaciones: this.observacionesField(),
     });
@@ -260,23 +259,21 @@ export class TrayectografiasTrayectoriasTabComponent {
 
   reset(): void {
     const tray = this.#store.trayectografiaIntroduction().trayectorias;
-    this.alcanceField.set(this.#numToField(tray.alcance, tray.alcanceUnit));
-    this.derivaField.set(this.#numToField(tray.deriva, tray.derivaUnit));
-    this.tiempoVueloField.set(this.#numToField(tray.tiempoVuelo, tray.tiempoVueloUnit));
+    this.alcanceField.set(numToField(tray.alcance, tray.alcanceUnit));
+    this.derivaField.set(numToField(tray.deriva, tray.derivaUnit));
+    this.tiempoVueloField.set(numToField(tray.tiempoVuelo, tray.tiempoVueloUnit));
     this.tiempoFuncEspoletaField.set(
-      this.#numToField(tray.tiempoFuncionamientoEspoleta, tray.tiempoFuncionamientoEspoletaUnit),
+      numToField(tray.tiempoFuncionamientoEspoleta, tray.tiempoFuncionamientoEspoletaUnit),
     );
-    this.altFuncEspoletaField.set(
-      this.#numToField(tray.alturaFuncionamientoEspoleta, tray.alturaFuncionamientoEspoletaUnit),
-    );
+    this.altFuncEspoletaField.set(numToField(tray.alturaFuncionamientoEspoleta, tray.alturaFuncionamientoEspoletaUnit));
     this.alcFuncEspoletaField.set(
-      this.#numToField(tray.alcanceFuncionamientoEspoleta, tray.alcanceFuncionamientoEspoletaUnit),
+      numToField(tray.alcanceFuncionamientoEspoleta, tray.alcanceFuncionamientoEspoletaUnit),
     );
-    this.flechaField.set(this.#numToField(tray.flecha, tray.flechaUnit));
+    this.flechaField.set(numToField(tray.flecha, tray.flechaUnit));
     this.calificacionVueloField.set(tray.calificacionVuelo);
     this.coefAerodinamicoField.set(tray.coeficienteAerodinamico);
     this.tiempoEyecBotesFumField.set(
-      this.#numToField(tray.tiempoEyeccionBotesFumigenos, tray.tiempoEyeccionBotesFumigenosUnit),
+      numToField(tray.tiempoEyeccionBotesFumigenos, tray.tiempoEyeccionBotesFumigenosUnit),
     );
     this.observacionesField.set(tray.observaciones);
     this.#syncSnapshot();
@@ -284,32 +281,21 @@ export class TrayectografiasTrayectoriasTabComponent {
 
   #currentValues(): Partial<TrayectografiaTrayectoriaState> {
     return {
-      alcance: this.#fieldToNum(this.alcanceField()),
-      deriva: this.#fieldToNum(this.derivaField()),
-      tiempoVuelo: this.#fieldToNum(this.tiempoVueloField()),
-      tiempoFuncionamientoEspoleta: this.#fieldToNum(this.tiempoFuncEspoletaField()),
-      alturaFuncionamientoEspoleta: this.#fieldToNum(this.altFuncEspoletaField()),
-      alcanceFuncionamientoEspoleta: this.#fieldToNum(this.alcFuncEspoletaField()),
-      flecha: this.#fieldToNum(this.flechaField()),
+      alcance: parseNum(this.alcanceField()),
+      deriva: parseNum(this.derivaField()),
+      tiempoVuelo: parseNum(this.tiempoVueloField()),
+      tiempoFuncionamientoEspoleta: parseNum(this.tiempoFuncEspoletaField()),
+      alturaFuncionamientoEspoleta: parseNum(this.altFuncEspoletaField()),
+      alcanceFuncionamientoEspoleta: parseNum(this.alcFuncEspoletaField()),
+      flecha: parseNum(this.flechaField()),
       calificacionVuelo: this.calificacionVueloField(),
       coeficienteAerodinamico: this.coefAerodinamicoField(),
-      tiempoEyeccionBotesFumigenos: this.#fieldToNum(this.tiempoEyecBotesFumField()),
+      tiempoEyeccionBotesFumigenos: parseNum(this.tiempoEyecBotesFumField()),
       observaciones: this.observacionesField(),
     };
   }
 
   #syncSnapshot(): void {
     this.#savedSnapshot.set(this.#currentValues());
-  }
-
-  #numToField(num: number | null, unit: string): InputFieldValue {
-    if (num === null) return null;
-    return { value: num.toString(), unit };
-  }
-
-  #fieldToNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const parsed = Number(field.value);
-    return isNaN(parsed) ? null : parsed;
   }
 }

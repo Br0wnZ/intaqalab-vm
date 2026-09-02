@@ -45,4 +45,36 @@ describe('ExecutionStore (composición de features)', () => {
     expect(store.radarTrayectographyOrientation()).toBeDefined();
     expect(store.topographyIntroduction()).toBeDefined();
   });
+
+  it('expone métodos y computeds de carga y guardado para las 5 features conectadas a la API', () => {
+    // JLT MAO
+    expect(store.jltMao).toBeDefined();
+    expect(typeof store.loadShotJltMao).toBe('function');
+    expect(typeof store.saveShotJltMao).toBe('function');
+    expect(store.isLoadingJltMao()).toBe(false);
+
+    // MAO Topography
+    expect(store.maoTopography).toBeDefined();
+    expect(typeof store.loadShotMaoTopography).toBe('function');
+    expect(typeof store.saveShotMaoTopography).toBe('function');
+    expect(store.isLoadingMaoTopography()).toBe(false);
+
+    // Topography Introduction
+    expect(store.topographyIntroduction).toBeDefined();
+    expect(typeof store.loadShotTopography).toBe('function');
+    expect(typeof store.saveShotTopography).toBe('function');
+    expect(store.isLoadingTopography()).toBe(false);
+
+    // Trajectography Introduction
+    expect(store.trayectografiaIntroduction).toBeDefined();
+    expect(typeof store.loadShotTrajectography).toBe('function');
+    expect(typeof store.saveShotTrajectography).toBe('function');
+    expect(store.isLoadingTrajectography()).toBe(false);
+
+    // Acoustic Level Introduction
+    expect(store.acousticLevelIntroduction).toBeDefined();
+    expect(typeof store.loadShotAcousticLevel).toBe('function');
+    expect(typeof store.saveShotAcousticLevel).toBe('function');
+    expect(store.isLoadingAcousticLevel()).toBe(false);
+  });
 });
