@@ -15,10 +15,10 @@ import { whareHouseRouter } from './warehouse.routes';
 
 const router = Router();
 
+router.use('/centers', masterDataRouter);
 router.use('/centers', trialsRouter);
 router.use('/centers', documentsRouter);
 router.use('/centers', calendarRouter);
-router.use('/centers', masterDataRouter);
 router.use('/centers', whareHouseRouter);
 router.use('/centers', executionRouter);
 router.use('/centers/:centerId', munitionsRouter);

@@ -1,7 +1,10 @@
+import { TAG_CONFIGS } from '@intaqalab/execution';
 import { MEASURE_UNIT_LABELS } from '@intaqalab/models';
 
 import type { MasterView } from '../models/master-data-view.model';
 import { MASTERS_ACTIONS, MASTER_LIST_COLUMN_TRANSFORM } from './master-data.constants';
+
+export const MEASUREMENT_AREA_OPTIONS = TAG_CONFIGS.map(({ id, label }) => ({ id, label }));
 
 export const MEASUREMENTS_AND_RECORDS_VIEW: MasterView = {
   title: 'MASTER_DATA.MEASURES.TITLE',
@@ -15,7 +18,14 @@ export const MEASUREMENTS_AND_RECORDS_VIEW: MasterView = {
         helper: 'MASTER_DATA.MEASURES.LIST.UNIT.VALUES',
       },
     },
-    { id: 'measurementAreaCode', name: 'MASTER_DATA.MEASURES.LIST.MEASUREMENT_AREA_CODE' },
+    {
+      id: 'measurementAreaCode',
+      name: 'MASTER_DATA.MEASURES.LIST.MEASUREMENT_AREA_CODE',
+      select: {
+        options: MEASUREMENT_AREA_OPTIONS,
+        multiple: true,
+      },
+    },
     {
       id: 'measureUnit',
       name: 'MASTER_DATA.MEASURES.LIST.MEASURE_UNIT',

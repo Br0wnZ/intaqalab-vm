@@ -1,8 +1,10 @@
 /* eslint-disable testing-library/no-node-access */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
@@ -34,7 +36,7 @@ function createMockMasterDataService() {
 const MOCK_QUANTITATIVE: MasterDataMeasures = {
   id: 'measure-1',
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'MA001',
+  measurementAreaCode: 'INITIAL_VELOCITY,SOUND',
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud ES', en: 'Magnitude EN' },
   procedure: { es: 'Procedimiento ES', en: 'Procedure EN' },
@@ -53,7 +55,7 @@ const MOCK_QUANTITATIVE: MasterDataMeasures = {
 const MOCK_QUALITATIVE: MasterDataMeasures = {
   id: 'measure-2',
   unit: 'MUNITIONS',
-  measurementAreaCode: 'MA002',
+  measurementAreaCode: 'WEIGHT',
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud Cualitativa ES', en: 'Qualitative Magnitude EN' },
   procedure: { es: '', en: '' },
@@ -71,7 +73,7 @@ const MOCK_QUALITATIVE: MasterDataMeasures = {
 
 const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'MA001',
+  measurementAreaCode: 'INITIAL_VELOCITY',
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
   procedure: { es: '', en: '' },
@@ -88,7 +90,7 @@ const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
 
 const VALID_QUALITATIVE_FORM: MasterDataMeasures = {
   unit: 'MUNITIONS',
-  measurementAreaCode: 'MA002',
+  measurementAreaCode: 'WEIGHT',
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
   procedure: { es: '', en: '' },
@@ -148,6 +150,23 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       await setup(MOCK_QUANTITATIVE);
       const heading = screen.getByRole('heading', { level: 2 });
       expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
+    });
+
+    it('should allow changing multiple measurement areas in edit mode and store them as CSV', async () => {
+      const { view } = await setup(MOCK_QUANTITATIVE);
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const measurementAreaSelect = await loader.getHarness(
+        MatSelectHarness.with({ selector: '#measurementAreaCode' }),
+      );
+
+      await measurementAreaSelect.open();
+      const options = await measurementAreaSelect.getOptions({ text: 'Trayectografía' });
+      await options[0].click();
+      view.fixture.detectChanges();
+
+      expect(view.fixture.componentInstance.formModel().measurementAreaCode).toBe(
+        'INITIAL_VELOCITY,SOUND,TRAJECTOGRAPHY',
+      );
     });
 
     it('should render cancel and save buttons', async () => {

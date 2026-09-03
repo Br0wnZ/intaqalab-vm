@@ -41,6 +41,9 @@ export type WidgetType = WidgetId;
  */
 export type TechProfile = 'velocidades' | 'presiones' | 'video' | 'trayectografia' | 'municiones' | 'armamento';
 
+/** ID serializado en preferencias; distingue variantes del widget técnico. */
+export type WidgetPreferenceId = WidgetId | `prep-tech-${TechProfile}`;
+
 /**
  * 📊 Estado del formulario de un widget
  */

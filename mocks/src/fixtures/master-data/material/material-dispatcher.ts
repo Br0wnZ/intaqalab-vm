@@ -5,6 +5,7 @@ interface MaterialMasterResponse {
   id: string;
   name: { es: string; en: string };
   label: string;
+  active: boolean;
   description?: string;
 }
 
@@ -16,11 +17,10 @@ export function masterDataMaterialDispatcher(params: RequestPaginationParams): D
 
 function seed(total = 20): MaterialMasterResponse[] {
   const item = getFixture<MaterialMasterResponse>('fixtures/master-data/material', 'material-fixture.json');
-  console.log('aqui esta todo:', item);
   const data: MaterialMasterResponse[] = new Array(total).fill(null).map((_, i) => {
     return {
-      enabled: !!(i % 2),
-      id: `${item.id} ${i}`,
+      active: !!(i % 2),
+      id: `${item.id}-${i}`,
       name: {
         en: `${item.name.en} ${i}`,
         es: `${item.name.es} ${i}`,

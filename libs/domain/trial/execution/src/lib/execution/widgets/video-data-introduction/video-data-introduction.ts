@@ -9,6 +9,7 @@ import {
   input,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,14 +17,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
+import type { ShotVideoDataResponse } from '../../models';
 import { EquipmentTypeEnum } from '../../models/equipment.models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { FormTouchDirective } from '../directives/form-touch.directive';
+import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { mapVideoFormToRequest, mapVideoResponseToForm, resolveVideoType } from './video-data-introduction.mapper';
 
 interface VideoDataIntroductionForm {
   serie: string | null;
@@ -33,8 +39,8 @@ interface VideoDataIntroductionForm {
   grabador: string | null;
   canal: string | null;
   magnitud: string | null;
-  resultadoObservado: string | null;
-  observaciones: string | null;
+  resultadoObservado: string;
+  observaciones: string;
 }
 
 @Component({
@@ -48,9 +54,14 @@ interface VideoDataIntroductionForm {
     MatIconModule,
     TranslateModule,
     IntaIconComponent,
+    FormTouchDirective,
   ],
   template: `
-    <div class="h-full overflow-auto rounded-2xl border border-slate-200 bg-white p-4 flex flex-col gap-4">
+    <div
+      intaFormTouch
+      class="h-full overflow-auto rounded-2xl border border-slate-200 bg-white p-4 flex flex-col gap-4"
+      #touch="intaFormTouch"
+    >
       <!-- Header -->
       <div class="flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
@@ -76,6 +87,7 @@ interface VideoDataIntroductionForm {
               id="serie-select"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
               [formField]="form.serie"
+              (selectionChange)="onSerieSelected($event.value)"
             >
               @for (opt of serieOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -91,6 +103,7 @@ interface VideoDataIntroductionForm {
               id="disparo-select"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
               [formField]="form.disparo"
+              (selectionChange)="onDisparoSelected($event.value)"
             >
               @for (opt of disparoOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -240,8 +253,9 @@ interface VideoDataIntroductionForm {
               [placeholder]="
                 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_PLACEHOLDER' | translate
               "
-              [value]="resultadoObservadoField() ?? ''"
-              (input)="resultadoObservadoField.set($any($event.target).value || null)"
+              [value]="selectorModel().resultadoObservado"
+              (input)="updateResultadoObservado(resultadoInput.value)"
+              #resultadoInput
             />
           </mat-form-field>
 
@@ -255,8 +269,9 @@ interface VideoDataIntroductionForm {
               matInput
               rows="3"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
-              [value]="observacionesField() ?? ''"
-              (input)="observacionesField.set($any($event.target).value || null)"
+              [value]="selectorModel().observaciones"
+              (input)="updateObservaciones(observacionesInput.value)"
+              #observacionesInput
             ></textarea>
           </mat-form-field>
         </div>
@@ -273,9 +288,13 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService, { optional: true });
+  readonly #executionService = inject(ExecutionService);
 
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
+  readonly #remoteVideoData = signal<ShotVideoDataResponse | null>(null);
+  readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  readonly #selectionKey = computed(() => shotSelectionKey(this.selectorModel().serie, this.selectorModel().disparo));
+  readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
 
   // ── Datos desde el store y API ────────────────────────────────────────────
 
@@ -354,35 +373,39 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     grabador: this.#store.videoDataIntroduction().grabador,
     canal: this.#store.videoDataIntroduction().canal,
     magnitud: this.#store.videoDataIntroduction().magnitud,
-    resultadoObservado: this.#store.videoDataIntroduction().resultadoObservado,
-    observaciones: this.#store.videoDataIntroduction().observaciones,
+    resultadoObservado: this.#store.videoDataIntroduction().resultadoObservado ?? '',
+    observaciones: this.#store.videoDataIntroduction().observaciones ?? '',
   });
 
-  protected readonly resultadoObservadoField = signal<string | null>(
-    this.#store.videoDataIntroduction().resultadoObservado,
-  );
-  protected readonly observacionesField = signal<string | null>(this.#store.videoDataIntroduction().observaciones);
-
   protected readonly form = form(this.selectorModel);
+  readonly #dirtyTracker = createDirtyTracker(() => this.#editableValues());
+  protected readonly touchRef = viewChild('touch', { read: FormTouchDirective });
 
   constructor() {
     super();
 
-    // Cargar catálogo de equipos desde /equipment/items
     this.#executionService
-      ?.loadEquipmentItemsByCategories?.([
+      .loadEquipmentItemsByCategories([
         EquipmentTypeEnum.HIGH_SPEED_CAMERA,
         EquipmentTypeEnum.CONVENTIONAL_CAMERA,
         EquipmentTypeEnum.RECORDER,
         EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
       ])
-      ?.then((result) => this.#itemsByCategory.set(result));
+      .then((result) => this.#itemsByCategory.set(result));
 
     effect(() => {
-      const serie = this.#store.activeSerieId();
-      const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
-      untracked(() => this.selectorModel.update((value) => ({ ...value, serie, disparo })));
+      const fireTrialId = this.#store.fireTrialId();
+      const serie = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
+      const disparo = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      if (!fireTrialId || !serie || !disparo) return;
+
+      const selectionKey = shotSelectionKey(serie, disparo);
+      if (this.#lastLoadedActiveSelection() === selectionKey) return;
+
+      untracked(() => {
+        this.#lastLoadedActiveSelection.set(selectionKey);
+        this.#setSelection(serie, disparo);
+      });
     });
   }
 
@@ -390,25 +413,41 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
   readonly formState: Signal<WidgetFormState> = computed(() => ({
     widgetId: this.widgetId(),
-    dirty: this.form().dirty(),
-    touched: this.form().touched(),
+    dirty: this.#dirtyTracker.isDirty(),
+    touched: this.touchRef()?.touched() ?? false,
     valid: this.form().valid(),
-    hasChanges: this.form().dirty(),
+    hasChanges: this.#dirtyTracker.isDirty(),
   }));
 
   updateTipoVideo(tipo: 'AV' | 'C'): void {
     this.selectorModel.update((value) => ({ ...value, tipoVideo: tipo }));
+    this.#applyRemoteBlock(tipo, this.#remoteVideoData());
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.selectorModel.update((value) => ({ ...value, serie, disparo: null }));
+    this.#store.updateVideoDataIntroduction({ serie, disparo: null });
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.selectorModel.update((value) => ({ ...value, disparo }));
+    this.#store.updateVideoDataIntroduction({ disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  updateResultadoObservado(resultadoObservado: string): void {
+    this.selectorModel.update((value) => ({ ...value, resultadoObservado }));
+  }
+
+  updateObservaciones(observaciones: string): void {
+    this.selectorModel.update((value) => ({ ...value, observaciones }));
   }
 
   resetToCurrentShot(): void {
     const activeSerie = this.#store.activeSerieId();
     const activeShot = this.#store.activeShotId();
     if (activeSerie && activeShot) {
-      this.selectorModel.update((value) => ({
-        ...value,
-        serie: activeSerie,
-        disparo: activeShot,
-      }));
+      this.#setSelection(activeSerie, activeShot);
     }
   }
 
@@ -422,11 +461,10 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       grabador: stored.grabador,
       canal: stored.canal,
       magnitud: stored.magnitud,
-      resultadoObservado: stored.resultadoObservado,
-      observaciones: stored.observaciones,
+      resultadoObservado: stored.resultadoObservado ?? '',
+      observaciones: stored.observaciones ?? '',
     });
-    this.resultadoObservadoField.set(stored.resultadoObservado);
-    this.observacionesField.set(stored.observaciones);
+    this.#dirtyTracker.syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
@@ -443,5 +481,60 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       resultadoObservado,
       observaciones,
     });
+
+    const fireTrialId = this.#store.fireTrialId();
+    const payload = mapVideoFormToRequest(this.selectorModel(), this.#remoteVideoData());
+    if (!fireTrialId || !serie || !disparo || !payload) return;
+
+    try {
+      const response = await this.#executionService.updateShotVideoData(fireTrialId, serie, disparo, payload);
+      this.#remoteVideoData.set(response);
+      this.#dirtyTracker.syncSnapshot();
+    } catch (error) {
+      console.error('Failed to save shot video data', error);
+      throw error;
+    }
+  }
+
+  #setSelection(serie: string, disparo: string): void {
+    this.selectorModel.update((value) => ({ ...value, serie, disparo }));
+    this.#store.updateVideoDataIntroduction({ serie, disparo });
+    void this.#loadSelectedShotData();
+  }
+
+  async #loadSelectedShotData(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    const { serie, disparo } = this.selectorModel();
+    if (!fireTrialId || !serie || !disparo) return;
+
+    const selectionKey = this.#selectionKey();
+    const ticket = this.#selectionGuard.begin();
+
+    try {
+      const response = await this.#executionService.fetchShotVideoData(fireTrialId, serie, disparo);
+      if (!ticket.isFresh(selectionKey)) return;
+      this.#remoteVideoData.set(response);
+      const tipoVideo = resolveVideoType(response, this.selectorModel().tipoVideo);
+      this.selectorModel.update((value) => ({ ...value, tipoVideo }));
+      this.#applyRemoteBlock(tipoVideo, response);
+    } catch {
+      if (!ticket.isFresh(selectionKey)) return;
+      this.#remoteVideoData.set(null);
+      this.#applyRemoteBlock(this.selectorModel().tipoVideo, null);
+    }
+  }
+
+  #applyRemoteBlock(tipoVideo: 'AV' | 'C' | null, response: ShotVideoDataResponse | null): void {
+    this.selectorModel.update((value) => ({
+      ...value,
+      ...mapVideoResponseToForm(response, tipoVideo),
+    }));
+    this.#store.updateVideoDataIntroduction(this.selectorModel());
+    this.#dirtyTracker.syncSnapshot();
+  }
+
+  #editableValues(): Omit<VideoDataIntroductionForm, 'serie' | 'disparo' | 'tipoVideo'> {
+    const { camera, grabador, canal, magnitud, resultadoObservado, observaciones } = this.selectorModel();
+    return { camera, grabador, canal, magnitud, resultadoObservado, observaciones };
   }
 }

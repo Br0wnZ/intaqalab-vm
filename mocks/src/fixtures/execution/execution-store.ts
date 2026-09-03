@@ -1504,3 +1504,76 @@ export function setShotAcousticLevel(
   state.set(key, updated);
   return cloneShotAcousticLevelState(updated);
 }
+
+// ── SHOT VIDEO DATA ──────────────────────────────────────────────────────
+
+export interface ShotVideoData {
+  cameraId: string;
+  recorderId: string;
+  channel: number;
+  measureId: string;
+  observedResult?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotVideoDataRequest {
+  highSpeedVideoData?: ShotVideoData | null;
+  conventionalVideoData?: ShotVideoData | null;
+}
+
+export type ShotVideoDataResponse = ShotVideoDataRequest;
+
+const videoDataStateMap = new Map<string, Map<string, ShotVideoDataResponse>>();
+
+function defaultShotVideoDataState(): ShotVideoDataResponse {
+  return getFixture<ShotVideoDataResponse>('fixtures/execution', 'execution-video-data-fixture.json') ?? {};
+}
+
+function cloneShotVideoDataState(state: ShotVideoDataResponse): ShotVideoDataResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateShotVideoDataMap(fireTrialId: string): Map<string, ShotVideoDataResponse> {
+  let state = videoDataStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotVideoDataResponse>();
+    videoDataStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotVideoData(fireTrialId: string, seriesId: string, shotId: string): ShotVideoDataResponse {
+  const state = getOrCreateShotVideoDataMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneShotVideoDataState(defaultShotVideoDataState());
+    state.set(key, initial);
+    return cloneShotVideoDataState(initial);
+  }
+
+  return cloneShotVideoDataState(current);
+}
+
+export function setShotVideoData(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotVideoDataRequest,
+): ShotVideoDataResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateShotVideoDataMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const updated = cloneShotVideoDataState(payload);
+  state.set(key, updated);
+  return cloneShotVideoDataState(updated);
+}

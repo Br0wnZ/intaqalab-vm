@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -6,6 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import type { MatSelectChange } from '@angular/material/select';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
@@ -13,7 +14,7 @@ import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqal
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
-import { MEASUREMENTS_AND_RECORDS_UNITS } from '../../../../data/measures.constants';
+import { MEASUREMENTS_AND_RECORDS_UNITS, MEASUREMENT_AREA_OPTIONS } from '../../../../data/measures.constants';
 import {
   type MasterDataMeasures,
   type MeasureQualitativeValue,
@@ -67,19 +68,20 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
           </mat-select>
         </mat-form-field>
       </div>
-      <div>
-        <label for="measurementAreaCode" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="measurementAreaCode"
-            matInput
-            [formField]="form.measurementAreaCode"
-            [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>{{ 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.LABEL' | translate }}</mat-label>
+        <mat-select
+          id="measurementAreaCode"
+          multiple
+          [value]="selectedMeasurementAreas()"
+          [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.PLACEHOLDER' | translate"
+          (selectionChange)="onMeasurementAreasChange($event)"
+        >
+          @for (option of measurementAreaOptions; track option.id) {
+            <mat-option [value]="option.id">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
       <div>
         <label for="magnitudeCode" class="block text-sm font-medium text-gray-700 mb-2">
           {{ 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MAGNITUDE_CODE.LABEL' | translate }}
@@ -363,6 +365,7 @@ export class MeasurementsAndRecordsDialogComponent {
   }
 
   readonly unitOptions = MEASUREMENTS_AND_RECORDS_UNITS;
+  readonly measurementAreaOptions = MEASUREMENT_AREA_OPTIONS;
 
   readonly qualificationTypeList = [
     {
@@ -404,6 +407,7 @@ export class MeasurementsAndRecordsDialogComponent {
   };
 
   readonly formModel = signal<MasterDataMeasures>(this.defaultFormValues);
+  readonly selectedMeasurementAreas = computed(() => this.formModel().measurementAreaCode.split(',').filter(Boolean));
 
   readonly #isQuantitative = () => this.formModel().qualificationType === 'QUANTITATIVE';
 
@@ -411,7 +415,6 @@ export class MeasurementsAndRecordsDialogComponent {
     required(schemaPath.unit);
     disabled(schemaPath.unit, () => this.data !== null);
     required(schemaPath.measurementAreaCode);
-    disabled(schemaPath.measurementAreaCode, () => this.data !== null);
     required(schemaPath.magnitudeCode);
     disabled(schemaPath.magnitudeCode, () => this.data !== null);
     required(schemaPath.magnitude.es);
@@ -486,6 +489,11 @@ export class MeasurementsAndRecordsDialogComponent {
     } else {
       this.store.update(dataToSend as unknown as MasterDataResponseType);
     }
+  }
+
+  protected onMeasurementAreasChange(event: MatSelectChange): void {
+    const measurementAreaCode = Array.isArray(event.value) ? event.value.join(',') : '';
+    this.formModel.update((model) => ({ ...model, measurementAreaCode }));
   }
 
   #castToValueCode(nameEn: string) {

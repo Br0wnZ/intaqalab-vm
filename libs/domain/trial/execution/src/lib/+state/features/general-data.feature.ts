@@ -5,7 +5,7 @@ import { TrialStatus } from '@intaqalab/models';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
-import type { WidgetId } from '../../execution/models';
+import type { WidgetId, WidgetPreferenceId } from '../../execution/models';
 import { ExecutionService } from '../../services/execution.service';
 
 interface GeneralDataSlice {
@@ -283,7 +283,7 @@ export function withGeneralData() {
         executionService.getPreferencesByUser(fireTrialId, username);
       },
 
-      updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetId[]): void {
+      updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetPreferenceId[]): void {
         executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
       },
     })),

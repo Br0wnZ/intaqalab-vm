@@ -28,15 +28,13 @@ export function masterDataLoadingAreaDispatcher(params: RequestPaginationParams)
     ['(4½)', '6 (5)', '7R', '8S'],
   ];
 
-  const randomNumberBetweenRange = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
   const allData: LoadingAreaMasterResponse[] = denominationsFixture.map((denomination, index) => {
     return {
       id: `${item.id}${index}`,
       denomination,
-      zones: zones[randomNumberBetweenRange(0, zones.length - 1)],
+      zones: zones[index % zones.length],
       active: true,
-      weapon: item.weapon[randomNumberBetweenRange(0, 3)] || '',
+      weapon: item.weapon[index % item.weapon.length] || '',
       caliber: `${item.caliber}${index} mm`,
       observations: `${item.observations} ${index + 1}`,
     };

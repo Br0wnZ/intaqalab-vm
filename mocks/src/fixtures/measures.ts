@@ -1,93 +1,191 @@
-export const MEASURES_CATALOG = [
+export interface MeasureCatalogItem {
+  id: string;
+  unit: 'TOPOGRAPHY' | 'MUNITIONS' | 'ARMAMENT' | 'BALLISTICS';
+  measurementAreaCode: string;
+  magnitudeCode: string;
+  magnitude: { es: string; en: string };
+  label: string;
+  measureUnit: string;
+  qualificationType: 'QUANTITATIVE' | 'QUALITATIVE';
+  minValue: number;
+  maxValue: number;
+  values: Array<{ code: string; name: { es: string; en: string }; active: boolean }>;
+  equipmentTypes: string[];
+  procedure: { es: string; en: string };
+  accreditation: boolean;
+  grubbs: boolean;
+  builtIn: boolean;
+  uncertainty: string;
+  magnitudeLabel: string;
+  procedureLabel: string;
+  active: boolean;
+  favorite: boolean;
+}
+
+interface MeasureSeed {
+  area: string;
+  unit: MeasureCatalogItem['unit'];
+  code: string;
+  name: string;
+  measureUnit: string;
+  equipmentTypes: string[];
+  minValue?: number;
+  maxValue?: number;
+  qualitative?: boolean;
+}
+
+const MEASURE_SEEDS: MeasureSeed[] = [
   {
-    id: '550e8400-e29b-41d4-a716-446655440040',
+    area: 'INITIAL_VELOCITY',
     unit: 'BALLISTICS',
-    measurementAreaCode: 'BAL_PRESSURE',
-    magnitudeCode: 'BAL_CHAMBER_PRESSURE',
-    magnitude: { es: 'Magnitud Presión en recámara', en: 'Chamber Pressure' },
-    label: 'Magnitud Presión en recámara - Procedimiento Presión',
+    code: 'MUZZLE_VELOCITY',
+    name: 'Velocidad inicial',
+    measureUnit: 'M_S',
+    equipmentTypes: ['DOPPLER_RADAR', 'ANTENNA'],
+    minValue: 100,
+    maxValue: 2000,
+  },
+  {
+    area: 'PIEZOELECTRIC_PRESSURE',
+    unit: 'BALLISTICS',
+    code: 'CHAMBER_PRESSURE',
+    name: 'Presión piezoeléctrica',
     measureUnit: 'BAR',
-    qualificationType: 'QUALITATIVE',
+    equipmentTypes: ['PIEZOELECTRIC_SENSOR', 'AMPLIFIER'],
     minValue: 0,
     maxValue: 10000,
-    equipmentTypes: ['PIEZOELECTRIC_SENSOR'],
-    procedure: { es: 'Procedimiento Presión', en: 'Pressure Procedure' },
-    accreditation: true,
-    grubbs: true,
-    builtIn: false,
-    uncertainty: '1%',
-    magnitudeLabel: 'Presión en recámara',
-    procedureLabel: 'Procedimiento Presión',
-    active: true,
-    favorite: true,
   },
   {
-    id: '550e8400-e29b-41d4-a716-446655440041',
+    area: 'TRAJECTOGRAPHY',
     unit: 'BALLISTICS',
-    measurementAreaCode: 'BAL_VELOCITY',
-    magnitudeCode: 'BAL_MUZZLE_VELOCITY',
-    magnitude: { es: 'Magnitud Velocidad en boca', en: 'Muzzle Velocity' },
-    label: 'Magnitud Velocidad en boca - Procedimiento Velocidad',
-    measureUnit: 'M_S',
-    qualificationType: 'QUANTITATIVE',
+    code: 'TRAJECTORY',
+    name: 'Trayectografía',
+    measureUnit: 'M',
+    equipmentTypes: ['TRAJECTOGRAPHY_RADAR'],
     minValue: 0,
-    maxValue: 2000,
-    equipmentTypes: ['DOPPLER_RADAR'],
-    procedure: { es: 'Procedimiento Velocidad', en: 'Velocity Procedure' },
-    accreditation: true,
-    grubbs: true,
-    builtIn: false,
-    uncertainty: '0.5%',
-    magnitudeLabel: 'Velocidad en boca',
-    procedureLabel: 'Procedimiento Velocidad',
-    active: true,
-    favorite: false,
+    maxValue: 50000,
   },
   {
-    id: '550e8400-e29b-41d4-a716-446655440042',
-    unit: 'TOPOGRAPHY',
-    measurementAreaCode: 'TOP_RECORD_C',
-    magnitudeCode: 'TOP_C',
-    magnitude: { es: 'Registro C', en: 'Record C' },
-    label: 'Registro C - Procedimiento C',
-    measureUnit: 'MM',
-    qualificationType: 'QUANTITATIVE',
+    area: 'SOUND',
+    unit: 'BALLISTICS',
+    code: 'SOUND_LEVEL',
+    name: 'Nivel sonoro',
+    measureUnit: 'DB',
+    equipmentTypes: ['SOUND_LEVEL_METER'],
     minValue: 0,
-    maxValue: 500,
-    equipmentTypes: ['TRACE_RULER'],
-    procedure: { es: 'Procedimiento C', en: 'Procedure C' },
-    accreditation: false,
-    grubbs: false,
-    builtIn: false,
-    uncertainty: '2mm',
-    magnitudeLabel: 'Registro C',
-    procedureLabel: 'Procedimiento C',
-    active: true,
-    favorite: false,
+    maxValue: 200,
   },
   {
-    id: '550e8400-e29b-41d4-a716-446655440043',
-    unit: 'TOPOGRAPHY',
-    measurementAreaCode: 'TOP_DEVIATION',
-    magnitudeCode: 'TOP_LATERAL_DEVIATION',
-    magnitude: { es: 'Registro Desviación lateral', en: 'Lateral Deviation' },
-    label: 'Registro Desviación lateral - Procedimiento Desviación',
+    area: 'HIGH_SPEED_VIDEO',
+    unit: 'BALLISTICS',
+    code: 'HIGH_SPEED_RECORD',
+    name: 'Vídeo de alta velocidad',
+    measureUnit: 'FPS',
+    equipmentTypes: ['HIGH_SPEED_CAMERA', 'RECORDER'],
+    qualitative: true,
+  },
+  {
+    area: 'CONVENTIONAL_VIDEO',
+    unit: 'BALLISTICS',
+    code: 'CONVENTIONAL_RECORD',
+    name: 'Vídeo convencional',
+    measureUnit: 'FPS',
+    equipmentTypes: ['CONVENTIONAL_CAMERA', 'RECORDER'],
+    qualitative: true,
+  },
+  {
+    area: 'LENGTH',
+    unit: 'ARMAMENT',
+    code: 'TUBE_LENGTH',
+    name: 'Longitud',
     measureUnit: 'MM',
-    qualificationType: 'QUANTITATIVE',
-    minValue: -100,
-    maxValue: 100,
     equipmentTypes: ['TRACE_RULER'],
-    procedure: { es: 'Procedimiento Desviación', en: 'Procedure Desviación' },
-    accreditation: true,
-    grubbs: false,
-    builtIn: false,
-    uncertainty: '1mm',
-    magnitudeLabel: 'Desviación lateral',
-    procedureLabel: 'Procedimiento Desviación',
-    active: true,
-    favorite: true,
+    minValue: 0,
+    maxValue: 10000,
+  },
+  {
+    area: 'MANOMETER_PRESSURE',
+    unit: 'MUNITIONS',
+    code: 'MANOMETER_READING',
+    name: 'Presión de manómetro',
+    measureUnit: 'BAR',
+    equipmentTypes: ['PRESSURE_GAUGE', 'CRUSHER', 'PROBE'],
+    minValue: 0,
+    maxValue: 5000,
+  },
+  {
+    area: 'IPG_PRESSURE',
+    unit: 'MUNITIONS',
+    code: 'IPG_READING',
+    name: 'Presión IPG',
+    measureUnit: 'BAR',
+    equipmentTypes: ['IPG'],
+    minValue: 0,
+    maxValue: 5000,
+  },
+  {
+    area: 'WEIGHT',
+    unit: 'MUNITIONS',
+    code: 'PROJECTILE_WEIGHT',
+    name: 'Peso',
+    measureUnit: 'KG',
+    equipmentTypes: ['BALANCE'],
+    minValue: 0,
+    maxValue: 1000,
+  },
+  {
+    area: 'CONDITIONING',
+    unit: 'MUNITIONS',
+    code: 'CONDITIONING_STATUS',
+    name: 'Acondicionamiento',
+    measureUnit: 'CELSIUS',
+    equipmentTypes: ['CLIMATIC_CHAMBER'],
+    qualitative: true,
+  },
+  {
+    area: 'TIME',
+    unit: 'TOPOGRAPHY',
+    code: 'ELAPSED_TIME',
+    name: 'Tiempo',
+    measureUnit: 'S',
+    equipmentTypes: ['CHRONOMETER'],
+    minValue: 0,
+    maxValue: 3600,
   },
 ];
+
+export const MEASURES_CATALOG: MeasureCatalogItem[] = MEASURE_SEEDS.map((seed, index) => {
+  const procedureLabel = `Procedimiento ${seed.name}`;
+  const qualitative = seed.qualitative ?? false;
+  return {
+    id: `550e8400-e29b-41d4-a716-${String(446655440040 + index).padStart(12, '0')}`,
+    unit: seed.unit,
+    measurementAreaCode: seed.area,
+    magnitudeCode: seed.code,
+    magnitude: { es: seed.name, en: seed.name },
+    label: `${seed.name} - ${procedureLabel}`,
+    measureUnit: seed.measureUnit,
+    qualificationType: qualitative ? 'QUALITATIVE' : 'QUANTITATIVE',
+    minValue: seed.minValue ?? 0,
+    maxValue: seed.maxValue ?? 0,
+    values: qualitative
+      ? [
+          { code: 'COMPLIANT', name: { es: 'Conforme', en: 'Compliant' }, active: true },
+          { code: 'NON_COMPLIANT', name: { es: 'No conforme', en: 'Non-compliant' }, active: true },
+        ]
+      : [],
+    equipmentTypes: seed.equipmentTypes,
+    procedure: { es: procedureLabel, en: procedureLabel },
+    accreditation: index % 3 !== 0,
+    grubbs: !qualitative && index % 2 === 0,
+    builtIn: index < 2,
+    uncertainty: qualitative ? '' : `${(index % 3) + 1}%`,
+    magnitudeLabel: seed.name,
+    procedureLabel,
+    active: index !== MEASURE_SEEDS.length - 1,
+    favorite: index % 4 === 0,
+  };
+});
 
 export const TRIAL_MEASURES = {
   series: [

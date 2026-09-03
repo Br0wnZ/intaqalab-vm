@@ -5,7 +5,8 @@
       "es": "Acero",
       "en": "Steel"
     },
-    "label": "Acero"
+    "label": "Acero",
+    "active": true
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440002",
@@ -13,7 +14,8 @@
       "es": "Aluminio",
       "en": "Aluminum"
     },
-    "label": "Aluminio"
+    "label": "Aluminio",
+    "active": true
   },
   {
     "id": "550e8400-e29b-41d4-a716-446655440003",
@@ -21,6 +23,7 @@
       "es": "Hormigón",
       "en": "Concrete"
     },
-    "label": "Hormigón"
+    "label": "Hormigón",
+    "active": true
   }
 ]

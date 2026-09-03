@@ -112,7 +112,7 @@ masterDataRouter.get('/fire-trial-types', fireTrialTypesHandler);
 masterDataRouter.get('/:centerId/fire-trial-types', fireTrialTypesHandler);
 
 masterDataRouter.post(['/fire-trial-types', '/:centerId/fire-trial-types'], (req: Request, res: Response) => {
-  res.status(200).send(req.body);
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body });
 });
 
 masterDataRouter.put(['/fire-trial-types/:id', '/:centerId/fire-trial-types/:id'], (req: Request, res: Response) => {
@@ -120,7 +120,7 @@ masterDataRouter.put(['/fire-trial-types/:id', '/:centerId/fire-trial-types/:id'
 });
 
 masterDataRouter.delete(['/fire-trial-types/:id', '/:centerId/fire-trial-types/:id'], (req: Request, res: Response) => {
-  res.status(200).send(req.body);
+  res.status(204).send();
 });
 // END
 
@@ -171,14 +171,14 @@ masterDataRouter.get('/:centerId/target-types', (req, res) => {
   }
 });
 masterDataRouter.post('/:centerId/target-types', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body, label: req.body?.name?.es ?? '' });
 });
 masterDataRouter.put('/:centerId/target-types/:id', (req, res) => {
   res.status(200).send(req.body);
 });
 
 masterDataRouter.delete('/:centerId/target-types/:id', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(204).send();
 });
 
 // MASTERS --> MATERIAL //
@@ -205,14 +205,14 @@ masterDataRouter.get('/:centerId/target-materials', (req, res) => {
   }
 });
 masterDataRouter.post('/:centerId/target-materials', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body, label: req.body?.name?.es ?? '' });
 });
 masterDataRouter.put('/:centerId/target-materials/:id', (req, res) => {
   res.status(200).send(req.body);
 });
 
 masterDataRouter.delete('/:centerId/target-materials/:id', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(204).send();
 });
 // END //
 
@@ -234,14 +234,14 @@ masterDataRouter.get('/:centerId/target-dimensions', (req, res) => {
   }
 });
 masterDataRouter.post('/:centerId/target-dimensions', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body });
 });
 masterDataRouter.put('/:centerId/target-dimensions/:id', (req, res) => {
   res.status(200).send(req.body);
 });
 
 masterDataRouter.delete('/:centerId/target-dimensions/:id', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(204).send();
 });
 // END //
 
@@ -258,14 +258,14 @@ masterDataRouter.get('/:centerId/fuse-working-modes', (req, res) => {
   res.status(200).send(dataToSend);
 });
 masterDataRouter.post('/:centerId/fuse-working-modes', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body, label: req.body?.name?.es ?? '' });
 });
 masterDataRouter.put('/:centerId/fuse-working-modes/:id', (req, res) => {
   res.status(200).send(req.body);
 });
 
 masterDataRouter.delete('/:centerId/fuse-working-modes/:id', (req, res) => {
-  res.status(200).send(req.body);
+  res.status(204).send();
 });
 
 // Obtener espesores de objetivos
@@ -288,7 +288,7 @@ masterDataRouter.get('/centers/:centerId/impact-zones', (req, res) => {
 });
 
 // MASTERS --> LOADING_ZONE
-masterDataRouter.get('/:centerId/master-data/loading-zone', (req, res) => {
+masterDataRouter.get('/:centerId/loading-zone', (req, res) => {
   const { pageSize = 10, page = 1 } = req.query;
   const pageSizeNumber = parseInt(pageSize as string, 10);
   const pageNumber = parseInt(page as string, 10);
@@ -301,25 +301,25 @@ masterDataRouter.get('/:centerId/master-data/loading-zone', (req, res) => {
   res.status(200).send(dataToSend);
 });
 
-masterDataRouter.post('/:centerId/master-data/loading-zone', (req, res) => {
+masterDataRouter.post('/:centerId/loading-zone', (req, res) => {
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body });
+});
+masterDataRouter.put('/:centerId/loading-zone/:id', (req, res) => {
   res.status(200).send(req.body);
 });
-masterDataRouter.put('/:centerId/master-data/loading-zone/:id', (req, res) => {
-  res.status(200).send(req.body);
-});
-masterDataRouter.delete('/:centerId/master-data/loading-zone/:id', (req, res) => {
-  res.status(200).send(req.body);
+masterDataRouter.delete('/:centerId/loading-zone/:id', (req, res) => {
+  res.status(204).send();
 });
 
 // Obtener zonas de carga para select
-masterDataRouter.get('/:centerId/master-data/denominations-loading-zone', (req, res) => {
+masterDataRouter.get('/:centerId/denominations-loading-zone', (req, res) => {
   const dataToSend = masterDataLoadingAreaDenominationsDispatcher();
 
   res.status(200).send(dataToSend);
 });
 
 // MASTERS --> STANAG
-masterDataRouter.get('/:centerId/master-data/stanag', (req, res) => {
+masterDataRouter.get('/:centerId/stanag-criteria', (req, res) => {
   const { pageSize = 10, page = 1 } = req.query;
   const pageSizeNumber = parseInt(pageSize as string, 10);
   const pageNumber = parseInt(page as string, 10);
@@ -332,12 +332,12 @@ masterDataRouter.get('/:centerId/master-data/stanag', (req, res) => {
   res.status(200).send(dataToSend);
 });
 
-masterDataRouter.post('/:centerId/master-data/stanag', (req, res) => {
+masterDataRouter.post('/:centerId/stanag-criteria', (req, res) => {
+  res.status(201).send({ id: crypto.randomUUID(), ...req.body });
+});
+masterDataRouter.put('/:centerId/stanag-criteria/:id', (req, res) => {
   res.status(200).send(req.body);
 });
-masterDataRouter.put('/:centerId/master-data/stanag/:id', (req, res) => {
-  res.status(200).send(req.body);
-});
-masterDataRouter.delete('/:centerId/master-data/stanag/:id', (req, res) => {
-  res.status(200).send(req.body);
+masterDataRouter.delete('/:centerId/stanag-criteria/:id', (req, res) => {
+  res.status(204).send();
 });

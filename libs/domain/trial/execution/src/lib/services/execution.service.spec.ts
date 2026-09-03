@@ -13,6 +13,8 @@ import {
   type ShotManometerPressuresResponse,
   type ShotMunitionRequest,
   type ShotMunitionResponse,
+  type ShotVideoDataRequest,
+  type ShotVideoDataResponse,
   WidgetId,
 } from '../execution/models';
 import {
@@ -381,11 +383,12 @@ describe('ExecutionService', () => {
     });
 
     // PUT by user
-    service.updatePreferencesByUser(DEMO_TRIAL_ID, 'john_doe', [WidgetId.SHOT, WidgetId.EXECUTION_PREP_TECH]);
+    service.updatePreferencesByUser(DEMO_TRIAL_ID, 'john_doe', [WidgetId.SHOT, 'prep-tech-video']);
     TestBed.tick();
 
     const putUserReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/preferences/users/john_doe`);
     expect(putUserReq.request.method).toBe('PUT');
+    expect(putUserReq.request.body).toEqual({ widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'] });
     expect(putUserReq.request.body).toEqual(mockPrefs);
     putUserReq.flush(mockPrefs);
 
@@ -1378,5 +1381,53 @@ describe('ExecutionService', () => {
 
     const updateResult = await updatePromise;
     expect(updateResult).toEqual(mockResponse);
+  });
+
+  it('handles video data GET and PUT resources and direct fetch', async () => {
+    const seriesId = 'series-video';
+    const shotId = 'shot-video';
+    const mockResponse: ShotVideoDataResponse = {
+      highSpeedVideoData: {
+        cameraId: 'camera-1',
+        recorderId: 'recorder-1',
+        channel: 1,
+        measureId: 'measure-1',
+      },
+      conventionalVideoData: null,
+    };
+    const updateBody: ShotVideoDataRequest = mockResponse;
+
+    service.getShotVideoData(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/video/series/${seriesId}/shots/${shotId}`);
+    expect(getReq.request.method).toBe('GET');
+    getReq.flush(mockResponse);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotVideoDataResource.value()).toEqual(mockResponse);
+    });
+
+    const directFetchPromise = service.fetchShotVideoData(DEMO_TRIAL_ID, seriesId, shotId);
+    TestBed.tick();
+
+    const directGetReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/video/series/${seriesId}/shots/${shotId}`);
+    expect(directGetReq.request.method).toBe('GET');
+    directGetReq.flush(mockResponse);
+    TestBed.tick();
+
+    await expect(directFetchPromise).resolves.toEqual(mockResponse);
+
+    const updatePromise = service.updateShotVideoData(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
+    TestBed.tick();
+
+    const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/video/series/${seriesId}/shots/${shotId}`);
+    expect(putReq.request.method).toBe('PUT');
+    expect(putReq.request.body).toEqual(updateBody);
+    putReq.flush(mockResponse);
+    TestBed.tick();
+
+    await expect(updatePromise).resolves.toEqual(mockResponse);
   });
 });

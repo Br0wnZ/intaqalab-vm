@@ -3,6 +3,7 @@ import { patchState, signalStore, withComputed, withHooks, withMethods, withStat
 
 import type { MasterDataCreateItemType, MasterDataResponseType } from '../models/utils.model';
 import { MasterDataService } from '../services/master-data.service';
+import type { MasterDataSearchRequest } from '../services/master-data.service';
 
 interface MasterDataStoreState {
   isInitialized: boolean;
@@ -47,7 +48,7 @@ export const MasterDataStore = signalStore(
   })),
 
   withMethods((store, service = inject(MasterDataService)) => ({
-    search(params: { page: number; pageSize: number; sortField?: string; sortDirection?: 'asc' | 'desc' | '' }): void {
+    search(params: MasterDataSearchRequest): void {
       service.searchItems.set(params);
       if (!store.isInitialized()) {
         patchState(store, { isInitialized: true });

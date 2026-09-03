@@ -17,11 +17,10 @@ export function masterDataTrialTypeDispatcher(params: RequestPaginationParams): 
 
 function seed(total = 20): TrialTypeMasterResponse[] {
   const item = getFixture<TrialTypeMasterResponse>('fixtures/master-data/trial-type', 'trial-type-fixture.json');
-  console.log('aqui esta todo:', item);
   const data: TrialTypeMasterResponse[] = new Array(total).fill(null).map((_, i) => {
     return {
       active: !!(i % 2),
-      id: `${item.id} ${i}`,
+      id: `${item.id}-${i}`,
       name: {
         en: `${item.name.en} ${i}`,
         es: `${item.name.es} ${i}`,

@@ -5,6 +5,7 @@ interface FuzeTypeMasterResponse {
   id: string;
   name: { es: string; en: string };
   label: string;
+  active: boolean;
   description?: string;
 }
 

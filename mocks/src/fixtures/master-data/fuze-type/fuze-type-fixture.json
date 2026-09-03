@@ -6,7 +6,8 @@
       "en": "Instant, SQ"
     },
     "label": "Instantáneo, SQ",
-    "description": "Espoleta de acción instantánea"
+    "description": "Espoleta de acción instantánea",
+    "active": true
   },
   {
     "id": "550e8400-e29b-41d4-a716-FuzeTypeDelaySQ",
@@ -15,7 +16,8 @@
       "en": "Delay, SQ"
     },
     "label": "Retardo, DLY",
-    "description": "Espoleta de acción retardada"
+    "description": "Espoleta de acción retardada",
+    "active": true
   },
   {
     "id": "550e8400-e29b-41d4-a716-FuzeTypeTimes",
@@ -24,7 +26,8 @@
       "en": "At times"
     },
     "label": "A tiempos",
-    "description": "Espoleta de acción a tiempos"
+    "description": "Espoleta de acción a tiempos",
+    "active": true
   },
   {
     "id": "550e8400-e29b-41d4-a716-FuzeTypeImpact",
@@ -33,7 +36,8 @@
       "en": "Impact"
     },
     "label": "Impacto",
-    "description": "Espoleta de acción por impacto"
+    "description": "Espoleta de acción por impacto",
+    "active": false
   },
   {
     "id": "550e8400-e29b-41d4-a716-FuzeTypeProximity",
@@ -42,6 +46,7 @@
       "en": "Proximity"
     },
     "label": "Proximidad",
-    "description": "Espoleta de acción por proximidad"
+    "description": "Espoleta de acción por proximidad",
+    "active": true
   }
 ]

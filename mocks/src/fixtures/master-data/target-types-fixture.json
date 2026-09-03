@@ -5,7 +5,8 @@
       "es": "Mar",
       "en": "Sea"
     },
-    "label": "Mar"
+    "label": "Mar",
+    "active": true
   },
   {
     "id": "b4e7f9a1-2c3d-4e5f-9a0b-1c2d3e4f5a6b",
@@ -13,7 +14,8 @@
       "es": "Arena",
       "en": "Sand"
     },
-    "label": "Arena"
+    "label": "Arena",
+    "active": true
   },
   {
     "id": "c6d7e8f9-0a1b-2c3d-4e5f-6a7b8c9d0e1f",
@@ -21,6 +23,7 @@
       "es": "Desierto",
       "en": "Desert"
     },
-    "label": "Desierto"
+    "label": "Desierto",
+    "active": true
   }
 ]

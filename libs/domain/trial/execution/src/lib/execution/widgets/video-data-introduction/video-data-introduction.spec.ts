@@ -96,4 +96,50 @@ describe('VideoDataIntroduction', () => {
       { value: 'daq-1', label: 'Yokogawa DL850 / DAQ-001' },
     ]);
   });
+
+  it('loads initial shot data and preserves the other video block when saving', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    const { fixture } = await renderWidget();
+    const executionService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const response = {
+      highSpeedVideoData: {
+        cameraId: 'camera-av-1',
+        recorderId: 'recorder-1',
+        channel: 1,
+        measureId: 'measure-1',
+        observedResult: 'AV result',
+        observations: 'AV observations',
+      },
+      conventionalVideoData: {
+        cameraId: 'camera-c-1',
+        recorderId: 'recorder-1',
+        channel: 2,
+        measureId: 'measure-2',
+        observedResult: 'C result',
+        observations: 'C observations',
+      },
+    };
+    const fetchSpy = vi.spyOn(executionService, 'fetchShotVideoData').mockResolvedValue(response);
+    const updateSpy = vi.spyOn(executionService, 'updateShotVideoData').mockResolvedValue(response);
+
+    store.setFireTrialId('trial-123');
+    store.setOptimisticActiveShot('series-1', 'shot-1');
+
+    await vi.waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1');
+      expect(fixture.componentInstance['selectorModel']().camera).toBe('camera-av-1');
+    });
+
+    fixture.componentInstance['selectorModel'].update((value) => ({ ...value, camera: 'camera-av-2' }));
+    await fixture.componentInstance.saveForm();
+
+    expect(updateSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1', {
+      highSpeedVideoData: {
+        ...response.highSpeedVideoData,
+        cameraId: 'camera-av-2',
+      },
+      conventionalVideoData: response.conventionalVideoData,
+    });
+  });
 });

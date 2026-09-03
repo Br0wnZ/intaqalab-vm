@@ -1,13 +1,14 @@
 import { HttpContext, httpResource } from '@angular/common/http';
 import { effect, signal } from '@angular/core';
-import type { PaginatedApiResponse, PaginatedSortedViewRequest } from '@intaqalab/models';
+import type { PaginatedApiResponse } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 
 import type { MasterDataCreateItemType } from '../models/utils.model';
+import type { MasterDataSearchRequest } from './master-data.service';
 
 export function injectMasterDataResource<T>(endpointUrl: string, context: HttpContext = new HttpContext()) {
-  const searchItems = signal<PaginatedSortedViewRequest>({});
+  const searchItems = signal<MasterDataSearchRequest>({});
   const _saveItem = actionTrigger<MasterDataCreateItemType<T> | null>();
   const _updateItem = actionTrigger<T | null>();
   const _deleteItem = actionTrigger<string | number | T | null>();
@@ -17,7 +18,10 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
 
     if (!Object.keys(params).length) return;
 
-    const apiParams = paginatedSortedParamsToSend(params);
+    let apiParams = paginatedSortedParamsToSend(params);
+    for (const [name, value] of Object.entries(params.filters ?? {})) {
+      if (value) apiParams = apiParams.set(name, value);
+    }
 
     return {
       url: endpointUrl,

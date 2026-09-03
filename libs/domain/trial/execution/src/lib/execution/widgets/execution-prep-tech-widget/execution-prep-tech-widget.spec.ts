@@ -53,17 +53,25 @@ function createMockExecutionProgress() {
   };
 }
 
+function createMockPlanningSeries() {
+  return [
+    { id: SERIE_ID_1, name: 'First test series' },
+    { id: SERIE_ID_2, name: 'Second test series' },
+  ];
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Mock factories
 // ──────────────────────────────────────────────────────────────────────────────
 
 function createMockStore(overrides?: {
   profilesReadiness?: ReturnType<typeof createMockProfilesReadiness> | null;
+  planningSeries?: ReturnType<typeof createMockPlanningSeries> | null;
   isLoadingReadiness?: boolean;
 }) {
   return {
     profilesReadiness: signal(overrides?.profilesReadiness ?? createMockProfilesReadiness()),
-    planningSeries: signal(null),
+    planningSeries: signal(overrides?.planningSeries ?? null),
     executionProgress: signal(createMockExecutionProgress()),
     isLoadingReadiness: signal(overrides?.isLoadingReadiness ?? false),
     isSavingReadiness: signal(false),
@@ -83,7 +91,6 @@ function createMockWidgetStateService() {
     placedWidgets: signal([]),
   };
 }
-
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Setup helper
@@ -135,24 +142,17 @@ describe('ExecutionPrepTechWidgetComponent', () => {
 
     it('should render the profile subtitle for velocidades', async () => {
       await runSetup({ profile: 'velocidades' });
-      expect(
-        screen.getByText(/TRIAL_EXECUTION\.WIDGETS\.EXEC_PREP_TECH\.PROFILES\.VELOCIDADES/),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/TRIAL_EXECUTION\.WIDGETS\.EXEC_PREP_TECH\.PROFILES\.VELOCIDADES/)).toBeInTheDocument();
     });
 
     it('should register widget instance with WidgetStateService on init', async () => {
       const { mockWidgetStateService } = await runSetup();
-      expect(mockWidgetStateService.registerWidgetInstance).toHaveBeenCalledWith(
-        'widget-test-1',
-        expect.anything(),
-      );
+      expect(mockWidgetStateService.registerWidgetInstance).toHaveBeenCalledWith('widget-test-1', expect.anything());
     });
 
     it('should render the profile subtitle for video', async () => {
       await runSetup({ profile: 'video' });
-      expect(
-        screen.getByText(/TRIAL_EXECUTION\.WIDGETS\.EXEC_PREP_TECH\.PROFILES\.VIDEO/),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/TRIAL_EXECUTION\.WIDGETS\.EXEC_PREP_TECH\.PROFILES\.VIDEO/)).toBeInTheDocument();
     });
 
     it('should render one checkbox per series plus the select-all', async () => {
@@ -166,6 +166,22 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       const { loader } = await runSetup();
       const inputs = await loader.getAllHarnesses(MatInputHarness);
       expect(inputs.length).toBe(2);
+    });
+
+    it('should render every series returned by the planning series GET', async () => {
+      const partialReadiness = createMockProfilesReadiness();
+      partialReadiness[0].seriesReadiness = partialReadiness[0].seriesReadiness.slice(0, 1);
+
+      const { loader } = await runSetup({
+        storeOverrides: {
+          planningSeries: createMockPlanningSeries(),
+          profilesReadiness: partialReadiness,
+        },
+      });
+
+      expect(screen.getByText('First test series')).toBeInTheDocument();
+      expect(screen.getByText('Second test series')).toBeInTheDocument();
+      expect(await loader.getAllHarnesses(MatInputHarness)).toHaveLength(2);
     });
 
     it('should not show the dirty indicator when form is clean', async () => {
@@ -189,9 +205,7 @@ describe('ExecutionPrepTechWidgetComponent', () => {
 
     it('should not show loading indicator when isLoadingReadiness is false', async () => {
       await runSetup({ storeOverrides: { isLoadingReadiness: false } });
-      expect(
-        screen.queryByText('TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.LOADING'),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.LOADING')).not.toBeInTheDocument();
     });
   });
 
@@ -200,9 +214,9 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       const { loader } = await runSetup({
         // Array con perfil distinto al widget → profileItem no encontrado → seriesReadiness = []
         storeOverrides: {
-          profilesReadiness: [
-            { profile: 'VIDEO', seriesReadiness: [] },
-          ] as ReturnType<typeof createMockProfilesReadiness>,
+          profilesReadiness: [{ profile: 'VIDEO', seriesReadiness: [] }] as ReturnType<
+            typeof createMockProfilesReadiness
+          >,
         },
       });
       const inputs = await loader.getAllHarnesses(MatInputHarness);
@@ -349,9 +363,7 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith(
         'trial-123',
         'VELOCITIES',
-        expect.arrayContaining([
-          expect.objectContaining({ seriesId: SERIE_ID_1, isReady: true }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ seriesId: SERIE_ID_1, isReady: true })]),
       );
     });
 
@@ -366,9 +378,7 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith(
         'trial-123',
         'VELOCITIES',
-        expect.arrayContaining([
-          expect.objectContaining({ seriesId: SERIE_ID_1, observations: 'obs texto' }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ seriesId: SERIE_ID_1, observations: 'obs texto' })]),
       );
     });
   });

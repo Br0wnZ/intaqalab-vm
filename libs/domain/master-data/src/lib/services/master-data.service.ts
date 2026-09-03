@@ -5,8 +5,12 @@ import type { PaginatedApiResponse, PaginatedSortedViewRequest } from '@intaqala
 import type { MasterDataDefault } from '../models/master-data-default.model';
 import type { MasterDataCreateItemType } from '../models/utils.model';
 
+export type MasterDataSearchRequest = PaginatedSortedViewRequest & {
+  filters?: Readonly<Record<string, string>>;
+};
+
 export abstract class MasterDataService<T = MasterDataDefault> {
-  abstract readonly searchItems: WritableSignal<PaginatedSortedViewRequest>;
+  abstract readonly searchItems: WritableSignal<MasterDataSearchRequest>;
   abstract readonly paginatedResponse: HttpResourceRef<PaginatedApiResponse<T> | undefined>;
 
   abstract create(record: MasterDataCreateItemType<T>): void;

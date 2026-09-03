@@ -80,9 +80,9 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
  * - Armamento
  *
  * Conecta con el ExecutionStore (única fuente de verdad):
- * - GET: las series se cargan desde `store.profilesReadiness` filtrado por perfil.
+ * - GET: la lista y nombres se cargan desde `store.planningSeries`.
+ * - El estado de cada serie se carga desde `store.profilesReadiness` filtrado por perfil.
  * - PUT: `saveForm()` llama a `store.saveProfileReadiness()`.
- * - Los nombres de serie se derivan de `store.executionProgress()` (secuencia 1-based).
  */
 @Component({
   selector: 'inta-execution-prep-tech-widget',
@@ -281,44 +281,33 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
    * 📦 Estado mutable de series — linkedSignal derivado del store.
    *
    * Se inicializa (y resincroniza cuando el store cambia) leyendo
-   * `profilesReadiness` filtrado por el perfil de este widget.
-   * Los nombres de serie se derivan del `executionProgress` (Serie N).
+   * las series de planificación y superponiendo el readiness del perfil.
    */
   readonly seriesReadiness = linkedSignal<SerieReadiness[]>(() => {
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
     const profilesReadiness = this.#store.profilesReadiness();
     const planningSeries = this.#store.planningSeries();
-    const progress = this.#store.executionProgress();
-
-    // Mapa de seriesId → nombre real (de planificación) o fallback a progreso/secuencia
-    const seriesNameMap = new Map<string, string>();
-    if (planningSeries) {
-      planningSeries.forEach((serie) => {
-        if (serie.id && serie.name) {
-          seriesNameMap.set(serie.id, serie.name);
-        }
-      });
-    }
-    if (progress) {
-      progress.series.forEach((serie, idx) => {
-        if (!seriesNameMap.has(serie.seriesId)) {
-          seriesNameMap.set(serie.seriesId, `Serie ${idx + 1}`);
-        }
-      });
-    }
-
     const profileItem = profilesReadiness?.find((p) => p.profile === apiProfile);
+    const readinessBySeriesId = new Map(profileItem?.seriesReadiness.map((serie) => [serie.seriesId, serie]));
 
-    if (!profileItem) {
-      // Sin datos del API aún: retornar vacío (se muestra loading)
-      return [];
+    if (planningSeries) {
+      return planningSeries.map((serie, index) => {
+        const readiness = readinessBySeriesId.get(serie.id);
+
+        return {
+          serieId: serie.id,
+          serieName: serie.name?.trim() || `Serie ${index + 1}`,
+          ready: readiness?.isReady ?? false,
+          observations: readiness?.observations ?? '',
+        };
+      });
     }
 
-    return profileItem.seriesReadiness.map((s) => ({
-      serieId: s.seriesId,
-      serieName: seriesNameMap.get(s.seriesId) ?? `Serie ${s.seriesId.slice(-4)}`,
-      ready: s.isReady,
-      observations: s.observations ?? '',
+    return (profileItem?.seriesReadiness ?? []).map((serie, index) => ({
+      serieId: serie.seriesId,
+      serieName: `Serie ${index + 1}`,
+      ready: serie.isReady,
+      observations: serie.observations ?? '',
     }));
   });
 
@@ -338,16 +327,12 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
     const local = this.seriesReadiness();
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
     const storedItem = this.#store.profilesReadiness()?.find((p) => p.profile === apiProfile);
+    const storedBySeriesId = new Map(storedItem?.seriesReadiness.map((serie) => [serie.seriesId, serie]));
 
-    let dirty = false;
-    if (storedItem && local.length === storedItem.seriesReadiness.length) {
-      dirty = local.some((s, i) => {
-        const stored = storedItem.seriesReadiness[i];
-        return s.ready !== stored?.isReady || s.observations !== (stored?.observations ?? '');
-      });
-    } else if (!storedItem && local.some((s) => s.ready || s.observations.trim().length > 0)) {
-      dirty = true;
-    }
+    const dirty = local.some((serie) => {
+      const stored = storedBySeriesId.get(serie.serieId);
+      return serie.ready !== (stored?.isReady ?? false) || serie.observations !== (stored?.observations ?? '');
+    });
 
     return {
       widgetId: this.widgetId(),
@@ -387,39 +372,30 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
    * (descarta cambios no guardados).
    */
   resetForm(): void {
-    // Al resetear el linkedSignal, Angular re-ejecuta el computation del store
-    // y lo restablece al último valor guardado.
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
     const storedItem = this.#store.profilesReadiness()?.find((p) => p.profile === apiProfile);
     const planningSeries = this.#store.planningSeries();
-    const progress = this.#store.executionProgress();
+    const readinessBySeriesId = new Map(storedItem?.seriesReadiness.map((serie) => [serie.seriesId, serie]));
 
-    const seriesNameMap = new Map<string, string>();
-    if (planningSeries) {
-      planningSeries.forEach((serie) => {
-        if (serie.id && serie.name) {
-          seriesNameMap.set(serie.id, serie.name);
-        }
-      });
-    }
-    if (progress) {
-      progress.series.forEach((serie, idx) => {
-        if (!seriesNameMap.has(serie.seriesId)) {
-          seriesNameMap.set(serie.seriesId, `Serie ${idx + 1}`);
-        }
-      });
-    }
+    this.seriesReadiness.set(
+      planningSeries
+        ? planningSeries.map((serie, index) => {
+            const readiness = readinessBySeriesId.get(serie.id);
 
-    if (storedItem) {
-      this.seriesReadiness.set(
-        storedItem.seriesReadiness.map((s) => ({
-          serieId: s.seriesId,
-          serieName: seriesNameMap.get(s.seriesId) ?? `Serie ${s.seriesId.slice(-4)}`,
-          ready: s.isReady,
-          observations: s.observations ?? '',
-        })),
-      );
-    }
+            return {
+              serieId: serie.id,
+              serieName: serie.name?.trim() || `Serie ${index + 1}`,
+              ready: readiness?.isReady ?? false,
+              observations: readiness?.observations ?? '',
+            };
+          })
+        : (storedItem?.seriesReadiness ?? []).map((serie, index) => ({
+            serieId: serie.seriesId,
+            serieName: `Serie ${index + 1}`,
+            ready: serie.isReady,
+            observations: serie.observations ?? '',
+          })),
+    );
   }
 
   /**

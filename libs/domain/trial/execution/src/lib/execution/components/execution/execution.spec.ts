@@ -413,6 +413,24 @@ describe('Execution', () => {
       expect(widgetStateService.placedWidgets()[0].type).toBe(WidgetId.SHOT);
     });
 
+    it('restores the technical preparation profile from its preference ID', async () => {
+      const executionService = createMockExecutionService({ widgetsLayout: ['prep-tech-presiones'] });
+      const { view } = await setup({
+        fireTrialId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        executionService,
+      });
+
+      const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
+      view.fixture.detectChanges();
+
+      expect(widgetStateService.placedWidgets()).toEqual([
+        expect.objectContaining({
+          type: WidgetId.EXECUTION_PREP_TECH,
+          techProfile: 'presiones',
+        }),
+      ]);
+    });
+
     it('saves preferences on destroy using WidgetId enum', async () => {
       const executionService = createMockExecutionService({ widgetsLayout: [WidgetId.SHOT] });
       const { view } = await setup({
@@ -431,6 +449,24 @@ describe('Execution', () => {
         '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         'test_user',
         [WidgetId.SHOT],
+      );
+    });
+
+    it('saves each technical preparation profile with its own preference ID', async () => {
+      const executionService = createMockExecutionService({ widgetsLayout: [] });
+      const { view } = await setup({
+        fireTrialId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        executionService,
+      });
+
+      view.fixture.componentInstance.addWidget('prep-tech-video');
+      view.fixture.detectChanges();
+      view.fixture.destroy();
+
+      expect(executionService.updatePreferencesByUser).toHaveBeenCalledWith(
+        '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        'test_user',
+        ['prep-tech-video'],
       );
     });
 

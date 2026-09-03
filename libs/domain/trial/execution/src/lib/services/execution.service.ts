@@ -25,7 +25,9 @@ import type {
   ShotTopographyResponse,
   ShotTrajectographyRequest,
   ShotTrajectographyResponse,
-  WidgetId,
+  ShotVideoDataRequest,
+  ShotVideoDataResponse,
+  WidgetPreferenceId,
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
@@ -305,6 +307,17 @@ interface ShotAcousticLevelUpdateParams extends ShotAcousticLevelParams {
   body: ShotAcousticLevelRequest;
 }
 
+interface ShotVideoDataParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  _t: number;
+}
+
+interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
+  body: ShotVideoDataRequest;
+}
+
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
 
 export interface ShotPressuresData {
@@ -411,7 +424,7 @@ export type ExecutionTechnicalProfile =
   | 'ARMAMENT';
 
 export type ExecutionWidgetLayout = {
-  widgetsLayout: string[];
+  widgetsLayout: WidgetPreferenceId[];
 };
 
 export type SeriesReadinessRequest = {
@@ -512,7 +525,7 @@ export type EquipmentSelectorUpdateResponse = void;
 interface PreferencesParams extends ExecutionParams {
   roleName?: string;
   username?: string;
-  widgetsLayout?: WidgetId[];
+  widgetsLayout?: WidgetPreferenceId[];
 }
 
 interface ReadinessProfileParams extends ExecutionParams {
@@ -852,7 +865,7 @@ export class ExecutionService {
     };
   });
 
-  updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, widgetsLayout: WidgetId[]): void {
+  updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, widgetsLayout: WidgetPreferenceId[]): void {
     this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, widgetsLayout, _t: Date.now() });
   }
 
@@ -885,7 +898,7 @@ export class ExecutionService {
     };
   });
 
-  updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, widgetsLayout: WidgetId[]): void {
+  updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, widgetsLayout: WidgetPreferenceId[]): void {
     this.#updatePreferencesByUserParams.set({ fireTrialId, username, widgetsLayout, _t: Date.now() });
   }
 
@@ -1904,6 +1917,74 @@ export class ExecutionService {
     await this.#awaitResource(this.updateShotAcousticLevelResource);
     return this.updateShotAcousticLevelResource.value()!;
   }
+
+  // ── SHOT VIDEO DATA: GET ───────────────────────────────────
+
+  readonly #getShotVideoDataParams = signal<ShotVideoDataParams | null>(null);
+
+  readonly shotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
+    const params = this.#getShotVideoDataParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotVideoDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+  }
+
+  readonly #fetchShotVideoDataParams = signal<ShotVideoDataParams | null>(null);
+
+  readonly #fetchShotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
+    const params = this.#fetchShotVideoDataParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotVideoData(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotVideoDataResponse> {
+    this.#fetchShotVideoDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchShotVideoDataResource);
+    return this.#fetchShotVideoDataResource.value()!;
+  }
+
+  // ── SHOT VIDEO DATA: PUT ───────────────────────────────────
+
+  readonly #updateShotVideoDataParams = signal<ShotVideoDataUpdateParams | null>(null);
+
+  readonly updateShotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
+    const params = this.#updateShotVideoDataParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVideoDataRequest): void {
+    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotVideoData(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotVideoDataRequest,
+  ): Promise<ShotVideoDataResponse> {
+    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotVideoDataResource);
+    return this.updateShotVideoDataResource.value()!;
+  }
+
   /**
    * Espera a que un httpResource complete su carga actual.
    * Detecta la transición de carga y lanza si hay error.

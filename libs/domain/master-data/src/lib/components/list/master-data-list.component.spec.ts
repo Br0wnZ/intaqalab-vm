@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorHarness } from '@angular/material/paginator/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatTableHarness } from '@angular/material/table/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -20,8 +21,22 @@ import { MasterDataDefaultUpsertDialogComponent } from '../dialogs/upsert/defaul
 import { MasterDataListComponent } from './master-data-list.component';
 
 const MOCK_ITEMS = [
-  { id: 'id-1', label: 'Material 1', name: { es: 'Material 1', en: 'Material 1' }, active: true },
-  { id: 'id-2', label: 'Material 2', name: { es: 'Material 2', en: 'Material 2' }, active: false },
+  {
+    id: 'id-1',
+    label: 'Material 1',
+    name: { es: 'Material 1', en: 'Material 1' },
+    active: true,
+    singleSelection: 'single',
+    multipleSelection: ['multiple'],
+  },
+  {
+    id: 'id-2',
+    label: 'Material 2',
+    name: { es: 'Material 2', en: 'Material 2' },
+    active: false,
+    singleSelection: 'single',
+    multipleSelection: ['multiple'],
+  },
 ];
 
 function paginate<T>(items: T[]) {
@@ -56,6 +71,28 @@ const MOCK_VIEW: MasterView = {
     'switch-status': { title: 'Switch Status', description: 'Are you sure?' },
     delete: { title: 'Delete', description: 'Are you sure?' },
   },
+};
+
+const MOCK_SELECT_VIEW: MasterView = {
+  ...MOCK_VIEW,
+  columnList: [
+    {
+      id: 'singleSelection',
+      name: 'MASTER_DATA.COLUMNS.SINGLE_SELECT',
+      select: { options: [{ id: 'single', label: 'Single option' }] },
+    },
+    {
+      id: 'multipleSelection',
+      name: 'MASTER_DATA.COLUMNS.MULTIPLE_SELECT',
+      select: {
+        options: [
+          { id: 'multiple', label: 'Multiple option' },
+          { id: 'second', label: 'Second option' },
+        ],
+        multiple: true,
+      },
+    },
+  ],
 };
 
 const mockDialogRef = { afterClosed: vi.fn(), close: vi.fn() };
@@ -121,6 +158,29 @@ describe('MasterDataListComponent', () => {
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
       const paginator = await loader.getHarnessOrNull(MatPaginatorHarness);
       expect(paginator).toBeTruthy();
+    });
+
+    it('should render expandable read-only selects in cells', async () => {
+      const { view } = await setup(MOCK_SELECT_VIEW);
+      view.fixture.detectChanges();
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const selects = await loader.getAllHarnesses(MatSelectHarness);
+
+      expect(screen.getByText('MASTER_DATA.COLUMNS.SINGLE_SELECT')).toBeInTheDocument();
+      expect(screen.getByText('MASTER_DATA.COLUMNS.MULTIPLE_SELECT')).toBeInTheDocument();
+      expect(selects).toHaveLength(MOCK_ITEMS.length * 2);
+      expect(await selects[0].isDisabled()).toBe(false);
+      expect(await selects[0].isMultiple()).toBe(false);
+      expect(await selects[1].isMultiple()).toBe(true);
+      expect(await selects[0].getValueText()).toBe('Single option');
+      expect(await selects[1].getValueText()).toBe('Multiple option');
+
+      await selects[1].open();
+      const multipleOptions = await selects[1].getOptions();
+      expect(await multipleOptions[0].isDisabled()).toBe(true);
+      expect(await multipleOptions[1].isDisabled()).toBe(true);
+      await selects[1].close();
+      expect(await selects[1].getValueText()).toBe('Multiple option');
     });
   });
 

@@ -1,0 +1,18 @@
+{
+  "highSpeedVideoData": {
+    "cameraId": "meas-hsc-001",
+    "recorderId": "meas-daq-001",
+    "channel": 1,
+    "measureId": "velocity",
+    "observedResult": "Secuencia capturada correctamente.",
+    "observations": "Imagen nítida durante todo el disparo."
+  },
+  "conventionalVideoData": {
+    "cameraId": "meas-cc-001",
+    "recorderId": "meas-daq-001",
+    "channel": 2,
+    "measureId": "trajectory",
+    "observedResult": "Sin incidencias visibles.",
+    "observations": "Grabación completa."
+  }
+}

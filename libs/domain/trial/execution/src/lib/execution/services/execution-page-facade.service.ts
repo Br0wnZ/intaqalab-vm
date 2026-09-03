@@ -10,7 +10,7 @@ import { EquipmentSelectorDialog } from '../dialogs/equipment-selector-dialog';
 import { InterruptExecutionDialog } from '../dialogs/interrupt-execution-dialog';
 import { PauseExecutionDialog } from '../dialogs/pause-execution-dialog';
 import type { EquipmentSelectorDialogResult } from '../models';
-import type { Widget } from '../models/execution-grid.models';
+import type { PlacedWidget, Widget, WidgetPreferenceId } from '../models/execution-grid.models';
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../models/execution-page.models';
 import { WidgetId } from '../models/widget-id.enum';
 import { injectWidgets } from '../utils/inject-widgets';
@@ -156,7 +156,7 @@ export class ExecutionPageFacade {
     this.#store.updatePreferencesByUser(
       fireTrialId,
       this.#currentUser.preferred_username,
-      this.#widgetState.placedWidgets().map((widget) => widget.type),
+      this.#widgetState.placedWidgets().map((widget) => this.#toPreferenceId(widget)),
     );
   }
 
@@ -294,10 +294,12 @@ export class ExecutionPageFacade {
     }
   }
 
-  #restoreWidgetLayout(layout: string[]): void {
+  #restoreWidgetLayout(layout: WidgetPreferenceId[]): void {
     this.#widgetState.clearWidgets();
     for (const widgetId of layout) {
-      const widget = this.widgets().find((item) => item.widgetId === widgetId);
+      const widget =
+        this.widgets().find((item) => item.id === widgetId) ??
+        this.widgets().find((item) => item.widgetId === widgetId);
       if (!widget) {
         continue;
       }
@@ -314,6 +316,14 @@ export class ExecutionPageFacade {
         return;
       }
     }
+  }
+
+  #toPreferenceId(placedWidget: PlacedWidget): WidgetPreferenceId {
+    if (placedWidget.type !== WidgetId.EXECUTION_PREP_TECH || !placedWidget.techProfile) {
+      return placedWidget.type;
+    }
+
+    return `prep-tech-${placedWidget.techProfile}`;
   }
 
   #withTrialId(action: (fireTrialId: string) => void): void {

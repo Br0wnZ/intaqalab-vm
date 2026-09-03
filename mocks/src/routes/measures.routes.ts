@@ -1,16 +1,45 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 
+import type { MeasureCatalogItem } from '../fixtures/measures';
 import { MEASURES_CATALOG, TRIAL_MEASURES } from '../fixtures/measures';
 import { getPagination } from '../utils';
 
 const measuresRouter = Router({ mergeParams: true });
 
+function toCatalogItem(item: Partial<MeasureCatalogItem> & Pick<MeasureCatalogItem, 'id'>): MeasureCatalogItem {
+  const magnitudeLabel = item.magnitudeLabel ?? item.magnitude?.es ?? item.magnitudeCode ?? '';
+  const procedureLabel = item.procedureLabel ?? item.procedure?.es ?? '';
+  return {
+    unit: 'BALLISTICS',
+    measurementAreaCode: '',
+    magnitudeCode: '',
+    magnitude: { es: magnitudeLabel, en: magnitudeLabel },
+    label: [magnitudeLabel, procedureLabel].filter(Boolean).join(' - '),
+    measureUnit: '',
+    qualificationType: 'QUANTITATIVE',
+    minValue: 0,
+    maxValue: 0,
+    values: [],
+    equipmentTypes: [],
+    procedure: { es: procedureLabel, en: procedureLabel },
+    accreditation: false,
+    grubbs: false,
+    builtIn: false,
+    uncertainty: '',
+    magnitudeLabel,
+    procedureLabel,
+    active: true,
+    favorite: false,
+    ...item,
+  };
+}
+
 // --- Catalog Routes ---
 
 measuresRouter.get('/measures', (req: Request, res: Response) => {
   const { page, pageSize } = getPagination(req);
-  const { magnitude, name, unit, active } = req.query;
+  const { magnitude, name, unit, active, measurementAreaCode, sortField, sortDirection } = req.query;
 
   let filtered = [...MEASURES_CATALOG];
 
@@ -24,9 +53,27 @@ measuresRouter.get('/measures', (req: Request, res: Response) => {
     filtered = filtered.filter((m) => m.unit === unit);
   }
 
+  if (typeof measurementAreaCode === 'string' && measurementAreaCode.trim()) {
+    const requestedAreas = new Set(
+      measurementAreaCode
+        .split(',')
+        .map((area) => area.trim())
+        .filter(Boolean),
+    );
+    filtered = filtered.filter((measure) => requestedAreas.has(measure.measurementAreaCode));
+  }
+
   if (active !== undefined && active !== null) {
     const isActive = active === 'true';
     filtered = filtered.filter((m) => m.active === isActive);
+  }
+
+  if (typeof sortField === 'string' && (sortDirection === 'asc' || sortDirection === 'desc')) {
+    filtered.sort((left, right) => {
+      const leftValue = String(left[sortField as keyof MeasureCatalogItem] ?? '');
+      const rightValue = String(right[sortField as keyof MeasureCatalogItem] ?? '');
+      return leftValue.localeCompare(rightValue) * (sortDirection === 'asc' ? 1 : -1);
+    });
   }
 
   const start = (page - 1) * pageSize;
@@ -42,10 +89,10 @@ measuresRouter.get('/measures', (req: Request, res: Response) => {
 });
 
 measuresRouter.post('/measures', (req: Request, res: Response) => {
-  const newItem = {
+  const newItem = toCatalogItem({
     id: crypto.randomUUID(),
     ...req.body,
-  };
+  });
   MEASURES_CATALOG.push(newItem);
   res.status(201).json(newItem);
 });
@@ -55,7 +102,7 @@ measuresRouter.put('/measures/:measureId', (req: Request, res: Response) => {
   const index = MEASURES_CATALOG.findIndex((m) => m.id === measureId);
 
   if (index !== -1) {
-    MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], ...req.body };
+    MEASURES_CATALOG[index] = toCatalogItem({ ...MEASURES_CATALOG[index], ...req.body, id: measureId });
     res.json(MEASURES_CATALOG[index]);
   } else {
     res.status(404).json({ title: 'Not found', status: 404 });

@@ -4,9 +4,10 @@ import type { PaginatedApiResponse, RequestPaginationParams } from '../../../uti
 interface DimensionMasterResponse {
   id: string;
   label: string;
-  height?: string;
-  width?: string;
-  diameter?: string;
+  height?: number;
+  width?: number;
+  diameter?: number;
+  active: boolean;
 }
 
 type DataResponse = PaginatedApiResponse<DimensionMasterResponse>;
