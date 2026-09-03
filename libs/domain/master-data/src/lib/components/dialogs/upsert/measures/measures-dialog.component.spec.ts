@@ -4,6 +4,7 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -36,7 +37,8 @@ function createMockMasterDataService() {
 const MOCK_QUANTITATIVE: MasterDataMeasures = {
   id: 'measure-1',
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'INITIAL_VELOCITY,SOUND',
+  measurementAreaCode: 'TOP_ATMOSPHERE',
+  measurements: ['INITIAL_VELOCITY', 'SOUND'],
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud ES', en: 'Magnitude EN' },
   procedure: { es: 'Procedimiento ES', en: 'Procedure EN' },
@@ -55,7 +57,8 @@ const MOCK_QUANTITATIVE: MasterDataMeasures = {
 const MOCK_QUALITATIVE: MasterDataMeasures = {
   id: 'measure-2',
   unit: 'MUNITIONS',
-  measurementAreaCode: 'WEIGHT',
+  measurementAreaCode: 'MUN_PROJECTILE',
+  measurements: ['WEIGHT'],
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud Cualitativa ES', en: 'Qualitative Magnitude EN' },
   procedure: { es: '', en: '' },
@@ -73,7 +76,8 @@ const MOCK_QUALITATIVE: MasterDataMeasures = {
 
 const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'INITIAL_VELOCITY',
+  measurementAreaCode: 'TOP_ATMOSPHERE',
+  measurements: ['INITIAL_VELOCITY'],
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
   procedure: { es: '', en: '' },
@@ -90,7 +94,8 @@ const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
 
 const VALID_QUALITATIVE_FORM: MasterDataMeasures = {
   unit: 'MUNITIONS',
-  measurementAreaCode: 'WEIGHT',
+  measurementAreaCode: 'MUN_PROJECTILE',
+  measurements: ['WEIGHT'],
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
   procedure: { es: '', en: '' },
@@ -152,21 +157,26 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(heading).toHaveTextContent(/MASTER_DATA\.DIALOGS\.UPSERT\.EDIT_TITLE/);
     });
 
-    it('should allow changing multiple measurement areas in edit mode and store them as CSV', async () => {
+    it('should allow changing multiple measurements in edit mode and store them as an array', async () => {
       const { view } = await setup(MOCK_QUANTITATIVE);
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
-      const measurementAreaSelect = await loader.getHarness(
-        MatSelectHarness.with({ selector: '#measurementAreaCode' }),
-      );
+      const measurementAreaInput = await loader.getHarness(MatInputHarness.with({ selector: '#measurementAreaCode' }));
+      const measurementsSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#measurements' }));
 
-      await measurementAreaSelect.open();
-      const options = await measurementAreaSelect.getOptions({ text: 'Trayectografía' });
+      expect(await measurementAreaInput.getValue()).toBe('TOP_ATMOSPHERE');
+      expect(await measurementAreaInput.isDisabled()).toBe(true);
+      expect(await measurementsSelect.isDisabled()).toBe(false);
+
+      await measurementsSelect.open();
+      const options = await measurementsSelect.getOptions({ text: 'Trayectografía' });
       await options[0].click();
       view.fixture.detectChanges();
 
-      expect(view.fixture.componentInstance.formModel().measurementAreaCode).toBe(
-        'INITIAL_VELOCITY,SOUND,TRAJECTOGRAPHY',
-      );
+      expect(view.fixture.componentInstance.formModel().measurements).toEqual([
+        'INITIAL_VELOCITY',
+        'SOUND',
+        'TRAJECTOGRAPHY',
+      ]);
     });
 
     it('should render cancel and save buttons', async () => {
@@ -294,6 +304,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       const formValue = view.fixture.componentInstance.formModel();
       expect(formValue.unit).toBe(MOCK_QUANTITATIVE.unit);
       expect(formValue.measurementAreaCode).toBe(MOCK_QUANTITATIVE.measurementAreaCode);
+      expect(formValue.measurements).toEqual(MOCK_QUANTITATIVE.measurements);
       expect(formValue.magnitudeCode).toBe(MOCK_QUANTITATIVE.magnitudeCode);
       expect(formValue.qualificationType).toBe('QUANTITATIVE');
       expect(formValue.measureUnit).toBe(MOCK_QUANTITATIVE.measureUnit);

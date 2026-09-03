@@ -1,7 +1,22 @@
+export type EquipmentMagnitudeTagValue =
+  | 'INITIAL_VELOCITY'
+  | 'PIEZOELECTRIC_PRESSURE'
+  | 'TRAJECTOGRAPHY'
+  | 'SOUND'
+  | 'HIGH_SPEED_VIDEO'
+  | 'CONVENTIONAL_VIDEO'
+  | 'LENGTH'
+  | 'MANOMETER_PRESSURE'
+  | 'IPG_PRESSURE'
+  | 'WEIGHT'
+  | 'CONDITIONING'
+  | 'TIME';
+
 export interface MeasureCatalogItem {
   id: string;
   unit: 'TOPOGRAPHY' | 'MUNITIONS' | 'ARMAMENT' | 'BALLISTICS';
   measurementAreaCode: string;
+  measurements: EquipmentMagnitudeTagValue[];
   magnitudeCode: string;
   magnitude: { es: string; en: string };
   label: string;
@@ -24,6 +39,7 @@ export interface MeasureCatalogItem {
 
 interface MeasureSeed {
   area: string;
+  measurements: EquipmentMagnitudeTagValue[];
   unit: MeasureCatalogItem['unit'];
   code: string;
   name: string;
@@ -37,6 +53,7 @@ interface MeasureSeed {
 const MEASURE_SEEDS: MeasureSeed[] = [
   {
     area: 'INITIAL_VELOCITY',
+    measurements: ['INITIAL_VELOCITY'],
     unit: 'BALLISTICS',
     code: 'MUZZLE_VELOCITY',
     name: 'Velocidad inicial',
@@ -47,6 +64,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'PIEZOELECTRIC_PRESSURE',
+    measurements: ['PIEZOELECTRIC_PRESSURE'],
     unit: 'BALLISTICS',
     code: 'CHAMBER_PRESSURE',
     name: 'Presión piezoeléctrica',
@@ -57,6 +75,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'TRAJECTOGRAPHY',
+    measurements: ['TRAJECTOGRAPHY'],
     unit: 'BALLISTICS',
     code: 'TRAJECTORY',
     name: 'Trayectografía',
@@ -67,6 +86,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'SOUND',
+    measurements: ['SOUND'],
     unit: 'BALLISTICS',
     code: 'SOUND_LEVEL',
     name: 'Nivel sonoro',
@@ -77,6 +97,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'HIGH_SPEED_VIDEO',
+    measurements: ['HIGH_SPEED_VIDEO'],
     unit: 'BALLISTICS',
     code: 'HIGH_SPEED_RECORD',
     name: 'Vídeo de alta velocidad',
@@ -86,6 +107,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'CONVENTIONAL_VIDEO',
+    measurements: ['CONVENTIONAL_VIDEO'],
     unit: 'BALLISTICS',
     code: 'CONVENTIONAL_RECORD',
     name: 'Vídeo convencional',
@@ -95,6 +117,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'LENGTH',
+    measurements: ['LENGTH'],
     unit: 'ARMAMENT',
     code: 'TUBE_LENGTH',
     name: 'Longitud',
@@ -105,6 +128,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'MANOMETER_PRESSURE',
+    measurements: ['MANOMETER_PRESSURE'],
     unit: 'MUNITIONS',
     code: 'MANOMETER_READING',
     name: 'Presión de manómetro',
@@ -115,6 +139,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'IPG_PRESSURE',
+    measurements: ['IPG_PRESSURE'],
     unit: 'MUNITIONS',
     code: 'IPG_READING',
     name: 'Presión IPG',
@@ -125,6 +150,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'WEIGHT',
+    measurements: ['WEIGHT'],
     unit: 'MUNITIONS',
     code: 'PROJECTILE_WEIGHT',
     name: 'Peso',
@@ -135,6 +161,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'CONDITIONING',
+    measurements: ['CONDITIONING'],
     unit: 'MUNITIONS',
     code: 'CONDITIONING_STATUS',
     name: 'Acondicionamiento',
@@ -144,6 +171,7 @@ const MEASURE_SEEDS: MeasureSeed[] = [
   },
   {
     area: 'TIME',
+    measurements: ['TIME'],
     unit: 'TOPOGRAPHY',
     code: 'ELAPSED_TIME',
     name: 'Tiempo',
@@ -161,6 +189,7 @@ export const MEASURES_CATALOG: MeasureCatalogItem[] = MEASURE_SEEDS.map((seed, i
     id: `550e8400-e29b-41d4-a716-${String(446655440040 + index).padStart(12, '0')}`,
     unit: seed.unit,
     measurementAreaCode: seed.area,
+    measurements: seed.measurements,
     magnitudeCode: seed.code,
     magnitude: { es: seed.name, en: seed.name },
     label: `${seed.name} - ${procedureLabel}`,

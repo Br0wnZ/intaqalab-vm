@@ -13,6 +13,7 @@ function toCatalogItem(item: Partial<MeasureCatalogItem> & Pick<MeasureCatalogIt
   return {
     unit: 'BALLISTICS',
     measurementAreaCode: '',
+    measurements: [],
     magnitudeCode: '',
     magnitude: { es: magnitudeLabel, en: magnitudeLabel },
     label: [magnitudeLabel, procedureLabel].filter(Boolean).join(' - '),
@@ -100,6 +101,13 @@ measuresRouter.post('/measures', (req: Request, res: Response) => {
 measuresRouter.put('/measures/:measureId', (req: Request, res: Response) => {
   const { measureId } = req.params;
   const index = MEASURES_CATALOG.findIndex((m) => m.id === measureId);
+
+  if (
+    !Array.isArray(req.body.measurements) ||
+    req.body.measurements.some((measurement: unknown) => typeof measurement !== 'string')
+  ) {
+    return res.status(400).json({ title: 'measurements must be an array of strings', status: 400 });
+  }
 
   if (index !== -1) {
     MEASURES_CATALOG[index] = toCatalogItem({ ...MEASURES_CATALOG[index], ...req.body, id: measureId });

@@ -6,6 +6,7 @@ export interface MasterDataMeasures {
   id?: string;
   unit: string;
   measurementAreaCode: string;
+  measurements: string[];
   magnitudeCode: string;
   magnitude: { es: string; en: string };
   magnitudeLabel?: string;

@@ -10,5 +10,6 @@ export const MASTER_LIST_COLUMN_TRANSFORM = {
   ENUM: 'enum',
   LIST_TRANSLATION: 'listTranslation',
   LIST_KEY: 'listKey',
+  LIST_OPTIONS: 'listOptions',
   KEY: 'list',
 } as const;

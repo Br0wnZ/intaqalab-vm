@@ -12,10 +12,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
@@ -47,8 +45,6 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
     MatTooltipModule,
     MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatSelectModule,
     MatSlideToggleModule,
     BooleanStatusBadge,
     SkeletonTable,
@@ -121,19 +117,6 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
                 }
               } @else if (column.status) {
                 <ui-boolean-status-badge [isActive]="rowData[column.id]" />
-              } @else if (column.select) {
-                <mat-form-field appearance="outline" class="w-full pt-4">
-                  <mat-label>{{ column.name | translate }}</mat-label>
-                  <mat-select
-                    aria-readonly="true"
-                    [multiple]="column.select.multiple ?? false"
-                    [value]="selectValue(rowData[column.id], column.select.multiple)"
-                  >
-                    @for (option of column.select.options; track option.id) {
-                      <mat-option disabled [value]="option.id">{{ option.label }}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
               } @else {
                 <span>{{ castValueToList(rowData[column.id], column.transform) }}</span>
               }
@@ -219,15 +202,14 @@ export class MasterDataListComponent {
       [MASTER_LIST_COLUMN_TRANSFORM.LIST_TRANSLATION]: () =>
         (value as []).map((v) => this.#translate.instant(`${transform.helper}.${v}`)).join(', '),
       [MASTER_LIST_COLUMN_TRANSFORM.LIST_KEY]: () => (value as []).map((v) => v[transform.helper as string]).join(', '),
+      [MASTER_LIST_COLUMN_TRANSFORM.LIST_OPTIONS]: () => {
+        const options = transform.helper as Array<{ id: string; label: string }>;
+        const values = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+        return values.map((id) => options.find((option) => option.id === id)?.label ?? id).join(', ');
+      },
       [MASTER_LIST_COLUMN_TRANSFORM.KEY]: () => (value as Record<string, unknown>)[transform.helper as string],
     };
     return callbacks[transform.id]() || '';
-  }
-
-  protected selectValue(value: unknown, multiple = false): unknown {
-    if (!multiple) return value;
-    if (Array.isArray(value)) return value;
-    return typeof value === 'string' ? value.split(',').filter(Boolean) : [];
   }
 
   protected createRecord(): void {

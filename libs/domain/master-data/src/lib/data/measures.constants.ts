@@ -21,9 +21,13 @@ export const MEASUREMENTS_AND_RECORDS_VIEW: MasterView = {
     {
       id: 'measurementAreaCode',
       name: 'MASTER_DATA.MEASURES.LIST.MEASUREMENT_AREA_CODE',
-      select: {
-        options: MEASUREMENT_AREA_OPTIONS,
-        multiple: true,
+    },
+    {
+      id: 'measurements',
+      name: 'MASTER_DATA.MEASURES.LIST.MEASUREMENTS',
+      transform: {
+        id: MASTER_LIST_COLUMN_TRANSFORM.LIST_OPTIONS,
+        helper: MEASUREMENT_AREA_OPTIONS,
       },
     },
     {

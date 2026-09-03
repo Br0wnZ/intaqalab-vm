@@ -3,7 +3,28 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 
+import type { MasterDataMeasures } from '../../../models/master-data-measures.model';
 import { MeasurementsAndRecordsService } from './measures.service';
+
+const MEASURE: MasterDataMeasures = {
+  id: 'measure-1',
+  unit: 'BALLISTICS',
+  measurementAreaCode: 'BAL_VELOCITY',
+  measurements: ['INITIAL_VELOCITY', 'TRAJECTOGRAPHY'],
+  magnitudeCode: 'MUZZLE_VELOCITY',
+  magnitude: { es: 'Velocidad inicial', en: 'Initial velocity' },
+  measureUnit: 'M_S',
+  qualificationType: 'QUANTITATIVE',
+  minValue: 100,
+  maxValue: 2000,
+  values: [],
+  equipmentTypes: ['DOPPLER_RADAR'],
+  procedure: { es: 'Procedimiento', en: 'Procedure' },
+  accreditation: true,
+  grubbs: true,
+  uncertainty: '1%',
+  active: true,
+};
 
 describe('MeasurementsAndRecordsService', () => {
   let service: MeasurementsAndRecordsService;
@@ -47,5 +68,17 @@ describe('MeasurementsAndRecordsService', () => {
     expect(request.request.method).toBe('GET');
     expect(request.request.params.get('measurementAreaCode')).toBe('INITIAL_VELOCITY,SOUND');
     request.flush({ page: 1, pageSize: 10, totalElements: 0, items: [] });
+  });
+
+  it('should send measurements as an array in the update request', () => {
+    service.update(MEASURE);
+    TestBed.tick();
+
+    const request = httpMock.expectOne((candidate) => candidate.url.endsWith('/measures/measure-1'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toMatchObject({
+      measurements: ['INITIAL_VELOCITY', 'TRAJECTOGRAPHY'],
+    });
+    request.flush(MEASURE);
   });
 });

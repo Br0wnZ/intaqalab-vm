@@ -579,6 +579,10 @@
             "LABEL": "Área de medición",
             "PLACEHOLDER": "Indique el código de área de medición"
           },
+          "MEASUREMENTS": {
+            "LABEL": "Medida",
+            "PLACEHOLDER": "Seleccione una o varias medidas"
+          },
           "MEASURE_UNIT": {
             "LABEL": "Unidad de medida",
             "PLACEHOLDER": "Seleccione la unidad de medida"
@@ -658,6 +662,7 @@
         "MAGNITUDE_LABEL": "Magnitud",
         "MAX_VALUE": "Valor máximo",
         "MEASUREMENT_AREA_CODE": "Área de medición",
+        "MEASUREMENTS": "Medida",
         "MEASURE_UNIT": "Unidad de medida",
         "MIN_VALUE": "Valor mínimo",
         "PROCEDURE_LABEL": "Procedimiento",

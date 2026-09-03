@@ -752,6 +752,19 @@
       },
       "TITLE": "Material management"
     },
+    "MEASURES": {
+      "DIALOGS": {
+        "UPSERT": {
+          "MEASUREMENTS": {
+            "LABEL": "Measurement",
+            "PLACEHOLDER": "Select one or more measurements"
+          }
+        }
+      },
+      "LIST": {
+        "MEASUREMENTS": "Measurement"
+      }
+    },
     "STANAG": {
       "DIALOGS": {
         "DELETE": {

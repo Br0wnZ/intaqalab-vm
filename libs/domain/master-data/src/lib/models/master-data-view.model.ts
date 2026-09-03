@@ -12,17 +12,6 @@ export interface MasterViewColumn {
   name: string;
   transform?: MasterViewColumnTransform;
   status?: boolean;
-  select?: MasterViewColumnSelect;
-}
-
-export interface MasterViewColumnSelect {
-  options: readonly MasterViewColumnSelectOption[];
-  multiple?: boolean;
-}
-
-export interface MasterViewColumnSelectOption {
-  id: string;
-  label: string;
 }
 
 export interface MasterViewColumnTransform {
