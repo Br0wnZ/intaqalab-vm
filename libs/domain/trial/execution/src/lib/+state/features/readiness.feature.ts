@@ -144,7 +144,7 @@ export function withReadiness() {
 
       isLoadingJltPreparation: computed(() => executionService.jltPreparationResource.isLoading()),
 
-      isSavingReadiness: computed(() => executionService.setProfileReadinessResource.isLoading()),
+      isSavingReadiness: computed(() => executionService.setSeriesReadinessResource.isLoading()),
 
       isSavingJltPreparation: computed(() => executionService.setJltReadinessResource.isLoading()),
 
@@ -154,7 +154,7 @@ export function withReadiness() {
 
       readinessLoadError: computed(() => executionService.profilesReadinessResource.error()),
 
-      readinessSaveError: computed(() => executionService.setProfileReadinessResource.error()),
+      readinessSaveError: computed(() => executionService.setSeriesReadinessResource.error()),
     })),
 
     withMethods((store, executionService = inject(ExecutionService)) => ({
@@ -244,18 +244,6 @@ export function withReadiness() {
           techUnits: mapProfilesReadinessToTechUnits(items),
         });
       },
-
-      /** Actualiza solo el perfil que acaba de guardarse (respuesta del PUT). */
-      _patchSingleProfile(item: ProfileReadinessItem): void {
-        const current = store.profilesReadiness() ?? [];
-        const idx = current.findIndex((p) => p.profile === item.profile);
-        const updated = idx >= 0 ? current.map((p, i) => (i === idx ? item : p)) : [...current, item];
-
-        patchState(store, {
-          profilesReadiness: updated,
-          techUnits: mapProfilesReadinessToTechUnits(updated),
-        });
-      },
     })),
 
     withHooks({
@@ -316,19 +304,6 @@ export function withReadiness() {
           }
           if (trialId && serieId && typeof storeAny.loadJltPreparation === 'function') {
             storeAny.loadJltPreparation(trialId, serieId);
-          }
-        });
-
-        // ── PUT: Actualizar perfil individual tras guardado exitoso ───────────────
-        effect(() => {
-          if (
-            typeof executionService.setProfileReadinessResource?.status === 'function' &&
-            executionService.setProfileReadinessResource.status() === 'resolved'
-          ) {
-            const item = safeResourceValue(executionService.setProfileReadinessResource);
-            if (item) {
-              store._patchSingleProfile(item);
-            }
           }
         });
       },

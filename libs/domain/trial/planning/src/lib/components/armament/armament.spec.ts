@@ -2,6 +2,7 @@
 import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
+import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
 import { By } from '@angular/platform-browser';
@@ -19,6 +20,7 @@ import type { TrialArmamentResponse } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { Armament } from './armament';
 import { ArmamentRow } from './armament-row';
+import { UpdateArmamentDialog } from './update-armament-dialog';
 
 const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmamentResponse => ({
   series: Array.from({ length: seriesCount }, (_, seriesIdx) => ({
@@ -27,6 +29,7 @@ const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmam
     shots: Array.from({ length: shotsPerSeries }, (_, shotIdx) => ({
       shotId: `shot-${seriesIdx + 1}-${shotIdx + 1}`,
       armament: {
+        itemType: SpecimenType.Weapon,
         weaponType: SpecimenType.Weapon,
         weaponName: `Weapon ${shotIdx + 1}`,
         weaponExternalId: shotIdx + 1,
@@ -265,28 +268,51 @@ describe('Armament', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('No se pudo obtener el trialId');
     });
 
-    it.skip('should open update dialog when edit button is clicked', async () => {
-      const { loader } = await runSetup();
+    it('should open update dialog when edit button is clicked', async () => {
+      const { loader, user } = await runSetup();
       const panel = await expandPanelByIndex(loader, 0);
       expect(await panel.isExpanded()).toBe(true);
 
-      const buttons = await loader.getAllHarnesses(MatButtonHarness);
-      expect(buttons.length).toBeGreaterThan(1);
-
       mockDialog.open.mockReturnValueOnce({
         afterClosed: () => of(false),
-      } as any);
+        close: vi.fn(),
+      } as unknown as MatDialogRef<UpdateArmamentDialog, boolean>);
 
-      // First button after massive config is icon button in observation cell
-      const iconButtons = buttons.filter((b) => b !== buttons[0]);
-      if (iconButtons.length > 1) {
-        await iconButtons[1].click();
-      } else if (buttons.length > 1) {
-        await buttons[1].click();
-      }
+      const editButtons = screen.getAllByLabelText(/Editar/i);
+      expect(editButtons.length).toBeGreaterThan(0);
+
+      await user.click(editButtons[0]);
 
       await waitFor(() => {
-        expect(mockDialog.open).toHaveBeenCalled();
+        expect(mockDialog.open).toHaveBeenCalledWith(
+          UpdateArmamentDialog,
+          expect.objectContaining({
+            data: expect.objectContaining({
+              trialId: 'trial-123',
+              shotId: 'shot-1-1',
+            }),
+          }),
+        );
+      });
+    });
+
+    it('should reload armament when update dialog returns true', async () => {
+      const { loader, user } = await runSetup();
+      await expandPanelByIndex(loader, 0);
+
+      mockDialog.open.mockReturnValueOnce({
+        afterClosed: () => of(true),
+        close: vi.fn(),
+      } as unknown as MatDialogRef<UpdateArmamentDialog, boolean>);
+
+      const reloadSpy = vi.spyOn(mockArmamentService.armamentResource, 'reload');
+      const editButtons = screen.getAllByLabelText(/Editar/i);
+      expect(editButtons.length).toBeGreaterThan(0);
+
+      await user.click(editButtons[0]);
+
+      await waitFor(() => {
+        expect(reloadSpy).toHaveBeenCalled();
       });
     });
   });

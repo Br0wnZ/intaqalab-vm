@@ -329,6 +329,8 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   override ngOnInit(): void {
     super.ngOnInit();
+    // Resetear el guard para garantizar GET siempre al montar el widget
+    this.#lastLoadedJltPreparationKey = null;
     this.#loadJltPreparationIfReady();
   }
 

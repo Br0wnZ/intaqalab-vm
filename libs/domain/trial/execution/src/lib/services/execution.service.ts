@@ -528,11 +528,6 @@ interface PreferencesParams extends ExecutionParams {
   widgetsLayout?: WidgetPreferenceId[];
 }
 
-interface ReadinessProfileParams extends ExecutionParams {
-  profile: ExecutionTechnicalProfile;
-  body: ProfileReadinessRequest;
-}
-
 interface EquipmentSelectorUpdateParams extends ExecutionParams {
   body: EquipmentSelectorUpdateRequest;
 }
@@ -586,8 +581,6 @@ export class ExecutionService {
   readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
-  #lastReadinessSaveStatus = 'idle';
-  #lastHandledReadinessSaveRequestId: number | null = null;
 
   // ── PLANNING SERIES ──────────────────────────────────────────────────────
 
@@ -921,21 +914,10 @@ export class ExecutionService {
 
   // ── EXECUTION READINESS: SET BY PROFILE & SERIES ────────────────────────
 
-  readonly #setReadinessProfileParams = signal<ReadinessProfileParams | null>(null);
-
-  readonly setProfileReadinessResource = httpResource<ProfileReadinessItem>(() => {
-    const params = this.#setReadinessProfileParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/readiness/profiles/${params.profile}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
   readonly #setSeriesReadinessOneParams = signal<SeriesReadinessOneParams | null>(null);
 
-  readonly #setSeriesReadinessOneResource = httpResource<SeriesReadinessItem>(() => {
+  // Única llamada real de guardado: PUT por perfil + serie (una petición por serie).
+  readonly setSeriesReadinessResource = httpResource<SeriesReadinessItem>(() => {
     const p = this.#setSeriesReadinessOneParams();
     if (!p) return undefined;
     return {
@@ -955,8 +937,8 @@ export class ExecutionService {
     body: SeriesReadinessRequest,
   ): Promise<SeriesReadinessItem> {
     this.#setSeriesReadinessOneParams.set({ fireTrialId, profile, seriesId, body, _t: Date.now() });
-    await this.#awaitResource(this.#setSeriesReadinessOneResource);
-    return this.#setSeriesReadinessOneResource.value()!;
+    await this.#awaitResource(this.setSeriesReadinessResource);
+    return this.setSeriesReadinessResource.value()!;
   }
 
   /**
@@ -968,13 +950,6 @@ export class ExecutionService {
     bodyOrItems: ProfileReadinessRequest | SeriesReadinessItem[],
   ): Promise<SeriesReadinessItem[]> {
     const items = Array.isArray(bodyOrItems) ? bodyOrItems : bodyOrItems.seriesReadiness;
-    // Disparar legacy trigger resource también por compatibilidad
-    this.#setReadinessProfileParams.set({
-      fireTrialId,
-      profile,
-      body: Array.isArray(bodyOrItems) ? { seriesReadiness: bodyOrItems } : bodyOrItems,
-      _t: Date.now(),
-    });
     const results: SeriesReadinessItem[] = [];
     for (const item of items) {
       const result = await this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
@@ -983,11 +958,13 @@ export class ExecutionService {
       });
       results.push(result);
     }
+    // Resincroniza el estado global de readiness tras guardar todas las series del perfil.
+    this.getProfilesReadiness(fireTrialId);
     return results;
   }
 
   resetSetProfileReadiness(): void {
-    this.#setReadinessProfileParams.set(null);
+    this.#setSeriesReadinessOneParams.set(null);
   }
 
   // ── EXECUTION READINESS: WIDGET 2 JLT PREPARATION ─────────────────────
@@ -1055,30 +1032,6 @@ export class ExecutionService {
   fireShot(fireTrialId: FireTrial['id']): void {
     this.#fireShotParams.set({ fireTrialId, _t: Date.now() });
   }
-
-  // Tras cada PUT exitoso, recargar el GET para resincronizar store y widgets.
-  // eslint-disable-next-line no-unused-private-class-members
-  readonly #reloadProfilesReadinessAfterSave = effect(
-    () => {
-      const params = this.#setReadinessProfileParams();
-      const status = this.setProfileReadinessResource.status();
-      const shouldReload =
-        !!params &&
-        status === 'resolved' &&
-        this.#lastHandledReadinessSaveRequestId !== params._t &&
-        this.#lastReadinessSaveStatus !== 'resolved';
-
-      this.#lastReadinessSaveStatus = status;
-
-      if (!shouldReload) {
-        return;
-      }
-
-      this.#lastHandledReadinessSaveRequestId = params._t;
-      this.getProfilesReadiness(params.fireTrialId);
-    },
-    { allowSignalWrites: true },
-  );
 
   // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
 

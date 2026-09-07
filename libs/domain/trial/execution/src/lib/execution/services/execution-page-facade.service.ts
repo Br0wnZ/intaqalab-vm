@@ -48,6 +48,7 @@ export class ExecutionPageFacade {
   readonly widgets = signal<Widget[]>(injectWidgets()).asReadonly();
   readonly hasUnsavedChanges = this.#widgetState.hasUnsavedChanges;
   readonly isSaving = this.#isSaving.asReadonly();
+  readonly placedWidgets = this.#widgetState.placedWidgets;
   /**
    * `true` solo durante la carga inicial (antes del primer dato de estado).
    * El polling periódico NO activa esta señal — `#initialLoadDone` actúa como

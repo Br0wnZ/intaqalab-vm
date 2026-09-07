@@ -1,6 +1,3 @@
-/* eslint-disable testing-library/no-node-access */
-
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -115,20 +112,21 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
 
   const setup = async (data: MasterDataMeasures | null = null) => {
     mockDialogRef = { close: vi.fn() };
+    const mockService = createMockMasterDataService();
     const user = userEvent.setup();
 
     const view = await render(MeasurementsAndRecordsDialogComponent, {
       imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
-        { provide: MasterDataService, useValue: createMockMasterDataService() },
+        { provide: MasterDataService, useValue: mockService },
         MasterDataStore,
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
     });
 
-    return { user, view };
+    return { user, view, mockService };
   };
 
   beforeEach(() => {
@@ -139,7 +137,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Rendering', () => {
+  describe('Initial Rendering', () => {
     it('should create the component', async () => {
       const { view } = await setup();
       expect(view.fixture.componentInstance).toBeTruthy();
@@ -158,31 +156,33 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     });
 
     it('should allow changing multiple measurements in edit mode and store them as an array', async () => {
-      const { view } = await setup(MOCK_QUANTITATIVE);
+      const { view, user } = await setup(MOCK_QUANTITATIVE);
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
-      const measurementAreaInput = await loader.getHarness(MatInputHarness.with({ selector: '#measurementAreaCode' }));
-      const measurementsSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#measurements' }));
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+      const selects = await loader.getAllHarnesses(MatSelectHarness);
+      const measurementAreaInput = inputs[0];
+      const measurementsSelect = selects[1];
 
       expect(await measurementAreaInput.getValue()).toBe('TOP_ATMOSPHERE');
       expect(await measurementAreaInput.isDisabled()).toBe(true);
       expect(await measurementsSelect.isDisabled()).toBe(false);
 
       await measurementsSelect.open();
-      const options = await measurementsSelect.getOptions({ text: 'Trayectografía' });
-      await options[0].click();
+      const option = screen.getByText('Trayectografía');
+      await user.click(option);
       view.fixture.detectChanges();
 
       expect(view.fixture.componentInstance.formModel().measurements).toEqual([
         'INITIAL_VELOCITY',
-        'SOUND',
         'TRAJECTOGRAPHY',
+        'SOUND',
       ]);
     });
 
     it('should render cancel and save buttons', async () => {
       await setup();
-      expect(screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL')).toBeInTheDocument();
-      expect(screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' })).toBeInTheDocument();
     });
 
     it('should render accreditation checkbox', async () => {
@@ -203,10 +203,10 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     });
   });
 
-  describe('Form Validation', () => {
+  describe('Form Validation & Save Button States', () => {
     it('should have save button disabled when form is empty in create mode', async () => {
       await setup(null);
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
       expect(saveBtn).toBeDisabled();
     });
 
@@ -221,7 +221,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       const instance = view.fixture.componentInstance;
       instance.formModel.set(VALID_QUANTITATIVE_FORM);
       view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
       expect(saveBtn).toBeEnabled();
     });
 
@@ -230,8 +230,30 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       const instance = view.fixture.componentInstance;
       instance.formModel.set(VALID_QUALITATIVE_FORM);
       view.fixture.detectChanges();
-      const saveBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
       expect(saveBtn).toBeEnabled();
+    });
+
+    it('should invalidate QUALITATIVE form when qualitative value names are empty', async () => {
+      const { view } = await setup(null);
+      const instance = view.fixture.componentInstance;
+      instance.formModel.set({
+        ...VALID_QUALITATIVE_FORM,
+        values: [{ code: '', name: { es: '', en: '' }, active: true }],
+      });
+      view.fixture.detectChanges();
+      expect(instance.form().invalid()).toBe(true);
+    });
+
+    it('should invalidate QUALITATIVE form when only one translation is provided', async () => {
+      const { view } = await setup(null);
+      const instance = view.fixture.componentInstance;
+      instance.formModel.set({
+        ...VALID_QUALITATIVE_FORM,
+        values: [{ code: '', name: { es: 'Solo ES', en: '' }, active: true }],
+      });
+      view.fixture.detectChanges();
+      expect(instance.form().invalid()).toBe(true);
     });
   });
 
@@ -297,7 +319,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     });
   });
 
-  describe('Edit Mode - Form Pre-population', () => {
+  describe('Edit Mode - Form Pre-population & Disabled Fields', () => {
     it('should pre-populate formModel with QUANTITATIVE data', async () => {
       const { view } = await setup(MOCK_QUANTITATIVE);
       view.fixture.detectChanges();
@@ -320,6 +342,28 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(formValue.values).toHaveLength(1);
       expect(formValue.values[0].name.en).toBe('Value One');
       expect(formValue.values[0].name.es).toBe('Valor Uno');
+    });
+
+    it('should disable immutable fields in edit mode', async () => {
+      const { view } = await setup(MOCK_QUANTITATIVE);
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+      const measurementAreaInput = inputs[0];
+      const magnitudeCodeInput = inputs[1];
+
+      expect(await measurementAreaInput.isDisabled()).toBe(true);
+      expect(await magnitudeCodeInput.isDisabled()).toBe(true);
+    });
+
+    it('should keep immutable fields enabled in create mode', async () => {
+      const { view } = await setup(null);
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+      const measurementAreaInput = inputs[0];
+      const magnitudeCodeInput = inputs[1];
+
+      expect(await measurementAreaInput.isDisabled()).toBe(false);
+      expect(await magnitudeCodeInput.isDisabled()).toBe(false);
     });
 
     it('should show QUANTITATIVE section when edit data has QUANTITATIVE type', async () => {
@@ -406,20 +450,130 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
     });
   });
 
-  describe('Dialog Actions', () => {
+  describe('Dialog Actions & Form Submission', () => {
     it('should close dialog with false when cancel is clicked', async () => {
       const { user } = await setup(null);
-      const cancelBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL').closest('button');
-      await user.click(cancelBtn!);
+      const cancelBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' });
+      await user.click(cancelBtn);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
     });
 
-    it('should not call close when sendData is invoked with empty qualificationType', async () => {
-      const { view } = await setup(null);
+    it('should not call close or service mutation when sendData is invoked with empty qualificationType', async () => {
+      const { view, mockService } = await setup(null);
       const instance = view.fixture.componentInstance;
-      // qualificationType is '' by default — sendData returns early
       (instance as unknown as { sendData(): void }).sendData();
+      expect(mockService.create).not.toHaveBeenCalled();
+      expect(mockService.update).not.toHaveBeenCalled();
       expect(mockDialogRef.close).not.toHaveBeenCalled();
+    });
+
+    it('should call store.create with quantitative data excluding values in create mode', async () => {
+      const { view, user, mockService } = await setup(null);
+      const instance = view.fixture.componentInstance;
+      instance.formModel.set({
+        ...VALID_QUANTITATIVE_FORM,
+        equipmentTypes: ['DOPPLER_RADAR', '', ''],
+      });
+      view.fixture.detectChanges();
+
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      await user.click(saveBtn);
+
+      expect(mockService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unit: 'TOPOGRAPHY',
+          measurementAreaCode: 'TOP_ATMOSPHERE',
+          measurements: ['INITIAL_VELOCITY'],
+          magnitudeCode: 'MG001',
+          magnitude: { es: 'Magnitud', en: 'Magnitude' },
+          qualificationType: 'QUANTITATIVE',
+          measureUnit: 'M_S',
+          minValue: 1,
+          maxValue: 100,
+          uncertainty: '±0.5',
+          equipmentTypes: ['DOPPLER_RADAR'],
+          active: true,
+        }),
+      );
+      const payload = mockService.create.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload).not.toHaveProperty('values');
+    });
+
+    it('should call store.create with qualitative data casting code and setting grubbs false', async () => {
+      const { view, user, mockService } = await setup(null);
+      const instance = view.fixture.componentInstance;
+      instance.formModel.set({
+        ...VALID_QUALITATIVE_FORM,
+        values: [{ code: '', name: { es: 'Valor Español', en: 'English Value' }, active: true }],
+        equipmentTypes: ['', '', ''],
+      });
+      view.fixture.detectChanges();
+
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      await user.click(saveBtn);
+
+      expect(mockService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unit: 'MUNITIONS',
+          measurementAreaCode: 'MUN_PROJECTILE',
+          measurements: ['WEIGHT'],
+          magnitudeCode: 'MG002',
+          magnitude: { es: 'Magnitud', en: 'Magnitude' },
+          qualificationType: 'QUALITATIVE',
+          grubbs: false,
+          equipmentTypes: null,
+          values: [
+            expect.objectContaining({
+              code: 'ENGLISH_VALUE',
+              name: { es: 'Valor Español', en: 'English Value' },
+              active: true,
+            }),
+          ],
+          active: true,
+        }),
+      );
+      const payload = mockService.create.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload).not.toHaveProperty('measureUnit');
+      expect(payload).not.toHaveProperty('minValue');
+      expect(payload).not.toHaveProperty('maxValue');
+      expect(payload).not.toHaveProperty('uncertainty');
+    });
+
+    it('should call store.update with transformed data in edit mode', async () => {
+      const { view, user, mockService } = await setup(MOCK_QUANTITATIVE);
+      const instance = view.fixture.componentInstance;
+      instance.formModel.update((m) => ({ ...m, uncertainty: '±0.8' }));
+      view.fixture.detectChanges();
+
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      await user.click(saveBtn);
+
+      expect(mockService.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'measure-1',
+          uncertainty: '±0.8',
+        }),
+      );
+    });
+  });
+
+  describe('Store Reaction Effects', () => {
+    it('should reset upsert and close dialog with true when saveStatus becomes resolved', async () => {
+      const { view, mockService } = await setup(null);
+      mockService.saveResource._setStatus('resolved');
+      view.fixture.detectChanges();
+
+      expect(mockService.resetUpsert).toHaveBeenCalled();
+      expect(mockDialogRef.close).toHaveBeenCalledWith(true);
+    });
+
+    it('should reset upsert and close dialog with true when updateStatus becomes resolved', async () => {
+      const { view, mockService } = await setup(MOCK_QUANTITATIVE);
+      mockService.updateResource._setStatus('resolved');
+      view.fixture.detectChanges();
+
+      expect(mockService.resetUpsert).toHaveBeenCalled();
+      expect(mockDialogRef.close).toHaveBeenCalledWith(true);
     });
   });
 });

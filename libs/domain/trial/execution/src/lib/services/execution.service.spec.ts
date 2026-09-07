@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, type TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+import { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -389,12 +389,13 @@ describe('ExecutionService', () => {
     const putUserReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/preferences/users/john_doe`);
     expect(putUserReq.request.method).toBe('PUT');
     expect(putUserReq.request.body).toEqual({ widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'] });
-    expect(putUserReq.request.body).toEqual(mockPrefs);
-    putUserReq.flush(mockPrefs);
+    putUserReq.flush({ widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'] });
 
     await waitFor(() => {
       TestBed.tick();
-      expect(service.updatePreferencesByUserResource.value()).toEqual(mockPrefs);
+      expect(service.updatePreferencesByUserResource.value()).toEqual({
+        widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'],
+      });
     });
   });
 
@@ -442,25 +443,32 @@ describe('ExecutionService', () => {
     const batchPromise = service.setProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', batchItems);
     TestBed.tick();
 
-    const legacyReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES`);
-    const req1 = httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
-    legacyReq.flush({ profile: 'VELOCITIES', seriesReadiness: batchItems });
+    let req1!: TestRequest;
+    await waitFor(() => {
+      TestBed.tick();
+      const matches = httpMock.match(`${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES/series/s-1`);
+      expect(matches.length).toBe(1);
+      req1 = matches[0];
+    });
     req1.flush(batchItems[0]);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
-
-    const reloadReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness`);
-    reloadReq.flush(mockReadiness);
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
-
-    const req2 = httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES/series/s-2`);
+    let req2!: TestRequest;
+    await waitFor(() => {
+      TestBed.tick();
+      const matches = httpMock.match(`${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES/series/s-2`);
+      expect(matches.length).toBe(1);
+      req2 = matches[0];
+    });
     req2.flush(batchItems[1]);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
+    let reloadReq!: TestRequest;
+    await waitFor(() => {
+      TestBed.tick();
+      const matches = httpMock.match(`${EXECUTION_BASE_URL}/readiness`);
+      expect(matches.length).toBe(1);
+      reloadReq = matches[0];
+    });
+    reloadReq.flush(mockReadiness);
 
     const batchResult = await batchPromise;
     expect(batchResult).toEqual(batchItems);
@@ -914,7 +922,7 @@ describe('ExecutionService', () => {
           weightData: {
             balanceId: 21031,
             weight: 41.2,
-            weightUnit: 'G',
+            weightUnit: WeightUnitEnum.G,
             weighingDateTime: '2026-08-21T10:34:12Z',
           },
           conditioningData: {

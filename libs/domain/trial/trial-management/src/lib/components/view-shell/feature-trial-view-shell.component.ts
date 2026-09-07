@@ -104,11 +104,13 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
       <mat-tab [label]="'TAPS_TOP.TRIAL_PLANIFICATION' | translate" [disabled]="isPlanningDisabled()">
         <ng-template matTabContent>
           @defer (on idle) {
-            <inta-feature-planning-general-data-shell
-              [trial]="store.trial()!"
-              [trialId]="id"
-              [hasPlanniUsers]="store.hasPlanniUser()"
-            />
+            @if (store.trial(); as currentTrial) {
+              <inta-feature-planning-general-data-shell
+                [trial]="currentTrial"
+                [trialId]="id"
+                [hasPlanniUsers]="store.hasPlanniUser()"
+              />
+            }
           } @placeholder {
             <div class="h-40 flex items-center justify-center">
               <span class="text-sm text-gray-400">Cargando planificación...</span>

@@ -30,7 +30,6 @@ import {
   setExecutionStatus,
   setJltReadiness,
   setJltShotData,
-  setProfileReadiness,
   setSeriesProfileReadiness,
   setShotAcousticLevel,
   setShotArmament,
@@ -218,24 +217,6 @@ executionRouter.put(
     res.status(200).json(updated);
   },
 );
-
-// Registrar readiness de un perfil (legacy batch array)
-executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/readiness/profiles/:profile', (req, res) => {
-  const { profile, fireTrialId } = req.params as { profile: string; fireTrialId: string };
-  const { seriesReadiness } = req.body as { seriesReadiness?: unknown[] };
-
-  if (!seriesReadiness || !Array.isArray(seriesReadiness)) {
-    res.status(400).json({
-      title: 'Bad Request',
-      status: 400,
-      detail: "El campo 'seriesReadiness' es obligatorio y debe ser un array",
-    });
-    return;
-  }
-
-  const updated = setProfileReadiness(fireTrialId, profile as never, seriesReadiness as never);
-  res.status(200).json(updated);
-});
 
 // Obtener preparación JLT + unidades técnicas para una serie
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation', (req, res) => {

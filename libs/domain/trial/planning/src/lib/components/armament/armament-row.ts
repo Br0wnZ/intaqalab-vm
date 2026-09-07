@@ -111,13 +111,20 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
         <button
           mat-icon-button
           type="button"
+          aria-label="Observaciones"
           class="!text-gray-600 scale-90"
           [matTooltip]="shot().armament.observations || 'Sin observaciones'"
         >
           <ui-inta-icon name="info" size="xxl" />
         </button>
         @if (!readonly() && hasWeaponType()) {
-          <button mat-icon-button type="button" class="!text-gray-600 scale-90" (click)="openUpdateDialog()">
+          <button
+            mat-icon-button
+            type="button"
+            aria-label="Editar"
+            class="!text-gray-600 scale-90"
+            (click)="openUpdateDialog()"
+          >
             <ui-inta-icon name="edit" size="xxl" />
           </button>
         }

@@ -72,11 +72,10 @@ Use `injectExecutionEndpoint()` from `@intaqalab/config` to construct the base U
 
 ### Tag: Execution Readiness
 
-| operationId               | Method | Path                                                      | Description                                                |
-| ------------------------- | ------ | --------------------------------------------------------- | ---------------------------------------------------------- |
-| getProfilesReadiness      | GET    | /execution/readiness                                      | Role-filtered readiness. Returns ProfilesReadinessResponse |
-| setProfileReadiness       | PUT    | /execution/readiness/profiles/{profile}                   | PENDING series only                                        |
-| setSeriesProfileReadiness | PUT    | /execution/readiness/profiles/{profile}/series/{seriesId} | Individual series profile readiness update                 |
+| operationId               | Method | Path                                                      | Description                                                                                   |
+| ------------------------- | ------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| getProfilesReadiness      | GET    | /execution/readiness                                      | Role-filtered readiness. Returns ProfilesReadinessResponse                                    |
+| setSeriesProfileReadiness | PUT    | /execution/readiness/profiles/{profile}/series/{seriesId} | Individual series profile readiness update (called once per series; no batch/legacy endpoint) |
 
 Profiles enum: `VELOCITIES`, `PRESSURES`, `VIDEO`, `TRAJECTOGRAPHY`, `MUNITIONS`, `ARMAMENT`.
 

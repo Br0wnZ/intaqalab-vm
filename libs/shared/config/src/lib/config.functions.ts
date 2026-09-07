@@ -97,3 +97,9 @@ export function injectFeatureFlag(feature: keyof AppEnvironment['features']): Si
 export function injectIsProduction(): boolean {
   return inject(APP_ENV).production;
 }
+
+export const isPreEnvironment = (env: AppEnvironment = inject(APP_ENV)): boolean =>
+  env.apiUrl?.includes('.pre.') ?? false;
+
+export const isDesEnvironment = (env: AppEnvironment = inject(APP_ENV)): boolean =>
+  !isPreEnvironment(env) && !env.production;

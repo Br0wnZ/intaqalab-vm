@@ -24,7 +24,7 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 - **PROHIBIDO usar `container` y navegación de nodos DOM:** NUNCA uses `container.querySelector`, `container.querySelectorAll` ni navegues propiedades de nodos (`firstElementChild`, `parentElement`, `children`, `childNodes`). Usa `screen` queries y matchers semánticos de Jest DOM (`toBeInTheDocument()`, `toHaveAttribute()`, `toHaveClass()`).
 - **Usuario Primero:** Simula interacciones reales usando `userEvent` (siempre asíncrono).
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
-- **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material.
+- **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material. Usa el patrón canónico del repo: pasa la clase constructora a `loader.getAllHarnesses(HarnessClass)` y accede por índice. **Evita `.with({ selector })` y `getOptions({ text })`** para prevenir `SyntaxError: '' is not a valid selector` en Vitest (ver Issue #19). Para opciones, abre con el harness (`await select.open()`) y haz click con ATL (`screen.getByText` + `user.click`).
 - **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
 - **Clean Code:** Tests descriptivos. **IMPORTANTE:** Todas las descripciones de los casos de prueba (`it()`) deben ser redactadas obligatoriamente en inglés (e.g. `it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
@@ -60,6 +60,8 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
    - Store con `providedIn: null` → `NG0201` → usar `componentProviders` o `providers` (Issue #7)
    - Crash `ng2-pdf-viewer` → importar mock global en `test-setup.ts` de la librería (Issue #14)
    - Subcomponentes con `input.required` de Signal Forms → usar `TestWrapperComponent` local (Issue #16)
+   - Crash `SyntaxError: '' is not a valid selector` al usar `.with(...)` o `getOptions(...)` → usar `getAllHarnesses(HarnessClass)[index]` y ATL `screen.getByText` + `user.click` (Issue #19)
+   - Discrepancia en array de `mat-select multiple` → Angular Material ordena según el orden de las opciones en el DOM, no el orden de clic (Issue #20)
 
 1. **Analiza el componente:** Lee el archivo `.ts` del componente para entender:
    - Tipo: componente, diálogo, servicio, store, interceptor, pipe

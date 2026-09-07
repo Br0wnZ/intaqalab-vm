@@ -1,10 +1,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component, input, output, signal } from '@angular/core';
+import { Component, forwardRef, input, output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { AuthService, Role, injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
@@ -24,13 +26,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TrialTransitionsService } from '../../services/trial-transitions.service';
 import { TrialGeneralDataStore } from '../shared/+state/trial-general-data.store';
+import { FeatureTrialCreateFormComponent } from '../shared/components/form/feature-trial-create-form.component';
 import { FeatureTrialViewShellComponent, injectionTokenTrialViewComponent } from './feature-trial-view-shell.component';
-
-// Must be hoisted: ng2-pdf-viewer is transitively imported via FeatureTrialCreateFormComponent → TrialDocs → DocViewer.
-// Use synchronous factory to avoid Vitest async hoisting errors.
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
 
 // Stub components
 @Component({
@@ -38,6 +35,12 @@ vi.mock('ng2-pdf-viewer', () => ({
   template: `
     <div data-testid="mock-trial-form"></div>
   `,
+  providers: [
+    {
+      provide: FeatureTrialCreateFormComponent,
+      useExisting: forwardRef(() => MockTrialCreateFormComponent),
+    },
+  ],
 })
 class MockTrialCreateFormComponent {
   readonly editable = input.required<boolean>();
@@ -46,13 +49,14 @@ class MockTrialCreateFormComponent {
   readonly viewDocument = output<string>();
 
   readonly _valid = signal(false);
-  readonly _value = signal<Record<string, unknown>>({ type: '', client: '' });
+  readonly _value = signal<Record<string, unknown>>({ type: 't1', client: 'c1' });
+  readonly markAsTouchedSpy = vi.fn();
 
   readonly upsertTrialModel = signal<Record<string, unknown>>({ type: '', client: '' });
   readonly upsertTrialForm = signal({
     valid: () => this._valid(),
     value: () => this._value(),
-    markAsTouched: vi.fn(),
+    markAsTouched: () => this.markAsTouchedSpy(),
   });
 }
 
@@ -65,6 +69,7 @@ class MockTrialCreateFormComponent {
 class MockPlanningShellComponent {
   readonly trial = input<Record<string, unknown>>();
   readonly trialId = input<string>();
+  readonly hasPlanniUsers = input<boolean>();
 }
 
 @Component({
@@ -92,6 +97,8 @@ const MOCK_TRIAL = {
   clientReference: 'ref',
   requestedDate: '2025-01-01',
   observations: 'obs',
+  statusReason: '',
+  validated: false,
 };
 
 function createMockTransitionsService() {
@@ -113,8 +120,12 @@ function createMockTransitionsService() {
 }
 
 describe('FeatureTrialViewShellComponent', () => {
-  let mockTrialStore: ReturnType<typeof createMockTrialGeneralDataStore>;
-  let mockTrialsDataService: ReturnType<typeof createMockTrialsDataService>;
+  let mockTrialStore: ReturnType<typeof createMockTrialGeneralDataStore> & {
+    hasPlanniUser: ReturnType<typeof vi.fn>;
+  };
+  let mockTrialsDataService: ReturnType<typeof createMockTrialsDataService> & {
+    resetUpdateTrial: ReturnType<typeof vi.fn>;
+  };
   let mockTransitionsService: ReturnType<typeof createMockTransitionsService>;
   let mockUiDialogs: { confirm: ReturnType<typeof vi.fn>; input: ReturnType<typeof vi.fn> };
   let mockTabCommand: ReturnType<typeof vi.fn>;
@@ -122,8 +133,14 @@ describe('FeatureTrialViewShellComponent', () => {
   const setup = async (options: { trialData?: typeof MOCK_TRIAL | null; roles?: Role[] } = {}) => {
     const trialData = options.trialData !== undefined ? options.trialData : MOCK_TRIAL;
     const roles = options.roles ?? [];
-    mockTrialStore = createMockTrialGeneralDataStore({ trial: trialData });
-    mockTrialsDataService = createMockTrialsDataService();
+    mockTrialStore = {
+      ...createMockTrialGeneralDataStore({ trial: trialData, trialId: 'someId' }),
+      hasPlanniUser: vi.fn(() => false),
+    };
+    mockTrialsDataService = {
+      ...createMockTrialsDataService(),
+      resetUpdateTrial: vi.fn(),
+    };
     mockTransitionsService = createMockTransitionsService();
     mockUiDialogs = { confirm: vi.fn().mockResolvedValue(true), input: vi.fn().mockResolvedValue('some reason') };
     mockTabCommand = vi.fn();
@@ -135,6 +152,8 @@ describe('FeatureTrialViewShellComponent', () => {
           MatTabsModule,
           MatButton,
           MatCardModule,
+          MatIconModule,
+          MatTooltipModule,
           TranslateModule,
           Badge,
           TrialStatusLabelPipe,
@@ -171,7 +190,7 @@ describe('FeatureTrialViewShellComponent', () => {
     vi.clearAllMocks();
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     vi.restoreAllMocks();
   });
 
@@ -198,16 +217,43 @@ describe('FeatureTrialViewShellComponent', () => {
     });
   });
 
-  describe('Trial status badge', () => {
+  describe('Trial status badge and reason', () => {
     it('should show the status badge when trial data is loaded', async () => {
       await setup();
-      // Badge renders the status value through the pipe
       expect(screen.getByText(TrialStatus.EXECUTED)).toBeInTheDocument();
     });
 
     it('should not show the status badge when trial is null', async () => {
       await setup({ trialData: null });
       expect(screen.queryByText(TrialStatus.EXECUTED)).not.toBeInTheDocument();
+    });
+
+    it('should show info icon when trial is CANCELLED and has statusReason', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.CANCELLED, statusReason: 'Bad weather' },
+      });
+      expect(screen.getByText('info')).toBeInTheDocument();
+    });
+
+    it('should show info icon when trial is VOIDED and has statusReason', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.VOIDED, statusReason: 'Clerical error' },
+      });
+      expect(screen.getByText('info')).toBeInTheDocument();
+    });
+
+    it('should NOT show info icon when statusReason is empty for CANCELLED trial', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.CANCELLED, statusReason: '' },
+      });
+      expect(screen.queryByText('info')).not.toBeInTheDocument();
+    });
+
+    it('should NOT show info icon when trial status is EXECUTED', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.EXECUTED, statusReason: 'Some reason' },
+      });
+      expect(screen.queryByText('info')).not.toBeInTheDocument();
     });
   });
 
@@ -244,7 +290,28 @@ describe('FeatureTrialViewShellComponent', () => {
       component.cancel();
 
       expect(component.editable()).toBe(false);
-      // setTrialId called once on init + once on cancel
+      expect(mockTrialStore.setTrialId).toHaveBeenCalledTimes(2);
+    });
+
+    it('should trigger save when save button is clicked in template', async () => {
+      const { user, component, fixture } = await setup();
+      component.editable.set(true);
+      fixture.detectChanges();
+
+      const saveSpy = vi.spyOn(component, 'save');
+      await user.click(screen.getByText('COMMONS.SAVE'));
+
+      expect(saveSpy).toHaveBeenCalled();
+    });
+
+    it('should trigger cancel when cancel button is clicked in template', async () => {
+      const { user, component, fixture } = await setup();
+      component.editable.set(true);
+      fixture.detectChanges();
+
+      await user.click(screen.getByText('COMMONS.CANCEL'));
+
+      expect(component.editable()).toBe(false);
       expect(mockTrialStore.setTrialId).toHaveBeenCalledTimes(2);
     });
   });
@@ -253,13 +320,30 @@ describe('FeatureTrialViewShellComponent', () => {
     it('should call updateTrial with mapped DTO when form is valid', async () => {
       const { component, fixture } = await setup();
 
-      // Simulate editable mode with a valid form via the mock child
       component.editable.set(true);
       fixture.detectChanges();
 
+      const mockForm = component.formComponent() as unknown as MockTrialCreateFormComponent;
+      mockForm._valid.set(true);
+      mockForm._value.set({ type: 't1', client: 'c1' });
+
       component.save();
 
-      // form is invalid by default in mock → updateTrial should NOT be called
+      expect(mockTrialsDataService.updateTrial).toHaveBeenCalledWith('someId', expect.any(Object));
+    });
+
+    it('should mark form as touched and not call updateTrial when form is invalid', async () => {
+      const { component, fixture } = await setup();
+
+      component.editable.set(true);
+      fixture.detectChanges();
+
+      const mockForm = component.formComponent() as unknown as MockTrialCreateFormComponent;
+      mockForm._valid.set(false);
+
+      component.save();
+
+      expect(mockForm.markAsTouchedSpy).toHaveBeenCalled();
       expect(mockTrialsDataService.updateTrial).not.toHaveBeenCalled();
     });
   });
@@ -314,6 +398,16 @@ describe('FeatureTrialViewShellComponent', () => {
       await waitFor(() => expect(mockTransitionsService.void).toHaveBeenCalledWith('someId', 'annulment reason'));
     });
 
+    it('should NOT call transitionsService.void when ANNUL dialog is dismissed', async () => {
+      const { component } = await setup();
+      mockUiDialogs.input.mockResolvedValue(false);
+
+      component.handleClickTrialAction('ANNUL');
+
+      await waitFor(() => expect(mockUiDialogs.input).toHaveBeenCalled());
+      expect(mockTransitionsService.void).not.toHaveBeenCalled();
+    });
+
     it('should call transitionsService.close after CLOSE action is confirmed', async () => {
       const { component } = await setup();
       mockUiDialogs.confirm.mockResolvedValue(true);
@@ -347,6 +441,16 @@ describe('FeatureTrialViewShellComponent', () => {
       await waitFor(() => expect(mockTransitionsService.reopen).toHaveBeenCalledWith('someId'));
     });
 
+    it('should NOT call transitionsService.reopen when REOPEN dialog is dismissed', async () => {
+      const { component } = await setup();
+      mockUiDialogs.confirm.mockResolvedValue(false);
+
+      component.handleClickTrialAction('REOPEN');
+
+      await waitFor(() => expect(mockUiDialogs.confirm).toHaveBeenCalled());
+      expect(mockTransitionsService.reopen).not.toHaveBeenCalled();
+    });
+
     it('should call transitionsService.reactivate after REACTIVATE action is confirmed', async () => {
       const { component } = await setup();
       mockUiDialogs.confirm.mockResolvedValue(true);
@@ -354,6 +458,16 @@ describe('FeatureTrialViewShellComponent', () => {
       component.handleClickTrialAction('REACTIVATE');
 
       await waitFor(() => expect(mockTransitionsService.reactivate).toHaveBeenCalledWith('someId'));
+    });
+
+    it('should NOT call transitionsService.reactivate when REACTIVATE dialog is dismissed', async () => {
+      const { component } = await setup();
+      mockUiDialogs.confirm.mockResolvedValue(false);
+
+      component.handleClickTrialAction('REACTIVATE');
+
+      await waitFor(() => expect(mockUiDialogs.confirm).toHaveBeenCalled());
+      expect(mockTransitionsService.reactivate).not.toHaveBeenCalled();
     });
 
     it('should call transitionsService.delete after REMOVE action is confirmed', async () => {
@@ -364,9 +478,27 @@ describe('FeatureTrialViewShellComponent', () => {
 
       await waitFor(() => expect(mockTransitionsService.delete).toHaveBeenCalledWith('someId'));
     });
+
+    it('should NOT call transitionsService.delete when REMOVE dialog is dismissed', async () => {
+      const { component } = await setup();
+      mockUiDialogs.confirm.mockResolvedValue(false);
+
+      component.handleClickTrialAction('REMOVE');
+
+      await waitFor(() => expect(mockUiDialogs.confirm).toHaveBeenCalled());
+      expect(mockTransitionsService.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe('Planning tab access (disabled instead of showing ACCESS_DENIED)', () => {
+    it('should disable planning tab when trial is null', async () => {
+      await setup({ trialData: null });
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
     it('should disable the planning tab for a role without access while UNDER_REVIEW', async () => {
       await setup({
         trialData: { ...MOCK_TRIAL, status: TrialStatus.UNDER_REVIEW },
@@ -414,20 +546,76 @@ describe('FeatureTrialViewShellComponent', () => {
         'false',
       );
     });
+
+    it('should disable planning tab for administrative role when trial is not validated', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.PLANNED, validated: false },
+        roles: [Role.INTAQALAB_TRIAL_ADMINISTRATIVE],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    });
+
+    it('should enable planning tab for administrative role when trial is validated and PLANNED', async () => {
+      await setup({
+        trialData: { ...MOCK_TRIAL, status: TrialStatus.PLANNED, validated: true },
+        roles: [Role.INTAQALAB_TRIAL_ADMINISTRATIVE],
+      });
+
+      expect(screen.getByRole('tab', { name: 'TAPS_TOP.TRIAL_PLANIFICATION' })).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      );
+    });
   });
 
-  describe('Effect: reload store after transition', () => {
+  describe('Effects', () => {
     it('should call setTrialId again when actionResource resolves', async () => {
       const { fixture } = await setup();
 
-      // Simulate the httpResource resolving (void resources resolve to null in Angular http layer)
-      // null !== undefined triggers the effect guard condition
       mockTransitionsService._actionResource._setValue(null as unknown as void);
       fixture.detectChanges();
 
-      // setTrialId: once on init + once triggered by the effect
       expect(mockTrialStore.setTrialId).toHaveBeenCalledTimes(2);
       expect(mockTrialStore.setTrialId).toHaveBeenLastCalledWith('someId');
+    });
+
+    it('should call onAction with TRIAL_LIST when deleteResource status becomes resolved', async () => {
+      const { fixture } = await setup();
+
+      mockTransitionsService._deleteResource._setStatus('resolved');
+      fixture.detectChanges();
+
+      expect(mockTabCommand).toHaveBeenCalledWith({ command: 'TRIAL_LIST' });
+    });
+
+    it('should reset updateTrial, reload trial and exit editable mode when updateTrialResource resolves', async () => {
+      const { component, fixture } = await setup();
+      component.editable.set(true);
+      fixture.detectChanges();
+
+      mockTrialsDataService._updateTrialResource._setValue({} as unknown as Record<string, unknown>);
+      fixture.detectChanges();
+
+      expect(mockTrialsDataService.resetUpdateTrial).toHaveBeenCalled();
+      expect(mockTrialStore.setTrialId).toHaveBeenCalledWith('someId');
+      expect(component.editable()).toBe(false);
+    });
+  });
+
+  describe('Tab selection', () => {
+    it('should default selectedTab to 0', async () => {
+      const { component } = await setup();
+      expect(component.selectedTab()).toBe(0);
+    });
+
+    it('should update selectedTab when set', async () => {
+      const { component } = await setup();
+      component.selectedTab.set(1);
+      expect(component.selectedTab()).toBe(1);
     });
   });
 });

@@ -404,23 +404,6 @@ export function setSeriesProfileReadiness(
   return updatedSeriesItem;
 }
 
-export function setProfileReadiness(
-  fireTrialId: string,
-  profile: ExecutionProfile,
-  seriesReadiness: SeriesReadinessItem[],
-): ProfileReadinessItem {
-  const state = getReadiness(fireTrialId);
-  const idx = state.profilesReadiness.findIndex((p) => p.profile === profile);
-  const updated: ProfileReadinessItem = { profile, seriesReadiness };
-  if (idx >= 0) {
-    state.profilesReadiness[idx] = updated;
-  } else {
-    state.profilesReadiness.push(updated);
-  }
-  readinessStateMap.set(fireTrialId, state);
-  return updated;
-}
-
 export function getJltPreparation(fireTrialId: string, _seriesId: string): JltPreparationState {
   if (!jltPreparationStateMap.has(fireTrialId)) {
     jltPreparationStateMap.set(fireTrialId, structuredClone(defaultJltPreparationState()));

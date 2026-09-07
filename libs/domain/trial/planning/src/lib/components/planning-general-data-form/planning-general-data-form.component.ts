@@ -191,9 +191,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               }
               <button
                 mat-flat-button
-                [disabled]="
-                  !readonly() || generalDataForm().invalid() || !isPlanningValidable() || isValidatingPlanning()
-                "
+                [disabled]="generalDataForm().invalid() || !isPlanningValidable() || isValidatingPlanning()"
                 (click)="onValidate()"
               >
                 {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE' | translate }}

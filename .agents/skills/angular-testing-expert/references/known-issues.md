@@ -493,3 +493,78 @@ const chips = await loader.getAllHarnesses(MatChipHarness);
 expect(chips.length).toBe(1);
 ```
 
+---
+
+## 19. `SyntaxError: '' is not a valid selector` al usar `Harness.with(...)` o `MatSelectHarness.getOptions(...)` en Vitest
+
+**Contexto:** Un test usa `loader.getHarness(MatInputHarness.with({ selector: '#myId' }))` o `matSelect.getOptions({ text: 'Opción' })` y falla inmediatamente con:
+
+```
+SyntaxError: '' is not a valid selector
+ ❯ emit node_modules/nwsapi/src/nwsapi.js
+ ❯ Object._querySelectorAll [as select]
+ ❯ HTMLDivElementImpl.querySelectorAll / HTMLBodyElementImpl.querySelectorAll
+```
+
+**Causa:**
+En el entorno Vite/Vitest, `@angular/cdk/testing` se instancia en contextos de módulo separados. En `_parseQueries(queries)` del CDK, la comprobación `query instanceof HarnessPredicate` evalúa a `false` cuando `query` es un predicado generado por `.with(...)` o `getOptions(...)`.
+Como resultado, el CDK trata erróneamente la instancia de `HarnessPredicate` como una clase constructora de harness y crea `new HarnessPredicate(query, {})`, donde `query.hostSelector` es `undefined`. Esto genera un selector vacío `''` que se pasa a `querySelectorAll('')`, provocando que JSDOM lance `SyntaxError: '' is not a valid selector`.
+
+**PROHIBIDO:** Intentar monkey-patching `HarnessPredicate` o alterar `test-setup.ts`.
+
+**Solución Oficial del Proyecto:**
+
+1. **Para obtener harnesses (inputs, selects, etc.):** No uses `.with({ selector: ... })`. Pasa la clase constructora a `loader.getAllHarnesses(HarnessClass)` y accede por índice:
+
+```typescript
+// ❌ Falla con SyntaxError: '' is not a valid selector
+const input = await loader.getHarness(MatInputHarness.with({ selector: '#myInput' }));
+const select = await loader.getHarness(MatSelectHarness.with({ selector: '#mySelect' }));
+
+// ✅ Correcto: pasar la clase constructora y acceder por índice
+const inputs = await loader.getAllHarnesses(MatInputHarness);
+const selects = await loader.getAllHarnesses(MatSelectHarness);
+const myInput = inputs[0];
+const mySelect = selects[0];
+```
+
+2. **Para interactuar con opciones de `mat-select`:**
+   No uses `select.getOptions({ text: ... })`. Abre el select con el harness y usa queries accesibles de Angular Testing Library (`screen.getByText` o `screen.getByRole('option', { name: ... })`) combinadas con `userEvent`:
+
+```typescript
+// ❌ Falla con SyntaxError: '' is not a valid selector
+await select.open();
+const options = await select.getOptions({ text: 'Opción 1' });
+await options[0].click();
+
+// ✅ Correcto: open() del harness + screen query de ATL + userEvent
+await select.open();
+const option = screen.getByText('Opción 1');
+await user.click(option);
+view.fixture.detectChanges();
+```
+
+---
+
+## 20. Discrepancia de orden en arrays con `MatSelect` múltiple (`multiple`)
+
+**Contexto:** Un test interactúa con un `mat-select` con atributo `multiple`, hace click en una nueva opción, y la aserción sobre el array del modelo (`toEqual([...])`) falla porque los elementos no coinciden con el orden en que se realizaron los clics.
+
+**Causa:**
+El componente `MatSelect` de Angular Material en modo `multiple` **ordena internamente las opciones seleccionadas según su orden de aparición en el DOM** (usando `options.indexOf(a) - options.indexOf(b)`). Por tanto, la nueva opción seleccionada no se agrega al final del array, sino en la posición ordinal que le corresponde según el listado del template (`@for (option of options; track ...)`).
+
+**Solución:** En el `expect`, verificar el array respetando el orden de definición del catálogo en el template, no el orden cronológico de interacción:
+
+```typescript
+// Si las opciones en el DOM son: [INITIAL_VELOCITY, TRAJECTOGRAPHY, SOUND]
+// Y el valor inicial era: ['INITIAL_VELOCITY', 'SOUND']
+// Al hacer click en 'Trayectografía':
+await user.click(screen.getByText('Trayectografía'));
+view.fixture.detectChanges();
+
+// ❌ Incorrecto (asume que se agrega al final del array):
+expect(formModel().measurements).toEqual(['INITIAL_VELOCITY', 'SOUND', 'TRAJECTOGRAPHY']);
+
+// ✅ Correcto (respeta el orden ordinal del DOM):
+expect(formModel().measurements).toEqual(['INITIAL_VELOCITY', 'TRAJECTOGRAPHY', 'SOUND']);
+```

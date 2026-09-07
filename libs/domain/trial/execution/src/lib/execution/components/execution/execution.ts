@@ -64,6 +64,7 @@ import { ExecutionHeader } from './execution-header/execution-header';
       <inta-widget-library
         [widgets]="widgets()"
         [isOpen]="isWidgetsPanelOpen()"
+        [placedWidgets]="placedWidgets()"
         (selected)="addWidget($event)"
         (closed)="closeWidgetsPanel()"
       />
@@ -87,6 +88,7 @@ export class Execution implements OnDestroy {
   readonly isSaving = this.#executionFacade.isSaving;
   readonly isLoading = this.#executionFacade.isLoading;
   readonly loadError = this.#executionFacade.loadError;
+  readonly placedWidgets = this.#executionFacade.placedWidgets;
   readonly isWidgetsPanelOpen = signal(false);
   readonly isEditMode = signal(false);
 

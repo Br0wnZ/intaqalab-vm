@@ -23,11 +23,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningGeneralDataFormComponent } from './planning-general-data-form.component';
 
-// vi.mock hoisted by Vitest — must use synchronous factory (Issue #14: ng2-pdf-viewer crash)
-vi.mock('ng2-pdf-viewer', () => ({
-  PdfViewerModule: class PdfViewerModule {},
-}));
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Valores del formulario que lo dejan completamente válido */
@@ -234,7 +229,7 @@ describe('PlanningGeneralDataFormComponent', () => {
     });
 
     it('should prevent negative values on percentageEndTrial field', async () => {
-      const { user } = await setup();
+      await setup();
       const endInput = screen.getByLabelText(
         /TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL/i,
       ) as HTMLInputElement;
@@ -272,12 +267,11 @@ describe('PlanningGeneralDataFormComponent', () => {
       });
       view.fixture.detectChanges();
 
-      await waitFor(async () => {
-        const button = await loader.getHarness(
-          MatButtonHarness.with({ text: /TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE/i }),
-        );
-        expect(await button.isDisabled()).toBe(false);
-      });
+      view.fixture.detectChanges();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({ text: /TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE/i }),
+      );
+      expect(await button.isDisabled()).toBe(false);
     });
 
     it('should keep validate button disabled when goal is empty', async () => {
@@ -311,12 +305,11 @@ describe('PlanningGeneralDataFormComponent', () => {
       view.fixture.detectChanges();
 
       // Wait for button to be enabled, then click
+      view.fixture.detectChanges();
       const button = await loader.getHarness(
         MatButtonHarness.with({ text: /TRIAL_PLANNING.GENERAL_DATA_SECTION.VALIDATE/i }),
       );
-      await waitFor(async () => {
-        expect(await button.isDisabled()).toBe(false);
-      });
+      expect(await button.isDisabled()).toBe(false);
       await button.click();
       await view.fixture.whenStable();
 
@@ -325,7 +318,7 @@ describe('PlanningGeneralDataFormComponent', () => {
     });
 
     it('should call updatePlanningInfo when save draft button is clicked and form is valid', async () => {
-      const { view, mockStore } = await setup();
+      const { view, mockStore, user } = await setup();
 
       view.fixture.componentInstance.formModel.set({
         ...view.fixture.componentInstance.formModel(),
@@ -334,8 +327,9 @@ describe('PlanningGeneralDataFormComponent', () => {
       });
       view.fixture.detectChanges();
 
-      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT').closest('button')!;
-      draftButton.click();
+      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT');
+      expect(draftButton).toBeInTheDocument();
+      await user.click(draftButton);
       await view.fixture.whenStable();
 
       expect(mockStore.updatePlanningInfo).toHaveBeenCalledWith(
@@ -344,17 +338,18 @@ describe('PlanningGeneralDataFormComponent', () => {
     });
 
     it('should call reloadPlanningInfo when cancel button is clicked', async () => {
-      const { view, mockStore } = await setup();
+      const { view, mockStore, user } = await setup();
 
-      const cancelButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL').closest('button')!;
-      cancelButton.click();
+      const cancelButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL');
+      expect(cancelButton).toBeInTheDocument();
+      await user.click(cancelButton);
       await view.fixture.whenStable();
 
       expect(mockStore.reloadPlanningInfo).toHaveBeenCalled();
     });
 
     it('should NOT include ratingCriteriaUnits in payload when rating criteria checkbox is unchecked', async () => {
-      const { view, mockStore } = await setup();
+      const { view, mockStore, user } = await setup();
 
       // Ensure showRatingCriteria is false (default state)
       expect(view.fixture.componentInstance.showRatingCriteria()).toBe(false);
@@ -365,8 +360,9 @@ describe('PlanningGeneralDataFormComponent', () => {
       });
       view.fixture.detectChanges();
 
-      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT').closest('button')!;
-      draftButton.click();
+      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT');
+      expect(draftButton).toBeInTheDocument();
+      await user.click(draftButton);
       await view.fixture.whenStable();
 
       const payload = mockStore.updatePlanningInfo.mock.calls[0][0];
@@ -393,8 +389,9 @@ describe('PlanningGeneralDataFormComponent', () => {
         expect(view.fixture.componentInstance.showRatingCriteria()).toBe(true);
       });
 
-      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT').closest('button')!;
-      draftButton.click();
+      const draftButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT');
+      expect(draftButton).toBeInTheDocument();
+      await user.click(draftButton);
       await view.fixture.whenStable();
 
       const payload = mockStore.updatePlanningInfo.mock.calls[0][0];
@@ -571,10 +568,11 @@ describe('PlanningGeneralDataFormComponent', () => {
     });
 
     it('should call store.unlockPlanning when the modify planning button is clicked', async () => {
-      const { mockStore } = await setup({ fireTrialStatus: 'PLANNED', roles: ['INTAQALAB_ADMIN'] });
+      const { mockStore, user } = await setup({ fireTrialStatus: 'PLANNED', roles: ['INTAQALAB_ADMIN'] });
 
-      const modifyButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.MODIFY_PLANNING').closest('button');
-      modifyButton?.click();
+      const modifyButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.MODIFY_PLANNING');
+      expect(modifyButton).toBeInTheDocument();
+      await user.click(modifyButton);
 
       expect(mockStore.unlockPlanning).toHaveBeenCalled();
     });

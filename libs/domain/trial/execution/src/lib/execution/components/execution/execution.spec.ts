@@ -103,7 +103,7 @@ function createMockExecutionService(
     profilesReadinessResource: createMockResource<ProfilesReadinessResponse>({
       profilesReadiness: [],
     }),
-    setProfileReadinessResource: createMockResource<ProfileReadinessItem>(),
+    setSeriesReadinessResource: createMockResource<ProfileReadinessItem>(),
     jltPreparationResource: createMockResource<JltPreparationResponse>(),
     setJltReadinessResource: createMockResource<JltReadinessItem>(),
     selectShotResource: createMockResource<void>(),

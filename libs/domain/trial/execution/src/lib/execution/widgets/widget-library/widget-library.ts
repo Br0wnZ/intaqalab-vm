@@ -6,7 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import type { Widget } from '../../models/execution-grid.models';
+import type { PlacedWidget, Widget } from '../../models/execution-grid.models';
+import { WidgetId } from '../../models/widget-id.enum';
 
 @Component({
   selector: 'inta-widget-library',
@@ -65,7 +66,13 @@ import type { Widget } from '../../models/execution-grid.models';
                     </div>
                   </div>
                   <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ widget.description | translate }}</p>
-                  <button mat-flat-button color="primary" class="w-full" (click)="selectWidget(widget.id)">
+                  <button
+                    mat-flat-button
+                    color="primary"
+                    class="w-full"
+                    [disabled]="disabledWidgetIds().has(widget.id)"
+                    (click)="selectWidget(widget.id)"
+                  >
                     {{ 'TRIAL_EXECUTION.ADD' | translate }}
                   </button>
                 </div>
@@ -103,9 +110,37 @@ export class WidgetLibrary {
 
   readonly widgets = input.required<readonly Widget[]>();
   readonly isOpen = input.required<boolean>();
+  readonly placedWidgets = input<PlacedWidget[]>([]);
   readonly selected = output<string>();
   readonly closed = output<void>();
   readonly searchTerm = signal('');
+
+  /**
+   * Conjunto de `widget.id` (del catálogo) que ya están colocados en el grid.
+   * Para EXECUTION_PREP_TECH, la clave es `prep-tech-{techProfile}`.
+   * Para el resto, se busca el `id` del catálogo que corresponde al `WidgetId`.
+   */
+  readonly disabledWidgetIds = computed(() => {
+    const placed = this.placedWidgets();
+    const catalog = this.widgets();
+    const disabled = new Set<string>();
+
+    for (const w of placed) {
+      if (w.type === WidgetId.EXECUTION_PREP_TECH) {
+        // Variante única por techProfile
+        if (w.techProfile) {
+          disabled.add(`prep-tech-${w.techProfile}`);
+        }
+      } else {
+        const found = catalog.find((item) => item.widgetId === w.type);
+        if (found) {
+          disabled.add(found.id);
+        }
+      }
+    }
+
+    return disabled;
+  });
 
   readonly filteredWidgets = computed(() => {
     const search = this.searchTerm().trim().toLowerCase();
