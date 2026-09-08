@@ -9,7 +9,7 @@ import { MeasurementsAndRecordsService } from './measures.service';
 const MEASURE: MasterDataMeasures = {
   id: 'measure-1',
   unit: 'BALLISTICS',
-  measurementAreaCode: 'BAL_VELOCITY',
+  measurementArea: 'BAL_VELOCITY',
   measurements: ['INITIAL_VELOCITY', 'TRAJECTOGRAPHY'],
   magnitudeCode: 'MUZZLE_VELOCITY',
   magnitude: { es: 'Velocidad inicial', en: 'Initial velocity' },
@@ -60,13 +60,13 @@ describe('MeasurementsAndRecordsService', () => {
     service.searchItems.set({
       page: 1,
       pageSize: 10,
-      filters: { measurementAreaCode: 'INITIAL_VELOCITY,SOUND' },
+      filters: { measurementArea: 'INITIAL_VELOCITY,SOUND' },
     });
     TestBed.tick();
 
     const request = httpMock.expectOne((candidate) => candidate.url.endsWith('/measures'));
     expect(request.request.method).toBe('GET');
-    expect(request.request.params.get('measurementAreaCode')).toBe('INITIAL_VELOCITY,SOUND');
+    expect(request.request.params.get('measurementArea')).toBe('INITIAL_VELOCITY,SOUND');
     request.flush({ page: 1, pageSize: 10, totalElements: 0, items: [] });
   });
 

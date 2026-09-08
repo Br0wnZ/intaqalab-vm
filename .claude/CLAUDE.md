@@ -10,7 +10,7 @@
 
 ## Codebase Intelligence for intaqalab-vm (Repowise)
 
-Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-09-04 (commit 79efb51). Confidence: 99%.
+Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-09-08 (commit 23243d2). Confidence: 99%.
 
 ### How to work in this repo
 
@@ -59,15 +59,15 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 
 ### Files that need care (bug-fix history first, then churn — check `get_risk` before editing)
 
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 2 days ago; 13 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 2 days ago; 6 commits/90d
-- `libs/domain/master-data/src/lib/components/dialogs/upsert/loading-zone/loading-zone-upsert-dialog.component.spec.ts` — 1 bug fix, last fix 2 days ago; 6 commits/90d
-- `libs/domain/trial/execution/src/lib/execution/services/execution-page-facade.service.ts` — 1 bug fix, last fix 2 days ago; 3 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 2 days ago; 5 commits/90d
+- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 6 days ago; 12 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 6 days ago; 7 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/update-armament-dialog.ts` — 1 bug fix, last fix 6 days ago; 4 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 6 days ago; 7 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 6 days ago; 7 commits/90d
 
 ### Code health
 
-Three co-equal signals: defect risk 8.48/10 avg, hotspot health 6.31/10 (stable), worst `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` at 1.9/10 · maintainability 9.27/10 · performance risk 3 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
+Three co-equal signals: defect risk 8.55/10 avg, hotspot health 6.55/10 (stable), worst `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` at 1.9/10 · maintainability 9.27/10 · performance risk 3 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
 
 Critical files:
 
@@ -75,7 +75,7 @@ Critical files:
 - `libs/shared/data-access/src/lib/users-service/users-service.spec.ts` — change entropy — impact −3.0
 - `libs/domain/trial/trial-management/src/lib/trial-scheduler/components/inline/trial-scheduler-inline.component.ts` — change entropy — impact −3.0
 - `libs/domain/trial/trial-management/src/lib/services/trial-docs-service.ts` — change entropy — impact −3.0
-- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.ts` — change entropy — impact −3.0
+- `libs/domain/trial/trial-management/src/lib/components/trial-docs/trial-doc-details/trial-doc-details.ts` — change entropy — impact −3.0
 
 ### Commands
 

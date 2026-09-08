@@ -15,7 +15,7 @@ export type EquipmentMagnitudeTagValue =
 export interface MeasureCatalogItem {
   id: string;
   unit: 'TOPOGRAPHY' | 'MUNITIONS' | 'ARMAMENT' | 'BALLISTICS';
-  measurementAreaCode: string;
+  measurementArea: string;
   measurements: EquipmentMagnitudeTagValue[];
   magnitudeCode: string;
   magnitude: { es: string; en: string };
@@ -188,7 +188,7 @@ export const MEASURES_CATALOG: MeasureCatalogItem[] = MEASURE_SEEDS.map((seed, i
   return {
     id: `550e8400-e29b-41d4-a716-${String(446655440040 + index).padStart(12, '0')}`,
     unit: seed.unit,
-    measurementAreaCode: seed.area,
+    measurementArea: seed.area,
     measurements: seed.measurements,
     magnitudeCode: seed.code,
     magnitude: { es: seed.name, en: seed.name },

@@ -34,7 +34,7 @@ function createMockMasterDataService() {
 const MOCK_QUANTITATIVE: MasterDataMeasures = {
   id: 'measure-1',
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'TOP_ATMOSPHERE',
+  measurementArea: 'TOP_ATMOSPHERE',
   measurements: ['INITIAL_VELOCITY', 'SOUND'],
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud ES', en: 'Magnitude EN' },
@@ -54,7 +54,7 @@ const MOCK_QUANTITATIVE: MasterDataMeasures = {
 const MOCK_QUALITATIVE: MasterDataMeasures = {
   id: 'measure-2',
   unit: 'MUNITIONS',
-  measurementAreaCode: 'MUN_PROJECTILE',
+  measurementArea: 'MUN_PROJECTILE',
   measurements: ['WEIGHT'],
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud Cualitativa ES', en: 'Qualitative Magnitude EN' },
@@ -73,7 +73,7 @@ const MOCK_QUALITATIVE: MasterDataMeasures = {
 
 const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
   unit: 'TOPOGRAPHY',
-  measurementAreaCode: 'TOP_ATMOSPHERE',
+  measurementArea: 'TOP_ATMOSPHERE',
   measurements: ['INITIAL_VELOCITY'],
   magnitudeCode: 'MG001',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
@@ -91,7 +91,7 @@ const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
 
 const VALID_QUALITATIVE_FORM: MasterDataMeasures = {
   unit: 'MUNITIONS',
-  measurementAreaCode: 'MUN_PROJECTILE',
+  measurementArea: 'MUN_PROJECTILE',
   measurements: ['WEIGHT'],
   magnitudeCode: 'MG002',
   magnitude: { es: 'Magnitud', en: 'Magnitude' },
@@ -325,7 +325,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       view.fixture.detectChanges();
       const formValue = view.fixture.componentInstance.formModel();
       expect(formValue.unit).toBe(MOCK_QUANTITATIVE.unit);
-      expect(formValue.measurementAreaCode).toBe(MOCK_QUANTITATIVE.measurementAreaCode);
+      expect(formValue.measurementArea).toBe(MOCK_QUANTITATIVE.measurementArea);
       expect(formValue.measurements).toEqual(MOCK_QUANTITATIVE.measurements);
       expect(formValue.magnitudeCode).toBe(MOCK_QUANTITATIVE.magnitudeCode);
       expect(formValue.qualificationType).toBe('QUANTITATIVE');
@@ -482,7 +482,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(mockService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           unit: 'TOPOGRAPHY',
-          measurementAreaCode: 'TOP_ATMOSPHERE',
+          measurementArea: 'TOP_ATMOSPHERE',
           measurements: ['INITIAL_VELOCITY'],
           magnitudeCode: 'MG001',
           magnitude: { es: 'Magnitud', en: 'Magnitude' },
@@ -515,7 +515,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(mockService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           unit: 'MUNITIONS',
-          measurementAreaCode: 'MUN_PROJECTILE',
+          measurementArea: 'MUN_PROJECTILE',
           measurements: ['WEIGHT'],
           magnitudeCode: 'MG002',
           magnitude: { es: 'Magnitud', en: 'Magnitude' },

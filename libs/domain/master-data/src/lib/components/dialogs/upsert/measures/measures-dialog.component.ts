@@ -10,7 +10,7 @@ import type { MatSelectChange } from '@angular/material/select';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
-import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
@@ -38,7 +38,6 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
     MatExpansionModule,
     MatCheckbox,
     MatSelectModule,
-    NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
     SaveButton,
   ],
@@ -69,14 +68,14 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
         </mat-form-field>
       </div>
       <div>
-        <label for="measurementAreaCode" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="measurementArea" class="block text-sm font-medium text-gray-700 mb-2">
           {{ 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.LABEL' | translate }}
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <input
-            id="measurementAreaCode"
+            id="measurementArea"
             matInput
-            [formField]="form.measurementAreaCode"
+            [formField]="form.measurementArea"
             [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.MEASUREMENT_AREA_CODE.PLACEHOLDER' | translate"
           />
         </mat-form-field>
@@ -221,11 +220,8 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
           <mat-form-field appearance="outline" class="w-full">
             <input
               id="uncertainty"
-              type="number"
+              type="text"
               matInput
-              libNoNegativeValues
-              libLocalDecimal
-              min="0"
               [formField]="form.uncertainty!"
               [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.UNCERTAINTY.PLACEHOLDER' | translate"
             />
@@ -397,7 +393,7 @@ export class MeasurementsAndRecordsDialogComponent {
 
   readonly defaultFormValues = {
     unit: '',
-    measurementAreaCode: '',
+    measurementArea: '',
     measurements: [],
     magnitudeCode: '',
     magnitude: { es: '', en: '' },
@@ -427,8 +423,8 @@ export class MeasurementsAndRecordsDialogComponent {
   readonly form = form(this.formModel, (schemaPath) => {
     required(schemaPath.unit);
     disabled(schemaPath.unit, () => this.data !== null);
-    required(schemaPath.measurementAreaCode);
-    disabled(schemaPath.measurementAreaCode, () => this.data !== null);
+    required(schemaPath.measurementArea);
+    disabled(schemaPath.measurementArea, () => this.data !== null);
     required(schemaPath.measurements);
     required(schemaPath.magnitudeCode);
     disabled(schemaPath.magnitudeCode, () => this.data !== null);
@@ -436,9 +432,6 @@ export class MeasurementsAndRecordsDialogComponent {
     required(schemaPath.magnitude.en);
     required(schemaPath.qualificationType);
     required(schemaPath.measureUnit, { when: () => this.#isQuantitative() });
-    required(schemaPath.minValue, { when: () => this.#isQuantitative() });
-    required(schemaPath.maxValue, { when: () => this.#isQuantitative() });
-    required(schemaPath.uncertainty, { when: () => this.#isQuantitative() });
     validate(schemaPath.values, ({ value }) => {
       if (this.#isQuantitative()) return null;
 
@@ -462,7 +455,6 @@ export class MeasurementsAndRecordsDialogComponent {
         ? { kind: 'namesIncomplete', message: 'MASTER_DATA.MEASURES.VALIDATION.BOTH_FIELDS' }
         : null;
     });
-    disabled(schemaPath.values, () => this.data !== null);
   });
 
   protected sendData() {

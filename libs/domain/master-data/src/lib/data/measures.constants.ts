@@ -19,7 +19,7 @@ export const MEASUREMENTS_AND_RECORDS_VIEW: MasterView = {
       },
     },
     {
-      id: 'measurementAreaCode',
+      id: 'measurementArea',
       name: 'MASTER_DATA.MEASURES.LIST.MEASUREMENT_AREA_CODE',
     },
     {

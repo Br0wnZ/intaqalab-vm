@@ -56,7 +56,7 @@ export type EquipmentTypeEnum =
 export type MasterDataMeasureItem = {
   id: string;
   unit: TechnicalUnitEnum;
-  measurementAreaCode: string;
+  measurementArea: string;
   magnitudeCode: string;
   magnitude: Record<string, string>;
   label: string;

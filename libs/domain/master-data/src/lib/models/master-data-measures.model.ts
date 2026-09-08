@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 export interface MasterDataMeasures {
   id?: string;
   unit: string;
-  measurementAreaCode: string;
+  measurementArea: string;
   measurements: string[];
   magnitudeCode: string;
   magnitude: { es: string; en: string };

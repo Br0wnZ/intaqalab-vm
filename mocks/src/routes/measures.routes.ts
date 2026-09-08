@@ -12,7 +12,7 @@ function toCatalogItem(item: Partial<MeasureCatalogItem> & Pick<MeasureCatalogIt
   const procedureLabel = item.procedureLabel ?? item.procedure?.es ?? '';
   return {
     unit: 'BALLISTICS',
-    measurementAreaCode: '',
+    measurementArea: '',
     measurements: [],
     magnitudeCode: '',
     magnitude: { es: magnitudeLabel, en: magnitudeLabel },
@@ -40,7 +40,7 @@ function toCatalogItem(item: Partial<MeasureCatalogItem> & Pick<MeasureCatalogIt
 
 measuresRouter.get('/measures', (req: Request, res: Response) => {
   const { page, pageSize } = getPagination(req);
-  const { magnitude, name, unit, active, measurementAreaCode, sortField, sortDirection } = req.query;
+  const { magnitude, name, unit, active, measurementArea, sortField, sortDirection } = req.query;
 
   let filtered = [...MEASURES_CATALOG];
 
@@ -54,14 +54,14 @@ measuresRouter.get('/measures', (req: Request, res: Response) => {
     filtered = filtered.filter((m) => m.unit === unit);
   }
 
-  if (typeof measurementAreaCode === 'string' && measurementAreaCode.trim()) {
+  if (typeof measurementArea === 'string' && measurementArea.trim()) {
     const requestedAreas = new Set(
-      measurementAreaCode
+      measurementArea
         .split(',')
         .map((area) => area.trim())
         .filter(Boolean),
     );
-    filtered = filtered.filter((measure) => requestedAreas.has(measure.measurementAreaCode));
+    filtered = filtered.filter((measure) => requestedAreas.has(measure.measurementArea));
   }
 
   if (active !== undefined && active !== null) {
