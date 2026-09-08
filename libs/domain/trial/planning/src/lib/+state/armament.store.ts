@@ -3,10 +3,10 @@ import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
-    ArmamentBulkUpdateRequest,
-    CatalogQueryParams,
-    SeriesArmamentData,
-    SpecimenItem,
+  ArmamentBulkUpdateRequest,
+  CatalogQueryParams,
+  SeriesArmamentData,
+  SpecimenItem,
 } from '../services/armament-service';
 import { ArmamentService } from '../services/armament-service';
 import { PlanningGeneralDataStore } from './planning-general-data.store';
@@ -84,13 +84,21 @@ export const ArmamentStore = signalStore(
 
       tubesError: computed(() => armamentService.tubesResource.error()),
 
-      // Denominaciones arma reactivas (filtradas por itemType seleccionado)
+      // Denominaciones arma reactivas
       weaponDenominations: computed<SpecimenItem[]>(() => {
         const response = safeResourceValue(armamentService.weaponDenominationsResource);
         return response?.items ?? [];
       }),
 
       isLoadingWeaponDenominations: computed(() => armamentService.weaponDenominationsResource.isLoading()),
+
+      // Denominaciones mortero reactivas
+      mortarDenominations: computed<SpecimenItem[]>(() => {
+        const response = safeResourceValue(armamentService.mortarDenominationsResource);
+        return response?.items ?? [];
+      }),
+
+      isLoadingMortarDenominations: computed(() => armamentService.mortarDenominationsResource.isLoading()),
 
       // Equipos físicos de tubo reactivos (filtrados por familyId del arma seleccionada)
       tubeDenominations: computed<SpecimenItem[]>(() => {
@@ -152,11 +160,11 @@ export const ArmamentStore = signalStore(
     },
 
     /**
-     * Carga denominaciones de arma filtradas por el itemType seleccionado.
-     * Llama a GET /centers/{centerId}/equipment/denominations?itemType={itemType}
+     * Carga denominaciones de arma.
+     * Llama a GET /centers/{centerId}/equipment/denominations?itemType=WEAPON
      */
-    loadWeaponDenominations(itemType: string): void {
-      armamentService.loadWeaponDenominations(itemType);
+    loadWeaponDenominations(): void {
+      armamentService.loadWeaponDenominations();
     },
 
     /**
@@ -164,6 +172,21 @@ export const ArmamentStore = signalStore(
      */
     clearWeaponDenominations(): void {
       armamentService.clearWeaponDenominations();
+    },
+
+    /**
+     * Carga denominaciones de mortero.
+     * Llama a GET /centers/{centerId}/equipment/denominations?itemType=MORTAR
+     */
+    loadMortarDenominations(): void {
+      armamentService.loadMortarDenominations();
+    },
+
+    /**
+     * Limpia el listado de denominaciones de mortero.
+     */
+    clearMortarDenominations(): void {
+      armamentService.clearMortarDenominations();
     },
 
     /**

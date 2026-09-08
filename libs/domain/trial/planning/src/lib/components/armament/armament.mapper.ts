@@ -96,7 +96,7 @@ export function mergeCatalogOptions(
   shots: ArmamentSerie['shots'],
   idKey: 'weaponExternalId' | 'tubeExternalId',
   nameKey: 'weaponName' | 'tubeName',
-  fallbackType: 'WEAPON' | 'TUBE',
+  fallbackType: 'WEAPON' | 'MORTAR' | 'TUBE',
 ): SpecimenItem[] {
   const byId = new Map<string, SpecimenItem>();
 

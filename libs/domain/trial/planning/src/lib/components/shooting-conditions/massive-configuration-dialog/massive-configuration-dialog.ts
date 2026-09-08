@@ -15,7 +15,6 @@ import {
 } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
 import type { Serie, ShootingConditionsUnits, UpdateShot } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 
@@ -65,7 +64,6 @@ interface DialogData {
     NoLeadingZerosDirective,
     LocaleDecimalInputDirective,
   ],
-  providers: [PlanningGeneralDataStore],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
       <ui-inta-icon name="edit" size="xxl" />
@@ -81,8 +79,8 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="bulk-series"
+              clearable
               multiple
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.SERIES_PLACEHOLDER' | translate
@@ -102,8 +100,8 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="bulk-date"
+              clearable
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_PLACEHOLDER' | translate
               "
@@ -129,8 +127,8 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="bulk-impact"
+              clearable
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
                   | translate
@@ -150,8 +148,8 @@ interface DialogData {
           </label>
           <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
-              clearable
               id="bulk-target"
+              clearable
               [placeholder]="
                 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
               "
@@ -311,8 +309,8 @@ interface DialogData {
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="bulk-material"
+                clearable
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
                     | translate
@@ -331,12 +329,14 @@ interface DialogData {
 
           <div class="flex flex-col gap-1">
             <label for="bulk-dims" class="text-xs font-bold text-slate-700 ml-1">
-              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_LABEL' | translate }}
+              {{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_LABEL' | translate
+              }}
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="bulk-dims"
+                clearable
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_PLACEHOLDER'
                     | translate
@@ -355,12 +355,14 @@ interface DialogData {
 
           <div class="flex flex-col gap-1">
             <label for="bulk-thick" class="text-xs font-bold text-slate-700 ml-1">
-              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_LABEL' | translate }}
+              {{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_LABEL' | translate
+              }}
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
-                clearable
                 id="bulk-thick"
+                clearable
                 [placeholder]="
                   'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_PLACEHOLDER'
                     | translate
@@ -383,7 +385,9 @@ interface DialogData {
             </label>
             <ui-input-select
               placeholder="0"
-              label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate }}"
+              label="{{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate
+              }}"
               [opciones]="unitOptions.distance"
               [showLabel]="false"
               [value]="configModel().distance"
@@ -442,7 +446,6 @@ interface DialogData {
 })
 export class MassiveConfigurationDialog {
   readonly shootingConditionsService = inject(ShootingConditionsService);
-  protected readonly store = inject(PlanningGeneralDataStore);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   readonly dialogRef = inject(MatDialogRef<MassiveConfigurationDialog>);
   readonly #applyConfirmed = signal(false);
@@ -483,7 +486,7 @@ export class MassiveConfigurationDialog {
   });
 
   constructor() {
-    const units = this.store.conditionsUnits();
+    const units = this.shootingConditionsService.conditionsResource.value()?.units;
     this.configModel.set({
       series: [],
       date: '',

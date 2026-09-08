@@ -1,3 +1,4 @@
+import type { Injector } from '@angular/core';
 import { Injectable, inject } from '@angular/core';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,6 +10,7 @@ import type {
   MassiveConfigData,
   MassiveShotsConfigurationDialogData,
   UpdateArmamentDialogData,
+  UpdateArmamentDialogResult,
 } from '../../utils-models/armament.model';
 import type { SpecimenItem } from '../../utils-models/catalog.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
@@ -41,23 +43,25 @@ export class ArmamentDialogService {
   }
 
   openUpdateDialog(
-    trialId: string,
     shotIdx: number,
     shot: ArmamentSerieShot,
     weapons: SpecimenItem[],
     tubes: SpecimenItem[],
-  ): Promise<boolean | undefined> {
-    const dialogRef = this.#dialog.open<UpdateArmamentDialog, UpdateArmamentDialogData, boolean>(UpdateArmamentDialog, {
-      width: '600px',
-      data: {
-        trialId,
-        shotNumber: shotIdx + 1,
-        shotId: shot.shotId,
-        armament: shot.armament,
-        weapons,
-        tubes,
+    injector?: Injector,
+  ): Promise<UpdateArmamentDialogResult | undefined> {
+    const dialogRef = this.#dialog.open<UpdateArmamentDialog, UpdateArmamentDialogData, UpdateArmamentDialogResult>(
+      UpdateArmamentDialog,
+      {
+        width: '600px',
+        injector,
+        data: {
+          shotNumber: shotIdx + 1,
+          armament: shot.armament,
+          weapons,
+          tubes,
+        },
       },
-    });
+    );
 
     return firstValueFrom(dialogRef.afterClosed());
   }

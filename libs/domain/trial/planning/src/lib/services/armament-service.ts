@@ -5,13 +5,20 @@ import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 
 import type {
-    ArmamentBulkUpdateRequest,
-    SeriesArmamentData,
-    TrialArmamentResponse,
+  ArmamentBulkUpdateRequest,
+  SeriesArmamentData,
+  TrialArmamentResponse,
 } from '../utils-models/armament.model';
 import type { CatalogQueryParams, SpecimenListResponse } from '../utils-models/catalog.model';
 
-export type { ArmamentBulkUpdateRequest, CatalogQueryParams, SeriesArmamentData, SpecimenItem, SpecimenListResponse, TrialArmamentResponse };
+export type {
+  ArmamentBulkUpdateRequest,
+  CatalogQueryParams,
+  SeriesArmamentData,
+  SpecimenItem,
+  SpecimenListResponse,
+  TrialArmamentResponse,
+};
 
 type EquipmentDenominationApiItem = {
   id: number | string;
@@ -51,11 +58,18 @@ type SpecimenItem = {
   type: 'WEAPON' | 'TUBE' | 'MORTAR' | 'BUNDLE' | 'MUNITION';
   active: boolean;
   familyId?: number;
+  denominationId?: number;
+  modelName?: string;
 };
 
-/** Parámetros para el resource de denominaciones arma: itemType obligatorio */
+/** Parámetros para el resource de denominaciones arma. */
 type WeaponDenominationParams = {
-  itemType: string;
+  itemType: 'WEAPON';
+};
+
+/** Parámetros para el resource de denominaciones mortero. */
+type MortarDenominationParams = {
+  itemType: 'MORTAR';
 };
 
 /** Parámetros para el resource de denominaciones tubo: siempre TUBE + familyId del arma seleccionada */
@@ -76,6 +90,7 @@ export class ArmamentService {
 
   // Nuevos signals reactivos para denominaciones en cascada
   readonly #weaponDenominationParams = signal<WeaponDenominationParams | null>(null);
+  readonly #mortarDenominationParams = signal<MortarDenominationParams | null>(null);
   readonly #tubeDenominationParams = signal<TubeDenominationParams | null>(null);
 
   readonly #planningUrl = injectPlanningEndpoint();
@@ -110,7 +125,7 @@ export class ArmamentService {
     return {
       url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
-      parse: (raw) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON'),
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON'),
     };
   });
 
@@ -127,12 +142,27 @@ export class ArmamentService {
   });
 
   /**
-   * Resource reactivo para denominaciones de arma filtrado por itemType.
-   * Se activa cuando se selecciona un tipo en el campo Tipo.
-   * URL: GET /centers/{centerId}/equipment/denominations?itemType={itemType}
+   * Resource reactivo para denominaciones de arma.
+   * URL: GET /centers/{centerId}/equipment/denominations?itemType=WEAPON
    */
   readonly weaponDenominationsResource = httpResource<SpecimenListResponse>(() => {
     const params = this.#weaponDenominationParams();
+    if (!params) return undefined;
+
+    const queryParams = this.#buildQueryParams({ itemType: params.itemType });
+    return {
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+      method: 'GET',
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, params.itemType as SpecimenItem['type']),
+    };
+  });
+
+  /**
+   * Resource reactivo para denominaciones de mortero.
+   * URL: GET /centers/{centerId}/equipment/denominations?itemType=MORTAR
+   */
+  readonly mortarDenominationsResource = httpResource<SpecimenListResponse>(() => {
+    const params = this.#mortarDenominationParams();
     if (!params) return undefined;
 
     const queryParams = this.#buildQueryParams({ itemType: params.itemType });
@@ -181,11 +211,10 @@ export class ArmamentService {
   }
 
   /**
-   * Carga denominaciones de arma filtradas por itemType.
-   * @param itemType Tipo seleccionado (WEAPON, MORTAR, BUNDLE)
+   * Carga denominaciones de arma.
    */
-  loadWeaponDenominations(itemType: string): void {
-    this.#weaponDenominationParams.set({ itemType });
+  loadWeaponDenominations(): void {
+    this.#weaponDenominationParams.set({ itemType: 'WEAPON' });
   }
 
   /**
@@ -193,6 +222,20 @@ export class ArmamentService {
    */
   clearWeaponDenominations(): void {
     this.#weaponDenominationParams.set(null);
+  }
+
+  /**
+   * Carga denominaciones de mortero.
+   */
+  loadMortarDenominations(): void {
+    this.#mortarDenominationParams.set({ itemType: 'MORTAR' });
+  }
+
+  /**
+   * Limpia el resource de denominaciones de mortero.
+   */
+  clearMortarDenominations(): void {
+    this.#mortarDenominationParams.set(null);
   }
 
   /**
@@ -257,6 +300,7 @@ export class ArmamentService {
       items: (response.items ?? []).map((item) => ({
         id: String(item.id),
         name: item.modelName,
+        denominationId: item.denominationId,
         modelName: item.modelName,
         type: 'TUBE',
         active: true,

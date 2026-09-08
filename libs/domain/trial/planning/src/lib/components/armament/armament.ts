@@ -9,9 +9,10 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
-import { applyEach, disabled, form, max, min, required } from '@angular/forms/signals';
+import { applyEach, disabled, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -228,6 +229,7 @@ export class Armament implements OnInit {
   readonly isSaving = this.#armamentStore.isUpdatingArmament;
   readonly updateStatus = this.#armamentStore.updateArmamentStatus;
   readonly isLoadingWeaponDenominations = this.#armamentStore.isLoadingWeaponDenominations;
+  readonly isLoadingMortarDenominations = this.#armamentStore.isLoadingMortarDenominations;
   readonly isLoadingTubeDenominations = this.#armamentStore.isLoadingTubeDenominations;
 
   /**
@@ -235,7 +237,7 @@ export class Armament implements OnInit {
    * Incluye las armas ya guardadas en el armamento para no perder opciones activas.
    */
   readonly weaponOptions = computed(() => {
-    const denominations = this.#armamentStore.weaponDenominations();
+    const denominations = [...this.#armamentStore.weaponDenominations(), ...this.#armamentStore.mortarDenominations()];
     const existing = this.armamentSignal().flatMap((serie) => serie.shots);
     return mergeCatalogOptions(denominations, existing, 'weaponExternalId', 'weaponName', 'WEAPON');
   });
@@ -284,8 +286,13 @@ export class Armament implements OnInit {
         return;
       }
 
-      this.armamentSignal.set(mergedSeries);
-      this.#initialArmamentData = deepClone(mergedSeries);
+      const current = untracked(this.armamentSignal);
+      const mergedSeriesById = new Map(mergedSeries.map((serie) => [serie.seriesId, serie]));
+      const updatedSeries =
+        current.length === 0 ? mergedSeries : this.#mergeArmamentRowItems(current, mergedSeriesById);
+
+      this.armamentSignal.set(updatedSeries);
+      this.#initialArmamentData = deepClone(updatedSeries);
 
       if (hasArmament) {
         this.#armamentApplied = true;
@@ -320,11 +327,22 @@ export class Armament implements OnInit {
   readonly armamentForm = form(this.armamentSignal, (root) => {
     applyEach(root, (serie) => {
       applyEach(serie.shots, (shotPath) => {
-        required(shotPath.armament.weaponExternalId, {
+        required(shotPath.armament.weaponType);
+        required(shotPath.armament.weaponExternalId);
+        required(shotPath.armament.tubeExternalId, {
           when: ({ valueOf }) => {
             const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
-            return !!weaponType && weaponType !== SpecimenType.Weapon;
+
+            return !!weaponType && weaponType !== SpecimenType.Mortar;
           },
+        });
+        validate(shotPath.armament.isInstrumented, ({ value, valueOf }) => {
+          const instrument = value();
+          const type = valueOf(shotPath.armament.weaponType)?.toLowerCase();
+
+          if (type === SpecimenType.Mortar) return null;
+
+          return instrument !== null ? null : { kind: 'required' };
         });
         required(shotPath.armament.tubeLifePercentage, {
           when: ({ valueOf }) => {
@@ -334,11 +352,15 @@ export class Armament implements OnInit {
         });
 
         disabled(shotPath.armament.weaponType, () => this.readonly());
-        disabled(
-          shotPath.armament.weaponExternalId,
-          ({ valueOf }) =>
-            this.readonly() || !valueOf(shotPath.armament.weaponType) || this.isLoadingWeaponDenominations(),
-        );
+        disabled(shotPath.armament.weaponExternalId, ({ valueOf }) => {
+          const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
+          const isLoadingDenominations =
+            weaponType === SpecimenType.Mortar
+              ? this.isLoadingMortarDenominations()
+              : this.isLoadingWeaponDenominations();
+
+          return this.readonly() || !weaponType || isLoadingDenominations;
+        });
         disabled(
           shotPath.armament.tubeExternalId,
           ({ valueOf }) =>
@@ -358,17 +380,22 @@ export class Armament implements OnInit {
   }
 
   onShotChange(serieIndex: number, shotIndex: number, updatedShot: ArmamentSerieShot): void {
-    this.armamentSignal.update((series) => {
-      // Mutate armament in-place to preserve FieldTree node identity in Signal Forms.
-      // Creating new object references forces Signal Forms to rebuild FieldTree nodes,
-      // causing a timing issue where formPath is stale when conditional templates re-render.
-      const shot = series[serieIndex]?.shots[shotIndex];
-      if (shot) {
-        Object.assign(shot.armament, updatedShot.armament);
-      }
-      // Return a new top-level array reference to trigger Angular change detection
-      return [...series];
-    });
+    this.armamentSignal.update((series) =>
+      series.map((serie, i) => {
+        if (i !== serieIndex) return serie;
+
+        // Rebuild the reference chain only down to the edited shot (series -> shots -> shot -> armament)
+        // so Signal Forms detects the change and repaints the bound select, while sibling shots/series
+        // keep their identity to avoid rebuilding unrelated FieldTree nodes (stale formPath).
+        return {
+          ...serie,
+          shots: serie.shots.map((shot, j) => {
+            if (j !== shotIndex) return shot;
+            return { ...shot, armament: { ...shot.armament, ...updatedShot.armament } };
+          }),
+        };
+      }),
+    );
   }
 
   async openMassiveConfiguration(): Promise<void> {
@@ -406,8 +433,12 @@ export class Armament implements OnInit {
 
         if (config.denominacionArma) {
           updatedArmament.weaponExternalId = config.denominacionArma;
+          const selectedDenominations =
+            config.tipo === SpecimenType.Mortar
+              ? this.#armamentStore.mortarDenominations()
+              : this.#armamentStore.weaponDenominations();
           const foundWeapon =
-            this.#armamentStore.weaponDenominations().find((w) => String(w.id) === config.denominacionArma) ??
+            selectedDenominations.find((w) => String(w.id) === config.denominacionArma) ??
             this.weaponOptions().find((w) => w.id === config.denominacionArma);
           if (foundWeapon) {
             updatedArmament.weaponName = foundWeapon.name;
@@ -417,7 +448,7 @@ export class Armament implements OnInit {
         if (config.denominacionTubo) {
           updatedArmament.tubeExternalId = config.denominacionTubo;
           const foundTube =
-            this.#armamentStore.tubeDenominations().find((t) => String(t.id) === config.denominacionTubo) ??
+            this.#armamentStore.tubeDenominations().find((t) => String(t.id) === String(config.denominacionTubo)) ??
             this.tubeOptions().find((t) => t.id === config.denominacionTubo);
           if (foundTube) {
             updatedArmament.tubeName = foundTube.name;
@@ -451,31 +482,21 @@ export class Armament implements OnInit {
     this.armamentSignal.set(updatedSeries);
   }
 
-  async openUpdateDialog(serieIdx: number, shotIdx: number): Promise<void> {
-    if (this.readonly()) {
-      return;
-    }
-    const serie = this.armamentSignal()[serieIdx];
-    const shot = serie.shots[shotIdx];
-    const trialId = this.#planningGeneralDataStore.fireTrialId();
+  #mergeArmamentRowItems(current: ArmamentSerie[], mergedSeriesById: Map<string, ArmamentSerie>) {
+    return current.map((currentSerie) => {
+      const mergedSerie = mergedSeriesById.get(currentSerie.seriesId);
 
-    if (!trialId) {
-      console.error('No se pudo obtener el trialId');
-      return;
-    }
+      if (!mergedSerie) return currentSerie;
 
-    const wasUpdated = await this.#armamentDialogService.openUpdateDialog(
-      trialId,
-      shotIdx,
-      shot,
-      this.weaponOptions(),
-      this.tubeOptions(),
-    );
-
-    if (wasUpdated) {
-      this.#armamentStore.reloadArmament();
-      console.info('Shot actualizado correctamente');
-    }
+      const globalNumbersByShotId = new Map(currentSerie.shots.map((shot) => [shot.shotId, shot.globalNumber]));
+      return {
+        ...mergedSerie,
+        shots: mergedSerie.shots.map((shot) => ({
+          ...shot,
+          globalNumber: globalNumbersByShotId.get(shot.shotId) ?? shot.globalNumber,
+        })),
+      };
+    });
   }
 
   isFormValid(): boolean {

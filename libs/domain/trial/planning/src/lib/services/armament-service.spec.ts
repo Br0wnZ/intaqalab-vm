@@ -245,6 +245,31 @@ describe('ArmamentService', () => {
       }));
   });
 
+  describe('Denomination resources', () => {
+    it('should fetch weapon and mortar denominations independently', () =>
+      fakeAsync(() => {
+        service.loadWeaponDenominations();
+        service.loadMortarDenominations();
+        tick();
+
+        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', {
+          page: 0,
+          pageSize: 1,
+          totalElements: 1,
+          items: [{ id: 1, name: 'Weapon denomination', itemType: 'WEAPON', active: true }],
+        });
+        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=MORTAR`, 'GET', {
+          page: 0,
+          pageSize: 1,
+          totalElements: 1,
+          items: [{ id: 2, name: 'Mortar denomination', itemType: 'MORTAR', active: true }],
+        });
+
+        expect(service.weaponDenominationsResource.value()?.items[0]?.type).toBe('WEAPON');
+        expect(service.mortarDenominationsResource.value()?.items[0]?.type).toBe('MORTAR');
+      }));
+  });
+
   describe('Resource States & Edge Cases', () => {
     it('should not make armament request when params are null', () =>
       fakeAsync(() => {

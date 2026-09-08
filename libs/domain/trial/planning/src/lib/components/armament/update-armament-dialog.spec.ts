@@ -1,5 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { TranslateModule } from '@ngx-translate/core';
@@ -7,14 +6,12 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ArmamentStoreType } from '../../+state/armament.store';
+import { ArmamentStore } from '../../+state/armament.store';
 import type { UpdateArmamentDialogData } from '../../utils-models/armament.model';
+import type { SpecimenItem } from '../../utils-models/catalog.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { UpdateArmamentDialog } from './update-armament-dialog';
-
-vi.mock('@intaqalab/config', () => ({
-  injectPlanningEndpoint: () => 'http://api.test/planning',
-  injectApiUrl: () => 'http://api.test/center',
-}));
 
 function createMockDialogRef() {
   return {
@@ -27,9 +24,7 @@ function createMockDialogRef() {
 
 function createMockDialogData(overrides: Partial<UpdateArmamentDialogData> = {}): UpdateArmamentDialogData {
   return {
-    trialId: 'trial-123',
     shotNumber: 1,
-    shotId: 'shot-001',
     armament: {
       weaponType: SpecimenType.Weapon,
       weaponName: 'Obús 105mm',
@@ -53,14 +48,22 @@ function createMockDialogData(overrides: Partial<UpdateArmamentDialogData> = {})
 }
 
 const renderDialog = async (dialogRefMock = createMockDialogRef(), dialogData = createMockDialogData()) => {
+  const armamentStoreMock: Pick<
+    ArmamentStoreType,
+    'tubeDenominations' | 'loadTubeDenominations' | 'clearTubeDenominations'
+  > = {
+    tubeDenominations: signal<SpecimenItem[]>([]),
+    loadTubeDenominations: vi.fn(),
+    clearTubeDenominations: vi.fn(),
+  };
+
   return render(UpdateArmamentDialog, {
     imports: [TranslateModule.forRoot()],
     providers: [
-      provideHttpClient(),
-      provideHttpClientTesting(),
       provideNoopAnimations(),
       { provide: MatDialogRef, useValue: dialogRefMock },
       { provide: MAT_DIALOG_DATA, useValue: dialogData },
+      { provide: ArmamentStore, useValue: armamentStoreMock },
     ],
   });
 };
@@ -139,6 +142,21 @@ describe('UpdateArmamentDialog', () => {
       const component = renderResult.fixture.componentInstance;
 
       expect(component.armamentForm().valid()).toBe(true);
+    });
+
+    it('should have a valid form when isInstrumented is false', async () => {
+      const renderResult = await renderDialog();
+
+      expect(renderResult.fixture.componentInstance.armamentForm().valid()).toBe(true);
+    });
+
+    it('should have an invalid form when isInstrumented is undefined', async () => {
+      const data = createMockDialogData();
+      data.armament.isInstrumented = null as never;
+
+      const renderResult = await renderDialog(createMockDialogRef(), data);
+
+      expect(renderResult.fixture.componentInstance.armamentForm().valid()).toBe(false);
     });
 
     it('should have invalid form when weaponExternalId is empty', async () => {
@@ -222,23 +240,29 @@ describe('UpdateArmamentDialog', () => {
 
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
+
+    it('onApply should close dialog with form data when form is valid', async () => {
+      const dialogRefMock = createMockDialogRef();
+      const renderResult = await renderDialog(dialogRefMock);
+
+      renderResult.fixture.componentInstance.onApply();
+
+      expect(dialogRefMock.close).toHaveBeenCalledWith({
+        weaponExternalId: 'weapon-1',
+        tubeExternalId: 'tube-1',
+        isInstrumented: false,
+        tubeLifePercentage: 75,
+        observations: 'Initial observations',
+      });
+    });
   });
 
   describe('Component logic', () => {
-    it('should expose isUpdating as false initially', async () => {
-      const renderResult = await renderDialog();
-      const component = renderResult.fixture.componentInstance;
-
-      expect(component.isUpdating()).toBe(false);
-    });
-
     it('should have correct data from MAT_DIALOG_DATA', async () => {
       const renderResult = await renderDialog();
       const component = renderResult.fixture.componentInstance;
 
-      expect(component.data.trialId).toBe('trial-123');
       expect(component.data.shotNumber).toBe(1);
-      expect(component.data.shotId).toBe('shot-001');
       expect(component.data.weapons.length).toBe(2);
       expect(component.data.tubes.length).toBe(2);
     });

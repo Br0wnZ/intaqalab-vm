@@ -93,9 +93,7 @@ export type ArmamentItem = {
 };
 
 export type UpdateArmamentDialogData = {
-  trialId: string;
   shotNumber: number;
-  shotId: string;
   armament: ArmamentSerieShotDetail;
   weapons: SpecimenItem[];
   tubes: SpecimenItem[];

@@ -8,7 +8,6 @@ import { createMockResource } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
-import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 import { MassiveConfigurationDialog } from './massive-configuration-dialog';
 
@@ -49,14 +48,6 @@ describe('MassiveConfigurationDialog', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockShootingConditionsService: any;
 
-  const mockStore = {
-    series: () => [
-      { id: 'serie-1', name: 'Serie 1' },
-      { id: 'serie-2', name: 'Serie 2' },
-    ],
-    conditionsUnits: () => ({ velocity: 'm/s', pressure: 'bar' }),
-  };
-
   const renderDialog = async (dialogRefMock = createFullMockDialogRef()) => {
     const view = await render(MassiveConfigurationDialog, {
       imports: [TranslateModule.forRoot()],
@@ -77,7 +68,6 @@ describe('MassiveConfigurationDialog', () => {
         },
         { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
       ],
-      componentProviders: [{ provide: PlanningGeneralDataStore, useValue: mockStore }],
     });
 
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
@@ -88,6 +78,7 @@ describe('MassiveConfigurationDialog', () => {
     vi.clearAllMocks();
 
     mockShootingConditionsService = {
+      conditionsResource: createMockResource({ units: { velocity: 'm/s', pressure: 'bar' }, series: [] }),
       getTargetTypesResource: createMockResource(mockTargetTypes),
       getTargetMaterialsResource: createMockResource(mockMaterials),
       getImpactZonesResource: createMockResource(mockImpactZones),

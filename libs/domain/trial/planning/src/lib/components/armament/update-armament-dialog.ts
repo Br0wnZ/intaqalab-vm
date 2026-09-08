@@ -1,22 +1,17 @@
-import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, max, min, required } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectPlanningEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { actionTrigger } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type {
-  ArmamentBulkUpdateRequest,
-  UpdateArmamentDialogData,
-  UpdateArmamentDialogResult,
-} from '../../utils-models/armament.model';
+import { ArmamentStore } from '../../+state/armament.store';
+import type { UpdateArmamentDialogData, UpdateArmamentDialogResult } from '../../utils-models/armament.model';
+import type { SpecimenItem } from '../../utils-models/catalog.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 
 @Component({
@@ -50,6 +45,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
               clearable
               [formField]="armamentForm.weaponExternalId"
               [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.WEAPON_PLACEHOLDER' | translate"
+              (valueChange)="onWeaponChange($event)"
             >
               @for (weapon of data.weapons; track weapon.id) {
                 <mat-option [value]="weapon.id">{{ weapon.name }}</mat-option>
@@ -70,8 +66,10 @@ import { SpecimenType } from '../../utils-models/specimen.model';
                 [formField]="armamentForm.tubeExternalId"
                 [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_PLACEHOLDER' | translate"
               >
-                @for (tube of data.tubes; track tube.id) {
-                  <mat-option [value]="tube.id">{{ tube.name }}</mat-option>
+                @for (tube of tubeOptions(); track tube.denominationId ?? tube.id) {
+                  <mat-option [value]="tube.denominationId?.toString() ?? tube.id">
+                    {{ tube.modelName ?? tube.name }}
+                  </mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -79,37 +77,41 @@ import { SpecimenType } from '../../utils-models/specimen.model';
         }
 
         <!-- Instrumentado -->
-        <div>
-          <div class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.INSTRUMENTED_LABEL' | translate }}
+        @if (data.armament.weaponType !== mortarSpecimenType) {
+          <div>
+            <div class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.INSTRUMENTED_LABEL' | translate }}
+            </div>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select
+                clearable
+                [formField]="armamentForm.isInstrumented"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
+              >
+                <mat-option [value]="true">{{ 'TRIAL_PLANNING.ARMAMENT.TABLE.YES' | translate }}</mat-option>
+                <mat-option [value]="false">{{ 'TRIAL_PLANNING.ARMAMENT.TABLE.NO' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-select
-              clearable
-              [formField]="armamentForm.isInstrumented"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
-            >
-              <mat-option [value]="true">{{ 'TRIAL_PLANNING.ARMAMENT.TABLE.YES' | translate }}</mat-option>
-              <mat-option [value]="false">{{ 'TRIAL_PLANNING.ARMAMENT.TABLE.NO' | translate }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
+        }
 
         <!-- Vida útil -->
-        <div>
-          <div class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.LIFE_LABEL' | translate }}
+        @if (data.armament.weaponType !== mortarSpecimenType) {
+          <div>
+            <div class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.LIFE_LABEL' | translate }}
+            </div>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                matInput
+                type="number"
+                [formField]="armamentForm.tubeLifePercentage"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.LIFE_PLACEHOLDER' | translate"
+              />
+              <span matTextSuffix>%</span>
+            </mat-form-field>
           </div>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              matInput
-              type="number"
-              [formField]="armamentForm.tubeLifePercentage"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.LIFE_PLACEHOLDER' | translate"
-            />
-            <span matTextSuffix>%</span>
-          </mat-form-field>
-        </div>
+        }
 
         <!-- Observaciones -->
         <div>
@@ -130,7 +132,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
     </mat-dialog-content>
 
     <mat-dialog-actions>
-      <button mat-flat-button color="primary" [disabled]="armamentForm().invalid() || isUpdating()" (click)="onApply()">
+      <button mat-flat-button color="primary" [disabled]="armamentForm().invalid()" (click)="onApply()">
         {{ 'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.APPLY_BUTTON' | translate }}
       </button>
       <button mat-stroked-button (click)="onCancel()">
@@ -143,26 +145,10 @@ import { SpecimenType } from '../../utils-models/specimen.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateArmamentDialog {
-  readonly #planningUrl = injectPlanningEndpoint();
-  readonly dialogRef = inject(MatDialogRef<UpdateArmamentDialog>);
+  readonly dialogRef = inject(MatDialogRef<UpdateArmamentDialog, UpdateArmamentDialogResult>);
   readonly data = inject<UpdateArmamentDialogData>(MAT_DIALOG_DATA);
   readonly mortarSpecimenType = SpecimenType.Mortar;
-
-  readonly #updateTrigger = actionTrigger<{ trialId: string; body: ArmamentBulkUpdateRequest }>();
-
-  readonly #updateResource = httpResource<void>(() => {
-    const params = this.#updateTrigger.value();
-    if (!params) return undefined;
-
-    return {
-      url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/armament`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  readonly updateStatus = computed(() => this.#updateResource.status());
-  readonly isUpdating = computed(() => this.#updateResource.isLoading());
+  readonly #armamentStore = inject(ArmamentStore);
 
   readonly armamentModel = signal<UpdateArmamentDialogResult>({
     weaponExternalId: this.data.armament.weaponExternalId,
@@ -172,49 +158,70 @@ export class UpdateArmamentDialog {
     observations: this.data.armament.observations || '',
   });
 
+  readonly tubeOptions = computed<SpecimenItem[]>(() => {
+    const denominations = this.#armamentStore.tubeDenominations();
+    const selectedId = this.armamentModel().tubeExternalId;
+
+    if (!selectedId || denominations.some((tube) => (tube.denominationId?.toString() ?? tube.id) === selectedId)) {
+      return denominations;
+    }
+
+    const fallback = this.data.tubes.find((tube) => (tube.denominationId?.toString() ?? tube.id) === selectedId) ?? {
+      id: selectedId,
+      name: this.data.armament.tubeName || selectedId,
+      type: 'TUBE' as const,
+      active: true,
+    };
+
+    return [...denominations, fallback];
+  });
+
+  constructor() {
+    const initialFamilyId = this.data.weapons.find(
+      (weapon) => weapon.id === this.data.armament.weaponExternalId,
+    )?.familyId;
+    if (this.data.armament.weaponType !== this.mortarSpecimenType && initialFamilyId !== undefined) {
+      this.#armamentStore.loadTubeDenominations(initialFamilyId);
+    }
+  }
+
   readonly armamentForm = form(this.armamentModel, (f) => {
     required(f.weaponExternalId);
     required(f.tubeExternalId, { when: () => this.data.armament.weaponType !== this.mortarSpecimenType });
-    required(f.isInstrumented);
+    validate(f.isInstrumented, ({ value }) => {
+      const instrument = value();
+      const type = this.data.armament.weaponType.toLowerCase();
+
+      if (type === SpecimenType.Mortar) return null;
+
+      return instrument !== null ? null : { kind: 'required' };
+    });
     required(f.tubeLifePercentage);
     min(f.tubeLifePercentage, 0);
     max(f.tubeLifePercentage, 100);
   });
 
-  constructor() {
-    effect(() => {
-      const status = this.updateStatus();
-      if (status === 'resolved') {
-        this.dialogRef.close(true);
-      }
-    });
-  }
-
   onCancel(): void {
     this.dialogRef.close();
   }
 
+  onWeaponChange(weaponId: string | null | undefined): void {
+    this.armamentModel.update((current) => ({ ...current, tubeExternalId: '' }));
+
+    if (!weaponId) {
+      this.#armamentStore.clearTubeDenominations();
+      return;
+    }
+
+    const familyId = this.data.weapons.find((weapon) => weapon.id === weaponId)?.familyId;
+    if (familyId !== undefined) {
+      this.#armamentStore.loadTubeDenominations(familyId);
+    }
+  }
+
   onApply(): void {
     if (this.armamentForm().valid()) {
-      const formData = this.armamentModel();
-
-      this.#updateTrigger.fire({
-        trialId: this.data.trialId,
-        body: {
-          shots: [
-            {
-              shotId: this.data.shotId,
-              // Conversión string→integer según contrato Swagger
-              weaponExternalId: formData.weaponExternalId ? Number(formData.weaponExternalId) : undefined,
-              tubeExternalId: formData.tubeExternalId ? Number(formData.tubeExternalId) : undefined,
-              itemType: this.data.armament.weaponType.toUpperCase(),
-              isInstrumented: formData.isInstrumented,
-              lifeUsefulPercentage: formData.tubeLifePercentage,
-              observations: formData.observations,
-            },
-          ],
-        },
-      });
+      this.dialogRef.close(this.armamentModel());
     }
   }
 }

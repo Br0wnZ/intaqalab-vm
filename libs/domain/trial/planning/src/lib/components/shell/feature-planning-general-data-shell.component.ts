@@ -105,7 +105,6 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
 export class FeaturePlanningGeneralDataShellComponent {
   readonly trial = input<TrialCreateModifyForm>();
   readonly trialId = input<FireTrial['id']>();
-  readonly hasPlanniUsers = input<boolean>(false);
 
   readonly #store = inject(PlanningGeneralDataStore);
   readonly #planningPermissions = inject(PlanningPermissionsService);
@@ -152,7 +151,7 @@ export class FeaturePlanningGeneralDataShellComponent {
       const trialId = this.trialId();
 
       if (trial && trialId) {
-        this.#store.setFireTrialData(trialId, trial, this.hasPlanniUsers());
+        this.#store.setFireTrialData(trialId, trial);
       }
     });
   }

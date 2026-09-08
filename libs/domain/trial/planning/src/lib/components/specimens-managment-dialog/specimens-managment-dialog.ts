@@ -20,7 +20,13 @@ import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../../utils-models/specimen.model';
+import {
+  mapSpecimenTypeToApiType,
+  type SpecimenDialogResult,
+  type SpecimenOption,
+  type SpecimenSelection,
+  SpecimenType,
+} from '../../utils-models/specimen.model';
 
 @Component({
   selector: 'inta-specimens-managment-dialog',
@@ -181,10 +187,10 @@ import { type SpecimenOption, type SpecimenSelection, SpecimenType } from '../..
 export class SpecimensManagmentDialog {
   readonly autocompleteTrigger = viewChild(MatAutocompleteTrigger);
 
-  readonly #dialogRef = inject(MatDialogRef<SpecimensManagmentDialog>);
+  readonly #dialogRef = inject(MatDialogRef<SpecimensManagmentDialog, SpecimenDialogResult[]>);
   readonly #dialogData = inject<{
     specimens: SpecimenOption[];
-    selectedSpecimens?: { specimenId: string; batch: string }[];
+    selectedSpecimens?: SpecimenDialogResult[];
   } | null>(MAT_DIALOG_DATA, { optional: true });
   readonly store = inject(PlanningGeneralDataStore);
 
@@ -287,7 +293,7 @@ export class SpecimensManagmentDialog {
       this.selectedSpecimens().map((i) => ({
         specimenId: i.id,
         batch: i.serialNumber || i.lot || '',
-        type: i.type === SpecimenType.Munition ? 'MUNITION' : i.type.toUpperCase(),
+        type: mapSpecimenTypeToApiType(i.type),
       })),
     );
   }

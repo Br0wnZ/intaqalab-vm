@@ -1,3 +1,5 @@
+import type { PlanningSpecimenApiType } from './specimen.model';
+
 export type TrialPlanningInfo = {
   goal: string;
   specimens: Specimen[];
@@ -62,7 +64,9 @@ type DateControl = {
 
 type Specimen = {
   specimenId: string;
+  type: PlanningSpecimenApiType;
   batch?: string;
+  name?: string;
 };
 
 type PlanningUser = {
@@ -72,7 +76,7 @@ type PlanningUser = {
 
 export type UpsertTrialPlanningInfo = {
   goal: string;
-  specimens: { specimenId: string; batch: string }[];
+  specimens: { specimenId: string; type: PlanningSpecimenApiType; batch: string }[];
   planningUserId: string;
   hypochelometricReviewBefore?: boolean;
   hypochelometricReviewAfter?: boolean;

@@ -194,7 +194,7 @@ coverity-des:
     - if: ($CI_COMMIT_BRANCH == "develop") && $CI_PIPELINE_SOURCE != 'merge_request_event'
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
-        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Errores_Criticos_Pipeline"
     - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "develop" 
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
@@ -248,7 +248,7 @@ coverity-pre:
     - if: ($CI_COMMIT_BRANCH == "preprod") && $CI_PIPELINE_SOURCE != 'merge_request_event'
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
-        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Errores_Criticos_Pipeline"
     - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "preprod"
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
@@ -301,7 +301,7 @@ coverity-pro:
     - if: ($CI_COMMIT_BRANCH == "master") && $CI_PIPELINE_SOURCE != 'merge_request_event'
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_COMMIT_BRANCH"
-        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Outstanding Issues"
+        BRIDGE_COVERITY_CONNECT_POLICY_VIEW: "Errores_Criticos_Pipeline"
     - if: ($CI_PIPELINE_SOURCE == 'merge_request_event') && $CI_COMMIT_BRANCH == "master"
       variables:
         BRIDGE_COVERITY_CONNECT_STREAM_NAME: "$CI_PROJECT_NAME-$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"

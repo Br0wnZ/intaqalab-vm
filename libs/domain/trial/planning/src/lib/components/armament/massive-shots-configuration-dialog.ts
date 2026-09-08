@@ -258,12 +258,11 @@ export class MassiveShotsConfigurationDialog {
 
   // ── Resources locales reactivos (independientes del store padre) ──────────
 
-  /**
-   * Denominaciones de arma: reactivo al tipo seleccionado.
-   * GET /centers/{centerId}/equipment/denominations?itemType={tipo}
-   * El interceptor center-interceptor inyecta automáticamente /centers/{centerId}/.
-   */
+  /** Denominaciones de arma: GET /centers/{centerId}/equipment/denominations?itemType=WEAPON. */
   readonly #weaponDenominationsResource = this.#armamentService.weaponDenominationsResource;
+
+  /** Denominaciones de mortero: GET /centers/{centerId}/equipment/denominations?itemType=MORTAR. */
+  readonly #mortarDenominationsResource = this.#armamentService.mortarDenominationsResource;
 
   /**
    * Equipos físicos de tubo: reactivo al familyId del arma seleccionada.
@@ -271,7 +270,9 @@ export class MassiveShotsConfigurationDialog {
    */
   readonly #tubeDenominationsResource = this.#armamentService.tubeDenominationsResource;
 
-  readonly isLoadingWeapons = computed(() => this.#weaponDenominationsResource.isLoading());
+  readonly isLoadingWeapons = computed(() =>
+    this.isMortar() ? this.#mortarDenominationsResource.isLoading() : this.#weaponDenominationsResource.isLoading(),
+  );
   readonly isLoadingTubes = computed(() => this.#tubeDenominationsResource.isLoading());
 
   readonly isMortar = computed(() => this.configModel().tipo?.toLowerCase() === SpecimenType.Mortar);
@@ -292,11 +293,13 @@ export class MassiveShotsConfigurationDialog {
         return !!tipo && tipo !== SpecimenType.Mortar;
       },
     });
-    required(path.instrumentado, {
-      when: ({ valueOf }) => {
-        const tipo = valueOf(path.tipo)?.toLowerCase();
-        return !!tipo && tipo !== SpecimenType.Mortar;
-      },
+    validate(path.instrumentado, ({ value, valueOf }) => {
+      const instrument = value();
+      const type = valueOf(path.tipo)?.toLowerCase();
+
+      if (type === SpecimenType.Mortar) return null;
+
+      return instrument ? null : { kind: 'required' };
     });
     required(path.vidaUtil, {
       when: ({ valueOf }) => {
@@ -312,7 +315,9 @@ export class MassiveShotsConfigurationDialog {
   });
 
   readonly weaponsOptions = computed<{ value: string; label: string }[]>(() => {
-    const response = safeResourceValue(this.#weaponDenominationsResource);
+    const response = safeResourceValue(
+      this.isMortar() ? this.#mortarDenominationsResource : this.#weaponDenominationsResource,
+    );
     return (response?.items ?? []).map((w) => ({ value: w.id, label: w.name }));
   });
 
@@ -353,10 +358,13 @@ export class MassiveShotsConfigurationDialog {
     this.selectedWeaponId.set(null);
     this.#selectedWeaponFamilyId.set(null);
 
-    if (itemType) {
-      this.#armamentService.loadWeaponDenominations(itemType.toUpperCase());
+    if (itemType?.toLowerCase() === SpecimenType.Mortar) {
+      this.#armamentService.loadMortarDenominations();
+    } else if (itemType) {
+      this.#armamentService.loadWeaponDenominations();
     } else {
       this.#armamentService.clearWeaponDenominations();
+      this.#armamentService.clearMortarDenominations();
     }
   }
 
@@ -377,7 +385,9 @@ export class MassiveShotsConfigurationDialog {
     this.selectedWeaponId.set(weaponId);
 
     // Buscar familyId en los items del resource de denominaciones de arma
-    const response = safeResourceValue(this.#weaponDenominationsResource);
+    const response = safeResourceValue(
+      this.isMortar() ? this.#mortarDenominationsResource : this.#weaponDenominationsResource,
+    );
     const weapon = response?.items.find((w) => w.id === weaponId);
     this.#selectedWeaponFamilyId.set(weapon?.familyId ?? null);
   }

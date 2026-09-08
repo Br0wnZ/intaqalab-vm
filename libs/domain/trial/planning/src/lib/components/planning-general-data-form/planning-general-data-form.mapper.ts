@@ -8,10 +8,7 @@ import type { PlanningGeneralData } from './planning-general-data-form.component
 
 export function mapFormDataToUpsertModel(
   formValue: PlanningGeneralData,
-  specimens: {
-    specimenId: string;
-    batch: string;
-  }[],
+  specimens: UpsertTrialPlanningInfo['specimens'],
   showRatingCriteria: boolean,
   ratingCriteria: RatingCriteriaModel | undefined,
   ratingCriteriaUnits: RatingCriteriaUnits | undefined,

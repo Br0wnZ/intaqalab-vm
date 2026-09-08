@@ -16,11 +16,12 @@ import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
-import { SpecimenType } from '../../utils-models/specimen.model';
+import { type SpecimenDialogResult, SpecimenType } from '../../utils-models/specimen.model';
 import type {
   RatingCriteria as RatingCriteriaModel,
   RatingCriteriaUnits,
   TrialPlanningInfo,
+  UpsertTrialPlanningInfo,
 } from '../../utils-models/trial-planing-info.model';
 import { PlanningScheduledDatesComponent } from '../planning-scheduled-dates/planning-scheduled-dates.component';
 import { RatingCriteria } from '../rating-criteria/rating-criteria';
@@ -236,6 +237,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                   [disabled]="generalDataForm.specimen().disabled()"
                   [placeholder]="'TRIAL_PLANNING.GENERAL_DATA_SECTION.SPECIMEN_PLACEHOLDER' | translate"
                   [value]="specimenSummary()"
+                  (focus)="generalDataForm.specimen().markAsTouched()"
                   (mouseenter)="showSpecimenInfoTooltip = true"
                   (mouseleave)="showSpecimenInfoTooltip = false"
                 />
@@ -536,7 +538,6 @@ export class PlanningGeneralDataFormComponent {
     Array<{ id: string; label?: string; name?: { es?: string; en?: string } | string; type?: string }>
   >([]);
   readonly dialog = inject(MatDialog);
-  #specimenSynced = false;
 
   /** Puede validar planificación (pasar a PLANNED) */
   readonly canValidate = computed(() => this.#planningPermissions.canValidatePlanning());
@@ -586,7 +587,7 @@ export class PlanningGeneralDataFormComponent {
     hypochelometricReviewAfter: false,
   });
   #initialFormModel = this.formModel();
-  #initialSelectedSpecimens: { specimenId: string; batch: string }[] = [];
+  #initialSelectedSpecimens: UpsertTrialPlanningInfo['specimens'] = [];
 
   readonly generalDataForm = form(this.formModel, (f) => {
     required(f.goal);
@@ -674,6 +675,7 @@ export class PlanningGeneralDataFormComponent {
         const mappedModel = mapDataToFormModel(planningInfo, DEFAULT_REQUERIMENTS);
         const selectedSpecimens = planningInfo.specimens.map((s) => ({
           specimenId: s.specimenId,
+          type: s.type,
           batch: s.batch ?? '',
         }));
         this.formModel.set(mappedModel);
@@ -718,30 +720,28 @@ export class PlanningGeneralDataFormComponent {
       const mapped = selected.map((s) => ({ specimenId: s.specimenId, batch: s.batch ?? '' }));
       untracked(() => {
         this.formModel.update((m) => ({ ...m, specimen: mapped }));
-        if (this.#specimenSynced) {
-          // Only mark touched after the first sync — avoids showing error on initial load
-          this.generalDataForm.specimen().markAsTouched();
-        } else {
-          this.#specimenSynced = true;
-        }
       });
     });
   }
 
   async openSpecimenManagement(): Promise<void> {
     const specimens = this.#cachedSpecimens();
+    this.generalDataForm.specimen().markAsTouched();
 
-    const dialogRef = this.dialog.open(SpecimensManagmentDialog, {
-      width: '600px',
-      data: {
-        specimens,
-        selectedSpecimenIds: this.generalDataForm
-          .specimen()
-          .value()
-          .map((entry) => entry.specimenId),
-        selectedSpecimens: this.#store.selectedSpecimens(),
+    const dialogRef = this.dialog.open<SpecimensManagmentDialog, unknown, SpecimenDialogResult[]>(
+      SpecimensManagmentDialog,
+      {
+        width: '600px',
+        data: {
+          specimens,
+          selectedSpecimenIds: this.generalDataForm
+            .specimen()
+            .value()
+            .map((entry) => entry.specimenId),
+          selectedSpecimens: this.#store.selectedSpecimens(),
+        },
       },
-    });
+    );
 
     const result = await firstValueFrom(dialogRef.afterClosed(), { defaultValue: undefined });
     if (result !== undefined) {

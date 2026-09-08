@@ -2,8 +2,8 @@
   "goal": "Evaluar comportamiento del material en condiciones estándar",
   "isValidable": true,
   "specimens": [
-    { "specimenId": "550e8400-e29b-41d4-a716-446655440010", "batch": "" },
-    { "specimenId": "550e8400-e29b-41d4-a716-446655440011", "batch": "" }
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440010", "type": "MUNITION", "batch": "" },
+    { "specimenId": "550e8400-e29b-41d4-a716-446655440011", "type": "MUNITION", "batch": "" }
   ],
   "planningUser": { "id": "b01a0e23-da71-3a08-9893-11b8b2dfb069", "name": "Usuario CET 1" },
   "hypochelometricReviewBefore": true,

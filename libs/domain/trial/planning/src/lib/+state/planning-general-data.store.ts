@@ -26,14 +26,12 @@ import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie
 interface PlanningState {
   fireTrialId: string | null;
   fireTrial: TrialCreateModifyForm | null;
-  hasPlanningUsers: boolean;
   selectedSpecimens: UpsertTrialPlanningInfo['specimens'];
 }
 
 const initialState: PlanningState = {
   fireTrialId: null,
   fireTrial: null,
-  hasPlanningUsers: false,
   selectedSpecimens: [],
 };
 export const PlanningGeneralDataStore = signalStore(
@@ -78,7 +76,12 @@ export const PlanningGeneralDataStore = signalStore(
 
         isLoadingPlanningInfo: computed(() => dataPlanningService.getPlanningDataResource.isLoading()),
 
-        planningInfoError: computed(() => dataPlanningService.getPlanningDataResource.error()),
+        planningInfoError: computed(() => {
+          return (
+            dataPlanningService.getPlanningDataResource.error() &&
+            dataPlanningService.getPlanningDataResource.statusCode() !== 404
+          );
+        }),
 
         hasPlanningInfoError: computed(() => dataPlanningService.getPlanningDataResource.error() !== undefined),
 
@@ -291,10 +294,8 @@ export const PlanningGeneralDataStore = signalStore(
       usersService = inject(UsersService),
       lifecycleService = inject(PlanningLifecycleService),
     ) => ({
-      setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm, hasPlanniUsers: boolean): void {
-        patchState(store, { fireTrialId, fireTrial, hasPlanningUsers: hasPlanniUsers, selectedSpecimens: [] });
-
-        if (!hasPlanniUsers) return;
+      setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
+        patchState(store, { fireTrialId, fireTrial, selectedSpecimens: [] });
 
         dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
       },
@@ -353,9 +354,8 @@ export const PlanningGeneralDataStore = signalStore(
 
       reloadPlanningInfo(): void {
         const fireTrialId = store.fireTrialId();
-        const hasSavedData = store.hasPlanningUsers();
 
-        if (fireTrialId && hasSavedData) dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
+        if (fireTrialId) dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
       },
 
       reloadSpecimens(): void {

@@ -16,7 +16,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { ArmamentService } from '../../services/armament-service';
-import type { TrialArmamentResponse } from '../../utils-models/armament.model';
+import type { TrialArmamentResponse, UpdateArmamentDialogResult } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { Armament } from './armament';
 import { ArmamentRow } from './armament-row';
@@ -194,7 +194,7 @@ describe('Armament', () => {
       const { view } = await runSetup();
       const component = view.fixture.componentInstance as Armament;
 
-      expect(component.isFormValid()).toBe(true);
+      await waitFor(() => expect(component.isFormValid()).toBe(true));
     });
   });
 
@@ -203,7 +203,7 @@ describe('Armament', () => {
       const { view } = await runSetup();
       const component = view.fixture.componentInstance as Armament;
 
-      expect(component.isFormValid()).toBe(true);
+      await waitFor(() => expect(component.isFormValid()).toBe(true));
       expect(() => component.saveForm()).not.toThrow();
     });
 
@@ -257,26 +257,15 @@ describe('Armament', () => {
   });
 
   describe('Update dialog', () => {
-    it('should log error when trialId is not available', async () => {
-      const { view } = await runSetup({ trialId: null });
-      const component = view.fixture.componentInstance as Armament;
-
-      const consoleErrorSpy = vi.spyOn(console, 'error');
-
-      component.openUpdateDialog(0, 0);
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('No se pudo obtener el trialId');
-    });
-
     it('should open update dialog when edit button is clicked', async () => {
       const { loader, user } = await runSetup();
       const panel = await expandPanelByIndex(loader, 0);
       expect(await panel.isExpanded()).toBe(true);
 
       mockDialog.open.mockReturnValueOnce({
-        afterClosed: () => of(false),
+        afterClosed: () => of(undefined),
         close: vi.fn(),
-      } as unknown as MatDialogRef<UpdateArmamentDialog, boolean>);
+      } as unknown as MatDialogRef<UpdateArmamentDialog, undefined>);
 
       const editButtons = screen.getAllByLabelText(/Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
@@ -288,31 +277,31 @@ describe('Armament', () => {
           UpdateArmamentDialog,
           expect.objectContaining({
             data: expect.objectContaining({
-              trialId: 'trial-123',
-              shotId: 'shot-1-1',
+              armament: expect.objectContaining({ weaponExternalId: 1 }),
             }),
           }),
         );
       });
     });
 
-    it('should reload armament when update dialog returns true', async () => {
-      const { loader, user } = await runSetup();
+    it('should update the shot armament when the dialog returns a result', async () => {
+      const { loader, user, view } = await runSetup();
       await expandPanelByIndex(loader, 0);
 
       mockDialog.open.mockReturnValueOnce({
-        afterClosed: () => of(true),
+        afterClosed: () =>
+          of({ weaponExternalId: 2, tubeExternalId: '2', isInstrumented: true, tubeLifePercentage: 90 }),
         close: vi.fn(),
-      } as unknown as MatDialogRef<UpdateArmamentDialog, boolean>);
+      } as unknown as MatDialogRef<UpdateArmamentDialog, UpdateArmamentDialogResult>);
 
-      const reloadSpy = vi.spyOn(mockArmamentService.armamentResource, 'reload');
       const editButtons = screen.getAllByLabelText(/Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
 
       await user.click(editButtons[0]);
 
+      const component = view.fixture.componentInstance as Armament;
       await waitFor(() => {
-        expect(reloadSpy).toHaveBeenCalled();
+        expect(component.armamentSignal()[0].shots[0].armament.weaponExternalId).toBe(2);
       });
     });
   });

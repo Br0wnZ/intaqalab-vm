@@ -894,6 +894,7 @@ export function createMockArmamentService(initialData?: {
   weapons?: { page: number; pageSize: number; totalElements: number; items: any[] };
   tubes?: { page: number; pageSize: number; totalElements: number; items: any[] };
   weaponDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
+  mortarDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
   tubeDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
 }) {
   // Trial Armament resources
@@ -906,6 +907,7 @@ export function createMockArmamentService(initialData?: {
 
   // Denomination resources (cascada reactiva)
   const weaponDenominationsResource = createMockResource(initialData?.weaponDenominations);
+  const mortarDenominationsResource = createMockResource(initialData?.mortarDenominations);
   const tubeDenominationsResource = createMockResource(initialData?.tubeDenominations);
 
   return {
@@ -925,9 +927,12 @@ export function createMockArmamentService(initialData?: {
 
     // Denomination resources (cascada por tipo → arma → tubo)
     weaponDenominationsResource,
+    mortarDenominationsResource,
     tubeDenominationsResource,
     loadWeaponDenominations: vi.fn(),
     clearWeaponDenominations: vi.fn(),
+    loadMortarDenominations: vi.fn(),
+    clearMortarDenominations: vi.fn(),
     loadTubeDenominations: vi.fn(),
     clearTubeDenominations: vi.fn(),
 
@@ -937,6 +942,7 @@ export function createMockArmamentService(initialData?: {
     _weaponsResource: weaponsResource,
     _tubesResource: tubesResource,
     _weaponDenominationsResource: weaponDenominationsResource,
+    _mortarDenominationsResource: mortarDenominationsResource,
     _tubeDenominationsResource: tubeDenominationsResource,
   };
 }
