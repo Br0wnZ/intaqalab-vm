@@ -80,6 +80,10 @@
       "ACTIVE": "Gültig",
       "ASSOCIATED_TRIALS": "Link zu anderen Versuchen",
       "CATEGORY": "Kategorie",
+      "CATEGORIES": {
+        "GENERAL": "Allgemein",
+        "SPECIFIC": "Spezifisch"
+      },
       "CLOSE_BUTTON": "Schließen",
       "DATE_UPLOADED": "Uploaddatum",
       "DELETE": "Löschen",
@@ -1038,7 +1042,8 @@
       "ERRORS": {
         "LOAD_FAILED_TITLE": "Fehler beim Laden von Serien und Schüssen",
         "LOAD_FAILED_DETAIL": "Die Serien und Schüsse konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-      }
+      },
+      "SINGLE_SHOT_DELETE_TOOLTIP": "Um den einzigen Schuss der Serie zu löschen, muss die gesamte Serie gelöscht werden."
     },
     "SHOOTING_CONDITIONS_SECTION": {
       "ERRORS": {
@@ -1058,6 +1063,7 @@
         "LOAD_FAILED_DETAIL": "Die Munitionskonfigurationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
       },
       "CONFIGURATION_FORM": {
+        "CLIENT_NUMBER_LABEL": "Kundennummer",
         "MUNITION_TYPE_LABEL": "Munitionstyp",
         "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
         "POWDER_INDEX": "Pulver {{index}}"

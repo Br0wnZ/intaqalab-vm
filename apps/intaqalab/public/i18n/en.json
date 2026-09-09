@@ -1226,6 +1226,10 @@
       "ACTIVE": "In force",
       "ASSOCIATED_TRIALS": "Associate with other trials",
       "CATEGORY": "Category",
+      "CATEGORIES": {
+        "GENERAL": "General",
+        "SPECIFIC": "Specific"
+      },
       "CLOSE_BUTTON": "Close",
       "DATE_UPLOADED": "Upload date",
       "DELETE": "Delete",
@@ -2322,6 +2326,7 @@
       "CONFIGURATION_FORM": {
         "ASSOCIATED_SHOTS": "Associated shots",
         "ASSOCIATED_SHOTS_LABEL": "Associated shots",
+        "CLIENT_NUMBER_LABEL": "Client No.",
         "COMPONENT_SELECTOR_LABEL": "Component selector",
         "COMPONENT_SELECTOR_PLACEHOLDER": "Select component types",
         "CONDITIONING_CHECKBOX": "Conditioning",
@@ -2427,6 +2432,7 @@
       "NO_SERIES_RESULTS": "No series found.",
       "NO_SHOTS_RESULTS": "No shots found.",
       "SERIES_SHOTS": "Series shots",
+      "SINGLE_SHOT_DELETE_TOOLTIP": "To delete the only shot in the series, you must delete the whole series.",
       "SERIES_TABLE": {
         "ACTIONS": "Actions",
         "EXECUTION_ORDER": "Execution order",

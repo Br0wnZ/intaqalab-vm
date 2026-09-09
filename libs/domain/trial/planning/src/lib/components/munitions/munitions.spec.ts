@@ -27,6 +27,7 @@ import {
   createEmptySerie,
 } from '../../utils-models/munitions.model';
 import { Munitions } from './munitions';
+import { mapBackendToLocal, mapLocalToRequest } from './munitions.mapper';
 
 // Helpers
 
@@ -347,6 +348,33 @@ describe('Munitions', () => {
         expect(component.isFormValid()).toBe(true);
       });
 
+      it('should report the form as valid when config-level reconditioning is enabled and timeMax is omitted', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                reconditioning: {
+                  temperature: 20,
+                  tolerance: 2,
+                  timeMin: 12,
+                },
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(true);
+      });
+
       it('should report the form as invalid when component-level reconditioning is enabled but numeric fields are undefined', async () => {
         const { component, view } = await runSetup();
 
@@ -404,6 +432,40 @@ describe('Munitions', () => {
                       tolerance: 2,
                       timeMin: 12,
                       timeMax: 24,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(true);
+      });
+
+      it('should report the form as valid when component-level reconditioning is enabled and timeMax is omitted', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                batch: 'LOT-001',
+                assignedShotIds: ['shot-1'],
+                selectedComponents: ['espoleta'],
+                components: [
+                  {
+                    ...createEmptyComponentDetail('espoleta'),
+                    denomination: { id: 'denom-1', name: 'Espoleta 1' },
+                    reconditioning: {
+                      temperature: 20,
+                      tolerance: 2,
+                      timeMin: 12,
                     },
                   },
                 ],
@@ -512,6 +574,30 @@ describe('Munitions', () => {
       component.saveForm();
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('Formulario inválido');
+    });
+
+    it('should include clientNumber when saving valid form', async () => {
+      const { component, view, mockMunitionsService } = await runSetup();
+
+      const serie = createValidSerie('Serie 1');
+      serie.configurations[0].clientNumber = '101,102';
+      serie.configurations[0].assignedShotIds = ['shot-1', 'shot-2'];
+      component.seriesSignal.set([serie]);
+      component.seriesForm().markAsTouched();
+      view.fixture.detectChanges();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith(
+        'trial-123',
+        expect.objectContaining({
+          configurations: [
+            expect.objectContaining({
+              clientNumber: '101,102',
+            }),
+          ],
+        }),
+      );
     });
   });
 
@@ -631,6 +717,61 @@ describe('Munitions', () => {
       view.fixture.detectChanges();
 
       expect(component.validateConfiguration()).toBe(false);
+    });
+  });
+
+  // ClientNumber validation and mapping
+
+  describe('ClientNumber validation and mapping', () => {
+    it('should mark form invalid when configuration clientNumber has trailing comma', async () => {
+      const { component, view } = await runSetup();
+
+      const serie = createValidSerie('Serie 1');
+      serie.configurations[0].clientNumber = '1,';
+      component.seriesSignal.set([serie]);
+      component.seriesForm().markAsTouched();
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+    });
+
+    it('should mark form invalid when configuration clientNumber exceeds assigned shots count', async () => {
+      const { component, view } = await runSetup();
+
+      const serie = createValidSerie('Serie 1');
+      serie.configurations[0].assignedShotIds = ['shot-1'];
+      serie.configurations[0].clientNumber = '1,2';
+      component.seriesSignal.set([serie]);
+      component.seriesForm().markAsTouched();
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+    });
+
+    it('should map clientNumber correctly between backend and local', () => {
+      const backendData = [
+        {
+          seriesId: 'ser-1',
+          seriesName: 'Serie 1',
+          configurations: [
+            {
+              id: 'cfg-1',
+              seriesId: 'ser-1',
+              denomination: { id: 'd-1', name: 'Denom 1' },
+              batch: 'LOT-1',
+              clientNumber: 42,
+              components: [],
+              assignedShotIds: ['shot-1'],
+            },
+          ],
+        },
+      ];
+
+      const local = mapBackendToLocal(backendData as any, [], [], []);
+      expect(local[0].configurations[0].clientNumber).toBe('42');
+
+      const request = mapLocalToRequest(local);
+      expect(request[0].clientNumber).toBe('42');
     });
   });
 });

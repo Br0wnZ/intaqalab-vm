@@ -56,7 +56,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
   ],
   template: `
     <div class="bg-gray-200 p-6 space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <!-- Tipo de munición -->
         <div>
           <label class="block text-xs font-medium text-gray-600 mb-2" [for]="'munitionType-' + configIndex()">
@@ -191,6 +191,30 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [id]="'maxAllowedErrors-' + configIndex()"
               (blur)="emitChanges()"
             />
+          </mat-form-field>
+        </div>
+
+        <!-- Nº de cliente (clientNumber) -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-2" [for]="'clientNumber-' + configIndex()">
+            {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.CLIENT_NUMBER_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              matInput
+              type="text"
+              data-testid="client-number-input"
+              [formField]="configForm.clientNumber"
+              [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate"
+              [id]="'clientNumber-' + configIndex()"
+              (input)="onClientNumberInput($event)"
+              (blur)="emitChanges()"
+            />
+            @if (configForm.clientNumber().touched() && configForm.clientNumber().errors()) {
+              @for (error of configForm.clientNumber().errors(); track error) {
+                <mat-error class="!text-xs mt-2">{{ error.message }}</mat-error>
+              }
+            }
           </mat-form-field>
         </div>
       </div>
@@ -507,6 +531,7 @@ export class ConfigurationFormComponent {
     required(f.batch);
     disabled(f.batch, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
+    disabled(f.clientNumber, () => this.readonly());
     disabled(f.observations, () => this.readonly());
     // Denomination disabled when no munition-type is selected AND no component
     // path is available (prevents interacting with an empty dropdown).
@@ -525,7 +550,53 @@ export class ConfigurationFormComponent {
       return undefined;
     });
     min(f.maxAllowedErrors, 0);
+    validate(f.clientNumber, ({ value }) => {
+      const val = String(value() ?? '').trim();
+      if (!val || val === '0') return undefined;
+
+      if (val.endsWith(',')) {
+        return { kind: 'trailing-comma', message: 'No puede terminar con coma' };
+      }
+
+      const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+      const limit = this.formModel().assignedShotIds?.length ?? 0;
+
+      if (numbersCount > limit) {
+        return {
+          kind: 'max-numbers',
+          message: `No puede haber más números (${numbersCount}) que disparos asociados (${limit})`,
+        };
+      }
+
+      return undefined;
+    });
   });
+
+  onClientNumberInput(event: Event): void {
+    if (this.readonly()) {
+      return;
+    }
+    const inputEl = event.target as HTMLInputElement;
+    const rawVal = inputEl.value;
+
+    let sanitized = rawVal.replace(/[^0-9,]/g, '');
+    sanitized = sanitized.replace(/,+/g, ',');
+    if (sanitized.startsWith(',')) {
+      sanitized = sanitized.slice(1);
+    }
+
+    if (inputEl.value !== sanitized) {
+      inputEl.value = sanitized;
+    }
+
+    if (this.formModel().clientNumber !== sanitized) {
+      this.formModel.update((current) => ({
+        ...current,
+        clientNumber: sanitized,
+      }));
+      this.emitChanges();
+    }
+  }
 
   emitChanges(): void {
     this.configChange.emit(this.formModel());

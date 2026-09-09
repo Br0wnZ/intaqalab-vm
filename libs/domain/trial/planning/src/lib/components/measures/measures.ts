@@ -22,11 +22,11 @@ import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { type MasterDataMeasureItem, MeasuresStore } from '../../+state/measures.store';
+import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import type { MagnitudesOptions, MeasureSelectionData } from '../../utils-models/measure-serie.model';
-import { mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
+import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
 import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
 @Component({
@@ -478,36 +478,9 @@ export class Measures {
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
-  readonly magnitudesOptions = computed<MagnitudesOptions>(() => {
-    const catalog = this.#measuresStore.measuresCatalog();
-
-    if (catalog.length > 0) {
-      const mapItem = (item: MasterDataMeasureItem) => ({
-        id: item.id,
-        name:
-          item.label ??
-          (typeof item.magnitude === 'object'
-            ? item.magnitude['es'] || item.magnitude['en'] || ''
-            : item.magnitude || ''),
-        active: item.active,
-        favorite: item.favorite,
-      });
-
-      return {
-        topografia: catalog.filter((item) => item.unit === 'TOPOGRAPHY').map(mapItem),
-        municiones: catalog.filter((item) => item.unit === 'MUNITIONS').map(mapItem),
-        armamento: catalog.filter((item) => item.unit === 'ARMAMENT').map(mapItem),
-        balistica: catalog.filter((item) => item.unit === 'BALLISTICS').map(mapItem),
-      };
-    }
-
-    return {
-      topografia: [],
-      municiones: [],
-      armamento: [],
-      balistica: [],
-    };
-  });
+  readonly magnitudesOptions = computed<MagnitudesOptions>(() =>
+    mapCatalogToMagnitudesOptions(this.#measuresStore.measuresCatalog()),
+  );
 
   constructor() {
     effect(() => {

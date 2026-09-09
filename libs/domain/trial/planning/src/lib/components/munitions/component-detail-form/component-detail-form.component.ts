@@ -114,8 +114,8 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
               </label>
               <mat-form-field appearance="outline" class="w-full">
                 <mat-select
-                  clearable
                   id="component-denomination"
+                  clearable
                   data-testid="denomination-select"
                   [value]="denominationId()"
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
@@ -340,7 +340,7 @@ export class ComponentDetailFormComponent {
   });
 
   /**
-   * True when conditioning is disabled OR all 4 required numeric fields are filled.
+   * True when conditioning is disabled OR all required numeric fields are filled.
    * This computed is separate from `detailForm` to avoid breaking existing form validations.
    */
   readonly conditioningValid = computed(() => {
@@ -348,7 +348,7 @@ export class ComponentDetailFormComponent {
     const r = this.formModel().reconditioning;
     if (!r) return false;
     const isValidNum = (v: number | undefined | null): boolean => v !== undefined && v !== null && !isNaN(v);
-    return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin) && isValidNum(r.timeMax);
+    return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin);
   });
 
   readonly detailForm = form(this.formModel, (f) => {

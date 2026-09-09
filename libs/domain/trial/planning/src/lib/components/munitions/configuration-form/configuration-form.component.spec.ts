@@ -119,6 +119,7 @@ describe('ConfigurationFormComponent', () => {
         screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS_LABEL'),
       ).toBeInTheDocument();
       expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_LABEL')).toBeInTheDocument();
+      expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.CLIENT_NUMBER_LABEL')).toBeInTheDocument();
       expect(screen.getByText('TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OBSERVATIONS_LABEL')).toBeInTheDocument();
     });
 
@@ -615,6 +616,86 @@ describe('ConfigurationFormComponent', () => {
         const lastEmitted = configChangeSpy.mock.calls[configChangeSpy.mock.calls.length - 1][0];
         expect(lastEmitted.assignedShotIds).toEqual([]);
       });
+    });
+  });
+
+  describe('clientNumber handling', () => {
+    it('should render clientNumber input with initial value', async () => {
+      const configWithClientNumber: Configuration = {
+        ...defaultConfig,
+        clientNumber: '10,20',
+      };
+
+      await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { config: configWithClientNumber, configIndex: 0 },
+      });
+
+      const clientInput = screen.getByTestId('client-number-input') as HTMLInputElement;
+      expect(clientInput).toBeInTheDocument();
+      expect(clientInput.value).toBe('10,20');
+    });
+
+    it('should sanitize clientNumber input to digits and commas only', async () => {
+      const user = userEvent.setup();
+      const configChangeSpy = vi.fn();
+
+      await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { config: defaultConfig, configIndex: 0 },
+        on: { configChange: configChangeSpy },
+      });
+
+      const clientInput = screen.getByTestId('client-number-input') as HTMLInputElement;
+      await user.type(clientInput, ',,12,,abc,34,');
+
+      expect(clientInput.value).toBe('12,34,');
+      expect(configChangeSpy).toHaveBeenCalled();
+      const lastEmitted = configChangeSpy.mock.calls[configChangeSpy.mock.calls.length - 1][0];
+      expect(lastEmitted.clientNumber).toBe('12,34,');
+    });
+
+    it('should validate trailing comma in clientNumber', async () => {
+      const { fixture } = await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          config: { ...defaultConfig, assignedShotIds: ['shot-1', 'shot-2'] },
+          configIndex: 0,
+        },
+      });
+
+      const component = fixture.componentInstance;
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2,' }));
+
+      expect(component.configForm.clientNumber().errors()).toEqual([
+        expect.objectContaining({ kind: 'trailing-comma', message: 'No puede terminar con coma' }),
+      ]);
+    });
+
+    it('should validate clientNumber counts against assignedShotIds count', async () => {
+      const { fixture } = await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: {
+          config: { ...defaultConfig, assignedShotIds: ['shot-1', 'shot-2'] },
+          configIndex: 0,
+        },
+      });
+
+      const component = fixture.componentInstance;
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2' }));
+      expect(component.configForm.clientNumber().errors()).toHaveLength(0);
+
+      component.formModel.update((c) => ({ ...c, clientNumber: '1,2,3' }));
+      expect(component.configForm.clientNumber().errors()).toEqual([
+        expect.objectContaining({
+          kind: 'max-numbers',
+          message: 'No puede haber más números (3) que disparos asociados (2)',
+        }),
+      ]);
     });
   });
 });

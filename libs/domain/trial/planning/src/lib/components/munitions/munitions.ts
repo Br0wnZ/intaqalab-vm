@@ -24,7 +24,7 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import type { ComponentDetail, Serie } from '../../utils-models/munitions.model';
 import { createEmptyConfiguration, createEmptySerie } from '../../utils-models/munitions.model';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog/massive-munitions-configuration-dialog';
-import { mapBackendToLocal, mapLocalToRequest } from './munition.mapper';
+import { mapBackendToLocal, mapLocalToRequest } from './munitions.mapper';
 import { SeriePanelComponent } from './serie-panel/serie-panel.component';
 
 @Component({
@@ -321,6 +321,27 @@ export class Munitions {
             : undefined;
         });
 
+        validate(configPath.clientNumber, ({ value, valueOf }) => {
+          const val = String(value() ?? '').trim();
+          if (!val || val === '0') return undefined;
+
+          if (val.endsWith(',')) {
+            return { kind: 'trailing-comma', message: 'No puede terminar con coma' };
+          }
+
+          const numbersCount = val.split(',').filter((x) => x.trim().length > 0).length;
+          const shots: string[] = valueOf(configPath.assignedShotIds) ?? [];
+
+          if (numbersCount > shots.length) {
+            return {
+              kind: 'max-numbers',
+              message: `No puede haber más números (${numbersCount}) que disparos asociados (${shots.length})`,
+            };
+          }
+
+          return undefined;
+        });
+
         // Validate config-level reconditioning via configPath
         validate(configPath, ({ value }) => {
           const config = value();
@@ -331,8 +352,7 @@ export class Munitions {
           const valid =
             isValidNum(reconditioning.temperature) &&
             isValidNum(reconditioning.tolerance) &&
-            isValidNum(reconditioning.timeMin) &&
-            isValidNum(reconditioning.timeMax);
+            isValidNum(reconditioning.timeMin);
           return valid
             ? undefined
             : {
@@ -350,9 +370,7 @@ export class Munitions {
           const allValid = components.every((comp) => {
             const r = comp.reconditioning;
             if (!r) return true; // not enabled
-            return (
-              isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin) && isValidNum(r.timeMax)
-            );
+            return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin);
           });
           return allValid
             ? undefined

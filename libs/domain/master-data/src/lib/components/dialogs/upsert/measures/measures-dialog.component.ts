@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
 import type { MatSelectChange } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
@@ -38,6 +39,7 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
     MatExpansionModule,
     MatCheckbox,
     MatSelectModule,
+    MatSlideToggleModule,
     LocaleDecimalInputDirective,
     SaveButton,
   ],
@@ -261,7 +263,7 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
                   <input
                     id="value-name-es"
                     matInput
-                    [formField]="form.values[valueIdx].name.es"
+                    [formField]="value.name.es"
                     [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.VALUES.NAME_ES.PLACEHOLDER' | translate"
                   />
                 </mat-form-field>
@@ -274,10 +276,20 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
                   <input
                     id="value-name-en"
                     matInput
-                    [formField]="form.values[valueIdx].name.en"
+                    [formField]="value.name.en"
                     [placeholder]="'MASTER_DATA.MEASURES.DIALOGS.UPSERT.VALUES.NAME_EN.PLACEHOLDER' | translate"
                   />
                 </mat-form-field>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700">
+                  {{ 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.VALUES.ACTIVE' | translate }}
+                </span>
+                <mat-slide-toggle
+                  color="primary"
+                  [checked]="formModel().values[valueIdx].active"
+                  (change)="toggleValueActive(valueIdx)"
+                />
               </div>
             </mat-expansion-panel>
           }
@@ -301,7 +313,7 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
               [placeholder]="
                 'MASTER_DATA.MEASURES.DIALOGS.UPSERT.EQUIPMENT_TYPES.LABEL' | translate: { index: equipmentTypeIdx + 1 }
               "
-              [formField]="form.equipmentTypes[equipmentTypeIdx]"
+              [formField]="equipmentType"
             >
               @for (opt of equipmentOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label | translate }}</mat-option>
@@ -358,7 +370,7 @@ export class MeasurementsAndRecordsDialogComponent {
     effect(() => {
       const data = this.data;
 
-      if (data) this.formModel.set(data);
+      if (data) this.formModel.set(this.#normalizeFormData(data));
     });
 
     effect(() => {
@@ -455,7 +467,21 @@ export class MeasurementsAndRecordsDialogComponent {
         ? { kind: 'namesIncomplete', message: 'MASTER_DATA.MEASURES.VALIDATION.BOTH_FIELDS' }
         : null;
     });
+    applyEach(schemaPath.values, (valuePath) => {
+      disabled(valuePath.name.es, ({ valueOf }) => !!valueOf(valuePath.code));
+      disabled(valuePath.name.en, ({ valueOf }) => !!valueOf(valuePath.code));
+    });
   });
+
+  #normalizeFormData(data: MasterDataMeasures): MasterDataMeasures {
+    return {
+      ...this.defaultFormValues,
+      ...data,
+      measurements: Array.isArray(data.measurements) ? data.measurements : [],
+      values: Array.isArray(data.values) && data.values.length ? data.values : this.defaultFormValues.values,
+      equipmentTypes: Array.isArray(data.equipmentTypes) ? data.equipmentTypes : this.defaultFormValues.equipmentTypes,
+    };
+  }
 
   protected sendData() {
     const form = this.formModel();
@@ -477,10 +503,12 @@ export class MeasurementsAndRecordsDialogComponent {
       const specialOptionsToCast: Record<string, (value: unknown) => unknown> = {
         values: (value: unknown) =>
           (value as MeasureQualitativeValue[])
-            .filter((v) => v.name.en)
-            .map((v) => ({ ...v, code: this.#castToValueCode(v.name.en) })),
+            .filter((qualitativeValue) => qualitativeValue.name.en)
+            .map((value) => this.#mapQualitativeValueForRequest(value)),
         equipmentTypes: (value: unknown) =>
-          (value as string[]).length && (value as string[])[0] ? (value as string[]).filter((v) => v) : null,
+          (value as string[]).length && (value as string[])[0]
+            ? (value as string[]).filter((equipmentType) => equipmentType)
+            : null,
       };
 
       dataToSend[key as keyof MasterDataMeasures] =
@@ -503,12 +531,13 @@ export class MeasurementsAndRecordsDialogComponent {
     this.formModel.update((model) => ({ ...model, measurements }));
   }
 
-  #castToValueCode(nameEn: string) {
-    return nameEn
-      .toUpperCase()
-      .replace(/[-\s]+/g, '_')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+  #mapQualitativeValueForRequest(
+    value: MeasureQualitativeValue,
+  ): MeasureQualitativeValue | Omit<MeasureQualitativeValue, 'code'> {
+    if (value.code) return value;
+
+    const { code, ...requestValue } = value;
+    return requestValue;
   }
 
   onAddValueRow(): void {
@@ -516,6 +545,13 @@ export class MeasurementsAndRecordsDialogComponent {
     this.formModel.update((model) => ({
       ...model,
       values: [...model.values, emptyElement],
+    }));
+  }
+
+  toggleValueActive(index: number): void {
+    this.formModel.update((model) => ({
+      ...model,
+      values: model.values.map((value, valueIdx) => (valueIdx === index ? { ...value, active: !value.active } : value)),
     }));
   }
 

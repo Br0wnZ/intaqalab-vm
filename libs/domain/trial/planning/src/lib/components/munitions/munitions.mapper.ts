@@ -20,6 +20,7 @@ export function mapLocalToRequest(series: Serie[]): MunitionConfigRequest[] {
         seriesId: serie.seriesId,
         denominationId: config.denomination,
         batch: config.batch,
+        clientNumber: config.clientNumber || undefined,
         observations: config.observations,
         reconditioning: config.reconditioning,
         maxAllowedErrors: config.maxAllowedErrors,
@@ -70,6 +71,8 @@ export function mapBackendToLocal(
       });
 
       const denomination = resolveDenominationId(config.denomination?.id, denominations);
+      const clientNumber =
+        config.clientNumber !== undefined && config.clientNumber !== null ? String(config.clientNumber) : '';
 
       return {
         id: config.id,
@@ -77,22 +80,13 @@ export function mapBackendToLocal(
         munitionTypeId: config.munitionTypeId ?? '',
         denomination,
         batch: config.batch ?? '',
+        clientNumber,
         reconditioning: config.reconditioning ?? undefined,
         maxAllowedErrors: config.maxAllowedErrors ?? 0,
         observations: config.observations ?? '',
         assignedShotIds: config.assignedShotIds ?? null,
         components,
-        selectedComponents: getSelectedComponentTypes({
-          id: config.id,
-          seriesId: config.seriesId,
-          munitionTypeId: config.munitionTypeId ?? '',
-          denomination,
-          batch: config.batch ?? '',
-          maxAllowedErrors: config.maxAllowedErrors ?? 0,
-          observations: config.observations ?? '',
-          assignedShotIds: config.assignedShotIds ?? null,
-          components,
-        }),
+        selectedComponents: getSelectedComponentTypes({ components }),
       };
     }),
   }));

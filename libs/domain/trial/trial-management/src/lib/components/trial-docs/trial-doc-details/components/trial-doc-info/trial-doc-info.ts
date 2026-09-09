@@ -1,0 +1,501 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormField, disabled, form } from '@angular/forms/signals';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTableModule } from '@angular/material/table';
+import { Router } from '@angular/router';
+import { IntaDatePipe } from '@intaqalab/utils';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
+
+import { TrialDocsService } from '../../../../../services/trial-docs-service';
+import { AssociateDocTrialsDialog } from '../../../associate-doc-trials-dialog/associate-doc-trials-dialog';
+import { ConfirmDeleteDialogComponent } from '../../../confirm-delete-dialog/confirm-delete-dialog';
+import { ModifyDocDialog } from '../../../modify-doc-dialog/modify-doc-dialog';
+import { TrialDocsFilePicker } from '../../../trial-docs-file-picker/trial-docs-file-picker';
+
+@Component({
+  selector: 'inta-trial-doc-info',
+  imports: [
+    TranslateModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatTableModule,
+    MatChipsModule,
+    FormField,
+    IntaDatePipe,
+  ],
+  template: `
+    <div class="w-full bg-white rounded-lg border border-gray-200 p-6 mt-6">
+      <div class="flex items-center justify-between mb-6">
+        <div></div>
+
+        <button
+          mat-flat-button
+          class="flex items-center gap-2 cursor-pointer"
+          [matMenuTriggerFor]="actionsMenu"
+          (menuOpened)="opened.set(true)"
+          (menuClosed)="opened.set(false)"
+        >
+          {{ 'TRIAL_DOCS.DOC_DETAILS.ACTIONS' | translate }}
+          <mat-icon>
+            @if (opened()) {
+              expand_less
+            } @else {
+              expand_more
+            }
+          </mat-icon>
+        </button>
+
+        <mat-menu #actionsMenu="matMenu">
+          <button mat-menu-item (click)="onAction('edit')">
+            <span>{{ 'COMMONS.EDIT' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="onAction('delete')">
+            <span>{{ 'TRIAL_DOCS.DOC_DETAILS.DELETE' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="onAction('new_version')">
+            <span>{{ 'TRIAL_DOCS.DOC_DETAILS.NEW_VERSION' | translate }}</span>
+          </button>
+          <button mat-menu-item (click)="onAction('associated_trials')">
+            <span>{{ 'TRIAL_DOCS.DOC_DETAILS.ASSOCIATED_TRIALS' | translate }}</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <div class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label for="document-type" class="block text-sm font-medium text-gray-900 mb-2">
+              {{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_TYPE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                placeholder="{{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_TYPE_PLACEHOLDER' | translate }}"
+                id="document-type"
+                matInput
+                [formField]="docDetailsForm.documentCategory"
+              />
+            </mat-form-field>
+          </div>
+
+          <div>
+            <label for="document-subtype" class="block text-sm font-medium text-gray-900 mb-2">
+              {{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_SUBTYPE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                placeholder="{{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_SUBTYPE_PLACEHOLDER' | translate }}"
+                id="document-subtype"
+                matInput
+                [formField]="docDetailsForm.documentType"
+              />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label for="responsible-user" class="block text-sm font-medium text-gray-900 mb-2">
+              {{ 'TRIAL_DOCS.DOC_DETAILS.RESPONSIBLE_USER_NAME' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                placeholder="{{ 'TRIAL_DOCS.DOC_DETAILS.RESPONSIBLE_USER_PLACEHOLDER' | translate }}"
+                id="responsible-user"
+                matInput
+                [formField]="docDetailsForm.responsibleUser"
+              />
+            </mat-form-field>
+          </div>
+
+          <div>
+            <label for="document-title" class="block text-sm font-medium text-gray-900 mb-2">
+              {{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_TITLE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                placeholder="{{ 'TRIAL_DOCS.DOC_DETAILS.DOCUMENT_TITLE_PLACEHOLDER' | translate }}"
+                id="document-title"
+                matInput
+                [formField]="docDetailsForm.documentTitle"
+              />
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <h4 class="text-sm font-medium text-gray-900 mb-4">
+          {{ 'TRIAL_DOCS.DOC_DETAILS.VINCULATED_TRIALS' | translate }}
+        </h4>
+
+        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+          <table mat-table class="w-full" [dataSource]="linkedTrialsResource.value() || []">
+            <!-- Columna Número de prueba -->
+            <ng-container matColumnDef="trialNumber">
+              <th
+                *matHeaderCellDef
+                mat-header-cell
+                class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+              >
+                {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.TRIAL_NUMBER' | translate }}
+              </th>
+              <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                {{ trial.trialNumber }}
+              </td>
+            </ng-container>
+
+            <!-- Columna Usuario vinculación -->
+            <ng-container matColumnDef="createdByUsername">
+              <th
+                *matHeaderCellDef
+                mat-header-cell
+                class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+              >
+                {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_USER' | translate }}
+              </th>
+              <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                {{ trial.createdByUsername }}
+              </td>
+            </ng-container>
+
+            <!-- Columna Fecha vinculación -->
+            <ng-container matColumnDef="createdAt">
+              <th
+                *matHeaderCellDef
+                mat-header-cell
+                class="!px-6 !py-3 !text-left !text-xs !font-medium !text-gray-500 !bg-gray-50"
+              >
+                {{ 'TRIAL_DOCS.DOC_DETAILS.TABLE_COLUMNS.VINCULATED_DATE' | translate }}
+              </th>
+              <td *matCellDef="let trial" mat-cell class="!px-6 !py-4 !text-sm !text-gray-900">
+                {{ trial.createdAt | intaDate: 'dd-MM-yyyy HH:mm:ss' }}
+              </td>
+            </ng-container>
+
+            <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+            <tr
+              *matRowDef="let row; columns: displayedColumns"
+              mat-row
+              class="hover:!bg-gray-50 !border-b !border-gray-100"
+            ></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: `
+    mat-form-field {
+      width: 100%;
+    }
+
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: white;
+    }
+
+    ::ng-deep .mat-mdc-form-field-outline {
+      color: #e5e7eb !important;
+    }
+
+    ::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline {
+      color: #d1d5db !important;
+    }
+
+    ::ng-deep .mat-mdc-table {
+      background: transparent;
+    }
+
+    ::ng-deep .mat-mdc-header-row {
+      background-color: #f9fafb;
+    }
+
+    ::ng-deep .mat-mdc-header-cell {
+      font-weight: 500;
+      color: #6b7280;
+      font-size: 0.75rem;
+      padding: 12px 24px;
+    }
+
+    ::ng-deep .mat-mdc-cell {
+      padding: 16px 24px;
+      color: #111827;
+      font-size: 0.875rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    ::ng-deep .mat-mdc-row:hover {
+      background-color: #f9fafb;
+      transition: background-color 0.2s ease;
+    }
+
+    ::ng-deep .mat-mdc-row:last-child .mat-mdc-cell {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    ::ng-deep button[mat-stroked-button] {
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+  `,
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TrialDocInfo {
+  readonly #translate = inject(TranslateService);
+  readonly #docsService = inject(TrialDocsService);
+  readonly #matDialog = inject(MatDialog);
+  readonly #router = inject(Router);
+
+  readonly documentId = input<string | undefined>(undefined);
+
+  protected readonly documentDetailResource = this.#docsService.documentDetailResource;
+  protected readonly documentObservationsResource = this.#docsService.documentObservationsResource;
+  protected readonly linkedTrialsResource = this.#docsService.documentAssociatedTrialsResource;
+  protected readonly deleteAssociatedDocumentResource = this.#docsService.deleteAssociatedDocumentResource;
+  protected readonly downloadDocumentResource = this.#docsService.downloadDocumentResource;
+
+  displayedColumns = ['trialNumber', 'createdByUsername', 'createdAt'];
+  opened = signal(false);
+
+  readonly docDetailsModel = signal({
+    documentCategory: '',
+    documentType: '',
+    responsibleUser: '',
+    documentTitle: '',
+  });
+
+  readonly docDetailsForm = form(this.docDetailsModel, (f) => {
+    disabled(f.documentCategory, () => true);
+    disabled(f.documentType, () => true);
+    disabled(f.responsibleUser, () => true);
+    disabled(f.documentTitle, () => true);
+  });
+
+  readonly #currentLang = toSignal(this.#translate.onLangChange);
+
+  constructor() {
+    effect(() => {
+      this.#currentLang();
+      const detail = this.documentDetailResource.value();
+      if (detail) {
+        const rawName = detail.type?.name;
+        const typeNameString =
+          typeof rawName === 'string'
+            ? rawName
+            : typeof rawName === 'object' && rawName !== null && 'es' in rawName
+              ? String((rawName as { es?: string }).es ?? '')
+              : '';
+
+        this.docDetailsModel.update((current) => ({
+          ...current,
+          documentCategory: this.#translateCategory(detail.category),
+          documentType: detail.type?.label ?? typeNameString,
+          responsibleUser: detail.createdBy ?? '',
+          documentTitle: detail.name ?? '',
+        }));
+      } else {
+        this.docDetailsModel.set({
+          documentCategory: '',
+          documentType: '',
+          responsibleUser: '',
+          documentTitle: '',
+        });
+      }
+    });
+
+    effect(() => {
+      const status = this.deleteAssociatedDocumentResource.status();
+
+      if (status === 'resolved') {
+        untracked(() => {
+          this.#docsService.resetDeleteAssociated();
+          const trialId = this.#docsService.fireTrialId();
+          if (trialId) {
+            this.#router.navigateByUrl(`/trial/view/${trialId}`);
+          }
+        });
+      }
+    });
+
+    effect(() => {
+      const downloadStatus = this.downloadDocumentResource.status();
+      const downloadValue = this.downloadDocumentResource.value();
+
+      if (downloadStatus === 'resolved' && downloadValue instanceof Blob) {
+        this.downloadBlob(downloadValue, this.documentDetailResource.value()?.name);
+        this.#docsService.resetDownloadDocument();
+      }
+    });
+  }
+
+  #translateCategory(category: string | undefined): string {
+    if (!category) return '';
+    const key = `TRIAL_DOCS.DOC_DETAILS.CATEGORIES.${category.toUpperCase()}`;
+    const translated = this.#translate.instant(key);
+    return translated !== key ? translated : category;
+  }
+
+  onAction(action: string): void {
+    switch (action) {
+      case 'edit':
+        this.editDocument();
+        break;
+      case 'delete':
+        this.deleteDocument();
+        break;
+      case 'new_version':
+        this.openFilePickerDialog();
+        break;
+      case 'associated_trials':
+        this.openAssociatedTrialsDialog();
+        break;
+      default:
+        break;
+    }
+  }
+
+  async openFilePickerDialog() {
+    const documentId = this.documentId();
+
+    const dialogRef = this.#matDialog.open(TrialDocsFilePicker, {
+      width: '1024px',
+      data: {
+        documentId,
+      },
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || result.action !== 'add' || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
+    this.#docsService.getDocumentVersions(documentId);
+  }
+
+  async openAssociatedTrialsDialog() {
+    const documentId = this.documentId();
+    const fireTrialIds = this.linkedTrialsResource.value()?.map((item) => item.id);
+
+    const dialogRef = this.#matDialog.open(AssociateDocTrialsDialog, {
+      width: '1024px',
+      data: {
+        documentId,
+        trialIds: fireTrialIds,
+      },
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
+  }
+
+  async editDocument() {
+    const documentId = this.documentId();
+
+    const dialogRef = this.#matDialog.open(ModifyDocDialog, {
+      width: '600px',
+      data: {
+        document: this.documentDetailResource.value(),
+      },
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result || !documentId) return;
+
+    this.#docsService.getDocumentDetail(documentId);
+  }
+
+  async deleteDocument() {
+    const document = this.documentDetailResource.value();
+    if (!document) return;
+    const dialogRef = this.#matDialog.open(ConfirmDeleteDialogComponent, {
+      disableClose: true,
+      autoFocus: true,
+      data: {
+        title: this.#translate.instant('TRIAL_DOCS.DELETE_DOCUMENT_DIALOG.TITLE'),
+        description: this.#translate.instant('TRIAL_DOCS.DELETE_DOCUMENT_DIALOG.DESCRIPTION', {
+          fileName: document.name,
+        }),
+        message: this.#translate.instant('TRIAL_DOCS.DELETE_DOCUMENT_DIALOG.MESSAGE'),
+        confirmText: this.#translate.instant('TRIAL_DOCS.DELETE_DOCUMENT_DIALOG.CONFIRM'),
+        cancelText: this.#translate.instant('TRIAL_DOCS.DELETE_DOCUMENT_DIALOG.BACK'),
+      },
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result) return;
+
+    this.#docsService.deleteAssociatedDocument(document.id);
+  }
+
+  downloadDocument(): void {
+    const document = this.documentDetailResource.value();
+    if (!document) return;
+    this.#docsService.downloadDocument(document.id);
+  }
+
+  downloadBlob(blob: Blob, fileName = 'download.bin') {
+    const mimeType = this.#resolveMimeType(fileName) || blob.type || 'application/octet-stream';
+    const typedBlob = blob.type === mimeType ? blob : new Blob([blob], { type: mimeType });
+    const url = window.URL.createObjectURL(typedBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    window.URL.revokeObjectURL(url);
+  }
+
+  #resolveMimeType(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const mimeTypes: Record<string, string> = {
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+    };
+    return ext ? (mimeTypes[ext] ?? '') : '';
+  }
+}

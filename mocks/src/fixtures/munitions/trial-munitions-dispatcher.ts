@@ -26,6 +26,7 @@ interface MunitionConfigResponse {
   munitionTypeId?: string;
   denomination: string;
   batch?: string;
+  clientNumber?: string | number;
   reconditioning?: ReconditioningData;
   maxAllowedErrors?: number;
   observations?: string;
@@ -82,6 +83,7 @@ interface MunitionConfigRequest {
   denomination?: string;
   denominationId?: string;
   batch?: string;
+  clientNumber?: string | number;
   observations?: string;
   reconditioning?: ReconditioningData;
   maxAllowedErrors?: number;
@@ -177,6 +179,7 @@ function transformConfigRequest(config: MunitionConfigRequest): MunitionConfigRe
     munitionTypeId: undefined,
     denomination: config.denominationId || config.denomination || 'Unknown Denomination',
     batch: config.batch,
+    clientNumber: config.clientNumber,
     reconditioning: config.reconditioning,
     maxAllowedErrors: config.maxAllowedErrors,
     observations: config.observations,

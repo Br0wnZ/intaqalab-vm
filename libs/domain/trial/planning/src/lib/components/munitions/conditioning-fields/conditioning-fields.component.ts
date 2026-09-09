@@ -90,7 +90,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
         <label for="conditioning-time-max" class="block text-xs font-medium text-gray-600 mb-2">
           {{ 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MAX_TIME_LABEL' | translate }}
         </label>
-        <mat-form-field appearance="outline" class="w-full" [class.cond-invalid]="showFieldError('timeMax')">
+        <mat-form-field appearance="outline" class="w-full">
           <input
             placeholder="0"
             id="conditioning-time-max"
@@ -181,14 +181,14 @@ export class ConditioningFieldsComponent {
   readonly #touchedFields = signal<Set<NumericField>>(new Set());
 
   /** Per-field required error flags (true = field is empty/invalid) */
-  readonly fieldErrors = computed(() => {
+  readonly fieldErrors = computed<Record<NumericField, boolean>>(() => {
     const d = this.formModel();
     const invalid = (v: number | undefined | null): boolean => v === undefined || v === null || isNaN(v as number);
     return {
       temperature: invalid(d.temperature),
       tolerance: invalid(d.tolerance),
       timeMin: invalid(d.timeMin),
-      timeMax: invalid(d.timeMax),
+      timeMax: false,
     };
   });
 
@@ -207,9 +207,10 @@ export class ConditioningFieldsComponent {
     if (this.readonly()) {
       return;
     }
+    const parsedValue = typeof value === 'number' && isNaN(value) ? undefined : value;
     this.formModel.update((current) => ({
       ...current,
-      [field]: value,
+      [field]: parsedValue,
     }));
     this.dataChange.emit(this.formModel());
   }

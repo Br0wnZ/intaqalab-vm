@@ -616,6 +616,7 @@
             "PLACEHOLDER": "Seleccione la unidad"
           },
           "VALUES": {
+            "ACTIVE": "Activo",
             "CODE": {
               "LABEL": "Código",
               "PLACEHOLDER": "Generado automáticamnete en función nombre inglés"
@@ -1040,6 +1041,10 @@
       "ACTIVE": "En vigor",
       "ASSOCIATED_TRIALS": "Asociar a otras pruebas",
       "CATEGORY": "Categoría",
+      "CATEGORIES": {
+        "GENERAL": "General",
+        "SPECIFIC": "Particular"
+      },
       "CLOSE_BUTTON": "Cerrar",
       "DATE_UPLOADED": "Fecha de subida",
       "DELETE": "Eliminar",
@@ -2139,6 +2144,7 @@
       "CONFIGURATION_FORM": {
         "ASSOCIATED_SHOTS": "Disparos asociados",
         "ASSOCIATED_SHOTS_LABEL": "Disparos asociados",
+        "CLIENT_NUMBER_LABEL": "Nº de cliente",
         "COMPONENT_SELECTOR_LABEL": "Selector de componentes",
         "COMPONENT_SELECTOR_PLACEHOLDER": "Selecciona tipos de componentes",
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
@@ -2248,6 +2254,7 @@
       "NO_SERIES_RESULTS": "No se han encontrado series.",
       "NO_SHOTS_RESULTS": "No se han encontrado disparos.",
       "SERIES_SHOTS": "Disparos de la serie",
+      "SINGLE_SHOT_DELETE_TOOLTIP": "Para eliminar el único disparo de la serie es necesario eliminar la serie completa.",
       "SERIES_TABLE": {
         "ACTIONS": "Acciones",
         "EXECUTION_ORDER": "Orden de ejecución",

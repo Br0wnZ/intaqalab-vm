@@ -292,5 +292,32 @@ describe('SeriesAndShots', () => {
       const content = await panel.getTextContent();
       expect(content).toContain('NOT_SHOTS_IN_SERIE');
     });
+
+    it('should disable shot deletion and show tooltip when series has a single shot', async () => {
+      const singleShotSeries = createSeriesData(1, 1);
+      const { user, container, loader } = await runSetup(singleShotSeries);
+      await expandPanelByIndex(loader, 0);
+
+      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
+      expect(expandedPanel).toBeTruthy();
+      if (!expandedPanel) return;
+
+      const panelQueries = within(expandedPanel as HTMLElement);
+      const deleteButtons = panelQueries.getAllByLabelText('Eliminar');
+      const shotDeleteButton = deleteButtons.find((button) => button.hasAttribute('disabled'));
+
+      expect(shotDeleteButton).toBeTruthy();
+      if (!shotDeleteButton?.parentElement) return;
+
+      await user.hover(shotDeleteButton.parentElement);
+
+      expect(
+        panelQueries.getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SINGLE_SHOT_DELETE_TOOLTIP'),
+      ).toBeInTheDocument();
+
+      await user.click(shotDeleteButton);
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+    });
   });
 });

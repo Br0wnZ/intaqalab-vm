@@ -318,9 +318,37 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                                   <ui-inta-icon name="edit" size="xl" />
                                 </button>
                               }
-                              <button title="Eliminar" class="cursor-pointer" (click)="deleteShot(serie.id, shot.id)">
-                                <ui-inta-icon name="remove" size="xl" />
-                              </button>
+                              <div
+                                class="relative flex items-center"
+                                (mouseenter)="setSingleShotDeleteTooltip(shot.id, isOnlyShotInSerie(serie))"
+                                (mouseleave)="singleShotDeleteTooltipId.set(null)"
+                              >
+                                <button
+                                  aria-label="Eliminar"
+                                  class="flex items-center"
+                                  [class.cursor-pointer]="!isOnlyShotInSerie(serie)"
+                                  [class.cursor-not-allowed]="isOnlyShotInSerie(serie)"
+                                  [class.opacity-40]="isOnlyShotInSerie(serie)"
+                                  [disabled]="isOnlyShotInSerie(serie)"
+                                  (click)="deleteShot(serie.id, shot.id)"
+                                >
+                                  <ui-inta-icon name="remove" size="xl" />
+                                </button>
+                                @if (singleShotDeleteTooltipId() === shot.id) {
+                                  <div
+                                    class="absolute bottom-full right-0 mb-3 w-80 p-4 bg-slate-800 text-white text-xs rounded-xl shadow-xl z-50 pointer-events-none text-left"
+                                  >
+                                    <div class="leading-relaxed">
+                                      {{
+                                        'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SINGLE_SHOT_DELETE_TOOLTIP' | translate
+                                      }}
+                                    </div>
+                                    <div
+                                      class="absolute top-full right-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-slate-800"
+                                    ></div>
+                                  </div>
+                                }
+                              </div>
                             }
                           </div>
                         </div>
@@ -362,6 +390,7 @@ export class SeriesAndShots {
   readonly viewError = computed(() => !!this.#seriesStore.seriesError() || !!this.#store.planningInfoError());
   readonly openSerieId = signal<string | null>(null);
   readonly editingShotId = signal<string | null>(null);
+  readonly singleShotDeleteTooltipId = signal<string | null>(null);
 
   readonly shotsSets = signal<Serie[] | null>(null);
 
@@ -441,6 +470,14 @@ export class SeriesAndShots {
     if (this.openSerieId() === closedSerieId) {
       this.openSerieId.set(null);
     }
+  }
+
+  isOnlyShotInSerie(serie: Serie): boolean {
+    return serie.shots.length === 1;
+  }
+
+  setSingleShotDeleteTooltip(shotId: string, show: boolean): void {
+    this.singleShotDeleteTooltipId.set(show ? shotId : null);
   }
 
   isSerieOpen(serieId: string): boolean {

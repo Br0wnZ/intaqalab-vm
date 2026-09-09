@@ -10,6 +10,7 @@
           "munitionTypeId": "GRANADA_MORTERO",
           "denomination": "M107 HE",
           "batch": "LOT-2025-001",
+          "clientNumber": "1,2",
           "reconditioning": {
             "temperature": 21,
             "tolerance": 2,

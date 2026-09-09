@@ -1185,6 +1185,7 @@ export class MassiveMunitionsConfigurationDialog {
         seriesId: serie.id,
         denominationId: this.formData.denomination,
         batch: this.formData.batch,
+        clientNumber: this.formData.clientNumber,
         observations: this.formData.observations,
         reconditioning: this.formData.reconditioning,
         maxAllowedErrors: this.formData.maxAllowedErrors,

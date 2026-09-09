@@ -90,6 +90,7 @@ export type MunitionConfigResponse = {
   munitionTypeId?: string | null;
   denomination: MunitionDenomination | null;
   batch?: string;
+  clientNumber?: string | number | null;
   reconditioning?: ReconditioningData | null;
   maxAllowedErrors?: number;
   observations?: string;
@@ -102,6 +103,7 @@ export type MunitionConfigRequest = {
   seriesId: string;
   denominationId: string;
   batch?: string;
+  clientNumber?: string | number;
   observations?: string;
   reconditioning?: ReconditioningData;
   maxAllowedErrors?: number;
@@ -171,6 +173,7 @@ export type Configuration = {
   munitionTypeId?: string;
   denomination: string;
   batch: string;
+  clientNumber: string;
   reconditioning?: ReconditioningData;
   maxAllowedErrors: number;
   observations: string;
@@ -242,6 +245,7 @@ export function createEmptyConfiguration(seriesId = ''): Configuration {
     munitionTypeId: '',
     denomination: '',
     batch: '',
+    clientNumber: '',
     maxAllowedErrors: 0,
     observations: '',
     components: [],
@@ -289,7 +293,7 @@ export const createEmptyMassiveConfigFormData = (): MassiveConfigFormData => {
   };
 };
 
-export function getSelectedComponentTypes(config: Configuration): string[] {
+export function getSelectedComponentTypes(config: Configuration | { components: ComponentDetail[] }): string[] {
   return config.components.map((c) => c.type.type.toLowerCase());
 }
 

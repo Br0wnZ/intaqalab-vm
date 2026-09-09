@@ -20,6 +20,7 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import { MeasuresService } from '../../services/measures-service';
 import { SeriesAndShotsService } from '../../services/series-and-shots-service';
 import { Measures } from './measures';
+import { formatMeasureOptionName, mapCatalogToMagnitudesOptions } from './measures.mapper';
 
 const defaultImports = [TranslateModule.forRoot()];
 
@@ -77,7 +78,9 @@ describe('Measures', () => {
 
     mockMeasuresService = createMockMeasuresService({
       measures: measuresData,
-      measuresCatalog: catalogData,
+      measuresCatalog: Array.isArray(catalogData)
+        ? ({ page: 1, pageSize: 10, totalElements: catalogData.length, items: catalogData } as any)
+        : catalogData,
     });
 
     mockSeriesStore = createMockSeriesAndShotsStore({
@@ -284,6 +287,100 @@ describe('Measures', () => {
 
       component.onToggleFavorite({ id: 'cat-1', isFavorite: false });
       expect(removeFavoriteSpy).toHaveBeenCalledWith('cat-1');
+    });
+  });
+
+  describe('formatMeasureOptionName', () => {
+    it('should remove trailing hyphen and preceding whitespace', () => {
+      expect(formatMeasureOptionName('Presión -')).toBe('Presión');
+      expect(formatMeasureOptionName('Presión - ')).toBe('Presión');
+      expect(formatMeasureOptionName('Presión-')).toBe('Presión');
+      expect(formatMeasureOptionName('Presión- ')).toBe('Presión');
+    });
+
+    it('should keep text intact when hyphen is in the middle', () => {
+      expect(formatMeasureOptionName('Presión - Recámara')).toBe('Presión - Recámara');
+    });
+
+    it('should keep text intact when there is no trailing hyphen', () => {
+      expect(formatMeasureOptionName('Presión')).toBe('Presión');
+    });
+
+    it('should return empty string for empty input', () => {
+      expect(formatMeasureOptionName('')).toBe('');
+    });
+  });
+
+  describe('mapCatalogToMagnitudesOptions', () => {
+    it('should return empty arrays when catalog is empty', () => {
+      const result = mapCatalogToMagnitudesOptions([]);
+      expect(result).toEqual({
+        topografia: [],
+        municiones: [],
+        armamento: [],
+        balistica: [],
+      });
+    });
+
+    it('should map catalog items by technical unit and format names', () => {
+      const catalog = [
+        {
+          id: 'cat-1',
+          label: 'Topografía -',
+          active: true,
+          unit: 'TOPOGRAPHY',
+          magnitude: 'Topografía',
+          favorite: true,
+        },
+        {
+          id: 'cat-2',
+          label: 'Balística - ',
+          active: false,
+          unit: 'BALLISTICS',
+          magnitude: 'Balística',
+          favorite: false,
+        },
+      ] as any;
+      const result = mapCatalogToMagnitudesOptions(catalog);
+      expect(result.topografia).toEqual([{ id: 'cat-1', name: 'Topografía', active: true, favorite: true }]);
+      expect(result.balistica).toEqual([{ id: 'cat-2', name: 'Balística', active: false, favorite: false }]);
+    });
+  });
+
+  describe('magnitudesOptions formatting', () => {
+    it('should format option names omitting trailing hyphen and space in dropdown options', async () => {
+      const customCatalog = [
+        {
+          id: 'cat-10',
+          label: 'Cadencia de tiro - ',
+          active: true,
+          unit: 'ARMAMENT',
+          magnitude: 'Cadencia',
+          favorite: false,
+        },
+        {
+          id: 'cat-11',
+          label: 'Velocidad en boca -',
+          active: true,
+          unit: 'MUNITIONS',
+          magnitude: 'Velocidad',
+          favorite: false,
+        },
+        {
+          id: 'cat-12',
+          label: 'Presión - Recámara',
+          active: true,
+          unit: 'TOPOGRAPHY',
+          magnitude: 'Presión',
+          favorite: false,
+        },
+      ];
+      const { view } = await runSetup({ catalogData: customCatalog });
+      const component = view.fixture.componentInstance;
+
+      expect(component.magnitudesOptions().armamento[0].name).toBe('Cadencia de tiro');
+      expect(component.magnitudesOptions().municiones[0].name).toBe('Velocidad en boca');
+      expect(component.magnitudesOptions().topografia[0].name).toBe('Presión - Recámara');
     });
   });
 });

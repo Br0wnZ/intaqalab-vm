@@ -204,4 +204,58 @@ describe('ConditioningFieldsComponent', () => {
       expect(emittedData).toHaveProperty('timeMax');
     });
   });
+
+  describe('Validation', () => {
+    it('should be valid when timeMax is undefined but other required fields are present', async () => {
+      const { fixture } = await render(ConditioningFieldsComponent, {
+        imports: defaultImports,
+        componentInputs: {
+          data: {
+            temperature: 25,
+            tolerance: 2,
+            timeMin: 4,
+            timeMax: undefined,
+          },
+        },
+      });
+
+      expect(fixture.componentInstance.isValid()).toBe(true);
+      expect(fixture.componentInstance.fieldErrors().timeMax).toBe(false);
+      expect(fixture.componentInstance.showFieldError('timeMax')).toBe(false);
+    });
+
+    it('should be invalid when required fields like temperature are missing', async () => {
+      const { fixture } = await render(ConditioningFieldsComponent, {
+        imports: defaultImports,
+        componentInputs: {
+          data: {
+            temperature: undefined,
+            tolerance: 2,
+            timeMin: 4,
+            timeMax: undefined,
+          },
+        },
+      });
+
+      expect(fixture.componentInstance.isValid()).toBe(false);
+      expect(fixture.componentInstance.fieldErrors().temperature).toBe(true);
+    });
+
+    it('should not show error for timeMax when showErrors is true', async () => {
+      const { fixture } = await render(ConditioningFieldsComponent, {
+        imports: defaultImports,
+        componentInputs: {
+          data: {
+            temperature: 25,
+            tolerance: 2,
+            timeMin: 4,
+            timeMax: undefined,
+          },
+          showErrors: true,
+        },
+      });
+
+      expect(fixture.componentInstance.showFieldError('timeMax')).toBe(false);
+    });
+  });
 });

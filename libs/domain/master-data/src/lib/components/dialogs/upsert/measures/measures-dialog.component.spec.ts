@@ -499,7 +499,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(payload).not.toHaveProperty('values');
     });
 
-    it('should call store.create with qualitative data casting code and setting grubbs false', async () => {
+    it('should call store.create with qualitative data without generating code and setting grubbs false', async () => {
       const { view, user, mockService } = await setup(null);
       const instance = view.fixture.componentInstance;
       instance.formModel.set({
@@ -524,7 +524,6 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
           equipmentTypes: null,
           values: [
             expect.objectContaining({
-              code: 'ENGLISH_VALUE',
               name: { es: 'Valor Español', en: 'English Value' },
               active: true,
             }),
@@ -537,6 +536,7 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(payload).not.toHaveProperty('minValue');
       expect(payload).not.toHaveProperty('maxValue');
       expect(payload).not.toHaveProperty('uncertainty');
+      expect((payload['values'] as Array<Record<string, unknown>>)[0]).not.toHaveProperty('code');
     });
 
     it('should call store.update with transformed data in edit mode', async () => {

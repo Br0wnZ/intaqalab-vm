@@ -130,33 +130,12 @@ interface DialogData {
               id="bulk-impact"
               clearable
               [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
-                  | translate
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.IMPACT_ZONE_PLACEHOLDER' | translate
               "
               [formField]="bulkForm.impactZone"
             >
               @for (impactZone of shootingConditionsService.getImpactZonesResource.value(); track impactZone.id) {
                 <mat-option [value]="impactZone.id">{{ impactZone.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-target" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="bulk-target"
-              clearable
-              [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
-              "
-              [formField]="bulkForm.targetType"
-            >
-              @for (targetType of shootingConditionsService.getTargetTypesResource.value(); track targetType.id) {
-                <mat-option [value]="targetType.id">{{ targetType.label }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -300,6 +279,26 @@ interface DialogData {
           >
             <input id="bulk-speed" inputSelectInput libNoNegativeValues libNoLeadingZeros />
           </ui-input-select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for="bulk-target" class="text-xs font-bold text-slate-700 ml-1">
+            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+            <mat-select
+              id="bulk-target"
+              clearable
+              [placeholder]="
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
+              "
+              [formField]="bulkForm.targetType"
+            >
+              @for (targetType of shootingConditionsService.getTargetTypesResource.value(); track targetType.id) {
+                <mat-option [value]="targetType.id">{{ targetType.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </div>
 
         @if (hasTargetSelected()) {
