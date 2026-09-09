@@ -1,5 +1,5 @@
-import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { Router } from 'express';
 
 import type { MeasureCatalogItem } from '../fixtures/measures';
 import { MEASURES_CATALOG, TRIAL_MEASURES } from '../fixtures/measures';
@@ -129,13 +129,13 @@ measuresRouter.delete('/measures/:measureId', (req: Request, res: Response) => {
   }
 });
 
-measuresRouter.post('/measures/:measureId/favorite', (req: Request, res: Response) => {
+measuresRouter.put('/measures/:measureId/favorite', (req: Request, res: Response) => {
   const { measureId } = req.params;
   const index = MEASURES_CATALOG.findIndex((m) => m.id === measureId);
 
   if (index !== -1) {
     MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], favorite: true };
-    res.status(200).send();
+    res.status(204).send();
   } else {
     res.status(404).json({ title: 'Not found', status: 404 });
   }
@@ -147,7 +147,7 @@ measuresRouter.delete('/measures/:measureId/favorite', (req: Request, res: Respo
 
   if (index !== -1) {
     MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], favorite: false };
-    res.status(200).send();
+    res.status(204).send();
   } else {
     res.status(404).json({ title: 'Not found', status: 404 });
   }

@@ -120,7 +120,7 @@ export class MeasuresService {
 
     return {
       url: `${this.#planningUrl}/measures/${params.id}/favorite`,
-      method: 'POST',
+      method: 'PUT',
       body: {},
     };
   });

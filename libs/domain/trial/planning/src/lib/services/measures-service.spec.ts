@@ -175,7 +175,7 @@ describe('MeasuresService', () => {
       expect(service.addFavoriteResource.isLoading()).toBe(true);
 
       const req = httpTestingController.expectOne(`${mockBaseUrl}/measures/${measureId}/favorite`);
-      expect(req.request.method).toBe('POST');
+      expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual({});
       req.flush({});
     });
