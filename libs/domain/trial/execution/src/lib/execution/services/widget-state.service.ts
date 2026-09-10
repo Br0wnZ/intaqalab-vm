@@ -10,7 +10,13 @@ import type {
   WidgetType,
   WidgetWidth,
 } from '../models/execution-grid.models';
-import type { WidgetId } from '../models/widget-id.enum';
+
+export class WidgetGridFullError extends Error {
+  constructor() {
+    super('No space available in the execution grid');
+    this.name = 'WidgetGridFullError';
+  }
+}
 
 /**
  * 🎯 Servicio para gestionar el estado de los widgets en el grid
@@ -76,7 +82,7 @@ export class WidgetStateService {
     const finalPosition = position || this.#findNextAvailablePosition(width, height);
 
     if (!finalPosition) {
-      throw new Error('No hay espacio disponible en el grid');
+      throw new WidgetGridFullError();
     }
 
     const newWidget: PlacedWidget = {
@@ -386,4 +392,3 @@ export class WidgetStateService {
     });
   }
 }
-

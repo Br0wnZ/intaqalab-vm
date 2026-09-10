@@ -21,7 +21,9 @@
     "YEAR_SEARCH_PLACEHOLDER": "Jahr auswählen"
   },
   "COMMONS": {
-    "LOADING": "Wird geladen..."
+    "LOADING": "Wird geladen...",
+    "NO_RESULTS": "Keine Ergebnisse gefunden",
+    "SEARCH": "Suchen"
   },
   "HEADER_TOOLS": {
     "CURRENT_ROLES": "Aktuelle Rollen",
@@ -290,6 +292,8 @@
     "FREE_SPACE_DESC_2": "um weitere Module hinzuzufügen",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Sie haben Platz auf Ihrem Panel",
+    "WIDGET_NO_SPACE_MESSAGE": "Schaffen Sie etwas Platz oder entfernen Sie ein anderes Widget, bevor Sie es erneut versuchen.",
+    "WIDGET_NO_SPACE_TITLE": "Dieses Widget passt nicht auf das Panel",
     "ERRORS": {
       "LOAD_FAILED_TITLE": "Fehler beim Laden der Ausführung",
       "LOAD_FAILED_DETAIL": "Die Ausführungsinformationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."

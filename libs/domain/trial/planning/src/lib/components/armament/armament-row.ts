@@ -63,9 +63,34 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     <!-- Weapon Column -->
     <td class="py-2 px-1">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-select clearable [formField]="formPath().armament.weaponExternalId" (valueChange)="onWeaponChange($event)">
-          @for (weapon of weaponOptions(); track weapon.id) {
+        <mat-select
+          clearable
+          [formField]="formPath().armament.weaponExternalId"
+          (valueChange)="onWeaponChange($event)"
+          (openedChange)="onWeaponSelectOpenedChange($event)"
+        >
+          <div
+            role="search"
+            class="weapon-search-container"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <mat-icon class="weapon-search-icon">search</mat-icon>
+            <input
+              matInput
+              class="weapon-search-input"
+              [placeholder]="'COMMONS.SEARCH' | translate"
+              [value]="weaponSearchTerm()"
+              (input)="onWeaponSearchInput($any($event.target).value)"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
+            />
+          </div>
+          @for (weapon of filteredWeaponOptions(); track weapon.id) {
             <mat-option [value]="weapon.id">{{ weapon.name }}</mat-option>
+          }
+          @if (filteredWeaponOptions().length === 0) {
+            <mat-option disabled>{{ 'COMMONS.NO_RESULTS' | translate }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -138,7 +163,37 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
       </div>
     </td>
   `,
-  styles: [``],
+  styles: [
+    `
+      .weapon-search-container {
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        height: 48px;
+        min-height: 48px;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .weapon-search-container .weapon-search-icon {
+        color: #9ca3af;
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      .weapon-search-container .weapon-search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        color: #374151;
+        background: transparent;
+      }
+    `,
+  ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -195,6 +250,25 @@ export class ArmamentRow implements OnInit {
       weaponType === SpecimenType.Mortar ? 'MORTAR' : 'WEAPON',
     );
   });
+
+  readonly weaponSearchTerm = signal<string>('');
+
+  readonly filteredWeaponOptions = computed(() => {
+    const search = this.weaponSearchTerm().trim().toLowerCase();
+    const options = this.weaponOptions();
+    if (!search) return options;
+    return options.filter((weapon) => weapon.name.toLowerCase().includes(search));
+  });
+
+  onWeaponSearchInput(value: string): void {
+    this.weaponSearchTerm.set(value);
+  }
+
+  onWeaponSelectOpenedChange(opened: boolean): void {
+    if (!opened) {
+      this.weaponSearchTerm.set('');
+    }
+  }
 
   readonly tubeOptions = computed(() => {
     const denominations = this.#armamentStore.tubeDenominations();

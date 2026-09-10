@@ -116,6 +116,7 @@
     "EDIT": "Editar",
     "INVALID_DATE_FORMAT": "Formato de fecha no válido",
     "LOADING": "Cargando...",
+    "NO_RESULTS": "No se encontraron resultados",
     "OPTIONAL": "Opcional",
     "REGISTER": "Registrar",
     "REQUIRED_FIELD": "Valor requerido",
@@ -1263,6 +1264,8 @@
     "FREE_SPACE_DESC_2": "para añadir más módulos",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Tienes espacio en tu panel",
+    "WIDGET_NO_SPACE_MESSAGE": "Libera algo de espacio o elimina otro widget antes de volver a intentarlo.",
+    "WIDGET_NO_SPACE_TITLE": "Este widget no cabe en el panel",
     "ERRORS": {
       "LOAD_FAILED_TITLE": "Error al cargar la ejecución",
       "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de ejecución. Inténtelo de nuevo más tarde."

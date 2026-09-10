@@ -16,6 +16,7 @@ import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
+import { ToastrService } from 'ngx-toastr';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -188,6 +189,7 @@ describe('Execution', () => {
   } = {}) => {
     const user = userEvent.setup();
     const trialsDataService = createTrialsDataServiceMock();
+    const toastrService = { warning: vi.fn() };
 
     const view = await render(Execution, {
       imports: [TranslateModule.forRoot()],
@@ -204,6 +206,10 @@ describe('Execution', () => {
         {
           provide: ExecutionService,
           useValue: executionService,
+        },
+        {
+          provide: ToastrService,
+          useValue: toastrService,
         },
         {
           provide: AuthService,
@@ -236,7 +242,7 @@ describe('Execution', () => {
     const rootLoader = TestbedHarnessEnvironment.documentRootLoader(view.fixture);
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { user, view, rootLoader, loader, executionService, trialsDataService };
+    return { user, view, rootLoader, loader, executionService, trialsDataService, toastrService };
   };
 
   beforeEach(() => {
@@ -266,6 +272,25 @@ describe('Execution', () => {
 
     expect(screen.getByText('034A/25')).toBeInTheDocument();
     expect(screen.getByText('Cliente: RHEINMETALL EXPAL MUNITIONS')).toBeInTheDocument();
+  });
+
+  it('shows friendly feedback and keeps widget panel open when widget does not fit', async () => {
+    const { view, toastrService } = await setup();
+    const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
+
+    widgetStateService.addWidget(WidgetId.SHOT, 3);
+    widgetStateService.addWidget(WidgetId.SHOT, 3);
+    widgetStateService.addWidget(WidgetId.SHOT, 3);
+    view.fixture.componentInstance.isWidgetsPanelOpen.set(true);
+
+    view.fixture.componentInstance.addWidget('prep-tech-video');
+
+    expect(toastrService.warning).toHaveBeenCalledWith(
+      'TRIAL_EXECUTION.WIDGET_NO_SPACE_MESSAGE',
+      'TRIAL_EXECUTION.WIDGET_NO_SPACE_TITLE',
+      { timeOut: 5000, progressBar: true, closeButton: true },
+    );
+    expect(view.fixture.componentInstance.isWidgetsPanelOpen()).toBe(true);
   });
 
   it('toggles the widgets sidebar panel visibility', async () => {

@@ -2,6 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { injectCurrentUser } from '@intaqalab/core';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
+import { TranslateService } from '@ngx-translate/core';
+import { ToastrService } from 'ngx-toastr';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../+state/execution.store';
@@ -14,7 +16,7 @@ import type { PlacedWidget, Widget, WidgetPreferenceId } from '../models/executi
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../models/execution-page.models';
 import { WidgetId } from '../models/widget-id.enum';
 import { injectWidgets } from '../utils/inject-widgets';
-import { WidgetStateService } from './widget-state.service';
+import { WidgetGridFullError, WidgetStateService } from './widget-state.service';
 
 const EXECUTION_STATE_POLLING_MS = 5_000;
 
@@ -23,6 +25,8 @@ export class ExecutionPageFacade {
   readonly #dialog = inject(MatDialog);
   readonly #store = inject(ExecutionStore);
   readonly #widgetState = inject(WidgetStateService);
+  readonly #translate = inject(TranslateService);
+  readonly #toastr = inject(ToastrService);
   readonly #currentUser = injectCurrentUser();
   readonly #pageVisible = injectPageVisibility();
   readonly #fireTrialId = signal<string | null>(null);
@@ -264,19 +268,33 @@ export class ExecutionPageFacade {
     this.#store.updateEquipmentSelections(result.equipments);
   }
 
-  addWidget(widgetId: string): void {
+  addWidget(widgetId: string): boolean {
     const widget = this.widgets().find((item) => item.id === widgetId);
     if (!widget) {
-      return;
+      return false;
     }
 
-    this.#widgetState.addWidget(
-      widget.widgetId,
-      widget.defaultWidth,
-      undefined,
-      widget.techProfile,
-      widget.defaultHeight ?? 1,
-    );
+    try {
+      this.#widgetState.addWidget(
+        widget.widgetId,
+        widget.defaultWidth,
+        undefined,
+        widget.techProfile,
+        widget.defaultHeight ?? 1,
+      );
+      return true;
+    } catch (error) {
+      if (!(error instanceof WidgetGridFullError)) {
+        throw error;
+      }
+
+      this.#toastr.warning(
+        this.#translate.instant('TRIAL_EXECUTION.WIDGET_NO_SPACE_MESSAGE'),
+        this.#translate.instant('TRIAL_EXECUTION.WIDGET_NO_SPACE_TITLE'),
+        { timeOut: 5000, progressBar: true, closeButton: true },
+      );
+      return false;
+    }
   }
 
   async saveAllChanges(): Promise<void> {

@@ -146,8 +146,9 @@ export class Execution implements OnDestroy {
   }
 
   addWidget(widgetId: string): void {
-    this.#executionFacade.addWidget(widgetId);
-    this.closeWidgetsPanel();
+    if (this.#executionFacade.addWidget(widgetId)) {
+      this.closeWidgetsPanel();
+    }
   }
 
   saveAllChanges(): Promise<void> {
