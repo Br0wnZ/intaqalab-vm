@@ -42,3 +42,11 @@ export type MagnitudesOptions = {
   armamento: SelectOption[];
   balistica: SelectOption[];
 };
+
+export type MeasureCategoryType = 'topografia' | 'municiones' | 'armamento' | 'balistica';
+
+export type MeasureCategoryDef = {
+  key: MeasureCategoryType;
+  title: string;
+  subtitle: string;
+};

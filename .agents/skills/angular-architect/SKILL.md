@@ -57,6 +57,7 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). Always declare explicit types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) from `@intaqalab/models` or local domain models.
 - **Deep Cloning:** Prohibited: `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
 - **Strict Comparisons:** All comparisons MUST be strict (`===` or `!==`).
+- **Event Isolation (`uiStopClick`):** Prohibited: Passing DOM `$event` into component methods solely to call `stopPropagation()` / `preventDefault()`. Use `uiStopClick` directive from `@intaqalab/ui` (`StopClick`) on the template element to keep component methods pure and DOM-independent.
 - **Language:** All technical code (variables, functions, classes, comments, file names) MUST be written completely in **English**.
 
 ---
@@ -76,6 +77,7 @@ When modernizing legacy code:
 | `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern       |
 | `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())` |
 | Massive mapping inside component `.ts`         | Extract to `<feature>-mapper.service.ts`        |
+| `event.stopPropagation()` in component method  | `uiStopClick` directive (`StopClick` from UI)   |
 
 ---
 

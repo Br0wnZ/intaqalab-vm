@@ -136,6 +136,7 @@ Los formularios se gestionan mediante la API moderna `form()` de `@angular/forms
 - **Configuración de Estados**: Es obligatorio usar el objeto de configuración `{ when: () => condition }` para `disabled`, `readonly` y `hidden`.
 - **Directiva `[formField]`**: Vincula los campos con `[formField]="myForm.property"`.
 - **Botón de Guardado `<ui-save-button>`**: Es **MANDATORIO** usar `<ui-save-button>` (`SaveButton` de `@intaqalab/ui`) con `[isSaving]="isSaving()"` para cualquier acción de guardado o submit. Prohibido usar `mat-flat-button` plano para guardar formularios.
+- **Aislamiento de Eventos `uiStopClick`**: Es **MANDATORIO** usar la directiva `uiStopClick` (o `stopClick`) de `@intaqalab/ui` (`StopClick`) en elementos interactivos anidados (botones, iconos, toggles dentro de `mat-option`, cabeceras de acordeón, tarjetas o filas de tabla) en lugar de inyectar `$event` en métodos del componente para ejecutar `event.stopPropagation()` y `event.preventDefault()`. E.g.: `<button type="button" uiStopClick (click)="toggleFavorite(id)">`.
 
 ```typescript
 import { Component, inject, signal } from '@angular/core';

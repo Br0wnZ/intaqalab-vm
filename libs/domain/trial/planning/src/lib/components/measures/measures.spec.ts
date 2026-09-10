@@ -25,8 +25,24 @@ import { formatMeasureOptionName, mapCatalogToMagnitudesOptions } from './measur
 const defaultImports = [TranslateModule.forRoot()];
 
 const defaultCatalogData = [
-  { id: 'cat-1', label: 'Presión', active: true, unit: 'TOPOGRAPHY', magnitude: 'Presión', favorite: true },
-  { id: 'cat-2', label: 'Velocidad', active: true, unit: 'MUNITIONS', magnitude: 'Velocidad', favorite: false },
+  {
+    id: 'cat-1',
+    label: 'Presión',
+    active: true,
+    unit: 'TOPOGRAPHY',
+    magnitude: 'Presión',
+    favorite: true,
+    qualificationType: 'QUANTITATIVE',
+  },
+  {
+    id: 'cat-2',
+    label: 'Velocidad',
+    active: true,
+    unit: 'MUNITIONS',
+    magnitude: 'Velocidad',
+    favorite: false,
+    qualificationType: 'QUANTITATIVE',
+  },
 ];
 
 describe('Measures', () => {
@@ -39,6 +55,7 @@ describe('Measures', () => {
     catalogData?: any;
     trialId?: string | null;
     seriesData?: any[];
+    readonly?: boolean;
   }) => {
     const measuresData = options?.measuresData ?? {
       series: [
@@ -93,6 +110,9 @@ describe('Measures', () => {
 
     const view = await render(Measures, {
       imports: defaultImports,
+      componentInputs: {
+        readonly: options?.readonly ?? false,
+      },
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -381,6 +401,187 @@ describe('Measures', () => {
       expect(component.magnitudesOptions().armamento[0].name).toBe('Cadencia de tiro');
       expect(component.magnitudesOptions().municiones[0].name).toBe('Velocidad en boca');
       expect(component.magnitudesOptions().topografia[0].name).toBe('Presión - Recámara');
+    });
+  });
+
+  describe('Category Card State Management', () => {
+    it('should have balistica open by default and other categories closed', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      expect(component.isCategoryOpen('balistica')).toBe(true);
+      expect(component.isCategoryOpen('topografia')).toBe(false);
+      expect(component.isCategoryOpen('municiones')).toBe(false);
+      expect(component.isCategoryOpen('armamento')).toBe(false);
+    });
+
+    it('should toggle category open state in global configuration', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.toggleCategory('topografia');
+      expect(component.isCategoryOpen('topografia')).toBe(true);
+
+      component.toggleCategory('topografia');
+      expect(component.isCategoryOpen('topografia')).toBe(false);
+    });
+
+    it('should toggle category open state independently per serie in series configuration', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.toggleCategory('topografia', 'series-1');
+      expect(component.isCategoryOpen('topografia', 'series-1')).toBe(true);
+      expect(component.isCategoryOpen('topografia', 'series-2')).toBe(false);
+    });
+  });
+
+  describe('Measure Limit Card Interactions', () => {
+    it('should toggle measure expanded state via toggleMeasureExpanded', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+      ]);
+
+      component.toggleMeasureExpanded('series-1', 'topografia', 'cat-1');
+      expect(component.seriesSignal()[0].topografia[0].expanded).toBe(true);
+
+      component.toggleMeasureExpanded('series-1', 'topografia', 'cat-1');
+      expect(component.seriesSignal()[0].topografia[0].expanded).toBe(false);
+    });
+
+    it('should not toggle expansion for qualitative measures via toggleMeasureExpanded', async () => {
+      const customCatalog = [
+        {
+          id: 'cat-qual',
+          label: 'Tipo',
+          active: true,
+          unit: 'MUNITIONS',
+          magnitude: 'Tipo',
+          qualificationType: 'QUALITATIVE',
+        },
+      ];
+      const { view } = await runSetup({ catalogData: customCatalog });
+      const component = view.fixture.componentInstance;
+
+      component.onCategoryChange('series-1', 'municiones', [
+        { id: 'cat-qual', minLimit: null, maxLimit: null, deviation: null, expanded: false },
+      ]);
+
+      component.toggleMeasureExpanded('series-1', 'municiones', 'cat-qual');
+      expect(component.seriesSignal()[0].municiones[0].expanded).toBe(false);
+    });
+
+    it('should remove measure via removeMeasure', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+        { id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2, expanded: false },
+      ]);
+
+      component.removeMeasure('series-1', 'topografia', 'cat-1');
+      expect(component.seriesSignal()[0].topografia.length).toBe(1);
+      expect(component.seriesSignal()[0].topografia[0].id).toBe('cat-2');
+    });
+
+    it('should update limit field via updateLimit', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: true },
+      ]);
+
+      component.updateLimit('series-1', 'topografia', 'cat-1', 'maxLimit', 10);
+      expect(component.seriesSignal()[0].topografia[0].maxLimit).toBe(10);
+
+      component.updateLimit('series-1', 'topografia', 'cat-1', 'minLimit', 2);
+      expect(component.seriesSignal()[0].topografia[0].minLimit).toBe(2);
+
+      component.updateLimit('series-1', 'topografia', 'cat-1', 'deviation', 0.5);
+      expect(component.seriesSignal()[0].topografia[0].deviation).toBe(0.5);
+    });
+  });
+
+  describe('Helper functions', () => {
+    it('should identify quantitative measures based on qualificationType in catalog', async () => {
+      const customCatalog = [
+        {
+          id: 'cat-quant',
+          label: 'Presión',
+          active: true,
+          unit: 'TOPOGRAPHY',
+          magnitude: 'Presión',
+          qualificationType: 'QUANTITATIVE',
+        },
+        {
+          id: 'cat-qual',
+          label: 'Tipo',
+          active: true,
+          unit: 'MUNITIONS',
+          magnitude: 'Tipo',
+          qualificationType: 'QUALITATIVE',
+        },
+      ];
+      const { view } = await runSetup({ catalogData: customCatalog });
+      const component = view.fixture.componentInstance;
+
+      expect(component.isQuantitative('cat-quant')).toBe(true);
+      expect(component.isQuantitative('cat-qual')).toBe(false);
+      expect(component.isQuantitative('cat-non-existent')).toBe(false);
+    });
+
+    it('should return measure name from options or fallback to id', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      const options = [
+        { id: 'cat-1', name: 'Presión cámara' },
+        { id: 'cat-2', name: 'Velocidad inicial' },
+      ];
+      expect(component.getMeasureName('cat-1', options)).toBe('Presión cámara');
+      expect(component.getMeasureName('unknown-id', options)).toBe('unknown-id');
+    });
+  });
+
+  describe('Readonly Mode', () => {
+    it('should not render save and cancel buttons when readonly is true', async () => {
+      await runSetup({ readonly: true });
+      expect(screen.queryByRole('button', { name: /Guardar borrador/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Cancelar/i })).not.toBeInTheDocument();
+    });
+
+    it('should prevent modifications when readonly is true', async () => {
+      const { view } = await runSetup({ readonly: true });
+      const component = view.fixture.componentInstance;
+      const initialSeries = component.seriesSignal();
+
+      component.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+      ]);
+      expect(component.seriesSignal()).toEqual(initialSeries);
+
+      component.removeMeasure('series-1', 'topografia', 'cat-1');
+      expect(component.seriesSignal()).toEqual(initialSeries);
+
+      component.updateLimit('series-1', 'topografia', 'cat-1', 'maxLimit', 100);
+      expect(component.seriesSignal()).toEqual(initialSeries);
+
+      component.toggleConfigBySerie();
+      expect(component.seriesConfiguration()).toBe(false);
+
+      const store = view.fixture.debugElement.injector.get(MeasuresStore);
+      const addFavoriteSpy = vi.spyOn(store, 'addFavorite');
+      component.onToggleFavorite({ id: 'cat-1', isFavorite: true });
+      expect(addFavoriteSpy).not.toHaveBeenCalled();
+
+      const updateMeasuresSpy = vi.spyOn(store, 'updateMeasures');
+      component.save();
+      expect(updateMeasuresSpy).not.toHaveBeenCalled();
     });
   });
 });

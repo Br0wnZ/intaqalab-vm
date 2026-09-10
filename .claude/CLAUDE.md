@@ -10,7 +10,7 @@
 
 ## Codebase Intelligence for intaqalab-vm (Repowise)
 
-Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-09-09 (commit e6aff70). Confidence: 99%.
+Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-09-10 (commit 5535997). Confidence: 99%.
 
 ### How to work in this repo
 
@@ -59,11 +59,11 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 
 ### Files that need care (bug-fix history first, then churn — check `get_risk` before editing)
 
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 7 days ago; 12 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 7 days ago; 7 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/update-armament-dialog.ts` — 1 bug fix, last fix 7 days ago; 4 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 7 days ago; 7 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 7 days ago; 7 commits/90d
+- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 8 days ago; 11 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 8 days ago; 7 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/update-armament-dialog.ts` — 1 bug fix, last fix 8 days ago; 4 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 8 days ago; 7 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 8 days ago; 7 commits/90d
 
 ### Code health
 

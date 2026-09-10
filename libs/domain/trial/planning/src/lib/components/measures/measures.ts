@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,14 +9,11 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { applyEach, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,22 +21,20 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type { MagnitudesOptions, MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import type {
+  MagnitudesOptions,
+  MeasureCategoryDef,
+  MeasureSelectionData,
+} from '../../utils-models/measure-serie.model';
+import { MeasureCategoryCard } from './measure-category-card';
 import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
-import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
 @Component({
   selector: 'inta-measures',
   imports: [
-    NgTemplateOutlet,
     MatExpansionModule,
     MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    FormsModule,
-    MultiSelectSearchableComponent,
     TranslateModule,
     Badge,
     TrialStatusLabelPipe,
@@ -48,6 +42,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
     Skeleton,
     ErrorState,
     RangePipe,
+    MeasureCategoryCard,
   ],
   providers: [MeasuresStore, SeriesAndShotsStore],
   template: `
@@ -63,25 +58,36 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
             <ui-skeleton variant="rectangle" width="180px" height="24px" animation="wave" />
           </div>
 
-          <!-- Global / Single Card Skeleton -->
-          <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+          <!-- Category Cards Skeleton -->
+          <div class="space-y-4">
             @for (cat of 4 | range; track cat) {
-              <div class="space-y-3">
-                <ui-skeleton variant="text" width="260px" height="1.25rem" animation="wave" />
-                <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
-                @if (cat === 0 || cat === 3) {
-                  <div class="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <div class="flex justify-between items-center">
-                      <ui-skeleton variant="text" width="320px" height="1.25rem" animation="wave" />
-                      <div class="flex items-center gap-2">
-                        <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
-                        <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
-                      </div>
+              <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <ui-skeleton variant="rectangle" width="48px" height="48px" animation="wave" />
+                    <div class="space-y-1.5">
+                      <ui-skeleton variant="text" width="120px" height="1rem" animation="wave" />
+                      <ui-skeleton variant="text" width="220px" height="0.75rem" animation="wave" />
                     </div>
-                    <div class="grid grid-cols-3 gap-4">
-                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
-                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
-                      <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                  </div>
+                  <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                </div>
+                @if (cat === 3) {
+                  <div class="pt-2 space-y-3">
+                    <ui-skeleton variant="rectangle" width="100%" height="48px" animation="wave" />
+                    <div class="border border-purple-200 rounded-xl p-4 space-y-3">
+                      <div class="flex justify-between items-center">
+                        <ui-skeleton variant="text" width="280px" height="1.25rem" animation="wave" />
+                        <div class="flex items-center gap-2">
+                          <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                          <ui-skeleton variant="circle" width="24px" height="24px" animation="wave" />
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-3 gap-4">
+                        <ui-skeleton variant="rectangle" width="100%" height="44px" animation="wave" />
+                        <ui-skeleton variant="rectangle" width="100%" height="44px" animation="wave" />
+                        <ui-skeleton variant="rectangle" width="100%" height="44px" animation="wave" />
+                      </div>
                     </div>
                   </div>
                 }
@@ -103,7 +109,7 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
       } @else {
         <div class="flex justify-between items-center mb-6">
           <div class="flex gap-2">
-            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
+            <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg font-medium">
               {{ trialCode() }}
             </h2>
             @if (trialStatus(); as status) {
@@ -124,104 +130,23 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
         </div>
 
         @if (!seriesConfiguration() && seriesSignal().length > 0) {
-          <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
-            <div class="flex flex-col space-y-4">
-              <!-- Magnitudes y registros de topografía -->
-              <inta-multi-select-searchable
-                [label]="'Magnitudes y registros de topografía'"
-                [placeholder]="'Selecciona magnitudes y/o registros'"
-                [options]="magnitudesOptions().topografia"
-                [selectedValues]="seriesSignal()[0].topografia"
-                [disabled]="readonly()"
-                (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'topografia', $event)"
+          <div class="flex flex-col gap-4">
+            @for (cat of categories; track cat.key) {
+              <inta-measure-category-card
+                [category]="cat"
+                [isOpen]="isCategoryOpen(cat.key)"
+                [options]="magnitudesOptions()[cat.key]"
+                [selectedValues]="seriesSignal()[0][cat.key]"
+                [readonly]="readonly()"
+                [measuresCatalog]="measuresCatalog()"
+                (toggleOpen)="toggleCategory(cat.key)"
+                (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, cat.key, $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
+                (removeMeasure)="removeMeasure(seriesSignal()[0].id, cat.key, $event)"
+                (toggleMeasureExpanded)="toggleMeasureExpanded(seriesSignal()[0].id, cat.key, $event)"
+                (updateLimit)="updateLimit(seriesSignal()[0].id, cat.key, $event.measureId, $event.field, $event.value)"
               />
-              @for (measure of seriesSignal()[0].topografia; track measure.id) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    measureLimitCard;
-                    context: {
-                      $implicit: measure,
-                      serieId: seriesSignal()[0].id,
-                      category: 'topografia',
-                      options: magnitudesOptions().topografia,
-                    }
-                  "
-                />
-              }
-
-              <!-- Magnitudes y registros de municiones -->
-              <inta-multi-select-searchable
-                [label]="'Magnitudes y registros de municiones'"
-                [placeholder]="'Selecciona magnitudes y/o registros'"
-                [options]="magnitudesOptions().municiones"
-                [selectedValues]="seriesSignal()[0].municiones"
-                [disabled]="readonly()"
-                (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'municiones', $event)"
-                (toggleFavorite)="onToggleFavorite($event)"
-              />
-              @for (measure of seriesSignal()[0].municiones; track measure.id) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    measureLimitCard;
-                    context: {
-                      $implicit: measure,
-                      serieId: seriesSignal()[0].id,
-                      category: 'municiones',
-                      options: magnitudesOptions().municiones,
-                    }
-                  "
-                />
-              }
-
-              <!-- Magnitudes y registros de armamento -->
-              <inta-multi-select-searchable
-                [label]="'Magnitudes y registros de armamento'"
-                [placeholder]="'Selecciona magnitudes y/o registros'"
-                [options]="magnitudesOptions().armamento"
-                [selectedValues]="seriesSignal()[0].armamento"
-                [disabled]="readonly()"
-                (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'armamento', $event)"
-                (toggleFavorite)="onToggleFavorite($event)"
-              />
-              @for (measure of seriesSignal()[0].armamento; track measure.id) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    measureLimitCard;
-                    context: {
-                      $implicit: measure,
-                      serieId: seriesSignal()[0].id,
-                      category: 'armamento',
-                      options: magnitudesOptions().armamento,
-                    }
-                  "
-                />
-              }
-
-              <!-- Magnitudes y registros de balística -->
-              <inta-multi-select-searchable
-                [label]="'Magnitudes y registros de balística'"
-                [placeholder]="'Selecciona magnitudes y/o registros'"
-                [options]="magnitudesOptions().balistica"
-                [selectedValues]="seriesSignal()[0].balistica"
-                [disabled]="readonly()"
-                (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, 'balistica', $event)"
-                (toggleFavorite)="onToggleFavorite($event)"
-              />
-              @for (measure of seriesSignal()[0].balistica; track measure.id) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    measureLimitCard;
-                    context: {
-                      $implicit: measure,
-                      serieId: seriesSignal()[0].id,
-                      category: 'balistica',
-                      options: magnitudesOptions().balistica,
-                    }
-                  "
-                />
-              }
-            </div>
+            }
           </div>
         }
 
@@ -240,99 +165,20 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
                 </mat-expansion-panel-header>
 
                 <div class="flex flex-col gap-4 p-2">
-                  <!-- Magnitudes y registros de topografía -->
-                  <inta-multi-select-searchable
-                    [label]="'Magnitudes y registros de topografía'"
-                    [placeholder]="'Selecciona magnitudes y/o registros'"
-                    [options]="magnitudesOptions().topografia"
-                    [selectedValues]="serie.topografia"
-                    [disabled]="readonly()"
-                    (selectedValuesChange)="onCategoryChange(serie.id, 'topografia', $event)"
-                    (toggleFavorite)="onToggleFavorite($event)"
-                  />
-                  @for (measure of serie.topografia; track measure.id) {
-                    <ng-container
-                      *ngTemplateOutlet="
-                        measureLimitCard;
-                        context: {
-                          $implicit: measure,
-                          serieId: serie.id,
-                          category: 'topografia',
-                          options: magnitudesOptions().topografia,
-                        }
-                      "
-                    />
-                  }
-
-                  <!-- Magnitudes y registros de municiones -->
-                  <inta-multi-select-searchable
-                    [label]="'Magnitudes y registros de municiones'"
-                    [placeholder]="'Selecciona magnitudes y/o registros'"
-                    [options]="magnitudesOptions().municiones"
-                    [selectedValues]="serie.municiones"
-                    [disabled]="readonly()"
-                    (selectedValuesChange)="onCategoryChange(serie.id, 'municiones', $event)"
-                    (toggleFavorite)="onToggleFavorite($event)"
-                  />
-                  @for (measure of serie.municiones; track measure.id) {
-                    <ng-container
-                      *ngTemplateOutlet="
-                        measureLimitCard;
-                        context: {
-                          $implicit: measure,
-                          serieId: serie.id,
-                          category: 'municiones',
-                          options: magnitudesOptions().municiones,
-                        }
-                      "
-                    />
-                  }
-
-                  <!-- Magnitudes y registros de armamento -->
-                  <inta-multi-select-searchable
-                    [label]="'Magnitudes y registros de armamento'"
-                    [placeholder]="'Selecciona magnitudes y/o registros'"
-                    [options]="magnitudesOptions().armamento"
-                    [selectedValues]="serie.armamento"
-                    [disabled]="readonly()"
-                    (selectedValuesChange)="onCategoryChange(serie.id, 'armamento', $event)"
-                    (toggleFavorite)="onToggleFavorite($event)"
-                  />
-                  @for (measure of serie.armamento; track measure.id) {
-                    <ng-container
-                      *ngTemplateOutlet="
-                        measureLimitCard;
-                        context: {
-                          $implicit: measure,
-                          serieId: serie.id,
-                          category: 'armamento',
-                          options: magnitudesOptions().armamento,
-                        }
-                      "
-                    />
-                  }
-
-                  <!-- Magnitudes y registros de balística -->
-                  <inta-multi-select-searchable
-                    [label]="'Magnitudes y registros de balística'"
-                    [placeholder]="'Selecciona magnitudes y/o registros'"
-                    [options]="magnitudesOptions().balistica"
-                    [selectedValues]="serie.balistica"
-                    [disabled]="readonly()"
-                    (selectedValuesChange)="onCategoryChange(serie.id, 'balistica', $event)"
-                    (toggleFavorite)="onToggleFavorite($event)"
-                  />
-                  @for (measure of serie.balistica; track measure.id) {
-                    <ng-container
-                      *ngTemplateOutlet="
-                        measureLimitCard;
-                        context: {
-                          $implicit: measure,
-                          serieId: serie.id,
-                          category: 'balistica',
-                          options: magnitudesOptions().balistica,
-                        }
-                      "
+                  @for (cat of categories; track cat.key) {
+                    <inta-measure-category-card
+                      [category]="cat"
+                      [isOpen]="isCategoryOpen(cat.key, serie.id)"
+                      [options]="magnitudesOptions()[cat.key]"
+                      [selectedValues]="serie[cat.key]"
+                      [readonly]="readonly()"
+                      [measuresCatalog]="measuresCatalog()"
+                      (toggleOpen)="toggleCategory(cat.key, serie.id)"
+                      (selectedValuesChange)="onCategoryChange(serie.id, cat.key, $event)"
+                      (toggleFavorite)="onToggleFavorite($event)"
+                      (removeMeasure)="removeMeasure(serie.id, cat.key, $event)"
+                      (toggleMeasureExpanded)="toggleMeasureExpanded(serie.id, cat.key, $event)"
+                      (updateLimit)="updateLimit(serie.id, cat.key, $event.measureId, $event.field, $event.value)"
                     />
                   }
                 </div>
@@ -343,85 +189,28 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
         <div class="flex justify-end gap-3 mt-6">
           @if (!readonly()) {
-            <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">Cancelar</button>
-            <button mat-flat-button [disabled]="isSaving() || !seriesForm().valid()" (click)="save()">
+            <button
+              mat-stroked-button
+              class="!rounded-lg !border-slate-300 !text-gray-700 !px-5"
+              [disabled]="isSaving()"
+              (click)="cancel()"
+            >
+              Cancelar
+            </button>
+            <button
+              mat-flat-button
+              class="!bg-purple-600 hover:!bg-purple-700 !text-white !rounded-lg !px-5"
+              [disabled]="isSaving() || !seriesForm().valid()"
+              (click)="save()"
+            >
               @if (isSaving()) {
-                <ng-container>
-                  <mat-icon class="animate-spin mr-2">sync</mat-icon>
-                </ng-container>
+                <mat-icon class="animate-spin mr-2">sync</mat-icon>
               }
               {{ isSaving() ? 'Guardando...' : 'Guardar borrador' }}
             </button>
           }
         </div>
       }
-
-      <!-- Measure limit card template -->
-      <ng-template let-measure let-serieId="serieId" let-category="category" let-options="options" #measureLimitCard>
-        <div>
-          <div class="flex items-center justify-between py-1">
-            <span class="font-semibold text-sm text-gray-900">
-              {{ getMeasureName(measure.id, options) }}
-            </span>
-            <div class="flex items-center">
-              <button
-                mat-icon-button
-                type="button"
-                class="!text-gray-500 hover:!text-red-500"
-                [disabled]="readonly()"
-                (click)="removeMeasure(serieId, category, measure.id)"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                type="button"
-                class="!text-gray-500"
-                (click)="toggleMeasureExpanded(serieId, category, measure.id)"
-              >
-                <mat-icon>{{ measure.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-              </button>
-            </div>
-          </div>
-          @if (measure.expanded && isQuantitative(measure.id)) {
-            <div class="grid grid-cols-3 gap-4">
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Límite máximo</mat-label>
-                <input
-                  placeholder="Escribe aquí el límite máximo"
-                  matInput
-                  type="number"
-                  [ngModel]="measure.maxLimit"
-                  [disabled]="readonly()"
-                  (ngModelChange)="updateLimit(serieId, category, measure.id, 'maxLimit', $event)"
-                />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Límite mínimo</mat-label>
-                <input
-                  placeholder="Escribe aquí el límite mínimo"
-                  matInput
-                  type="number"
-                  [ngModel]="measure.minLimit"
-                  [disabled]="readonly()"
-                  (ngModelChange)="updateLimit(serieId, category, measure.id, 'minLimit', $event)"
-                />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Desviación</mat-label>
-                <input
-                  placeholder="Escribe aquí la desviación"
-                  matInput
-                  type="number"
-                  [ngModel]="measure.deviation"
-                  [disabled]="readonly()"
-                  (ngModelChange)="updateLimit(serieId, category, measure.id, 'deviation', $event)"
-                />
-              </mat-form-field>
-            </div>
-          }
-        </div>
-      </ng-template>
     </div>
   `,
   styles: [],
@@ -435,6 +224,8 @@ export class Measures {
   readonly #measuresStore = inject(MeasuresStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
   readonly #seriesStore = inject(SeriesAndShotsStore);
+
+  readonly measuresCatalog = computed(() => this.#measuresStore.measuresCatalog());
 
   readonly isLoadingView = computed(
     () =>
@@ -451,6 +242,38 @@ export class Measures {
   );
 
   readonly seriesConfiguration = signal<boolean>(false);
+
+  readonly categories = [
+    { key: 'topografia', title: 'Topografía', subtitle: 'Magnitudes y registros de topografía' },
+    { key: 'municiones', title: 'Municiones', subtitle: 'Magnitudes y registros de municiones' },
+    { key: 'armamento', title: 'Armamento', subtitle: 'Magnitudes y registros de armamento' },
+    { key: 'balistica', title: 'Balística', subtitle: 'Magnitudes y registros de balística' },
+  ] as const;
+
+  readonly openCategories = signal<Record<string, boolean>>({
+    topografia: false,
+    municiones: false,
+    armamento: false,
+    balistica: true,
+  });
+
+  isCategoryOpen(category: string, serieId?: string): boolean {
+    const key = serieId ? `${serieId}_${category}` : category;
+    const current = this.openCategories()[key];
+    if (current !== undefined) {
+      return current;
+    }
+    return category === 'balistica';
+  }
+
+  toggleCategory(category: string, serieId?: string): void {
+    const key = serieId ? `${serieId}_${category}` : category;
+    const currentState = this.isCategoryOpen(category, serieId);
+    this.openCategories.update((prev) => ({
+      ...prev,
+      [key]: !currentState,
+    }));
+  }
 
   readonly #backendData = computed(() => {
     const planningSeries = this.#seriesStore.series();
@@ -562,6 +385,9 @@ export class Measures {
     category: 'topografia' | 'municiones' | 'armamento' | 'balistica',
     measureId: string,
   ): void {
+    if (!this.isQuantitative(measureId)) {
+      return;
+    }
     this.seriesSignal.update((series) =>
       series.map((s) => {
         if (s.id !== serieId) return s;

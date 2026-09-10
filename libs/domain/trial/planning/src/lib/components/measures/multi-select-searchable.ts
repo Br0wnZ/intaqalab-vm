@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, effect, input, model, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,15 +13,7 @@ export type { MeasureSelectionData, SelectOption };
 
 @Component({
   selector: 'inta-multi-select-searchable',
-  imports: [
-    MatFormFieldModule,
-    MatSelectModule,
-    MatSelectClearable,
-    MatInputModule,
-    MatIconModule,
-    MatButtonModule,
-    FormsModule,
-  ],
+  imports: [MatFormFieldModule, MatSelectModule, MatSelectClearable, MatInputModule, MatIconModule, MatButtonModule],
   template: `
     <div class="multi-select-container">
       @if (label()) {
@@ -32,13 +23,13 @@ export type { MeasureSelectionData, SelectOption };
       }
       <mat-form-field id="multi-select-field" appearance="outline" class="w-full">
         <mat-select
-          clearable
           panelClass="custom-select-panel"
+          clearable
           multiple
           [placeholder]="placeholder()"
           [disabled]="disabled()"
-          [ngModel]="_internalIds()"
-          (ngModelChange)="onIdsChange($event)"
+          [value]="_internalIds()"
+          (valueChange)="onIdsChange($event)"
           (openedChange)="$event ? onPanelOpened() : null"
         >
           <mat-select-trigger>
@@ -55,7 +46,8 @@ export type { MeasureSelectionData, SelectOption };
             <input
               placeholder="Buscar"
               class="search-input"
-              [(ngModel)]="searchTermValue"
+              [value]="searchTerm()"
+              (input)="onSearchInput($event)"
               (click)="$event.stopPropagation()"
               (keydown)="$event.stopPropagation()"
             />
@@ -244,11 +236,9 @@ export class MultiSelectSearchableComponent {
   readonly searchTerm = signal<string>('');
   readonly starredItems = signal<string[]>([]);
 
-  get searchTermValue(): string {
-    return this.searchTerm();
-  }
-  set searchTermValue(value: string) {
-    this.searchTerm.set(value);
+  onSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchTerm.set(target.value);
   }
 
   readonly filteredOptions = computed(() => {

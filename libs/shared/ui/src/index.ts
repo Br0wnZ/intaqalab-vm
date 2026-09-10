@@ -29,3 +29,5 @@ export * from './lib/skeleton/skeleton-form';
 export * from './lib/error-state/error-state';
 
 export * from './lib/save-button/save-button';
+
+export * from './lib/stop-click/stop-click';
