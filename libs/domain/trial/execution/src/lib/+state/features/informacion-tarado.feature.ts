@@ -1,6 +1,8 @@
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import type { InformacionTaradoState } from '../execution-state.models';
+import type { InformacionTaradoSerie, InformacionTaradoState } from '../execution-state.models';
+import type { PropellantChargeParametersResponse } from '../../execution/models';
+import { mapPropellantChargeParametersToSeries } from '../../execution/widgets/informacion-tarado/informacion-tarado.mapper';
 
 interface InformacionTaradoSlice {
   informacionTarado: InformacionTaradoState;
@@ -54,6 +56,21 @@ export function withInformacionTarado() {
       updateInformacionTarado(updates: Partial<InformacionTaradoState>): void {
         patchState(store, (state) => ({
           informacionTarado: { ...state.informacionTarado, ...updates },
+        }));
+      },
+
+      /** Reemplaza la lista de series directamente */
+      setInformacionTaradoSeries(series: InformacionTaradoSerie[]): void {
+        patchState(store, (state) => ({
+          informacionTarado: { ...state.informacionTarado, series },
+        }));
+      },
+
+      /** Mapea y guarda la respuesta de parámetros de carga propulsora */
+      setPropellantChargeParameters(response: PropellantChargeParametersResponse): void {
+        const series = mapPropellantChargeParametersToSeries(response);
+        patchState(store, (state) => ({
+          informacionTarado: { ...state.informacionTarado, series },
         }));
       },
     })),

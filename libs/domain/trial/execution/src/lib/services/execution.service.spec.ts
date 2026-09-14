@@ -27,6 +27,7 @@ import {
   type PlanningSeriesItem,
   type PlanningStateResponse,
   type ProfilesReadinessResponse,
+  type PropellantChargeParametersResponse,
   type SecurityCountdownResponse,
   type ShotArmamentResponse,
   type ShotPressuresResponse,
@@ -116,6 +117,69 @@ describe('ExecutionService', () => {
       TestBed.tick();
       expect(service.planningConditionsResource.value()).toEqual(mockConditions);
     });
+  });
+
+  it('should GET propelling charge parameters when getPropellingChargeParameters() is called', async () => {
+    const mockParameters: PropellantChargeParametersResponse = {
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesNumber: 1,
+          seriesName: 'Serie 1',
+          loadingZone: 'Z1',
+          nominalSpeed: 780,
+          nominalSpeedUnit: SpeedUnitEnum.M_S,
+          maximumSpeedDeviation: 10,
+          maximumSpeedDeviationUnit: SpeedUnitEnum.M_S,
+          powderWeight: 3.75,
+          powderWeightUnit: WeightUnitEnum.KG,
+          observations: 'Test',
+        },
+      ],
+    };
+
+    service.getPropellingChargeParameters(DEMO_TRIAL_ID);
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockParameters);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.propellingChargeParametersResource.value()).toEqual(mockParameters);
+    });
+  });
+
+  it('should fetch propelling charge parameters imperatively when fetchPropellingChargeParameters() is called', async () => {
+    const mockParameters: PropellantChargeParametersResponse = {
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesNumber: 1,
+          seriesName: 'Serie 1',
+          loadingZone: 'Z1',
+          nominalSpeed: 780,
+          nominalSpeedUnit: SpeedUnitEnum.M_S,
+          maximumSpeedDeviation: 10,
+          maximumSpeedDeviationUnit: SpeedUnitEnum.M_S,
+          powderWeight: 3.75,
+          powderWeightUnit: WeightUnitEnum.KG,
+          observations: 'Test',
+        },
+      ],
+    };
+
+    const promise = service.fetchPropellingChargeParameters(DEMO_TRIAL_ID);
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockParameters);
+    TestBed.tick();
+
+    const result = await promise;
+    expect(result).toEqual(mockParameters);
   });
 
   it('should GET execution state when getExecutionState() is called', async () => {

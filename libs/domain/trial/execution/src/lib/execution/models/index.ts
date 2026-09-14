@@ -32,3 +32,6 @@ export * from './shot-mao-topography.models';
 export * from './shot-topography.models';
 export * from './shot-trajectography.models';
 export * from './shot-video-data.models';
+
+// Propelling charge parameters models (Widget 9)
+export * from './propelling-charge-parameters.models';

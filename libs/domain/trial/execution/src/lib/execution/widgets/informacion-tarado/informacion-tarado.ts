@@ -3,9 +3,11 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   inject,
   input,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { ElementRef, Signal } from '@angular/core';
@@ -18,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { InformacionTaradoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -140,6 +143,8 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #executionService = inject(ExecutionService);
+  readonly #lastLoadedTrialId = signal<string | null>(null);
 
   readonly carouselEl = viewChild<ElementRef<HTMLDivElement>>('carouselEl');
 
@@ -157,6 +162,33 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
     velocidadUnit: this.#store.informacionTarado().velocidadUnit,
   });
   protected readonly taradoForm = form(this.formModel);
+
+  constructor() {
+    super();
+
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      if (!fireTrialId) return;
+
+      if (this.#lastLoadedTrialId() === fireTrialId) return;
+
+      untracked(() => {
+        this.#lastLoadedTrialId.set(fireTrialId);
+        void this.loadPropellingChargeParameters(fireTrialId);
+      });
+    });
+  }
+
+  async loadPropellingChargeParameters(fireTrialId: string): Promise<void> {
+    try {
+      const response = await this.#executionService.fetchPropellingChargeParameters(fireTrialId);
+      if (response?.series) {
+        this.#store.setPropellantChargeParameters(response);
+      }
+    } catch {
+      // Retener el estado existente del store en caso de fallo de red
+    }
+  }
 
   readonly formState: Signal<WidgetFormState> = computed(() => ({
     widgetId: this.widgetId(),

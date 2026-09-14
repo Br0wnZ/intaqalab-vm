@@ -360,6 +360,10 @@ export interface InformacionTaradoSerie {
   desviacionVelocidadMax: number | null;
   /** Peso de pólvora Wc/g (de Planificación > Condiciones del disparo) */
   pesoPolvora: number | null;
+  /** Identificador de la serie en base de datos */
+  seriesId?: string;
+  /** Observaciones asociadas a los parámetros de la serie */
+  observations?: string | null;
 }
 
 /** Estado del widget Información Tarado */

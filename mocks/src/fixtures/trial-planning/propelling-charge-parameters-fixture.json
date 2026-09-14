@@ -1,0 +1,56 @@
+{
+  "series": [
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440100",
+      "seriesNumber": 1,
+      "seriesName": "Tarado pólvora tipo A Zona 1 baja",
+      "loadingZone": "Z1",
+      "nominalSpeed": 780,
+      "nominalSpeedUnit": "M_S",
+      "maximumSpeedDeviation": 10,
+      "maximumSpeedDeviationUnit": "M_S",
+      "powderWeight": 3.75,
+      "powderWeightUnit": "KG",
+      "observations": "Parámetros uniformes en la serie."
+    },
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440101",
+      "seriesNumber": 2,
+      "seriesName": "Tarado pólvora tipo A Zona 1 alta",
+      "loadingZone": "Z1",
+      "nominalSpeed": 810,
+      "nominalSpeedUnit": "M_S",
+      "maximumSpeedDeviation": 12,
+      "maximumSpeedDeviationUnit": "M_S",
+      "powderWeight": 4.10,
+      "powderWeightUnit": "KG",
+      "observations": "Zona 1 alta con sobrecarga ligera."
+    },
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440102",
+      "seriesNumber": 3,
+      "seriesName": "Tarado pólvora tipo B Zona 3 baja",
+      "loadingZone": "Z3",
+      "nominalSpeed": 920,
+      "nominalSpeedUnit": "M_S",
+      "maximumSpeedDeviation": 15,
+      "maximumSpeedDeviationUnit": "M_S",
+      "powderWeight": 5.25,
+      "powderWeightUnit": "KG",
+      "observations": "Pólvora tipo B experimental."
+    },
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440103",
+      "seriesNumber": 4,
+      "seriesName": "Tarado pólvora tipo B Zona 3 alta",
+      "loadingZone": "Z3",
+      "nominalSpeed": 960,
+      "nominalSpeedUnit": "M_S",
+      "maximumSpeedDeviation": 15,
+      "maximumSpeedDeviationUnit": "M_S",
+      "powderWeight": 5.80,
+      "powderWeightUnit": "KG",
+      "observations": "Calibración final."
+    }
+  ]
+}

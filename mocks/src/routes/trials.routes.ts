@@ -215,6 +215,15 @@ trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/conditions', (req
   res.status(200).send({});
 });
 
+// [Widget 9] Obtener parámetros de carga propulsora para el tarado
+trialsRouter.get(
+  ['/:centerId/fire-trials/:fireTrialId/planning/propelling-charge-parameters', '/fire-trials/:fireTrialId/planning/propelling-charge-parameters'],
+  (_req, res) => {
+    const data = getFixture('fixtures/trial-planning', 'propelling-charge-parameters-fixture.json');
+    res.status(200).json(data);
+  },
+);
+
 // ==========================================
 // PLANNING API - CATALOG ENDPOINTS
 // ==========================================

@@ -11,6 +11,7 @@ import type {
   EquipmentMeasureMagnitude,
   EquipmentSelectionApiList,
   EquipmentTypeEnum,
+  PropellantChargeParametersResponse,
   ShotAcousticLevelRequest,
   ShotAcousticLevelResponse,
   ShotJltMaoRequest,
@@ -612,6 +613,42 @@ export class ExecutionService {
 
   getPlanningConditions(fireTrialId: FireTrial['id']): void {
     this.#getPlanningConditionsParams.set({ fireTrialId, _t: Date.now() });
+  }
+
+  // ── PLANNING PROPELLING CHARGE PARAMETERS (Widget 9) ──────────────────────
+
+  readonly #getPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
+
+  readonly propellingChargeParametersResource = httpResource<PropellantChargeParametersResponse>(() => {
+    const params = this.#getPropellingChargeParametersParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/propelling-charge-parameters`,
+      method: 'GET',
+    };
+  });
+
+  getPropellingChargeParameters(fireTrialId: FireTrial['id']): void {
+    this.#getPropellingChargeParametersParams.set({ fireTrialId, _t: Date.now() });
+  }
+
+  readonly #fetchPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
+
+  readonly #fetchPropellingChargeParametersResource = httpResource<PropellantChargeParametersResponse>(() => {
+    const p = this.#fetchPropellingChargeParametersParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#planningUrl}/fire-trials/${p.fireTrialId}/planning/propelling-charge-parameters`,
+      method: 'GET',
+    };
+  });
+
+  async fetchPropellingChargeParameters(
+    fireTrialId: FireTrial['id'],
+  ): Promise<PropellantChargeParametersResponse> {
+    this.#fetchPropellingChargeParametersParams.set({ fireTrialId, _t: Date.now() });
+    await this.#awaitResource(this.#fetchPropellingChargeParametersResource);
+    return this.#fetchPropellingChargeParametersResource.value()!;
   }
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
