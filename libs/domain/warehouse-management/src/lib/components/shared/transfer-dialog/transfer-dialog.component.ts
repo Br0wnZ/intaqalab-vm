@@ -158,7 +158,7 @@ export class TransferDialogComponent {
     };
 
     this.#munitionsStockDetailService.transfer.set(dataToSend);
-    this.dialogRef.close(true);
+    this.dialogRef.close(dataToSend);
   }
 
   onCancel(): void {

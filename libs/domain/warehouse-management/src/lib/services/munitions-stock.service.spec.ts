@@ -122,7 +122,7 @@ describe('MunitionsStockService', () => {
     });
 
     it('should fire a POST to /stock/munition-components when munitionComponents is set', () => {
-      service.munitionComponents.set([makeMunitionComponentStock()]);
+      service.munitionComponents.set({ itemToSave: [makeMunitionComponentStock()] });
       TestBed.tick();
 
       const req = httpMock.expectOne((r) => r.url.includes('/stock/munition-components') && r.method === 'POST');
@@ -132,7 +132,7 @@ describe('MunitionsStockService', () => {
 
     it('should send the full array as the POST body', () => {
       const components = [makeMunitionComponentStock(), makeMunitionComponentStock()];
-      service.munitionComponents.set(components);
+      service.munitionComponents.set({ itemToSave: components });
       TestBed.tick();
 
       const req = httpMock.expectOne((r) => r.url.includes('/stock/munition-components') && r.method === 'POST');
@@ -145,7 +145,7 @@ describe('MunitionsStockService', () => {
   describe('clear()', () => {
     it('should reset both munition and munitionComponents signals to null', () => {
       service.munition.set({ itemToSave: makeMunitionStock() });
-      service.munitionComponents.set([makeMunitionComponentStock()]);
+      service.munitionComponents.set({ itemToSave: [makeMunitionComponentStock()] });
       TestBed.tick();
 
       // flush any pending requests triggered by the signal sets

@@ -13,6 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 
+import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
 import { MunitionComponentService } from '../../../services/munition-component.service';
 import { MunitionsStockCertificatesService } from '../../../services/munitions-stock-certificates.service';
@@ -35,6 +36,13 @@ function makeStockDetailStore(data = stock()): any {
     updateAssociatedComponents: vi.fn(),
     reload: vi.fn(),
     reset: vi.fn(),
+  };
+}
+
+function makeMunitionDumpsStore(items: unknown[] = []) {
+  return {
+    items: signal(items),
+    search: vi.fn(),
   };
 }
 
@@ -84,12 +92,14 @@ function makeMunitionsStockCertificatesService() {
 let dialogMock: { open: ReturnType<typeof vi.fn> };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockStore: any;
+let mockMunitionDumpsStore: ReturnType<typeof makeMunitionDumpsStore>;
 let router: { navigateByUrl: ReturnType<typeof vi.fn> };
 
-async function setup(entity: 'munitions' | 'munition-components' = 'munitions') {
+async function setup(entity: 'munitions' | 'munition-components' = 'munitions', munitionDumps: unknown[] = []) {
   dialogMock = { open: vi.fn().mockReturnValue({ afterClosed: () => of(undefined) }) };
   router = { navigateByUrl: vi.fn() };
   mockStore = makeStockDetailStore();
+  mockMunitionDumpsStore = makeMunitionDumpsStore(munitionDumps);
 
   const renderResult = await render(MunitionStockDetailShellComponent, {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
@@ -101,6 +111,7 @@ async function setup(entity: 'munitions' | 'munition-components' = 'munitions') 
       { provide: Router, useValue: router },
       // Shell's own store mock (shell has no providers[] for this store)
       { provide: MunitionsStockDetailStore, useValue: mockStore },
+      { provide: MunitionsDumpsStore, useValue: mockMunitionDumpsStore },
       // Services for child components' internally-created stores
       { provide: MunitionsStockDetailService, useValue: makeMunitionsStockDetailService() },
       { provide: MunitionComponentService, useValue: makeMunitionComponentService() },
@@ -137,6 +148,16 @@ describe('MunitionStockDetailShellComponent', () => {
     it('should call store.searchById with entity "munition-components" on init', async () => {
       await setup('munition-components');
       expect(mockStore.searchById).toHaveBeenCalledWith('stock-1', 'munition-components');
+    });
+
+    it('should load active munition dumps when the store has no data', async () => {
+      await setup();
+      expect(mockMunitionDumpsStore.search).toHaveBeenCalledWith({ pageSize: 500, active: true });
+    });
+
+    it('should not load munition dumps when the store already has data', async () => {
+      await setup('munitions', [{ id: 'dump-1' }]);
+      expect(mockMunitionDumpsStore.search).not.toHaveBeenCalled();
     });
   });
 

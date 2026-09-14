@@ -18,6 +18,7 @@ import { MasterDataStore } from '../../../../+state/master-data.store';
 import { MEASUREMENTS_AND_RECORDS_UNITS, MEASUREMENT_AREA_OPTIONS } from '../../../../data/measures.constants';
 import {
   type MasterDataMeasures,
+  type MasterDataMeasuresFormModel,
   type MeasureQualitativeValue,
   type MeasurementsAndRecordsQualificationType,
   injectMeasuresEquipments,
@@ -403,7 +404,7 @@ export class MeasurementsAndRecordsDialogComponent {
 
   readonly equipmentOptions = injectMeasuresEquipments();
 
-  readonly defaultFormValues = {
+  readonly defaultFormValues: MasterDataMeasuresFormModel = {
     unit: '',
     measurementArea: '',
     measurements: [],
@@ -428,7 +429,7 @@ export class MeasurementsAndRecordsDialogComponent {
     grubbs: false, // QUANTITATIVE
   };
 
-  readonly formModel = signal<MasterDataMeasures>(this.defaultFormValues);
+  readonly formModel = signal<MasterDataMeasuresFormModel>(this.defaultFormValues);
 
   readonly #isQuantitative = () => this.formModel().qualificationType === 'QUANTITATIVE';
 
@@ -473,13 +474,24 @@ export class MeasurementsAndRecordsDialogComponent {
     });
   });
 
-  #normalizeFormData(data: MasterDataMeasures): MasterDataMeasures {
+  #normalizeFormData(data: MasterDataMeasures): MasterDataMeasuresFormModel {
     return {
       ...this.defaultFormValues,
-      ...data,
+      unit: data.unit ?? this.defaultFormValues.unit,
+      measurementArea: data.measurementArea ?? this.defaultFormValues.measurementArea,
       measurements: Array.isArray(data.measurements) ? data.measurements : [],
+      magnitudeCode: data.magnitudeCode ?? this.defaultFormValues.magnitudeCode,
+      magnitude: data.magnitude ?? this.defaultFormValues.magnitude,
+      procedure: data.procedure ?? this.defaultFormValues.procedure,
+      qualificationType: data.qualificationType ?? this.defaultFormValues.qualificationType,
+      measureUnit: data.measureUnit ?? this.defaultFormValues.measureUnit,
+      minValue: data.minValue ?? this.defaultFormValues.minValue,
+      maxValue: data.maxValue ?? this.defaultFormValues.maxValue,
+      uncertainty: data.uncertainty ?? this.defaultFormValues.uncertainty,
       values: Array.isArray(data.values) && data.values.length ? data.values : this.defaultFormValues.values,
       equipmentTypes: Array.isArray(data.equipmentTypes) ? data.equipmentTypes : this.defaultFormValues.equipmentTypes,
+      accreditation: data.accreditation ?? this.defaultFormValues.accreditation,
+      grubbs: data.grubbs ?? this.defaultFormValues.grubbs,
     };
   }
 
@@ -511,18 +523,17 @@ export class MeasurementsAndRecordsDialogComponent {
             : null,
       };
 
-      dataToSend[key as keyof MasterDataMeasures] =
-        key in specialOptionsToCast ? specialOptionsToCast[key as string](value) : value;
+      dataToSend[key] = key in specialOptionsToCast ? specialOptionsToCast[key as string](value) : value;
 
       if (form.qualificationType === 'QUALITATIVE') {
-        dataToSend['grubbs' as keyof MasterDataMeasures] = false;
+        dataToSend['grubbs'] = false;
       }
     });
 
     if (!this.data) {
       this.store.create({ ...(dataToSend as unknown as MasterDataResponseType), active: true });
     } else {
-      this.store.update(dataToSend as unknown as MasterDataResponseType);
+      this.store.update({ ...(dataToSend as unknown as MasterDataResponseType), id: this.data.id });
     }
   }
 

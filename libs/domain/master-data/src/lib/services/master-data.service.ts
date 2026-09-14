@@ -3,7 +3,7 @@ import type { WritableSignal } from '@angular/core';
 import type { PaginatedApiResponse, PaginatedSortedViewRequest } from '@intaqalab/models';
 
 import type { MasterDataDefault } from '../models/master-data-default.model';
-import type { MasterDataCreateItemType } from '../models/utils.model';
+import type { MasterDataCreateItemType, MasterDataEntityId } from '../models/utils.model';
 
 export type MasterDataSearchRequest = PaginatedSortedViewRequest & {
   filters?: Readonly<Record<string, string>>;
@@ -15,7 +15,7 @@ export abstract class MasterDataService<T = MasterDataDefault> {
 
   abstract create(record: MasterDataCreateItemType<T>): void;
   abstract update(record: T): void;
-  abstract delete(id: string | number | T): void;
+  abstract delete(id: MasterDataEntityId): void;
 
   abstract resetUpsert(): void;
   abstract resetSwitchStatus(): void;

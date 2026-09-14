@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
@@ -184,11 +184,13 @@ export class ArmamentService {
 
     const queryParams = this.#buildQueryParams({ itemType: 'TUBE', familyId: params.familyId });
     return {
-      url: `${this.#planningUrl}/equipment/items${queryParams}`,
+      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
       parse: (raw: unknown) => this.#mapEquipmentItemsResponse(raw),
     };
   });
+
+  readonly tubeDenominationsFamilyId = computed(() => this.#tubeDenominationParams()?.familyId);
 
   getArmament(trialId: FireTrial['id']) {
     this.#getArmamentParams.set({ trialId });

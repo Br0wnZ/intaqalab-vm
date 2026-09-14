@@ -67,7 +67,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
                 [placeholder]="'TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.TUBE_PLACEHOLDER' | translate"
               >
                 @for (tube of tubeOptions(); track tube.denominationId ?? tube.id) {
-                  <mat-option [value]="tube.denominationId?.toString() ?? tube.id">
+                  <mat-option [value]="(tube.denominationId ?? tube.id).toString()">
                     {{ tube.modelName ?? tube.name }}
                   </mat-option>
                 }
@@ -162,11 +162,11 @@ export class UpdateArmamentDialog {
     const denominations = this.#armamentStore.tubeDenominations();
     const selectedId = this.armamentModel().tubeExternalId;
 
-    if (!selectedId || denominations.some((tube) => (tube.denominationId?.toString() ?? tube.id) === selectedId)) {
+    if (!selectedId || denominations.some((tube) => (tube.denominationId ?? tube.id).toString() === selectedId)) {
       return denominations;
     }
 
-    const fallback = this.data.tubes.find((tube) => (tube.denominationId?.toString() ?? tube.id) === selectedId) ?? {
+    const fallback = this.data.tubes.find((tube) => (tube.denominationId ?? tube.id).toString() === selectedId) ?? {
       id: selectedId,
       name: this.data.armament.tubeName || selectedId,
       type: 'TUBE' as const,

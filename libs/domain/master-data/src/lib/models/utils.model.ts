@@ -14,3 +14,7 @@ export type MasterDataResponseType =
 export type MasterDataUpsertDialogType<T> = Omit<T, 'id' | 'active' | 'label'>;
 
 export type MasterDataCreateItemType<T> = Omit<T, 'id'>;
+
+export type MasterDataEntityId = string | number;
+
+export type MasterDataWithId = { id: MasterDataEntityId };

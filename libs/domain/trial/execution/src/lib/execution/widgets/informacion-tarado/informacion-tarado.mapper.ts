@@ -42,9 +42,7 @@ export function normalizeSpeedToMs(
 /**
  * Mapea una serie individual de la respuesta API al modelo de estado del widget Información Tarado.
  */
-export function mapPropellantChargeSeriesItem(
-  item: PropellantChargeParametersSeries,
-): InformacionTaradoSerie {
+export function mapPropellantChargeSeriesItem(item: PropellantChargeParametersSeries): InformacionTaradoSerie {
   const numStr =
     item.seriesNumber !== null && item.seriesNumber !== undefined
       ? String(item.seriesNumber).startsWith('S')
@@ -57,10 +55,7 @@ export function mapPropellantChargeSeriesItem(
     nombre: item.seriesName ?? null,
     zona: item.loadingZone ?? null,
     velocidadNominal: normalizeSpeedToMs(item.nominalSpeed, item.nominalSpeedUnit),
-    desviacionVelocidadMax: normalizeSpeedToMs(
-      item.maximumSpeedDeviation,
-      item.maximumSpeedDeviationUnit,
-    ),
+    desviacionVelocidadMax: normalizeSpeedToMs(item.maximumSpeedDeviation, item.maximumSpeedDeviationUnit),
     pesoPolvora: normalizePowderWeightToGrams(item.powderWeight, item.powderWeightUnit),
     seriesId: item.seriesId,
     observations: item.observations ?? null,

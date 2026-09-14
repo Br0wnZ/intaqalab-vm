@@ -22,6 +22,10 @@ import { Armament } from './armament';
 import { ArmamentRow } from './armament-row';
 import { UpdateArmamentDialog } from './update-armament-dialog';
 
+type ArmamentServiceMock = ReturnType<typeof createMockArmamentService> & {
+  tubeDenominationsFamilyId: ReturnType<typeof vi.fn>;
+};
+
 const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmamentResponse => ({
   series: Array.from({ length: seriesCount }, (_, seriesIdx) => ({
     seriesId: `series-${seriesIdx + 1}`,
@@ -45,7 +49,7 @@ const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmam
 
 describe('Armament', () => {
   let mockPlanningStore: ReturnType<typeof createMockPlanningGeneralDataStore>;
-  let mockArmamentService: ReturnType<typeof createMockArmamentService>;
+  let mockArmamentService: ArmamentServiceMock;
   let mockDialog: ReturnType<typeof createMockMatDialog>;
 
   const runSetup = async (options?: { armamentData?: TrialArmamentResponse; trialId?: string | null }) => {
@@ -68,7 +72,8 @@ describe('Armament', () => {
 
     mockArmamentService = createMockArmamentService({
       armament: armamentData as any,
-    });
+    }) as ReturnType<typeof createMockArmamentService> & { tubeDenominationsFamilyId: ReturnType<typeof vi.fn> };
+    mockArmamentService.tubeDenominationsFamilyId = vi.fn(() => undefined);
 
     mockDialog = createMockMatDialog({ defaultResult: null });
 
@@ -135,7 +140,8 @@ describe('Armament', () => {
       });
       mockArmamentService = createMockArmamentService({
         armament: { series: [] } as any,
-      });
+      }) as ReturnType<typeof createMockArmamentService> & { tubeDenominationsFamilyId: ReturnType<typeof vi.fn> };
+      mockArmamentService.tubeDenominationsFamilyId = vi.fn(() => undefined);
       mockDialog = createMockMatDialog({ defaultResult: null });
 
       const view = await render(Armament, {
@@ -277,7 +283,7 @@ describe('Armament', () => {
           UpdateArmamentDialog,
           expect.objectContaining({
             data: expect.objectContaining({
-              armament: expect.objectContaining({ weaponExternalId: 1 }),
+              armament: expect.objectContaining({ weaponExternalId: '1' }),
             }),
           }),
         );

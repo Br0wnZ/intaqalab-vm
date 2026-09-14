@@ -6,12 +6,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import type { UIDialogConfirm } from '@intaqalab/ui';
+import { DialogConfirmComponent } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
+import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
+import type { TransferMovementsPayload } from '../../../models/movements.model';
 import type { StockEntity } from '../../../models/munition-stock-detail.model';
+import { MunitionsStockDetailService } from '../../../services/munitions-stock-detail.service';
 import { TransferDialogComponent } from '../../shared/transfer-dialog/transfer-dialog.component';
 import { CertificatesComponent } from '../certificates/certificates.component';
 import { ComponentsTableComponent } from '../components-table/components-table.component';
@@ -231,6 +236,8 @@ export class MunitionStockDetailShellComponent {
   readonly #dialog = inject(MatDialog);
   readonly #router = inject(Router);
   readonly store = inject(MunitionsStockDetailStore);
+  readonly #munitionDumpsStore = inject(MunitionsDumpsStore);
+  readonly #munitionsStockDetailService = inject(MunitionsStockDetailService);
 
   id = input.required<string>();
   entity = input.required<string>();
@@ -240,13 +247,59 @@ export class MunitionStockDetailShellComponent {
     return result;
   });
 
+  #lastTransferPayload: TransferMovementsPayload | null = null;
+
   constructor() {
+    if (!this.#munitionDumpsStore.items().length) {
+      this.#munitionDumpsStore.search({ pageSize: 500, active: true });
+    }
+
     effect(() => {
       const id = this.id();
       const entityParam: StockEntity = this.entity() === 'munitions' ? 'munitions' : 'munition-components';
       if (id !== undefined && entityParam !== undefined) {
         this.store.searchById(id, entityParam);
       }
+    });
+
+    effect(() => {
+      const result = this.#munitionsStockDetailService.transferResource.statusCode();
+
+      if (result === 201) this.store.reload();
+    });
+
+    effect(async () => {
+      const resource = this.#munitionsStockDetailService.transferResource;
+      const statusCode = resource.statusCode();
+
+      if (statusCode !== 400) return;
+
+      const detail = resource.error()?.message || '';
+      const message: UIDialogConfirm = detail.toLocaleLowerCase().includes('neq')
+        ? {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
+          }
+        : {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
+          };
+
+      const dialogRef = this.#dialog.open(DialogConfirmComponent, {
+        data: message,
+        maxWidth: 600,
+        width: '100vw',
+        height: 'fit-content',
+        maxHeight: 300,
+      });
+
+      const confirmed = await firstValueFrom(dialogRef.afterClosed());
+
+      if (!confirmed) return;
+
+      this.#munitionsStockDetailService.transfer.set({ ...this.#lastTransferPayload!, force: true });
     });
   }
 
@@ -285,7 +338,9 @@ export class MunitionStockDetailShellComponent {
       width: '1024px',
     });
 
-    await firstValueFrom(dialogRef.afterClosed());
+    const payload = await firstValueFrom(dialogRef.afterClosed());
+
+    if (payload) this.#lastTransferPayload = payload;
   }
 
   movements() {

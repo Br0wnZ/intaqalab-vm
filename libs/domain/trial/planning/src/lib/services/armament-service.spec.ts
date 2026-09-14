@@ -173,7 +173,9 @@ describe('ArmamentService', () => {
         service.getWeapons({ page: 0, pageSize: 20, familyId: 10 });
         tick();
 
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
+        const req = httpTestingController.expectOne((r) =>
+          r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
+        );
         expect(req.request.method).toBe('GET');
 
         const url = new URL(req.request.url);
@@ -221,7 +223,9 @@ describe('ArmamentService', () => {
         service.getTubes({ page: 1, pageSize: 5, familyId: 11 });
         tick();
 
-        const req = httpTestingController.expectOne((r) => r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`));
+        const req = httpTestingController.expectOne((r) =>
+          r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
+        );
         expect(req.request.method).toBe('GET');
 
         const url = new URL(req.request.url);

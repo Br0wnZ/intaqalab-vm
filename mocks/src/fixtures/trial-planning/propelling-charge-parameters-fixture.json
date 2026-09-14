@@ -22,7 +22,7 @@
       "nominalSpeedUnit": "M_S",
       "maximumSpeedDeviation": 12,
       "maximumSpeedDeviationUnit": "M_S",
-      "powderWeight": 4.10,
+      "powderWeight": 4.1,
       "powderWeightUnit": "KG",
       "observations": "Zona 1 alta con sobrecarga ligera."
     },
@@ -48,7 +48,7 @@
       "nominalSpeedUnit": "M_S",
       "maximumSpeedDeviation": 15,
       "maximumSpeedDeviationUnit": "M_S",
-      "powderWeight": 5.80,
+      "powderWeight": 5.8,
       "powderWeightUnit": "KG",
       "observations": "Calibración final."
     }

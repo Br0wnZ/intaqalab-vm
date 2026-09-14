@@ -1,8 +1,8 @@
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import type { InformacionTaradoSerie, InformacionTaradoState } from '../execution-state.models';
 import type { PropellantChargeParametersResponse } from '../../execution/models';
 import { mapPropellantChargeParametersToSeries } from '../../execution/widgets/informacion-tarado/informacion-tarado.mapper';
+import type { InformacionTaradoSerie, InformacionTaradoState } from '../execution-state.models';
 
 interface InformacionTaradoSlice {
   informacionTarado: InformacionTaradoState;

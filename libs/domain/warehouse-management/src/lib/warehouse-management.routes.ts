@@ -76,7 +76,7 @@ export const routes: Routes = [
   {
     path: 'stock/:entity/:id',
     component: MunitionStockDetailShellComponent,
-    providers: [MunitionsStockDetailStore],
+    providers: [MunitionsStockDetailStore, MunitionsDumpsStore],
     canMatch: [canMatchRole],
     data: {
       breadcrumb: 'BREADCRUMB.WAREHOUSE_STOCK',

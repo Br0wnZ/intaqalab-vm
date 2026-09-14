@@ -141,7 +141,9 @@ describe('ExecutionService', () => {
     service.getPropellingChargeParameters(DEMO_TRIAL_ID);
     TestBed.tick();
 
-    const req = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`);
+    const req = httpMock.expectOne(
+      `${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`,
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockParameters);
 
@@ -173,7 +175,9 @@ describe('ExecutionService', () => {
     const promise = service.fetchPropellingChargeParameters(DEMO_TRIAL_ID);
     TestBed.tick();
 
-    const req = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`);
+    const req = httpMock.expectOne(
+      `${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`,
+    );
     expect(req.request.method).toBe('GET');
     req.flush(mockParameters);
     TestBed.tick();

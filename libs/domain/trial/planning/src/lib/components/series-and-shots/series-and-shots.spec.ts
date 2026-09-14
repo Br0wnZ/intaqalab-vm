@@ -115,8 +115,16 @@ describe('SeriesAndShots', () => {
 
     it('should render actions for each series', async () => {
       await runSetup();
-      expect(screen.getAllByLabelText(/Editar/i)).toHaveLength(3);
-      expect(screen.getAllByLabelText(/Eliminar/i)).toHaveLength(3);
+      const seriesNames = ['Serie A', 'Serie B', 'Serie C'];
+      const seriesHeaders = seriesNames.map((name) => {
+        const seriesName = screen.getByText(name);
+        const header = seriesName.closest('mat-expansion-panel-header');
+        expect(header).toBeTruthy();
+        return header as HTMLElement;
+      });
+
+      expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/Editar/i))).toHaveLength(3);
+      expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/Eliminar/i))).toHaveLength(3);
       expect(screen.getAllByTitle(/Arrastrar para reordenar/i)).toHaveLength(3);
     });
   });

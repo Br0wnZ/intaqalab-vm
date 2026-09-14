@@ -271,49 +271,73 @@ export class MunitionsShellComponent {
     });
 
     effect(async () => {
-      const saveStatusCode = this.munitionsStockDataService.saveMunitionResource.statusCode();
-      if (saveStatusCode === 400) {
-        const error = this.munitionsStockDataService.saveMunitionResource.error();
-        const detail = error?.message || '';
-        let message: UIDialogConfirm;
-        if (detail.toLocaleLowerCase().includes('neq')) {
-          message = {
-            labelButtonConfirm: 'COMMONS.CONFIRM',
-            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
-            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
-          };
+      const category = this.form.category().value();
+
+      if (!category) return;
+
+      const isMunition = category === WarehouseMunitionCategory.MUNITION;
+
+      const resource = isMunition
+        ? this.munitionsStockDataService.saveMunitionResource
+        : this.munitionsStockDataService.saveMunitionComponentsResource;
+      const statusCode = resource.statusCode();
+      const status = resource.status();
+
+      if (status === 'resolved') {
+        if (isMunition) {
+          const id = this.munitionsStockDataService.saveMunitionResource.value()?.id;
+          this.munitionsStockDataService.munition.set(null);
+          this.#router.navigateByUrl('/warehouse-management/stock/munitions/' + id);
         } else {
-          message = {
-            labelButtonConfirm: 'COMMONS.CONFIRM',
-            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
-            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
-          };
+          this.munitionsStockDataService.munitionComponents.set(null);
+          this.#router.navigateByUrl('/warehouse-management/stock');
         }
+        return;
+      }
+
+      if (statusCode !== 400 || this.#confirmationInProgress) return;
+
+      this.#confirmationInProgress = true;
+      try {
+        const detail = resource.error()?.message || '';
+        const message: UIDialogConfirm = detail.toLocaleLowerCase().includes('neq')
+          ? {
+              labelButtonConfirm: 'COMMONS.CONFIRM',
+              title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
+              htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
+            }
+          : {
+              labelButtonConfirm: 'COMMONS.CONFIRM',
+              title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
+              htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
+            };
         const ok = await this.#uiDialogs.confirm(message);
-        const previousData = untracked(() => this.munitionsStockDataService.munition());
-        if (ok && previousData !== null) {
+        if (!ok) return;
+
+        if (isMunition) {
+          const previousData = untracked(() => this.munitionsStockDataService.munition());
+          if (previousData === null) return;
+
           this.munitionsStockDataService.munition.set({
             itemToSave: previousData.itemToSave,
             force: true,
           });
-        }
-      }
-    });
+        } else {
+          const previousData = untracked(() => this.munitionsStockDataService.munitionComponents());
+          if (previousData === null) return;
 
-    effect(async () => {
-      const saveMunitionStatus = this.munitionsStockDataService.saveMunitionResource.status();
-      if (saveMunitionStatus === 'resolved') {
-        const id = this.munitionsStockDataService.saveMunitionResource.value()?.id;
-        this.munitionsStockDataService.munition.set(null);
-        this.#router.navigateByUrl('/warehouse-management/stock/munitions/' + id);
-      }
-      const saveComponentsStatus = this.munitionsStockDataService.saveMunitionComponentsResource.status();
-      if (saveComponentsStatus === 'resolved') {
-        this.munitionsStockDataService.munitionComponents.set(null);
-        this.#router.navigateByUrl('/warehouse-management/stock');
+          this.munitionsStockDataService.munitionComponents.set({
+            itemToSave: previousData.itemToSave,
+            force: true,
+          });
+        }
+      } finally {
+        this.#confirmationInProgress = false;
       }
     });
   }
+
+  #confirmationInProgress = false;
 
   #defaultFormModel = {
     category: null,
@@ -488,7 +512,7 @@ export class MunitionsShellComponent {
     const payload = getPayloadMunitionComponents(form);
 
     if (payload.length) {
-      this.munitionsStockDataService.munitionComponents.set(payload);
+      this.munitionsStockDataService.munitionComponents.set({ itemToSave: payload });
     }
   }
 

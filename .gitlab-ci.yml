@@ -173,11 +173,11 @@ coverity-des:
     BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
     # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
   before_script:
-    - apt-get update && apt-get install -y curl unzip ca-certificates gnupg
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-upgrade curl unzip ca-certificates gnupg
     - mkdir -p /etc/apt/keyrings
     - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-    - apt-get update && apt-get install -y nodejs
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y nodejs
     - echo "=== Instalando dependencias npm ==="
     - npm ci --ignore-scripts --engine-strict=false
     - mkdir -p /opt/coverity/bin
@@ -227,11 +227,11 @@ coverity-pre:
     BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
     # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
   before_script:
-    - apt-get update && apt-get install -y curl unzip ca-certificates gnupg
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-upgrade curl unzip ca-certificates gnupg
     - mkdir -p /etc/apt/keyrings
     - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-    - apt-get update && apt-get install -y nodejs
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y nodejs
     - echo "=== Instalando dependencias npm ==="
     - npm ci --ignore-scripts --engine-strict=false
     - mkdir -p /opt/coverity/bin
@@ -280,11 +280,11 @@ coverity-pro:
     BRIDGE_BLACKDUCKSCA_REPORTS_SARIF_CREATE: "false"
     # BRIDGE_COVERITY_BUILD_COMMAND: "npm run build"
   before_script:
-    - apt-get update && apt-get install -y curl unzip ca-certificates gnupg
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-upgrade curl unzip ca-certificates gnupg
     - mkdir -p /etc/apt/keyrings
     - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     - echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
-    - apt-get update && apt-get install -y nodejs
+    - apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y nodejs
     - echo "=== Instalando dependencias npm ==="
     - npm ci --ignore-scripts --engine-strict=false
     - mkdir -p /opt/coverity/bin

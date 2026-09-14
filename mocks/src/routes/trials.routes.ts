@@ -217,7 +217,10 @@ trialsRouter.put('/:centerId/fire-trials/:fireTrialId/planning/conditions', (req
 
 // [Widget 9] Obtener parámetros de carga propulsora para el tarado
 trialsRouter.get(
-  ['/:centerId/fire-trials/:fireTrialId/planning/propelling-charge-parameters', '/fire-trials/:fireTrialId/planning/propelling-charge-parameters'],
+  [
+    '/:centerId/fire-trials/:fireTrialId/planning/propelling-charge-parameters',
+    '/fire-trials/:fireTrialId/planning/propelling-charge-parameters',
+  ],
   (_req, res) => {
     const data = getFixture('fixtures/trial-planning', 'propelling-charge-parameters-fixture.json');
     res.status(200).json(data);
@@ -387,7 +390,6 @@ trialsRouter.post('/:centerId/fire-trials/:fireTrialId/finish', (req, res) => {
   setTrialStatus(req.params['fireTrialId'], 'EXECUTED');
   res.status(200).json({ executionFinishedAt: new Date().toISOString() });
 });
-
 
 // Cancelar prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/cancel', (req, res) => {

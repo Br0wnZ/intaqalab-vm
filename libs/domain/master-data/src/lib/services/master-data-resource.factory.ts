@@ -4,14 +4,17 @@ import type { PaginatedApiResponse } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 
-import type { MasterDataCreateItemType } from '../models/utils.model';
+import type { MasterDataCreateItemType, MasterDataEntityId, MasterDataWithId } from '../models/utils.model';
 import type { MasterDataSearchRequest } from './master-data.service';
 
-export function injectMasterDataResource<T>(endpointUrl: string, context: HttpContext = new HttpContext()) {
+export function injectMasterDataResource<T extends MasterDataWithId>(
+  endpointUrl: string,
+  context: HttpContext = new HttpContext(),
+) {
   const searchItems = signal<MasterDataSearchRequest>({});
   const _saveItem = actionTrigger<MasterDataCreateItemType<T> | null>();
   const _updateItem = actionTrigger<T | null>();
-  const _deleteItem = actionTrigger<string | number | T | null>();
+  const _deleteItem = actionTrigger<MasterDataEntityId | null>();
 
   const paginatedResponse = httpResource<PaginatedApiResponse<T>>(() => {
     const params = searchItems();
@@ -48,7 +51,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
     if (!params) return undefined;
 
     return {
-      url: `${endpointUrl}/${(params as Record<string, unknown>)['id']}`,
+      url: `${endpointUrl}/${params.id}`,
       method: 'PUT',
       body: params,
       context,
@@ -57,7 +60,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
 
   const deleteById = httpResource<T>(() => {
     const params = _deleteItem.value();
-    if (!params) return undefined;
+    if (params === null || params === undefined) return undefined;
 
     return {
       url: `${endpointUrl}/${params}`,
@@ -86,7 +89,7 @@ export function injectMasterDataResource<T>(endpointUrl: string, context: HttpCo
     update: (record: T) => _updateItem.fire(record),
     resetUpdateItem: () => _updateItem.reset(),
 
-    delete: (item: string | number | T) => _deleteItem.fire(item),
+    delete: (id: MasterDataEntityId) => _deleteItem.fire(id),
     resetDeleteItem: () => _deleteItem.reset(),
 
     saveResource,

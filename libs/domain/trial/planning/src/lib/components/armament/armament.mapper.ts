@@ -98,19 +98,23 @@ export function mergeCatalogOptions(
   nameKey: 'weaponName' | 'tubeName',
   fallbackType: 'WEAPON' | 'MORTAR' | 'TUBE',
 ): SpecimenItem[] {
+  const optionKeyOf = (item: SpecimenItem): string =>
+    fallbackType === 'TUBE' ? String(item.denominationId ?? item.id) : item.id;
+
   const byId = new Map<string, SpecimenItem>();
 
   for (const item of catalog) {
-    byId.set(item.id, item);
+    byId.set(optionKeyOf(item), item);
   }
 
   for (const shot of shots) {
     const id = shot.armament[idKey];
-    if (!id || byId.has(id)) {
+    const optionKey = fallbackType === 'TUBE' ? String(id) : id;
+    if (!id || byId.has(optionKey)) {
       continue;
     }
 
-    byId.set(id, {
+    byId.set(optionKey, {
       id,
       name: shot.armament[nameKey] || id,
       type: fallbackType,

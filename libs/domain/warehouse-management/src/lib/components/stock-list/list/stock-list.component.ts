@@ -13,13 +13,15 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { BooleanStatusBadge, IntaIconComponent } from '@intaqalab/ui';
+import type { UIDialogConfirm } from '@intaqalab/ui';
+import { BooleanStatusBadge, DialogConfirmComponent, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
+import type { TransferMovementsPayload } from '../../../models/movements.model';
 import type { MunitionStockListResponse, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import { WarehouseMunitionStatus } from '../../../models/utils.model';
 import { MunitionsStockDetailService } from '../../../services/munitions-stock-detail.service';
@@ -328,6 +330,8 @@ export class StockListComponent {
   sortDirection = signal<'asc' | 'desc' | ''>('desc');
   filtersData = signal<MunitionStockListSearch | undefined>(undefined);
 
+  #lastTransferPayload: TransferMovementsPayload | null = null;
+
   constructor() {
     this.#munitionDumpsStore.search({ pageSize: 500, active: true });
 
@@ -350,6 +354,40 @@ export class StockListComponent {
         this.selection.clear();
       }
     });
+
+    effect(async () => {
+      const resource = this.#munitionsStockDetailService.transferResource;
+      const statusCode = resource.statusCode();
+
+      if (statusCode !== 400) return;
+
+      const detail = resource.error()?.message || '';
+      const message: UIDialogConfirm = detail.toLocaleLowerCase().includes('neq')
+        ? {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
+          }
+        : {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
+          };
+
+      const dialogRef = this.#dialog.open(DialogConfirmComponent, {
+        data: message,
+        maxWidth: 600,
+        width: '100vw',
+        height: 'fit-content',
+        maxHeight: 300,
+      });
+
+      const confirmed = await firstValueFrom(dialogRef.afterClosed());
+
+      if (!confirmed) return;
+
+      this.#munitionsStockDetailService.transfer.set({ ...this.#lastTransferPayload!, force: true });
+    });
   }
 
   async transfer() {
@@ -362,7 +400,11 @@ export class StockListComponent {
       width: '1024px',
     });
 
-    await firstValueFrom(dialogRef.afterClosed());
+    const payload = await firstValueFrom(dialogRef.afterClosed());
+
+    if (payload) {
+      this.#lastTransferPayload = payload;
+    }
   }
 
   navigate(item: MunitionStockListResponse) {

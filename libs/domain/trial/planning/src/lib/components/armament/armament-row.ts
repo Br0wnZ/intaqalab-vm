@@ -102,7 +102,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-select clearable [formField]="formPath().armament.tubeExternalId">
             @for (tube of tubeOptions(); track tube.id) {
-              <mat-option [value]="tube.denominationId?.toString() ?? tube.id">
+              <mat-option [value]="(tube.denominationId ?? tube.id).toString()">
                 {{ tube.modelName ?? tube.name }}
               </mat-option>
             }
@@ -206,20 +206,12 @@ export class ArmamentRow implements OnInit {
   readonly #armamentStore = inject(ArmamentStore);
   readonly #armamentDialogService = inject(ArmamentDialogService);
   readonly #injector = inject(Injector);
-  #loadedTubeFamilyId: number | null = null;
 
   constructor() {
     effect(() => {
-      const armament = this.shot().armament;
-      if (!armament.weaponExternalId || armament.weaponType.toLowerCase() === SpecimenType.Mortar) return;
+      const familyId = this.#weaponFamilyId();
+      if (familyId === undefined || this.#armamentStore.hasTubeDenominationsForFamily(familyId)) return;
 
-      const familyId = this.#armamentStore
-        .weaponDenominations()
-        .find((weapon) => String(weapon.id) === String(armament.weaponExternalId))?.familyId;
-
-      if (familyId === undefined || familyId === this.#loadedTubeFamilyId) return;
-
-      this.#loadedTubeFamilyId = familyId;
       this.#armamentStore.loadTubeDenominations(familyId);
     });
   }
@@ -271,9 +263,19 @@ export class ArmamentRow implements OnInit {
   }
 
   readonly tubeOptions = computed(() => {
-    const denominations = this.#armamentStore.tubeDenominations();
+    const familyId = this.#weaponFamilyId();
+    const denominations = familyId === undefined ? [] : this.#armamentStore.tubeDenominationsForFamily(familyId);
     const singleShotArray = [this.shot()];
     return mergeCatalogOptions(denominations, singleShotArray, 'tubeExternalId', 'tubeName', 'TUBE');
+  });
+
+  readonly #weaponFamilyId = computed(() => {
+    const armament = this.shot().armament;
+    if (!armament.weaponExternalId || armament.weaponType.toLowerCase() === SpecimenType.Mortar) return undefined;
+
+    return this.#armamentStore
+      .weaponDenominations()
+      .find((weapon) => String(weapon.id) === String(armament.weaponExternalId))?.familyId;
   });
 
   ngOnInit(): void {
@@ -307,8 +309,6 @@ export class ArmamentRow implements OnInit {
 
     this.hasWeaponType.set(!!itemType);
 
-    this.#armamentStore.clearTubeDenominations();
-
     if (itemType?.toLowerCase() === SpecimenType.Mortar && !this.#armamentStore.mortarDenominations().length) {
       this.#armamentStore.loadMortarDenominations();
     }
@@ -323,15 +323,6 @@ export class ArmamentRow implements OnInit {
       tubeExternalId: '',
       tubeName: '',
     });
-
-    if (!weaponId) {
-      this.#armamentStore.clearTubeDenominations();
-      return;
-    }
-    const weapon = this.weaponOptions().find((w) => w.id === weaponId);
-    if (weapon?.familyId !== undefined) {
-      this.#armamentStore.loadTubeDenominations(weapon.familyId);
-    }
   }
 
   async openUpdateDialog(): Promise<void> {

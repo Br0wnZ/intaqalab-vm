@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject } from '@angular/core';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
@@ -13,10 +13,12 @@ import { PlanningGeneralDataStore } from './planning-general-data.store';
 
 interface ArmamentState {
   isInitialized: boolean;
+  tubeDenominationsByFamily: Record<number, SpecimenItem[]>;
 }
 
 const initialState: ArmamentState = {
   isInitialized: false,
+  tubeDenominationsByFamily: {},
 };
 
 export const ArmamentStore = signalStore(
@@ -204,12 +206,37 @@ export const ArmamentStore = signalStore(
       armamentService.clearTubeDenominations();
     },
 
+    /**
+     * Equipos de tubo cacheados para una familia concreta (usado por cada armament-row de forma independiente).
+     */
+    tubeDenominationsForFamily(familyId: number): SpecimenItem[] {
+      return store.tubeDenominationsByFamily()[familyId] ?? [];
+    },
+
+    /**
+     * Indica si ya existe cache de equipos de tubo para una familia concreta.
+     */
+    hasTubeDenominationsForFamily(familyId: number): boolean {
+      return familyId in store.tubeDenominationsByFamily();
+    },
+
     reset(): void {
       patchState(store, initialState);
     },
   })),
 
   withHooks({
+    onInit(store, armamentService = inject(ArmamentService)) {
+      effect(() => {
+        const familyId = armamentService.tubeDenominationsFamilyId();
+        const response = armamentService.tubeDenominationsResource.value();
+        if (familyId === undefined || response === undefined || familyId in store.tubeDenominationsByFamily()) return;
+
+        patchState(store, (state) => ({
+          tubeDenominationsByFamily: { ...state.tubeDenominationsByFamily, [familyId]: response.items },
+        }));
+      });
+    },
     onDestroy(store) {
       store.reset();
     },

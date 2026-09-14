@@ -643,9 +643,7 @@ export class ExecutionService {
     };
   });
 
-  async fetchPropellingChargeParameters(
-    fireTrialId: FireTrial['id'],
-  ): Promise<PropellantChargeParametersResponse> {
+  async fetchPropellingChargeParameters(fireTrialId: FireTrial['id']): Promise<PropellantChargeParametersResponse> {
     this.#fetchPropellingChargeParametersParams.set({ fireTrialId, _t: Date.now() });
     await this.#awaitResource(this.#fetchPropellingChargeParametersResource);
     return this.#fetchPropellingChargeParametersResource.value()!;

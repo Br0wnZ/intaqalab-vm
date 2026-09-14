@@ -18,6 +18,7 @@ export interface TransferMovementsPayload {
   munitionDumpId: string;
   cellName: string;
   items: { quantity: number; stockId: string }[];
+  force?: boolean;
 }
 
 export interface MovementListPaginatedResponse {

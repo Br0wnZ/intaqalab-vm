@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateService } from '@ngx-translate/core';
 
 export interface MasterDataMeasures {
-  id?: string;
+  id: string;
   unit: string;
   measurementArea: string;
   measurements: string[];
@@ -80,3 +80,8 @@ export const injectMeasuresEquipments = () => {
 };
 
 export type MeasurementsAndRecordsQualificationType = 'QUANTITATIVE' | 'QUALITATIVE' | '';
+
+export type MasterDataMeasuresFormModel = Omit<
+  MasterDataMeasures,
+  'id' | 'active' | 'magnitudeLabel' | 'procedureLabel'
+>;

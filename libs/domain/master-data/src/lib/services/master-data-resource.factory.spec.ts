@@ -7,19 +7,6 @@ import { injectMasterDataResource } from './master-data-resource.factory';
 
 const BASE_URL = 'http://localhost:3000/api/master-data';
 
-function flushRemainingRequests(httpMock: HttpTestingController) {
-  try {
-    const reqs = httpMock.match(() => true);
-    reqs.forEach((r) => {
-      if (!r.cancelled) {
-        r.flush({});
-      }
-    });
-  } catch {
-    // ignore
-  }
-}
-
 describe('injectMasterDataResource', () => {
   let httpTesting: HttpTestingController;
 
@@ -32,7 +19,7 @@ describe('injectMasterDataResource', () => {
   });
 
   afterEach(() => {
-    flushRemainingRequests(httpTesting);
+    httpTesting.verify();
   });
 
   it('should create and fetch initial paginated data', async () => {
@@ -109,7 +96,7 @@ describe('injectMasterDataResource', () => {
     });
   });
 
-  it('should call DELETE when deleting an item', async () => {
+  it('should call DELETE when deleting an item with string id', async () => {
     await TestBed.runInInjectionContext(async () => {
       const endpoint = `${BASE_URL}/dimension`;
       const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
@@ -123,7 +110,33 @@ describe('injectMasterDataResource', () => {
       resource.delete('1');
       TestBed.flushEffects();
 
-      const reqDel = httpTesting.expectOne((r) => r.url.includes('/dimension/1') && r.method === 'DELETE');
+      const reqDel = httpTesting.expectOne((r) => r.url === `${endpoint}/1` && r.method === 'DELETE');
+      reqDel.flush(null);
+
+      await Promise.resolve();
+      TestBed.flushEffects();
+
+      const reqReload = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqReload.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+    });
+  });
+
+  it('should call DELETE when deleting an item with numeric id 0', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: number; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+      const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqGet.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+
+      resource.delete(0);
+      TestBed.flushEffects();
+
+      const reqDel = httpTesting.expectOne((r) => r.url === `${endpoint}/0` && r.method === 'DELETE');
       reqDel.flush(null);
 
       await Promise.resolve();
