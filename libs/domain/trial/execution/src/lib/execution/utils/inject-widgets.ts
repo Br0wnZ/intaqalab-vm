@@ -150,8 +150,8 @@ export const injectWidgets = (): Widget[] => [
     category: 'Balística',
     badge: 'S',
     badgeColor: 'blue',
-    defaultWidth: 1,
-    defaultHeight: 2,
+    defaultWidth: 3,
+    defaultHeight: 1,
   },
   {
     id: 'orientacion-radar-trayectografia',

@@ -24,7 +24,6 @@
     "build:pre": "npx nx run intaqalab:build --configuration=pre",
     "build:prod": "npx nx run intaqalab:build --configuration=production",
     "test": "nx test",
-    "test:cicd": "echo skipping temporaly test2",
     "test:data-access:ui": "nx test data-access --ui --watch",
     "test:all": "nx run-many --target=test --projects=admin,calendar-trials,planning,trial-management,data-access,ui,pruebas,utils,shared-theme,core,warehouse-management --parallel=true",
     "vitest:ui": "cross-env NODE_OPTIONS='--max-old-space-size=8192' npx vitest --ui",

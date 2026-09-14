@@ -6,7 +6,7 @@ import type { WidgetId } from './widget-id.enum';
  * 📐 Tamaño de un widget en el grid
  */
 export type WidgetWidth = 1 | 2 | 3;
-export type WidgetHeight = 1 | 2;
+export type WidgetHeight = 1 | 2 | 3;
 
 /**
  * 📍 Posición en el grid (1-based)

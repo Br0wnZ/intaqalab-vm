@@ -59,215 +59,194 @@ interface VideoDataIntroductionForm {
   template: `
     <div
       intaFormTouch
-      class="h-full overflow-auto rounded-2xl border border-slate-200 bg-white p-4 flex flex-col gap-4"
+      class="h-full overflow-auto rounded-2xl border border-slate-200 bg-white p-3.5 flex flex-col gap-3 justify-between"
       #touch="intaFormTouch"
     >
-      <!-- Header -->
-      <div class="flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-2">
-          <ui-inta-icon name="edit" color="var(--inta-button)" size="xl" />
-          <h3 class="text-sm font-semibold text-gray-800 leading-tight">
+      <!-- ── Header ──────────────────────────────────────────────────────── -->
+      <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+        <!-- Icon + Title -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <ui-inta-icon name="edit_line" color="var(--inta-button)" size="lg" />
+          <h3 class="text-sm font-semibold text-gray-800 leading-tight truncate">
             {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TITLE' | translate }}
           </h3>
         </div>
-        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-full">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span class="text-xs font-semibold text-green-700">
+
+        <!-- Serie -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
+          <mat-select
+            id="serie-select"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
+            [formField]="form.serie"
+            (selectionChange)="onSerieSelected($event.value)"
+          >
+            @for (opt of serieOptions(); track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Disparo -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-28">
+          <mat-select
+            id="disparo-select"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
+            [formField]="form.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
+          >
+            @for (opt of disparoOptions(); track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Disparo actual -->
+        <button
+          type="button"
+          class="flex items-center justify-center h-[38px] px-3.5 bg-[var(--inta-button)] text-white rounded-xl text-xs font-semibold shrink-0 shadow-xs transition-opacity hover:opacity-90 whitespace-nowrap cursor-pointer"
+          (click)="resetToCurrentShot()"
+        >
+          {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_ACTUAL_LABEL' | translate }}
+        </button>
+
+        <!-- Toggles: Video AV / Video C -->
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="h-[38px] px-3.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer border"
+            [class]="
+              selectorModel().tipoVideo === 'AV'
+                ? 'bg-blue-100/70 text-blue-600 border-blue-400 font-semibold'
+                : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50/50'
+            "
+            (click)="updateTipoVideo('AV')"
+          >
+            {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TIPO_VIDEO_AV_SHORT' | translate }}
+          </button>
+          <button
+            type="button"
+            class="h-[38px] px-3.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer border"
+            [class]="
+              selectorModel().tipoVideo === 'C'
+                ? 'bg-blue-100/70 text-blue-600 border-blue-400 font-semibold'
+                : 'bg-white text-blue-600 border-blue-300 hover:bg-blue-50/50'
+            "
+            (click)="updateTipoVideo('C')"
+          >
+            {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TIPO_VIDEO_C_SHORT' | translate }}
+          </button>
+        </div>
+
+        <div class="flex-1"></div>
+
+        <!-- Estado del disparo -->
+        <div class="flex items-center px-3 py-1.5 bg-[#d1fae5] rounded-xl shrink-0">
+          <span class="text-xs font-semibold text-[#065f46]">
             {{ estadoDisparo() ?? ('TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.STATUS_IN_PROGRESS' | translate) }}
           </span>
         </div>
       </div>
 
-      <!-- Filtros: Serie / Disparo / Boton -->
-      <div class="flex items-center gap-3 shrink-0">
-        <div class="flex-1 min-w-0">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.SERIE_LABEL' | translate }}</mat-label>
-            <mat-select
-              id="serie-select"
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.SERIE_PLACEHOLDER' | translate"
-              [formField]="form.serie"
-              (selectionChange)="onSerieSelected($event.value)"
-            >
-              @for (opt of serieOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
+      <!-- ── Body ────────────────────────────────────────────────────────── -->
+      <div class="flex-1 flex gap-3 min-h-0">
+        <!-- Columna izquierda: 2 filas -->
+        <div class="flex-[2.4] min-w-0 flex flex-col justify-evenly gap-2.5">
+          <!-- Fila 1: Cámara | Grabador | Canal -->
+          <div class="grid grid-cols-3 gap-3">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_LABEL' | translate }}</mat-label>
+              <mat-select
+                id="camera-select"
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_LABEL' | translate"
+                [formField]="form.camera"
+              >
+                @for (opt of cameraOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-        <div class="flex-1 min-w-0">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_LABEL' | translate }}</mat-label>
-            <mat-select
-              id="disparo-select"
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_PLACEHOLDER' | translate"
-              [formField]="form.disparo"
-              (selectionChange)="onDisparoSelected($event.value)"
-            >
-              @for (opt of disparoOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_LABEL' | translate }}</mat-label>
+              <mat-select
+                id="grabador-select"
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_LABEL' | translate"
+                [formField]="form.grabador"
+              >
+                @for (opt of grabadorOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-        <button
-          type="button"
-          class="flex items-center justify-center gap-1.5 h-[42px] px-4 bg-[var(--inta-button)] text-white rounded-lg text-[13px] font-semibold shrink-0 shadow-sm transition-opacity hover:opacity-90 whitespace-nowrap"
-          (click)="resetToCurrentShot()"
-        >
-          {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_ACTUAL_LABEL' | translate }}
-        </button>
-      </div>
-
-      <!-- Tipo de vídeo -->
-      <div class="flex flex-col gap-2 shrink-0">
-        <span class="text-[13px] font-medium text-gray-600">
-          {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TIPO_VIDEO_LABEL' | translate }}
-        </span>
-        <div class="flex gap-3">
-          <button
-            type="button"
-            class="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl text-[13px] font-semibold transition-all duration-150 cursor-pointer border-2"
-            [class]="
-              selectorModel().tipoVideo === 'AV'
-                ? 'bg-[var(--inta-button)] text-white border-[var(--inta-button)] shadow-md'
-                : 'bg-white text-[var(--inta-button)] border-gray-200 hover:border-[var(--inta-button)]'
-            "
-            (click)="updateTipoVideo('AV')"
-          >
-            <ui-inta-icon
-              name="play_circle"
-              size="md"
-              [color]="selectorModel().tipoVideo === 'AV' ? 'white' : 'var(--inta-button)'"
-            />
-            {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TIPO_VIDEO_AV' | translate }}
-          </button>
-          <button
-            type="button"
-            class="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl text-[13px] font-semibold transition-all duration-150 cursor-pointer border-2"
-            [class]="
-              selectorModel().tipoVideo === 'C'
-                ? 'bg-[var(--inta-button)] text-white border-[var(--inta-button)] shadow-md'
-                : 'bg-white text-[var(--inta-button)] border-gray-200 hover:border-[var(--inta-button)]'
-            "
-            (click)="updateTipoVideo('C')"
-          >
-            <ui-inta-icon
-              name="play_circle"
-              size="md"
-              [color]="selectorModel().tipoVideo === 'C' ? 'white' : 'var(--inta-button)'"
-            />
-            {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TIPO_VIDEO_C' | translate }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Accordion DATOS DE ENTRADA -->
-      <div class="rounded-xl border border-gray-100 bg-white flex flex-col shrink-0 shadow-sm">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 rounded-t-xl bg-gray-50/50">
-          <div class="flex items-center gap-2 text-[var(--inta-button)]">
-            <ui-inta-icon name="login" size="md" color="var(--inta-button)" />
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--inta-button)]">
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.INPUT_DATA_SECTION' | translate }}
-            </span>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_LABEL' | translate }}</mat-label>
+              <mat-select
+                id="canal-select"
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_LABEL' | translate"
+                [formField]="form.canal"
+              >
+                @for (opt of canalOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
-          <ui-inta-icon name="expand_less" size="md" color="var(--color-gray-400, #9ca3af)" />
-        </div>
 
-        <div class="p-4 flex flex-col gap-4">
-          <!-- 3 selects en fila: Cámara, Grabador, Canal -->
-          <div class="flex gap-3">
-            <div class="flex-1 min-w-0">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_LABEL' | translate }}</mat-label>
-                <mat-select
-                  id="camera-select"
-                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_PLACEHOLDER' | translate"
-                  [formField]="form.camera"
-                >
-                  @for (opt of cameraOptions(); track opt.value) {
-                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
-            <div class="flex-1 min-w-0">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <!-- Fila 2: Magnitud (col 1) | Resultado observado (cols 2-3) -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-1">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
                 <mat-label>
-                  {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_LABEL' | translate }}
+                  {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_LABEL' | translate }}
                 </mat-label>
                 <mat-select
-                  id="grabador-select"
-                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_PLACEHOLDER' | translate"
-                  [formField]="form.grabador"
+                  id="magnitud-select"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_LABEL' | translate"
+                  [formField]="form.magnitud"
                 >
-                  @for (opt of grabadorOptions(); track opt.value) {
+                  @for (opt of magnitudOptions(); track opt.value) {
                     <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
             </div>
-            <div class="flex-1 min-w-0">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_LABEL' | translate }}</mat-label>
-                <mat-select
-                  id="canal-select"
-                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_PLACEHOLDER' | translate"
-                  [formField]="form.canal"
-                >
-                  @for (opt of canalOptions(); track opt.value) {
-                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                  }
-                </mat-select>
+
+            <div class="col-span-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
+                <mat-label>
+                  {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate }}
+                </mat-label>
+                <input
+                  id="resultado-input"
+                  matInput
+                  [placeholder]="
+                    'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate
+                  "
+                  [value]="selectorModel().resultadoObservado"
+                  (input)="updateResultadoObservado(resultadoInput.value)"
+                  #resultadoInput
+                />
               </mat-form-field>
             </div>
           </div>
+        </div>
 
-          <!-- Magnitud -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_LABEL' | translate }}
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_HINT' | translate }}
-            </mat-label>
-            <mat-select
-              id="magnitud-select"
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_PLACEHOLDER' | translate"
-              [formField]="form.magnitud"
-            >
-              @for (opt of magnitudOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Resultado observado -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>
-              {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate }}
-            </mat-label>
-            <input
-              id="resultado-input"
-              matInput
-              [placeholder]="
-                'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_PLACEHOLDER' | translate
-              "
-              [value]="selectorModel().resultadoObservado"
-              (input)="updateResultadoObservado(resultadoInput.value)"
-              #resultadoInput
-            />
-          </mat-form-field>
-
-          <!-- Observaciones -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+        <!-- Columna derecha: Observaciones (altura completa) -->
+        <div class="flex-1 min-w-[220px] max-w-[340px] flex flex-col h-full">
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            floatLabel="always"
+            class="w-full flex-1 flex flex-col [&>.mat-mdc-text-field-wrapper]:flex-1 [&>.mat-mdc-text-field-wrapper]:h-full [&_.mat-mdc-form-field-flex]:h-full [&_.mat-mdc-form-field-infix]:h-full"
+          >
             <mat-label>
               {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}
             </mat-label>
             <textarea
               id="observaciones-input"
               matInput
-              rows="3"
+              class="h-full"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
               [value]="selectorModel().observaciones"
               (input)="updateObservaciones(observacionesInput.value)"

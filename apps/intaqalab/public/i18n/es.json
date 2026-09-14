@@ -1913,7 +1913,9 @@
         "TIPO_VIDEO_LABEL": "Tipo de vídeo",
         "TIPO_VIDEO_PLACEHOLDER": "Selecciona tipo de vídeo",
         "TIPO_VIDEO_AV": "Video AV (alta velocidad)",
+        "TIPO_VIDEO_AV_SHORT": "Video AV",
         "TIPO_VIDEO_C": "Video C (convencional)",
+        "TIPO_VIDEO_C_SHORT": "Video C",
         "INPUT_DATA_SECTION": "DATOS DE ENTRADA",
         "CAMARA_LABEL": "Cámara",
         "CAMARA_PLACEHOLDER": "Selecciona cámara",
@@ -1925,7 +1927,7 @@
         "STATUS_IN_PROGRESS": "En curso",
         "STATUS_PENDING": "Pendiente",
         "STATUS_EXECUTED": "Ejecutada",
-        "TITLE": "Introducción de datos de vídeo"
+        "TITLE": "Introducción datos vídeo"
       },
       "VIGILANCIA": {
         "ACTUALIZAR_BTN": "Actualizar",
