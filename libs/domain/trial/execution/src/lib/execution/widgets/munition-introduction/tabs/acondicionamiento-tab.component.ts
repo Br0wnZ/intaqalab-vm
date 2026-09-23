@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,6 +32,7 @@ import type { AcondFormModel } from '../munition-introduction';
         <mat-select
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_PLACEHOLDER' | translate"
           [formField]="acondForm.componente"
+          (selectionChange)="onComponentChange($event.value)"
         >
           @for (opt of componenteOptions(); track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -179,6 +180,8 @@ import type { AcondFormModel } from '../munition-introduction';
 export class MunitionAcondicionamientoTabComponent {
   readonly #store = inject(ExecutionStore);
 
+  readonly componentChange = output<string>();
+
   readonly acondFormModel = signal<AcondFormModel>({
     camara: this.#store.munitionIntroduction().acondicionamiento.camara,
     componente: this.#store.munitionIntroduction().acondicionamiento.componente,
@@ -258,19 +261,21 @@ export class MunitionAcondicionamientoTabComponent {
     };
   }
 
+  onComponentChange(componente: string | null): void {
+    if (componente) {
+      this.componentChange.emit(componente);
+    }
+  }
+
   applyData(data: Partial<MunitionIntroAcondicionamientoState>): void {
     this.acondFormModel.update((m) => ({
       ...m,
-      camara: data.camara !== undefined ? data.camara : m.camara,
+      camara: data.camara !== undefined ? data.camara : null,
       componente: data.componente !== undefined ? data.componente : m.componente,
     }));
-    if (data.observaciones !== undefined) this.observacionesField.set(data.observaciones);
-    if (data.fechaHoraEntrada !== undefined) {
-      this.fechaHoraEntradaField.set(data.fechaHoraEntrada ? data.fechaHoraEntrada.substring(0, 16) : null);
-    }
-    if (data.fechaHoraSalida !== undefined) {
-      this.fechaHoraSalidaField.set(data.fechaHoraSalida ? data.fechaHoraSalida.substring(0, 16) : null);
-    }
+    this.observacionesField.set(data.observaciones ?? null);
+    this.fechaHoraEntradaField.set(data.fechaHoraEntrada ? data.fechaHoraEntrada.substring(0, 16) : null);
+    this.fechaHoraSalidaField.set(data.fechaHoraSalida ? data.fechaHoraSalida.substring(0, 16) : null);
     this.#dirtyTracker.syncSnapshot();
   }
 

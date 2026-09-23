@@ -162,8 +162,12 @@ describe('MasterDataListComponent', () => {
   describe('Store Integration', () => {
     it('should call store.search on init via effect', async () => {
       const { mockService } = await setup();
-      // effect() fires immediately in constructor
-      expect(mockService.searchItems.set ?? mockService.searchItems()).toBeDefined();
+      expect(mockService.searchItems()).toEqual({
+        page: 1,
+        pageSize: 10,
+        sortDirection: '',
+        sortField: undefined,
+      });
     });
 
     it('should display totalElements from store in the paginator', async () => {
@@ -190,15 +194,9 @@ describe('MasterDataListComponent', () => {
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
       const buttons = await loader.getAllHarnesses(MatButtonHarness);
 
-      // Encontrar el botón de editar por su contenido interno de icono
-      for (const btn of buttons) {
-        const host = await btn.host();
-        const text = await host.text();
-        if (text.includes('edit')) {
-          await btn.click();
-          break;
-        }
-      }
+      const editButton = await findButtonByAriaLabel(buttons, 'COMMONS.EDIT');
+      await editButton.click();
+
       expect(mockMatDialog.open).toHaveBeenCalled();
     });
   });
@@ -266,3 +264,14 @@ describe('MasterDataListComponent', () => {
     });
   });
 });
+
+async function findButtonByAriaLabel(buttons: MatButtonHarness[], ariaLabel: string): Promise<MatButtonHarness> {
+  for (const button of buttons) {
+    const host = await button.host();
+    if ((await host.getAttribute('aria-label')) === ariaLabel) {
+      return button;
+    }
+  }
+
+  throw new Error(`Button with aria-label "${ariaLabel}" not found`);
+}

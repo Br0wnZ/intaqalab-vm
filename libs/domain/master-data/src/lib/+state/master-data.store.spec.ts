@@ -92,4 +92,27 @@ describe('MasterDataStore', () => {
     store.resetAll();
     expect(store.isInitialized()).toBe(false);
   });
+
+  it('should return empty list and 0 total elements when paginatedResponse has no value', () => {
+    mockService.paginatedResponse._setValue(undefined);
+    expect(store.items()).toEqual([]);
+    expect(store.totalElements()).toBe(0);
+    expect(store.hasError()).toBe(false);
+  });
+
+  it('should reflect error state when paginatedResponse has error status and error object', () => {
+    expect(store.hasError()).toBe(false);
+
+    mockService.paginatedResponse._setError(new Error('Fetch failed'));
+    expect(store.hasError()).toBe(true);
+    expect(store.error()).toEqual(new Error('Fetch failed'));
+
+    mockService.paginatedResponse._setValue({
+      page: 1,
+      pageSize: 10,
+      totalElements: 0,
+      items: [],
+    });
+    expect(store.hasError()).toBe(false);
+  });
 });

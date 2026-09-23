@@ -2421,6 +2421,12 @@
     "INVALID_DATE": "Introduzca una fecha válida"
   },
   "WHAREHOUSE_MANAGMENT": {
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "¿Desea confirmar el cambio de estado del registro?",
+        "TITLE": "Cambiar estado"
+      }
+    },
     "CERTIFICATES": {
       "ACTIONS": "Acciones",
       "ACTION_DELETE_HTML": "Vas a eliminar un certificado asociado",

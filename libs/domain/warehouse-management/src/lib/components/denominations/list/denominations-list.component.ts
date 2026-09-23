@@ -13,7 +13,7 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BooleanStatusBadge, IntaIconComponent, UiDialogService } from '@intaqalab/ui';
+import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { DenominationsStoreType } from '../../../+state/denominations.store';
@@ -34,7 +34,6 @@ const DEFAULT_COLUMNS = [
   'compatibility',
   'weight',
   'riskGroup',
-  'active',
   'actions',
 ] as const;
 @Component({
@@ -53,7 +52,6 @@ const DEFAULT_COLUMNS = [
     MatTooltipModule,
     MatSelectModule,
     MatSlideToggleModule,
-    BooleanStatusBadge,
     DenominationsFilter,
     IntaIconComponent,
   ],
@@ -150,15 +148,6 @@ const DEFAULT_COLUMNS = [
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="active">
-              <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
-                {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.COLUMNS.STATUS' | translate }}
-              </th>
-              <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm !bg-white">
-                <ui-boolean-status-badge [isActive]="item.active" />
-              </td>
-            </ng-container>
-
             <!-- Observations Column (Scheduler) -->
             <ng-container matColumnDef="observations">
               <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
@@ -183,16 +172,16 @@ const DEFAULT_COLUMNS = [
               </th>
               <td *matCellDef="let item" mat-cell class="px-6 py-4">
                 <div class="flex items-center gap-2">
-                  <button mat-icon-button class="!text-gray-600 scale-90" (click)="delete(item)">
-                    <ui-inta-icon name="remove" size="xxl" />
-                  </button>
                   <button mat-icon-button class="!text-gray-600 scale-90" (click)="edit(item)">
                     <ui-inta-icon name="edit" size="xxl" />
                   </button>
+                  <button mat-icon-button class="!text-gray-600 scale-90" (click)="delete(item)">
+                    <ui-inta-icon name="remove" size="xxl" />
+                  </button>
                   <mat-slide-toggle
                     class="scale-90"
-                    [(ngModel)]="item.active"
-                    (change)="toogleActive(item, $event)"
+                    [checked]="getCheckedState(item)"
+                    (change)="toogleActive(item)"
                   ></mat-slide-toggle>
                 </div>
               </td>
@@ -232,6 +221,7 @@ export class DenominationsListComponent {
   sortField = signal<string | undefined>(undefined);
   sortDirection = signal<'asc' | 'desc' | ''>('');
   filters = signal<{ name: string; munitionTypeId: string }>({ name: '', munitionTypeId: '' });
+  readonly #overrideItemId = signal<string | null>(null);
 
   readonly showOnlyActive = signal<boolean>(true);
 
@@ -245,6 +235,10 @@ export class DenominationsListComponent {
       const { name, munitionTypeId } = this.filters();
 
       this.store.search({ page, pageSize, sortDirection, sortField, active, name, munitionTypeId });
+    });
+
+    effect(() => {
+      if (this.store.isLoading()) this.#overrideItemId.set(null);
     });
   }
 
@@ -293,8 +287,29 @@ export class DenominationsListComponent {
     }
   }
 
-  toogleActive(item: DenominationUpSertModel, event: { checked: boolean }) {
-    const itemToSend = { ...item, active: event.checked, munitionTypeId: item.munitionType.id };
+  getCheckedState(item: DenominationModel) {
+    return this.#overrideItemId() === item.id ? !item.active : item.active;
+  }
+
+  async toogleActive(item: DenominationModel): Promise<void> {
+    this.#overrideItemId.set(item.id);
+
+    const confirmed = await this.uiDialogs.confirm({
+      labelButtonConfirm: 'COMMONS.ACCEPT',
+      title: 'WHAREHOUSE_MANAGMENT.DIALOGS.SWITCH_STATUS.TITLE',
+      htmlText: 'WHAREHOUSE_MANAGMENT.DIALOGS.SWITCH_STATUS.CONTENT_HTML',
+    });
+
+    if (!confirmed) {
+      this.#overrideItemId.set(null);
+      return;
+    }
+
+    const itemToSend: DenominationUpSertModel = {
+      ...item,
+      active: !item.active,
+      munitionTypeId: item.munitionType.id,
+    };
     this.store.toogleEnabledItem(itemToSend);
   }
 

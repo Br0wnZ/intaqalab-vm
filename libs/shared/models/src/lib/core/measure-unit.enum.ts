@@ -23,6 +23,7 @@ export enum MeasureUnitEnum {
   DB = 'DB',
   SPM = 'SPM',
   QUANTITY = 'QUANTITY',
+  INCH = 'INCH',
 }
 
 // ── Sub-enums por magnitud (≡ *UnitEnum del swagger) ─────────────────────────
@@ -108,6 +109,7 @@ export const MEASURE_UNIT_LABELS: Record<MeasureUnitEnum, string> = {
   [MeasureUnitEnum.RAD]: 'rad',
   [MeasureUnitEnum.UM]: 'μm',
   [MeasureUnitEnum.MM]: 'mm',
+  [MeasureUnitEnum.INCH]: '"',
   [MeasureUnitEnum.M]: 'm',
   [MeasureUnitEnum.KM]: 'km',
   [MeasureUnitEnum.DB]: 'dB',

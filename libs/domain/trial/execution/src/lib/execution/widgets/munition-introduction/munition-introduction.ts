@@ -23,7 +23,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotMunitionResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -35,7 +34,6 @@ import { MassiveConfigDialog } from './massive-config-dialog';
 import {
   mapMunitionStateToRequest,
   mapPlanningSeriesToOptions,
-  mapRemoteToMunitionState,
   mapShotsToDisparoOptions,
 } from './munition-introduction.mapper';
 import { MunitionAcondicionamientoTabComponent } from './tabs/acondicionamiento-tab.component';
@@ -57,6 +55,7 @@ export interface IdentFormModel {
   modoFuncionamiento: string | null;
 }
 
+/** @deprecated Renamed to WeightFormModel in pesos-tab.component */
 export interface PesosFormModel {
   componente: string | null;
   balanza: string | null;
@@ -71,7 +70,6 @@ export interface AcondFormModel {
   selector: 'inta-munition-introduction',
   imports: [
     FormField,
-    ReadonlyContentDirective,
     FormTouchDirective,
     MatButtonModule,
     MatFormFieldModule,
@@ -182,10 +180,20 @@ export interface AcondFormModel {
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- Se utiliza [class.hidden] en lugar de @switch para preservar el estado interno de las tabs -->
-      <div intaReadonlyContent intaFormTouch class="flex-1 min-h-0" #touch="intaFormTouch">
-        <inta-munition-identificacion-tab [class.hidden]="activeTab() !== 'identificacion'" />
-        <inta-munition-pesos-tab [class.hidden]="activeTab() !== 'pesos'" />
-        <inta-munition-acondicionamiento-tab [class.hidden]="activeTab() !== 'acondicionamiento'" />
+      <div intaFormTouch class="flex-1 min-h-0" #touch="intaFormTouch">
+        <inta-munition-identificacion-tab
+          [class.hidden]="activeTab() !== 'identificacion'"
+          (componentChange)="onComponentChange($event)"
+        />
+        <inta-munition-pesos-tab
+          [class.hidden]="activeTab() !== 'pesos'"
+          (componentChange)="onComponentChange($event)"
+          (balanceChange)="onBalanceChange()"
+        />
+        <inta-munition-acondicionamiento-tab
+          [class.hidden]="activeTab() !== 'acondicionamiento'"
+          (componentChange)="onComponentChange($event)"
+        />
       </div>
     </div>
   `,
@@ -375,14 +383,35 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     void this.#loadSelectedShotData();
   }
 
+  onComponentChange(componentId: string): void {
+    this.#store.selectMunitionComponent(componentId);
+
+    const stored = this.#store.munitionIntroduction();
+    this.identTab()?.applyData(stored.identificacion);
+    this.pesosTab()?.applyData(stored.weight);
+    this.acondTab()?.applyData(stored.acondicionamiento);
+    this.touchRef()?.reset();
+  }
+
+  onBalanceChange(): void {
+    if (!this.isDirty()) {
+      this.touchRef()?.reset();
+    }
+  }
+
   resetForm(): void {
     const stored = this.#store.munitionIntroduction();
     this.selectorFormModel.set({ serie: stored.serie, disparo: stored.disparo });
 
-    // Delegar reset
+    if (stored.selectedComponentId) {
+      this.#store.selectMunitionComponent(stored.selectedComponentId);
+    }
+
+    // Delegar reset a las tabs hijas
     this.identTab()?.reset();
     this.pesosTab()?.reset();
     this.acondTab()?.reset();
+    this.touchRef()?.reset();
   }
 
   async saveForm(): Promise<void> {
@@ -393,28 +422,40 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
     if (fireTrialId && serie && disparo) {
       const identUpdates = this.identTab()?.getFormUpdates() ?? this.#store.munitionIntroduction().identificacion;
-      const pesosUpdates = this.pesosTab()?.getFormUpdates() ?? this.#store.munitionIntroduction().pesos;
       const acondUpdates = this.acondTab()?.getFormUpdates() ?? this.#store.munitionIntroduction().acondicionamiento;
 
+      // Persist current balance edits from the tab before building the payload
+      const currentWeightUpdates = this.pesosTab()?.getFormUpdates();
+      if (currentWeightUpdates?.balance) {
+        this.#store.updateMunitionIntroductionWeightByBalance(currentWeightUpdates.balance, currentWeightUpdates);
+      }
+
+      // Collect all in-memory weight data across all balances
+      const weightDataByBalance = this.#store.munitionIntroduction().weightDataByBalance;
+
       const componentId =
+        this.#store.munitionIntroduction().selectedComponentId ??
         identUpdates.componente ??
-        pesosUpdates.componente ??
-        acondUpdates.componente ??
+        this.#store.munitionIntroduction().weight.componente ??
         this.#store.munitionIntroduction().componenteOptions[0]?.value ??
         'granada-01';
+
+      const existingComponents = this.#store.munitionIntroduction().remoteMunitionResponse?.munitionData ?? [];
 
       const payload = mapMunitionStateToRequest({
         componentId,
         identificacion: identUpdates,
-        pesos: pesosUpdates,
+        weightDataByBalance,
         acondicionamiento: acondUpdates,
+        existingComponents,
       });
 
       try {
-        await this.#executionService.updateShotMunition(fireTrialId, serie, disparo, payload);
+        const updatedResponse = await this.#executionService.updateShotMunition(fireTrialId, serie, disparo, payload);
         this.identTab()?.save();
         this.pesosTab()?.save();
         this.acondTab()?.save();
+        this.#store.loadMunitionIntroductionRemoteResponse(updatedResponse, componentId);
       } catch (error) {
         console.error('Failed to save shot munition', error);
         throw error;
@@ -470,18 +511,12 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   }
 
   #applyRemoteShotData(response: ShotMunitionResponse): void {
-    const mapped = mapRemoteToMunitionState(response);
-    if (mapped.identificacion && Object.keys(mapped.identificacion).length > 0) {
-      this.#store.updateMunitionIntroductionIdentification(mapped.identificacion);
-      this.identTab()?.applyData(mapped.identificacion);
-    }
-    if (mapped.pesos && Object.keys(mapped.pesos).length > 0) {
-      this.#store.updateMunitionIntroductionPesos(mapped.pesos);
-      this.pesosTab()?.applyData(mapped.pesos);
-    }
-    if (mapped.acondicionamiento && Object.keys(mapped.acondicionamiento).length > 0) {
-      this.#store.updateMunitionIntroductionAcondicionamiento(mapped.acondicionamiento);
-      this.acondTab()?.applyData(mapped.acondicionamiento);
-    }
+    const preferredComponent = this.#store.munitionIntroduction().selectedComponentId;
+    this.#store.loadMunitionIntroductionRemoteResponse(response, preferredComponent);
+
+    const stored = this.#store.munitionIntroduction();
+    this.identTab()?.applyData(stored.identificacion);
+    this.pesosTab()?.applyData(stored.weight);
+    this.acondTab()?.applyData(stored.acondicionamiento);
   }
 }

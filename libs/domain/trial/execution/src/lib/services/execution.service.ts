@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import type { Signal } from '@angular/core';
-import { Injectable, Injector, effect, inject, signal } from '@angular/core';
+import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
@@ -334,10 +334,10 @@ export interface ShotPressuresData {
   observations?: string | null;
 }
 
-export type ShotPressuresRequest = ShotPressuresData;
+export type ShotPressuresRequest = ShotPressuresData[];
 
 export interface ShotPressuresResponse {
-  pressuresData: ShotPressuresData;
+  pressuresData: ShotPressuresData[];
 }
 
 export interface ArmamentEquipmentItem {
@@ -1305,6 +1305,17 @@ export class ExecutionService {
 
   setShotPressure(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotPressuresRequest): void {
     this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+  }
+
+  async updateShotPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotPressuresRequest,
+  ): Promise<ShotPressuresResponse> {
+    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    await this.#awaitResource(this.updateShotPressuresResource);
+    return this.updateShotPressuresResource.value()!;
   }
 
   // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────

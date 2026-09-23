@@ -15,6 +15,11 @@ export interface ShotMunitionIdentificationData {
   observations?: string | null;
 }
 
+/** Datos de identificación serializados para el PUT de un componente. */
+export interface ShotMunitionIdentificationRequestData extends Omit<ShotMunitionIdentificationData, 'denominationId'> {
+  denominationId?: number | null;
+}
+
 /**
  * Datos de peso de un componente de munición para un disparo (Request).
  */
@@ -63,8 +68,9 @@ export interface ShotMunitionConditioningDataResponse extends ShotMunitionCondit
  */
 export interface ShotMunitionComponentRequest {
   componentId: string;
-  identificationData?: ShotMunitionIdentificationData | null;
-  weightData?: ShotMunitionWeightData | null;
+  identificationData?: ShotMunitionIdentificationRequestData | null;
+  /** Array of weight entries, one per balance (scale). */
+  weightData?: ShotMunitionWeightData[] | null;
   conditioningData?: ShotMunitionConditioningData | null;
 }
 
@@ -74,7 +80,8 @@ export interface ShotMunitionComponentRequest {
 export interface ShotMunitionComponentResponse {
   componentId: string;
   identificationData?: ShotMunitionIdentificationData | null;
-  weightData?: ShotMunitionWeightDataResponse | null;
+  /** Array of weight entries, one per balance (scale). */
+  weightData?: ShotMunitionWeightDataResponse[] | null;
   conditioningData?: ShotMunitionConditioningDataResponse | null;
 }
 

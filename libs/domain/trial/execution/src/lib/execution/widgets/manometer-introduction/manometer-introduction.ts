@@ -26,14 +26,19 @@ import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
-import type { ShotManometerPressuresResponse } from '../../models/shot-manometer-pressures.models';
+import type {
+  ShotManometerPressures,
+  ShotManometerPressuresResponse,
+} from '../../models/shot-manometer-pressures.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import type { InputFieldValue } from './manometer-introduction.mapper';
 import {
+  buildShotManometerPressureData,
   buildShotManometerPressuresRequest,
+  extractManometerPressuresData,
   mapPlanningSeriesToOptions,
   mapRemoteToManometerState,
   mapShotsToDisparoOptions,
@@ -129,7 +134,7 @@ export interface DataFormModel {
       <!-- ── Body: flex container (data grid + observaciones) ──────────────── -->
       <div intaReadonlyContent intaFormTouch class="flex-1 flex-wrap flex gap-2 min-h-0" #touch="intaFormTouch">
         <!-- Data grid: two explicit rows inside a flex column -->
-        <div class="flex-1 flex justify-end flex-col gap-4">
+        <div class="flex-1 flex justify-evenly flex-col gap-4">
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
           <div class="grid grid-cols-2 lg:grid-cols-6 gap-2">
             <!-- Manómetro -->
@@ -138,6 +143,7 @@ export interface DataFormModel {
               <mat-select
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
                 [formField]="dataForm.manometro"
+                (selectionChange)="onManometroSelected($event.value)"
               >
                 @for (opt of manometroOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -151,6 +157,7 @@ export interface DataFormModel {
               <mat-select
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
                 [formField]="dataForm.crusher"
+                (selectionChange)="onEquipmentSelected('crusher', $event.value)"
               >
                 @for (opt of crusherOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -164,6 +171,7 @@ export interface DataFormModel {
               <mat-select
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
                 [formField]="dataForm.micrometroPalpador"
+                (selectionChange)="onEquipmentSelected('micrometroPalpador', $event.value)"
               >
                 @for (opt of micrometroPalpadorOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -193,13 +201,13 @@ export interface DataFormModel {
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h1Field()?.value ?? ''"
-                (input)="h1Field.set({ value: $any($event.target).value, unit: h1Field()?.unit ?? 'μm' })"
+                (input)="onHeightInput('h1', $event)"
               />
               <mat-select
                 matSuffix
                 class="pr-4"
                 [value]="h1Field()?.unit ?? 'μm'"
-                (selectionChange)="h1Field.set({ value: h1Field()?.value ?? '', unit: $event.value })"
+                (selectionChange)="onHeightUnitChanged('h1', $event.value)"
               >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -217,13 +225,13 @@ export interface DataFormModel {
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h2Field()?.value ?? ''"
-                (input)="h2Field.set({ value: $any($event.target).value, unit: h2Field()?.unit ?? 'μm' })"
+                (input)="onHeightInput('h2', $event)"
               />
               <mat-select
                 matSuffix
                 class="pr-4"
                 [value]="h2Field()?.unit ?? 'μm'"
-                (selectionChange)="h2Field.set({ value: h2Field()?.value ?? '', unit: $event.value })"
+                (selectionChange)="onHeightUnitChanged('h2', $event.value)"
               >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -241,13 +249,13 @@ export interface DataFormModel {
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h3Field()?.value ?? ''"
-                (input)="h3Field.set({ value: $any($event.target).value, unit: h3Field()?.unit ?? 'μm' })"
+                (input)="onHeightInput('h3', $event)"
               />
               <mat-select
                 matSuffix
                 class="pr-4"
                 [value]="h3Field()?.unit ?? 'μm'"
-                (selectionChange)="h3Field.set({ value: h3Field()?.value ?? '', unit: $event.value })"
+                (selectionChange)="onHeightUnitChanged('h3', $event.value)"
               >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -265,13 +273,13 @@ export interface DataFormModel {
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h4Field()?.value ?? ''"
-                (input)="h4Field.set({ value: $any($event.target).value, unit: h4Field()?.unit ?? 'μm' })"
+                (input)="onHeightInput('h4', $event)"
               />
               <mat-select
                 matSuffix
                 class="pr-4"
                 [value]="h4Field()?.unit ?? 'μm'"
-                (selectionChange)="h4Field.set({ value: h4Field()?.value ?? '', unit: $event.value })"
+                (selectionChange)="onHeightUnitChanged('h4', $event.value)"
               >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -289,13 +297,13 @@ export interface DataFormModel {
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
                 [value]="h5Field()?.value ?? ''"
-                (input)="h5Field.set({ value: $any($event.target).value, unit: h5Field()?.unit ?? 'μm' })"
+                (input)="onHeightInput('h5', $event)"
               />
               <mat-select
                 matSuffix
                 class="pr-4"
                 [value]="h5Field()?.unit ?? 'μm'"
-                (selectionChange)="h5Field.set({ value: h5Field()?.value ?? '', unit: $event.value })"
+                (selectionChange)="onHeightUnitChanged('h5', $event.value)"
               >
                 @for (opt of mumOptions; track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -323,7 +331,7 @@ export interface DataFormModel {
             class="resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
-            (input)="observacionesField.set($any($event.target).value || null)"
+            (input)="onObservacionesInput($event)"
           ></textarea>
         </mat-form-field>
       </div>
@@ -561,6 +569,42 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     void this.#loadSelectedShotData();
   }
 
+  onManometroSelected(manometro: string | null): void {
+    const previousManometro = this.#store.manometerIntroduction().manometro;
+    if (previousManometro !== manometro) {
+      this.#syncCurrentDraftToStore(previousManometro);
+    }
+
+    const selectedData = this.#store
+      .manometerIntroduction()
+      .manometerPressures.find((entry) => entry.pressureGaugeId === manometro);
+
+    this.#applyDataToForm(selectedData, manometro);
+    if (!selectedData && manometro) {
+      this.#syncCurrentDraftToStore(manometro);
+    }
+  }
+
+  onEquipmentSelected(field: 'crusher' | 'micrometroPalpador', value: string | null): void {
+    this.dataFormModel.update((current) => ({ ...current, [field]: value }));
+    this.#syncCurrentDraftToStore();
+  }
+
+  onHeightInput(field: 'h1' | 'h2' | 'h3' | 'h4' | 'h5', event: Event): void {
+    const value = event.target instanceof HTMLInputElement ? event.target.value : '';
+    this.#updateHeightField(field, { value, unit: this.#getHeightField(field)?.unit ?? 'μm' });
+  }
+
+  onHeightUnitChanged(field: 'h1' | 'h2' | 'h3' | 'h4' | 'h5', unit: string): void {
+    this.#updateHeightField(field, { value: this.#getHeightField(field)?.value ?? '', unit });
+  }
+
+  onObservacionesInput(event: Event): void {
+    const value = event.target instanceof HTMLTextAreaElement ? event.target.value : '';
+    this.observacionesField.set(value || null);
+    this.#syncCurrentDraftToStore();
+  }
+
   setCurrentShot(): void {
     const serie = this.#store.activeSerieId() ?? this.selectorFormModel().serie;
     const disparo = this.#store.activeShotId() ?? this.selectorFormModel().disparo;
@@ -596,41 +640,17 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   }
 
   async saveForm(): Promise<void> {
+    this.#syncCurrentDraftToStore();
     const { serie, disparo } = this.selectorFormModel();
-    const { manometro, crusher, micrometroPalpador } = this.dataFormModel();
     const fireTrialId = this.#store.fireTrialId();
 
     this.#store.updateManometerIntroduction({
       serie,
       disparo,
-      manometro,
-      crusher,
-      micrometroPalpador,
-      h1: parseNum(this.h1Field()),
-      h1Unit: this.h1Field()?.unit ?? 'μm',
-      h2: parseNum(this.h2Field()),
-      h2Unit: this.h2Field()?.unit ?? 'μm',
-      h3: parseNum(this.h3Field()),
-      h3Unit: this.h3Field()?.unit ?? 'μm',
-      h4: parseNum(this.h4Field()),
-      h4Unit: this.h4Field()?.unit ?? 'μm',
-      h5: parseNum(this.h5Field()),
-      h5Unit: this.h5Field()?.unit ?? 'μm',
-      observaciones: this.observacionesField(),
     });
 
     if (fireTrialId && serie && disparo) {
-      const payload = buildShotManometerPressuresRequest({
-        manometro,
-        crusher,
-        micrometroPalpador,
-        h1Field: this.h1Field(),
-        h2Field: this.h2Field(),
-        h3Field: this.h3Field(),
-        h4Field: this.h4Field(),
-        h5Field: this.h5Field(),
-        observaciones: this.observacionesField(),
-      });
+      const payload = buildShotManometerPressuresRequest(this.#store.manometerIntroduction().manometerPressures);
 
       try {
         await this.#executionService.updateShotManometerPressures(fireTrialId, serie, disparo, payload);
@@ -688,10 +708,20 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   }
 
   #applyRemoteShotData(response: ShotManometerPressuresResponse): void {
-    const mapped = mapRemoteToManometerState(response);
+    const data = extractManometerPressuresData(response);
+    this.#store.setManometerPressures(data);
+
+    const selectedGauge = this.dataFormModel().manometro;
+    const selectedData = data.find((entry) => entry.pressureGaugeId === selectedGauge) ?? data[0];
+    this.#applyDataToForm(selectedData, selectedData?.pressureGaugeId ?? selectedGauge);
+    this.#syncSnapshot();
+  }
+
+  #applyDataToForm(data: ShotManometerPressures | undefined, manometro: string | null): void {
+    const mapped = mapRemoteToManometerState({ manometerPressuresData: data ? [data] : [] }, manometro);
     this.#store.updateManometerIntroduction(mapped);
     this.dataFormModel.set({
-      manometro: mapped.manometro,
+      manometro,
       crusher: mapped.crusher,
       micrometroPalpador: mapped.micrometroPalpador,
     });
@@ -701,7 +731,59 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     this.h4Field.set(numToField(mapped.h4, mapped.h4Unit));
     this.h5Field.set(numToField(mapped.h5, mapped.h5Unit));
     this.observacionesField.set(mapped.observaciones);
-    this.#syncSnapshot();
+  }
+
+  #syncCurrentDraftToStore(manometro = this.dataFormModel().manometro): void {
+    const { crusher, micrometroPalpador } = this.dataFormModel();
+    const entry = buildShotManometerPressureData({
+      manometro,
+      crusher,
+      micrometroPalpador,
+      h1Field: this.h1Field(),
+      h2Field: this.h2Field(),
+      h3Field: this.h3Field(),
+      h4Field: this.h4Field(),
+      h5Field: this.h5Field(),
+      observaciones: this.observacionesField(),
+    });
+    this.#store.upsertManometerPressure(entry);
+    this.#store.updateManometerIntroduction(mapRemoteToManometerState({ manometerPressuresData: [entry] }, manometro));
+  }
+
+  #getHeightField(field: 'h1' | 'h2' | 'h3' | 'h4' | 'h5'): InputFieldValue {
+    switch (field) {
+      case 'h1':
+        return this.h1Field();
+      case 'h2':
+        return this.h2Field();
+      case 'h3':
+        return this.h3Field();
+      case 'h4':
+        return this.h4Field();
+      case 'h5':
+        return this.h5Field();
+    }
+  }
+
+  #updateHeightField(field: 'h1' | 'h2' | 'h3' | 'h4' | 'h5', value: InputFieldValue): void {
+    switch (field) {
+      case 'h1':
+        this.h1Field.set(value);
+        break;
+      case 'h2':
+        this.h2Field.set(value);
+        break;
+      case 'h3':
+        this.h3Field.set(value);
+        break;
+      case 'h4':
+        this.h4Field.set(value);
+        break;
+      case 'h5':
+        this.h5Field.set(value);
+        break;
+    }
+    this.#syncCurrentDraftToStore();
   }
 
   #syncSnapshot(): void {

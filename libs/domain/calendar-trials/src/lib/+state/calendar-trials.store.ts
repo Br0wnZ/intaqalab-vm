@@ -7,7 +7,7 @@ import type {
   CalendarViewHoliday,
   CalendarViewNoNotam,
   CalendarViewObservation,
-  LinesOfShot
+  LinesOfShot,
 } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import type { CalendarEvent } from 'angular-calendar';
@@ -88,14 +88,19 @@ export const CalendarTrialStore = signalStore(
   withMethods((store) => {
     const linesOfShotService = inject(LinesOfShotDataService);
     const eventsCalendarService = inject(CalendarEventsDataService);
+    let latestRequestId = 0;
 
     return {
       async _loadItems() {
+        const requestId = ++latestRequestId;
         try {
           const date = store.viewDate();
           const lineId = store.linesOfShotSelected();
           const calendarView = store.view();
           if (lineId === null) {
+            if (requestId === latestRequestId) {
+              patchState(store, { loading: false });
+            }
             return;
           }
           patchState(store, { loading: true, error: null });
@@ -107,10 +112,18 @@ export const CalendarTrialStore = signalStore(
           } else {
             data = await firstValueFrom(eventsCalendarService.getDayEvents(date, lineId));
           }
+
+          if (requestId !== latestRequestId) {
+            return;
+          }
+
           const { holidays, no_notams, trials, observations } = data;
           patchState(store, { loading: false, holidays, no_notams, trials, observations });
         } catch (err) {
-          console.log(err);
+          if (requestId !== latestRequestId) {
+            return;
+          }
+          console.error(err);
           patchState(store, {
             loading: false,
             error: 'Error al cargar los trials',
@@ -123,12 +136,13 @@ export const CalendarTrialStore = signalStore(
           const linesOfShotList = await firstValueFrom(linesOfShotService.list(true));
           patchState(store, { linesOfShot: linesOfShotList });
 
-          const defaultLineId = linesOfShotList.length > 0 ? linesOfShotList[0].id : '';
-          patchState(store, { linesOfShotSelected: defaultLineId });
-          patchState(store, { loading: false, error: null });
+          if (store.linesOfShotSelected() === null) {
+            const defaultLineId = linesOfShotList.length > 0 ? linesOfShotList[0].id : '';
+            patchState(store, { linesOfShotSelected: defaultLineId });
+          }
           await this._loadItems();
         } catch (err) {
-          console.log(err);
+          console.error(err);
           patchState(store, {
             loading: false,
             error: 'Error al cargar los trials',
@@ -136,12 +150,11 @@ export const CalendarTrialStore = signalStore(
         }
       },
       async refreshView() {
-        this._loadItems();
+        await this._loadItems();
       },
       changeLine(lineId: string) {
         patchState(store, { linesOfShotSelected: lineId });
         this._loadItems();
-        console.log('Line changed to', lineId);
       },
       setView(view: CalendarView) {
         patchState(store, { view });

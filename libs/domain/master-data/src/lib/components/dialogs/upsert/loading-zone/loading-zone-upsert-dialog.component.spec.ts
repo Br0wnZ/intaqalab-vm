@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
 import { DenominationsStore } from '@intaqalab/warehouse-management';
@@ -71,7 +72,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
     id: '550e8400-e29b-41d4-a716-446655440000',
     denomination: { id: '550e8400-e29b-41d4-a716-446655440001', name: '105/51' },
     zone: '1M, 2M, 3M',
-    caliber: '105',
+    caliber: 105,
+    caliberUnit: MeasureUnitEnum.MM,
     active: true,
   };
 
@@ -136,9 +138,6 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       expect(
         screen.getByPlaceholderText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER'),
       ).toBeInTheDocument();
-      expect(
-        screen.getByPlaceholderText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.PLACEHOLDER'),
-      ).toBeInTheDocument();
     });
 
     it('should pre-populate zone and caliber fields in edit mode', async () => {
@@ -147,9 +146,6 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       expect(screen.getByPlaceholderText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER')).toHaveValue(
         '1M, 2M, 3M',
       );
-      expect(screen.getByPlaceholderText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.PLACEHOLDER')).toHaveValue(
-        '105',
-      );
     });
 
     it('should pre-populate formModel with denominationId in edit mode', async () => {
@@ -157,8 +153,23 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       view.fixture.detectChanges();
       const formValue = view.fixture.componentInstance.formModel();
       expect(formValue.denominationId).toBe('550e8400-e29b-41d4-a716-446655440001');
-      expect(formValue.caliber).toBe('105');
+      expect(formValue.caliber).toBe(105);
+      expect(formValue.caliberUnit).toBe(MeasureUnitEnum.MM);
       expect(formValue.zone).toBe('1M, 2M, 3M');
+    });
+
+    it('should update caliber unit when the inline selector changes', async () => {
+      const { view } = await setup(null);
+      const instance = view.fixture.componentInstance;
+
+      (
+        instance as unknown as { onCaliberUnitChanges(value: { value: string; unit: string }): void }
+      ).onCaliberUnitChanges({
+        value: '105',
+        unit: MeasureUnitEnum.INCH,
+      });
+
+      expect(instance.formModel().caliberUnit).toBe(MeasureUnitEnum.INCH);
     });
   });
 
@@ -195,7 +206,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       instance.formModel.set({
         denominationId: '550e8400-e29b-41d4-a716-446655440031',
         zone: '1M, 2M, 3M',
-        caliber: '105',
+        caliber: 105,
+        caliberUnit: MeasureUnitEnum.MM,
       });
       view.fixture.detectChanges();
 
@@ -205,7 +217,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       expect(service.create).toHaveBeenCalledWith({
         denominationId: '550e8400-e29b-41d4-a716-446655440031',
         zone: ['1M', ' 2M', ' 3M'],
-        caliber: '105',
+        caliber: 105,
+        caliberUnit: MeasureUnitEnum.MM,
         active: true,
       });
     });
@@ -219,7 +232,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
         ...MOCK_LOADING_ZONE,
         denominationId: '550e8400-e29b-41d4-a716-446655440001',
         zone: 'ZoneA, ZoneB',
-        caliber: '120',
+        caliber: 120,
+        caliberUnit: MeasureUnitEnum.INCH,
       });
       view.fixture.detectChanges();
 
@@ -230,7 +244,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
           id: MOCK_LOADING_ZONE.id,
           denominationId: '550e8400-e29b-41d4-a716-446655440001',
           zone: ['ZoneA', ' ZoneB'],
-          caliber: '120',
+          caliber: 120,
+          caliberUnit: MeasureUnitEnum.INCH,
         }),
       );
     });
@@ -242,7 +257,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       instance.formModel.set({
         denominationId: '550e8400-e29b-41d4-a716-446655440031',
         zone: ['1M', '2M'] as unknown as string,
-        caliber: '105',
+        caliber: 105,
+        caliberUnit: MeasureUnitEnum.MM,
       });
       view.fixture.detectChanges();
 
@@ -251,7 +267,8 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       expect(service.create).toHaveBeenCalledWith({
         denominationId: '550e8400-e29b-41d4-a716-446655440031',
         zone: ['1M', '2M'],
-        caliber: '105',
+        caliber: 105,
+        caliberUnit: MeasureUnitEnum.MM,
         active: true,
       });
     });

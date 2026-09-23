@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -21,6 +21,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
         <mat-select
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_PLACEHOLDER' | translate"
           [formField]="identForm.componente"
+          (selectionChange)="onComponentChange($event.value)"
         >
           @for (opt of componenteOptions(); track opt.value) {
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -120,6 +121,8 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 export class MunitionIdentificacionTabComponent {
   readonly #store = inject(ExecutionStore);
 
+  readonly componentChange = output<string>();
+
   readonly identFormModel = signal<IdentFormModel>({
     componente: this.#store.munitionIntroduction().identificacion.componente,
     denominacion: this.#store.munitionIntroduction().identificacion.denominacion,
@@ -218,18 +221,23 @@ export class MunitionIdentificacionTabComponent {
     };
   }
 
+  onComponentChange(componente: string | null): void {
+    if (componente) {
+      this.componentChange.emit(componente);
+    }
+  }
+
   applyData(data: Partial<MunitionIntroIdentificationState>): void {
     this.identFormModel.update((m) => ({
       ...m,
       componente: data.componente !== undefined ? data.componente : m.componente,
-      denominacion: data.denominacion !== undefined ? data.denominacion : m.denominacion,
-      lote: data.lote !== undefined ? data.lote : m.lote,
-      modoFuncionamiento: data.modoFuncionamiento !== undefined ? data.modoFuncionamiento : m.modoFuncionamiento,
+      denominacion: data.denominacion ?? null,
+      lote: data.lote ?? null,
+      modoFuncionamiento: data.modoFuncionamiento ?? null,
     }));
-    if (data.numeroCliente !== undefined) this.numeroClienteField.set(data.numeroCliente);
-    if (data.observaciones !== undefined) this.observacionesField.set(data.observaciones);
-    if (data.graduacionEspoleta !== undefined)
-      this.graduacionEspoletaField.set(this.#numToField(data.graduacionEspoleta, 's'));
+    this.numeroClienteField.set(data.numeroCliente ?? null);
+    this.observacionesField.set(data.observaciones ?? null);
+    this.graduacionEspoletaField.set(this.#numToField(data.graduacionEspoleta ?? null, 's'));
     this.#dirtyTracker.syncSnapshot();
   }
 

@@ -2599,6 +2599,12 @@
     "INVALID_DATE": "Please enter a valid date"
   },
   "WHAREHOUSE_MANAGMENT": {
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "Do you want to confirm the record status change?",
+        "TITLE": "Change status"
+      }
+    },
     "CERTIFICATES": {
       "ACTIONS": "Actions",
       "ACTION_DELETE_HTML": "You are deleting an associated certificate",

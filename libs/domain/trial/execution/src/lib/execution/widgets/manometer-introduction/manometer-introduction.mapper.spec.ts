@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { ShotManometerPressuresResponse } from '../../models/shot-manometer-pressures.models';
 import {
+  buildShotManometerPressureData,
   buildShotManometerPressuresRequest,
   extractManometerPressuresData,
   mapDistanceUnitToApi,
@@ -67,33 +68,37 @@ describe('manometer-introduction.mapper', () => {
 
   it('extractManometerPressuresData extracts nested or flat data', () => {
     const nested: ShotManometerPressuresResponse = {
-      manometerPressuresData: {
-        h1: 120,
-        observations: 'test',
-      },
+      manometerPressuresData: [
+        {
+          h1: 120,
+          observations: 'test',
+        },
+      ],
     };
-    expect(extractManometerPressuresData(nested)).toEqual({ h1: 120, observations: 'test' });
-    expect(extractManometerPressuresData(null)).toBeNull();
+    expect(extractManometerPressuresData(nested)).toEqual([{ h1: 120, observations: 'test' }]);
+    expect(extractManometerPressuresData(null)).toEqual([]);
   });
 
   it('mapRemoteToManometerState maps response to state fields', () => {
     const response: ShotManometerPressuresResponse = {
-      manometerPressuresData: {
-        pressureGaugeId: 'gauge-1',
-        crusherId: 'crusher-1',
-        probeId: 'probe-1',
-        h1: 125.4,
-        h1Unit: DistanceUnitEnum.UM,
-        h2: 126.1,
-        h2Unit: DistanceUnitEnum.UM,
-        h3: 125.8,
-        h3Unit: DistanceUnitEnum.MM,
-        h4: 126.0,
-        h4Unit: DistanceUnitEnum.UM,
-        h5: 125.6,
-        h5Unit: DistanceUnitEnum.UM,
-        observations: 'All good',
-      },
+      manometerPressuresData: [
+        {
+          pressureGaugeId: 'gauge-1',
+          crusherId: 'crusher-1',
+          probeId: 'probe-1',
+          h1: 125.4,
+          h1Unit: DistanceUnitEnum.UM,
+          h2: 126.1,
+          h2Unit: DistanceUnitEnum.UM,
+          h3: 125.8,
+          h3Unit: DistanceUnitEnum.MM,
+          h4: 126.0,
+          h4Unit: DistanceUnitEnum.UM,
+          h5: 125.6,
+          h5Unit: DistanceUnitEnum.UM,
+          observations: 'All good',
+        },
+      ],
     };
 
     const state = mapRemoteToManometerState(response);
@@ -116,7 +121,7 @@ describe('manometer-introduction.mapper', () => {
   });
 
   it('buildShotManometerPressuresRequest constructs correct request payload', () => {
-    const request = buildShotManometerPressuresRequest({
+    const entry = buildShotManometerPressureData({
       manometro: 'gauge-1',
       crusher: 'crusher-1',
       micrometroPalpador: 'probe-1',
@@ -128,7 +133,7 @@ describe('manometer-introduction.mapper', () => {
       observaciones: 'Obs',
     });
 
-    expect(request).toEqual({
+    expect(entry).toEqual({
       pressureGaugeId: 'gauge-1',
       crusherId: 'crusher-1',
       probeId: 'probe-1',
@@ -144,5 +149,6 @@ describe('manometer-introduction.mapper', () => {
       h5Unit: DistanceUnitEnum.UM,
       observations: 'Obs',
     });
+    expect(buildShotManometerPressuresRequest([entry])).toEqual([entry]);
   });
 });

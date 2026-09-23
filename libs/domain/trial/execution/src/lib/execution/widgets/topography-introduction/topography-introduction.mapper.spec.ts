@@ -1,4 +1,4 @@
-import { TimeUnitEnum } from '@intaqalab/models';
+import type { TimeUnitEnum } from '@intaqalab/models';
 import { describe, expect, it } from 'vitest';
 
 import type { ShotTopographyResponse } from '../../models/shot-topography.models';
@@ -15,6 +15,9 @@ import {
   numToField,
   parseNum,
 } from './topography-introduction.mapper';
+
+const TIME_UNIT_SECONDS = 'S' as TimeUnitEnum;
+const TIME_UNIT_MILLISECONDS = 'MS' as TimeUnitEnum;
 
 describe('topography-introduction.mapper', () => {
   describe('numToField', () => {
@@ -46,15 +49,15 @@ describe('topography-introduction.mapper', () => {
 
   describe('unit mappers', () => {
     it('mapTimeUnitToApi converts strings and enums correctly', () => {
-      expect(mapTimeUnitToApi('s')).toBe(TimeUnitEnum.S);
-      expect(mapTimeUnitToApi('ms')).toBe(TimeUnitEnum.MS);
-      expect(mapTimeUnitToApi(TimeUnitEnum.S)).toBe(TimeUnitEnum.S);
+      expect(mapTimeUnitToApi('s')).toBe(TIME_UNIT_SECONDS);
+      expect(mapTimeUnitToApi('ms')).toBe(TIME_UNIT_MILLISECONDS);
+      expect(mapTimeUnitToApi(TIME_UNIT_SECONDS)).toBe(TIME_UNIT_SECONDS);
       expect(mapTimeUnitToApi(null)).toBeNull();
     });
 
     it('mapTimeUnitToUi converts API enums to UI strings', () => {
-      expect(mapTimeUnitToUi(TimeUnitEnum.S)).toBe('s');
-      expect(mapTimeUnitToUi(TimeUnitEnum.MS)).toBe('ms');
+      expect(mapTimeUnitToUi(TIME_UNIT_SECONDS)).toBe('s');
+      expect(mapTimeUnitToUi(TIME_UNIT_MILLISECONDS)).toBe('ms');
       expect(mapTimeUnitToUi(null, 's')).toBe('s');
     });
   });
@@ -141,9 +144,9 @@ describe('topography-introduction.mapper', () => {
         topographyData: {
           chronometerId: 'crono-01',
           flightTime: 23.4,
-          flightTimeUnit: TimeUnitEnum.S,
+          flightTimeUnit: TIME_UNIT_SECONDS,
           illuminationTime: 12.1,
-          illuminationTimeUnit: TimeUnitEnum.S,
+          illuminationTimeUnit: TIME_UNIT_SECONDS,
           smokeTrailCount: 3,
           observations: 'Test observation',
         },
@@ -164,7 +167,7 @@ describe('topography-introduction.mapper', () => {
   describe('mapTopographyStateToRequest', () => {
     it('converts component state to PUT request body', () => {
       const state = {
-        equipo: 'crono-02',
+        equipo: '2',
         tiempoVuelo: 14.2,
         tiempoVueloUnit: 's',
         tiempoIluminacion: 8.5,
@@ -175,11 +178,11 @@ describe('topography-introduction.mapper', () => {
 
       const request = mapTopographyStateToRequest(state);
 
-      expect(request.chronometerId).toBe('crono-02');
+      expect(request.chronometerId).toBe(2);
       expect(request.flightTime).toBe(14.2);
-      expect(request.flightTimeUnit).toBe(TimeUnitEnum.S);
+      expect(request.flightTimeUnit).toBe(TIME_UNIT_SECONDS);
       expect(request.illuminationTime).toBe(8.5);
-      expect(request.illuminationTimeUnit).toBe(TimeUnitEnum.S);
+      expect(request.illuminationTimeUnit).toBe(TIME_UNIT_SECONDS);
       expect(request.smokeTrailCount).toBe(2);
       expect(request.observations).toBe('Saved obs');
     });

@@ -1,10 +1,10 @@
-import { TimeUnitEnum } from '@intaqalab/models';
+import type { TimeUnitEnum } from '@intaqalab/models';
 
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
 import type {
-  ShotTopography,
-  ShotTopographyRequest,
-  ShotTopographyResponse,
+    ShotTopography,
+    ShotTopographyRequest,
+    ShotTopographyResponse,
 } from '../../models/shot-topography.models';
 
 export interface SelectOption {
@@ -13,6 +13,9 @@ export interface SelectOption {
 }
 
 export type InputFieldValue = { value: string; unit: string } | null;
+
+const TIME_UNIT_SECONDS = 'S' as TimeUnitEnum;
+const TIME_UNIT_MILLISECONDS = 'MS' as TimeUnitEnum;
 
 /**
  * Convierte un número y una unidad a la estructura InputFieldValue de UI.
@@ -37,9 +40,9 @@ export const parseNum = (field: InputFieldValue): number | null => {
 export const mapTimeUnitToApi = (unit?: TimeUnitEnum | string | null): TimeUnitEnum | null => {
   if (!unit) return null;
   const u = unit.toUpperCase();
-  if (u === 'S' || u === TimeUnitEnum.S) return TimeUnitEnum.S;
-  if (u === 'MS' || u === TimeUnitEnum.MS) return TimeUnitEnum.MS;
-  return TimeUnitEnum.S;
+  if (u === 'S') return TIME_UNIT_SECONDS;
+  if (u === 'MS') return TIME_UNIT_MILLISECONDS;
+  return TIME_UNIT_SECONDS;
 };
 
 /**
@@ -156,8 +159,10 @@ export const mapRemoteToTopographyState = (
  * Mapea el estado del componente/store al payload de petición PUT.
  */
 export const mapTopographyStateToRequest = (state: Partial<TopographyIntroductionState>): ShotTopographyRequest => {
+  const chronometerId = state.equipo ? Number(state.equipo) : null;
+
   return {
-    chronometerId: state.equipo ?? null,
+    chronometerId: chronometerId !== null && Number.isFinite(chronometerId) ? chronometerId : null,
     flightTime: state.tiempoVuelo ?? null,
     flightTimeUnit: mapTimeUnitToApi(state.tiempoVueloUnit),
     illuminationTime: state.tiempoIluminacion ?? null,

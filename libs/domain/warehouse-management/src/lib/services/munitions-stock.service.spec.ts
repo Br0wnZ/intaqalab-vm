@@ -148,8 +148,13 @@ describe('MunitionsStockService', () => {
       service.munitionComponents.set({ itemToSave: [makeMunitionComponentStock()] });
       TestBed.tick();
 
-      // flush any pending requests triggered by the signal sets
-      httpMock.match((r) => r.url.includes('/stock')).forEach((r) => r.flush({}));
+      const reqMunition = httpMock.expectOne((r) => r.url.includes('/stock/munitions') && r.method === 'POST');
+      reqMunition.flush({});
+
+      const reqComponents = httpMock.expectOne(
+        (r) => r.url.includes('/stock/munition-components') && r.method === 'POST',
+      );
+      reqComponents.flush({});
 
       service.clear();
 

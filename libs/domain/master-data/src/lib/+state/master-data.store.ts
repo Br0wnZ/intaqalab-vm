@@ -1,9 +1,10 @@
 import { computed, inject } from '@angular/core';
+import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type { MasterDataCreateItemType, MasterDataResponseType } from '../models/utils.model';
-import { MasterDataService } from '../services/master-data.service';
 import type { MasterDataSearchRequest } from '../services/master-data.service';
+import { MasterDataService } from '../services/master-data.service';
 
 interface MasterDataStoreState {
   isInitialized: boolean;
@@ -18,12 +19,12 @@ export const MasterDataStore = signalStore(
 
   withComputed((store, service = inject(MasterDataService)) => ({
     items: computed(() => {
-      const response = service.paginatedResponse.value();
+      const response = safeResourceValue(service.paginatedResponse);
       return response?.items ?? [];
     }),
 
     totalElements: computed(() => {
-      const response = service.paginatedResponse.value();
+      const response = safeResourceValue(service.paginatedResponse);
       return response?.totalElements ?? 0;
     }),
 
@@ -31,7 +32,9 @@ export const MasterDataStore = signalStore(
 
     error: computed(() => service.paginatedResponse.error()),
 
-    hasError: computed(() => service.paginatedResponse.error() !== null),
+    hasError: computed(
+      () => service.paginatedResponse.status() === 'error' && service.paginatedResponse.error() !== null,
+    ),
 
     saveStatus: computed(() => service.saveResource.status()),
     isSaving: computed(() => service.saveResource.isLoading()),

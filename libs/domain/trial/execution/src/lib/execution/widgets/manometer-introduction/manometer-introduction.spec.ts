@@ -25,22 +25,32 @@ const mockWidgetStateService = {
 };
 
 const mockManometerResponse: ShotManometerPressuresResponse = {
-  manometerPressuresData: {
-    pressureGaugeId: 'manometro-PN6-SN001',
-    crusherId: 'crusher-cobre-SN101',
-    probeId: 'micrometro-SN201',
-    h1: 125.4,
-    h1Unit: DistanceUnitEnum.UM,
-    h2: 126.1,
-    h2Unit: DistanceUnitEnum.UM,
-    h3: 125.8,
-    h3Unit: DistanceUnitEnum.UM,
-    h4: 126.0,
-    h4Unit: DistanceUnitEnum.UM,
-    h5: 125.6,
-    h5Unit: DistanceUnitEnum.UM,
-    observations: 'Lecturas remotas OK',
-  },
+  manometerPressuresData: [
+    {
+      pressureGaugeId: 'manometro-PN6-SN001',
+      crusherId: 'crusher-cobre-SN101',
+      probeId: 'micrometro-SN201',
+      h1: 125.4,
+      h1Unit: DistanceUnitEnum.UM,
+      h2: 126.1,
+      h2Unit: DistanceUnitEnum.UM,
+      h3: 125.8,
+      h3Unit: DistanceUnitEnum.UM,
+      h4: 126.0,
+      h4Unit: DistanceUnitEnum.UM,
+      h5: 125.6,
+      h5Unit: DistanceUnitEnum.UM,
+      observations: 'Lecturas remotas OK',
+    },
+    {
+      pressureGaugeId: 'manometro-PN10-SN002',
+      crusherId: 'crusher-plomo-SN102',
+      probeId: 'micrometro-SN202',
+      h1: 200,
+      h1Unit: DistanceUnitEnum.UM,
+      observations: 'Segundo manómetro',
+    },
+  ],
 };
 
 describe('ManometerIntroduction', () => {
@@ -167,5 +177,42 @@ describe('ManometerIntroduction', () => {
 
     expect(fixture.componentInstance['selectorFormModel']().serie).toBe(store.activeSerieId());
     expect(fixture.componentInstance['selectorFormModel']().disparo).toBe(store.activeShotId());
+  });
+
+  it('switches form data when another manometer is selected', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    store.setManometerPressures(mockManometerResponse.manometerPressuresData ?? []);
+
+    fixture.componentInstance.onManometroSelected('manometro-PN10-SN002');
+
+    expect(fixture.componentInstance['h1Field']()).toEqual({ value: '200', unit: 'μm' });
+    expect(fixture.componentInstance['dataFormModel']()).toMatchObject({
+      manometro: 'manometro-PN10-SN002',
+      crusher: 'crusher-plomo-SN102',
+      micrometroPalpador: 'micrometro-SN202',
+    });
+  });
+
+  it('keeps height input changes in the selected manometer draft', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const gaugeId = 'manometro-PN6-SN001';
+    store.setManometerPressures([{ pressureGaugeId: gaugeId }]);
+    fixture.componentInstance['dataFormModel'].set({
+      manometro: gaugeId,
+      crusher: null,
+      micrometroPalpador: null,
+    });
+
+    const input = document.createElement('input');
+    input.value = '321.5';
+    const event = new Event('input');
+    Object.defineProperty(event, 'target', { value: input });
+    fixture.componentInstance.onHeightInput('h1', event);
+
+    expect(store.manometerIntroduction().manometerPressures).toContainEqual(
+      expect.objectContaining({ pressureGaugeId: gaugeId, h1: 321.5 }),
+    );
   });
 });

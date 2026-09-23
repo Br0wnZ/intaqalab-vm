@@ -1,9 +1,11 @@
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
+import type { ShotMunitionResponse } from '../../execution/models';
+import { mapRemoteToMunitionState } from '../../execution/widgets/munition-introduction/munition-introduction.mapper';
 import type {
   MunitionIntroAcondicionamientoState,
   MunitionIntroIdentificationState,
-  MunitionIntroPesosState,
+  MunitionIntroWeightState,
   MunitionIntroductionState,
 } from '../execution-state.models';
 
@@ -11,11 +13,24 @@ interface MunitionIntroductionSlice {
   munitionIntroduction: MunitionIntroductionState;
 }
 
+const initialWeightState: MunitionIntroWeightState = {
+  componente: null,
+  balance: null,
+  weight: null,
+  weightAdded: null,
+  weightRemoved: null,
+  weighingDateTime: null,
+  weighingRange: null,
+  observations: null,
+};
+
 const initialState: MunitionIntroductionSlice = {
   munitionIntroduction: {
     serie: null,
     disparo: null,
     estadoDisparo: 'EN_CURSO',
+    selectedComponentId: null,
+    remoteMunitionResponse: null,
     identificacion: {
       componente: null,
       denominacion: null,
@@ -29,16 +44,8 @@ const initialState: MunitionIntroductionSlice = {
       denominacionNotInStock: false,
       loteNotInStock: false,
     },
-    pesos: {
-      componente: null,
-      balanza: null,
-      peso: null,
-      pesoAnadido: null,
-      pesoRetirado: null,
-      fechaHora: null,
-      rangoPesada: null,
-      observaciones: null,
-    },
+    weight: initialWeightState,
+    weightDataByBalance: {},
     acondicionamiento: {
       camara: null,
       componente: null,
@@ -98,14 +105,14 @@ export function withMunitionIntroduction() {
   return signalStoreFeature(
     withState(initialState),
     withMethods((store) => ({
-      /** Actualiza selector de serie/disparo del widget Introducción datos municiones */
+      /** Updates serie/disparo selector */
       updateMunitionIntroductionSelector(updates: Partial<Pick<MunitionIntroductionState, 'serie' | 'disparo'>>): void {
         patchState(store, (state) => ({
           munitionIntroduction: { ...state.munitionIntroduction, ...updates },
         }));
       },
 
-      /** Actualiza el tab Identificación del widget Introducción datos municiones */
+      /** Updates Identificación tab */
       updateMunitionIntroductionIdentification(updates: Partial<MunitionIntroIdentificationState>): void {
         patchState(store, (state) => ({
           munitionIntroduction: {
@@ -115,17 +122,92 @@ export function withMunitionIntroduction() {
         }));
       },
 
-      /** Actualiza el tab Pesos del widget Introducción datos municiones */
-      updateMunitionIntroductionPesos(updates: Partial<MunitionIntroPesosState>): void {
-        patchState(store, (state) => ({
-          munitionIntroduction: {
-            ...state.munitionIntroduction,
-            pesos: { ...state.munitionIntroduction.pesos, ...updates },
-          },
-        }));
+      /**
+       * Updates the active weight state and persists it into weightDataByBalance
+       * using the current balance key.
+       */
+      updateMunitionIntroductionWeight(updates: Partial<MunitionIntroWeightState>): void {
+        patchState(store, (state) => {
+          const merged: MunitionIntroWeightState = { ...state.munitionIntroduction.weight, ...updates };
+          const balanceKey = merged.balance;
+          const weightDataByBalance = balanceKey
+            ? { ...state.munitionIntroduction.weightDataByBalance, [balanceKey]: merged }
+            : state.munitionIntroduction.weightDataByBalance;
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              weight: merged,
+              weightDataByBalance,
+            },
+          };
+        });
       },
 
-      /** Actualiza el tab Acondicionamiento del widget Introducción datos municiones */
+      /**
+       * Updates weight data for a specific balance key and syncs the active weight
+       * state if it matches the currently selected balance.
+       */
+      updateMunitionIntroductionWeightByBalance(balanceKey: string, data: Partial<MunitionIntroWeightState>): void {
+        patchState(store, (state) => {
+          const existing = state.munitionIntroduction.weightDataByBalance[balanceKey] ?? initialWeightState;
+          const updated: MunitionIntroWeightState = { ...existing, ...data, balance: balanceKey };
+          const weightDataByBalance = {
+            ...state.munitionIntroduction.weightDataByBalance,
+            [balanceKey]: updated,
+          };
+          // Also update the active weight state if this is the currently selected balance
+          const isActive = state.munitionIntroduction.weight.balance === balanceKey;
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              weight: isActive ? updated : state.munitionIntroduction.weight,
+              weightDataByBalance,
+            },
+          };
+        });
+      },
+
+      /**
+       * Switches the active balance and loads its persisted weight data from memory.
+       * If no data exists for the balance, resets to empty defaults.
+       */
+      setActiveMunitionBalance(balanceKey: string): void {
+        patchState(store, (state) => {
+          const persisted = state.munitionIntroduction.weightDataByBalance[balanceKey];
+          const active: MunitionIntroWeightState = persisted
+            ? { ...persisted, balance: balanceKey }
+            : { ...initialWeightState, balance: balanceKey };
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              weight: active,
+            },
+          };
+        });
+      },
+
+      /**
+       * Loads all weight data from the API response (array per balance).
+       * Replaces the entire weightDataByBalance map and sets the active weight
+       * to the first entry (or empty if none).
+       */
+      loadMunitionIntroductionWeightData(weightDataByBalance: Record<string, MunitionIntroWeightState>): void {
+        patchState(store, (state) => {
+          const keys = Object.keys(weightDataByBalance);
+          const firstKey = keys[0];
+          const activeWeight: MunitionIntroWeightState =
+            firstKey !== undefined && firstKey !== null ? weightDataByBalance[firstKey] : { ...initialWeightState };
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              weight: activeWeight,
+              weightDataByBalance,
+            },
+          };
+        });
+      },
+
+      /** Updates Acondicionamiento tab */
       updateMunitionIntroductionAcondicionamiento(updates: Partial<MunitionIntroAcondicionamientoState>): void {
         patchState(store, (state) => ({
           munitionIntroduction: {
@@ -133,6 +215,79 @@ export function withMunitionIntroduction() {
             acondicionamiento: { ...state.munitionIntroduction.acondicionamiento, ...updates },
           },
         }));
+      },
+
+      /**
+       * Loads the full remote ShotMunitionResponse (GET).
+       * Sets remoteMunitionResponse and maps data for the target component (or first component).
+       */
+      loadMunitionIntroductionRemoteResponse(
+        response: ShotMunitionResponse,
+        preferredComponentId?: string | null,
+      ): void {
+        patchState(store, (state) => {
+          const components = response.munitionData ?? [];
+          const targetComponentId =
+            (preferredComponentId && components.some((c) => c.componentId === preferredComponentId)
+              ? preferredComponentId
+              : null) ??
+            components[0]?.componentId ??
+            null;
+
+          const mapped = mapRemoteToMunitionState(response, targetComponentId);
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              selectedComponentId: targetComponentId,
+              remoteMunitionResponse: response,
+              identificacion: {
+                ...state.munitionIntroduction.identificacion,
+                ...mapped.identificacion,
+              },
+              weight: {
+                ...initialWeightState,
+                ...mapped.weight,
+              },
+              weightDataByBalance: mapped.weightDataByBalance,
+              acondicionamiento: {
+                ...state.munitionIntroduction.acondicionamiento,
+                ...mapped.acondicionamiento,
+              },
+            },
+          };
+        });
+      },
+
+      /**
+       * Switches the active component.
+       * Discards all unsaved in-memory edits by reloading pristine data from remoteMunitionResponse.
+       * Resets chosen balance to the first balance of this component (or null).
+       */
+      selectMunitionComponent(componentId: string): void {
+        patchState(store, (state) => {
+          const remote = state.munitionIntroduction.remoteMunitionResponse;
+          const mapped = mapRemoteToMunitionState(remote, componentId);
+
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              selectedComponentId: componentId,
+              identificacion: {
+                ...initialState.munitionIntroduction.identificacion,
+                ...mapped.identificacion,
+              },
+              weight: {
+                ...initialWeightState,
+                ...mapped.weight,
+              },
+              weightDataByBalance: mapped.weightDataByBalance,
+              acondicionamiento: {
+                ...initialState.munitionIntroduction.acondicionamiento,
+                ...mapped.acondicionamiento,
+              },
+            },
+          };
+        });
       },
     })),
   );

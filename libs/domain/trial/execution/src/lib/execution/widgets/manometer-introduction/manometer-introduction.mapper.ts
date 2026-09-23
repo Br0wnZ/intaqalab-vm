@@ -82,20 +82,19 @@ export const parseNum = (field: InputFieldValue): number | null => {
  * Extrae y normaliza ShotManometerPressures de la respuesta GET de la API.
  */
 export const extractManometerPressuresData = (
-  response: ShotManometerPressuresResponse | ShotManometerPressures | null | undefined,
-): ShotManometerPressures | null => {
-  if (!response) return null;
-  if ('manometerPressuresData' in response && response.manometerPressuresData) {
-    return response.manometerPressuresData;
-  }
-  return response as ShotManometerPressures;
+  response: ShotManometerPressuresResponse | ShotManometerPressures[] | null | undefined,
+): ShotManometerPressures[] => {
+  if (!response) return [];
+  if (Array.isArray(response)) return response;
+  return response.manometerPressuresData ?? [];
 };
 
 /**
  * Mapea la respuesta remota a campos de estado del widget.
  */
 export const mapRemoteToManometerState = (
-  response: ShotManometerPressuresResponse | ShotManometerPressures | null | undefined,
+  response: ShotManometerPressuresResponse | ShotManometerPressures[] | null | undefined,
+  pressureGaugeId?: string | null,
 ): {
   manometro: string | null;
   crusher: string | null;
@@ -112,7 +111,9 @@ export const mapRemoteToManometerState = (
   h5Unit: string;
   observaciones: string | null;
 } => {
-  const data = extractManometerPressuresData(response);
+  const data =
+    extractManometerPressuresData(response).find((entry) => entry.pressureGaugeId === pressureGaugeId) ??
+    extractManometerPressuresData(response)[0];
   if (!data) {
     return {
       manometro: null,
@@ -153,7 +154,7 @@ export const mapRemoteToManometerState = (
 /**
  * Construye el payload de ShotManometerPressuresRequest para el PUT a la API.
  */
-export const buildShotManometerPressuresRequest = (params: {
+export const buildShotManometerPressureData = (params: {
   manometro: string | null;
   crusher: string | null;
   micrometroPalpador: string | null;
@@ -163,7 +164,7 @@ export const buildShotManometerPressuresRequest = (params: {
   h4Field: InputFieldValue;
   h5Field: InputFieldValue;
   observaciones: string | null;
-}): ShotManometerPressuresRequest => ({
+}): ShotManometerPressures => ({
   pressureGaugeId: params.manometro ?? null,
   crusherId: params.crusher ?? null,
   probeId: params.micrometroPalpador ?? null,
@@ -179,3 +180,6 @@ export const buildShotManometerPressuresRequest = (params: {
   h5Unit: mapDistanceUnitToApi(params.h5Field?.unit),
   observations: params.observaciones ?? null,
 });
+
+export const buildShotManometerPressuresRequest = (entries: ShotManometerPressures[]): ShotManometerPressuresRequest =>
+  entries;

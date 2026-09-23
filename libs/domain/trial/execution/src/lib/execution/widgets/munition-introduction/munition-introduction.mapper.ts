@@ -3,7 +3,7 @@ import type { TimeUnitEnum, WeightUnitEnum } from '@intaqalab/models';
 import type {
   MunitionIntroAcondicionamientoState,
   MunitionIntroIdentificationState,
-  MunitionIntroPesosState,
+  MunitionIntroWeightState,
 } from '../../../+state/execution-state.models';
 import type {
   ShotMunitionComponentRequest,
@@ -15,7 +15,7 @@ import type {
 export type InputFieldValue = { value: string; unit: string } | null;
 
 /**
- * Convierte un número y unidad a la estructura de InputSelect.
+ * Converts a number + unit to InputSelect structure.
  */
 export function numToField(value: number | null | undefined, unit = 'g'): InputFieldValue {
   if (value === null || value === undefined) return null;
@@ -23,7 +23,7 @@ export function numToField(value: number | null | undefined, unit = 'g'): InputF
 }
 
 /**
- * Parsea el valor string de un InputSelect a número o null.
+ * Parses the string value of an InputSelect to number or null.
  */
 export function parseNum(field: InputFieldValue): number | null {
   if (!field || (!field.value && field.value !== '0')) return null;
@@ -32,7 +32,7 @@ export function parseNum(field: InputFieldValue): number | null {
 }
 
 /**
- * Mapea las series de planificación a opciones para el selector.
+ * Maps planning series to selector options.
  */
 export function mapPlanningSeriesToOptions(
   planningSeries?: Array<{ id: string; name?: string | null }> | null,
@@ -48,7 +48,7 @@ export function mapPlanningSeriesToOptions(
 }
 
 /**
- * Mapea los disparos de una serie a opciones para el selector.
+ * Maps shots in a series to selector options.
  */
 export function mapShotsToDisparoOptions(
   shots?: Array<{ shotId?: string; id?: string }> | null,
@@ -63,12 +63,28 @@ export function mapShotsToDisparoOptions(
   return fallbackOptions;
 }
 
-function resolveBalanzaValue(balanceId: number | string | null | undefined): string | null {
+// ─── ID resolution helpers ────────────────────────────────────────────────────
+
+/**
+ * Resolves a numeric Calibry balanceId (or an existing string key) to the
+ * frontend option key used in balanzaOptions (e.g. 'bal-01').
+ */
+export function resolveBalanceKey(balanceId: number | string | null | undefined): string | null {
   if (balanceId === null || balanceId === undefined) return null;
   const str = String(balanceId);
   if (str === '21031' || str === 'bal-01') return 'bal-01';
   if (str === '21032' || str === 'bal-02') return 'bal-02';
   return str;
+}
+
+/**
+ * Resolves a frontend balance key to the Calibry numeric balanceId for the PUT.
+ */
+function resolveBalanceId(balanceKey: string | null | undefined): number | null {
+  if (!balanceKey) return null;
+  if (balanceKey === 'bal-01') return 21031;
+  if (balanceKey === 'bal-02') return 21032;
+  return Number(balanceKey) || null;
 }
 
 function resolveCamaraValue(climaticChamberId: number | string | null | undefined): string | null {
@@ -80,33 +96,105 @@ function resolveCamaraValue(climaticChamberId: number | string | null | undefine
   return str;
 }
 
+function resolveCamaraId(camaraKey: string | null | undefined): number | null {
+  if (!camaraKey) return null;
+  if (camaraKey === 'camara-01') return 21045;
+  if (camaraKey === 'camara-02') return 21046;
+  return Number(camaraKey) || null;
+}
+
+// ─── mapRemoteToMunitionState ──────────────────────────────────────────────────
+
 /**
- * Mapea la respuesta remota ShotMunitionResponse al estado de los 3 tabs.
+ * Maps a ShotMunitionResponse (GET) to the three-tab state.
+ *
+ * For the Pesos tab, `weightData` is now an array (one entry per balance).
+ * Returns `weightDataByBalance` — a map from balance key → MunitionIntroWeightState —
+ * and `weight` as the first entry (or empty if none).
  */
 export function mapRemoteToMunitionState(
   response: ShotMunitionResponse | null | undefined,
   fallbackComponentId?: string | null,
 ): {
   identificacion: Partial<MunitionIntroIdentificationState>;
-  pesos: Partial<MunitionIntroPesosState>;
+  weight: Partial<MunitionIntroWeightState>;
+  weightDataByBalance: Record<string, MunitionIntroWeightState>;
   acondicionamiento: Partial<MunitionIntroAcondicionamientoState>;
 } {
   const components = response?.munitionData ?? [];
   if (components.length === 0) {
     return {
-      identificacion: {},
-      pesos: {},
-      acondicionamiento: {},
+      identificacion: fallbackComponentId ? { componente: fallbackComponentId } : {},
+      weight: fallbackComponentId ? { componente: fallbackComponentId, balance: null } : {},
+      weightDataByBalance: {},
+      acondicionamiento: fallbackComponentId ? { componente: fallbackComponentId } : {},
     };
   }
 
-  // Si se pasa fallbackComponentId, buscamos ese componente; si no, tomamos el primero
-  const targetComponent: ShotMunitionComponentResponse =
-    (fallbackComponentId ? components.find((c) => c.componentId === fallbackComponentId) : null) ?? components[0];
+  const targetComponent =
+    (fallbackComponentId ? components.find((c) => c.componentId === fallbackComponentId) : null) ??
+    (fallbackComponentId ? null : components[0]);
+
+  if (!targetComponent) {
+    return {
+      identificacion: {
+        componente: fallbackComponentId ?? null,
+        denominacion: null,
+        lote: null,
+        numeroCliente: null,
+        modoFuncionamiento: null,
+        graduacionEspoleta: null,
+        observaciones: null,
+      },
+      weight: {
+        componente: fallbackComponentId ?? null,
+        balance: null,
+        weight: null,
+        weightAdded: null,
+        weightRemoved: null,
+        weighingDateTime: null,
+        weighingRange: null,
+        observations: null,
+      },
+      weightDataByBalance: {},
+      acondicionamiento: {
+        camara: null,
+        componente: fallbackComponentId ?? null,
+        fechaHoraEntrada: null,
+        fechaHoraSalida: null,
+        temperatura: null,
+        temperaturaCorregida: null,
+        observaciones: null,
+      },
+    };
+  }
 
   const ident = targetComponent.identificationData;
-  const weights = targetComponent.weightData;
   const cond = targetComponent.conditioningData;
+
+  // Build weightDataByBalance from the array of weight entries
+  const weightEntries = targetComponent.weightData ?? [];
+  const weightDataByBalance: Record<string, MunitionIntroWeightState> = {};
+  for (const entry of weightEntries) {
+    const balanceKey = resolveBalanceKey(entry.balanceId);
+    if (!balanceKey) continue;
+    weightDataByBalance[balanceKey] = {
+      componente: targetComponent.componentId,
+      balance: balanceKey,
+      weight: entry.weight ?? null,
+      weightAdded: entry.weightAdded ?? null,
+      weightRemoved: entry.weightRemoved ?? null,
+      weighingDateTime: entry.weighingDateTime ?? null,
+      weighingRange: entry.weighingRange ?? null,
+      observations: entry.observations ?? null,
+    };
+  }
+
+  // Active weight = first balance entry (or empty with null balance)
+  const firstKey = Object.keys(weightDataByBalance)[0] ?? null;
+  const activeWeight: Partial<MunitionIntroWeightState> = firstKey
+    ? weightDataByBalance[firstKey]
+    : { componente: targetComponent.componentId, balance: null };
 
   return {
     identificacion: {
@@ -118,16 +206,8 @@ export function mapRemoteToMunitionState(
       graduacionEspoleta: ident?.fuseGraduation ?? null,
       observaciones: ident?.observations ?? null,
     },
-    pesos: {
-      componente: targetComponent.componentId,
-      balanza: resolveBalanzaValue(weights?.balanceId),
-      peso: weights?.weight ?? null,
-      pesoAnadido: weights?.weightAdded ?? null,
-      pesoRetirado: weights?.weightRemoved ?? null,
-      fechaHora: weights?.weighingDateTime ?? null,
-      rangoPesada: weights?.weighingRange ?? null,
-      observaciones: weights?.observations ?? null,
-    },
+    weight: activeWeight,
+    weightDataByBalance,
     acondicionamiento: {
       camara: resolveCamaraValue(cond?.climaticChamberId),
       componente: targetComponent.componentId,
@@ -140,40 +220,46 @@ export function mapRemoteToMunitionState(
   };
 }
 
+// ─── mapMunitionStateToRequest ─────────────────────────────────────────────────
+
 /**
- * Convierte el estado actual de las tabs en una petición ShotMunitionRequest.
+ * Converts the current tab state into a ShotMunitionRequest (PUT body).
+ *
+ * `weightDataByBalance` contains all in-memory weight entries (one per balance)
+ * and is serialized into a `weightData` array for the PUT request.
  */
 export function mapMunitionStateToRequest(params: {
   componentId: string;
   identificacion: Partial<MunitionIntroIdentificationState>;
-  pesos: Partial<MunitionIntroPesosState>;
+  weightDataByBalance: Record<string, MunitionIntroWeightState>;
   acondicionamiento: Partial<MunitionIntroAcondicionamientoState>;
-  existingComponents?: ShotMunitionComponentRequest[];
+  existingComponents?: (ShotMunitionComponentRequest | ShotMunitionComponentResponse)[];
 }): ShotMunitionRequest {
-  const { componentId, identificacion, pesos, acondicionamiento, existingComponents = [] } = params;
+  const { componentId, identificacion, weightDataByBalance, acondicionamiento, existingComponents = [] } = params;
 
-  let balanceId: number | null = null;
-  if (pesos.balanza === 'bal-01') {
-    balanceId = 21031;
-  } else if (pesos.balanza === 'bal-02') {
-    balanceId = 21032;
-  } else if (pesos.balanza) {
-    balanceId = Number(pesos.balanza) || null;
-  }
+  const normalizeDenominationId = (value: string | number | null | undefined): number | null => {
+    if (value === null || value === undefined || value === '') return null;
+    const denominationId = Number(value);
+    return Number.isFinite(denominationId) ? denominationId : null;
+  };
 
-  let climaticChamberId: number | null = null;
-  if (acondicionamiento.camara === 'camara-01') {
-    climaticChamberId = 21045;
-  } else if (acondicionamiento.camara === 'camara-02') {
-    climaticChamberId = 21046;
-  } else if (acondicionamiento.camara) {
-    climaticChamberId = Number(acondicionamiento.camara) || null;
-  }
+  // Build the weightData array from all in-memory balance entries
+  const weightData = Object.values(weightDataByBalance).map((entry) => ({
+    balanceId: resolveBalanceId(entry.balance),
+    weight: entry.weight ?? null,
+    weightUnit: 'G' as WeightUnitEnum,
+    weightAdded: entry.weightAdded ?? null,
+    weightAddedUnit: 'G' as WeightUnitEnum,
+    weightRemoved: entry.weightRemoved ?? null,
+    weightRemovedUnit: 'G' as WeightUnitEnum,
+    weighingDateTime: entry.weighingDateTime ?? null,
+    observations: entry.observations ?? null,
+  }));
 
   const currentComponent: ShotMunitionComponentRequest = {
     componentId,
     identificationData: {
-      denominationId: identificacion.denominacion ?? null,
+      denominationId: normalizeDenominationId(identificacion.denominacion),
       batch: identificacion.lote ?? null,
       clientNumber: identificacion.numeroCliente ?? null,
       fuseWorkingModeId: identificacion.modoFuncionamiento ?? null,
@@ -181,26 +267,46 @@ export function mapMunitionStateToRequest(params: {
       fuseGraduationUnit: 'S' as TimeUnitEnum,
       observations: identificacion.observaciones ?? null,
     },
-    weightData: {
-      balanceId,
-      weight: pesos.peso ?? null,
-      weightUnit: 'G' as WeightUnitEnum,
-      weightAdded: pesos.pesoAnadido ?? null,
-      weightAddedUnit: 'G' as WeightUnitEnum,
-      weightRemoved: pesos.pesoRetirado ?? null,
-      weightRemovedUnit: 'G' as WeightUnitEnum,
-      weighingDateTime: pesos.fechaHora ?? null,
-      observations: pesos.observaciones ?? null,
-    },
+    weightData: weightData.length > 0 ? weightData : null,
     conditioningData: {
-      climaticChamberId,
+      climaticChamberId: resolveCamaraId(acondicionamiento.camara),
       chamberEntryDateTime: acondicionamiento.fechaHoraEntrada ?? null,
       chamberExitDateTime: acondicionamiento.fechaHoraSalida ?? null,
       observations: acondicionamiento.observaciones ?? null,
     },
   };
 
-  const otherComponents = existingComponents.filter((c) => c.componentId !== componentId);
+  const otherComponents: ShotMunitionComponentRequest[] = existingComponents
+    .filter((c) => c.componentId !== componentId)
+    .map((c) => ({
+      componentId: c.componentId,
+      identificationData: c.identificationData
+        ? {
+            ...c.identificationData,
+            denominationId: normalizeDenominationId(c.identificationData.denominationId),
+          }
+        : null,
+      weightData:
+        c.weightData?.map((w) => ({
+          balanceId: w.balanceId,
+          weight: w.weight,
+          weightUnit: w.weightUnit,
+          weightAdded: w.weightAdded,
+          weightAddedUnit: w.weightAddedUnit,
+          weightRemoved: w.weightRemoved,
+          weightRemovedUnit: w.weightRemovedUnit,
+          weighingDateTime: w.weighingDateTime,
+          observations: w.observations,
+        })) ?? null,
+      conditioningData: c.conditioningData
+        ? {
+            climaticChamberId: c.conditioningData.climaticChamberId,
+            chamberEntryDateTime: c.conditioningData.chamberEntryDateTime,
+            chamberExitDateTime: c.conditioningData.chamberExitDateTime,
+            observations: c.conditioningData.observations,
+          }
+        : null,
+    }));
 
   return {
     components: [currentComponent, ...otherComponents],

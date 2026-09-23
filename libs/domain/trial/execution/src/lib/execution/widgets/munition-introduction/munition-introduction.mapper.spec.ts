@@ -47,17 +47,19 @@ describe('munition-introduction.mapper', () => {
       const res: ShotMunitionResponse = { munitionData: [] };
       expect(mapRemoteToMunitionState(res)).toEqual({
         identificacion: {},
-        pesos: {},
+        weight: {},
+        weightDataByBalance: {},
         acondicionamiento: {},
       });
       expect(mapRemoteToMunitionState(null)).toEqual({
         identificacion: {},
-        pesos: {},
+        weight: {},
+        weightDataByBalance: {},
         acondicionamiento: {},
       });
     });
 
-    it('should map component data to state pieces', () => {
+    it('should map a single-balance weightData array to weightDataByBalance', () => {
       const res: ShotMunitionResponse = {
         munitionData: [
           {
@@ -70,15 +72,17 @@ describe('munition-introduction.mapper', () => {
               fuseGraduation: 5.5,
               observations: 'Ident OK',
             },
-            weightData: {
-              balanceId: 101,
-              weight: 120.5,
-              weightAdded: 10,
-              weightRemoved: 2,
-              weighingDateTime: '2026-08-27T10:00:00Z',
-              weighingRange: '0-500g',
-              observations: 'Peso OK',
-            },
+            weightData: [
+              {
+                balanceId: 101,
+                weight: 120.5,
+                weightAdded: 10,
+                weightRemoved: 2,
+                weighingDateTime: '2026-08-27T10:00:00Z',
+                weighingRange: '0-500',
+                observations: 'Weight OK',
+              },
+            ],
             conditioningData: {
               climaticChamberId: 202,
               chamberEntryDateTime: '2026-08-27T08:00:00Z',
@@ -86,7 +90,7 @@ describe('munition-introduction.mapper', () => {
               temperature: 20,
               programmedTemperature: 21,
               chamberTime: '02:00:00',
-              observations: 'Camara OK',
+              observations: 'Chamber OK',
             },
           },
         ],
@@ -104,16 +108,20 @@ describe('munition-introduction.mapper', () => {
         observaciones: 'Ident OK',
       });
 
-      expect(mapped.pesos).toEqual({
+      // weightDataByBalance: key is '101' (unknown balanceId → kept as string)
+      expect(mapped.weightDataByBalance['101']).toEqual({
         componente: 'comp-1',
-        balanza: '101',
-        peso: 120.5,
-        pesoAnadido: 10,
-        pesoRetirado: 2,
-        fechaHora: '2026-08-27T10:00:00Z',
-        rangoPesada: '0-500g',
-        observaciones: 'Peso OK',
+        balance: '101',
+        weight: 120.5,
+        weightAdded: 10,
+        weightRemoved: 2,
+        weighingDateTime: '2026-08-27T10:00:00Z',
+        weighingRange: '0-500',
+        observations: 'Weight OK',
       });
+
+      // Active weight = first entry
+      expect(mapped.weight).toEqual(mapped.weightDataByBalance['101']);
 
       expect(mapped.acondicionamiento).toEqual({
         camara: '202',
@@ -122,45 +130,175 @@ describe('munition-introduction.mapper', () => {
         fechaHoraSalida: '2026-08-27T10:00',
         temperatura: 20,
         temperaturaCorregida: 21,
-        observaciones: 'Camara OK',
+        observaciones: 'Chamber OK',
       });
+    });
+
+    it('should map known balanceIds to frontend keys (bal-01, bal-02)', () => {
+      const res: ShotMunitionResponse = {
+        munitionData: [
+          {
+            componentId: 'comp-1',
+            weightData: [
+              { balanceId: 21031, weight: 40 },
+              { balanceId: 21032, weight: 41 },
+            ],
+          },
+        ],
+      };
+
+      const mapped = mapRemoteToMunitionState(res);
+
+      expect(Object.keys(mapped.weightDataByBalance)).toEqual(['bal-01', 'bal-02']);
+      expect(mapped.weightDataByBalance['bal-01'].weight).toBe(40);
+      expect(mapped.weightDataByBalance['bal-02'].weight).toBe(41);
+      // Active weight = first balance (bal-01)
+      expect(mapped.weight.balance).toBe('bal-01');
+    });
+
+    it('should return empty weightDataByBalance if weightData is null or empty', () => {
+      const res: ShotMunitionResponse = {
+        munitionData: [{ componentId: 'comp-1', weightData: null }],
+      };
+      const mapped = mapRemoteToMunitionState(res);
+      expect(mapped.weightDataByBalance).toEqual({});
+      expect(mapped.weight).toEqual({ componente: 'comp-1', balance: null });
+    });
+
+    it('should map specific component when targetComponentId is passed and reset balance', () => {
+      const res: ShotMunitionResponse = {
+        munitionData: [
+          {
+            componentId: 'granada-01',
+            identificationData: { denominationId: 'den-01' },
+            weightData: [{ balanceId: 21031, weight: 43.5 }],
+          },
+          {
+            componentId: 'espoleta-01',
+            identificationData: { denominationId: 'den-02' },
+            weightData: [{ balanceId: 21032, weight: 520 }],
+          },
+        ],
+      };
+
+      const mappedGranada = mapRemoteToMunitionState(res, 'granada-01');
+      expect(mappedGranada.identificacion.denominacion).toBe('den-01');
+      expect(mappedGranada.weight.balance).toBe('bal-01');
+      expect(mappedGranada.weight.weight).toBe(43.5);
+
+      const mappedEspoleta = mapRemoteToMunitionState(res, 'espoleta-01');
+      expect(mappedEspoleta.identificacion.denominacion).toBe('den-02');
+      expect(mappedEspoleta.weight.balance).toBe('bal-02');
+      expect(mappedEspoleta.weight.weight).toBe(520);
     });
   });
 
   describe('mapMunitionStateToRequest', () => {
-    it('should convert tab states into ShotMunitionRequest', () => {
+    it('should build weightData array from weightDataByBalance', () => {
       const req = mapMunitionStateToRequest({
         componentId: 'comp-1',
         identificacion: {
-          denominacion: 'den-1',
+          denominacion: '1',
           lote: 'LOT-1',
           numeroCliente: 'CL-1',
           modoFuncionamiento: 'fwm-1',
           graduacionEspoleta: 5.5,
           observaciones: 'Ident obs',
         },
-        pesos: {
-          balanza: '101',
-          peso: 150,
-          pesoAnadido: 5,
-          pesoRetirado: 1,
-          fechaHora: '2026-08-27T10:00:00Z',
-          observaciones: 'Peso obs',
+        weightDataByBalance: {
+          'bal-01': {
+            componente: 'comp-1',
+            balance: 'bal-01',
+            weight: 40,
+            weightAdded: null,
+            weightRemoved: null,
+            weighingDateTime: '2026-08-27T10:00:00Z',
+            weighingRange: '0-500',
+            observations: 'Weight bal-01',
+          },
+          'bal-02': {
+            componente: 'comp-1',
+            balance: 'bal-02',
+            weight: 41,
+            weightAdded: null,
+            weightRemoved: null,
+            weighingDateTime: '2026-08-27T10:05:00Z',
+            weighingRange: '0-2000',
+            observations: 'Weight bal-02',
+          },
         },
         acondicionamiento: {
-          camara: '202',
+          camara: 'camara-01',
           fechaHoraEntrada: '2026-08-27T08:00:00Z',
           fechaHoraSalida: '2026-08-27T10:00:00Z',
-          observaciones: 'Acond obs',
+          observaciones: 'Conditioning obs',
         },
       });
 
       expect(req.components).toHaveLength(1);
-      expect(req.components[0].componentId).toBe('comp-1');
-      expect(req.components[0].identificationData?.denominationId).toBe('den-1');
-      expect(req.components[0].weightData?.balanceId).toBe(101);
-      expect(req.components[0].weightData?.weight).toBe(150);
-      expect(req.components[0].conditioningData?.climaticChamberId).toBe(202);
+      const comp = req.components[0];
+      expect(comp.componentId).toBe('comp-1');
+      expect(comp.identificationData?.denominationId).toBe(1);
+
+      // weightData is now an array
+      expect(Array.isArray(comp.weightData)).toBe(true);
+      expect(comp.weightData).toHaveLength(2);
+
+      const bal01Entry = comp.weightData?.find((e) => e.balanceId === 21031);
+      expect(bal01Entry?.weight).toBe(40);
+
+      const bal02Entry = comp.weightData?.find((e) => e.balanceId === 21032);
+      expect(bal02Entry?.weight).toBe(41);
+
+      expect(comp.conditioningData?.climaticChamberId).toBe(21045);
+    });
+
+    it('should set weightData to null if weightDataByBalance is empty', () => {
+      const req = mapMunitionStateToRequest({
+        componentId: 'comp-1',
+        identificacion: {},
+        weightDataByBalance: {},
+        acondicionamiento: {},
+      });
+      expect(req.components[0].weightData).toBeNull();
+    });
+
+    it('should preserve other components in mapMunitionStateToRequest', () => {
+      const req = mapMunitionStateToRequest({
+        componentId: 'granada-01',
+        identificacion: { denominacion: '1' },
+        weightDataByBalance: {
+          'bal-01': {
+            componente: 'granada-01',
+            balance: 'bal-01',
+            weight: 45,
+            weightAdded: null,
+            weightRemoved: null,
+            weighingDateTime: null,
+            weighingRange: null,
+            observations: null,
+          },
+        },
+        acondicionamiento: {},
+        existingComponents: [
+          {
+            componentId: 'granada-01',
+            identificationData: { denominationId: '1' },
+          },
+          {
+            componentId: 'espoleta-01',
+            identificationData: { denominationId: '2' },
+            weightData: [{ balanceId: 21032, weight: 520 }],
+          },
+        ],
+      });
+
+      expect(req.components).toHaveLength(2);
+      expect(req.components[0].componentId).toBe('granada-01');
+      expect(req.components[0].identificationData?.denominationId).toBe(1);
+      expect(req.components[1].componentId).toBe('espoleta-01');
+      expect(req.components[1].identificationData?.denominationId).toBe(2);
+      expect(req.components[1].weightData?.[0].weight).toBe(520);
     });
   });
 });

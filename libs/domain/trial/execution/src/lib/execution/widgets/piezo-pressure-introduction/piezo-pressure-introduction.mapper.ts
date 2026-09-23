@@ -1,4 +1,4 @@
-import { MEASURE_UNIT_LABELS, MeasureUnitEnum, PressureUnitEnum } from '@intaqalab/models';
+import { MeasureUnitEnum } from '@intaqalab/models';
 
 import type {
   ShotPressuresData,
@@ -47,13 +47,16 @@ export const mapShotsToDisparoOptions = (
  * Extrae y normaliza ShotPressuresData de la respuesta GET de la API.
  */
 export const extractPressuresData = (
-  response: ShotPressuresResponse | ShotPressuresData | null | undefined,
-): ShotPressuresData | null => {
-  if (!response) return null;
-  if ('pressuresData' in response && response.pressuresData) {
+  response: ShotPressuresResponse | ShotPressuresData[] | null | undefined,
+): ShotPressuresData[] => {
+  if (!response) return [];
+  if (Array.isArray(response)) {
+    return response;
+  }
+  if ('pressuresData' in response) {
     return response.pressuresData;
   }
-  return response as ShotPressuresData;
+  return [];
 };
 
 /**
@@ -93,7 +96,7 @@ export const equipmentStringToId = (value: string | null | undefined): number | 
 /**
  * Construye el payload de ShotPressuresRequest para el PUT a la API.
  */
-export const buildShotPressuresRequest = (params: {
+export const buildShotPressureData = (params: {
   captador: string | null;
   amplificador: string | null;
   registrador: string | null;
@@ -104,7 +107,7 @@ export const buildShotPressuresRequest = (params: {
   culotePresion: number | null;
   culoteUnit?: string;
   observations?: string | null;
-}): ShotPressuresRequest => ({
+}): ShotPressuresData => ({
   piezoelectricSensorId: equipmentStringToId(params.captador),
   amplifierId: equipmentStringToId(params.amplificador),
   dataAcquisitionSystemId: equipmentStringToId(params.registrador),
@@ -116,3 +119,18 @@ export const buildShotPressuresRequest = (params: {
   shellMaxPressureUnit: params.culoteUnit ?? DEFAULT_PRESSURE_UNIT,
   observations: params.observations ?? null,
 });
+
+/** Construye el payload completo del PUT, conservando una entrada por captador. */
+export const buildShotPressuresRequest = (entries: ShotPressuresData[]): ShotPressuresRequest =>
+  entries.map((entry) => ({
+    piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
+    amplifierId: entry.amplifierId ?? null,
+    dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
+    closingMaxPressure: entry.closingMaxPressure ?? null,
+    closingMaxPressureUnit: entry.closingMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    halfMaxPressure: entry.halfMaxPressure ?? null,
+    halfMaxPressureUnit: entry.halfMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    shellMaxPressure: entry.shellMaxPressure ?? null,
+    shellMaxPressureUnit: entry.shellMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    observations: entry.observations ?? null,
+  }));

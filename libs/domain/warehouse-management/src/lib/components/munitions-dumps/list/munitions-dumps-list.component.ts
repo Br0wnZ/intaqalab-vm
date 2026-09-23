@@ -8,7 +8,6 @@ import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import type { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
@@ -113,8 +112,8 @@ const DEFAULT_COLUMNS = ['munitionDumpId', 'cellsCount', 'maxNeq', 'maxRiskGroup
                 </button>
                 <mat-slide-toggle
                   class="scale-90"
-                  [(ngModel)]="item.active"
-                  (change)="toogleActive(item, $event)"
+                  [checked]="getCheckedState(item)"
+                  (change)="toogleActive(item)"
                 ></mat-slide-toggle>
               </div>
             </td>
@@ -148,6 +147,7 @@ export class MunitionsDumpsListComponent {
   pageSize = signal(10);
   sortField = signal<string | undefined>(undefined);
   sortDirection = signal<'asc' | 'desc' | ''>('');
+  readonly #overrideItemId = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -157,6 +157,10 @@ export class MunitionsDumpsListComponent {
       const sortDirection = this.sortDirection();
 
       this.store.search({ page, pageSize, sortDirection, sortField });
+    });
+
+    effect(() => {
+      if (this.store.isLoading()) this.#overrideItemId.set(null);
     });
   }
 
@@ -202,9 +206,25 @@ export class MunitionsDumpsListComponent {
     }
   }
 
-  toogleActive(item: MunitionsDumpModel, change: MatSlideToggleChange) {
-    const enabled = change.checked;
-    this.store.toogleEnabledItem(item, enabled);
+  getCheckedState(item: MunitionsDumpModel) {
+    return this.#overrideItemId() === item.munitionDumpId ? !item.active : item.active;
+  }
+
+  async toogleActive(item: MunitionsDumpModel): Promise<void> {
+    this.#overrideItemId.set(item.munitionDumpId);
+
+    const confirmed = await this.uiDialogs.confirm({
+      labelButtonConfirm: 'COMMONS.ACCEPT',
+      title: 'WHAREHOUSE_MANAGMENT.DIALOGS.SWITCH_STATUS.TITLE',
+      htmlText: 'WHAREHOUSE_MANAGMENT.DIALOGS.SWITCH_STATUS.CONTENT_HTML',
+    });
+
+    if (!confirmed) {
+      this.#overrideItemId.set(null);
+      return;
+    }
+
+    this.store.toogleEnabledItem(item, !item.active);
   }
 
   onPage(event: PageEvent): void {

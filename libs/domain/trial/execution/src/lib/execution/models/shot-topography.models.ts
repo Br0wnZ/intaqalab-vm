@@ -10,7 +10,9 @@ export interface ShotTopography {
   observations?: string | null;
 }
 
-export type ShotTopographyRequest = ShotTopography;
+export interface ShotTopographyRequest extends Omit<ShotTopography, 'chronometerId'> {
+  chronometerId?: number | null;
+}
 
 export interface ShotTopographyResponse {
   topographyData?: ShotTopography | null;

@@ -11,6 +11,7 @@ const initialState: ManometerIntroductionSlice = {
     serie: null,
     disparo: null,
     estadoDisparo: 'EN_CURSO',
+    manometerPressures: [],
     manometro: null,
     crusher: null,
     micrometroPalpador: null,
@@ -69,6 +70,32 @@ export function withManometerIntroduction() {
         patchState(store, (state) => ({
           manometerIntroduction: { ...state.manometerIntroduction, ...updates },
         }));
+      },
+
+      setManometerPressures(manometerPressures: ManometerIntroductionState['manometerPressures']): void {
+        patchState(store, (state) => ({
+          manometerIntroduction: { ...state.manometerIntroduction, manometerPressures },
+        }));
+      },
+
+      upsertManometerPressure(entry: ManometerIntroductionState['manometerPressures'][number]): void {
+        patchState(store, (state) => {
+          const currentEntries = state.manometerIntroduction.manometerPressures;
+          const entryIndex = currentEntries.findIndex(
+            (currentEntry) => currentEntry.pressureGaugeId === entry.pressureGaugeId,
+          );
+          const nextEntries = [...currentEntries];
+
+          if (entryIndex === -1) {
+            nextEntries.push(entry);
+          } else {
+            nextEntries[entryIndex] = entry;
+          }
+
+          return {
+            manometerIntroduction: { ...state.manometerIntroduction, manometerPressures: nextEntries },
+          };
+        });
       },
     })),
   );

@@ -128,7 +128,7 @@ export interface ShotPressuresData {
 }
 
 export interface ShotPressuresResponse {
-  pressuresData: ShotPressuresData;
+  pressuresData: ShotPressuresData[];
 }
 
 const executionStateMap = new Map<string, ExecutionState>();
@@ -619,7 +619,7 @@ export function setShotPressure(
   fireTrialId: string,
   seriesId: string,
   shotId: string,
-  payload: ShotPressuresData,
+  payload: ShotPressuresData[],
 ): ShotPressuresResponse {
   const shotProgress = getShotProgress(seriesId, shotId);
   if (!shotProgress) {
@@ -633,18 +633,18 @@ export function setShotPressure(
   const state = getOrCreatePressuresMap(fireTrialId);
   const key = `${seriesId}|${shotId}`;
   const updated: ShotPressuresResponse = {
-    pressuresData: {
-      piezoelectricSensorId: payload.piezoelectricSensorId ?? null,
-      amplifierId: payload.amplifierId ?? null,
-      dataAcquisitionSystemId: payload.dataAcquisitionSystemId ?? null,
-      closingMaxPressure: payload.closingMaxPressure ?? null,
-      closingMaxPressureUnit: payload.closingMaxPressureUnit ?? 'BAR',
-      halfMaxPressure: payload.halfMaxPressure ?? null,
-      halfMaxPressureUnit: payload.halfMaxPressureUnit ?? 'BAR',
-      shellMaxPressure: payload.shellMaxPressure ?? null,
-      shellMaxPressureUnit: payload.shellMaxPressureUnit ?? 'BAR',
-      observations: payload.observations ?? null,
-    },
+    pressuresData: payload.map((entry) => ({
+      piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
+      amplifierId: entry.amplifierId ?? null,
+      dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
+      closingMaxPressure: entry.closingMaxPressure ?? null,
+      closingMaxPressureUnit: entry.closingMaxPressureUnit ?? 'BAR',
+      halfMaxPressure: entry.halfMaxPressure ?? null,
+      halfMaxPressureUnit: entry.halfMaxPressureUnit ?? 'BAR',
+      shellMaxPressure: entry.shellMaxPressure ?? null,
+      shellMaxPressureUnit: entry.shellMaxPressureUnit ?? 'BAR',
+      observations: entry.observations ?? null,
+    })),
   };
 
   state.set(key, updated);
@@ -855,7 +855,7 @@ export interface ShotMunitionConditioningData {
 export interface ShotMunitionComponent {
   componentId: string;
   identificationData?: ShotMunitionIdentificationData | null;
-  weightData?: ShotMunitionWeightData | null;
+  weightData?: ShotMunitionWeightData[] | null;
   conditioningData?: ShotMunitionConditioningData | null;
 }
 
@@ -920,11 +920,11 @@ export function setShotMunition(
     munitionData: (payload.components || []).map((comp) => ({
       componentId: comp.componentId,
       identificationData: comp.identificationData ?? null,
-      weightData: comp.weightData
-        ? {
-            ...comp.weightData,
-            weighingRange: comp.weightData.weighingRange ?? '300,00-500,00g',
-          }
+      weightData: Array.isArray(comp.weightData)
+        ? comp.weightData.map((w: ShotMunitionWeightData) => ({
+            ...w,
+            weighingRange: w.weighingRange ?? (w.balanceId === 21032 ? '0 - 2000' : '0 - 500'),
+          }))
         : null,
       conditioningData: comp.conditioningData
         ? {
@@ -963,10 +963,10 @@ export interface ShotManometerPressures {
 }
 
 export interface ShotManometerPressuresResponse {
-  manometerPressuresData?: ShotManometerPressures | null;
+  manometerPressuresData?: ShotManometerPressures[] | null;
 }
 
-export type ShotManometerPressuresRequest = ShotManometerPressures;
+export type ShotManometerPressuresRequest = ShotManometerPressures[];
 
 function defaultManometerPressuresState(): ShotManometerPressuresResponse {
   return getFixture<ShotManometerPressuresResponse>('fixtures/execution', 'execution-manometer-pressures-fixture.json');
@@ -1022,22 +1022,22 @@ export function setShotManometerPressures(
   const key = `${seriesId}|${shotId}`;
 
   const updated: ShotManometerPressuresResponse = {
-    manometerPressuresData: {
-      pressureGaugeId: payload.pressureGaugeId ?? null,
-      crusherId: payload.crusherId ?? null,
-      probeId: payload.probeId ?? null,
-      h1: payload.h1 ?? null,
-      h1Unit: payload.h1Unit ?? 'UM',
-      h2: payload.h2 ?? null,
-      h2Unit: payload.h2Unit ?? 'UM',
-      h3: payload.h3 ?? null,
-      h3Unit: payload.h3Unit ?? 'UM',
-      h4: payload.h4 ?? null,
-      h4Unit: payload.h4Unit ?? 'UM',
-      h5: payload.h5 ?? null,
-      h5Unit: payload.h5Unit ?? 'UM',
-      observations: payload.observations ?? null,
-    },
+    manometerPressuresData: payload.map((entry) => ({
+      pressureGaugeId: entry.pressureGaugeId ?? null,
+      crusherId: entry.crusherId ?? null,
+      probeId: entry.probeId ?? null,
+      h1: entry.h1 ?? null,
+      h1Unit: entry.h1Unit ?? 'UM',
+      h2: entry.h2 ?? null,
+      h2Unit: entry.h2Unit ?? 'UM',
+      h3: entry.h3 ?? null,
+      h3Unit: entry.h3Unit ?? 'UM',
+      h4: entry.h4 ?? null,
+      h4Unit: entry.h4Unit ?? 'UM',
+      h5: entry.h5 ?? null,
+      h5Unit: entry.h5Unit ?? 'UM',
+      observations: entry.observations ?? null,
+    })),
   };
 
   state.set(key, updated);

@@ -11,18 +11,32 @@
         "fuseGraduationUnit": "S",
         "observations": "Identificación de granada 155mm verificada."
       },
-      "weightData": {
-        "balanceId": 21031,
-        "weight": 43.5,
-        "weightUnit": "KG",
-        "weightAdded": 0,
-        "weightAddedUnit": "G",
-        "weightRemoved": 0,
-        "weightRemovedUnit": "G",
-        "weighingDateTime": "2026-08-21T10:34:12Z",
-        "weighingRange": "0 - 500g",
-        "observations": "Pesada de granada correcta."
-      },
+      "weightData": [
+        {
+          "balanceId": 21031,
+          "weight": 43.5,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T10:34:12Z",
+          "weighingRange": "0 - 500",
+          "observations": "Pesada de granada con Balanza 500g correcta."
+        },
+        {
+          "balanceId": 21032,
+          "weight": 43.6,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T10:40:00Z",
+          "weighingRange": "0 - 2000",
+          "observations": "Pesada de comprobación con Balanza 2000g."
+        }
+      ],
       "conditioningData": {
         "climaticChamberId": 21045,
         "chamberEntryDateTime": "2026-08-21T08:00:00Z",
@@ -46,18 +60,20 @@
         "fuseGraduationUnit": "S",
         "observations": "Espoleta graduada a 12s."
       },
-      "weightData": {
-        "balanceId": 21031,
-        "weight": 520.0,
-        "weightUnit": "G",
-        "weightAdded": 0,
-        "weightAddedUnit": "G",
-        "weightRemoved": 0,
-        "weightRemovedUnit": "G",
-        "weighingDateTime": "2026-08-21T09:15:00Z",
-        "weighingRange": "0 - 500g",
-        "observations": "Pesada de espoleta."
-      },
+      "weightData": [
+        {
+          "balanceId": 21031,
+          "weight": 520.0,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T09:15:00Z",
+          "weighingRange": "0 - 500",
+          "observations": "Pesada de espoleta."
+        }
+      ],
       "conditioningData": {
         "climaticChamberId": 21045,
         "chamberEntryDateTime": "2026-08-21T08:00:00Z",

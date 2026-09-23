@@ -2,8 +2,10 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
-import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
+import { InputSelect, InputSelectInput, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
 import { DenominationsStore } from '@intaqalab/warehouse-management';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,6 +27,9 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     MatIconModule,
     MatInputModule,
     SaveButton,
+    InputSelect,
+    InputSelectInput,
+    NoNegativeValuesDirective,
   ],
   template: `
     <h2 mat-dialog-title class="!flex gap-2 !pt-4 items-center align-center gap-3 text-xl font-semibold !mx-auto">
@@ -63,19 +68,19 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
         </mat-form-field>
       </div>
 
-      <div>
-        <label for="caliber" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="caliber"
-            matInput
-            [formField]="form.caliber"
-            [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
+      <ui-input-select
+        placeholder="0"
+        [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
+        [opciones]="caliberUnitOptions"
+        [showLabel]="false"
+        [value]="{
+          value: formModel().caliber?.toString() ?? '',
+          unit: formModel().caliberUnit,
+        }"
+        (valueChange)="onCaliberUnitChanges($event)"
+      >
+        <input type="number" inputSelectInput libNoNegativeValues [formField]="form.caliber" />
+      </ui-input-select>
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -99,6 +104,13 @@ export class LoadingZoneUpsertDialogComponent {
   readonly data = inject<MasterDataLoadingZone | null>(MAT_DIALOG_DATA);
   readonly store = inject(MasterDataStore);
   readonly denominationsStore: DenominationsStoreType = inject(DenominationsStore);
+  readonly caliberUnitOptions = toUnitOptions([MeasureUnitEnum.MM, MeasureUnitEnum.INCH]);
+
+  protected onCaliberUnitChanges(value: { value: string; unit: string } | null) {
+    if (!value || (value.unit !== MeasureUnitEnum.MM && value.unit !== MeasureUnitEnum.INCH)) return;
+
+    this.formModel.update((formValue) => ({ ...formValue, caliberUnit: value.unit }));
+  }
 
   constructor() {
     this.denominationsStore.search({ active: true, munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER });
@@ -124,11 +136,15 @@ export class LoadingZoneUpsertDialogComponent {
   readonly defaultFormValues = {
     denominationId: '',
     zone: '',
-    caliber: '',
+    caliber: null,
+    caliberUnit: MeasureUnitEnum.MM,
   };
 
   readonly formModel = signal<
-    Omit<MasterDataUpsertDialogType<MasterDataLoadingZone>, 'denomination'> & { denominationId: string }
+    Omit<MasterDataUpsertDialogType<MasterDataLoadingZone>, 'denomination' | 'caliber'> & {
+      denominationId: string;
+      caliber: number | null;
+    }
   >(this.defaultFormValues);
 
   readonly form = form(this.formModel, (schemaPath) => {
@@ -137,9 +153,9 @@ export class LoadingZoneUpsertDialogComponent {
   });
 
   protected sendData() {
-    const { denominationId, caliber } = this.formModel();
+    const { denominationId, caliber, caliberUnit } = this.formModel();
     const zone = Array.isArray(this.formModel().zone) ? this.formModel().zone : this.formModel().zone?.split(',');
-    const payload = { ...this.data, denominationId, zone, caliber };
+    const payload = { ...this.data, denominationId, zone, caliber, ...(caliber && { caliberUnit }) };
 
     if (!this.data) {
       this.store.create({ ...payload, active: true });

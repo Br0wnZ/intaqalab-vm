@@ -1,15 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-  untracked,
-} from '@angular/core';
 import type { Signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    computed,
+    effect,
+    inject,
+    input,
+    signal,
+    untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,21 +23,22 @@ import type { TopographyIntroductionState } from '../../../+state/execution.stor
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { ShotTopographyResponse } from '../../models/shot-topography.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
-  type InputFieldValue,
-  mapPlanningSeriesToOptions,
-  mapRemoteToTopographyState,
-  mapShotStatusToClass,
-  mapShotStatusToLabel,
-  mapShotsToDisparoOptions,
-  mapTopographyStateToRequest,
-  numToField,
-  parseNum,
+    type InputFieldValue,
+    mapPlanningSeriesToOptions,
+    mapRemoteToTopographyState,
+    mapShotStatusToClass,
+    mapShotStatusToLabel,
+    mapShotsToDisparoOptions,
+    mapTopographyStateToRequest,
+    numToField,
+    parseNum,
 } from './topography-introduction.mapper';
 
 interface TopographyFormModel {
@@ -184,6 +185,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
+  readonly #chronometerOptions = signal<Array<{ value: string; label: string }>>([]);
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
@@ -192,7 +194,10 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   protected readonly sOptions = [{ value: 's', label: 's' }];
 
   // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly equipoOptions = computed(() => this.#store.topographyIntroduction().equipoOptions);
+  protected readonly equipoOptions = computed(() => {
+    const chronometerOptions = this.#chronometerOptions();
+    return chronometerOptions.length ? chronometerOptions : this.#store.topographyIntroduction().equipoOptions;
+  });
   protected readonly serieOptions = computed(() =>
     mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.topographyIntroduction().serieOptions),
   );
@@ -273,6 +278,13 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   constructor() {
     super();
+
+    this.#executionService
+      .loadEquipmentItemsByCategories([EquipmentTypeEnum.CHRONOMETER])
+      .then((itemsByCategory) => {
+        const items = itemsByCategory[EquipmentTypeEnum.CHRONOMETER] ?? [];
+        this.#chronometerOptions.set(items.map((item) => ({ value: item.id, label: item.label })));
+      });
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();

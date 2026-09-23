@@ -159,6 +159,7 @@ function createMockExecutionService(
     getShotPressures: vi.fn(),
     fetchShotPressures: vi.fn(),
     setShotPressure: vi.fn(),
+    updateShotPressures: vi.fn().mockResolvedValue({ pressuresData: [] }),
     loadArmamentEquipmentItems: vi.fn().mockResolvedValue([]),
     fetchPlanningArmament: vi.fn().mockResolvedValue({ series: [] } as PlanningArmamentResponse),
     fetchShotArmament: vi.fn().mockResolvedValue({} as ShotArmamentResponse),

@@ -1,4 +1,4 @@
-import { HttpContext, httpResource } from '@angular/common/http';
+import { HttpContext, type HttpResourceRef, httpResource } from '@angular/common/http';
 import { effect, signal } from '@angular/core';
 import type { PaginatedApiResponse } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
@@ -6,6 +6,11 @@ import { actionTrigger } from '@intaqalab/utils';
 
 import type { MasterDataCreateItemType, MasterDataEntityId, MasterDataWithId } from '../models/utils.model';
 import type { MasterDataSearchRequest } from './master-data.service';
+
+function isHttpSuccess(resource: HttpResourceRef<unknown>): boolean {
+  const code = resource.statusCode();
+  return resource.status() === 'resolved' && code !== undefined && code >= 200 && code < 300;
+}
 
 export function injectMasterDataResource<T extends MasterDataWithId>(
   endpointUrl: string,
@@ -70,11 +75,11 @@ export function injectMasterDataResource<T extends MasterDataWithId>(
   });
 
   effect(() => {
-    const save = saveResource.statusCode();
-    const update = updateResource.statusCode();
-    const deleteId = deleteById.statusCode();
+    const saveSuccess = isHttpSuccess(saveResource);
+    const updateSuccess = isHttpSuccess(updateResource);
+    const deleteSuccess = isHttpSuccess(deleteById);
 
-    if (save || update || deleteId) {
+    if (saveSuccess || updateSuccess || deleteSuccess) {
       paginatedResponse.reload();
     }
   });

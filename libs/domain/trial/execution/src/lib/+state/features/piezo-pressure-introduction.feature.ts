@@ -1,6 +1,10 @@
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import type { PiezoPosicionState, PiezoPressureIntroductionState } from '../execution-state.models';
+import type {
+  PiezoPosicionState,
+  PiezoPressureDataState,
+  PiezoPressureIntroductionState,
+} from '../execution-state.models';
 
 interface PiezoPressureIntroductionSlice {
   piezoPressureIntroduction: PiezoPressureIntroductionState;
@@ -11,6 +15,7 @@ const initialState: PiezoPressureIntroductionSlice = {
     serie: null,
     disparo: null,
     estadoDisparo: 'EN_CURSO',
+    presiones: [],
     cierre: {
       captador: null,
       amplificador: null,
@@ -68,6 +73,37 @@ export function withPiezoPressureIntroduction() {
         patchState(store, (state) => ({
           piezoPressureIntroduction: { ...state.piezoPressureIntroduction, ...updates },
         }));
+      },
+
+      /** Reemplaza los drafts de presión recibidos para el disparo seleccionado. */
+      setPiezoPressureData(presiones: PiezoPressureDataState[]): void {
+        patchState(store, (state) => ({
+          piezoPressureIntroduction: { ...state.piezoPressureIntroduction, presiones },
+        }));
+      },
+
+      /** Conserva en memoria los cambios del captador actualmente editado. */
+      upsertPiezoPressureData(entry: PiezoPressureDataState): void {
+        patchState(store, (state) => {
+          const currentEntries = state.piezoPressureIntroduction.presiones;
+          const entryIndex = currentEntries.findIndex(
+            (currentEntry) => currentEntry.piezoelectricSensorId === entry.piezoelectricSensorId,
+          );
+          const nextEntries = [...currentEntries];
+
+          if (entryIndex === -1) {
+            nextEntries.push(entry);
+          } else {
+            nextEntries[entryIndex] = entry;
+          }
+
+          return {
+            piezoPressureIntroduction: {
+              ...state.piezoPressureIntroduction,
+              presiones: nextEntries,
+            },
+          };
+        });
       },
 
       /** Actualiza los datos de una posición piezoeléctrica concreta */

@@ -1112,6 +1112,12 @@
     }
   },
   "WHAREHOUSE_MANAGMENT": {
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "Möchten Sie die Statusänderung des Datensatzes bestätigen?",
+        "TITLE": "Status ändern"
+      }
+    },
     "DENOMINATIONS": {
       "ACTIONS": "Aktionen",
       "COLUMNS": {

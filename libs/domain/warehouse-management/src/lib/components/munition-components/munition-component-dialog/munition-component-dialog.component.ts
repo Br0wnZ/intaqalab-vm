@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -134,6 +134,8 @@ export class MunitionComponentDialogComponent {
   readonly form = form(this.formModel, (f) => {
     required(f.nameEs);
     required(f.nameEn);
+    disabled(f.nameEs, () => this.data.item !== null);
+    disabled(f.nameEn, () => this.data.item !== null);
   });
 
   constructor() {

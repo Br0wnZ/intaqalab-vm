@@ -1,6 +1,11 @@
 import type { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 
-import type { EquipmentItemSelection, EquipmentMagnitudeSelectionGroup } from '../execution/models';
+import type {
+  EquipmentItemSelection,
+  EquipmentMagnitudeSelectionGroup,
+  ShotManometerPressures,
+  ShotMunitionResponse,
+} from '../execution/models';
 
 export interface TechUnitStatus {
   id: string;
@@ -789,11 +794,26 @@ export interface PiezoPosicionState {
   tiempoRetardo: number | null;
 }
 
+/** Datos de presión asociados a un captador piezoeléctrico. */
+export interface PiezoPressureDataState {
+  piezoelectricSensorId?: number | null;
+  amplifierId?: number | null;
+  dataAcquisitionSystemId?: number | null;
+  closingMaxPressure?: number | null;
+  closingMaxPressureUnit?: string;
+  halfMaxPressure?: number | null;
+  halfMaxPressureUnit?: string;
+  shellMaxPressure?: number | null;
+  shellMaxPressureUnit?: string;
+  observations?: string | null;
+}
+
 /** Estado del widget Introducción datos presión piezoeléctrica */
 export interface PiezoPressureIntroductionState {
   serie: string | null;
   disparo: string | null;
   estadoDisparo: 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
+  presiones: PiezoPressureDataState[];
   cierre: PiezoPosicionState;
   intermedio: PiezoPosicionState;
   culote: PiezoPosicionState;
@@ -809,6 +829,7 @@ export interface ManometerIntroductionState {
   serie: string | null;
   disparo: string | null;
   estadoDisparo: 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
+  manometerPressures: ShotManometerPressures[];
   manometro: string | null;
   crusher: string | null;
   micrometroPalpador: string | null;
@@ -878,17 +899,20 @@ export interface MunitionIntroIdentificationState {
   loteNotInStock: boolean;
 }
 
-/** Estado del tab Pesos */
-export interface MunitionIntroPesosState {
+/** Estado del tab Pesos / Weight tab state */
+export interface MunitionIntroWeightState {
   componente: string | null;
-  balanza: string | null;
-  peso: number | null;
-  pesoAnadido: number | null;
-  pesoRetirado: number | null;
-  fechaHora: string | null;
-  rangoPesada: string | null;
-  observaciones: string | null;
+  balance: string | null;
+  weight: number | null;
+  weightAdded: number | null;
+  weightRemoved: number | null;
+  weighingDateTime: string | null;
+  weighingRange: string | null;
+  observations: string | null;
 }
+
+/** @deprecated Use MunitionIntroWeightState */
+export type MunitionIntroPesosState = MunitionIntroWeightState;
 
 /** Estado del tab Acondicionamiento */
 export interface MunitionIntroAcondicionamientoState {
@@ -906,8 +930,15 @@ export interface MunitionIntroductionState {
   serie: string | null;
   disparo: string | null;
   estadoDisparo: 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
+  /** Currently selected component ID (e.g. 'granada-01') */
+  selectedComponentId: string | null;
+  /** Pristine remote response received from the GET call (or updated after successful PUT) */
+  remoteMunitionResponse: ShotMunitionResponse | null;
   identificacion: MunitionIntroIdentificationState;
-  pesos: MunitionIntroPesosState;
+  /** Active balance weight state (currently selected balance). */
+  weight: MunitionIntroWeightState;
+  /** In-memory map of weight data per balance key (e.g. 'bal-01'). Accumulates edits across balances before PUT. */
+  weightDataByBalance: Record<string, MunitionIntroWeightState>;
   acondicionamiento: MunitionIntroAcondicionamientoState;
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];

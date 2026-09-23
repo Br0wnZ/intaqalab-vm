@@ -228,12 +228,35 @@ describe('MunitionsDumpsListComponent', () => {
 
   // Toggle active
   describe('toogleActive()', () => {
-    it('should call store.toogleEnabledItem() with the item and the new checked state', async () => {
+    it('should call store.toogleEnabledItem() when status change is confirmed', async () => {
       const { component, storeMock } = await setup();
       const item = twoRows()[0];
-      const fakeChangeEvent = { checked: false } as any;
-      component.toogleActive(item, fakeChangeEvent);
+
+      await component.toogleActive(item);
+
       expect(storeMock.toogleEnabledItem).toHaveBeenCalledWith(item, false);
+    });
+
+    it('should not change status when confirmation is cancelled', async () => {
+      const { component, storeMock } = await setup({ confirmed: false });
+      const item = twoRows()[0];
+
+      await component.toogleActive(item);
+
+      expect(storeMock.toogleEnabledItem).not.toHaveBeenCalled();
+      expect(component.getCheckedState(item)).toBe(true);
+    });
+
+    it('should render the refreshed status when list reload starts', async () => {
+      const { component, fixture, storeMock } = await setup();
+      const item = storeMock.items()[0];
+
+      await component.toogleActive(item);
+      item.active = false;
+      storeMock.isLoading.set(true);
+      fixture.detectChanges();
+
+      expect(component.getCheckedState(item)).toBe(false);
     });
   });
 

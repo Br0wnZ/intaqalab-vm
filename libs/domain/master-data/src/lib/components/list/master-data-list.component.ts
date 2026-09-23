@@ -20,7 +20,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
-import { BooleanStatusBadge, ErrorState, SkeletonTable } from '@intaqalab/ui';
+import { BooleanStatusBadge, ErrorState, IntaIconComponent, SkeletonTable } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -49,6 +49,7 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
     BooleanStatusBadge,
     SkeletonTable,
     ErrorState,
+    IntaIconComponent,
   ],
   template: `
     @if (isLoading()) {
@@ -90,20 +91,21 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
                       <button
                         type="button"
                         mat-icon-button
-                        class="hover:bg-gray-100 -mr-2"
+                        class="!text-gray-600 scale-90"
+                        [attr.aria-label]="'COMMONS.EDIT' | translate"
                         (click)="onClickEdit(rowData)"
                       >
-                        <mat-icon>edit</mat-icon>
+                        <ui-inta-icon name="edit" size="xxl" />
                       </button>
                     }
                     @case (ACTIONS.DELETE) {
                       <button
                         type="button"
                         mat-icon-button
-                        class="hover:bg-gray-100 -mr-2"
+                        class="!text-gray-600 scale-90"
                         (click)="onClickDelete(rowData.id)"
                       >
-                        <mat-icon>delete</mat-icon>
+                        <ui-inta-icon name="remove" size="xxl" />
                       </button>
                     }
                     @case (ACTIONS.SWITCH_STATUS) {

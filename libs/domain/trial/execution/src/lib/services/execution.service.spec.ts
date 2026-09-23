@@ -811,18 +811,32 @@ describe('ExecutionService', () => {
     const seriesId = 'series-1';
     const shotId = 'shot-1';
     const mockPressuresResponse: ShotPressuresResponse = {
-      pressuresData: {
-        piezoelectricSensorId: 12,
-        amplifierId: 15,
-        dataAcquisitionSystemId: 20,
-        closingMaxPressure: 3200.5,
-        closingMaxPressureUnit: 'BAR',
-        halfMaxPressure: 2800,
-        halfMaxPressureUnit: 'BAR',
-        shellMaxPressure: 2500.75,
-        shellMaxPressureUnit: 'BAR',
-        observations: 'Sin incidencias.',
-      },
+      pressuresData: [
+        {
+          piezoelectricSensorId: 12,
+          amplifierId: 15,
+          dataAcquisitionSystemId: 20,
+          closingMaxPressure: 3200.5,
+          closingMaxPressureUnit: 'BAR',
+          halfMaxPressure: 2800,
+          halfMaxPressureUnit: 'BAR',
+          shellMaxPressure: 2500.75,
+          shellMaxPressureUnit: 'BAR',
+          observations: 'Sin incidencias.',
+        },
+        {
+          piezoelectricSensorId: 13,
+          amplifierId: 16,
+          dataAcquisitionSystemId: 21,
+          closingMaxPressure: 3195.2,
+          closingMaxPressureUnit: 'BAR',
+          halfMaxPressure: null,
+          halfMaxPressureUnit: 'BAR',
+          shellMaxPressure: null,
+          shellMaxPressureUnit: 'BAR',
+          observations: null,
+        },
+      ],
     };
 
     service.getShotPressures(DEMO_TRIAL_ID, seriesId, shotId);
@@ -987,12 +1001,14 @@ describe('ExecutionService', () => {
             clientNumber: 'CL-00123',
             observations: 'Ident OK',
           },
-          weightData: {
-            balanceId: 21031,
-            weight: 41.2,
-            weightUnit: WeightUnitEnum.G,
-            weighingDateTime: '2026-08-21T10:34:12Z',
-          },
+          weightData: [
+            {
+              balanceId: 21031,
+              weight: 41.2,
+              weightUnit: WeightUnitEnum.G,
+              weighingDateTime: '2026-08-21T10:34:12Z',
+            },
+          ],
           conditioningData: {
             climaticChamberId: 21045,
             chamberEntryDateTime: '2026-08-21T08:00:00Z',
@@ -1072,22 +1088,24 @@ describe('ExecutionService', () => {
     const seriesId = 'series-21';
     const shotId = 'shot-21';
     const mockManometerResponse: ShotManometerPressuresResponse = {
-      manometerPressuresData: {
-        pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
-        crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
-        probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
-        h1: 125.4,
-        h1Unit: DistanceUnitEnum.UM,
-        h2: 126.1,
-        h2Unit: DistanceUnitEnum.UM,
-        h3: 125.8,
-        h3Unit: DistanceUnitEnum.UM,
-        h4: 126.0,
-        h4Unit: DistanceUnitEnum.UM,
-        h5: 125.6,
-        h5Unit: DistanceUnitEnum.UM,
-        observations: 'Lecturas registradas',
-      },
+      manometerPressuresData: [
+        {
+          pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
+          crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
+          probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
+          h1: 125.4,
+          h1Unit: DistanceUnitEnum.UM,
+          h2: 126.1,
+          h2Unit: DistanceUnitEnum.UM,
+          h3: 125.8,
+          h3Unit: DistanceUnitEnum.UM,
+          h4: 126.0,
+          h4Unit: DistanceUnitEnum.UM,
+          h5: 125.6,
+          h5Unit: DistanceUnitEnum.UM,
+          observations: 'Lecturas registradas',
+        },
+      ],
     };
 
     // getShotManometerPressures (httpResource)
@@ -1118,22 +1136,24 @@ describe('ExecutionService', () => {
     expect(directResult).toEqual(mockManometerResponse);
 
     // setShotManometerPressures (httpResource)
-    const updateBody: ShotManometerPressuresRequest = {
-      pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
-      crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
-      probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
-      h1: 125.4,
-      h1Unit: DistanceUnitEnum.UM,
-      h2: 126.1,
-      h2Unit: DistanceUnitEnum.UM,
-      h3: 125.8,
-      h3Unit: DistanceUnitEnum.UM,
-      h4: 126.0,
-      h4Unit: DistanceUnitEnum.UM,
-      h5: 125.6,
-      h5Unit: DistanceUnitEnum.UM,
-      observations: 'Lecturas registradas',
-    };
+    const updateBody: ShotManometerPressuresRequest = [
+      {
+        pressureGaugeId: '6e5c0c80-1547-4ccf-92fa-ec4df8850f40',
+        crusherId: 'a4f3507a-a711-4741-b5dc-85e83d2d8b70',
+        probeId: '3ebaa16a-f7d3-48f3-9f8f-b0148b133bb4',
+        h1: 125.4,
+        h1Unit: DistanceUnitEnum.UM,
+        h2: 126.1,
+        h2Unit: DistanceUnitEnum.UM,
+        h3: 125.8,
+        h3Unit: DistanceUnitEnum.UM,
+        h4: 126.0,
+        h4Unit: DistanceUnitEnum.UM,
+        h5: 125.6,
+        h5Unit: DistanceUnitEnum.UM,
+        observations: 'Lecturas registradas',
+      },
+    ];
 
     service.setShotManometerPressures(DEMO_TRIAL_ID, seriesId, shotId, updateBody);
     TestBed.tick();

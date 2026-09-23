@@ -77,18 +77,20 @@ describe('PiezoPressureIntroduction', () => {
   it('patches form with API response containing data', async () => {
     const { fixture } = await renderWidget();
     fixture.componentInstance['applyRemoteShotData']?.({
-      pressuresData: {
-        piezoelectricSensorId: 12,
-        amplifierId: 15,
-        dataAcquisitionSystemId: 20,
-        closingMaxPressure: 3200.5,
-        closingMaxPressureUnit: 'BAR',
-        halfMaxPressure: 2800,
-        halfMaxPressureUnit: 'BAR',
-        shellMaxPressure: 2500.75,
-        shellMaxPressureUnit: 'BAR',
-        observations: null,
-      },
+      pressuresData: [
+        {
+          piezoelectricSensorId: 12,
+          amplifierId: 15,
+          dataAcquisitionSystemId: 20,
+          closingMaxPressure: 3200.5,
+          closingMaxPressureUnit: 'BAR',
+          halfMaxPressure: 2800,
+          halfMaxPressureUnit: 'BAR',
+          shellMaxPressure: 2500.75,
+          shellMaxPressureUnit: 'BAR',
+          observations: null,
+        },
+      ],
     });
 
     expect(fixture.componentInstance['equiposFormModel']().captador).toBe('12');
@@ -104,18 +106,20 @@ describe('PiezoPressureIntroduction', () => {
   it('patches form with API response containing null values', async () => {
     const { fixture } = await renderWidget();
     fixture.componentInstance['applyRemoteShotData']?.({
-      pressuresData: {
-        piezoelectricSensorId: null,
-        amplifierId: null,
-        dataAcquisitionSystemId: null,
-        closingMaxPressure: null,
-        closingMaxPressureUnit: 'BAR',
-        halfMaxPressure: null,
-        halfMaxPressureUnit: 'BAR',
-        shellMaxPressure: null,
-        shellMaxPressureUnit: 'BAR',
-        observations: null,
-      },
+      pressuresData: [
+        {
+          piezoelectricSensorId: null,
+          amplifierId: null,
+          dataAcquisitionSystemId: null,
+          closingMaxPressure: null,
+          closingMaxPressureUnit: 'BAR',
+          halfMaxPressure: null,
+          halfMaxPressureUnit: 'BAR',
+          shellMaxPressure: null,
+          shellMaxPressureUnit: 'BAR',
+          observations: null,
+        },
+      ],
     });
 
     expect(fixture.componentInstance['equiposFormModel']().captador).toBeNull();
@@ -125,5 +129,35 @@ describe('PiezoPressureIntroduction', () => {
     expect(fixture.componentInstance['intermedioPresionField']()).toBeNull();
     expect(fixture.componentInstance['culotePresionField']()).toBeNull();
     expect(fixture.componentInstance.formState().dirty).toBe(false);
+  });
+
+  it('restores the selected captador draft when switching between captadores', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance['applyRemoteShotData']?.({
+      pressuresData: [
+        {
+          piezoelectricSensorId: 12,
+          amplifierId: 15,
+          dataAcquisitionSystemId: 20,
+          closingMaxPressure: 3200.5,
+          closingMaxPressureUnit: 'BAR',
+        },
+        {
+          piezoelectricSensorId: 13,
+          amplifierId: 16,
+          dataAcquisitionSystemId: 21,
+          closingMaxPressure: 3100,
+          closingMaxPressureUnit: 'MPA',
+        },
+      ],
+    });
+
+    fixture.componentInstance.onCaptadorSelected('13');
+    expect(fixture.componentInstance['cierrePresionField']()?.value).toBe('3100');
+    expect(fixture.componentInstance['equiposFormModel']().amplificador).toBe('16');
+
+    fixture.componentInstance.onCaptadorSelected('12');
+    expect(fixture.componentInstance['cierrePresionField']()?.value).toBe('3200.5');
+    expect(fixture.componentInstance['equiposFormModel']().amplificador).toBe('15');
   });
 });

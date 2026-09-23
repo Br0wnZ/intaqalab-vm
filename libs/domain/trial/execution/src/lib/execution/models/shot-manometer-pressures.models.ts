@@ -23,11 +23,11 @@ export interface ShotManometerPressures {
 /**
  * Request body para PUT /execution/manometer-pressures/series/{seriesId}/shots/{shotId} (Widget 21).
  */
-export type ShotManometerPressuresRequest = ShotManometerPressures;
+export type ShotManometerPressuresRequest = ShotManometerPressures[];
 
 /**
  * Response body para GET / PUT /execution/manometer-pressures/series/{seriesId}/shots/{shotId} (Widget 21).
  */
 export interface ShotManometerPressuresResponse {
-  manometerPressuresData?: ShotManometerPressures | null;
+  manometerPressuresData?: ShotManometerPressures[] | null;
 }

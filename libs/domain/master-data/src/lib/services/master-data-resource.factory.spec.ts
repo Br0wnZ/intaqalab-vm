@@ -147,4 +147,108 @@ describe('injectMasterDataResource', () => {
       await Promise.resolve();
     });
   });
+
+  it('should not reload list when creation fails with an HTTP error', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+      const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqGet.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+
+      resource.create({ name: 'Failing Item' });
+      TestBed.flushEffects();
+
+      const reqPost = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'POST');
+      reqPost.flush({ message: 'Bad request' }, { status: 400, statusText: 'Bad Request' });
+
+      await Promise.resolve();
+      TestBed.flushEffects();
+
+      // Verify no GET reload request was made
+      expect(resource.saveResource.status()).toBe('error');
+      expect(resource.saveResource.statusCode()).toBe(400);
+    });
+  });
+
+  it('should not reload list when update fails with an HTTP error', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+      const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqGet.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+
+      resource.update({ id: '1', name: 'Failing Update' });
+      TestBed.flushEffects();
+
+      const reqPut = httpTesting.expectOne((r) => r.url.includes('/dimension/1') && r.method === 'PUT');
+      reqPut.flush({ message: 'Conflict' }, { status: 409, statusText: 'Conflict' });
+
+      await Promise.resolve();
+      TestBed.flushEffects();
+
+      // Verify no GET reload request was made
+      expect(resource.updateResource.status()).toBe('error');
+      expect(resource.updateResource.statusCode()).toBe(409);
+    });
+  });
+
+  it('should not reload list when delete fails with an HTTP error', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+      const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqGet.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+
+      resource.delete('1');
+      TestBed.flushEffects();
+
+      const reqDel = httpTesting.expectOne((r) => r.url === `${endpoint}/1` && r.method === 'DELETE');
+      reqDel.flush({ message: 'Internal Server Error' }, { status: 500, statusText: 'Internal Server Error' });
+
+      await Promise.resolve();
+      TestBed.flushEffects();
+
+      // Verify no GET reload request was made
+      expect(resource.deleteById.status()).toBe('error');
+      expect(resource.deleteById.statusCode()).toBe(500);
+    });
+  });
+
+  it('should reload list when deletion returns 204 No Content', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+      const reqGet = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqGet.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+
+      resource.delete('1');
+      TestBed.flushEffects();
+
+      const reqDel = httpTesting.expectOne((r) => r.url === `${endpoint}/1` && r.method === 'DELETE');
+      reqDel.flush(null, { status: 204, statusText: 'No Content' });
+
+      await Promise.resolve();
+      TestBed.flushEffects();
+
+      const reqReload = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqReload.flush({ items: [], totalElements: 0 });
+      await Promise.resolve();
+    });
+  });
 });

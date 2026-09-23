@@ -94,7 +94,7 @@ describe('DenominationsListComponent', () => {
             <span>{{ item.neq }}</span>
             <button mat-icon-button type="button" (click)="delete(item)"></button>
             <button mat-icon-button type="button" (click)="edit(item)"></button>
-            <mat-slide-toggle [(ngModel)]="item.active" (change)="toogleActive(item, $event)"></mat-slide-toggle>
+            <mat-slide-toggle [checked]="getCheckedState(item)" (change)="toogleActive(item)"></mat-slide-toggle>
           </div>
         `,
       },
@@ -220,20 +220,41 @@ describe('DenominationsListComponent', () => {
   });
 
   describe('Toggle active', () => {
-    it('should call store.toogleEnabledItem when slide toggle changes', async () => {
-      const { container } = await setup([mockItem]);
-      const toggle = container.querySelector('mat-slide-toggle') as HTMLElement;
-      const input = toggle?.querySelector('input[type="checkbox"]') ?? toggle?.querySelector('button[role="switch"]');
-      (input as HTMLElement)?.click();
-      await Promise.resolve();
+    it('should call store.toogleEnabledItem when status change is confirmed', async () => {
+      const { view } = await setup([mockItem]);
+      mockUiDialog.confirm.mockResolvedValue(true);
+
+      await view.fixture.componentInstance.toogleActive(mockItem);
 
       expect(mockStore.toogleEnabledItem).toHaveBeenCalledWith(
         expect.objectContaining({
           id: mockItem.id,
-          active: expect.any(Boolean),
+          active: false,
           munitionTypeId: mockItem.munitionType.id,
         }),
       );
+    });
+
+    it('should not change status when confirmation is cancelled', async () => {
+      const { view } = await setup([mockItem]);
+
+      await view.fixture.componentInstance.toogleActive(mockItem);
+
+      expect(mockStore.toogleEnabledItem).not.toHaveBeenCalled();
+      expect(view.fixture.componentInstance.getCheckedState(mockItem)).toBe(true);
+    });
+
+    it('should render the refreshed status when list reload starts', async () => {
+      const item = { ...mockItem };
+      const { view } = await setup([item]);
+      mockUiDialog.confirm.mockResolvedValue(true);
+
+      await view.fixture.componentInstance.toogleActive(item);
+      item.active = false;
+      mockStore.isLoading.set(true);
+      view.fixture.detectChanges();
+
+      expect(view.fixture.componentInstance.getCheckedState(item)).toBe(false);
     });
   });
 });
