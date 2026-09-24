@@ -1,4 +1,3 @@
-import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { TranslateModule } from '@ngx-translate/core';
@@ -47,12 +46,16 @@ function createMockDialogData(overrides: Partial<UpdateArmamentDialogData> = {})
   };
 }
 
-const renderDialog = async (dialogRefMock = createMockDialogRef(), dialogData = createMockDialogData()) => {
+const renderDialog = async (
+  dialogRefMock = createMockDialogRef(),
+  dialogData = createMockDialogData(),
+  tubeDenominationsForFamily: (familyId: number) => SpecimenItem[] = () => [],
+) => {
   const armamentStoreMock: Pick<
     ArmamentStoreType,
-    'tubeDenominations' | 'loadTubeDenominations' | 'clearTubeDenominations'
+    'tubeDenominationsForFamily' | 'loadTubeDenominations' | 'clearTubeDenominations'
   > = {
-    tubeDenominations: signal<SpecimenItem[]>([]),
+    tubeDenominationsForFamily: vi.fn(tubeDenominationsForFamily),
     loadTubeDenominations: vi.fn(),
     clearTubeDenominations: vi.fn(),
   };
@@ -280,6 +283,26 @@ describe('UpdateArmamentDialog', () => {
 
       const tubeSelect = document.querySelectorAll('mat-select')[1] as HTMLElement;
       expect(tubeSelect).toBeInTheDocument();
+    });
+
+    it('should read tube options only for selected weapon family', async () => {
+      const data = createMockDialogData({
+        weapons: [
+          { id: 'weapon-1', name: 'Obús 105mm', type: 'WEAPON', active: true, familyId: 10665 },
+          { id: 'weapon-2', name: 'Obús 155mm', type: 'WEAPON', active: true, familyId: 10676 },
+        ],
+      });
+      const tubeDenominationsForFamily = vi.fn((familyId: number) =>
+        familyId === 10676
+          ? [{ id: 'stale-tube', name: 'TUBO DE OTRA FAMILIA', type: 'TUBE' as const, active: true }]
+          : [],
+      );
+
+      const renderResult = await renderDialog(createMockDialogRef(), data, tubeDenominationsForFamily);
+      const component = renderResult.fixture.componentInstance;
+
+      expect(component.tubeOptions().some((tube) => tube.id === 'stale-tube')).toBe(false);
+      expect(tubeDenominationsForFamily).toHaveBeenCalledWith(10665);
     });
   });
 });

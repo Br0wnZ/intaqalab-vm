@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "rootDir": "."
   },
   "include": [
     "vite.config.ts",

@@ -5,9 +5,6 @@
   "prefix": "inta",
   "projectType": "library",
   "tags": ["type:util", "scope:shared"],
-  "targets": {
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    }
-  }
+  "// targets": "to see all targets run: nx show project config --web",
+  "targets": {}
 }

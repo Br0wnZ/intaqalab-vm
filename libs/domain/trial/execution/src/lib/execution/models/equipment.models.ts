@@ -1,5 +1,5 @@
 import type { Role } from '@intaqalab/core';
-import type { FireTrial } from '@intaqalab/models';
+import type { FireTrial, MagnitudeMeasureSource } from '@intaqalab/models';
 
 export enum EquipmentTypeEnum {
   DOPPLER_RADAR = 'DOPPLER_RADAR',
@@ -51,6 +51,17 @@ export enum EquipmentMagnitudeTagEnum {
   PESOS = 'WEIGHT',
   ACONDICIONAMIENTO = 'CONDITIONING',
   TIEMPO = 'TIME',
+}
+
+export const EQUIPMENT_MAGNITUDE_TAGS: readonly EquipmentMagnitudeTagEnum[] = Object.values(EquipmentMagnitudeTagEnum);
+
+export function isEquipmentMagnitudeTagEnum(value: string): value is EquipmentMagnitudeTagEnum {
+  return (EQUIPMENT_MAGNITUDE_TAGS as readonly string[]).includes(value);
+}
+
+/** Magnitud seleccionada en Planificación: extiende el contrato de medida con sus grupos de medición asociados. */
+export interface PlanningMagnitudeSelection extends MagnitudeMeasureSource {
+  readonly measurements: readonly string[];
 }
 
 export type EquipmentMeasureMagnitude = 'ATTACK' | 'RECOIL';

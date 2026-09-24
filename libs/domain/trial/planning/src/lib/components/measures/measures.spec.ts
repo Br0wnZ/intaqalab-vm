@@ -164,6 +164,25 @@ describe('Measures', () => {
       expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Cancelar/i })).toBeInTheDocument();
     });
+
+    it('should disable actions when loaded data is unchanged', async () => {
+      await runSetup();
+
+      expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Cancelar/i })).toBeDisabled();
+    });
+
+    it('should enable actions when loaded data is changed', async () => {
+      const { view } = await runSetup();
+
+      view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+      ]);
+      view.fixture.detectChanges();
+
+      expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /Cancelar/i })).toBeEnabled();
+    });
   });
 
   describe('Toggle Configuration', () => {
@@ -192,7 +211,11 @@ describe('Measures', () => {
 
   describe('Data Interactions', () => {
     it('should call updateMeasures on save with valid data', async () => {
-      const { user } = await runSetup();
+      const { user, view } = await runSetup();
+
+      view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+      ]);
 
       const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
       await user.click(saveButton);

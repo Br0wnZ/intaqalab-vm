@@ -8,8 +8,10 @@
 - Prefix nx commands with `npx` or `npm exec` (e.g., `npx nx test execution`, `npm exec nx test <project>`). NEVER use `pnpm` (fails with `EPERM` / `configured to use npm`).
 - Nx project names match exact `name` in `project.json` or `nx show projects` output (e.g., `execution` instead of import path `domain-trial-execution`). Run `npx nx show projects` or `npx nx show project <name>` to inspect exact names and configurations.
 - You have access to the Nx MCP server and its tools, use them to help the user
-- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
 - NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
+- **Inferred Targets (Nx 23.2.1+ / Project Crystal):** `lint` and `test` targets are inferred by `@nx/eslint/plugin` and `@nx/vitest`. NEVER manually declare `lint` or `test` executors in `project.json`. Always run `npx nx show project <name> --json` to inspect full resolved targets.
+- **Vite & Vitest Standards:** Library `vite.config.mts` must use `plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()]` (no `nxCopyAssetsPlugin`). Workspace test suite is tracked in `vitest.config.ts` (`projects` array; `vitest.workspace.ts` is obsolete).
+- **Execution & Output:** Nx 23 defaults to `static-failures-only` in CI/non-interactive. If unix socket issues occur in sandboxes, use `NX_DAEMON=false`. Granular migrations run with `npx nx migrate --run-migration=<pkg:name>`.
 
 ## Scaffolding & Generators
 
@@ -128,6 +130,10 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 
 > [!IMPORTANT]
 > When making significant architectural decisions or changes, create or update the appropriate document in `docs/adrs/`.
+>
+> - **Naming convention:** `NNN-<kebab-case-topic-in-english>.md` with 3-digit zero-padded incremental prefix (e.g. `012-nx-23-migration.md`, `014-oxlint-oxfmt-evaluation.md`). File name MUST always be in English.
+> - **Title format:** `# ADR-NNN: <Descriptive Title>` matching the file number.
+> - **Mandatory structure:** Metadata header (`**Estado:**`, `**Fecha:**`, `**Autores:**`), followed by `## Contexto`, `## Decisión`, and `## Consecuencias`.
 
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 

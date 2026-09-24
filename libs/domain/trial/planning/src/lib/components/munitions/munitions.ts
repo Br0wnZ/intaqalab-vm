@@ -133,10 +133,10 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
 
           <div class="mt-6 flex gap-4 justify-end">
             @if (!readonly()) {
-              <button mat-flat-button [disabled]="!isFormValid()" (click)="saveForm()">
+              <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
                 {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
               </button>
-              <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
+              <button mat-stroked-button [disabled]="hasToBeDisabled()" (click)="resetForm()">
                 {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.CANCEL_BUTTON' | translate }}
               </button>
             }
@@ -200,6 +200,12 @@ export class Munitions {
   readonly isSaving = this.#munitionsStore.isUpdatingMunitions;
   readonly updateStatus = this.#munitionsStore.updateMunitionsStatus;
 
+  readonly hasToBeDisabled = computed(() => {
+    const hasUnchangedData = JSON.stringify(this.seriesSignal()) === JSON.stringify(this.#initialSeriesData);
+
+    return this.isSaving() || !this.isFormValid() || hasUnchangedData;
+  });
+
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
@@ -259,6 +265,7 @@ export class Munitions {
       if (status === 'resolved') {
         this.#preDeleteSnapshot = null;
         if (!this.#massiveDialogOpen) {
+          this.#isLocalInitialized = false;
           this.#munitionsStore.resetUpdateMunitions();
           this.#munitionsStore.reloadMunitions();
         }

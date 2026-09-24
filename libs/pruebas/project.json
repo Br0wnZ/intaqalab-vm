@@ -7,14 +7,10 @@
   "tags": ["type:demo", "scope:dev"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/coverage/libs/pruebas"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/pruebas"
+        "coverage.reportsDirectory": "../../../coverage/libs/pruebas"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

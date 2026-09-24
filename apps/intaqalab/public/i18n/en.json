@@ -2283,6 +2283,11 @@
       "ERRORS": {
         "LOAD_FAILED_TITLE": "Error loading measures and records",
         "LOAD_FAILED_DETAIL": "Failed to load trial measures and records. Please try again later."
+      },
+      "FOOTER": {
+        "SAVE_DRAFT": "Save draft",
+        "SAVING_DRAFT": "Saving...",
+        "CANCEL_BUTTON": "Cancel"
       }
     },
     "MUNITIONS": {

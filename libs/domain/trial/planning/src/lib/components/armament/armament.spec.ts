@@ -202,6 +202,37 @@ describe('Armament', () => {
 
       await waitFor(() => expect(component.isFormValid()).toBe(true));
     });
+
+    it('should disable actions when loaded data is unchanged', async () => {
+      const { view, loader } = await runSetup();
+      const component = view.fixture.componentInstance as Armament;
+
+      await waitFor(() => expect(component.hasToBeDisabled()).toBe(true));
+
+      const saveButton = await loader.getHarness(
+        MatButtonHarness.with({ text: /TRIAL_PLANNING\.ARMAMENT\.FOOTER\.SAVE_DRAFT/i }),
+      );
+      expect(await saveButton.isDisabled()).toBe(true);
+    });
+
+    it('should enable actions when loaded data is changed and valid', async () => {
+      const { view, loader } = await runSetup();
+      const component = view.fixture.componentInstance as Armament;
+
+      await waitFor(() => expect(component.isFormValid()).toBe(true));
+      component.armamentSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].armament.observations = 'Updated observation';
+        return updatedSeries;
+      });
+      view.fixture.detectChanges();
+
+      expect(component.hasToBeDisabled()).toBe(false);
+      const saveButton = await loader.getHarness(
+        MatButtonHarness.with({ text: /TRIAL_PLANNING\.ARMAMENT\.FOOTER\.SAVE_DRAFT/i }),
+      );
+      expect(await saveButton.isDisabled()).toBe(false);
+    });
   });
 
   describe('Save configuration', () => {

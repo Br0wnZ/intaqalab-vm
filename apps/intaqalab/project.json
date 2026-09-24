@@ -10,6 +10,7 @@
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{workspaceRoot}/dist/intaqalab"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": {
           "base": "dist/intaqalab",
@@ -90,12 +91,15 @@
           "extractLicenses": false,
           "sourceMap": true
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "continuous": true,
       "executor": "@nx/angular:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "proxyConfig": "apps/intaqalab/proxy.conf.js"
+      },
       "configurations": {
         "production": {
           "buildTarget": "intaqalab:build:production"
@@ -112,10 +116,6 @@
         "mocks": {
           "buildTarget": "intaqalab:build:mocks"
         }
-      },
-      "defaultConfiguration": "development",
-      "options": {
-        "proxyConfig": "apps/intaqalab/proxy.conf.js"
       }
     },
     "extract-i18n": {
@@ -125,16 +125,14 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
       "options": {
-        "lintFilePatterns": ["apps/intaqalab/src"]
+        "args": ["src"]
       }
     },
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/coverage/intaqalab"],
       "options": {
-        "reportsDirectory": "../../coverage/intaqalab"
+        "coverage.reportsDirectory": "../../../coverage/intaqalab"
       }
     },
     "serve-static": {

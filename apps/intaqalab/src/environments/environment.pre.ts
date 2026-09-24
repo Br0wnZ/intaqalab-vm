@@ -6,8 +6,9 @@ export const environment: AppEnvironment = {
   ...baseEnvironment,
   authConfig: {
     ...baseEnvironment.authConfig,
-    authority: 'https://iam.pre.inta.es/realms/intaqalab',
+    authority: 'https://iam.pre.inta.es/realms/global',
     secureRoutes: ['https://apis.pre.inta.es/intaqalab/'],
+    clientId: '74a8819d-43e4-479a-a603-2b2406b4fa69'
   },
   production: false,
   apiUrl: 'https://apis.pre.inta.es/intaqalab',

@@ -7,14 +7,13 @@
   "tags": ["type:feature", "scope:trials"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": [
+        "{projectRoot}/{options.coverage.reportsDirectory}",
+        "{workspaceRoot}/coverage/libs/domain/trial/trial-management"
+      ],
       "options": {
-        "reportsDirectory": "../../coverage/libs/domain/trial/trial-management"
+        "coverage.reportsDirectory": "../../../../../coverage/libs/domain/trial/trial-management"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

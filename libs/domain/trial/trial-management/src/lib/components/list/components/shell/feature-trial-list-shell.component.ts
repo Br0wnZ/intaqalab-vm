@@ -2,7 +2,7 @@ import { Component, Injector, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { injectionTokenTabCommand } from '@intaqalab/core';
 import type { TrialSearchFilters } from '@intaqalab/models';
-import { ErrorState, Skeleton, SkeletonForm, SkeletonTable } from '@intaqalab/ui';
+import { ErrorState, SkeletonForm, SkeletonTable } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { TrialStore } from '../../+state/trial-list.store';
@@ -15,7 +15,6 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
     TrialListComponent,
     TrialListFilter,
     TranslateModule,
-    Skeleton,
     SkeletonForm,
     SkeletonTable,
     ErrorState,

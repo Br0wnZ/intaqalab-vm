@@ -1,14 +1,23 @@
 import type { Role } from '@intaqalab/core';
 import { Role as RoleEnum } from '@intaqalab/core';
+import { resolveMagnitudeDisplayConfig } from '@intaqalab/utils';
 
 import type {
   EquipmentItemSelection,
   EquipmentMagnitudeSelectionGroup,
   EquipmentMeasureMagnitude,
   EquipmentMeasurementGroupApi,
+  PlanningMagnitudeSelection,
+  TagConfig,
+  TagRow,
+  TagTableState,
 } from '../models';
-import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../models';
-import type { TagConfig, TagFieldConfig, TagRow, TagTableState } from '../models';
+import {
+  EquipmentMagnitudeTagEnum,
+  EquipmentTypeEnum,
+  isEquipmentMagnitudeTagEnum,
+  isEquipmentTypeEnum,
+} from '../models';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
 
@@ -331,4 +340,27 @@ export function dialogStatesToApiFormat(tagStates: Record<string, TagTableState>
   }
 
   return equipments;
+}
+
+/**
+ * Cruza las magnitudes seleccionadas en Planificación con la resolución de medida compartida
+ * (`resolveMagnitudeDisplayConfig`) y devuelve solo los tags de equipamiento que Ejecución debe mostrar.
+ * Descarta magnitudes sin `qualificationType` reconocido (borradores incompletos del catálogo maestro).
+ */
+export function resolveNeededEquipmentTags(
+  planningMeasures: readonly PlanningMagnitudeSelection[],
+): EquipmentMagnitudeTagEnum[] {
+  const neededTags = new Set<EquipmentMagnitudeTagEnum>();
+
+  for (const measure of planningMeasures) {
+    if (!resolveMagnitudeDisplayConfig(measure)) continue;
+
+    for (const measurement of measure.measurements) {
+      if (isEquipmentMagnitudeTagEnum(measurement)) {
+        neededTags.add(measurement);
+      }
+    }
+  }
+
+  return [...neededTags];
 }

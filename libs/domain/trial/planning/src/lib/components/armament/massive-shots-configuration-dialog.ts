@@ -265,8 +265,8 @@ export class MassiveShotsConfigurationDialog {
   readonly #mortarDenominationsResource = this.#armamentService.mortarDenominationsResource;
 
   /**
-   * Equipos físicos de tubo: reactivo al familyId del arma seleccionada.
-   * GET /centers/{centerId}/equipment/items?itemType=TUBE&familyId={familyId}
+   * Denominaciones de tubo: reactivo al familyId del arma seleccionada.
+   * GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
    */
   readonly #tubeDenominationsResource = this.#armamentService.tubeDenominationsResource;
 
@@ -321,10 +321,13 @@ export class MassiveShotsConfigurationDialog {
     return (response?.items ?? []).map((w) => ({ value: w.id, label: w.name }));
   });
 
-  readonly tubesOptions = computed<{ value: number; label: string }[]>(() => {
+  readonly tubesOptions = computed<{ value: string; label: string }[]>(() => {
     const response = safeResourceValue(this.#tubeDenominationsResource);
 
-    return (response?.items ?? []).map((t) => ({ value: t.denominationId || 0, label: t.modelName || '' }));
+    return (response?.items ?? []).map((t) => ({
+      value: (t.denominationId ?? t.id).toString(),
+      label: t.modelName ?? t.name,
+    }));
   });
 
   readonly selectedChips = computed(() => {

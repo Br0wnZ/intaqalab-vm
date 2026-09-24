@@ -7,14 +7,10 @@
   "tags": ["type:feature", "scope:admin"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/coverage/libs/domain/admin"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/domain/admin"
+        "coverage.reportsDirectory": "../../../../coverage/libs/domain/admin"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

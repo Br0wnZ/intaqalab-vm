@@ -1,5 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "analytics": false,
+  "neverConnectToCloud": true,
   "workspaceLayout": {
     "appsDir": "apps",
     "libsDir": "libs"
@@ -28,9 +30,11 @@
       "cache": true,
       "inputs": [
         "default",
+        "^default",
         "{workspaceRoot}/.eslintrc.json",
         "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.mjs"
+        "{workspaceRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*"
       ]
     },
     "@nx/esbuild:esbuild": {
@@ -38,10 +42,34 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "@nx/vitest:test": {
+    "@nx/angular:package": {
       "cache": true,
-      "inputs": ["default", "^production"]
-    }
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@angular/build:extract-i18n": {
+      "cache": true,
+      "inputs": ["production"],
+      "outputs": ["{workspaceRoot}/apps/intaqalab/src/assets/i18n"]
+    },
+    "lint": [
+      {
+        "filter": {
+          "plugin": "@nx/eslint/plugin"
+        },
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}/.eslintrc.json",
+          "{workspaceRoot}/.eslintignore",
+          "{workspaceRoot}/eslint.config.mjs",
+          "{workspaceRoot}/tools/eslint-rules/**/*",
+          {
+            "externalDependencies": ["eslint"]
+          }
+        ]
+      }
+    ]
   },
   "plugins": [
     {
@@ -49,6 +77,31 @@
       "options": {
         "targetName": "lint"
       }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testMode": "watch",
+        "testTargetName": "test"
+      },
+      "include": [
+        "apps/intaqalab/**/*",
+        "libs/core/**/*",
+        "libs/domain/admin/**/*",
+        "libs/domain/calendar-trials/**/*",
+        "libs/domain/event-log/**/*",
+        "libs/domain/master-data/**/*",
+        "libs/domain/trial/execution/**/*",
+        "libs/domain/trial/planning/**/*",
+        "libs/domain/trial/trial-management/**/*",
+        "libs/domain/warehouse-management/**/*",
+        "libs/pruebas/**/*",
+        "libs/shared/config/**/*",
+        "libs/shared/data-access/**/*",
+        "libs/shared/theme/**/*",
+        "libs/shared/ui/**/*",
+        "libs/shared/utils/**/*"
+      ]
     }
   ],
   "generators": {
@@ -56,7 +109,7 @@
       "e2eTestRunner": "none",
       "linter": "eslint",
       "style": "scss",
-      "unitTestRunner": "vitest",
+      "unitTestRunner": "vitest-analog",
       "prefix": "inta",
       "standalone": true,
       "inlineStyle": true,
@@ -67,7 +120,7 @@
     },
     "@nx/angular:library": {
       "linter": "eslint",
-      "unitTestRunner": "vitest",
+      "unitTestRunner": "vitest-analog",
       "style": "scss",
       "prefix": "inta",
       "changeDetection": "OnPush",

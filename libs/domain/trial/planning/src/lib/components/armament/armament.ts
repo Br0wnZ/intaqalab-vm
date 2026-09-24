@@ -187,11 +187,11 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
 
           @if (!readonly()) {
             <div class="flex justify-end gap-3 mt-6">
-              <button mat-stroked-button [disabled]="!isFormValid()" (click)="resetForm()">
-                {{ 'COMMONS.CANCEL' | translate }}
-              </button>
-              <button mat-flat-button [disabled]="!isFormValid() || isSaving()" (click)="saveForm()">
+              <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
                 {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
+              </button>
+              <button mat-stroked-button [disabled]="hasToBeDisabled()" (click)="resetForm()">
+                {{ 'COMMONS.CANCEL' | translate }}
               </button>
             </div>
           }
@@ -228,6 +228,13 @@ export class Armament implements OnInit {
   readonly isLoading = this.#armamentStore.isLoading;
   readonly isSaving = this.#armamentStore.isUpdatingArmament;
   readonly updateStatus = this.#armamentStore.updateArmamentStatus;
+  readonly hasToBeDisabled = computed(() => {
+    const hasUnchangedData = JSON.stringify(this.armamentSignal()) === JSON.stringify(this.#initialArmamentData);
+    const isLoadingDenominations =
+      this.isLoadingWeaponDenominations() || this.isLoadingMortarDenominations() || this.isLoadingTubeDenominations();
+
+    return this.isSaving() || isLoadingDenominations || !this.isFormValid() || hasUnchangedData;
+  });
   readonly isLoadingWeaponDenominations = this.#armamentStore.isLoadingWeaponDenominations;
   readonly isLoadingMortarDenominations = this.#armamentStore.isLoadingMortarDenominations;
   readonly isLoadingTubeDenominations = this.#armamentStore.isLoadingTubeDenominations;

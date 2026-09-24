@@ -47,12 +47,12 @@ nx show projects --json
 
 Use `nx show project <name> --json` to get the full resolved configuration for a project.
 
-**Important**: Do NOT read `project.json` directly - it only contains partial configuration. The `nx show project --json` command returns the full resolved config including inferred targets from plugins.
+**Important**: Do NOT read `project.json` directly - it only contains partial configuration. In Nx 23+, targets such as `lint` and `test` are **inferred** by plugins (`@nx/eslint/plugin` and `@nx/vitest`) and do not exist as explicit keys in `project.json`. The `nx show project --json` command returns the full resolved config including all inferred targets, inputs, outputs, and cacheability.
 
 You can read the full project schema at `node_modules/nx/schemas/project-schema.json` to understand nx project configuration options.
 
 ```bash
-# Get full project configuration
+# Get full project configuration (including inferred targets)
 nx show project my-app --json
 
 # Extract specific parts from the JSON

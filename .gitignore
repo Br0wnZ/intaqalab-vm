@@ -42,6 +42,7 @@ testem.log
 .stignore
 sync.ffs_db
 apis/*
+docs/presentations/*
 functionals/*
 openwiki/*
 start-headroom.sh
@@ -74,3 +75,9 @@ AGENT.md
 
 # repowise API keys (local)
 .repowise/.env
+
+.claude/worktrees
+.claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs

@@ -2101,6 +2101,11 @@
       "ERRORS": {
         "LOAD_FAILED_TITLE": "Error al cargar las magnitudes y registros",
         "LOAD_FAILED_DETAIL": "No se han podido cargar las magnitudes y registros de la prueba. Por favor, reintente más tarde."
+      },
+      "FOOTER": {
+        "SAVE_DRAFT": "Guardar borrador",
+        "SAVING_DRAFT": "Guardando...",
+        "CANCEL_BUTTON": "Cancelar"
       }
     },
     "MUNITIONS": {

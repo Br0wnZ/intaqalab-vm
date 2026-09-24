@@ -280,7 +280,18 @@ describe('Munitions', () => {
       expect(saveButton).toBeDisabled();
     });
 
-    it('should enable save button when form is valid', async () => {
+    it('should disable save button when form data is unchanged', async () => {
+      const { component, view } = await runSetup();
+
+      const validSerie = createValidSerie('Serie 1');
+      component.loadConfiguration([validSerie]);
+      view.fixture.detectChanges();
+
+      const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
+      expect(saveButton).toBeDisabled();
+    });
+
+    it('should enable save button when form is valid and changed', async () => {
       const { component, view } = await runSetup();
 
       component.seriesSignal.set([createValidSerie('Serie 1')]);

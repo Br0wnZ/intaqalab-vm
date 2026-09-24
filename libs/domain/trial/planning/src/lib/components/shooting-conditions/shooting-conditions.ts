@@ -700,10 +700,10 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
         </mat-accordion>
         <div class="mt-10 flex gap-4 justify-end">
           @if (!readonly()) {
-            <button mat-flat-button [disabled]="isUpdating() || !isFormValid()" (click)="saveForm()">
+            <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
               {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
             </button>
-            <button mat-stroked-button [disabled]="isUpdating() || !isFormValid()" (click)="resetForm()">
+            <button mat-stroked-button [disabled]="hasToBeDisabled()" (click)="resetForm()">
               {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL' | translate }}
             </button>
           }
@@ -783,6 +783,14 @@ export class ShootingConditionsComponent implements OnInit {
     }
 
     return [...baseColumns, 'targetTypeId', 'observations'];
+  });
+
+  readonly hasToBeDisabled = computed(() => {
+    const isUpdating = this.isUpdating();
+    const isFormInvalid = this.seriesForm().invalid();
+    const hasUnchangedData = JSON.stringify(this.seriesSignal()) === JSON.stringify(this.#initialSeriesData);
+
+    return isUpdating || isFormInvalid || hasUnchangedData;
   });
 
   #initialSeriesData: Serie[] = [];
@@ -932,20 +940,6 @@ export class ShootingConditionsComponent implements OnInit {
     return this.seriesSignal();
   }
 
-  isFormValid(): boolean {
-    const length = this.seriesSignal().length;
-    for (let i = 0; i < length; i++) {
-      const serieForm = this.getSerieField(i);
-      if (serieForm) {
-        const state = serieForm();
-        if (state.touched() && !state.valid()) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   openMassiveConfigurationDialog() {
     if (this.readonly()) {
       return;
@@ -979,6 +973,6 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   #deepClone(series: Serie[]): Serie[] {
-    return JSON.parse(JSON.stringify(series));
+    return structuredClone(series);
   }
 }

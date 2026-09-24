@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
-    "isolatedModules": true
+    "isolatedModules": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": [
+      "dom",
+      "es2022"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

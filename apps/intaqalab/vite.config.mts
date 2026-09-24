@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode }) => {
   return {
-    root: __dirname,
+    root: import.meta.dirname,
     cacheDir: '../../node_modules/.vite/apps/intaqalab',
     plugins: [angular(), nxViteTsPaths()],
     define: {

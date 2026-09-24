@@ -7,14 +7,10 @@
   "tags": ["type:core", "scope:shared"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/coverage/libs/core"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/core"
+        "coverage.reportsDirectory": "../../../coverage/libs/core"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

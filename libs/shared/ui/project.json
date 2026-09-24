@@ -7,14 +7,10 @@
   "tags": ["type:ui", "scope:shared"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/coverage/libs/ui"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/ui"
+        "coverage.reportsDirectory": "../../../../coverage/libs/ui"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

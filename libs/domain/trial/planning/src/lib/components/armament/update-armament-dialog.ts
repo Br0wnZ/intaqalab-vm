@@ -158,8 +158,14 @@ export class UpdateArmamentDialog {
     observations: this.data.armament.observations || '',
   });
 
+  readonly selectedWeaponFamilyId = computed(() => {
+    const weaponId = this.armamentModel().weaponExternalId;
+    return this.data.weapons.find((weapon) => weapon.id === weaponId)?.familyId;
+  });
+
   readonly tubeOptions = computed<SpecimenItem[]>(() => {
-    const denominations = this.#armamentStore.tubeDenominations();
+    const familyId = this.selectedWeaponFamilyId();
+    const denominations = familyId === undefined ? [] : this.#armamentStore.tubeDenominationsForFamily(familyId);
     const selectedId = this.armamentModel().tubeExternalId;
 
     if (!selectedId || denominations.some((tube) => (tube.denominationId ?? tube.id).toString() === selectedId)) {

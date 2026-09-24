@@ -3,8 +3,8 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/shared/theme/src",
   "prefix": "intaqalab",
-  "tags": ["scope:shared", "type:theme"],
   "projectType": "library",
+  "tags": ["scope:shared", "type:theme"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -18,14 +18,10 @@
         }
       }
     },
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    },
     "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "outputs": ["{projectRoot}/{options.coverage.reportsDirectory}", "{workspaceRoot}/libs/coverage/libs/theme"],
       "options": {
-        "reportsDirectory": "../../coverage/libs/theme"
+        "coverage.reportsDirectory": "../../../../coverage/libs/theme"
       }
     }
   }

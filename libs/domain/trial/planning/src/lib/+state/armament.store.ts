@@ -230,7 +230,13 @@ export const ArmamentStore = signalStore(
       effect(() => {
         const familyId = armamentService.tubeDenominationsFamilyId();
         const response = armamentService.tubeDenominationsResource.value();
-        if (familyId === undefined || response === undefined || familyId in store.tubeDenominationsByFamily()) return;
+        if (
+          familyId === undefined ||
+          response === undefined ||
+          armamentService.tubeDenominationsResource.isLoading() ||
+          familyId in store.tubeDenominationsByFamily()
+        )
+          return;
 
         patchState(store, (state) => ({
           tubeDenominationsByFamily: { ...state.tubeDenominationsByFamily, [familyId]: response.items },

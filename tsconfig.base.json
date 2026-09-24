@@ -34,7 +34,8 @@
       "@intaqalab/warehouse-management": ["libs/domain/warehouse-management/src/index.ts"],
       "@intaqalab/event-log": ["libs/domain/event-log/src/index.ts"],
       "@intaqalab/execution": ["libs/domain/trial/execution/src/index.ts"]
-    }
+    },
+    "strict": false
   },
   "exclude": ["node_modules", "tmp", "dist"]
 }

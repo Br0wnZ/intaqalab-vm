@@ -1,14 +1,14 @@
 import type { Signal } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,15 +30,15 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
-    type InputFieldValue,
-    mapPlanningSeriesToOptions,
-    mapRemoteToTopographyState,
-    mapShotStatusToClass,
-    mapShotStatusToLabel,
-    mapShotsToDisparoOptions,
-    mapTopographyStateToRequest,
-    numToField,
-    parseNum,
+  type InputFieldValue,
+  mapPlanningSeriesToOptions,
+  mapRemoteToTopographyState,
+  mapShotStatusToClass,
+  mapShotStatusToLabel,
+  mapShotsToDisparoOptions,
+  mapTopographyStateToRequest,
+  numToField,
+  parseNum,
 } from './topography-introduction.mapper';
 
 interface TopographyFormModel {
@@ -279,12 +279,10 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   constructor() {
     super();
 
-    this.#executionService
-      .loadEquipmentItemsByCategories([EquipmentTypeEnum.CHRONOMETER])
-      .then((itemsByCategory) => {
-        const items = itemsByCategory[EquipmentTypeEnum.CHRONOMETER] ?? [];
-        this.#chronometerOptions.set(items.map((item) => ({ value: item.id, label: item.label })));
-      });
+    this.#executionService.loadEquipmentItemsByCategories([EquipmentTypeEnum.CHRONOMETER]).then((itemsByCategory) => {
+      const items = itemsByCategory[EquipmentTypeEnum.CHRONOMETER] ?? [];
+      this.#chronometerOptions.set(items.map((item) => ({ value: item.id, label: item.label })));
+    });
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();

@@ -48,7 +48,7 @@ By default it compares against the base branch. You can customize this:
 - `nx affected -t test --base=main --head=HEAD` — compare against a specific base and head
 - `nx affected -t test --files=libs/mylib/src/index.ts` — specify changed files directly
 
-## Useful flags
+## Useful flags & Nx 23 Features
 
 These flags work with `run`, `run-many`, and `affected`:
 
@@ -56,3 +56,28 @@ These flags work with `run`, `run-many`, and `affected`:
 - `--verbose` — print additional information such as stack traces
 - `--nxBail` — stop execution after the first failed task
 - `--configuration=<name>` — use a specific configuration (e.g. `production`)
+- `--output-style=<style>` — control terminal output:
+  - `static-failures-only`: (Nx 23 default in CI/non-interactive) prints 1 concise line for passing tasks and full output only for failures.
+  - `static`: compact progress without animated spinners.
+  - `stream`: streaming stdout/stderr in real-time.
+
+## Daemon & Environment Handling
+
+In restricted sandbox environments or CI pipelines where unix socket connections fail, run commands with `NX_DAEMON=false`:
+
+```bash
+NX_DAEMON=false npx nx test <project>
+```
+
+## Running Granular Nx Migrations
+
+In Nx 23+, specific migrations can be executed directly without running the entire suite:
+
+```bash
+# Run a specific migration by package and name
+npx nx migrate --run-migration=<pkg:name>
+# Example:
+npx nx migrate --run-migration=nx:23-2-0-set-cache-on-executor-target-defaults
+```
+
+Use `--agentic=false` for deterministic, non-interactive execution.

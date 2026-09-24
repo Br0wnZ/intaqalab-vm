@@ -1061,6 +1061,11 @@
       "ERRORS": {
         "LOAD_FAILED_TITLE": "Fehler beim Laden der Messgrößen und Aufzeichnungen",
         "LOAD_FAILED_DETAIL": "Die Messgrößen und Aufzeichnungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      },
+      "FOOTER": {
+        "SAVE_DRAFT": "Entwurf speichern",
+        "SAVING_DRAFT": "Wird gespeichert...",
+        "CANCEL_BUTTON": "Abbrechen"
       }
     },
     "MUNITIONS": {

@@ -164,7 +164,7 @@ export function withGeneralData() {
         this.loadSecurityCountdown(fireTrialId);
         this.loadPlanning(fireTrialId);
         this.loadPlanningState(fireTrialId);
-        this.loadProfilesReadiness(fireTrialId);
+        executionService.getProfilesReadiness(fireTrialId);
         this.loadPlanningSeries(fireTrialId);
         this.loadPlanningConditions(fireTrialId);
       },
@@ -178,7 +178,7 @@ export function withGeneralData() {
           this.loadSecurityCountdown(fireTrialId);
           this.loadPlanning(fireTrialId);
           this.loadPlanningState(fireTrialId);
-          this.loadProfilesReadiness(fireTrialId);
+          executionService.getProfilesReadiness(fireTrialId);
           this.loadPlanningSeries(fireTrialId);
           this.loadPlanningConditions(fireTrialId);
         }
@@ -253,10 +253,6 @@ export function withGeneralData() {
         body: Parameters<typeof executionService.approveExecutionPlanning>[1],
       ): void {
         executionService.approveExecutionPlanning(fireTrialId, body);
-      },
-
-      loadProfilesReadiness(fireTrialId: string): void {
-        executionService.getProfilesReadiness(fireTrialId);
       },
 
       loadPlanningSeries(fireTrialId: string): void {
@@ -362,7 +358,7 @@ export function withGeneralData() {
           store.loadSecurityCountdown(fireTrialId);
           store.loadPlanning(fireTrialId);
           store.loadPlanningState(fireTrialId);
-          store.loadProfilesReadiness(fireTrialId);
+          executionService.getProfilesReadiness(fireTrialId);
           store.loadPlanningSeries(fireTrialId);
           store.loadPlanningConditions(fireTrialId);
         }

@@ -3,7 +3,10 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "../../../dist/out-tsc",
-    "types": []
+    "types": [],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "es2022"]
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/*.stories.ts"]

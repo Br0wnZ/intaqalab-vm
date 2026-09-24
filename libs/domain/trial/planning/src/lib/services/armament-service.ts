@@ -35,23 +35,6 @@ type EquipmentDenominationsResponse = {
   items: EquipmentDenominationApiItem[];
 };
 
-/** Item físico de equipamiento devuelto por `/equipment/items` (unidad real, no denominación/familia). */
-type EquipmentItemApiItem = {
-  id: string;
-  tag: string;
-  serialNumber: string;
-  denominationId: number;
-  denominationName: string;
-  modelName: string;
-};
-
-type EquipmentItemsResponse = {
-  page?: number;
-  pageSize?: number;
-  totalElements: number;
-  items: EquipmentItemApiItem[];
-};
-
 type SpecimenItem = {
   id: string;
   name: string;
@@ -174,9 +157,9 @@ export class ArmamentService {
   });
 
   /**
-   * Resource reactivo para equipos físicos de tubo filtrado por familyId del arma seleccionada.
+   * Resource reactivo para denominaciones de tubo filtradas por familyId del arma seleccionada.
    * Se activa cuando se selecciona un arma.
-   * URL: GET /centers/{centerId}/equipment/items?itemType=TUBE&familyId={familyId}
+   * URL: GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
    */
   readonly tubeDenominationsResource = httpResource<SpecimenListResponse>(() => {
     const params = this.#tubeDenominationParams();
@@ -186,7 +169,7 @@ export class ArmamentService {
     return {
       url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
       method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentItemsResponse(raw),
+      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
     };
   });
 
@@ -288,24 +271,6 @@ export class ArmamentService {
         type: item.itemType ?? defaultType,
         active: item.active ?? true,
         familyId: item.familyId,
-      })),
-    };
-  }
-
-  #mapEquipmentItemsResponse(raw: unknown): SpecimenListResponse {
-    const response = raw as EquipmentItemsResponse;
-
-    return {
-      page: response.page ?? 0,
-      pageSize: response.pageSize ?? response.items.length,
-      totalElements: response.totalElements ?? response.items.length,
-      items: (response.items ?? []).map((item) => ({
-        id: String(item.id),
-        name: item.modelName,
-        denominationId: item.denominationId,
-        modelName: item.modelName,
-        type: 'TUBE',
-        active: true,
       })),
     };
   }

@@ -20,6 +20,7 @@ export default defineConfig({
     projects: [
       'apps/intaqalab/vite.config.mts',
       'libs/core/vite.config.mts',
+      'libs/demos/vite.config.mts',
       'libs/domain/admin/vite.config.mts',
       'libs/domain/calendar-trials/vite.config.mts',
       'libs/domain/event-log/vite.config.mts',
@@ -28,6 +29,7 @@ export default defineConfig({
       'libs/domain/trial/planning/vite.config.mts',
       'libs/domain/trial/trial-management/vite.config.mts',
       'libs/domain/warehouse-management/vite.config.mts',
+      'libs/pruebas/vite.config.mts',
       'libs/shared/config/vite.config.mts',
       'libs/shared/data-access/vite.config.mts',
       'libs/shared/models/vite.config.mts',

@@ -21,11 +21,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type {
-  MagnitudesOptions,
-  MeasureCategoryDef,
-  MeasureSelectionData,
-} from '../../utils-models/measure-serie.model';
+import type { MagnitudesOptions, MeasureSelectionData } from '../../utils-models/measure-serie.model';
 import { MeasureCategoryCard } from './measure-category-card';
 import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
 
@@ -189,24 +185,19 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
 
         <div class="flex justify-end gap-3 mt-6">
           @if (!readonly()) {
-            <button
-              mat-stroked-button
-              class="!rounded-lg !border-slate-300 !text-gray-700 !px-5"
-              [disabled]="isSaving()"
-              (click)="cancel()"
-            >
-              Cancelar
-            </button>
-            <button
-              mat-flat-button
-              class="!bg-purple-600 hover:!bg-purple-700 !text-white !rounded-lg !px-5"
-              [disabled]="isSaving() || !seriesForm().valid()"
-              (click)="save()"
-            >
+            <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="save()">
               @if (isSaving()) {
                 <mat-icon class="animate-spin mr-2">sync</mat-icon>
               }
-              {{ isSaving() ? 'Guardando...' : 'Guardar borrador' }}
+              {{
+                (isSaving()
+                  ? 'TRIAL_PLANNING.MEASURES.FOOTER.SAVING_DRAFT'
+                  : 'TRIAL_PLANNING.MEASURES.FOOTER.SAVE_DRAFT'
+                ) | translate
+              }}
+            </button>
+            <button mat-stroked-button [disabled]="hasToBeDisabled()" (click)="cancel()">
+              {{ 'TRIAL_PLANNING.MEASURES.FOOTER.CANCEL_BUTTON' | translate }}
             </button>
           }
         </div>
@@ -292,6 +283,19 @@ export class Measures {
   readonly isLoading = this.#measuresStore.isLoading;
   readonly isSaving = this.#measuresStore.isUpdatingMeasures;
   readonly updateStatus = this.#measuresStore.updateMeasuresStatus;
+
+  readonly #initialSeriesData = computed(() => {
+    const { planningSeries, measuresSeries } = this.#backendData();
+    return planningSeries ? mapResponseToLocal(planningSeries, measuresSeries) : [];
+  });
+
+  readonly hasToBeDisabled = computed(() => {
+    const currentRequest = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration());
+    const initialRequest = mapLocalToRequest(this.#initialSeriesData(), false);
+    const hasUnchangedData = JSON.stringify(currentRequest) === JSON.stringify(initialRequest);
+
+    return this.isSaving() || this.seriesForm().invalid() || hasUnchangedData;
+  });
 
   readonly isAddingFavorite = this.#measuresStore.isAddingFavorite;
   readonly addFavoriteStatus = this.#measuresStore.addFavoriteStatus;
@@ -477,9 +481,7 @@ export class Measures {
     if (this.readonly()) {
       return;
     }
-    const data = this.#backendData();
-    if (data.planningSeries) {
-      this.seriesSignal.set(mapResponseToLocal(data.planningSeries, data.measuresSeries));
-    }
+    this.seriesSignal.set(structuredClone(this.#initialSeriesData()));
+    this.seriesConfiguration.set(false);
   }
 }

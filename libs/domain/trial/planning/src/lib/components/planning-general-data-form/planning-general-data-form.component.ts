@@ -505,7 +505,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
         </div>
         @if (!readonly()) {
           <div class="flex justify-end gap-3 mt-6">
-            <button mat-flat-button [disabled]="isSaving() || !generalDataForm().valid()" (click)="saveDraft()">
+            <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveDraft()">
               @if (isSaving()) {
                 <ng-container>
                   <mat-icon class="animate-spin mr-2">sync</mat-icon>
@@ -513,7 +513,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
               }
               {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.SAVE_DRAFT' | translate }}
             </button>
-            <button mat-stroked-button [disabled]="isSaving()" (click)="cancel()">
+            <button mat-stroked-button [disabled]="hasToBeDisabled()" (click)="cancel()">
               {{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL' | translate }}
             </button>
           </div>
@@ -588,6 +588,19 @@ export class PlanningGeneralDataFormComponent {
   });
   #initialFormModel = this.formModel();
   #initialSelectedSpecimens: UpsertTrialPlanningInfo['specimens'] = [];
+  #initialRatingCriteria: RatingCriteriaModel | undefined;
+  #initialRatingCriteriaUnits: RatingCriteriaUnits | undefined;
+  #initialShowRatingCriteria = false;
+
+  readonly hasToBeDisabled = computed(() => {
+    const hasUnchangedData =
+      JSON.stringify(this.formModel()) === JSON.stringify(this.#initialFormModel) &&
+      JSON.stringify(this.ratingCriteriaState()) === JSON.stringify(this.#initialRatingCriteria) &&
+      JSON.stringify(this.ratingCriteriaUnitsState()) === JSON.stringify(this.#initialRatingCriteriaUnits) &&
+      this.showRatingCriteria() === this.#initialShowRatingCriteria;
+
+    return this.isSaving() || !this.generalDataForm().valid() || hasUnchangedData;
+  });
 
   readonly generalDataForm = form(this.formModel, (f) => {
     required(f.goal);
@@ -685,7 +698,11 @@ export class PlanningGeneralDataFormComponent {
         const ratingCriteria = structuredClone(planningInfo.ratingCriteria);
         this.ratingCriteriaState.set(ratingCriteria);
         this.ratingCriteriaUnitsState.set(planningInfo.ratingCriteriaUnits);
-        this.showRatingCriteria.set(this.#hasRatingCriteriaValues(ratingCriteria));
+        const showRatingCriteria = this.#hasRatingCriteriaValues(ratingCriteria);
+        this.#initialRatingCriteria = structuredClone(ratingCriteria);
+        this.#initialRatingCriteriaUnits = structuredClone(planningInfo.ratingCriteriaUnits);
+        this.#initialShowRatingCriteria = showRatingCriteria;
+        this.showRatingCriteria.set(showRatingCriteria);
         untracked(() => {
           this.generalDataForm.percentageTechnicalUnits().markAsTouched();
           this.generalDataForm.percentageEndTrial().markAsTouched();

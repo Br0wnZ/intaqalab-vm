@@ -146,6 +146,33 @@ describe('ShootingConditionsComponent', () => {
   });
 
   describe('Button State', () => {
+    it('should disable buttons when form values are unchanged', async () => {
+      await waitFor(() => {
+        const saveButton = screen
+          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
+          .closest('button');
+        expect(saveButton).toBeDisabled();
+      });
+    });
+
+    it('should enable buttons after changing form values', async () => {
+      await waitFor(() => expect(component.getFormValues()).toHaveLength(2));
+
+      component.seriesSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].distance += 1;
+        return updatedSeries;
+      });
+      fixture.detectChanges();
+
+      await waitFor(() => {
+        const saveButton = screen
+          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
+          .closest('button');
+        expect(saveButton).toBeEnabled();
+      });
+    });
+
     it('should disable buttons when updating', async () => {
       mockStore._updateConditionsResource._setLoading(true);
       fixture.detectChanges();
@@ -157,15 +184,6 @@ describe('ShootingConditionsComponent', () => {
           .closest('button');
         expect(saveBtn).toBeDisabled();
         expect(cancelBtn).toBeDisabled();
-      });
-    });
-
-    it('should enable buttons when form is valid and not updating', async () => {
-      await waitFor(() => {
-        const saveButton = screen
-          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
-          .closest('button');
-        expect(saveButton).toBeEnabled();
       });
     });
   });
@@ -213,42 +231,31 @@ describe('ShootingConditionsComponent', () => {
     });
   });
 
-  describe('Form Validation', () => {
-    it('should report form as valid when data is correct', () => {
-      // Initial conditions from beforeEach already have all required fields populated
-      expect(component.isFormValid()).toBe(true);
+  describe('Computed Button State', () => {
+    it('should disable buttons when initial data is valid and unchanged', () => {
+      expect(component.hasToBeDisabled()).toBe(true);
     });
 
-    it('should report form as valid with empty data', () => {
-      component.seriesSignal.set([]);
-      fixture.detectChanges();
-
-      expect(component.isFormValid()).toBe(true);
-    });
-
-    it('should report form as valid when invalid but untouched', () => {
+    it('should enable buttons when changed data remains valid', () => {
       component.seriesSignal.update((series) => {
-        const copy = JSON.parse(JSON.stringify(series));
-        copy[0].shots[0].impactZoneId = '';
-        return copy;
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].distance += 1;
+        return updatedSeries;
       });
       fixture.detectChanges();
 
-      expect(component.isFormValid()).toBe(true);
+      expect(component.hasToBeDisabled()).toBe(false);
     });
 
-    it('should report form as invalid when invalid and touched', () => {
+    it('should disable buttons when changed data is invalid', () => {
       component.seriesSignal.update((series) => {
-        const copy = JSON.parse(JSON.stringify(series));
-        copy[0].shots[0].impactZoneId = '';
-        return copy;
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].impactZoneId = '';
+        return updatedSeries;
       });
       fixture.detectChanges();
 
-      component.getShotField(0, 0).impactZoneId().markAsTouched();
-      fixture.detectChanges();
-
-      expect(component.isFormValid()).toBe(false);
+      expect(component.hasToBeDisabled()).toBe(true);
     });
   });
 
