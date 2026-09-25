@@ -1,7 +1,8 @@
 import { Component, Injector, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { ActivatedRoute } from '@angular/router';
 import { injectionTokenTabCommand } from '@intaqalab/core';
-import type { TrialSearchFilters } from '@intaqalab/models';
+import { type TrialSearchFilters, TrialStatus } from '@intaqalab/models';
 import { ErrorState, SkeletonForm, SkeletonTable } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -41,7 +42,10 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
       <!-- ESTADO 3: ÉXITO / NORMAL (Componentes reales con datos) -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h3 class="text-lg text-gray-900 font-medium mb-6">Listado de pruebas de fuego</h3>
-        <inta-trial-list-filter (filtersChange)="onFiltersChange($event)" />
+        <inta-trial-list-filter
+          [allowedStatuses]="isPlanningView() ? planningStatuses : null"
+          (filtersChange)="onFiltersChange($event)"
+        />
         <inta-trial-list [filters]="filters()" (goTrialDetail)="handleNavigation($event)"></inta-trial-list>
       </div>
     }
@@ -49,17 +53,22 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
   styles: ``,
 })
 export class FeatureTrialListShellComponent {
+  readonly planningStatuses = [TrialStatus.UNDER_REVIEW, TrialStatus.PLANNED] as const;
+  readonly #route = inject(ActivatedRoute);
   readonly #store = inject(TrialStore);
   readonly #injector = inject(Injector);
   readonly onAction = this.#injector.get(injectionTokenTabCommand);
 
   readonly isLoading = computed(() => this.#store.isLoading());
   readonly error = computed(() => this.#store.error());
+  readonly isPlanningView = signal(this.#route.snapshot.queryParamMap.get('planning') === 'true');
 
-  readonly filters = signal<Partial<TrialSearchFilters>>({});
+  readonly filters = signal<Partial<TrialSearchFilters>>(
+    this.isPlanningView() ? { status: [...this.planningStatuses] } : {},
+  );
 
   onFiltersChange(filters: Partial<TrialSearchFilters>) {
-    this.filters.set(filters);
+    this.filters.set(this.isPlanningView() ? { ...filters, status: [...this.planningStatuses] } : filters);
   }
 
   handleNavigation(event: { id: string }) {

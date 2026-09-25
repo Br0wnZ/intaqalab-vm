@@ -417,12 +417,7 @@ interface ExecutionPlanningParams extends ExecutionParams {
 }
 
 export type ExecutionTechnicalProfile =
-  | 'VELOCITIES'
-  | 'PRESSURES'
-  | 'VIDEO'
-  | 'TRAJECTOGRAPHY'
-  | 'MUNITIONS'
-  | 'ARMAMENT';
+  'VELOCITIES' | 'PRESSURES' | 'VIDEO' | 'TRAJECTOGRAPHY' | 'MUNITIONS' | 'ARMAMENT';
 
 export type ExecutionWidgetLayout = {
   widgetsLayout: WidgetPreferenceId[];
@@ -455,7 +450,7 @@ export type ProfileReadinessRequest = {
 export type JltReadinessRequest = {
   sanitaryServicesReady: boolean;
   securityReady: boolean;
-  vessel: boolean;
+  vesselReady: boolean;
   observations?: string | null;
 };
 

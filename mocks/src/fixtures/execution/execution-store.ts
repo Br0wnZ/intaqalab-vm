@@ -416,7 +416,7 @@ export function setJltReadiness(
   fireTrialId: string,
   sanitaryServicesReady: boolean,
   securityReady: boolean,
-  vessel: boolean,
+  vesselReady: boolean,
   observations?: string | null,
 ): JltReadinessItem {
   const current = getJltPreparation(fireTrialId, '');
@@ -425,7 +425,7 @@ export function setJltReadiness(
     jltReadiness: {
       sanitaryServicesReady,
       securityReady,
-      vesselReady: vessel,
+      vesselReady,
       observations: observations ?? null,
     },
   };

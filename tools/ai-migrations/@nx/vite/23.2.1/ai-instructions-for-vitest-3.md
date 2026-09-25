@@ -316,7 +316,7 @@ test(
   () => {
     /* ... */
   },
-  { retry: 3 }
+  { retry: 3 },
 );
 
 // ✅ AFTER (Vitest 3.0)
@@ -422,15 +422,7 @@ vi.isMockFunction(fooService.foo);
 export default defineConfig({
   test: {
     fakeTimers: {
-      toFake: [
-        'setTimeout',
-        'clearTimeout',
-        'setInterval',
-        'clearInterval',
-        'setImmediate',
-        'clearImmediate',
-        'Date',
-      ],
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'setImmediate', 'clearImmediate', 'Date'],
     },
   },
 });
@@ -551,10 +543,11 @@ Migrating now (while still on v3) clears the v3.2 deprecation warning and is req
 // ❌ DEPRECATED (Vitest 3.2+)
 // vitest.workspace.ts
 import { defineWorkspace } from 'vitest/config';
-export default defineWorkspace(['apps/*', 'libs/*']);
-
 // ✅ AFTER (inline in root vitest.config.ts)
 import { defineConfig } from 'vitest/config';
+
+export default defineWorkspace(['apps/*', 'libs/*']);
+
 export default defineConfig({
   test: {
     projects: ['apps/*', 'libs/*'],

@@ -1,5 +1,6 @@
 import {
   ALL_ROLES_EXCEPT_VIEWER,
+  CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES,
   MENU_EVENT_LOG_ROLES,
   MENU_EXECUTION_ROLES,
   MENU_NEW_TRIAL_ROLES,
@@ -14,6 +15,7 @@ export type MenuAction =
   | 'TRIAL_NEW'
   | 'TRIAL_LIST'
   | 'CALENDAR_TRIALS'
+  | 'PLANNING'
   | 'BLANK_2'
   | 'DEMO'
   | 'MASTER_DATA_TRIAL_TYPE'
@@ -43,6 +45,7 @@ export interface MenuNode {
 }
 
 export const ACTION_ROUTES: Partial<Record<MenuAction, string>> = {
+  PLANNING: '/trial/list?planning=true',
   DEMO: '/demos',
   MASTER_DATA_TRIAL_TYPE: '/master-data/trial-type',
   MASTER_DATA_DOCUMENT_TYPE: '/master-data/document-type',
@@ -65,6 +68,7 @@ export const ACTION_ROUTES: Partial<Record<MenuAction, string>> = {
 export const URL_ACTION_MAP: ReadonlyArray<{ startsWith: string; action: MenuAction }> = [
   { startsWith: '/demos', action: 'DEMO' },
   { startsWith: '/calendar-trials', action: 'CALENDAR_TRIALS' },
+  { startsWith: '/planning', action: 'PLANNING' },
   { startsWith: '/master-data/trial-type', action: 'MASTER_DATA_TRIAL_TYPE' },
   { startsWith: '/master-data/document-type', action: 'MASTER_DATA_DOCUMENT_TYPE' },
   { startsWith: '/master-data/target-type', action: 'MASTER_DATA_TARGET_TYPE' },
@@ -114,6 +118,55 @@ export const MENU_TREE: MenuNode[] = [
     roles: [...ALL_ROLES_EXCEPT_VIEWER],
   },
 
+  // ─── Planificación ─────────────────────────────────────────────────────────
+  {
+    // Mismos roles que la pestaña de planificación en estado En estudio
+    name: 'MENU_LEFT.PLANNING',
+    id: 'PLANNING',
+    iconName: 'edit',
+    roles: [...CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES],
+  },
+
+  // ─── Ejecución ──────────────────────────────────────────────────────────────
+  {
+    // Todos los roles incluido Viewer
+    name: 'MENU_LEFT.EXECUTION',
+    id: 'EXECUTION',
+    iconName: 'execution',
+    roles: [...MENU_EXECUTION_ROLES],
+  },
+
+  // ─── Event Log ──────────────────────────────────────────────────────────────
+  {
+    // Todos excepto Viewer y Municiones
+    name: 'MENU_LEFT.EVENT_LOG',
+    id: 'EVENT_LOG',
+    iconName: 'eventLog',
+    roles: [...MENU_EVENT_LOG_ROLES],
+  },
+
+  // ─── Maestros de Almacén ────────────────────────────────────────────────────
+  {
+    name: 'MENU_LEFT.CATALOG.TITLE',
+    iconName: 'catalog',
+    roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
+    children: [
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.TRIAL_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_TRIAL_TYPE' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.DOCUMENT_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_DOCUMENT_TYPE' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.TARGET_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_TARGET_TYPE' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.MATERIAL', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_MATERIAL' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.DIMENSION', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_DIMENSION' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.FUZE_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_FUZE_TYPE' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.LOADING_ZONE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_LOADING_ZONE' },
+      { name: 'MENU_LEFT.CATALOG.OPTIONS.STANAG', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_STANAG' },
+      {
+        name: 'MENU_LEFT.CATALOG.OPTIONS.MEASUREMENTS_AND_RECORDS',
+        iconName: TRIAL_CHILD_SVG,
+        id: 'MASTER_DATA_MEASUREMENTS_AND_RECORDS',
+      },
+    ],
+  },
+
   // ─── Almacén de Municiones ──────────────────────────────────────────────────
   {
     // Solo Admin + Municiones (Head + Tech), y Stock para roles en MENU_STOCK_MUNITION_ROLES
@@ -150,46 +203,6 @@ export const MENU_TREE: MenuNode[] = [
         iconName: TRIAL_CHILD_SVG,
         id: 'WHAREHOUSE_MUNITIONS_COMPONENTS',
         roles: [...MENU_WAREHOUSE_ROLES],
-      },
-    ],
-  },
-
-  // ─── Event Log ──────────────────────────────────────────────────────────────
-  {
-    // Todos excepto Viewer y Municiones
-    name: 'MENU_LEFT.EVENT_LOG',
-    id: 'EVENT_LOG',
-    iconName: 'eventLog',
-    roles: [...MENU_EVENT_LOG_ROLES],
-  },
-
-  // ─── Ejecución ──────────────────────────────────────────────────────────────
-  {
-    // Todos los roles incluido Viewer
-    name: 'MENU_LEFT.EXECUTION',
-    id: 'EXECUTION',
-    iconName: 'execution',
-    roles: [...MENU_EXECUTION_ROLES],
-  },
-
-  // ─── Maestros de Almacén ────────────────────────────────────────────────────
-  {
-    name: 'MENU_LEFT.CATALOG.TITLE',
-    iconName: 'catalog',
-    roles: [Role.INTAQALAB_ADMIN, Role.INTAQALAB_MUNITIONS_UNIT_HEAD, Role.INTAQALAB_MUNITIONS_UNIT_TECHNICIAN],
-    children: [
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.TRIAL_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_TRIAL_TYPE' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.DOCUMENT_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_DOCUMENT_TYPE' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.TARGET_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_TARGET_TYPE' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.MATERIAL', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_MATERIAL' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.DIMENSION', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_DIMENSION' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.FUZE_TYPE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_FUZE_TYPE' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.LOADING_ZONE', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_LOADING_ZONE' },
-      { name: 'MENU_LEFT.CATALOG.OPTIONS.STANAG', iconName: TRIAL_CHILD_SVG, id: 'MASTER_DATA_STANAG' },
-      {
-        name: 'MENU_LEFT.CATALOG.OPTIONS.MEASUREMENTS_AND_RECORDS',
-        iconName: TRIAL_CHILD_SVG,
-        id: 'MASTER_DATA_MEASUREMENTS_AND_RECORDS',
       },
     ],
   },

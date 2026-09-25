@@ -239,23 +239,27 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparati
 // Registrar readiness del JLT para una serie
 executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/jlt-preparation/series/:seriesId', (req, res) => {
   const fireTrialId = req.params['fireTrialId'] as string;
-  const { sanitaryServicesReady, securityReady, vessel, observations } = req.body as {
+  const { sanitaryServicesReady, securityReady, vesselReady, observations } = req.body as {
     sanitaryServicesReady?: boolean;
     securityReady?: boolean;
-    vessel?: boolean;
+    vesselReady?: boolean;
     observations?: string;
   };
 
-  if (typeof sanitaryServicesReady !== 'boolean' || typeof securityReady !== 'boolean' || typeof vessel !== 'boolean') {
+  if (
+    typeof sanitaryServicesReady !== 'boolean' ||
+    typeof securityReady !== 'boolean' ||
+    typeof vesselReady !== 'boolean'
+  ) {
     res.status(400).json({
       title: 'Bad Request',
       status: 400,
-      detail: "Los campos 'sanitaryServicesReady', 'securityReady' y 'vessel' son obligatorios y booleanos",
+      detail: "Los campos 'sanitaryServicesReady', 'securityReady' y 'vesselReady' son obligatorios y booleanos",
     });
     return;
   }
 
-  const updated = setJltReadiness(fireTrialId, sanitaryServicesReady, securityReady, vessel, observations);
+  const updated = setJltReadiness(fireTrialId, sanitaryServicesReady, securityReady, vesselReady, observations);
   res.status(200).json(updated);
 });
 

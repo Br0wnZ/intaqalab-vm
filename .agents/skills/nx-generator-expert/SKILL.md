@@ -118,4 +118,3 @@ _⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical 
 - List available Angular generators: `npx nx list @nx/angular`
 - Check options: `npx nx g [generator] --help`
 - By default, libraries are **non-buildable** (bundled directly by consuming applications).
-

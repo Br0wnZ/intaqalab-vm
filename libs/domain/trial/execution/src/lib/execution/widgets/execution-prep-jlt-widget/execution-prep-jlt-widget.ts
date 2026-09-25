@@ -174,7 +174,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             <div class="border-t border-slate-100 mb-3 shrink-0"></div>
 
             <div class="grid grid-cols-2 gap-2 mt-auto shrink-0">
-              <button mat-flat-button color="primary" [disabled]="!canExecuteActions()" (click)="selectCurrentShot()">
+              <button mat-flat-button color="primary" [disabled]="!canSelectShot()" (click)="selectCurrentShot()">
                 {{ 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SELECT_SHOT' | translate }}
               </button>
               <button mat-flat-button [disabled]="!canExecuteActions() || !isAllReady()" (click)="fireSelectedShot()">
@@ -301,6 +301,10 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     () => !!this.fireTrialId() && !!this.resolvedSerieId() && !!this.resolvedShotId(),
   );
 
+  readonly canSelectShot = computed(
+    () => this.canExecuteActions() && !this.#executionStore.isLoadingJltPreparation() && this.isAllReady(),
+  );
+
   #lastLoadedJltPreparationKey: string | null = null;
 
   // � Borrador local editable — se resincroniza cuando el store cambia (GET de preparación)
@@ -346,6 +350,10 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     this.selectedSerie.set(serieId);
 
     this.selectedShot.set(this.shotOptions().find((shot) => !shot.disabled)?.value ?? null);
+    this.#executionStore.setOptimisticActiveShot(serieId, this.selectedShot());
+
+    this.#lastLoadedJltPreparationKey = null;
+    this.#loadJltPreparationIfReady();
   }
 
   setActiveShot(shotId: string): void {

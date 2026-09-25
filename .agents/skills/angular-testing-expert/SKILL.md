@@ -60,7 +60,6 @@ afterEach(() => {
 - **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4.
 - **Concurrencia en ejecución masiva:** Para suites completas en local, evita saturación de memoria en JSDOM limitando el paralelismo (`npx nx run-many -t test --parallel=2` o ejecutando por dominio `-p [domain]`).
 
-
 ## 📋 Workflow: "Dame los tests de {{ componente }}"
 
 Cuando el usuario pida tests de un componente, sigue estos pasos:

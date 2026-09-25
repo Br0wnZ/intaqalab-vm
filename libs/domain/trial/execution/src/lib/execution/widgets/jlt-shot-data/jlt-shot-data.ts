@@ -260,24 +260,29 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries();
-    if (planningSeries?.length) {
-      return planningSeries.map((serie, index) => ({
-        value: serie.id,
-        label: serie.name?.trim() || `Serie ${index + 1}`,
-      }));
-    }
-
-    return this.#store.jltShotData().serieOptions;
+    const planningSeries = this.#store.planningSeries() ?? [];
+    return planningSeries.length
+      ? planningSeries.map((serie, index) => ({
+          value: serie.id,
+          label: serie.name?.trim() || `Serie ${index + 1}`,
+        }))
+      : this.#store.jltShotData().serieOptions;
   });
 
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
-    const series = this.#store.executionProgress()?.series;
-    const shots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
+    const planningSerie = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie);
+    const progressSerie = this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie);
 
-    if (shots?.length) {
-      return shots.map((shot, index) => ({
+    if (planningSerie?.shots?.length) {
+      return planningSerie.shots.map((shot, index) => ({
+        value: shot.id,
+        label: `Disparo ${shot.globalNumber ?? index + 1}`,
+      }));
+    }
+
+    if (progressSerie?.shots?.length) {
+      return progressSerie.shots.map((shot, index) => ({
         value: shot.shotId,
         label: `Disparo ${index + 1}`,
       }));
@@ -609,6 +614,9 @@ export class JltShotData extends BaseFormWidgetComponent {
       this.#store
         .executionProgress()
         ?.series.some((series) => series.seriesId === serie && series.shots.some((shot) => shot.shotId === disparo)) ??
+      this.#store
+        .planningSeries()
+        ?.some((series) => series.id === serie && series.shots?.some((shot) => shot.id === disparo)) ??
       false
     );
   }

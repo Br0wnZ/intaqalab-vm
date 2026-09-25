@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import type { ActivatedRouteSnapshot } from '@angular/router';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
+import { injectQueryParams } from '@intaqalab/utils';
 import { filter, map, startWith } from 'rxjs';
 
 export interface BreadcrumbItem {
@@ -11,6 +12,7 @@ export interface BreadcrumbItem {
 @Injectable({ providedIn: 'root' })
 export class BreadcrumbService {
   readonly #router = inject(Router);
+  readonly #planningQueryParam = injectQueryParams('planning');
 
   readonly items = signal<BreadcrumbItem[]>([]);
 
@@ -40,7 +42,7 @@ export class BreadcrumbService {
 
       const routeURL = child.url.map((segment) => segment.path).join('/');
       const nextURL = routeURL ? `${url}/${routeURL}` : url;
-      const breadcrumbLabel = child.data['breadcrumb'] as string | undefined;
+      const breadcrumbLabel = this.#resolveBreadcrumbLabel(child);
       const lastCrumb = crumbs[crumbs.length - 1];
 
       if (breadcrumbLabel && breadcrumbLabel !== lastCrumb?.label) {
@@ -51,5 +53,15 @@ export class BreadcrumbService {
     }
 
     return crumbs;
+  }
+
+  #resolveBreadcrumbLabel(route: ActivatedRouteSnapshot): string | undefined {
+    const breadcrumbLabel = route.data['breadcrumb'] as string | undefined;
+    const planningQueryParam =
+      this.#planningQueryParam() ?? this.#router.parseUrl(this.#router.url).queryParams['planning'];
+    if (breadcrumbLabel === 'BREADCRUMB.TRIAL_LIST' && planningQueryParam === 'true') {
+      return 'BREADCRUMB.PLANNING_TRIAL';
+    }
+    return breadcrumbLabel;
   }
 }

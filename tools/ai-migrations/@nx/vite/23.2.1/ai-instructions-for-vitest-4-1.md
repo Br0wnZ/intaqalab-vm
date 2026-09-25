@@ -779,6 +779,7 @@ VITEST_MODULE_DIRECTORIES=/custom/path
 ```typescript
 // ❌ BEFORE (Vitest 3.x)
 import { execute } from 'vitest/execute';
+
 // Access to __vitest_executor
 
 // ✅ AFTER (Vitest 4.0)

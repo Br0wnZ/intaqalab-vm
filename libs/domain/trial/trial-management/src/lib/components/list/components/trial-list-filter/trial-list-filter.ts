@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormField, debounce, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -66,7 +66,7 @@ function toISODateTime(value: string | Date): string | undefined {
         [formField]="filterForm.status"
         [label]="'TRIALS_LIST.FILTERS.STATUS' | translate"
         [placeholder]="'TRIALS_LIST.FILTERS.STATUS_PLACEHOLDER' | translate"
-        [options]="trialStatus()"
+        [options]="visibleTrialStatus()"
         [multiple]="true"
       />
 
@@ -168,6 +168,12 @@ export class TrialListFilter {
   protected readonly trialsTypeResource = inject(TrialTypeService).fireTrialTypesResource;
 
   readonly trialStatus = injectTrialStatus();
+  readonly allowedStatuses = input<readonly TrialStatus[] | null>(null);
+  readonly visibleTrialStatus = computed(() => {
+    const allowed = this.allowedStatuses();
+    if (!allowed) return this.trialStatus();
+    return this.trialStatus().filter((status) => allowed.includes(status.value));
+  });
 
   readonly filtersChange = output<Partial<TrialSearchFilters>>();
 

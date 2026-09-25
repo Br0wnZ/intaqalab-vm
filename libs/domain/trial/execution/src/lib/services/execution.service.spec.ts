@@ -576,7 +576,7 @@ describe('ExecutionService', () => {
     const jltBody = {
       sanitaryServicesReady: true,
       securityReady: true,
-      vessel: true,
+      vesselReady: true,
       observations: 'Serie lista',
     };
     service.setJltReadiness(DEMO_TRIAL_ID, seriesId, jltBody);

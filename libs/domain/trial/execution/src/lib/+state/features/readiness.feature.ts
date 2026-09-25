@@ -190,7 +190,7 @@ export function withReadiness() {
         executionService.setJltReadiness(fireTrialId, seriesId, {
           sanitaryServicesReady: jlt.sanitary,
           securityReady: jlt.security,
-          vessel: jlt.boat,
+          vesselReady: jlt.boat,
           observations: jlt.observations || null,
         });
       },
