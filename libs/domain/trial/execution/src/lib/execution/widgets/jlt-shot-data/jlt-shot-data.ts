@@ -24,21 +24,32 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import type { JltShotDataPayload, JltShotDataResponse } from '../../../services/execution.service';
+import type { JltShotDataResponse } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-
-type InputFieldValue = { value: string; unit: string } | null;
+import type { InputFieldValue, JltInheritedDefaults } from './jlt-shot-data.mapper';
+import {
+  calculateShotOrder,
+  extractJltData,
+  findLastShotId,
+  isShotInSerie,
+  mapEstadoDisparoToClass,
+  mapEstadoDisparoToLabel,
+  mapPlanningSeriesToOptions,
+  mapPlanningShotsToDisparoOptions,
+  mapRemoteToJltShotState,
+  mapShotStatusToEstadoDisparo,
+  numToField,
+  parseNum,
+} from './jlt-shot-data.mapper';
 
 interface JltShotDataSelectForm {
   serie: string | null;
   disparo: string | null;
-  equipoAtacado: string | null;
-  equipoRetroceso: string | null;
 }
 
 @Component({
@@ -123,94 +134,100 @@ interface JltShotDataSelectForm {
       <!-- Divider -->
       <div class=""></div>
 
-      <!-- Fields grid: 4 cols, 2 rows (last col = Observaciones spanning 2 rows) -->
+      <!-- Fields layout: 3 columns (Col 1: JET + Atacado/Retroceso, Col 2: Operador, Col 3: Observaciones) -->
       <div
-        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start"
+        class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_2fr_1fr] gap-x-3 gap-y-2 min-h-0 content-start"
         [attr.inert]="readOnly() ? '' : null"
         [class.inta-readonly-content]="readOnly()"
       >
-        <!-- ── Row 1 ──────────────────────────────────────────────── -->
+        <!-- ── Col 1: JET + Atacado / Retroceso ────────────────────────────── -->
+        <div class="flex flex-col gap-2">
+          <!-- JET -->
+          <div class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-gray-700 leading-tight">
+              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.JET_LABEL' | translate }}
+            </span>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <input
+                matInput
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.JET_PLACEHOLDER' | translate"
+                [value]="jetDisplayValue()"
+                (input)="jetField.set($any($event.target).value || null)"
+              />
+            </mat-form-field>
+          </div>
 
-        <!-- JET -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.JET_LABEL' | translate }}</mat-label>
-          <input
-            matInput
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.JET_PLACEHOLDER' | translate"
-            [value]="jetDisplayValue()"
-            (input)="jetField.set($any($event.target).value || null)"
-          />
-        </mat-form-field>
+          <!-- Atacado & Retroceso (2 columns) -->
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Atacado -->
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-semibold text-gray-700 leading-tight">
+                {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ATACADO_LABEL' | translate }}
+              </span>
+              <ui-input-select
+                [showLabel]="false"
+                [label]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ATACADO_LABEL' | translate"
+                [opciones]="mmOptions"
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ATACADO_PLACEHOLDER' | translate"
+                [value]="atacadoField()"
+                (valueChange)="atacadoField.set($event)"
+              />
+            </div>
 
-        <!-- Equipo Atacado -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.EQUIPO_ATACADO_LABEL' | translate }}</mat-label>
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.EQUIPO_ATACADO_PLACEHOLDER' | translate"
-            [formField]="selectForm.equipoAtacado"
+            <!-- Retroceso -->
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-semibold text-gray-700 leading-tight">
+                {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.RETROCESO_LABEL' | translate }}
+              </span>
+              <ui-input-select
+                [showLabel]="false"
+                [label]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.RETROCESO_LABEL' | translate"
+                [opciones]="mmOptions"
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.RETROCESO_PLACEHOLDER' | translate"
+                [value]="retrocesoField()"
+                (valueChange)="retrocesoField.set($event)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Col 2: Operador de la pieza ─────────────────────────────────── -->
+        <div class="flex flex-col gap-2">
+          <!-- Operador de la pieza -->
+          <div class="flex flex-col gap-1">
+            <span class="text-xs font-semibold text-gray-700 leading-tight">
+              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OPERADOR_PIEZA_LABEL' | translate }}
+            </span>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <input
+                matInput
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OPERADOR_PIEZA_PLACEHOLDER' | translate"
+                [value]="operadorPiezaDisplayValue()"
+                (input)="operadorPiezaField.set($any($event.target).value || null)"
+              />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- ── Col 3: Observaciones ────────────────────────────────────────── -->
+        <div class="flex flex-col h-full col-span-1 md:col-span-2 lg:col-span-1">
+          <!-- Spacer matching label height + gap so textarea aligns with inputs -->
+          <div class="h-5 shrink-0"></div>
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            class="w-full flex-1 min-h-[116px] [&_.mat-mdc-text-field-wrapper]:!h-full [&_.mat-mdc-form-field-flex]:!h-full"
           >
-            @for (opt of equipoAtacadoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <!-- Atacado (numérico + unidad) -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ATACADO_LABEL' | translate"
-          [opciones]="mmOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ATACADO_PLACEHOLDER' | translate"
-          [value]="atacadoField()"
-          (valueChange)="atacadoField.set($event)"
-        />
-
-        <!-- Observaciones (spans 2 rows) -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OBSERVACIONES_LABEL' | translate }}</mat-label>
-          <textarea
-            matInput
-            rows="4"
-            class="resize-none"
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OBSERVACIONES_PLACEHOLDER' | translate"
-            [value]="observacionesField() ?? ''"
-            (input)="observacionesField.set($any($event.target).value || null)"
-          ></textarea>
-        </mat-form-field>
-
-        <!-- ── Row 2 ──────────────────────────────────────────────── -->
-
-        <!-- Operador de la pieza -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OPERADOR_PIEZA_LABEL' | translate }}</mat-label>
-          <input
-            matInput
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OPERADOR_PIEZA_PLACEHOLDER' | translate"
-            [value]="operadorPiezaDisplayValue()"
-            (input)="operadorPiezaField.set($any($event.target).value || null)"
-          />
-        </mat-form-field>
-
-        <!-- Equipo Retroceso -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.EQUIPO_RETROCESO_LABEL' | translate }}</mat-label>
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.EQUIPO_RETROCESO_PLACEHOLDER' | translate"
-            [formField]="selectForm.equipoRetroceso"
-          >
-            @for (opt of equipoRetrocesoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <!-- Retroceso (numérico + unidad) -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.RETROCESO_LABEL' | translate"
-          [opciones]="mmOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.RETROCESO_PLACEHOLDER' | translate"
-          [value]="retrocesoField()"
-          (valueChange)="retrocesoField.set($event)"
-        />
+            <textarea
+              matInput
+              rows="4"
+              class="resize-none !h-full"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OBSERVACIONES_PLACEHOLDER' | translate"
+              [value]="observacionesField() ?? ''"
+              (input)="observacionesField.set($any($event.target).value || null)"
+            ></textarea>
+          </mat-form-field>
+        </div>
       </div>
     </div>
   `,
@@ -259,39 +276,18 @@ export class JltShotData extends BaseFormWidgetComponent {
   protected readonly mmOptions = [{ value: MeasureUnitEnum.MM, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.MM] }];
 
   // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries() ?? [];
-    return planningSeries.length
-      ? planningSeries.map((serie, index) => ({
-          value: serie.id,
-          label: serie.name?.trim() || `Serie ${index + 1}`,
-        }))
-      : this.#store.jltShotData().serieOptions;
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.jltShotData().serieOptions),
+  );
 
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
     const planningSerie = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie);
     const progressSerie = this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie);
 
-    if (planningSerie?.shots?.length) {
-      return planningSerie.shots.map((shot, index) => ({
-        value: shot.id,
-        label: `Disparo ${shot.globalNumber ?? index + 1}`,
-      }));
-    }
-
-    if (progressSerie?.shots?.length) {
-      return progressSerie.shots.map((shot, index) => ({
-        value: shot.shotId,
-        label: `Disparo ${index + 1}`,
-      }));
-    }
-
-    return this.#store.jltShotData().disparoOptions;
+    return mapPlanningShotsToDisparoOptions(planningSerie, progressSerie, this.#store.jltShotData().disparoOptions);
   });
-  protected readonly equipoAtacadoOptions = computed(() => this.#store.jltShotData().equipoAtacadoOptions);
-  protected readonly equipoRetrocesoOptions = computed(() => this.#store.jltShotData().equipoRetrocesoOptions);
+
   protected readonly selectedSeriesProgress = computed(() => {
     const selectedSerie = this.formModel().serie;
     return selectedSerie
@@ -311,11 +307,15 @@ export class JltShotData extends BaseFormWidgetComponent {
   );
 
   protected readonly selectedShotOrder = computed(() =>
-    this.#getShotOrder(this.formModel().serie, this.formModel().disparo),
+    calculateShotOrder(this.#store.executionProgress()?.series, this.formModel().serie, this.formModel().disparo),
   );
 
   protected readonly activeShotOrder = computed(() =>
-    this.#getShotOrder(this.#store.activeSerieId(), this.#store.activeShotId()),
+    calculateShotOrder(
+      this.#store.executionProgress()?.series,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+    ),
   );
 
   protected readonly isFutureShot = computed(() => {
@@ -351,7 +351,7 @@ export class JltShotData extends BaseFormWidgetComponent {
     );
   });
 
-  protected readonly inheritedDefaults = signal<{ jet: string | null; pieceOperator: string | null }>({
+  protected readonly inheritedDefaults = signal<JltInheritedDefaults>({
     jet: null,
     pieceOperator: null,
   });
@@ -362,54 +362,21 @@ export class JltShotData extends BaseFormWidgetComponent {
     () => this.operadorPiezaField() ?? this.inheritedDefaults().pieceOperator ?? '',
   );
 
-  protected readonly estadoDisparo = computed(() => {
-    const shotStatus = this.selectedShotProgress()?.status ?? null;
-
-    switch (shotStatus) {
-      case 'ACTIVE':
-        return 'EN_CURSO';
-      case 'PENDING':
-        return 'PENDIENTE';
-      case 'FIRED':
-        return 'EJECUTADA';
-      default:
-        return this.#store.jltShotData().estadoDisparo;
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapShotStatusToEstadoDisparo(this.selectedShotProgress()?.status, this.#store.jltShotData().estadoDisparo),
+  );
 
   // ── Estado del disparo (read-only output) ─────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.estadoDisparo()) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapEstadoDisparoToLabel(this.estadoDisparo()));
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.estadoDisparo()) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-blue-100 text-blue-700';
-      case 'EJECUTADA':
-        return 'bg-gray-100 text-gray-600';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoClass = computed(() => mapEstadoDisparoToClass(this.estadoDisparo()));
 
   // ── Numeric fields with units (ui-input-select) ────────────────────────────
   protected readonly atacadoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.jltShotData().atacado, MeasureUnitEnum.MM),
+    numToField(this.#store.jltShotData().atacado, MeasureUnitEnum.MM),
   );
   protected readonly retrocesoField = signal<InputFieldValue>(
-    this.#numToField(this.#store.jltShotData().retroceso, MeasureUnitEnum.MM),
+    numToField(this.#store.jltShotData().retroceso, MeasureUnitEnum.MM),
   );
 
   // ── Plain text signals ─────────────────────────────────────────────────────
@@ -421,8 +388,6 @@ export class JltShotData extends BaseFormWidgetComponent {
   protected readonly formModel = signal<JltShotDataSelectForm>({
     serie: this.#store.jltShotData().serie,
     disparo: this.#store.jltShotData().disparo,
-    equipoAtacado: this.#store.jltShotData().equipoAtacado,
-    equipoRetroceso: this.#store.jltShotData().equipoRetroceso,
   });
   protected readonly selectForm = form(this.formModel);
 
@@ -434,8 +399,6 @@ export class JltShotData extends BaseFormWidgetComponent {
     observaciones: this.observacionesField(),
     atacado: this.atacadoField(),
     retroceso: this.retrocesoField(),
-    equipoAtacado: this.formModel().equipoAtacado,
-    equipoRetroceso: this.formModel().equipoRetroceso,
   }));
 
   // ── Dirty tracking ─────────────────────────────────────────────────────────
@@ -454,7 +417,14 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   onSerieSelected(serie: string | null): void {
     const current = this.formModel();
-    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : null;
+    const disparo = isShotInSerie(
+      current.disparo,
+      serie,
+      this.#store.executionProgress()?.series,
+      this.#store.planningSeries(),
+    )
+      ? current.disparo
+      : null;
 
     this.formModel.set({
       ...current,
@@ -510,37 +480,24 @@ export class JltShotData extends BaseFormWidgetComponent {
       return;
     }
 
-    const { serie, disparo, equipoAtacado, equipoRetroceso } = this.formModel();
+    const { serie, disparo } = this.formModel();
     const jet = this.#resolvedJet();
     const operadorPieza = this.#resolvedPieceOperator();
     const updates: Partial<JltShotDataState> = {
       serie,
       disparo,
-      equipoAtacado,
-      equipoRetroceso,
       jet,
       operadorPieza,
       observaciones: this.observacionesField(),
-      atacado: this.#parseNum(this.atacadoField()),
-      retroceso: this.#parseNum(this.retrocesoField()),
+      atacado: parseNum(this.atacadoField()),
+      retroceso: parseNum(this.retrocesoField()),
     };
 
     this.#store.updateJltShotData(updates);
-
     this.#syncSnapshot();
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
-  #numToField(value: number | null, unit: string): InputFieldValue {
-    return value !== null ? { value: value.toString(), unit } : null;
-  }
-
-  #parseNum(field: InputFieldValue): number | null {
-    if (!field) return null;
-    const n = parseFloat(field.value);
-    return isNaN(n) ? null : n;
-  }
-
   #syncSnapshot(): void {
     this.#dirtyTracker.syncSnapshot();
   }
@@ -556,7 +513,7 @@ export class JltShotData extends BaseFormWidgetComponent {
       return;
     }
 
-    const lastShotId = this.#findLastShotId(serie);
+    const lastShotId = findLastShotId(this.#store.executionProgress()?.series, serie);
     const [currentShotResult, lastShotResult] = await Promise.allSettled([
       this.#executionService.fetchJltShotData(fireTrialId, serie, disparo),
       lastShotId ? this.#executionService.fetchJltShotData(fireTrialId, serie, lastShotId) : Promise.resolve(null),
@@ -566,35 +523,18 @@ export class JltShotData extends BaseFormWidgetComponent {
       return;
     }
 
-    const inheritedDefaults =
-      lastShotResult.status === 'fulfilled' && lastShotResult.value
-        ? {
-            jet: this.#getJltData(lastShotResult.value).jet || null,
-            pieceOperator: this.#getJltData(lastShotResult.value).pieceOperator || null,
-          }
-        : { jet: null, pieceOperator: null };
+    const lastShotPayload =
+      lastShotResult.status === 'fulfilled' && lastShotResult.value ? extractJltData(lastShotResult.value) : null;
+
+    const inheritedDefaults: JltInheritedDefaults = {
+      jet: lastShotPayload?.jet || null,
+      pieceOperator: lastShotPayload?.pieceOperator || null,
+    };
 
     this.inheritedDefaults.set(inheritedDefaults);
 
-    if (currentShotResult.status === 'fulfilled') {
-      this.#applyRemoteShotData(currentShotResult.value, inheritedDefaults);
-      return;
-    }
-
-    this.#applyRemoteShotData(
-      {
-        jltData: {
-          jet: '',
-          pieceOperator: '',
-          attackDistance: null,
-          attackDistanceUnit: MeasureUnitEnum.MM,
-          recoilDistance: null,
-          recoilDistanceUnit: MeasureUnitEnum.MM,
-          observations: null,
-        },
-      },
-      inheritedDefaults,
-    );
+    const remotePayload = currentShotResult.status === 'fulfilled' ? currentShotResult.value : null;
+    this.#applyRemoteShotData(remotePayload, inheritedDefaults);
   }
 
   #syncSelectionToStore(serie: string | null, disparo: string | null): void {
@@ -603,46 +543,6 @@ export class JltShotData extends BaseFormWidgetComponent {
       disparo,
       estadoDisparo: this.estadoDisparo(),
     });
-  }
-
-  #isShotInSerie(disparo: string | null, serie: string | null): boolean {
-    if (!disparo || !serie) {
-      return false;
-    }
-
-    return (
-      this.#store
-        .executionProgress()
-        ?.series.some((series) => series.seriesId === serie && series.shots.some((shot) => shot.shotId === disparo)) ??
-      this.#store
-        .planningSeries()
-        ?.some((series) => series.id === serie && series.shots?.some((shot) => shot.id === disparo)) ??
-      false
-    );
-  }
-
-  #findLastShotId(serie: string): string | null {
-    const shots = this.#store.executionProgress()?.series.find((item) => item.seriesId === serie)?.shots ?? [];
-    return shots.length > 0 ? (shots[shots.length - 1]?.shotId ?? null) : null;
-  }
-
-  #getShotOrder(serie: string | null, disparo: string | null): number | null {
-    if (!serie || !disparo) {
-      return null;
-    }
-
-    let shotOrder = 0;
-    for (const series of this.#store.executionProgress()?.series ?? []) {
-      for (const shot of series.shots) {
-        if (series.seriesId === serie && shot.shotId === disparo) {
-          return shotOrder;
-        }
-
-        shotOrder += 1;
-      }
-    }
-
-    return null;
   }
 
   #resolvedJet(): string | null {
@@ -656,55 +556,35 @@ export class JltShotData extends BaseFormWidgetComponent {
   #hydrateLocalState(
     stored: Pick<
       JltShotDataState,
-      | 'serie'
-      | 'disparo'
-      | 'equipoAtacado'
-      | 'equipoRetroceso'
-      | 'jet'
-      | 'operadorPieza'
-      | 'observaciones'
-      | 'atacado'
-      | 'retroceso'
+      'serie' | 'disparo' | 'jet' | 'operadorPieza' | 'observaciones' | 'atacado' | 'retroceso'
     >,
   ): void {
     this.jetField.set(stored.jet);
     this.operadorPiezaField.set(stored.operadorPieza);
     this.observacionesField.set(stored.observaciones);
-    this.atacadoField.set(this.#numToField(stored.atacado, MeasureUnitEnum.MM));
-    this.retrocesoField.set(this.#numToField(stored.retroceso, MeasureUnitEnum.MM));
+    this.atacadoField.set(numToField(stored.atacado, MeasureUnitEnum.MM));
+    this.retrocesoField.set(numToField(stored.retroceso, MeasureUnitEnum.MM));
     this.formModel.set({
       serie: stored.serie,
       disparo: stored.disparo,
-      equipoAtacado: stored.equipoAtacado,
-      equipoRetroceso: stored.equipoRetroceso,
     });
   }
 
   #applyRemoteShotData(
-    response: JltShotDataResponse,
-    inheritedDefaults: { jet: string | null; pieceOperator: string | null } = this.inheritedDefaults(),
+    response: JltShotDataResponse | null | undefined,
+    inheritedDefaults: JltInheritedDefaults = this.inheritedDefaults(),
   ): void {
-    const { serie, disparo, equipoAtacado, equipoRetroceso } = this.formModel();
-    const data = this.#getJltData(response);
-    const nextState: Partial<JltShotDataState> = {
+    const { serie, disparo } = this.formModel();
+    const nextState = mapRemoteToJltShotState(response, inheritedDefaults, {
       serie,
       disparo,
-      equipoAtacado,
-      equipoRetroceso,
-      jet: data.jet || inheritedDefaults.jet || null,
-      operadorPieza: data.pieceOperator || inheritedDefaults.pieceOperator || null,
-      observaciones: data.observations ?? null,
-      atacado: data.attackDistance ?? null,
-      retroceso: data.recoilDistance ?? null,
       estadoDisparo: this.estadoDisparo(),
-    };
+    });
 
     this.#store.updateJltShotData(nextState);
     this.#hydrateLocalState({
       serie,
       disparo,
-      equipoAtacado,
-      equipoRetroceso,
       jet: nextState.jet ?? null,
       operadorPieza: nextState.operadorPieza ?? null,
       observaciones: nextState.observaciones ?? null,
@@ -712,32 +592,5 @@ export class JltShotData extends BaseFormWidgetComponent {
       retroceso: nextState.retroceso ?? null,
     });
     this.#syncSnapshot();
-  }
-
-  #getJltData(response: JltShotDataResponse | null): JltShotDataPayload {
-    if (!response) {
-      return {
-        jet: '',
-        pieceOperator: '',
-        attackDistance: null,
-        attackDistanceUnit: MeasureUnitEnum.MM,
-        recoilDistance: null,
-        recoilDistanceUnit: MeasureUnitEnum.MM,
-        observations: null,
-      };
-    }
-
-    const data = 'jltData' in response ? response.jltData : response;
-    return (
-      data ?? {
-        jet: '',
-        pieceOperator: '',
-        attackDistance: null,
-        attackDistanceUnit: MeasureUnitEnum.MM,
-        recoilDistance: null,
-        recoilDistanceUnit: MeasureUnitEnum.MM,
-        observations: null,
-      }
-    );
   }
 }

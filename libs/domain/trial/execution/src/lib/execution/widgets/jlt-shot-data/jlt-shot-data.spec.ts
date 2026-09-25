@@ -301,16 +301,13 @@ describe('JltShotData', () => {
     expect(TestBed.inject(ExecutionStore).jltShotData().disparo).toBe(ACTIVE_SHOT_ID);
   });
 
-  it('marks dirty when equipoAtacado changes', async () => {
+  it('marks dirty when atacado changes', async () => {
     const { fixture } = await renderWidget();
     await fixture.whenStable();
 
     expect(fixture.componentInstance.formState().dirty).toBe(false);
 
-    fixture.componentInstance['formModel'].update((value) => ({
-      ...value,
-      equipoAtacado: 'equipo-b',
-    }));
+    fixture.componentInstance['atacadoField'].set({ value: '30', unit: 'MM' });
 
     expect(fixture.componentInstance.formState().dirty).toBe(true);
   });
@@ -322,8 +319,6 @@ describe('JltShotData', () => {
     TestBed.inject(ExecutionStore).updateJltShotData({
       serie: 'funcionamiento-2',
       disparo: 'shot-5',
-      equipoAtacado: 'eq-atac-02',
-      equipoRetroceso: 'eq-retro-02',
       jet: 'JET-STORE',
       operadorPieza: 'OP-STORE',
       observaciones: 'Store value',
@@ -334,8 +329,11 @@ describe('JltShotData', () => {
     fixture.componentInstance.resetForm();
 
     expect(fixture.componentInstance['formModel']().serie).toBe('funcionamiento-2');
-    expect(fixture.componentInstance['formModel']().equipoAtacado).toBe('eq-atac-02');
     expect(fixture.componentInstance['jetField']()).toBe('JET-STORE');
+    expect(fixture.componentInstance['operadorPiezaField']()).toBe('OP-STORE');
+    expect(fixture.componentInstance['observacionesField']()).toBe('Store value');
+    expect(fixture.componentInstance['atacadoField']()).toEqual({ value: '50', unit: 'MM' });
+    expect(fixture.componentInstance['retrocesoField']()).toEqual({ value: '12', unit: 'MM' });
   });
 
   it('setCurrentShot updates serie and disparo from active store values', async () => {
