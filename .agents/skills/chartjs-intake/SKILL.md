@@ -1,5 +1,8 @@
 ---
-description: 'Structured intake flow for @chartjs-expert. Use before creating a complex chart to define type, dataset, plugins, and framework context.'
+name: chartjs-intake
+version: 1.0.0
+last-updated: 2026-09-29
+description: Structured intake flow for @chartjs-expert. Use before creating a complex chart to define type, dataset, plugins, and framework context.
 argument-hint: "Briefly describe the chart needed (e.g. 'time-series line chart for chamber pressure with zoom')"
 mode: agent
 ---

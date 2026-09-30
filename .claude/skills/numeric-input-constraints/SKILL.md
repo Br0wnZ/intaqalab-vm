@@ -1,5 +1,7 @@
 ---
 name: numeric-input-constraints
+version: 1.0.0
+last-updated: 2026-09-29
 description: Expert in validating and constraining numeric inputs using Angular directives and context-aware min/max values from INTAQALAB functional specs (planning, execution, admin). Handles locale-aware decimals, leading zeros removal, and physics domain range validation.
 argument-hint: "E.g. 'Create planning form with velocities and pressures' or 'Generate execution data inputs with coordinates and pressure gauges'."
 user-invocable: true

@@ -1,5 +1,7 @@
 ---
 name: swagger-api-architect
+version: 1.0.0
+last-updated: 2026-09-29
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---
@@ -93,6 +95,7 @@ Cada capa tiene documentación detallada con ejemplos reales del proyecto. **Lee
 
 **Reglas:**
 
+- **NUNCA usar `any`:** PROHIBIDO el uso de `any` (e.g. `as any`, `: any`, `any[]`). Todos los schemas, requests, responses, mappers, servicios y mocks deben tener tipos TypeScript estrictos.
 - Usa `type` para DTOs y responses. Usa `interface` solo si hay herencia.
 - Exporta SIEMPRE con `export type`.
 - Nombra los archivos en **kebab-case**: `{entity}.model.ts`.

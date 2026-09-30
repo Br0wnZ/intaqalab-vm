@@ -350,3 +350,22 @@ if (isValidWidgetId(testId)) {
 Las transiciones de estado (pausar, interrumpir, cancelar) se ejecutan directamente realizando la petición HTTP desde el propio diálogo (ej. \`PauseExecutionDialogComponent\`).
 El diálogo se cierra solo cuando el resource HTTP pasa al estado \`resolved\`.
 Por este motivo, la fachada (\`ExecutionFacade\` o \`ExecutionStore\`) NO necesita ni debe llamar a los endpoints de transición directamente. El simple acto de confirmar el diálogo completa la operación y el store recarga el estado dinámicamente al recibir un estado \`resolved\` en sus signals internos.
+
+---
+
+## 🛑 Widgets Autónomos (Exclusión de refresco por `updatedAt`)
+
+Por defecto, el polling de `GET /execution/state` en `withGeneralData` (`general-data.feature.ts`) compara `state.updatedAt` y, cuando detecta un cambio, refresca los recursos globales de seguimiento/progreso y actualiza `activeSerieId` y `activeShotId`.
+
+Cuando un widget debe ser **autónomo** (gestionar su propia carga inicial sin re-ejecutar peticiones ni alterar su estado local ante cambios de `updatedAt`):
+
+1. **Estado y métodos en `ExecutionStore` (`withGeneralData`)**:
+   - `autonomousWidgets: Set<WidgetId>` (inicializado con `DEFAULT_AUTONOMOUS_WIDGETS = [WidgetId.SEGUIMIENTO]`).
+   - `registerAutonomousWidget(widgetId: WidgetId): void`
+   - `unregisterAutonomousWidget(widgetId: WidgetId): void`
+   - `isWidgetAutonomous(widgetId: WidgetId): boolean`
+2. **Declaración en el componente (`BaseFormWidgetComponent`)**:
+   - Establecer `protected override readonly autonomousWidgetType = WidgetId.SEGUIMIENTO;` en el widget.
+   - `BaseFormWidgetComponent` registra el widget en `ngOnInit()` y lo desregistra en `ngOnDestroy()`.
+3. **Guard en efectos de sincronización**:
+   - Antes de lanzar refrescos dependientes de `updatedAt`, comprobar `!untracked(() => store.isWidgetAutonomous(WidgetId.<ID>))`.

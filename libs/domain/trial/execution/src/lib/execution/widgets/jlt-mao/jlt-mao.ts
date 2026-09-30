@@ -18,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -55,6 +56,7 @@ interface JltMaoSelectForm {
     TranslateModule,
     InputSelect,
     IntaIconComponent,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <div class="h-full rounded-2xl border border-purple-200 bg-white p-2 flex flex-col gap-1.5 overflow-auto">
@@ -128,7 +130,9 @@ interface JltMaoSelectForm {
           [readOnly]="oltReadOnly()"
           [variant]="oltReadOnly() ? 'computed' : 'default'"
           (valueChange)="onOltChanged($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
@@ -167,7 +171,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_PLACEHOLDER' | translate"
           [value]="velocidadInicialField()"
           (valueChange)="velocidadInicialField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Distancia prevista pique -->
         <ui-input-select
@@ -176,7 +182,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_PLACEHOLDER' | translate"
           [value]="distanciaPiqueField()"
           (valueChange)="distanciaPiqueField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Deriva tabular -->
         <ui-input-select
@@ -185,7 +193,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_PLACEHOLDER' | translate"
           [value]="derivaTabularField()"
           (valueChange)="derivaTabularField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Tiempo vuelo teórico -->
         <ui-input-select
@@ -194,7 +204,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_PLACEHOLDER' | translate"
           [value]="tiempoVueloField()"
           (valueChange)="tiempoVueloField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- ── Row 2 ─────────────────────────────────────────────────────── -->
 
@@ -207,7 +219,9 @@ interface JltMaoSelectForm {
           [readOnly]="angularDifferenceReadOnly()"
           [variant]="angularDifferenceReadOnly() ? 'computed' : 'default'"
           (valueChange)="onAngularDifferenceChanged($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Ángulo de tiro -->
         <ui-input-select
@@ -216,7 +230,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_PLACEHOLDER' | translate"
           [value]="anguloTiroField()"
           (valueChange)="anguloTiroField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Graduación espoleta -->
         <ui-input-select
@@ -225,7 +241,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_PLACEHOLDER' | translate"
           [value]="graduacionEspoletaField()"
           (valueChange)="graduacionEspoletaField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Altura de funcionamiento -->
         <ui-input-select
@@ -234,7 +252,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_FUNCIONAMIENTO_PLACEHOLDER' | translate"
           [value]="alturaFuncionamientoField()"
           (valueChange)="alturaFuncionamientoField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Distancia de funcionamiento -->
         <ui-input-select
@@ -243,7 +263,9 @@ interface JltMaoSelectForm {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER' | translate"
           [value]="distanciaFuncionamientoField()"
           (valueChange)="distanciaFuncionamientoField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
       </div>
     </div>
   `,
@@ -274,13 +296,19 @@ export class JltMao extends BaseFormWidgetComponent {
   );
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.jltMao().disparoOptions);
+      return mapShotsToDisparoOptions(
+        progressShots.map((shot) => ({
+          ...shot,
+          globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
+        })),
+        this.#store.jltMao().disparoOptions,
+      );
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, this.#store.jltMao().disparoOptions);
     }

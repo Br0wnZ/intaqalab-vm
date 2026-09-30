@@ -1,5 +1,7 @@
 ---
 name: signal-trigger-pattern
+version: 1.0.0
+last-updated: 2026-09-29
 description: Implements the Signal Trigger Pattern — the mandatory httpResource + private trigger signal pattern for all data fetching in the Intaqalab project. USE WHEN creating or modifying data-access services, stores that fetch remote data, or any component that needs to load data from an API.
 ---
 
@@ -261,4 +263,15 @@ constructor() { this.service.load(params); } // el componente no llama al servic
 
 // ❌ Leer resource.value() en el template directamente (sin computed en el Store)
 {{ service.resource.value()?.data }}
+
+// ❌ Non-null assertion on resource.value()! (Forbidden non-null assertion)
+async fetchEntity(): Promise<Entity> {
+  await this.#awaitResource(this.resource);
+  return this.resource.value()!;
+}
+
+// ✅ Safe unwrap helper that awaits, checks for undefined, and throws
+async fetchEntity(): Promise<Entity> {
+  return this.#awaitResourceValue(this.resource);
+}
 ```

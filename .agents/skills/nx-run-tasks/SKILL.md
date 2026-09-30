@@ -1,5 +1,7 @@
 ---
 name: nx-run-tasks
+version: 1.0.0
+last-updated: 2026-09-29
 description: Helps with running tasks in an Nx workspace. USE WHEN the user wants to execute build, test, lint, serve, or run any other tasks defined in the workspace.
 ---
 

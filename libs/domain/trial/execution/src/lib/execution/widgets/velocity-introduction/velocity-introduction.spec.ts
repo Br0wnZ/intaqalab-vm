@@ -2,7 +2,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CadenceUnitEnum, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
@@ -217,7 +216,10 @@ describe('VelocityIntroduction', () => {
       value: '600',
       unit: MeasureUnitEnum.SPM,
     });
-    expect(fixture.componentInstance['incertidumbreSoftwareDisplay']()).toBe('0.5');
+    expect(fixture.componentInstance['incertidumbreSoftwareField']()).toEqual({
+      value: '0.5',
+      unit: MeasureUnitEnum.M_S,
+    });
     expect(fixture.componentInstance['observacionesField']()).toBe('Velocidad dentro del rango esperado');
   });
 

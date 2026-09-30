@@ -1,9 +1,8 @@
 ---
 name: master-data-specialist
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Master Data Domain Expert for INTAQALAB.
-  Expert in the generic Shell catalog pattern, data abstraction, and rapid implementation
-  of new master data services in `libs/domain/master-data`.
 ---
 
 # 🏗️ INTAQALAB: Master Data Specialist

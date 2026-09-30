@@ -1,6 +1,8 @@
 ---
 name: nx-generator-expert
-description: 'Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility.'
+version: 1.0.0
+last-updated: 2026-09-29
+description: Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility.
 argument-hint: "E.g. 'Generate feature library for warehouse management', 'Create card component in ui-shared lib', or '/create-feature'."
 user-invocable: true
 ---
@@ -87,6 +89,29 @@ nx g @nx/angular:service [name] --project=[nx-project-name] --no-interactive
 ```
 
 _⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical suffix (`example.service.ts` and class `ExampleService`)._
+
+---
+
+---
+
+## ⚡ Nx 23.2.1 Standards & Inferred Targets (Project Crystal)
+
+1. **Zero Manual `lint`/`test` in `project.json`**:
+   - 🚫 **PROHIBITED:** Manually defining `lint` (`@nx/eslint:lint`) or `test` (`@nx/vitest:test`) targets in `project.json`.
+   - In Nx 23+, targets are inferred automatically by `@nx/eslint/plugin` and `@nx/vitest`.
+   - Inspect full resolved targets using `npx nx show project <name> --json`.
+
+2. **Library `vite.config.mts` Rules**:
+   - All library `vite.config.mts` files MUST use:
+     ```ts
+     plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+     ```
+   - 🚫 **PROHIBITED:** `nxCopyAssetsPlugin` (deprecated in Nx 23, removed in Nx 24).
+   - 🚫 **PROHIBITED:** Bare `angular()` without `{ tsconfig: './tsconfig.spec.json' }` (causes Analog to fail searching for non-existent `tsconfig.app.json`).
+
+3. **Register New Libraries in Vitest Root Config**:
+   - When generating a library with tests, add its `vite.config.mts` path to the `projects` array in `vitest.config.ts`.
+   - 🚫 **PROHIBITED:** Creating or restoring `vitest.workspace.ts` (deprecated and ignored by Vitest 4).
 
 ---
 

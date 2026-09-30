@@ -7,8 +7,8 @@ Usa **Component Harnesses** de Angular Material para interactuar con componentes
 - **Siempre usa harnesses** para componentes Material en lugar de `querySelector` o selectores CSS directos.
 - **Crea el `HarnessLoader`** desde el fixture de ATL: `TestbedHarnessEnvironment.loader(view.fixture)`.
 - **Todos los métodos de harness son `async`**.
-- **Filtrado por atributos:** Usa `Harness.with({ ... })` para filtrar por texto, selector, etc.
-- **Si el filtrado no funciona** (HTML personalizado en headers, por ejemplo), usa `getAllHarnesses()` y accede por índice.
+- **Evita `.with({ selector: ... })` y `getOptions({ text: ... })`**: En el entorno Vite/Vitest, los predicados de CDK pueden fallar con `SyntaxError: '' is not a valid selector` (ver [known-issues.md #19](known-issues.md#19-syntaxerror--is-not-a-valid-selector-al-usar-harnesswith-o-matselectharnessgetoptions-en-vitest)).
+- **Patrón Canónico de Localización:** Pasa la clase constructora a `loader.getAllHarnesses(HarnessClass)` y accede por índice (`inputs[0]`, `selects[1]`).
 - **NO envolver llamadas a harnesses en `waitFor(async () => ...)`**: `waitFor` espera una función sincrónica. Llama a `view.fixture.detectChanges()` y luego haz `await loader.getHarness(...)` o `await loader.getAllHarnesses(...)` directamente.
 
 ## Imports Necesarios
@@ -37,21 +37,41 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 | `mat-sort-header`                   | `MatSortHeaderHarness`      | `@angular/material/sort/testing`         |
 | `mat-datepicker`                    | `MatDatepickerInputHarness` | `@angular/material/datepicker/testing`   |
 
-## Ejemplo: MatSelect con Harness
+## Ejemplo: MatSelect con Harness y ATL (Patrón Recomendado)
+
+Abre el select con el harness y selecciona opciones usando queries accesibles de ATL (`screen.getByText` o `screen.getByRole('option')`) + `userEvent`:
 
 ```typescript
 import { MatSelectHarness } from '@angular/material/select/testing';
 
-it('should open select and show options', async () => {
-  const { loader } = await runSetup();
+it('should open select and choose an option', async () => {
+  const { loader, user, fixture } = await runSetup();
 
-  const select = await loader.getHarness(MatSelectHarness);
+  const selects = await loader.getAllHarnesses(MatSelectHarness);
+  const select = selects[0];
   await select.open();
 
-  const options = await select.getOptions();
-  expect(options.length).toBe(3);
-  expect(await options[0].getText()).toBe('Option A');
+  // Seleccionar la opción en el overlay usando ATL
+  const option = screen.getByText('Option A');
+  await user.click(option);
+  fixture.detectChanges();
+
+  expect(screen.getByText('Option A')).toBeInTheDocument();
 });
+```
+
+### MatSelect Múltiple (Orden de valores en el modelo)
+
+`MatSelect` en modo `multiple` **ordena las selecciones según el orden de las opciones en el DOM**, nunca por el orden cronológico de clic (ver [known-issues.md #20](known-issues.md#20-discrepancia-de-orden-en-arrays-con-matselect-múltiple-multiple)):
+
+```typescript
+// Si en el DOM las opciones están en orden: [VELOCITY, TRAJECTOGRAPHY, SOUND]
+// Y el valor inicial era: ['VELOCITY', 'SOUND']
+await user.click(screen.getByText('Trayectografía'));
+fixture.detectChanges();
+
+// ✅ El modelo tendrá las claves en orden de aparición en el DOM:
+expect(component.formModel().measurements).toEqual(['VELOCITY', 'TRAJECTOGRAPHY', 'SOUND']);
 ```
 
 ## Ejemplo: Expansion Panel

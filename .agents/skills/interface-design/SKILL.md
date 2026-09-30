@@ -1,5 +1,7 @@
 ---
 name: interface-design
+version: 1.0.0
+last-updated: 2026-09-29
 description: This skill is for interface design — dashboards, admin panels, apps, tools, and interactive products. NOT for marketing design (landing pages, marketing sites, campaigns).
 ---
 

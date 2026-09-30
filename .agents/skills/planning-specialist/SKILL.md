@@ -1,9 +1,8 @@
 ---
 name: planning-specialist
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Trial Planning Domain Specialist for INTAQALAB.
-  Expert in domain data structures, associated catalogs, and SignalStore architecture
-  for series, shots, armaments, munitions, and shooting conditions in `libs/domain/trial/planning`.
 ---
 
 # 🎯 INTAQALAB: Trial Planning Specialist

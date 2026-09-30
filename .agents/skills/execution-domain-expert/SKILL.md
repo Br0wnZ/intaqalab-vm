@@ -1,10 +1,8 @@
 ---
 name: execution-domain-expert
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Domain Expert for Fire Trial Execution (libs/domain/trial/execution).
-  Deep knowledge of the complete architecture: Swagger API (execution-api.json), state machine,
-  httpResource + Signal Trigger patterns, ExecutionStore, Express mock-server, and Vitest+ATL tests.
-  Activate when developing services, stores, mocks, or tests related to trial execution.
 ---
 
 # 🎯 Execution Domain Expert
@@ -22,6 +20,7 @@ description: >
 - Hardcoded unit strings (`'g'`, `'kg'`, `'MPa'`, `'bar'`, etc.) are prohibited in components, stores, and services.
 - For unit labels and selectors, use `MEASURE_UNIT_LABELS` and specific subtypes (`WeightUnitEnum`, `PressureUnitEnum`, `DistanceUnitEnum`, `TimeUnitEnum`, etc.) from the shared models package.
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All payload types, response types, store slices, mappers, and unit transformations MUST use explicit TypeScript types and enums from `@intaqalab/models` or local models.
+- **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`). All methods in `ExecutionService` MUST use `#awaitResourceValue(resource)` instead of `resource.value()!`. In data mapping or store features, use `flatMap()` or explicit type guards.
 
 ### Root Directory Structure
 
@@ -107,6 +106,16 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 - **Form Touch Directive (`FormTouchDirective`):** Use `intaFormTouch` on host containers to capture real user `focusout` events rather than programmatic patches.
 - **Selection Race Condition Guard (`createSelectionGuard`):** Discard stale responses when rapidly switching series/shots during in-flight GET requests.
 - **Save Execution (`saveForm`):** Parent header triggers `WidgetStateService.saveAllDirtyForms()`, running `saveForm()` across all dirty widgets concurrently (`Promise.all`). Each widget awaits the HTTP mutation, syncs its baseline snapshot on success, and rethrows on error.
+- **Autonomous Widgets (`autonomousWidgets` / `updatedAt` Opt-Out):**
+  - `withGeneralData` in `ExecutionStore` tracks a `Set<WidgetId>` (`autonomousWidgets`, initialized with `DEFAULT_AUTONOMOUS_WIDGETS = [WidgetId.SEGUIMIENTO]`) and exposes `registerAutonomousWidget(widgetId)`, `unregisterAutonomousWidget(widgetId)`, and `isWidgetAutonomous(widgetId)`.
+  - Widgets that must NOT auto-refresh or reset their local state when `GET /execution/state` returns a new `updatedAt` declare `protected override readonly autonomousWidgetType = WidgetId.<ID>;` in their `BaseFormWidgetComponent` subclass (e.g., `SeguimientoWidget` with `WidgetId.SEGUIMIENTO`).
+  - `BaseFormWidgetComponent` automatically registers/unregisters `autonomousWidgetType` in `ExecutionStore` during its lifecycle, and `withGeneralData` / widget effects check `store.isWidgetAutonomous(widgetId)` before triggering `updatedAt`-driven refreshes.
+
+## 🔢 Shot Selector Numbering
+
+- Shot selectors MUST display each shot using its planning `globalNumber` when available: `Disparo ${shot.globalNumber ?? index + 1}`.
+- When execution progress does not include `globalNumber`, enrich progress shots with the matching planning shot before mapping selector options. Match by shot ID, never by array position.
+- Keep `index + 1` only as a fallback for legacy or incomplete data where `globalNumber` is `null` or `undefined`.
 
 ---
 

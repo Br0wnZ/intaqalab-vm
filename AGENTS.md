@@ -25,6 +25,8 @@
 
 <!-- nx configuration end-->
 
+<!-- AGENTS_VERSION: 1.0.1 | UPDATED: 2026-09-29 -->
+
 ---
 
 # 🪨 Caveman Mode & Token Efficiency (Mandatory)
@@ -41,6 +43,18 @@
 - **Comments & Encoding:** Strict **UTF-8** format for all code and docs (accent marks, ñ, special chars).
 - **Auto-Load Rules & Skills:** Antigravity, Claude Code, GitHub Copilot, and Cursor implicitly follow all instructions in `AGENTS.md` and dynamically load skills from `.agents/skills/`.
 - **Definition of Done:** Zero lint errors, passing Vitest unit tests (`npx nx test <project>`), and zero broken imports.
+
+## 📦 Versioning & Skills Registry (SemVer)
+
+- **Independent SemVer:** `AGENTS.md` and all skills in `.agents/skills/*/SKILL.md` follow independent Semantic Versioning (`MAJOR.MINOR.PATCH`).
+- **Single Source of Truth:** `.agents/skills/` is the canonical source of truth. `.claude/skills/` is mirrored via `npm run agents:sync`.
+- **Central Manifest:** `.agents/versions.json` tracks versions, paths, descriptions, and deterministic SHA-256 tree checksums.
+- **Changelog:** All updates are logged in `.agents/CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/).
+- **CLI Commands:**
+  - `npm run agents:status`: View versions, dates, and sync/dirty status.
+  - `npm run agents:check`: Validate SemVer, frontmatter schemas, and verify no unversioned changes exist (CI / pre-commit).
+  - `npm run agents:bump <target> [patch|minor|major] -- --msg "..."`: Bump version, update manifest/frontmatter, add changelog entry, and sync. Target can be `<skill-name>`, `agents`, or `all`.
+  - `npm run agents:sync`: Mirror `.agents/skills/` to `.claude/skills/`.
 
 ---
 
@@ -102,6 +116,10 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
   - **Classes:** Omit technical suffixes for components/directives/pipes (e.g. `UserProfile` instead of `UserProfileComponent`). **Services** maintain `Service` suffix (e.g. `UserProfileService`).
   - **Types & Enums:** MUST be declared under the `models` or `utils-models` directory of the respective library. Never inline in components or services.
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All models, service payloads, stores, mappers, fixtures, and tests MUST use explicit TypeScript types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.).
+- **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`) anywhere in code, store features, services, mappers, or tests (e.g. `resource.value()!`, `d.batch!`, `fixture.componentInstance.identTab()!`).
+  - **httpResource resolution in services:** NEVER return `resource.value()!`. In imperative async methods, use typed helper `return this.#awaitResourceValue(resource)` which safely awaits, verifies `value !== undefined`, and throws on error/empty.
+  - **Collections / Optional properties:** Use `flatMap()` or explicit TypeScript type predicates (`filter((x): x is ... => Boolean(...))`).
+  - **Tests:** Use explicit guards (`if (!tab) throw new Error(...)`) or semantic assertions (`expect(...).toBeDefined()`) instead of `!`. Never add `/* eslint-disable @typescript-eslint/no-non-null-assertion */`.
 - **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim.
 - **Save/Submit Button (`ui-save-button`):** ⚡ **MANDATORY.** For form mutations, submissions, and save actions, use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) with `[isSaving]="resource.isLoading()"`. Never use raw `mat-flat-button` for form submissions.
 - **Event Isolation (`uiStopClick`):** ⚡ **MANDATORY.** When handling clicks on interactive child elements inside clickable parent containers (`mat-option`, accordion headers, table rows, cards), use `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`) instead of manually calling `event.stopPropagation()` and `event.preventDefault()` in component methods. E.g.: `<button type="button" uiStopClick (click)="toggleStar(id)">`. Keeps component methods pure and DOM-event agnostic.

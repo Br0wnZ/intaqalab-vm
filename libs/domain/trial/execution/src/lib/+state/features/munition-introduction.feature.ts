@@ -2,12 +2,28 @@ import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/si
 
 import type { ShotMunitionResponse } from '../../execution/models';
 import { mapRemoteToMunitionState } from '../../execution/widgets/munition-introduction/munition-introduction.mapper';
+import type { PlanningComponentType } from '../../services/execution.service';
 import type {
   MunitionIntroAcondicionamientoState,
   MunitionIntroIdentificationState,
   MunitionIntroWeightState,
   MunitionIntroductionState,
 } from '../execution-state.models';
+
+/**
+ * Maps a catalog category + label to the internal store category string
+ * used by the tabs (e.g., isEspoleta checks for 'espoleta', isPolvo checks for 'polvo').
+ */
+function mapCatalogCategoryToStoreCategory(catalogCategory: string, label: string): string {
+  const lowerLabel = label.toLowerCase();
+  if (lowerLabel.includes('espoleta')) return 'espoleta';
+  if (lowerLabel.includes('pólvora') || lowerLabel.includes('polvora')) return 'polvo';
+  if (lowerLabel.includes('granada')) return 'granada';
+  if (lowerLabel.includes('carga')) return 'carga';
+  // MUNITION category → main denomination type (e.g., "Disparo Organizado", "Disparo completo")
+  if (catalogCategory === 'MUNITION') return 'munition';
+  return 'componente';
+}
 
 interface MunitionIntroductionSlice {
   munitionIntroduction: MunitionIntroductionState;
@@ -105,6 +121,84 @@ export function withMunitionIntroduction() {
   return signalStoreFeature(
     withState(initialState),
     withMethods((store) => ({
+      updateMunitionIntroductionPlanningOptions(
+        componentTypes: PlanningComponentType[],
+        denominations: Array<{
+          id: string;
+          name: string;
+          componentTypeId: string;
+          batch?: string | null;
+          clientNumber?: string | null;
+        }>,
+      ): void {
+        const planningLotes = denominations.flatMap((d) =>
+          d.batch ? [{ value: d.batch, label: d.batch, denominacionId: d.id }] : [],
+        );
+
+        patchState(store, (state) => {
+          const existingLotes = state.munitionIntroduction.loteOptions;
+          const mergedLotes = [...existingLotes];
+          for (const pl of planningLotes) {
+            if (!mergedLotes.some((l) => l.value === pl.value && l.denominacionId === pl.denominacionId)) {
+              mergedLotes.push(pl);
+            }
+          }
+
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              componenteOptions: componentTypes.map(({ id, label, category }) => ({
+                value: id,
+                label,
+                category: mapCatalogCategoryToStoreCategory(category, label),
+              })),
+              denominacionOptions: denominations.map(({ id, name, componentTypeId, batch, clientNumber }) => ({
+                value: id,
+                label: name,
+                componenteId: componentTypeId,
+                inStock: true,
+                batch: batch ?? null,
+                clientNumber: clientNumber ?? null,
+              })),
+              loteOptions: mergedLotes,
+            },
+          };
+        });
+      },
+
+      /** Adds or merges denomination options without duplicating */
+      addMunitionIntroductionDenominations(
+        denominations: Array<{
+          id: string;
+          name: string;
+          componentTypeId: string;
+          batch?: string | null;
+          clientNumber?: string | null;
+        }>,
+      ): void {
+        patchState(store, (state) => {
+          const existing = state.munitionIntroduction.denominacionOptions;
+          const toAdd = denominations.filter((d) => !existing.some((e) => e.value === d.id));
+          if (toAdd.length === 0) return {};
+
+          const newOptions = toAdd.map(({ id, name, componentTypeId, batch, clientNumber }) => ({
+            value: id,
+            label: name,
+            componenteId: componentTypeId,
+            inStock: true,
+            batch: batch ?? null,
+            clientNumber: clientNumber ?? null,
+          }));
+
+          return {
+            munitionIntroduction: {
+              ...state.munitionIntroduction,
+              denominacionOptions: [...existing, ...newOptions],
+            },
+          };
+        });
+      },
+
       /** Updates serie/disparo selector */
       updateMunitionIntroductionSelector(updates: Partial<Pick<MunitionIntroductionState, 'serie' | 'disparo'>>): void {
         patchState(store, (state) => ({

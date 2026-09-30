@@ -1,4 +1,4 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import type { HasStatus, TrialActions } from '@intaqalab/models';
 
 import { ButtonTrialActionsComponent } from '../button-trial-actions/button-trial-actions.component';
@@ -13,25 +13,22 @@ import { config } from './button-trial-actions-imp.constants';
       <inta-trial-actions [config]="config()!" (clicked)="actionClicked($event)" />
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonTrialActionsImplComponent {
   readonly clicked = output<TrialActions>();
   readonly trial = input.required<HasStatus>();
 
-  protected config = signal<ButtonTrialActionsInput | undefined>(undefined);
+  protected readonly config = computed<ButtonTrialActionsInput | undefined>(() => {
+    const trial = this.trial();
+    if (!trial) return undefined;
 
-  constructor() {
-    effect(() => {
-      const trial = this.trial();
-      if (trial) {
-        this.config.set({
-          label: 'UTILS_TRIALS.TRIAL_ACTIONS_LABEL',
-          list: config,
-          trial,
-        });
-      }
-    });
-  }
+    return {
+      label: 'UTILS_TRIALS.TRIAL_ACTIONS_LABEL',
+      list: config,
+      trial,
+    };
+  });
 
   actionClicked($event: string) {
     this.clicked.emit($event as TrialActions);

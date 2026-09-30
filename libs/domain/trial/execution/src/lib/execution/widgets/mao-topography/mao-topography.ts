@@ -32,8 +32,7 @@ import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard
 import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 import type { MaoTopographyMassConfigDialogResult } from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
-
-type InputFieldValue = { value: string; unit: string } | null;
+import { fromPosition, numToField, parseNum, toPosition } from './mao-topography.mapper';
 
 interface MaoTopographySelectForm {
   serie: string | null;
@@ -320,18 +319,18 @@ export class MaoTopography extends BaseFormWidgetComponent {
   }
 
   #applyRemoteShotData(response: ShotMaoTopographyResponse): void {
-    const data = response?.maoTopographyData;
-    if (!data) return;
+    const data = response?.maoTopographyData ?? null;
 
-    this.#remoteObservations.set(data.observations ?? null);
+    this.#remoteObservations.set(data?.observations ?? null);
 
     this.#store.updateMaoTopography({
-      xPieza: data.pieceX ?? null,
-      yPieza: data.pieceY ?? null,
-      zPieza: data.pieceZ ?? null,
-      xBlanco: data.targetX ?? null,
-      yBlanco: data.targetY ?? null,
-      zBlanco: data.targetZ ?? null,
+      ...(data ? {} : { observador: null }),
+      xPieza: data?.pieceX ?? null,
+      yPieza: data?.pieceY ?? null,
+      zPieza: data?.pieceZ ?? null,
+      xBlanco: data?.targetX ?? null,
+      yBlanco: data?.targetY ?? null,
+      zBlanco: data?.targetZ ?? null,
     });
 
     this.#applyFieldsFromStore();
@@ -351,15 +350,15 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   async saveForm(): Promise<void> {
     const { serie, disparo, observador } = this.formModel();
-    const pieza = this.#fromPosition(this.piezaPosition());
-    const blanco = this.#fromPosition(this.blancoPosition());
+    const pieza = fromPosition(this.piezaPosition());
+    const blanco = fromPosition(this.blancoPosition());
 
-    const xPieza = this.#parseNum(pieza.x);
-    const yPieza = this.#parseNum(pieza.y);
-    const zPieza = this.#parseNum(pieza.z);
-    const xBlanco = this.#parseNum(blanco.x);
-    const yBlanco = this.#parseNum(blanco.y);
-    const zBlanco = this.#parseNum(blanco.z);
+    const xPieza = parseNum(pieza.x);
+    const yPieza = parseNum(pieza.y);
+    const zPieza = parseNum(pieza.z);
+    const xBlanco = parseNum(blanco.x);
+    const yBlanco = parseNum(blanco.y);
+    const zBlanco = parseNum(blanco.z);
 
     const updates: Partial<MaoTopographyState> = {
       serie,
@@ -406,8 +405,8 @@ export class MaoTopography extends BaseFormWidgetComponent {
   }
 
   async openMassConfig(): Promise<void> {
-    const pieza = this.#fromPosition(this.piezaPosition());
-    const blanco = this.#fromPosition(this.blancoPosition());
+    const pieza = fromPosition(this.piezaPosition());
+    const blanco = fromPosition(this.blancoPosition());
 
     const ref = this.#dialog.open<MaoTopographyMassConfigDialog, unknown, MaoTopographyMassConfigDialogResult>(
       MaoTopographyMassConfigDialog,
@@ -459,38 +458,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
-  #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
-    if (!x && !y && !z) return null;
-    return {
-      x: x?.value ? parseFloat(x.value.replace(',', '.')) : null,
-      y: y?.value ? parseFloat(y.value.replace(',', '.')) : null,
-      z: z?.value ? parseFloat(z.value.replace(',', '.')) : null,
-      unit: x?.unit ?? y?.unit ?? z?.unit ?? 'm',
-    };
-  }
-
-  #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
-    if (!pos) {
-      return { x: null, y: null, z: null };
-    }
-    const unit = pos.unit ?? 'm';
-    return {
-      x: pos.x !== null ? { value: pos.x.toFixed(1), unit } : null,
-      y: pos.y !== null ? { value: pos.y.toFixed(1), unit } : null,
-      z: pos.z !== null ? { value: pos.z.toFixed(1), unit } : null,
-    };
-  }
-
-  #numToField(v: number | null, unit: string, decimals: number): InputFieldValue {
-    return v !== null ? { value: v.toFixed(decimals), unit } : null;
-  }
-
-  #parseNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const n = parseFloat(field.value.replace(',', '.'));
-    return isNaN(n) ? null : n;
-  }
-
   #syncSnapshot(): void {
     this.#savedSnapshot.set({
       piezaPosition: this.piezaPosition(),
@@ -501,17 +468,17 @@ export class MaoTopography extends BaseFormWidgetComponent {
   #applyFieldsFromStore(): void {
     const stored = this.#store.maoTopography();
     this.piezaPosition.set(
-      this.#toPosition(
-        this.#numToField(stored.xPieza, 'm', 1),
-        this.#numToField(stored.yPieza, 'm', 1),
-        this.#numToField(stored.zPieza, 'm', 1),
+      toPosition(
+        numToField(stored.xPieza, 'm', 1),
+        numToField(stored.yPieza, 'm', 1),
+        numToField(stored.zPieza, 'm', 1),
       ),
     );
     this.blancoPosition.set(
-      this.#toPosition(
-        this.#numToField(stored.xBlanco, 'm', 1),
-        this.#numToField(stored.yBlanco, 'm', 1),
-        this.#numToField(stored.zBlanco, 'm', 1),
+      toPosition(
+        numToField(stored.xBlanco, 'm', 1),
+        numToField(stored.yBlanco, 'm', 1),
+        numToField(stored.zBlanco, 'm', 1),
       ),
     );
   }

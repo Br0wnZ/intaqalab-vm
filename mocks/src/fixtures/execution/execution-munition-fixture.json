@@ -85,6 +85,117 @@
         "chamberTime": "02:30:00",
         "observations": "Espoleta acondicionada."
       }
+    },
+    {
+      "componentId": "8b688c6f-60c2-4f7d-b1b3-9c34982726d1",
+      "identificationData": {
+        "denominationId": "9361e6ef-7c23-42db-b70a-175678457ed5",
+        "batch": "LOT-DO-001",
+        "clientNumber": "DO-001",
+        "fuseWorkingModeId": null,
+        "fuseGraduation": null,
+        "fuseGraduationUnit": null,
+        "observations": "Disparo Organizado 105 mm."
+      },
+      "weightData": [
+        {
+          "balanceId": 21031,
+          "weight": 14500.0,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T10:34:12Z",
+          "weighingRange": "0 - 20000",
+          "observations": "Pesada de disparo organizado correcta."
+        }
+      ],
+      "conditioningData": {
+        "climaticChamberId": 21045,
+        "chamberEntryDateTime": "2026-08-21T08:00:00Z",
+        "chamberExitDateTime": "2026-08-21T10:30:00Z",
+        "temperature": 45,
+        "temperatureUnit": "CELSIUS",
+        "programmedTemperature": 45,
+        "programmedTemperatureUnit": "CELSIUS",
+        "chamberTime": "02:30:00",
+        "observations": "Acondicionamiento completado."
+      }
+    },
+    {
+      "componentId": "06ca4256-e992-4d97-afb1-083c2ed93739",
+      "identificationData": {
+        "denominationId": "60012c29-a8b1-47d8-af48-9ed2b1365f1d",
+        "batch": "LOT-ESP-002",
+        "clientNumber": "34",
+        "fuseWorkingModeId": "tiempo",
+        "fuseGraduation": 12.0,
+        "fuseGraduationUnit": "S",
+        "observations": "Espoleta 4AP."
+      },
+      "weightData": [
+        {
+          "balanceId": 21031,
+          "weight": 520.0,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T09:15:00Z",
+          "weighingRange": "0 - 500",
+          "observations": "Pesada de espoleta."
+        }
+      ],
+      "conditioningData": {
+        "climaticChamberId": 21045,
+        "chamberEntryDateTime": "2026-08-21T08:00:00Z",
+        "chamberExitDateTime": "2026-08-21T10:30:00Z",
+        "temperature": -5,
+        "temperatureUnit": "CELSIUS",
+        "programmedTemperature": -5,
+        "programmedTemperatureUnit": "CELSIUS",
+        "chamberTime": "02:30:00",
+        "observations": "Espoleta acondicionada."
+      }
+    },
+    {
+      "componentId": "d1598b72-46ff-4808-974b-e2a00162334e",
+      "identificationData": {
+        "denominationId": "d58bd878-46d0-4faf-9dad-27a80fdbd3f7",
+        "batch": "LOT-GM-003",
+        "clientNumber": "GM-001",
+        "fuseWorkingModeId": "percusion",
+        "fuseGraduation": null,
+        "fuseGraduationUnit": null,
+        "observations": "Granada mortero 81 mm HC."
+      },
+      "weightData": [
+        {
+          "balanceId": 21031,
+          "weight": 4200.0,
+          "weightUnit": "G",
+          "weightAdded": 0,
+          "weightAddedUnit": "G",
+          "weightRemoved": 0,
+          "weightRemovedUnit": "G",
+          "weighingDateTime": "2026-08-21T09:15:00Z",
+          "weighingRange": "0 - 5000",
+          "observations": "Pesada de granada mortero."
+        }
+      ],
+      "conditioningData": {
+        "climaticChamberId": 21045,
+        "chamberEntryDateTime": "2026-08-21T08:00:00Z",
+        "chamberExitDateTime": "2026-08-21T10:30:00Z",
+        "temperature": 20,
+        "temperatureUnit": "CELSIUS",
+        "programmedTemperature": 20,
+        "programmedTemperatureUnit": "CELSIUS",
+        "chamberTime": "02:30:00",
+        "observations": "Acondicionamiento normal."
+      }
     }
   ]
 }

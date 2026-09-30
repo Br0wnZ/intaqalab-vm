@@ -87,7 +87,9 @@ export function withPiezoPressureIntroduction() {
         patchState(store, (state) => {
           const currentEntries = state.piezoPressureIntroduction.presiones;
           const entryIndex = currentEntries.findIndex(
-            (currentEntry) => currentEntry.piezoelectricSensorId === entry.piezoelectricSensorId,
+            (currentEntry) =>
+              currentEntry.piezoelectricSensorId === entry.piezoelectricSensorId ||
+              (entry.piezoelectricSensorId !== null && currentEntry.piezoelectricSensorId === null),
           );
           const nextEntries = [...currentEntries];
 

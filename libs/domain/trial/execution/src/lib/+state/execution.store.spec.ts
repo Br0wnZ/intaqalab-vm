@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { WidgetId } from '../execution/models/widget-id.enum';
 import { ExecutionStore } from './execution.store';
 
 /**
@@ -76,5 +77,16 @@ describe('ExecutionStore (composición de features)', () => {
     expect(typeof store.loadShotAcousticLevel).toBe('function');
     expect(typeof store.saveShotAcousticLevel).toBe('function');
     expect(store.isLoadingAcousticLevel()).toBe(false);
+  });
+
+  it('registers and unregisters autonomous widgets excluded from updatedAt refreshes', () => {
+    expect(store.isWidgetAutonomous(WidgetId.SEGUIMIENTO)).toBe(true);
+    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(false);
+
+    store.registerAutonomousWidget(WidgetId.SHOT);
+    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(true);
+
+    store.unregisterAutonomousWidget(WidgetId.SHOT);
+    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(false);
   });
 });

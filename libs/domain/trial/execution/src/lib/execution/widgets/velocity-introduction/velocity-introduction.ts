@@ -1,15 +1,15 @@
 import type { Signal } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
-    viewChild,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,8 +18,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CadenceUnitEnum, MEASURE_UNIT_LABELS, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { createDirtyTracker } from '@intaqalab/utils';
+import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -32,16 +32,16 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
-    type InputFieldValue,
-    buildRadarAntenaCombinedValue,
-    mapPlanningSeriesToOptions,
-    mapRemoteToVelocityState,
-    mapShotStatusToEstadoDisparo,
-    mapShotsToDisparoOptions,
-    mapVelocityFormToRequest,
-    numToField,
-    parseNum,
-    splitRadarAntenaCombinedValue,
+  type InputFieldValue,
+  buildRadarAntenaCombinedValue,
+  mapPlanningSeriesToOptions,
+  mapRemoteToVelocityState,
+  mapShotStatusToEstadoDisparo,
+  mapShotsToDisparoOptions,
+  mapVelocityFormToRequest,
+  numToField,
+  parseNum,
+  splitRadarAntenaCombinedValue,
 } from './velocity-introduction.mapper';
 
 interface SelectorFormModel {
@@ -67,7 +67,9 @@ interface DataFormModel {
     MatSelectModule,
     TranslateModule,
     InputSelect,
+    InputSelectInput,
     IntaIconComponent,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-4 overflow-auto">
@@ -133,10 +135,10 @@ interface DataFormModel {
       <div
         intaReadonlyContent
         intaFormTouch
-        #touch="intaFormTouch"
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 min-h-0 items-end"
         [attr.inert]="readOnly() ? '' : null"
         [class.inta-readonly-content]="readOnly()"
+        #touch="intaFormTouch"
       >
         <!-- Row 1 -->
 
@@ -160,7 +162,9 @@ interface DataFormModel {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.VELOCIDAD_PLACEHOLDER' | translate"
           [value]="velocidadField()"
           (valueChange)="velocidadField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Observaciones (spans 2 rows) -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full row-span-2 h-full">
@@ -178,11 +182,14 @@ interface DataFormModel {
         <!-- Row 2 -->
 
         <!-- Incert. Software (read-only, procede del tarado) -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.INCERT_SOFTWARE_LABEL' | translate }}</mat-label>
-          <input matInput class="tabular-nums italic text-slate-400" [value]="incertidumbreSoftwareDisplay()" />
-          <span matSuffix class="pr-4 text-sm text-gray-700">{{ softwareUncertaintyUnitLabel() }}</span>
-        </mat-form-field>
+        <ui-input-select
+          [label]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.INCERT_SOFTWARE_LABEL' | translate"
+          [opciones]="msOptions"
+          [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.VELOCIDAD_PLACEHOLDER' | translate"
+          [value]="incertidumbreSoftwareField()"
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Pérdida -->
         <ui-input-select
@@ -191,7 +198,9 @@ interface DataFormModel {
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.PERDIDA_PLACEHOLDER' | translate"
           [value]="perdidaField()"
           (valueChange)="perdidaField.set($event)"
-        />
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
 
         <!-- Cadencia -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
@@ -278,7 +287,12 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.selectorFormModel().serie;
     const series = this.#store.executionProgress()?.series;
-    const shots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
+    const progressShots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    const shots = progressShots?.map((shot) => ({
+      ...shot,
+      globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
+    }));
 
     return mapShotsToDisparoOptions(shots, this.#store.velocityIntroduction().disparoOptions);
   });
@@ -364,9 +378,9 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   });
 
   // ── Read-only: incertidumbre del software ─────────────────────────────────
-  protected readonly incertidumbreSoftwareDisplay = computed(() => {
-    const stored = this.#store.velocityIntroduction().incertidumbreSoftware;
-    return stored !== null ? stored.toString() : '—';
+  protected readonly incertidumbreSoftwareField = computed(() => {
+    const data = this.#store.velocityIntroduction();
+    return numToField(data.incertidumbreSoftware, data.incertidumbreSoftwareUnit || SpeedUnitEnum.M_S);
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────

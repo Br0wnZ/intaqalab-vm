@@ -1,5 +1,7 @@
 ---
 name: angular-testing-expert
+version: 1.0.0
+last-updated: 2026-09-29
 description: Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses.
 user-invocable: true
 ---
@@ -24,7 +26,7 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 - **PROHIBIDO usar `container` y navegación de nodos DOM:** NUNCA uses `container.querySelector`, `container.querySelectorAll` ni navegues propiedades de nodos (`firstElementChild`, `parentElement`, `children`, `childNodes`). Usa `screen` queries y matchers semánticos de Jest DOM (`toBeInTheDocument()`, `toHaveAttribute()`, `toHaveClass()`).
 - **Usuario Primero:** Simula interacciones reales usando `userEvent` (siempre asíncrono).
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
-- **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material.
+- **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material. Usa el patrón canónico del repo: pasa la clase constructora a `loader.getAllHarnesses(HarnessClass)` y accede por índice. **Evita `.with({ selector })` y `getOptions({ text })`** para prevenir `SyntaxError: '' is not a valid selector` en Vitest (ver Issue #19). Para opciones, abre con el harness (`await select.open()`) y haz click con ATL (`screen.getByText` + `user.click`).
 - **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
 - **Clean Code:** Tests descriptivos. **IMPORTANTE:** Todas las descripciones de los casos de prueba (`it()`) deben ser redactadas obligatoriamente en inglés (e.g. `it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
@@ -49,6 +51,17 @@ afterEach(() => {
 });
 ```
 
+### 4. Nx 23 & Vitest Workspace Standards ⚙️
+
+- **Inferred Targets:** En Nx 23+, `test` se infiere directamente desde `vite.config.mts` mediante `@nx/vitest`. No se declaran targets de test manuales en `project.json`.
+- **Configuración en librerías:** Todos los `vite.config.mts` de librerías deben declarar:
+  ```ts
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+  ```
+  Evita `nxCopyAssetsPlugin` (obsoleto). La propiedad `tsconfig: './tsconfig.spec.json'` es obligatoria para evitar advertencias de Analog buscando `tsconfig.app.json`.
+- **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4.
+- **Concurrencia en ejecución masiva:** Para suites completas en local, evita saturación de memoria en JSDOM limitando el paralelismo (`npx nx run-many -t test --parallel=2` o ejecutando por dominio `-p [domain]`).
+
 ## 📋 Workflow: "Dame los tests de {{ componente }}"
 
 Cuando el usuario pida tests de un componente, sigue estos pasos:
@@ -60,6 +73,8 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
    - Store con `providedIn: null` → `NG0201` → usar `componentProviders` o `providers` (Issue #7)
    - Crash `ng2-pdf-viewer` → importar mock global en `test-setup.ts` de la librería (Issue #14)
    - Subcomponentes con `input.required` de Signal Forms → usar `TestWrapperComponent` local (Issue #16)
+   - Crash `SyntaxError: '' is not a valid selector` al usar `.with(...)` o `getOptions(...)` → usar `getAllHarnesses(HarnessClass)[index]` y ATL `screen.getByText` + `user.click` (Issue #19)
+   - Discrepancia en array de `mat-select multiple` → Angular Material ordena según el orden de las opciones en el DOM, no el orden de clic (Issue #20)
 
 1. **Analiza el componente:** Lee el archivo `.ts` del componente para entender:
    - Tipo: componente, diálogo, servicio, store, interceptor, pipe

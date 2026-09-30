@@ -1,9 +1,8 @@
 ---
 name: master-data-specialist
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Master Data Domain Expert for INTAQALAB.
-  Expert in the generic Shell catalog pattern, data abstraction, and rapid implementation
-  of new master data services in `libs/domain/master-data`.
 ---
 
 # 🏗️ INTAQALAB: Master Data Specialist
@@ -66,3 +65,4 @@ readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 3
 
 - When requested to build a management screen for a new basic entity, **never build UI components from scratch**. Implement the models, the service, and wire them to `MasterDataShellComponent`.
 - Avoid complex global stores for simple CRUD catalogs; leverage direct HTTP resource reloading.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All catalog models, DTOs, service responses, and query parameters must be strictly typed with real TypeScript types.

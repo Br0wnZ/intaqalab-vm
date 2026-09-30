@@ -1,5 +1,15 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,15 +18,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type {
-  SeguimientoSerieData,
-  SeguimientoShotRow,
-  SeguimientoState,
-  SeguimientoTab,
-} from '../../../+state/execution.store';
+import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
+import type { ShotMeasurementShot } from '../../../services/execution.service';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
+import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 
@@ -108,7 +116,7 @@ interface ComputedSerie {
           @for (serie of tableData(); track serie.serieId) {
             <mat-expansion-panel
               class="!shadow-none !rounded-xl border border-slate-200 !m-0 !bg-white"
-              [expanded]="true"
+              [expanded]="activeSerieId() === serie.serieId"
             >
               <mat-expansion-panel-header class="!px-3 !min-h-8 !h-8">
                 <mat-panel-title class="text-[11px] font-semibold text-slate-700">
@@ -155,7 +163,9 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
 
   override readonly widgetStateService = inject(WidgetStateService);
+  protected override readonly autonomousWidgetType = WidgetId.SEGUIMIENTO;
   readonly #store = inject(ExecutionStore);
+  readonly #executionService = inject(ExecutionService);
 
   // Static unit options
   readonly presionUnits = ['MPa', 'bar', 'PSI', 'kgf/cm²'];
@@ -163,7 +173,19 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
 
   // Read-only state from store
   protected readonly activeTabs = computed(() => this.#store.seguimiento().activeTabs);
-  protected readonly series = computed(() => this.#store.seguimiento().series);
+  protected readonly activeSerieId = signal<string | null>(this.#store.activeSerieId());
+  protected readonly series = computed(() => {
+    const resource = this.#executionService.shotMeasurementsResource;
+    if (!resource.hasValue()) {
+      return this.#store.seguimiento().series;
+    }
+
+    return resource.value().series.map((series): SeguimientoSerieData => ({
+      serieId: series.seriesId,
+      serieLabel: this.#seriesLabel(series.seriesId),
+      rows: series.shots.map((shot, index) => this.#mapShot(series.seriesId, shot, index)),
+    }));
+  });
 
   // Local UI signal for active tab
   protected readonly activeTab = signal<SeguimientoTab>(this.#store.seguimiento().activeTab);
@@ -174,6 +196,35 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
     pesosUnit: this.#store.seguimiento().pesosUnit,
   });
   protected readonly seguimientoForm = form(this.formModel);
+
+  constructor() {
+    super();
+    this.#store.registerAutonomousWidget?.(WidgetId.SEGUIMIENTO);
+
+    let lastLoadedTrialId: string | null = null;
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      if (!fireTrialId || fireTrialId === lastLoadedTrialId) {
+        return;
+      }
+      lastLoadedTrialId = fireTrialId;
+      this.#executionService.getShotMeasurements(fireTrialId);
+    });
+
+    effect(() => {
+      const serieId = this.#store.activeSerieId();
+      if (!serieId) {
+        return;
+      }
+      if (
+        untracked(() => this.#store.isWidgetAutonomous?.(WidgetId.SEGUIMIENTO) ?? true) &&
+        untracked(() => this.activeSerieId()) !== null
+      ) {
+        return;
+      }
+      this.activeSerieId.set(serieId);
+    });
+  }
 
   // Computed column definitions based on active tab and equipment counts
   protected readonly columns = computed((): ColumnDef[] => {
@@ -216,39 +267,30 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from(
-            { length: numPiezo },
-            (_, i): ColumnDef => ({
-              key: `pmax_cie_${i}`,
-              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-            }),
-          ),
+          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
+            key: `pmax_cie_${i}`,
+            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+          })),
         ];
 
       case 'p-pz-int':
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from(
-            { length: numPiezo },
-            (_, i): ColumnDef => ({
-              key: `pmax_int_${i}`,
-              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-            }),
-          ),
+          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
+            key: `pmax_int_${i}`,
+            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+          })),
         ];
 
       case 'p-pz-cul':
         return [
           ...wcCols,
           ...wpCols,
-          ...Array.from(
-            { length: numPiezo },
-            (_, i): ColumnDef => ({
-              key: `pmax_cul_${i}`,
-              label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
-            }),
-          ),
+          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
+            key: `pmax_cul_${i}`,
+            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+          })),
         ];
 
       case 'p-ipg':
@@ -342,5 +384,37 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       return row.pMaxCulote[idx] ?? null;
     }
     return null;
+  }
+
+  #seriesLabel(seriesId: string): string {
+    const planningSeries = this.#store.planningSeries?.() ?? [];
+    const planningSerie = planningSeries.find((series) => series.id === seriesId);
+    return planningSerie?.name || seriesId;
+  }
+
+  #mapShot(seriesId: string, shot: ShotMeasurementShot, index: number): SeguimientoShotRow {
+    const planningSeries = this.#store.planningSeries?.() ?? [];
+    const planningSerie = planningSeries.find((series) => series.id === seriesId);
+    const planningShot = planningSerie?.shots?.find((plannedShot) => plannedShot.id === shot.shotId);
+
+    return {
+      disparo: planningShot?.globalNumber ?? index + 1,
+      wcValues: shot.powderWeights.map((item) => item.weight),
+      wpValues: shot.projectileWeights.map((item) => item.weight),
+      v0Values: shot.velocities.map((item) => item.initialVelocity),
+      v0c: this.#average(shot.velocities.map((item) => item.initialVelocity)),
+      pManomValues: [],
+      pManomMean: null,
+      pMaxCierre: shot.piezoPressures.map((item) => item.closingMaxPressure),
+      pMaxIntermedio: shot.piezoPressures.map((item) => item.halfMaxPressure),
+      pMaxCulote: shot.piezoPressures.map((item) => item.shellMaxPressure),
+    };
+  }
+
+  #average(values: (number | null)[]): number | null {
+    const definedValues = values.filter((value): value is number => value !== null);
+    return definedValues.length > 0
+      ? definedValues.reduce((sum, value) => sum + value, 0) / definedValues.length
+      : null;
   }
 }

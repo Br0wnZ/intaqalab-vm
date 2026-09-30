@@ -1,5 +1,7 @@
 ---
 name: view-state-pattern
+version: 1.0.0
+last-updated: 2026-09-29
 description: Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states.
 user-invocable: true
 ---

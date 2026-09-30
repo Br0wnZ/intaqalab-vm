@@ -1,18 +1,22 @@
-import { computed, effect, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { FireTrial, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
-import type { WidgetId, WidgetPreferenceId } from '../../execution/models';
+import type { WidgetPreferenceId } from '../../execution/models';
+import { WidgetId } from '../../execution/models';
 import { ExecutionService } from '../../services/execution.service';
+
+export const DEFAULT_AUTONOMOUS_WIDGETS: readonly WidgetId[] = [WidgetId.SEGUIMIENTO];
 
 interface GeneralDataSlice {
   fireTrialId: string | null;
   fireTrial: TrialCreateModifyForm | null;
   activeSerieId: string | null;
   activeShotId: string | null;
+  autonomousWidgets: Set<WidgetId>;
 }
 
 const initialState: GeneralDataSlice = {
@@ -20,6 +24,7 @@ const initialState: GeneralDataSlice = {
   fireTrial: null,
   activeSerieId: null,
   activeShotId: null,
+  autonomousWidgets: new Set<WidgetId>(DEFAULT_AUTONOMOUS_WIDGETS),
 };
 
 /** Mapea FireTrial (modelo API) al formato TrialCreateModifyForm del store. */
@@ -282,6 +287,30 @@ export function withGeneralData() {
       updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetPreferenceId[]): void {
         executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
       },
+
+      registerAutonomousWidget(widgetId: WidgetId): void {
+        const current = store.autonomousWidgets();
+        if (current.has(widgetId)) {
+          return;
+        }
+        const next = new Set(current);
+        next.add(widgetId);
+        patchState(store, { autonomousWidgets: next });
+      },
+
+      unregisterAutonomousWidget(widgetId: WidgetId): void {
+        const current = store.autonomousWidgets();
+        if (!current.has(widgetId)) {
+          return;
+        }
+        const next = new Set(current);
+        next.delete(widgetId);
+        patchState(store, { autonomousWidgets: next });
+      },
+
+      isWidgetAutonomous(widgetId: WidgetId): boolean {
+        return store.autonomousWidgets().has(widgetId);
+      },
     })),
     withHooks({
       onInit(store) {
@@ -315,6 +344,9 @@ export function withGeneralData() {
           const trialId = store.fireTrialId();
           if (trialId) {
             store.loadExecutionProgress(trialId);
+            if (!untracked(() => store.isWidgetAutonomous(WidgetId.SEGUIMIENTO))) {
+              executionService.getShotMeasurements(trialId);
+            }
           }
 
           const activeShotId = state.activeShotId ?? state.activeShootId ?? null;

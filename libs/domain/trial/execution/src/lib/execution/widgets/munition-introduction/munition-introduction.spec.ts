@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 /* eslint-disable testing-library/no-node-access */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -205,9 +203,16 @@ describe('MunitionIntroduction', () => {
 
   it('saveForm delegates to child tabs', async () => {
     const { fixture } = await renderWidget();
-    const identSpy = vi.spyOn(fixture.componentInstance.identTab()!, 'save');
-    const pesosSpy = vi.spyOn(fixture.componentInstance.pesosTab()!, 'save');
-    const acondSpy = vi.spyOn(fixture.componentInstance.acondTab()!, 'save');
+    const identTab = fixture.componentInstance.identTab();
+    const pesosTab = fixture.componentInstance.pesosTab();
+    const acondTab = fixture.componentInstance.acondTab();
+    expect(identTab).toBeDefined();
+    expect(pesosTab).toBeDefined();
+    expect(acondTab).toBeDefined();
+    if (!identTab || !pesosTab || !acondTab) throw new Error('Tabs not rendered');
+    const identSpy = vi.spyOn(identTab, 'save');
+    const pesosSpy = vi.spyOn(pesosTab, 'save');
+    const acondSpy = vi.spyOn(acondTab, 'save');
 
     await fixture.componentInstance.saveForm();
 
@@ -218,9 +223,16 @@ describe('MunitionIntroduction', () => {
 
   it('resetForm delegates to child tabs', async () => {
     const { fixture } = await renderWidget();
-    const identSpy = vi.spyOn(fixture.componentInstance.identTab()!, 'reset');
-    const pesosSpy = vi.spyOn(fixture.componentInstance.pesosTab()!, 'reset');
-    const acondSpy = vi.spyOn(fixture.componentInstance.acondTab()!, 'reset');
+    const identTab = fixture.componentInstance.identTab();
+    const pesosTab = fixture.componentInstance.pesosTab();
+    const acondTab = fixture.componentInstance.acondTab();
+    expect(identTab).toBeDefined();
+    expect(pesosTab).toBeDefined();
+    expect(acondTab).toBeDefined();
+    if (!identTab || !pesosTab || !acondTab) throw new Error('Tabs not rendered');
+    const identSpy = vi.spyOn(identTab, 'reset');
+    const pesosSpy = vi.spyOn(pesosTab, 'reset');
+    const acondSpy = vi.spyOn(acondTab, 'reset');
 
     fixture.componentInstance.resetForm();
 
@@ -349,7 +361,9 @@ describe('MunitionIntroduction', () => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
     });
 
-    const pesosTab = fixture.componentInstance.pesosTab()!;
+    const pesosTab = fixture.componentInstance.pesosTab();
+    expect(pesosTab).toBeDefined();
+    if (!pesosTab) throw new Error('pesosTab not rendered');
     expect(pesosTab.weightFormModel().balance).toBe('bal-01');
     expect(fixture.componentInstance.formState().dirty).toBe(false);
     expect(fixture.componentInstance.formState().touched).toBe(false);
@@ -379,7 +393,9 @@ describe('MunitionIntroduction', () => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
     });
 
-    const pesosTab = fixture.componentInstance.pesosTab()!;
+    const pesosTab = fixture.componentInstance.pesosTab();
+    expect(pesosTab).toBeDefined();
+    if (!pesosTab) throw new Error('pesosTab not rendered');
 
     // 1. Edit bal-01
     pesosTab.weightField.set({ value: '99', unit: 'g' });
@@ -408,5 +424,231 @@ describe('MunitionIntroduction', () => {
     expect(pesosTab.isDirty()).toBe(false);
     expect(fixture.componentInstance.formState().dirty).toBe(false);
     expect(fixture.componentInstance.formState().touched).toBe(false);
+  });
+
+  it('updates component and denomination options based on selected series planning configurations', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+
+    const mockPlanningOptions = {
+      configurationIds: ['config-1', 'config-2'],
+      componentTypes: [
+        { id: 'type-do', label: 'Disparo Organizado', category: 'MUNITION' },
+        { id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' },
+        { id: 'type-gm', label: 'Granada mortero', category: 'MUNITION' },
+      ],
+      denominations: [
+        {
+          id: 'denom-do',
+          name: 'D. O. 105 mm M1 TP inerte',
+          componentTypeId: 'type-do',
+          batch: 'LOT-DO-001',
+          clientNumber: 'DO-001',
+        },
+        {
+          id: 'denom-esp',
+          name: 'Espoleta 4AP',
+          componentTypeId: 'type-esp',
+          batch: 'LOT-ESP-002',
+          clientNumber: '34',
+        },
+        {
+          id: 'denom-gm',
+          name: 'Granada mortero 81 mm HC',
+          componentTypeId: 'type-gm',
+          batch: 'LOT-GM-003',
+          clientNumber: 'GM-001',
+        },
+      ],
+      optionsBySelection: {},
+      optionsByShot: {},
+      optionsBySeries: {
+        'serie-inicial': {
+          componentTypes: [
+            { id: 'type-do', label: 'Disparo Organizado', category: 'MUNITION' },
+            { id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' },
+          ],
+          denominations: [
+            {
+              id: 'denom-do',
+              name: 'D. O. 105 mm M1 TP inerte',
+              componentTypeId: 'type-do',
+              batch: 'LOT-DO-001',
+              clientNumber: 'DO-001',
+            },
+            {
+              id: 'denom-esp',
+              name: 'Espoleta 4AP',
+              componentTypeId: 'type-esp',
+              batch: 'LOT-ESP-002',
+              clientNumber: '34',
+            },
+          ],
+          componentData: {
+            'type-do': {
+              componentTypeId: 'type-do',
+              denominationId: 'denom-do',
+              batch: 'LOT-DO-001',
+              clientNumber: 'DO-001',
+            },
+            'type-esp': {
+              componentTypeId: 'type-esp',
+              denominationId: 'denom-esp',
+              batch: 'LOT-ESP-002',
+              clientNumber: '34',
+            },
+          },
+          denominationData: {
+            'denom-do': {
+              componentTypeId: 'type-do',
+              denominationId: 'denom-do',
+              batch: 'LOT-DO-001',
+              clientNumber: 'DO-001',
+            },
+            'denom-esp': {
+              componentTypeId: 'type-esp',
+              denominationId: 'denom-esp',
+              batch: 'LOT-ESP-002',
+              clientNumber: '34',
+            },
+          },
+        },
+        'serie-aseguramiento': {
+          componentTypes: [{ id: 'type-gm', label: 'Granada mortero', category: 'MUNITION' }],
+          denominations: [
+            {
+              id: 'denom-gm',
+              name: 'Granada mortero 81 mm HC',
+              componentTypeId: 'type-gm',
+              batch: 'LOT-GM-003',
+              clientNumber: 'GM-001',
+            },
+          ],
+          componentData: {
+            'type-gm': {
+              componentTypeId: 'type-gm',
+              denominationId: 'denom-gm',
+              batch: 'LOT-GM-003',
+              clientNumber: 'GM-001',
+            },
+          },
+          denominationData: {
+            'denom-gm': {
+              componentTypeId: 'type-gm',
+              denominationId: 'denom-gm',
+              batch: 'LOT-GM-003',
+              clientNumber: 'GM-001',
+            },
+          },
+        },
+      },
+    };
+
+    vi.spyOn(execService, 'fetchPlanningMunitionOptions').mockResolvedValue(mockPlanningOptions);
+    vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue({ munitionData: [] });
+
+    store.setFireTrialId('trial-123');
+
+    await vi.waitFor(() => {
+      expect(execService.fetchPlanningMunitionOptions).toHaveBeenCalledWith('trial-123');
+    });
+
+    // 1. Select Serie Inicial: displays 2 components and patches initial component (Disparo Organizado)
+    fixture.componentInstance.onSerieSelected('serie-inicial');
+
+    expect(store.munitionIntroduction().componenteOptions).toHaveLength(2);
+    expect(store.munitionIntroduction().componenteOptions.map((c) => c.label)).toEqual([
+      'Disparo Organizado',
+      'Espoleta',
+    ]);
+    expect(store.munitionIntroduction().denominacionOptions).toHaveLength(2);
+
+    expect(fixture.componentInstance.identTab()?.identFormModel().componente).toBe('type-do');
+    expect(fixture.componentInstance.identTab()?.identFormModel().denominacion).toBe('denom-do');
+    expect(fixture.componentInstance.identTab()?.identFormModel().lote).toBe('LOT-DO-001');
+    expect(fixture.componentInstance.identTab()?.numeroClienteField()).toBe('DO-001');
+
+    // 2. Change component to Espoleta: patches denomination, lote and clientNumber for Espoleta
+    fixture.componentInstance.onComponentChange('type-esp');
+
+    expect(fixture.componentInstance.identTab()?.identFormModel().componente).toBe('type-esp');
+    expect(fixture.componentInstance.identTab()?.identFormModel().denominacion).toBe('denom-esp');
+    expect(fixture.componentInstance.identTab()?.identFormModel().lote).toBe('LOT-ESP-002');
+    expect(fixture.componentInstance.identTab()?.numeroClienteField()).toBe('34');
+
+    // 3. Select Serie Aseguramiento: displays only Granada mortero and patches its data
+    fixture.componentInstance.onSerieSelected('serie-aseguramiento');
+
+    expect(store.munitionIntroduction().componenteOptions).toHaveLength(1);
+    expect(store.munitionIntroduction().componenteOptions[0].label).toBe('Granada mortero');
+    expect(store.munitionIntroduction().denominacionOptions).toHaveLength(1);
+    expect(store.munitionIntroduction().denominacionOptions[0].label).toBe('Granada mortero 81 mm HC');
+
+    expect(fixture.componentInstance.identTab()?.identFormModel().componente).toBe('type-gm');
+    expect(fixture.componentInstance.identTab()?.identFormModel().denominacion).toBe('denom-gm');
+    expect(fixture.componentInstance.identTab()?.identFormModel().lote).toBe('LOT-GM-003');
+    expect(fixture.componentInstance.identTab()?.numeroClienteField()).toBe('GM-001');
+  });
+
+  it('loads and displays all denominations for component when planning specifies component without denomination', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+
+    const mockPlanningOptions = {
+      configurationIds: ['config-unassigned'],
+      componentTypes: [{ id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' }],
+      denominations: [
+        { id: 'denom-wh-1', name: 'Espoleta M578', componentTypeId: 'type-esp', batch: null, clientNumber: null },
+        { id: 'denom-wh-2', name: 'Espoleta 4AP', componentTypeId: 'type-esp', batch: null, clientNumber: null },
+      ],
+      optionsBySelection: {},
+      optionsByShot: {},
+      optionsBySeries: {
+        'serie-unassigned': {
+          componentTypes: [{ id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' }],
+          denominations: [
+            { id: 'denom-wh-1', name: 'Espoleta M578', componentTypeId: 'type-esp', batch: null, clientNumber: null },
+            { id: 'denom-wh-2', name: 'Espoleta 4AP', componentTypeId: 'type-esp', batch: null, clientNumber: null },
+          ],
+          componentData: {
+            'type-esp': { componentTypeId: 'type-esp', denominationId: null, batch: null, clientNumber: null },
+          },
+          denominationData: {},
+        },
+      },
+    };
+
+    vi.spyOn(execService, 'fetchPlanningMunitionOptions').mockResolvedValue(mockPlanningOptions);
+    vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue({ munitionData: [] });
+
+    store.setFireTrialId('trial-unassigned-denom');
+
+    await vi.waitFor(() => {
+      expect(execService.fetchPlanningMunitionOptions).toHaveBeenCalledWith('trial-unassigned-denom');
+    });
+
+    fixture.componentInstance.onSerieSelected('serie-unassigned');
+
+    const identTab = fixture.componentInstance.identTab();
+    expect(identTab).toBeDefined();
+
+    // Component is set to Espoleta
+    expect(identTab?.identFormModel().componente).toBe('type-esp');
+
+    // Denomination is not preselected because planning did not inform it
+    expect(identTab?.identFormModel().denominacion).toBeNull();
+
+    // All warehouse denominations for this component type are loaded in options
+    const filteredDenoms = identTab?.filteredDenominacionOptions() ?? [];
+    expect(filteredDenoms).toHaveLength(2);
+    expect(filteredDenoms.map((d) => d.value)).toEqual(['denom-wh-1', 'denom-wh-2']);
+    expect(filteredDenoms.map((d) => d.label)).toEqual(['Espoleta M578', 'Espoleta 4AP']);
+
+    // User selects one denomination
+    identTab?.onDenominacionChange('denom-wh-1');
+    identTab?.identFormModel.update((m) => ({ ...m, denominacion: 'denom-wh-1' }));
+    expect(identTab?.identFormModel().denominacion).toBe('denom-wh-1');
   });
 });

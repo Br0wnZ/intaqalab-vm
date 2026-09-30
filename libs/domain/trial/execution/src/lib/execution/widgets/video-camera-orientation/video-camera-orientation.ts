@@ -18,6 +18,7 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -161,6 +162,7 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #executionService = inject(ExecutionService);
 
   // ── Datos desde el store ──────────────────────────────────────────────────
 
@@ -169,15 +171,22 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   /** Outputs del widget MAO (read-only) */
   protected readonly estimatedDistancePique = computed(
-    () => this.#store.videoCameraOrientation().estimatedDistancePique,
+    () =>
+      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.plannedImpactDistance ?? null,
   );
-  protected readonly operatingHeight = computed(() => this.#store.videoCameraOrientation().operatingHeight);
-  protected readonly operatingRange = computed(() => this.#store.videoCameraOrientation().operatingRange);
+  protected readonly operatingHeight = computed(
+    () => this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.functioningHeight ?? null,
+  );
+  protected readonly operatingRange = computed(
+    () =>
+      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.functioningDistance ?? null,
+  );
 
   /** Diferencia angular calculada en el store, formateada a 2 decimales */
   protected readonly angularDifferenceFormatted = computed(() => {
-    const val = this.#store.videoCameraAngularDifference();
-    return val !== null ? val.toFixed(2) : null;
+    const val =
+      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.cameraAngularDifference;
+    return val !== null && val !== undefined ? val.toFixed(2) : null;
   });
 
   protected readonly serieOptions = computed(() =>
@@ -206,11 +215,23 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   constructor() {
     super();
+    let lastRequestedSelection: string | null = null;
     effect(() => {
       const serie = this.#store.activeSerieId();
       const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
-      untracked(() => this.selectorModel.update((value) => ({ ...value, serie, disparo })));
+      const camera = this.selectorModel().camera;
+      const fireTrialId = this.#store.fireTrialId();
+      if (!serie || !disparo || !camera || !fireTrialId) return;
+      untracked(() => {
+        const current = this.selectorModel();
+        if (current.serie !== serie || current.disparo !== disparo) {
+          this.selectorModel.set({ ...current, serie, disparo });
+        }
+      });
+      const selectionKey = `${fireTrialId}:${serie}:${disparo}:${camera}`;
+      if (selectionKey === lastRequestedSelection) return;
+      lastRequestedSelection = selectionKey;
+      this.#executionService.getShotCameraOrientation(fireTrialId, serie, disparo, camera);
     });
   }
 

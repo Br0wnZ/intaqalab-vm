@@ -1,5 +1,7 @@
 ---
 name: angular-architect
+version: 1.0.1
+last-updated: 2026-09-29
 description: Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns.
 argument-hint: "E.g. 'Migrate this component to Signal Forms and Signal Queries', 'Audit and optimize Signals usage', or 'Refactor this service to httpResource'."
 user-invocable: true
@@ -41,7 +43,7 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 - **Decorator:** Use `@Service()` from `@angular/core` for singleton services.
 - **Private Injection:** Use functional injection with native private fields: `readonly #myService = inject(MyService)`.
-- **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim and focused strictly on the view.
+- **Dedicated Mappers (`<feature>-mapper.service.ts` or `<widget-name>.mapper.ts`):** Extract all heavy backend ↔ frontend transformation logic, payload building, unit mapping, and catalog operations into a dedicated mapper (e.g. `ArmamentMapperService` or `trayectografia-introduction.mapper.ts`). Components must remain slim, clean, and focused strictly on the presentation/view. Each mapper MUST have a corresponding `.mapper.spec.ts`.
 
 ### 4. Control Flow & 3-State Views
 
@@ -54,8 +56,14 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 ### 5. Quality & Clean Code
 
+- **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). Always declare explicit types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) from `@intaqalab/models` or local domain models.
+- **Zero Non-Null Assertions (`!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`).
+  - Never do `resource.value()!`. In imperative service methods, use safe unwrap helper `#awaitResourceValue(resource)`.
+  - In collections with optional fields, use `flatMap()` or explicit type guard predicates (`filter((x): x is ... => Boolean(...))`).
+  - In tests, use type narrowing or explicit assertions rather than non-null assertions.
 - **Deep Cloning:** Prohibited: `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
 - **Strict Comparisons:** All comparisons MUST be strict (`===` or `!==`).
+- **Event Isolation (`uiStopClick`):** Prohibited: Passing DOM `$event` into component methods solely to call `stopPropagation()` / `preventDefault()`. Use `uiStopClick` directive from `@intaqalab/ui` (`StopClick`) on the template element to keep component methods pure and DOM-independent.
 - **Language:** All technical code (variables, functions, classes, comments, file names) MUST be written completely in **English**.
 
 ---
@@ -75,6 +83,7 @@ When modernizing legacy code:
 | `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern       |
 | `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())` |
 | Massive mapping inside component `.ts`         | Extract to `<feature>-mapper.service.ts`        |
+| `event.stopPropagation()` in component method  | `uiStopClick` directive (`StopClick` from UI)   |
 
 ---
 

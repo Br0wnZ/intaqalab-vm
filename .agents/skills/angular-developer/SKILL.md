@@ -1,5 +1,7 @@
 ---
 name: angular-developer
+version: 1.0.0
+last-updated: 2026-09-29
 description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 user-invocable: true
 ---
@@ -66,6 +68,7 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 - Do not hardcode unit literals (`'kg'`, `'MPa'`, `'bar'`, etc.) in component/store/service logic.
 - For UI labels/options, reuse `MEASURE_UNIT_LABELS` and typed subsets (`WeightUnitEnum`, `PressureUnitEnum`, etc.) from `@intaqalab/models`.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, services, stores, mappers, and components must use strict, explicit TypeScript types.
+- **Forbidden Non-Null Assertions:** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`). Handle undefined/null with type narrowing, nullish coalescing (`??`), optional chaining (`?.`), or safe unwrapping helpers.
 
 ## Forms
 

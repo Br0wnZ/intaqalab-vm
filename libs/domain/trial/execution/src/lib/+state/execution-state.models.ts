@@ -284,6 +284,8 @@ export interface MunitionIntroDenominacionOption {
   label: string;
   componenteId: string;
   inStock: boolean;
+  batch?: string | null;
+  clientNumber?: string | null;
 }
 
 /** Opción de lote de munición */

@@ -40,6 +40,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
         <mat-select
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DENOMINACION_PLACEHOLDER' | translate"
           [formField]="identForm.denominacion"
+          (selectionChange)="onDenominacionChange($event.value)"
         >
           @for (opt of filteredDenominacionOptions(); track opt.value) {
             <mat-option [value]="opt.value" [class.text-red-500]="!opt.inStock">{{ opt.label }}</mat-option>
@@ -179,8 +180,13 @@ export class MunitionIdentificacionTabComponent {
 
   readonly filteredLoteOptions = computed(() => {
     const denominacion = this.identFormModel().denominacion;
+    const currentLote = this.identFormModel().lote;
     const opts = this.#store.munitionIntroduction().loteOptions;
-    return denominacion ? opts.filter((l) => l.denominacionId === denominacion) : opts;
+    const filtered = denominacion ? opts.filter((l) => l.denominacionId === denominacion) : opts;
+    if (currentLote && !filtered.some((l) => l.value === currentLote)) {
+      return [...filtered, { value: currentLote, label: currentLote, denominacionId: denominacion ?? '' }];
+    }
+    return filtered;
   });
 
   readonly isEspoleta = computed(() => {
@@ -219,6 +225,19 @@ export class MunitionIdentificacionTabComponent {
       observaciones: this.observacionesField(),
       graduacionEspoleta: this.#parseNum(this.graduacionEspoletaField()),
     };
+  }
+
+  onDenominacionChange(denominacionId: string | null): void {
+    if (!denominacionId) return;
+    const option = this.filteredDenominacionOptions().find((d) => d.value === denominacionId);
+    if (option) {
+      if (option.batch !== undefined && option.batch !== null) {
+        this.identFormModel.update((m) => ({ ...m, lote: option.batch || null }));
+      }
+      if (option.clientNumber !== undefined && option.clientNumber !== null) {
+        this.numeroClienteField.set(option.clientNumber || null);
+      }
+    }
   }
 
   onComponentChange(componente: string | null): void {

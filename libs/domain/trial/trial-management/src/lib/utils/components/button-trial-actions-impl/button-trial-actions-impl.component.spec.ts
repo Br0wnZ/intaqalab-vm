@@ -1,11 +1,14 @@
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import type { Role } from '@intaqalab/core';
 import { AuthService } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
+import { describe, expect, it } from 'vitest';
 
+import { ButtonTrialActionsComponent } from '../button-trial-actions/button-trial-actions.component';
 import { ButtonTrialActionsImplComponent } from './button-trial-actions-impl.component';
 
 // vi.mock hoisted by Vitest
@@ -19,8 +22,8 @@ const AuthServiceMock = {
   userRoles: signal<Role[]>([]),
 };
 
-describe('ButtonActionsComponent', () => {
-  it('should fill the form', async () => {
+describe('ButtonTrialActionsImplComponent', () => {
+  it('should render the actions button', async () => {
     await render(ButtonTrialActionsImplComponent, {
       inputs: {
         trial: {
@@ -39,5 +42,57 @@ describe('ButtonActionsComponent', () => {
         }),
       ],
     });
+  });
+
+  it('should not include EXECUTION action when trial status is CLOSED', async () => {
+    const { fixture } = await render(ButtonTrialActionsImplComponent, {
+      inputs: {
+        trial: {
+          status: TrialStatus.CLOSED,
+        },
+      },
+      providers: [
+        {
+          provide: AuthService,
+          useValue: AuthServiceMock,
+        },
+      ],
+      imports: [
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
+      ],
+    });
+
+    const childDebugEl = fixture.debugElement.query(By.directive(ButtonTrialActionsComponent));
+    const childComponent = childDebugEl.componentInstance as ButtonTrialActionsComponent;
+    const actions = childComponent.list().map((item) => item.option);
+    expect(actions).not.toContain('EXECUTION');
+  });
+
+  it('should include EXECUTION action when trial status is EXECUTED', async () => {
+    const { fixture } = await render(ButtonTrialActionsImplComponent, {
+      inputs: {
+        trial: {
+          status: TrialStatus.EXECUTED,
+        },
+      },
+      providers: [
+        {
+          provide: AuthService,
+          useValue: AuthServiceMock,
+        },
+      ],
+      imports: [
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
+      ],
+    });
+
+    const childDebugEl = fixture.debugElement.query(By.directive(ButtonTrialActionsComponent));
+    const childComponent = childDebugEl.componentInstance as ButtonTrialActionsComponent;
+    const actions = childComponent.list().map((item) => item.option);
+    expect(actions).toContain('EXECUTION');
   });
 });

@@ -1,10 +1,8 @@
 ---
 name: widget-service-integration
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Implementa la integración completa GET+PUT de un endpoint de la API en un widget existente del panel de ejecución.
-  Cubre: modelos TypeScript, métodos en ExecutionService, feature del store, mapper bidireccional, lógica de load/save en el widget padre, tabs hijas con dirty tracking, mocks Express coherentes y spec Vitest.
-  USA ESTE SKILL cuando necesites conectar un widget del execution grid a sus endpoints reales de la API (GET para cargar datos del disparo, PUT para guardar).
-  Referencia canónica: Widget 20 — Introducción de datos de munición (MunitionIntroduction).
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
 ---
@@ -17,6 +15,7 @@ Referencia real: **Widget 20 — `MunitionIntroduction`**.
 > [!IMPORTANT]
 > **Lee la skill `execution-domain-expert` ANTES de empezar** si no conoces bien la arquitectura del dominio de ejecución.
 > **Lee `signal-trigger-pattern`** para entender el patrón `httpResource` + trigger privado en `ExecutionService`.
+> **PROHIBIDO EL USO DE `any`:** Todos los modelos, requests, responses, mappers, servicios, stores y componentes deben usar tipado estricto (`DistanceUnitEnum`, `TimeUnitEnum`, etc.). Nunca usar `as any`, `: any` o `any[]`.
 
 ---
 
@@ -160,10 +159,10 @@ export type { <Resource>Response, <Resource>Request } from './<widget-resource>.
 > un método `async` que:
 >
 > 1. Actualiza el trigger con `_t: Date.now()` para forzar el re-disparo.
-> 2. Llama a `this.#awaitResource(resource)` para esperar la resolución.
-> 3. Retorna `resource.value()!`.
+> 2. Llama y retorna `return this.#awaitResourceValue(resource)`.
 >
-> La API `#awaitResource` ya existe en `ExecutionService` — no la reimplementes.
+> 🚫 **PROHIBIDO EL USO DE NON-NULL ASSERTION (`!`):** NUNCA uses `resource.value()!`. Usa `#awaitResourceValue(resource)`, que valida el valor de forma segura y evita advertencias `Forbidden non-null assertion`.
+> El helper `#awaitResourceValue` ya existe en `ExecutionService` — úsalo directamente.
 
 ```typescript
 // === GET (Widget N) =========================================================
@@ -202,8 +201,7 @@ async fetch<Resource>(
   shotId: string,
 ): Promise<<Resource>Response> {
   this.#fetch<Resource>Params.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-  await this.#awaitResource(this.#fetch<Resource>Resource);
-  return this.#fetch<Resource>Resource.value()!;
+  return this.#awaitResourceValue(this.#fetch<Resource>Resource);
 }
 
 // === PUT (Widget N) =========================================================
@@ -236,8 +234,7 @@ async update<Resource>(
   body: <Resource>Request,
 ): Promise<<Resource>Response> {
   this.#update<Resource>Params.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-  await this.#awaitResource(this.update<Resource>Resource);
-  return this.update<Resource>Resource.value()!;
+  return this.#awaitResourceValue(this.update<Resource>Resource);
 }
 ```
 
@@ -425,6 +422,11 @@ export type { <Widget>IdentificationState, <Widget>PesosState, <Widget>Acondicio
 
 ## Paso 5 — Crear el Mapper bidireccional
 
+> [!IMPORTANT]
+> **Fichero dedicado obligatorio:** El mapper DEBE ubicarse en un archivo independiente `<widget-name>.mapper.ts` en la carpeta del widget (ej. `trayectografia-introduction.mapper.ts`) junto con sus tests unitarios `<widget-name>.mapper.spec.ts`. NUNCA incluir funciones de mapeo, parseo o transformación pesadas directamente en el componente `.ts`. Mantener componentes delgados y limpios.
+>
+> **Regla de tipado estricto (Zero any):** El mapper DEBE estar 100% tipado con enums de dominio (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) y modelos de TypeScript. PROHIBIDO usar `any`, `as any` o `any[]`.
+
 ### 5a. Regla de resolución de IDs numéricos
 
 > [!IMPORTANT]
@@ -597,6 +599,7 @@ export function map<Widget>StateToRequest(params: {
 4. **Selection guard** — usar `createSelectionGuard` + `ticket.isFresh()` para descartar respuestas desactualizadas.
 5. **`[class.hidden]` en tabs** — en lugar de `@switch`/`@if` para preservar el estado interno de cada tab.
 6. **`saveForm()` siempre hace `tab.save()`** — tras el PUT exitoso, para sincronizar el snapshot de dirty tracking.
+7. **Widgets autónomos (no reactivos a `updatedAt` de `GET /state`)** — si un widget debe gestionar su propio ciclo de carga sin refrescarse automáticamente cuando cambia `updatedAt` en el polling de `/state` (como `SeguimientoWidget`), definir `protected override readonly autonomousWidgetType = WidgetId.<ID>;` en el componente e incluir su `WidgetId` en `DEFAULT_AUTONOMOUS_WIDGETS` (`general-data.feature.ts`), comprobando `!untracked(() => store.isWidgetAutonomous(WidgetId.<ID>))` antes de disparar refrescos ligados a `updatedAt`.
 
 ```typescript
 @Component({
@@ -1224,8 +1227,7 @@ onDisparoSelected() → #syncSelectionToStore() → #loadSelectedShotData()
        ↓
 ExecutionService.fetch<Resource>(fireTrialId, seriesId, shotId)
   → #fetch<Resource>Params.set({ ..., _t: Date.now() })
-  → #awaitResource(#fetch<Resource>Resource)
-  → return resource.value()!
+  → return this.#awaitResourceValue(#fetch<Resource>Resource)
        ↓
 #applyRemoteShotData(response)
   → mapRemoteTo<Widget>State(response)

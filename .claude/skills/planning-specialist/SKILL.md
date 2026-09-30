@@ -1,9 +1,8 @@
 ---
 name: planning-specialist
+version: 1.0.0
+last-updated: 2026-09-29
 description: >
-  Trial Planning Domain Specialist for INTAQALAB.
-  Expert in domain data structures, associated catalogs, and SignalStore architecture
-  for series, shots, armaments, munitions, and shooting conditions in `libs/domain/trial/planning`.
 ---
 
 # 🎯 INTAQALAB: Trial Planning Specialist
@@ -53,3 +52,4 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 
 - When developing in `libs/domain/trial/planning`, **NEVER** use `HttpClient.subscribe`. Enforce the Signal Trigger Pattern + `httpResource`.
 - Ensure mutations are coordinated through feature stores via `patchState` and synchronous service dispatch.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, DTOs, store slices, and service calls must use strict TypeScript interfaces and domain types.

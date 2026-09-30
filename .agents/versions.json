@@ -1,0 +1,185 @@
+{
+  "system": {
+    "name": "intaqalab-agents-ecosystem",
+    "version": "1.0.0",
+    "lastUpdated": "2026-09-29"
+  },
+  "core": {
+    "AGENTS.md": {
+      "version": "1.0.1",
+      "lastUpdated": "2026-09-29",
+      "checksum": "78829cc593686f93",
+      "description": "System configuration, AI rules, and architecture standards"
+    }
+  },
+  "skills": {
+    "angular-architect": {
+      "version": "1.0.1",
+      "lastUpdated": "2026-09-29",
+      "checksum": "25f036457f0bada2",
+      "path": ".agents/skills/angular-architect/SKILL.md",
+      "description": "Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns."
+    },
+    "angular-developer": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "c97357580d521d6d",
+      "path": ".agents/skills/angular-developer/SKILL.md",
+      "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
+    },
+    "angular-testing-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "04baa3fb987feb51",
+      "path": ".agents/skills/angular-testing-expert/SKILL.md",
+      "description": "Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses."
+    },
+    "chartjs-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "7693b01309c68201",
+      "path": ".agents/skills/chartjs-expert/SKILL.md",
+      "description": "USE WHEN building Chart.js visualizations, configuring charts, optimizing rendering performance, integrating plugins (annotation, datalabels, zoom, decimation), working with time-series charts, or adapting charts to any component-based framework. Trigger: chart, Chart.js, visualization, canvas, data chart, graph, bar chart, line chart, pie chart, scatter plot, histogram, datalabels, ng2-charts, chart performance."
+    },
+    "chartjs-intake": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "c6d798d1646a1ddd",
+      "path": ".agents/skills/chartjs-intake/SKILL.md",
+      "description": "Structured intake flow for @chartjs-expert. Use before creating a complex chart to define type, dataset, plugins, and framework context."
+    },
+    "create-feature": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "045812fb8553ee07",
+      "path": ".agents/skills/create-feature/SKILL.md",
+      "description": "Scaffolds a new complete Feature library using Angular 21, Nx CLI, and Zoneless architecture."
+    },
+    "dialog-patterns": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "d49523193bd9b101",
+      "path": ".agents/skills/dialog-patterns/SKILL.md",
+      "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
+    },
+    "execution-domain-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "3002813e19052cd0",
+      "path": ".agents/skills/execution-domain-expert/SKILL.md",
+      "description": ">"
+    },
+    "i18n-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "a42551982288780b",
+      "path": ".agents/skills/i18n-expert/SKILL.md",
+      "description": "Internationalization Specialist with @ngx-translate. Use when adding, updating, or auditing translation keys in all 3 project languages (es/en/de), creating namespaces, or translating component templates."
+    },
+    "interface-design": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "ca9ebe0a26f3bd8c",
+      "path": ".agents/skills/interface-design/SKILL.md",
+      "description": "This skill is for interface design — dashboards, admin panels, apps, tools, and interactive products. NOT for marketing design (landing pages, marketing sites, campaigns)."
+    },
+    "master-data-specialist": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "c29b8dae07dad60a",
+      "path": ".agents/skills/master-data-specialist/SKILL.md",
+      "description": ">"
+    },
+    "mock-server-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "fd32f8f36bcec519",
+      "path": ".agents/skills/mock-server-expert/SKILL.md",
+      "description": "Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines."
+    },
+    "numeric-input-constraints": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "5bfbf84985873437",
+      "path": ".agents/skills/numeric-input-constraints/SKILL.md",
+      "description": "Expert in validating and constraining numeric inputs using Angular directives and context-aware min/max values from INTAQALAB functional specs (planning, execution, admin). Handles locale-aware decimals, leading zeros removal, and physics domain range validation."
+    },
+    "nx-generator-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "3d028928de95b063",
+      "path": ".agents/skills/nx-generator-expert/SKILL.md",
+      "description": "Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility."
+    },
+    "nx-plugins": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "b092321fba83ea60",
+      "path": ".agents/skills/nx-plugins/SKILL.md",
+      "description": "Find and add Nx plugins. USE WHEN user wants to discover available plugins, install a new plugin, or add support for a specific framework or technology to the workspace."
+    },
+    "nx-run-tasks": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "7f308d7c9edacbaf",
+      "path": ".agents/skills/nx-run-tasks/SKILL.md",
+      "description": "Helps with running tasks in an Nx workspace. USE WHEN the user wants to execute build, test, lint, serve, or run any other tasks defined in the workspace."
+    },
+    "nx-workspace": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "6801057e7b26b9ec",
+      "path": ".agents/skills/nx-workspace/SKILL.md",
+      "description": "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
+    },
+    "planning-specialist": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "292ff70b2bf0ccd0",
+      "path": ".agents/skills/planning-specialist/SKILL.md",
+      "description": ">"
+    },
+    "signal-trigger-pattern": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "9b99c6be1c1c2ed2",
+      "path": ".agents/skills/signal-trigger-pattern/SKILL.md",
+      "description": "Implements the Signal Trigger Pattern — the mandatory httpResource + private trigger signal pattern for all data fetching in the Intaqalab project. USE WHEN creating or modifying data-access services, stores that fetch remote data, or any component that needs to load data from an API."
+    },
+    "signalstore-expert": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "eada0141157095eb",
+      "path": ".agents/skills/signalstore-expert/SKILL.md",
+      "description": "NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities."
+    },
+    "swagger-api-architect": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "c584a69489b0be6f",
+      "path": ".agents/skills/swagger-api-architect/SKILL.md",
+      "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
+    },
+    "ui-design-engineer": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "5d24c007c4f0e8bc",
+      "path": ".agents/skills/ui-design-engineer/SKILL.md",
+      "description": "Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards."
+    },
+    "view-state-pattern": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "f7acc5e46dc3c83e",
+      "path": ".agents/skills/view-state-pattern/SKILL.md",
+      "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
+    },
+    "widget-service-integration": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-09-29",
+      "checksum": "5bc29415321ebd70",
+      "path": ".agents/skills/widget-service-integration/SKILL.md",
+      "description": ">"
+    }
+  }
+}

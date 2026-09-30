@@ -1,6 +1,8 @@
 ---
 name: ui-design-engineer
-description: 'Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.'
+version: 1.0.0
+last-updated: 2026-09-29
+description: Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.
 argument-hint: "E.g. 'Create the munitions listing screen', 'Generate the card component', or 'Create a new widget for the execution grid'."
 user-invocable: true
 ---

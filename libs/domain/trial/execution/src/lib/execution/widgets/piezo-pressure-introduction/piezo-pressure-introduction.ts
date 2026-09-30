@@ -168,7 +168,7 @@ interface EquiposFormModel {
       </div>
 
       <!-- ── Body ───────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent intaFormTouch class="flex flex-col gap-3 min-h-0" #touch="intaFormTouch">
+      <div intaReadonlyContent intaFormTouch class="flex flex-col gap-10 min-h-0" #touch="intaFormTouch">
         <!-- Fila 1: Selectores de equipos (compartidos) -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
@@ -277,17 +277,20 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.selectorFormModel().serie;
     const series = this.#store.executionProgress()?.series;
-    const shots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
+    const progressShots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
+    const shots = progressShots?.map((shot) => ({
+      ...shot,
+      globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
+    }));
+
     return mapShotsToDisparoOptions(shots, this.#store.piezoPressureIntroduction().disparoOptions);
   });
 
   // ── Options: Equipos desde API (con fallback a store) ────────────────────────
   protected readonly captadorOptions = computed(() => {
     const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PIEZOELECTRIC_SENSOR];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.piezoPressureIntroduction().captadorOptions;
+    return apiItems?.map((item) => ({ value: item.id, label: item.label })) ?? [];
   });
 
   protected readonly amplificadorOptions = computed(() => {

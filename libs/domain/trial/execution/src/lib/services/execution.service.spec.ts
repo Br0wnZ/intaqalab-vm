@@ -38,6 +38,7 @@ const DEMO_TRIAL_ID = 'trial-456';
 const EXECUTION_BASE_URL = `http://localhost:3000/api/execution/fire-trials/${DEMO_TRIAL_ID}/execution`;
 const PLANNING_BASE_URL = `http://localhost:3000/api/planning/fire-trials/${DEMO_TRIAL_ID}/planning`;
 const PLANNING_ROOT_URL = 'http://localhost:3000/api/planning';
+const WAREHOUSE_BASE_URL = 'http://localhost:3000/api/warehouse';
 
 vi.mock('@intaqalab/config', async (importOriginal) => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -47,6 +48,7 @@ vi.mock('@intaqalab/config', async (importOriginal) => {
     injectExecutionEndpoint: () => 'http://localhost:3000/api/execution',
     injectPlanningEndpoint: () => 'http://localhost:3000/api/planning',
     injectFireTrialsEndpoint: () => 'http://localhost:3000/api/fire-trials',
+    injectWharehouseEndpoint: () => 'http://localhost:3000/api/warehouse',
   };
 });
 
@@ -655,7 +657,7 @@ describe('ExecutionService', () => {
     );
     radarReq.flush({
       totalElements: 1,
-      items: [{ denominationId: 101, denominationName: 'Doppler R1', tag: 'RAD-01' }],
+      items: [{ id: 101, denominationName: 'Doppler R1', tag: 'RAD-01' }],
     });
 
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -668,7 +670,7 @@ describe('ExecutionService', () => {
     );
     antennaReq.flush({
       totalElements: 1,
-      items: [{ denominationId: 201, denominationName: 'Antenna Horn', tag: 'ANT-01' }],
+      items: [{ id: 201, denominationName: 'Antenna Horn', tag: 'ANT-01' }],
     });
 
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -1082,6 +1084,223 @@ describe('ExecutionService', () => {
 
     const updateResult = await updatePromise;
     expect(updateResult).toEqual(mockMunitionResponse);
+  });
+
+  it('fetches planning munition options and resolves component labels and options per series', async () => {
+    const trialId = DEMO_TRIAL_ID;
+    const mockCatalog = [
+      { id: 'type-do', label: 'Disparo Organizado', category: 'MUNITION' },
+      { id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' },
+      { id: 'type-gm', label: 'Granada mortero', category: 'MUNITION' },
+    ];
+    const mockPlanningMunitions = {
+      series: [
+        {
+          seriesId: 'series-initial',
+          seriesName: 'Serie inicial',
+          configurations: [
+            {
+              id: 'config-1',
+              denomination: {
+                id: 'denom-do',
+                munitionTypeId: 'type-do',
+                name: 'D. O. 105 mm M1 TP inerte',
+              },
+              batch: 'LOT-DO-001',
+              clientNumber: 'DO-001',
+              components: [
+                {
+                  id: 'comp-1',
+                  type: { id: 'type-esp', label: 'Espoleta' },
+                  denomination: { id: 'denom-esp', name: 'Espoleta 4AP' },
+                  batch: 'LOT-ESP-002',
+                  clientNumber: '34',
+                },
+              ],
+              assignedShotIds: ['shot-init-1'],
+            },
+          ],
+        },
+        {
+          seriesId: 'series-aseg',
+          seriesName: 'Serie aseguramiento',
+          configurations: [
+            {
+              id: 'config-2',
+              denomination: {
+                id: 'denom-gm',
+                munitionTypeId: 'type-gm',
+                name: 'Granada mortero 81 mm HC',
+              },
+              batch: 'LOT-GM-003',
+              clientNumber: 'GM-001',
+              components: [],
+              assignedShotIds: ['shot-aseg-1'],
+            },
+          ],
+        },
+      ],
+    };
+
+    const promise = service.fetchPlanningMunitionOptions(trialId);
+    TestBed.tick();
+
+    const catalogReq = httpMock.expectOne(`${WAREHOUSE_BASE_URL}/munition-types?pageSize=100&active=true`);
+    expect(catalogReq.request.method).toBe('GET');
+    catalogReq.flush(mockCatalog);
+
+    const warehouseReq = httpMock.expectOne(`${WAREHOUSE_BASE_URL}/denominations?pageSize=100&active=true`);
+    expect(warehouseReq.request.method).toBe('GET');
+    warehouseReq.flush({ items: [] });
+
+    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    expect(planningReq.request.method).toBe('GET');
+    planningReq.flush(mockPlanningMunitions);
+    TestBed.tick();
+
+    const result = await promise;
+
+    const initialSeriesOptions = result.optionsBySeries['series-initial'];
+    expect(initialSeriesOptions).toBeDefined();
+    expect(initialSeriesOptions.componentTypes).toHaveLength(2);
+    expect(initialSeriesOptions.componentTypes.map((c) => c.label)).toEqual(['Disparo Organizado', 'Espoleta']);
+    expect(initialSeriesOptions.denominations).toHaveLength(2);
+    expect(initialSeriesOptions.componentData['type-do']).toEqual({
+      componentTypeId: 'type-do',
+      denominationId: 'denom-do',
+      batch: 'LOT-DO-001',
+      clientNumber: 'DO-001',
+    });
+    expect(initialSeriesOptions.componentData['type-esp']).toEqual({
+      componentTypeId: 'type-esp',
+      denominationId: 'denom-esp',
+      batch: 'LOT-ESP-002',
+      clientNumber: '34',
+    });
+
+    const asegSeriesOptions = result.optionsBySeries['series-aseg'];
+    expect(asegSeriesOptions).toBeDefined();
+    expect(asegSeriesOptions.componentTypes).toHaveLength(1);
+    expect(asegSeriesOptions.componentTypes[0].label).toBe('Granada mortero');
+    expect(asegSeriesOptions.denominations).toHaveLength(1);
+    expect(asegSeriesOptions.denominations[0].name).toBe('Granada mortero 81 mm HC');
+    expect(asegSeriesOptions.componentData['type-gm']).toEqual({
+      componentTypeId: 'type-gm',
+      denominationId: 'denom-gm',
+      batch: 'LOT-GM-003',
+      clientNumber: 'GM-001',
+    });
+  });
+
+  it('fetches all warehouse denominations when planning munitions response has components without denomination', async () => {
+    const trialId = DEMO_TRIAL_ID;
+    const mockCatalog = [{ id: 'type-esp', label: 'Espoleta', category: 'MUNITION_COMPONENT' }];
+    const mockPlanningMunitions = {
+      series: [
+        {
+          seriesId: 'series-test',
+          seriesName: 'Serie Test',
+          configurations: [
+            {
+              id: 'config-unassigned',
+              assignedShotIds: ['shot-test-1'],
+              components: [
+                {
+                  id: 'comp-1',
+                  type: { id: 'type-esp', label: 'Espoleta' },
+                  denomination: null,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const mockWarehouseDenominations = {
+      items: [
+        {
+          id: 'denom-wh-1',
+          name: 'Espoleta M578',
+          active: true,
+          munitionType: { id: 'type-esp', name: 'Espoleta' },
+        },
+        {
+          id: 'denom-wh-2',
+          name: 'Espoleta 4AP',
+          active: true,
+          munitionType: { id: 'type-esp', name: 'Espoleta' },
+        },
+        {
+          id: 'denom-wh-other',
+          name: 'Granada 155mm',
+          active: true,
+          munitionType: { id: 'type-other', name: 'Granada' },
+        },
+      ],
+    };
+
+    const promise = service.fetchPlanningMunitionOptions(trialId);
+    TestBed.tick();
+
+    const catalogReq = httpMock.expectOne(`${WAREHOUSE_BASE_URL}/munition-types?pageSize=100&active=true`);
+    catalogReq.flush(mockCatalog);
+
+    const warehouseDenomsReq = httpMock.expectOne(`${WAREHOUSE_BASE_URL}/denominations?pageSize=100&active=true`);
+    expect(warehouseDenomsReq.request.method).toBe('GET');
+    warehouseDenomsReq.flush(mockWarehouseDenominations);
+
+    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    planningReq.flush(mockPlanningMunitions);
+    TestBed.tick();
+
+    const result = await promise;
+    const seriesOptions = result.optionsBySeries['series-test'];
+    expect(seriesOptions).toBeDefined();
+    expect(seriesOptions?.componentTypes).toHaveLength(1);
+    expect(seriesOptions?.componentTypes[0]?.id).toBe('type-esp');
+
+    // Denominations should contain all matching warehouse denominations for type-esp
+    expect(seriesOptions?.denominations).toHaveLength(2);
+    expect(seriesOptions?.denominations.map((d) => d.id)).toEqual(['denom-wh-1', 'denom-wh-2']);
+    expect(seriesOptions?.componentData['type-esp']).toEqual({
+      componentTypeId: 'type-esp',
+      denominationId: null,
+      batch: null,
+      clientNumber: null,
+    });
+  });
+
+  it('fetchWarehouseDenominations queries warehouse denominations filtered by munitionTypeId', async () => {
+    const mockWarehouseDenominations = {
+      items: [
+        {
+          id: 'denom-esp-1',
+          name: 'Espoleta M578',
+          active: true,
+          munitionType: { id: 'type-esp', name: 'Espoleta' },
+        },
+      ],
+    };
+
+    const promise = service.fetchWarehouseDenominations('type-esp');
+    TestBed.tick();
+
+    const req = httpMock.expectOne(
+      `${WAREHOUSE_BASE_URL}/denominations?pageSize=100&active=true&munitionTypeId=type-esp`,
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(mockWarehouseDenominations);
+    TestBed.tick();
+
+    const result = await promise;
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      id: 'denom-esp-1',
+      name: 'Espoleta M578',
+      componentTypeId: 'type-esp',
+      batch: null,
+      clientNumber: null,
+    });
   });
 
   it('handles shot manometer pressures (Widget 21) GET and PUT resources and direct fetch', async () => {

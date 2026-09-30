@@ -9,6 +9,7 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguimientoWidget } from './seguimiento';
 
@@ -97,5 +98,20 @@ describe('SeguimientoWidget', () => {
     const { fixture } = await renderWidget();
     const key = fixture.componentInstance['tabLabelKey']('p-pz-cie');
     expect(key).toBe('TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CIE');
+  });
+
+  it('registers as autonomous widget and ignores subsequent activeSerieId updates', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+
+    expect(store.isWidgetAutonomous(WidgetId.SEGUIMIENTO)).toBe(true);
+
+    store.setOptimisticActiveShot('funcionamiento-1', 'shot-1');
+    fixture.detectChanges();
+    expect(fixture.componentInstance['activeSerieId']()).toBe('funcionamiento-1');
+
+    store.setOptimisticActiveShot('funcionamiento-2', 'shot-2');
+    fixture.detectChanges();
+    expect(fixture.componentInstance['activeSerieId']()).toBe('funcionamiento-1');
   });
 });

@@ -1,5 +1,7 @@
 ---
 name: dialog-patterns
+version: 1.0.0
+last-updated: 2026-09-29
 description: Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern.
 ---
 

@@ -1,5 +1,7 @@
 ---
 name: angular-testing-expert
+version: 1.0.0
+last-updated: 2026-09-29
 description: Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses.
 user-invocable: true
 ---

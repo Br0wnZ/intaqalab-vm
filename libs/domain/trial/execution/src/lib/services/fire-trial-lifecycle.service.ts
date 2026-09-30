@@ -5,7 +5,6 @@ import type { ChangeStatusRequest, FinishFireTrialResponse, FireTrial } from '@i
 
 interface FireTrialLifecycleParams {
   fireTrialId: FireTrial['id'];
-  _t: number;
 }
 
 interface FireTrialChangeStatusParams extends FireTrialLifecycleParams {
@@ -32,7 +31,7 @@ export class FireTrialLifecycleService {
   });
 
   startFireTrial(fireTrialId: FireTrial['id']): void {
-    this.#startParams.set({ fireTrialId, _t: Date.now() });
+    this.#startParams.set({ fireTrialId });
   }
 
   // ── FINISH FIRE TRIAL ──────────────────────────────────────────────────
@@ -49,7 +48,7 @@ export class FireTrialLifecycleService {
   });
 
   finishFireTrial(fireTrialId: FireTrial['id']): void {
-    this.#finishParams.set({ fireTrialId, _t: Date.now() });
+    this.#finishParams.set({ fireTrialId });
   }
 
   // ── CANCEL FIRE TRIAL ──────────────────────────────────────────────────
@@ -67,7 +66,7 @@ export class FireTrialLifecycleService {
   });
 
   cancelFireTrial(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#cancelParams.set({ fireTrialId, reason, _t: Date.now() });
+    this.#cancelParams.set({ fireTrialId, reason });
   }
 
   // ── VOID FIRE TRIAL ────────────────────────────────────────────────────
@@ -85,7 +84,7 @@ export class FireTrialLifecycleService {
   });
 
   voidFireTrial(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#voidParams.set({ fireTrialId, reason, _t: Date.now() });
+    this.#voidParams.set({ fireTrialId, reason });
   }
 
   // ── CLOSE FIRE TRIAL ───────────────────────────────────────────────────
@@ -102,7 +101,7 @@ export class FireTrialLifecycleService {
   });
 
   closeFireTrial(fireTrialId: FireTrial['id']): void {
-    this.#closeParams.set({ fireTrialId, _t: Date.now() });
+    this.#closeParams.set({ fireTrialId });
   }
 
   // ── REOPEN FIRE TRIAL ──────────────────────────────────────────────────
@@ -119,7 +118,7 @@ export class FireTrialLifecycleService {
   });
 
   reopenFireTrial(fireTrialId: FireTrial['id']): void {
-    this.#reopenParams.set({ fireTrialId, _t: Date.now() });
+    this.#reopenParams.set({ fireTrialId });
   }
 
   // ── REACTIVATE FIRE TRIAL ──────────────────────────────────────────────
@@ -136,6 +135,6 @@ export class FireTrialLifecycleService {
   });
 
   reactivateFireTrial(fireTrialId: FireTrial['id']): void {
-    this.#reactivateParams.set({ fireTrialId, _t: Date.now() });
+    this.#reactivateParams.set({ fireTrialId });
   }
 }

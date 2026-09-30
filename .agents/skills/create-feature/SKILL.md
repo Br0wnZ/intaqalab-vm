@@ -1,4 +1,7 @@
 ---
+name: create-feature
+version: 1.0.0
+last-updated: 2026-09-29
 description: Scaffolds a new complete Feature library using Angular 21, Nx CLI, and Zoneless architecture.
 argument-hint: 'Domain: [name], Feature: [name], Type: [CRUD | Dashboard | Form]'
 ---

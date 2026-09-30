@@ -26,6 +26,7 @@ export * from './shot-munition.models';
 
 // Shot manometer pressures models (Widget 21)
 export * from './shot-acoustic-level.models';
+export * from './shot-camera-orientation.models';
 export * from './shot-jlt-mao.models';
 export * from './shot-manometer-pressures.models';
 export * from './shot-mao-topography.models';

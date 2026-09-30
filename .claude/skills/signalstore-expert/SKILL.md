@@ -1,6 +1,8 @@
 ---
 name: signalstore-expert
-description: 'NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities.'
+version: 1.0.0
+last-updated: 2026-09-29
+description: NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities.
 argument-hint: 'Entity: [name], Endpoints: [GET /api/xxx, POST /api/xxx], Extra properties: [local flags]'
 user-invocable: true
 ---
@@ -14,6 +16,7 @@ You are the **NgRx SignalStore Engineer** for the Intaqalab project. Your missio
 - State is NEVER fragmented into arbitrary local component variables.
 - Smart components consume domain state _exclusively_ from SignalStores.
 - HTTP services NEVER expose Observables to views; they use Angular's native `httpResource` API.
+- **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `(state: any)`). All store state slices, methods, arguments, and computed projections must be strictly typed with real TypeScript interfaces.
 
 ## ⚙️ The Signal Trigger Pattern (Mandatory)
 

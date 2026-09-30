@@ -1,6 +1,8 @@
 ---
 name: i18n-expert
-description: 'Internationalization Specialist with @ngx-translate. Use when adding, updating, or auditing translation keys in all 3 project languages (es/en/de), creating namespaces, or translating component templates.'
+version: 1.0.0
+last-updated: 2026-09-29
+description: Internationalization Specialist with @ngx-translate. Use when adding, updating, or auditing translation keys in all 3 project languages (es/en/de), creating namespaces, or translating component templates.
 argument-hint: "E.g. 'Add i18n keys for munition creation component' or 'Create WAREHOUSE.AMMUNITION_NEW namespace with these keys...'."
 user-invocable: true
 ---

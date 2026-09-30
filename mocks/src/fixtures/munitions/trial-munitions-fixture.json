@@ -1,108 +1,117 @@
 {
+  "units": {
+    "temperature": null,
+    "time": null
+  },
   "series": [
     {
-      "seriesId": "ser-001",
-      "seriesName": "Serie 1",
+      "seriesId": "03d42240-b0cf-4036-a1b3-548867838cc0",
+      "seriesName": "Serie aseguramiento",
       "configurations": [
         {
-          "id": "cfg-001",
-          "seriesId": "ser-001",
-          "munitionTypeId": "GRANADA_MORTERO",
-          "denomination": "M107 HE",
-          "batch": "LOT-2025-001",
-          "clientNumber": "1,2",
-          "reconditioning": {
-            "temperature": 21,
-            "tolerance": 2,
-            "timeMin": 4,
-            "timeMax": 24,
-            "observations": "Acondicionamiento estándar"
+          "id": "48b93b36-07ba-4cb7-b562-085a40d668e1",
+          "seriesId": "03d42240-b0cf-4036-a1b3-548867838cc0",
+          "denomination": {
+            "id": "d58bd878-46d0-4faf-9dad-27a80fdbd3f7",
+            "munitionTypeId": "d1598b72-46ff-4808-974b-e2a00162334e",
+            "name": "Granada mortero 81 mm HC"
           },
-          "maxAllowedErrors": 2,
-          "observations": "Configuración principal serie 1",
-          "components": [
-            {
-              "id": "comp-001",
-              "munitionTypeId": "GRANADA_MORTERO",
-              "type": {
-                "id": "Proyectil",
-                "type": "Proyectil",
-                "label": "Proyectil"
-              },
-              "denomination": {
-                "id": "proy-1",
-                "name": "Proyectil 1"
-              },
-              "batch": "PROJ-2025-001",
-              "clientNumber": 1,
-              "observations": "Proyectil estándar",
-              "maxAllowedErrors": 1
-            },
-            {
-              "id": "comp-002",
-              "munitionTypeId": "MUNITION_HE",
-              "type": {
-                "id": "Espoleta",
-                "type": "Espoleta",
-                "label": "Espoleta"
-              },
-              "denomination": {
-                "id": "esp-1",
-                "name": "Espoleta 1"
-              },
-              "batch": "FUZE-2025-001",
-              "fuseWorkingMode": {
-                "id": "fwm-001",
-                "type": "INSTANT",
-                "label": "Instantáneo"
-              },
-              "fuseMeasurement": 0,
-              "manufacturerNumber": "MFG-ESP-2025-001",
-              "clientNumber": 2,
-              "maxAllowedErrors": 0
-            }
-          ],
-          "assignedShotIds": ["shot-001", "shot-002", "shot-003"]
+          "batch": "LOT-GM-003",
+          "clientNumber": "GM-001",
+          "reconditioning": null,
+          "maxAllowedErrors": 1,
+          "observations": "",
+          "components": [],
+          "assignedShotIds": [
+            "16b3e265-7c2c-4d0a-9f8b-2f9c91ebfb41",
+            "d5b7b8e3-3580-42a3-a3be-9f460ef6ca59",
+            "e000eb05-2a77-4457-b4e0-bfe2be7e1754"
+          ]
         }
       ]
     },
     {
-      "seriesId": "ser-002",
-      "seriesName": "Serie 2",
+      "seriesId": "ed1d366e-c50f-42b8-8a34-d971a68b379d",
+      "seriesName": "Serie inicial",
       "configurations": [
         {
-          "id": "cfg-002",
-          "seriesId": "ser-002",
-          "munitionTypeId": "DISPARO_COMPLETO",
-          "denomination": "M116 SMK",
-          "batch": "LOT-2025-002",
+          "id": "e3c80288-76d8-48a6-9496-6be0149417b3",
+          "seriesId": "ed1d366e-c50f-42b8-8a34-d971a68b379d",
+          "denomination": {
+            "id": "9361e6ef-7c23-42db-b70a-175678457ed5",
+            "munitionTypeId": "8b688c6f-60c2-4f7d-b1b3-9c34982726d1",
+            "name": "D. O. 105 mm M1 TP inerte"
+          },
+          "batch": "LOT-DO-001",
+          "clientNumber": "DO-001",
           "reconditioning": {
-            "temperature": 20,
-            "tolerance": 3,
-            "timeMin": 2,
-            "timeMax": 12
+            "temperature": 45,
+            "tolerance": 1,
+            "timeMin": 24,
+            "timeMax": 32,
+            "observations": null
           },
           "maxAllowedErrors": 1,
-          "observations": "Configuración humo",
+          "observations": "",
           "components": [
             {
-              "id": "comp-003",
-              "munitionTypeId": "DISPARO_COMPLETO",
+              "id": "960ff0e9-2746-4f43-b0a1-169db0fb9580",
               "type": {
-                "id": "Proyectil",
-                "type": "Proyectil",
-                "label": "Proyectil"
+                "id": "06ca4256-e992-4d97-afb1-083c2ed93739",
+                "label": "Espoleta",
+                "type": "MUNITION_COMPONENT"
               },
               "denomination": {
-                "id": "proy-2",
-                "name": "Proyectil 2"
+                "id": "60012c29-a8b1-47d8-af48-9ed2b1365f1d",
+                "munitionTypeId": "06ca4256-e992-4d97-afb1-083c2ed93739",
+                "name": "Espoleta 4AP"
               },
-              "batch": "PROJ-2025-002",
-              "clientNumber": 1,
-              "maxAllowedErrors": 1
+              "batch": "LOT-ESP-002",
+              "reconditioning": {
+                "temperature": -5,
+                "tolerance": 1,
+                "timeMin": 24,
+                "timeMax": 24,
+                "observations": null
+              },
+              "clientNumber": 34,
+              "observations": "",
+              "fuseWorkingModeId": "f8d1f2de-39b5-4eca-8857-d6a36be959a6",
+              "fuseMeasurement": 12,
+              "maxAllowedErrors": 0
             }
           ],
-          "assignedShotIds": null
+          "assignedShotIds": [
+            "ebb7b8e3-b491-49a7-ba3c-35b5bd055356",
+            "80bb469d-2c5c-45d2-8223-5772baa0006c",
+            "2a2903ce-1232-4745-a2f2-d57736f94b11"
+          ]
+        }
+      ]
+    },
+    {
+      "seriesId": "4f025fb3-93f5-4801-846b-c20e9f0eb5a3",
+      "seriesName": "Serie verificación",
+      "configurations": [
+        {
+          "id": "a17a4041-9c21-4cb5-8a8b-02f786730b58",
+          "seriesId": "4f025fb3-93f5-4801-846b-c20e9f0eb5a3",
+          "denomination": {
+            "id": "d58bd878-46d0-4faf-9dad-27a80fdbd3f7",
+            "munitionTypeId": "d1598b72-46ff-4808-974b-e2a00162334e",
+            "name": "Granada mortero 81 mm HC"
+          },
+          "batch": "LOT-GM-004",
+          "clientNumber": "GM-002",
+          "reconditioning": null,
+          "maxAllowedErrors": 0,
+          "observations": "",
+          "components": [],
+          "assignedShotIds": [
+            "5830f2f8-ad77-4e66-a5f8-532cc3f7f383",
+            "bd6b8b3c-380f-4478-8eb6-85c78f997bdf",
+            "53846a7c-3f83-4b81-9d72-a533abadb753"
+          ]
         }
       ]
     }

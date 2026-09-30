@@ -2,7 +2,7 @@ import { httpResource } from '@angular/common/http';
 import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { injectExecutionEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
+import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
 import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { filter, firstValueFrom, take } from 'rxjs';
 
@@ -14,6 +14,7 @@ import type {
   PropellantChargeParametersResponse,
   ShotAcousticLevelRequest,
   ShotAcousticLevelResponse,
+  ShotCameraOrientationResponse,
   ShotJltMaoRequest,
   ShotJltMaoResponse,
   ShotManometerPressuresRequest,
@@ -32,6 +33,10 @@ import type {
 } from '../execution/models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 // ============= Types =============
 
 export type ExecutionStatus =
@@ -47,6 +52,43 @@ export type ExecutionStatus =
   | 'FINISHED'
   | 'ANALYZING'
   | 'CLOSED';
+
+export interface PlanningComponentType {
+  id: string;
+  label: string;
+  category: string;
+}
+
+export interface PlanningDenominationOption {
+  id: string;
+  name: string;
+  componentTypeId: string;
+  batch?: string | null;
+  clientNumber?: string | null;
+}
+
+export interface PlanningComponentData {
+  componentTypeId: string;
+  denominationId: string | null;
+  batch: string | null;
+  clientNumber: string | null;
+}
+
+export interface PlanningOptionsGroup {
+  componentTypes: PlanningComponentType[];
+  denominations: PlanningDenominationOption[];
+  componentData: Record<string, PlanningComponentData>;
+  denominationData: Record<string, PlanningComponentData>;
+}
+
+export interface PlanningMunitionOptionData {
+  configurationIds: string[];
+  componentTypes: PlanningComponentType[];
+  denominations: PlanningDenominationOption[];
+  optionsBySelection: Record<string, PlanningOptionsGroup>;
+  optionsByShot: Record<string, PlanningOptionsGroup>;
+  optionsBySeries: Record<string, PlanningOptionsGroup>;
+}
 
 export interface ExecutionStateResponse {
   status: ExecutionStatus;
@@ -70,6 +112,48 @@ export interface ExecutionShotProgress {
 
 export interface ExecutionProgressResponse {
   series: ExecutionSeriesProgress[];
+}
+
+export interface ShotMeasurementWeight {
+  balanceId: number | null;
+  weight: number | null;
+  weightUnit: string | null;
+}
+
+export interface ShotMeasurementVelocity {
+  radarDopplerId: number;
+  antennaId: number;
+  initialVelocity: number | null;
+  initialVelocityUnit: string | null;
+}
+
+export interface ShotMeasurementPiezoPressure {
+  piezoelectricSensorId: number | null;
+  amplifierId: number | null;
+  dataAcquisitionSystemId: number | null;
+  closingMaxPressure: number | null;
+  closingMaxPressureUnit: string | null;
+  halfMaxPressure: number | null;
+  halfMaxPressureUnit: string | null;
+  shellMaxPressure: number | null;
+  shellMaxPressureUnit: string | null;
+}
+
+export interface ShotMeasurementShot {
+  shotId: string;
+  powderWeights: ShotMeasurementWeight[];
+  projectileWeights: ShotMeasurementWeight[];
+  velocities: ShotMeasurementVelocity[];
+  piezoPressures: ShotMeasurementPiezoPressure[];
+}
+
+export interface ShotMeasurementSeries {
+  seriesId: string;
+  shots: ShotMeasurementShot[];
+}
+
+export interface ShotMeasurementsResponse {
+  series: ShotMeasurementSeries[];
 }
 
 export type SecurityCountdownStatus = 'INACTIVE' | 'ACTIVE' | 'PAUSED';
@@ -217,14 +301,12 @@ export interface ShotVelocitiesResponse {
 
 interface ExecutionParams {
   fireTrialId: FireTrial['id'];
-  _t: number;
 }
 
 interface ShotVelocitiesParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotVelocitiesUpdateParams extends ShotVelocitiesParams {
@@ -235,7 +317,6 @@ interface ShotMunitionParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotMunitionUpdateParams extends ShotMunitionParams {
@@ -246,7 +327,6 @@ interface ShotManometerPressuresParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotManometerPressuresUpdateParams extends ShotManometerPressuresParams {
@@ -257,7 +337,13 @@ interface ShotJltMaoParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
+}
+
+interface ShotCameraOrientationParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+  cameraId: string;
 }
 
 interface ShotJltMaoUpdateParams extends ShotJltMaoParams {
@@ -268,7 +354,6 @@ interface ShotMaoTopographyParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotMaoTopographyUpdateParams extends ShotMaoTopographyParams {
@@ -279,7 +364,6 @@ interface ShotTopographyParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotTopographyUpdateParams extends ShotTopographyParams {
@@ -290,7 +374,6 @@ interface ShotTrajectographyParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotTrajectographyUpdateParams extends ShotTrajectographyParams {
@@ -301,7 +384,6 @@ interface ShotAcousticLevelParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotAcousticLevelUpdateParams extends ShotAcousticLevelParams {
@@ -312,7 +394,6 @@ interface ShotVideoDataParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
@@ -389,7 +470,6 @@ interface ShotPressuresParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
   shotId: string;
-  _t: number;
 }
 
 interface ShotPressuresUpdateParams extends ShotPressuresParams {
@@ -554,17 +634,14 @@ interface SeriesReadinessOneParams {
   profile: ExecutionTechnicalProfile;
   seriesId: string;
   body: SeriesReadinessRequest;
-  _t: number;
 }
 
 interface EquipmentByCategoryParams {
   categoryId: string;
-  _t: number;
 }
 
 interface LoadEquipmentByTypeParams {
   itemType: 'WEAPON' | 'TUBE';
-  _t: number;
 }
 
 // ============= Service =============
@@ -577,6 +654,388 @@ export class ExecutionService {
   readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #warehouseUrl = injectWharehouseEndpoint();
+
+  readonly #planningMunitionsParams = signal<ExecutionParams | null>(null);
+  readonly #componentTypesParams = signal<{ pageSize: number; active: boolean } | null>(null);
+  readonly #warehouseDenominationsParams = signal<{
+    pageSize: number;
+    active: boolean;
+    munitionTypeId?: string;
+  } | null>(null);
+
+  readonly #planningMunitionsResource = httpResource<unknown>(() => {
+    const params = this.#planningMunitionsParams();
+    if (!params) return undefined;
+    return { url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/munitions`, method: 'GET' };
+  });
+
+  readonly #componentTypesResource = httpResource<unknown>(() => {
+    const params = this.#componentTypesParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#warehouseUrl}/munition-types`,
+      params: { pageSize: params.pageSize, active: params.active },
+      method: 'GET',
+    };
+  });
+
+  readonly warehouseDenominationsResource = httpResource<unknown>(() => {
+    const params = this.#warehouseDenominationsParams();
+    if (!params) return undefined;
+    const queryParams: Record<string, string | number | boolean> = {
+      pageSize: params.pageSize,
+      active: params.active,
+    };
+    if (params.munitionTypeId) {
+      queryParams['munitionTypeId'] = params.munitionTypeId;
+    }
+    return {
+      url: `${this.#warehouseUrl}/denominations`,
+      params: queryParams,
+      method: 'GET',
+    };
+  });
+
+  async fetchWarehouseDenominations(munitionTypeId?: string): Promise<PlanningDenominationOption[]> {
+    this.#warehouseDenominationsParams.set({
+      pageSize: 100,
+      active: true,
+      munitionTypeId: munitionTypeId?.trim() || undefined,
+    });
+    await this.#awaitResource(this.warehouseDenominationsResource);
+    const catalog = this.#catalogItems(this.warehouseDenominationsResource.value());
+    const denominations: PlanningDenominationOption[] = [];
+
+    catalog.forEach((item) => {
+      if (!isRecord(item) || typeof item['id'] !== 'string') return;
+      const name =
+        typeof item['name'] === 'string'
+          ? item['name']
+          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
+            ? item['name']['es']
+            : item['id'];
+      const compTypeId =
+        isRecord(item['munitionType']) && typeof item['munitionType']['id'] === 'string'
+          ? item['munitionType']['id']
+          : (munitionTypeId ?? '');
+
+      if (!munitionTypeId || compTypeId === munitionTypeId) {
+        denominations.push({
+          id: item['id'],
+          name,
+          componentTypeId: compTypeId,
+          batch: null,
+          clientNumber: null,
+        });
+      }
+    });
+
+    return denominations;
+  }
+
+  async fetchPlanningMunitionOptions(fireTrialId: FireTrial['id']): Promise<PlanningMunitionOptionData> {
+    this.#componentTypesParams.set({ pageSize: 100, active: true });
+    this.#warehouseDenominationsParams.set({ pageSize: 100, active: true });
+    this.#planningMunitionsParams.set({ fireTrialId });
+    await Promise.all([
+      this.#awaitResource(this.#componentTypesResource),
+      this.#awaitResource(this.warehouseDenominationsResource),
+      this.#awaitResource(this.#planningMunitionsResource),
+    ]);
+
+    const response = this.#planningMunitionsResource.value();
+    const componentTypeCatalog = this.#catalogItems(this.#componentTypesResource.value());
+    const componentTypeMap = new Map<string, { label: string; category: string }>();
+    componentTypeCatalog.forEach((item) => {
+      if (!isRecord(item) || typeof item['id'] !== 'string') return;
+      const label =
+        typeof item['label'] === 'string' && item['label']
+          ? item['label']
+          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
+            ? item['name']['es']
+            : typeof item['name'] === 'string'
+              ? item['name']
+              : item['id'];
+      const category = typeof item['category'] === 'string' ? item['category'] : '';
+      componentTypeMap.set(item['id'], { label, category });
+    });
+
+    const warehouseDenominationsByType = new Map<string, PlanningDenominationOption[]>();
+    const warehouseDenominationsCatalog = this.#catalogItems(this.warehouseDenominationsResource.value());
+    warehouseDenominationsCatalog.forEach((item) => {
+      if (!isRecord(item) || typeof item['id'] !== 'string') return;
+      const name =
+        typeof item['name'] === 'string'
+          ? item['name']
+          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
+            ? item['name']['es']
+            : item['id'];
+      const compTypeId =
+        isRecord(item['munitionType']) && typeof item['munitionType']['id'] === 'string'
+          ? item['munitionType']['id']
+          : '';
+      if (compTypeId) {
+        const list = warehouseDenominationsByType.get(compTypeId) ?? [];
+        list.push({
+          id: item['id'],
+          name,
+          componentTypeId: compTypeId,
+          batch: null,
+          clientNumber: null,
+        });
+        warehouseDenominationsByType.set(compTypeId, list);
+      }
+    });
+
+    const root = isRecord(response) ? response : {};
+    const seriesList = Array.isArray(root['series']) ? root['series'] : [];
+
+    const configurationIds: string[] = [];
+    const globalComponentTypes = new Map<string, PlanningComponentType>();
+    const globalDenominations = new Map<string, PlanningDenominationOption>();
+    const optionsBySelection: PlanningMunitionOptionData['optionsBySelection'] = {};
+    const optionsByShot: PlanningMunitionOptionData['optionsByShot'] = {};
+    const optionsBySeries: PlanningMunitionOptionData['optionsBySeries'] = {};
+
+    seriesList.forEach((serieItem) => {
+      if (!isRecord(serieItem)) return;
+      const seriesId = typeof serieItem['seriesId'] === 'string' ? serieItem['seriesId'] : '';
+      const configurations = Array.isArray(serieItem['configurations']) ? serieItem['configurations'] : [];
+      const serieComponentTypes = new Map<string, PlanningComponentType>();
+      const serieDenominations = new Map<string, PlanningDenominationOption>();
+      const serieComponentData: Record<string, PlanningComponentData> = {};
+      const serieDenomData: Record<string, PlanningComponentData> = {};
+
+      configurations.forEach((configuration) => {
+        if (!isRecord(configuration)) return;
+        if (typeof configuration['id'] === 'string') {
+          configurationIds.push(configuration['id']);
+        }
+        const localTypes = new Map<string, PlanningComponentType>();
+        const localDenominations = new Map<string, PlanningDenominationOption>();
+        const localComponentData: Record<string, PlanningComponentData> = {};
+        const localDenomData: Record<string, PlanningComponentData> = {};
+
+        const configDenom = configuration['denomination'];
+        const configBatch = this.#extractBatch(configDenom, configuration);
+        const configClient = this.#extractClient(configDenom, configuration);
+        const configMunitionTypeId =
+          typeof configuration['munitionTypeId'] === 'string' && configuration['munitionTypeId'].trim() !== ''
+            ? configuration['munitionTypeId'].trim()
+            : isRecord(configDenom) &&
+                typeof configDenom['munitionTypeId'] === 'string' &&
+                configDenom['munitionTypeId'].trim() !== ''
+              ? configDenom['munitionTypeId'].trim()
+              : '';
+        const configDenomId =
+          isRecord(configDenom) && typeof configDenom['id'] === 'string' && configDenom['id'].trim() !== ''
+            ? configDenom['id'].trim()
+            : typeof configDenom === 'string' && configDenom.trim() !== ''
+              ? configDenom.trim()
+              : null;
+
+        if (configMunitionTypeId) {
+          const catalogInfo = componentTypeMap.get(configMunitionTypeId);
+          const label = catalogInfo?.label ?? configMunitionTypeId;
+          const category = catalogInfo?.category ?? 'MUNITION';
+          const entry: PlanningComponentType = { id: configMunitionTypeId, label, category };
+          localTypes.set(configMunitionTypeId, entry);
+          serieComponentTypes.set(configMunitionTypeId, entry);
+          globalComponentTypes.set(configMunitionTypeId, entry);
+
+          if (configDenomId) {
+            const denomName =
+              isRecord(configDenom) && typeof configDenom['name'] === 'string' ? configDenom['name'] : configDenomId;
+            const denomItem: PlanningDenominationOption = {
+              id: configDenomId,
+              name: denomName,
+              componentTypeId: configMunitionTypeId,
+              batch: configBatch,
+              clientNumber: configClient,
+            };
+            localDenominations.set(denomItem.id, denomItem);
+            serieDenominations.set(denomItem.id, denomItem);
+            globalDenominations.set(denomItem.id, denomItem);
+
+            const compData: PlanningComponentData = {
+              componentTypeId: configMunitionTypeId,
+              denominationId: denomItem.id,
+              batch: configBatch,
+              clientNumber: configClient,
+            };
+            localComponentData[configMunitionTypeId] = compData;
+            localDenomData[denomItem.id] = compData;
+            serieComponentData[configMunitionTypeId] = compData;
+            serieDenomData[denomItem.id] = compData;
+          } else {
+            const matchingDenoms = warehouseDenominationsByType.get(configMunitionTypeId) ?? [];
+            matchingDenoms.forEach((denom) => {
+              localDenominations.set(denom.id, denom);
+              serieDenominations.set(denom.id, denom);
+              globalDenominations.set(denom.id, denom);
+            });
+
+            const compData: PlanningComponentData = {
+              componentTypeId: configMunitionTypeId,
+              denominationId: null,
+              batch: configBatch,
+              clientNumber: configClient,
+            };
+            localComponentData[configMunitionTypeId] = compData;
+            serieComponentData[configMunitionTypeId] = compData;
+          }
+        }
+
+        if (Array.isArray(configuration['components'])) {
+          configuration['components'].forEach((component) => {
+            if (!isRecord(component)) return;
+            const type = isRecord(component['type']) ? component['type'] : undefined;
+            const compTypeId =
+              type && typeof type['id'] === 'string' && type['id'].trim() !== ''
+                ? type['id'].trim()
+                : typeof component['munitionTypeId'] === 'string' && component['munitionTypeId'].trim() !== ''
+                  ? component['munitionTypeId'].trim()
+                  : null;
+            if (!compTypeId) return;
+
+            const catalogInfo = componentTypeMap.get(compTypeId);
+            const compLabel =
+              type && typeof type['label'] === 'string' && type['label']
+                ? type['label']
+                : (catalogInfo?.label ?? compTypeId);
+            const compCategory =
+              catalogInfo?.category || (type && typeof type['type'] === 'string' ? type['type'] : 'MUNITION_COMPONENT');
+            const entry: PlanningComponentType = { id: compTypeId, label: compLabel, category: compCategory };
+
+            localTypes.set(compTypeId, entry);
+            serieComponentTypes.set(compTypeId, entry);
+            globalComponentTypes.set(compTypeId, entry);
+
+            const denomination = component['denomination'];
+            const compBatch = this.#extractBatch(denomination, component);
+            const compClient = this.#extractClient(denomination, component);
+            const compDenomId =
+              isRecord(denomination) && typeof denomination['id'] === 'string' && denomination['id'].trim() !== ''
+                ? denomination['id'].trim()
+                : typeof denomination === 'string' && denomination.trim() !== ''
+                  ? denomination.trim()
+                  : null;
+
+            if (compDenomId) {
+              const denomName =
+                isRecord(denomination) && typeof denomination['name'] === 'string' ? denomination['name'] : compDenomId;
+              const item: PlanningDenominationOption = {
+                id: compDenomId,
+                name: denomName,
+                componentTypeId: compTypeId,
+                batch: compBatch,
+                clientNumber: compClient,
+              };
+              localDenominations.set(item.id, item);
+              serieDenominations.set(item.id, item);
+              globalDenominations.set(item.id, item);
+            } else {
+              const matchingDenoms = warehouseDenominationsByType.get(compTypeId) ?? [];
+              matchingDenoms.forEach((denom) => {
+                localDenominations.set(denom.id, denom);
+                serieDenominations.set(denom.id, denom);
+                globalDenominations.set(denom.id, denom);
+              });
+            }
+
+            const compData: PlanningComponentData = {
+              componentTypeId: compTypeId,
+              denominationId: compDenomId,
+              batch: compBatch,
+              clientNumber: compClient,
+            };
+            localComponentData[compTypeId] = compData;
+            if (compDenomId) {
+              localDenomData[compDenomId] = compData;
+              serieDenomData[compDenomId] = compData;
+            }
+            serieComponentData[compTypeId] = compData;
+          });
+        }
+
+        const configSeriesId =
+          typeof configuration['seriesId'] === 'string' && configuration['seriesId']
+            ? configuration['seriesId']
+            : seriesId;
+        const shotIds = Array.isArray(configuration['assignedShotIds']) ? configuration['assignedShotIds'] : [];
+        shotIds
+          .filter((shotId): shotId is string => typeof shotId === 'string')
+          .forEach((shotId) => {
+            const shotOptions: PlanningOptionsGroup = {
+              componentTypes: [...localTypes.values()],
+              denominations: [...localDenominations.values()],
+              componentData: { ...localComponentData },
+              denominationData: { ...localDenomData },
+            };
+            if (configSeriesId) {
+              optionsBySelection[`${configSeriesId}|${shotId}`] = shotOptions;
+            }
+            optionsByShot[shotId] = shotOptions;
+          });
+      });
+
+      if (seriesId) {
+        optionsBySeries[seriesId] = {
+          componentTypes: [...serieComponentTypes.values()],
+          denominations: [...serieDenominations.values()],
+          componentData: { ...serieComponentData },
+          denominationData: { ...serieDenomData },
+        };
+      }
+    });
+
+    return {
+      configurationIds,
+      componentTypes: [...globalComponentTypes.values()],
+      denominations: [...globalDenominations.values()],
+      optionsBySelection,
+      optionsByShot,
+      optionsBySeries,
+    };
+  }
+
+  #extractBatch(...sources: unknown[]): string | null {
+    for (const src of sources) {
+      if (isRecord(src)) {
+        if (typeof src['batch'] === 'string' && src['batch'].trim()) return src['batch'].trim();
+        if (typeof src['lote'] === 'string' && src['lote'].trim()) return src['lote'].trim();
+        if (typeof src['lotNumber'] === 'string' && src['lotNumber'].trim()) return src['lotNumber'].trim();
+      }
+    }
+    return null;
+  }
+
+  #extractClient(...sources: unknown[]): string | null {
+    for (const src of sources) {
+      if (isRecord(src)) {
+        if (typeof src['clientNumber'] === 'string' && src['clientNumber'].trim()) return src['clientNumber'].trim();
+        if (typeof src['clientNumber'] === 'number') return String(src['clientNumber']);
+        if (typeof src['client'] === 'string' && src['client'].trim()) return src['client'].trim();
+        if (typeof src['client'] === 'number') return String(src['client']);
+        if (isRecord(src['client'])) {
+          if (typeof src['client']['name'] === 'string' && src['client']['name'].trim())
+            return src['client']['name'].trim();
+          if (typeof src['client']['id'] === 'string' && src['client']['id'].trim()) return src['client']['id'].trim();
+        }
+        if (typeof src['numeroCliente'] === 'string' && src['numeroCliente'].trim()) return src['numeroCliente'].trim();
+        if (typeof src['numeroCliente'] === 'number') return String(src['numeroCliente']);
+        if (typeof src['customer'] === 'string' && src['customer'].trim()) return src['customer'].trim();
+      }
+    }
+    return null;
+  }
+
+  #catalogItems(value: unknown): Record<string, unknown>[] {
+    if (Array.isArray(value)) return value.filter(isRecord);
+    if (!isRecord(value) || !Array.isArray(value['items'])) return [];
+    return value['items'].filter(isRecord);
+  }
 
   // ── PLANNING SERIES ──────────────────────────────────────────────────────
 
@@ -592,7 +1051,7 @@ export class ExecutionService {
   });
 
   getPlanningSeries(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningSeriesParams.set({ fireTrialId, _t: Date.now() });
+    this.#getPlanningSeriesParams.set({ fireTrialId });
   }
 
   readonly #getPlanningConditionsParams = signal<ExecutionParams | null>(null);
@@ -607,7 +1066,7 @@ export class ExecutionService {
   });
 
   getPlanningConditions(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningConditionsParams.set({ fireTrialId, _t: Date.now() });
+    this.#getPlanningConditionsParams.set({ fireTrialId });
   }
 
   // ── PLANNING PROPELLING CHARGE PARAMETERS (Widget 9) ──────────────────────
@@ -624,7 +1083,7 @@ export class ExecutionService {
   });
 
   getPropellingChargeParameters(fireTrialId: FireTrial['id']): void {
-    this.#getPropellingChargeParametersParams.set({ fireTrialId, _t: Date.now() });
+    this.#getPropellingChargeParametersParams.set({ fireTrialId });
   }
 
   readonly #fetchPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
@@ -639,9 +1098,8 @@ export class ExecutionService {
   });
 
   async fetchPropellingChargeParameters(fireTrialId: FireTrial['id']): Promise<PropellantChargeParametersResponse> {
-    this.#fetchPropellingChargeParametersParams.set({ fireTrialId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchPropellingChargeParametersResource);
-    return this.#fetchPropellingChargeParametersResource.value()!;
+    this.#fetchPropellingChargeParametersParams.set({ fireTrialId });
+    return this.#awaitResourceValue(this.#fetchPropellingChargeParametersResource);
   }
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
@@ -658,7 +1116,7 @@ export class ExecutionService {
   });
 
   getExecutionState(fireTrialId: FireTrial['id']): void {
-    this.#getExecutionStateParams.set({ fireTrialId, _t: Date.now() });
+    this.#getExecutionStateParams.set({ fireTrialId });
   }
 
   // ── EXECUTION PROGRESS ───────────────────────────────────────────────────
@@ -675,7 +1133,24 @@ export class ExecutionService {
   });
 
   getExecutionProgress(fireTrialId: FireTrial['id']): void {
-    this.#getExecutionProgressParams.set({ fireTrialId, _t: Date.now() });
+    this.#getExecutionProgressParams.set({ fireTrialId });
+  }
+
+  // ── SHOT MEASUREMENTS (Widget 8) ────────────────────────────────────────
+
+  readonly #getShotMeasurementsParams = signal<ExecutionParams | null>(null);
+
+  readonly shotMeasurementsResource = httpResource<ShotMeasurementsResponse>(() => {
+    const params = this.#getShotMeasurementsParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/shot-measurements`,
+      method: 'GET',
+    };
+  });
+
+  getShotMeasurements(fireTrialId: FireTrial['id']): void {
+    this.#getShotMeasurementsParams.set({ fireTrialId });
   }
 
   // ── SECURITY COUNTDOWN STATE ────────────────────────────────────────────
@@ -692,7 +1167,7 @@ export class ExecutionService {
   });
 
   getSecurityCountdownState(fireTrialId: FireTrial['id']): void {
-    this.#getSecurityCountdownParams.set({ fireTrialId, _t: Date.now() });
+    this.#getSecurityCountdownParams.set({ fireTrialId });
   }
 
   // ── SECURITY COUNTDOWN UPDATE ───────────────────────────────────────────
@@ -710,7 +1185,7 @@ export class ExecutionService {
   });
 
   updateSecurityCountdown(fireTrialId: FireTrial['id'], body: SecurityCountdownRequest): void {
-    this.#updateSecurityCountdownParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#updateSecurityCountdownParams.set({ fireTrialId, body });
   }
 
   // ── EXECUTION TRANSITIONS: START ─────────────────────────────────────────
@@ -735,7 +1210,7 @@ export class ExecutionService {
   });
 
   pauseExecution(fireTrialId: FireTrial['id']): void {
-    this.#pauseParams.set({ fireTrialId, _t: Date.now() });
+    this.#pauseParams.set({ fireTrialId });
   }
 
   // ── EXECUTION TRANSITIONS: INTERRUPT ────────────────────────────────────
@@ -753,7 +1228,7 @@ export class ExecutionService {
   });
 
   interruptExecution(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#interruptParams.set({ fireTrialId, reason, _t: Date.now() });
+    this.#interruptParams.set({ fireTrialId, reason });
   }
 
   // ── EXECUTION TRANSITIONS: RESUME ───────────────────────────────────────
@@ -770,7 +1245,7 @@ export class ExecutionService {
   });
 
   resumeExecution(fireTrialId: FireTrial['id']): void {
-    this.#resumeParams.set({ fireTrialId, _t: Date.now() });
+    this.#resumeParams.set({ fireTrialId });
   }
 
   // ── EXECUTION TRANSITIONS: CANCEL ───────────────────────────────────────
@@ -803,7 +1278,7 @@ export class ExecutionService {
   });
 
   getExecutionPlanning(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningParams.set({ fireTrialId, _t: Date.now() });
+    this.#getPlanningParams.set({ fireTrialId });
   }
 
   // ── EXECUTION PLANNING: UPDATE ──────────────────────────────────────────
@@ -821,7 +1296,7 @@ export class ExecutionService {
   });
 
   updateExecutionPlanning(fireTrialId: FireTrial['id'], body: PlanningRequest): void {
-    this.#updatePlanningParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#updatePlanningParams.set({ fireTrialId, body });
   }
 
   // ── EXECUTION PLANNING: STATE ───────────────────────────────────────────
@@ -838,7 +1313,7 @@ export class ExecutionService {
   });
 
   getExecutionPlanningState(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningStateParams.set({ fireTrialId, _t: Date.now() });
+    this.#getPlanningStateParams.set({ fireTrialId });
   }
 
   // ── EXECUTION PLANNING: APPROVE ─────────────────────────────────────────
@@ -856,7 +1331,7 @@ export class ExecutionService {
   });
 
   approveExecutionPlanning(fireTrialId: FireTrial['id'], body: PlanningApprovalRequest): void {
-    this.#approvePlanningParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#approvePlanningParams.set({ fireTrialId, body });
   }
 
   // ── WIDGET PREFERENCES: BY ROLE ─────────────────────────────────────────
@@ -873,7 +1348,7 @@ export class ExecutionService {
   });
 
   getPreferencesByRole(fireTrialId: FireTrial['id'], roleName: string): void {
-    this.#getPreferencesByRoleParams.set({ fireTrialId, roleName, _t: Date.now() });
+    this.#getPreferencesByRoleParams.set({ fireTrialId, roleName });
   }
 
   readonly #updatePreferencesByRoleParams = signal<PreferencesParams | null>(null);
@@ -889,7 +1364,7 @@ export class ExecutionService {
   });
 
   updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, widgetsLayout: WidgetPreferenceId[]): void {
-    this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, widgetsLayout, _t: Date.now() });
+    this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, widgetsLayout });
   }
 
   // ── WIDGET PREFERENCES: BY USER ─────────────────────────────────────────
@@ -906,7 +1381,7 @@ export class ExecutionService {
   });
 
   getPreferencesByUser(fireTrialId: FireTrial['id'], username: string): void {
-    this.#getPreferencesByUserParams.set({ fireTrialId, username, _t: Date.now() });
+    this.#getPreferencesByUserParams.set({ fireTrialId, username });
   }
 
   readonly #updatePreferencesByUserParams = signal<PreferencesParams | null>(null);
@@ -922,7 +1397,7 @@ export class ExecutionService {
   });
 
   updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, widgetsLayout: WidgetPreferenceId[]): void {
-    this.#updatePreferencesByUserParams.set({ fireTrialId, username, widgetsLayout, _t: Date.now() });
+    this.#updatePreferencesByUserParams.set({ fireTrialId, username, widgetsLayout });
   }
 
   // ── EXECUTION READINESS: GET ALL ────────────────────────────────────────
@@ -939,7 +1414,7 @@ export class ExecutionService {
   });
 
   getProfilesReadiness(fireTrialId: FireTrial['id']): void {
-    this.#getReadinessParams.set({ fireTrialId, _t: Date.now() });
+    this.#getReadinessParams.set({ fireTrialId });
   }
 
   // ── EXECUTION READINESS: SET BY PROFILE & SERIES ────────────────────────
@@ -966,9 +1441,8 @@ export class ExecutionService {
     seriesId: string,
     body: SeriesReadinessRequest,
   ): Promise<SeriesReadinessItem> {
-    this.#setSeriesReadinessOneParams.set({ fireTrialId, profile, seriesId, body, _t: Date.now() });
-    await this.#awaitResource(this.setSeriesReadinessResource);
-    return this.setSeriesReadinessResource.value()!;
+    this.#setSeriesReadinessOneParams.set({ fireTrialId, profile, seriesId, body });
+    return this.#awaitResourceValue(this.setSeriesReadinessResource);
   }
 
   /**
@@ -1014,7 +1488,7 @@ export class ExecutionService {
   });
 
   getJltPreparation(fireTrialId: FireTrial['id'], seriesId: string): void {
-    this.#getJltPreparationParams.set({ fireTrialId, seriesId, _t: Date.now() });
+    this.#getJltPreparationParams.set({ fireTrialId, seriesId });
   }
 
   readonly #setJltReadinessParams = signal<JltReadinessParams | null>(null);
@@ -1030,7 +1504,7 @@ export class ExecutionService {
   });
 
   setJltReadiness(fireTrialId: FireTrial['id'], seriesId: string, body: JltReadinessRequest): void {
-    this.#setJltReadinessParams.set({ fireTrialId, seriesId, body, _t: Date.now() });
+    this.#setJltReadinessParams.set({ fireTrialId, seriesId, body });
   }
 
   readonly #selectShotParams = signal<SelectShotParams | null>(null);
@@ -1045,7 +1519,7 @@ export class ExecutionService {
   });
 
   selectShot(fireTrialId: FireTrial['id'], shotId: string): void {
-    this.#selectShotParams.set({ fireTrialId, shotId, _t: Date.now() });
+    this.#selectShotParams.set({ fireTrialId, shotId });
   }
 
   readonly #fireShotParams = signal<ExecutionParams | null>(null);
@@ -1060,7 +1534,7 @@ export class ExecutionService {
   });
 
   fireShot(fireTrialId: FireTrial['id']): void {
-    this.#fireShotParams.set({ fireTrialId, _t: Date.now() });
+    this.#fireShotParams.set({ fireTrialId });
   }
 
   // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
@@ -1077,7 +1551,7 @@ export class ExecutionService {
   });
 
   getEquipmentSelector(fireTrialId: FireTrial['id']): void {
-    this.#getEquipmentSelectorParams.set({ fireTrialId, _t: Date.now() });
+    this.#getEquipmentSelectorParams.set({ fireTrialId });
   }
 
   // ── EQUIPMENT ITEMS BY CATEGORY ──────────────────────────────────────────
@@ -1086,7 +1560,11 @@ export class ExecutionService {
 
   readonly #loadByCategoryResource = httpResource<{
     totalElements: number;
-    items: Array<{ denominationId: number; denominationName: string; tag: string }>;
+    items: Array<{
+      id: number | null;
+      denominationName: string | null;
+      tag: string | null;
+    }>;
   }>(() => {
     const p = this.#loadByCategoryParams();
     if (!p) return undefined;
@@ -1099,21 +1577,20 @@ export class ExecutionService {
 
   /**
    * Carga items de equipo para múltiples categorías de forma secuencial desde /equipment/items?categoryId=X.
-   * Devuelve un map categoryId → opciones de select { id: denominationId, label }
+   * Devuelve un map categoryId → opciones de select { id: equipmentItemId, label }.
    */
   async loadEquipmentItemsByCategories(
     categories: EquipmentTypeEnum[],
   ): Promise<Record<string, Array<{ id: string; label: string }>>> {
     const results: Array<readonly [string, Array<{ id: string; label: string }>]> = [];
     for (const cat of categories) {
-      this.#loadByCategoryParams.set({ categoryId: cat, _t: Date.now() });
-      await this.#awaitResource(this.#loadByCategoryResource);
-      const response = this.#loadByCategoryResource.value()!;
+      this.#loadByCategoryParams.set({ categoryId: cat });
+      const response = await this.#awaitResourceValue(this.#loadByCategoryResource);
       results.push([
         cat,
         response.items.map((item) => ({
-          id: String(item.denominationId),
-          label: `${item.denominationName} / ${item.tag}`,
+          id: String(item.id),
+          label: `${item.denominationName ?? ''} / ${item.tag ?? ''}`.trim(),
         })),
       ] as const);
     }
@@ -1135,7 +1612,7 @@ export class ExecutionService {
   });
 
   updateEquipmentSelector(fireTrialId: FireTrial['id'], body: EquipmentSelectorUpdateRequest): void {
-    this.#updateEquipmentSelectorParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#updateEquipmentSelectorParams.set({ fireTrialId, body });
   }
 
   // ── JLT SHOT DATA: GET ───────────────────────────────────────────────────
@@ -1152,7 +1629,7 @@ export class ExecutionService {
   });
 
   getJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getJltShotDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getJltShotDataParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchJltShotDataParams = signal<JltShotDataParams | null>(null);
@@ -1167,9 +1644,8 @@ export class ExecutionService {
   });
 
   async fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
-    this.#fetchJltShotDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchJltShotDataResource);
-    return this.#fetchJltShotDataResource.value()!;
+    this.#fetchJltShotDataParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchJltShotDataResource);
   }
 
   // ── JLT SHOT DATA: PUT ───────────────────────────────────────────────────
@@ -1187,7 +1663,7 @@ export class ExecutionService {
   });
 
   setJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: JltShotDataRequest): void {
-    this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   // ── SHOT VELOCITIES: GET ─────────────────────────────────────────────────
@@ -1204,7 +1680,7 @@ export class ExecutionService {
   });
 
   getShotVelocities(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotVelocitiesParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
@@ -1223,9 +1699,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotVelocitiesResponse> {
-    this.#fetchShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotVelocitiesResource);
-    return this.#fetchShotVelocitiesResource.value()!;
+    this.#fetchShotVelocitiesParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotVelocitiesResource);
   }
 
   // ── SHOT VELOCITIES: PUT ─────────────────────────────────────────────────
@@ -1243,7 +1718,7 @@ export class ExecutionService {
   });
 
   setShotVelocity(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVelocitiesRequest): void {
-    this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   // ── SHOT PRESSURES: GET ──────────────────────────────────────────────────────
@@ -1260,7 +1735,7 @@ export class ExecutionService {
   });
 
   getShotPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotPressuresParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotPressuresParams = signal<ShotPressuresParams | null>(null);
@@ -1279,9 +1754,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotPressuresResponse> {
-    this.#fetchShotPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotPressuresResource);
-    return this.#fetchShotPressuresResource.value()!;
+    this.#fetchShotPressuresParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotPressuresResource);
   }
 
   // ── SHOT PRESSURES: PUT ──────────────────────────────────────────────────────
@@ -1299,7 +1773,7 @@ export class ExecutionService {
   });
 
   setShotPressure(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotPressuresRequest): void {
-    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotPressures(
@@ -1308,9 +1782,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotPressuresRequest,
   ): Promise<ShotPressuresResponse> {
-    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotPressuresResource);
-    return this.updateShotPressuresResource.value()!;
+    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotPressuresResource);
   }
 
   // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────
@@ -1328,9 +1801,9 @@ export class ExecutionService {
   });
 
   async loadArmamentEquipmentItems(itemType: 'WEAPON' | 'TUBE'): Promise<ArmamentEquipmentItem[]> {
-    this.#loadArmamentItemsParams.set({ itemType, _t: Date.now() });
-    await this.#awaitResource(this.#loadArmamentItemsResource);
-    return this.#loadArmamentItemsResource.value()!.items;
+    this.#loadArmamentItemsParams.set({ itemType });
+    const response = await this.#awaitResourceValue(this.#loadArmamentItemsResource);
+    return response.items;
   }
 
   readonly #fetchPlanningArmamentParams = signal<ExecutionParams | null>(null);
@@ -1345,9 +1818,8 @@ export class ExecutionService {
   });
 
   async fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
-    this.#fetchPlanningArmamentParams.set({ fireTrialId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchPlanningArmamentResource);
-    return this.#fetchPlanningArmamentResource.value()!;
+    this.#fetchPlanningArmamentParams.set({ fireTrialId });
+    return this.#awaitResourceValue(this.#fetchPlanningArmamentResource);
   }
 
   readonly #fetchShotArmamentParams = signal<ShotPressuresParams | null>(null);
@@ -1366,9 +1838,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotArmamentResponse> {
-    this.#fetchShotArmamentParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotArmamentResource);
-    return this.#fetchShotArmamentResource.value()!;
+    this.#fetchShotArmamentParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotArmamentResource);
   }
 
   readonly #updateShotArmamentParams = signal<ShotArmamentUpdateParams | null>(null);
@@ -1384,7 +1855,7 @@ export class ExecutionService {
   });
 
   setShotArmament(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotArmamentRequest): void {
-    this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   // ── ARMAMENT BULK CONFIGURATION ──────────────────────────────────────────
@@ -1402,7 +1873,7 @@ export class ExecutionService {
   });
 
   applyArmamentBulkConfiguration(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): void {
-    this.#applyArmamentBulkConfigurationParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#applyArmamentBulkConfigurationParams.set({ fireTrialId, body });
   }
 
   readonly #bulkConfigureArmamentParams = signal<ArmamentBulkConfigurationParams | null>(null);
@@ -1418,7 +1889,7 @@ export class ExecutionService {
   });
 
   async bulkConfigureArmament(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): Promise<void> {
-    this.#bulkConfigureArmamentParams.set({ fireTrialId, body, _t: Date.now() });
+    this.#bulkConfigureArmamentParams.set({ fireTrialId, body });
     await this.#awaitResource(this.#bulkConfigureArmamentResource);
   }
 
@@ -1436,7 +1907,7 @@ export class ExecutionService {
   });
 
   getShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotMunitionParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotMunitionParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotMunitionParams = signal<ShotMunitionParams | null>(null);
@@ -1455,9 +1926,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotMunitionResponse> {
-    this.#fetchShotMunitionParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotMunitionResource);
-    return this.#fetchShotMunitionResource.value()!;
+    this.#fetchShotMunitionParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotMunitionResource);
   }
 
   // ── SHOT MUNITIONS: PUT (Widget 20) ──────────────────────────────────────────
@@ -1475,7 +1945,7 @@ export class ExecutionService {
   });
 
   setShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotMunitionRequest): void {
-    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotMunition(
@@ -1484,9 +1954,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotMunitionRequest,
   ): Promise<ShotMunitionResponse> {
-    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotMunitionResource);
-    return this.updateShotMunitionResource.value()!;
+    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotMunitionResource);
   }
 
   // ── SHOT MANOMETER PRESSURES: GET (Widget 21) ────────────────────────────────
@@ -1503,7 +1972,7 @@ export class ExecutionService {
   });
 
   getShotManometerPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotManometerPressuresParams = signal<ShotManometerPressuresParams | null>(null);
@@ -1522,9 +1991,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotManometerPressuresResponse> {
-    this.#fetchShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotManometerPressuresResource);
-    return this.#fetchShotManometerPressuresResource.value()!;
+    this.#fetchShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotManometerPressuresResource);
   }
 
   // ── SHOT MANOMETER PRESSURES: PUT (Widget 21) ────────────────────────────────
@@ -1547,7 +2015,7 @@ export class ExecutionService {
     shotId: string,
     body: ShotManometerPressuresRequest,
   ): void {
-    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotManometerPressures(
@@ -1556,9 +2024,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotManometerPressuresRequest,
   ): Promise<ShotManometerPressuresResponse> {
-    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotManometerPressuresResource);
-    return this.updateShotManometerPressuresResource.value()!;
+    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotManometerPressuresResource);
   }
 
   // ── SHOT JLT MAO: GET ────────────────────────────────
@@ -1576,7 +2043,7 @@ export class ExecutionService {
   readonly shotShotJltMaoResource = this.shotJltMaoResource;
 
   getShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotJltMaoParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotJltMaoParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotJltMaoParams = signal<ShotJltMaoParams | null>(null);
@@ -1591,9 +2058,8 @@ export class ExecutionService {
   });
 
   async fetchShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotJltMaoResponse> {
-    this.#fetchShotJltMaoParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotJltMaoResource);
-    return this.#fetchShotJltMaoResource.value()!;
+    this.#fetchShotJltMaoParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotJltMaoResource);
   }
 
   // ── SHOT JLT MAO: PUT ────────────────────────────────
@@ -1611,7 +2077,7 @@ export class ExecutionService {
   });
 
   setShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotJltMaoRequest): void {
-    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotJltMao(
@@ -1620,9 +2086,25 @@ export class ExecutionService {
     shotId: string,
     body: ShotJltMaoRequest,
   ): Promise<ShotJltMaoResponse> {
-    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotJltMaoResource);
-    return this.updateShotJltMaoResource.value()!;
+    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotJltMaoResource);
+  }
+
+  // ── SHOT CAMERA ORIENTATION: GET (Widget 6) ─────────────────────────────
+
+  readonly #getShotCameraOrientationParams = signal<ShotCameraOrientationParams | null>(null);
+
+  readonly shotCameraOrientationResource = httpResource<ShotCameraOrientationResponse>(() => {
+    const params = this.#getShotCameraOrientationParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/series/${params.seriesId}/shots/${params.shotId}/cameras/${params.cameraId}/orientation`,
+      method: 'GET',
+    };
+  });
+
+  getShotCameraOrientation(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, cameraId: string): void {
+    this.#getShotCameraOrientationParams.set({ fireTrialId, seriesId, shotId, cameraId });
   }
 
   // ── SHOT MAO TOPOGRAPHY: GET ────────────────────────────────
@@ -1640,7 +2122,7 @@ export class ExecutionService {
   readonly shotShotMaoTopographyResource = this.shotMaoTopographyResource;
 
   getShotMaoTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotMaoTopographyParams = signal<ShotMaoTopographyParams | null>(null);
@@ -1659,9 +2141,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotMaoTopographyResponse> {
-    this.#fetchShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotMaoTopographyResource);
-    return this.#fetchShotMaoTopographyResource.value()!;
+    this.#fetchShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotMaoTopographyResource);
   }
 
   // ── SHOT MAO TOPOGRAPHY: PUT ────────────────────────────────
@@ -1684,7 +2165,7 @@ export class ExecutionService {
     shotId: string,
     body: ShotMaoTopographyRequest,
   ): void {
-    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotMaoTopography(
@@ -1693,9 +2174,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotMaoTopographyRequest,
   ): Promise<ShotMaoTopographyResponse> {
-    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotMaoTopographyResource);
-    return this.updateShotMaoTopographyResource.value()!;
+    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotMaoTopographyResource);
   }
 
   // ── SHOT TOPOGRAPHY: GET ────────────────────────────────
@@ -1713,7 +2193,7 @@ export class ExecutionService {
   readonly shotShotTopographyResource = this.shotTopographyResource;
 
   getShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotTopographyParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotTopographyParams = signal<ShotTopographyParams | null>(null);
@@ -1732,9 +2212,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotTopographyResponse> {
-    this.#fetchShotTopographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotTopographyResource);
-    return this.#fetchShotTopographyResource.value()!;
+    this.#fetchShotTopographyParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotTopographyResource);
   }
 
   // ── SHOT TOPOGRAPHY: PUT ────────────────────────────────
@@ -1752,7 +2231,7 @@ export class ExecutionService {
   });
 
   setShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotTopographyRequest): void {
-    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotTopography(
@@ -1761,9 +2240,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotTopographyRequest,
   ): Promise<ShotTopographyResponse> {
-    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotTopographyResource);
-    return this.updateShotTopographyResource.value()!;
+    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotTopographyResource);
   }
 
   // ── SHOT TRAJECTOGRAPHY: GET ────────────────────────────────
@@ -1781,7 +2259,7 @@ export class ExecutionService {
   readonly shotShotTrajectographyResource = this.shotTrajectographyResource;
 
   getShotTrajectography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotTrajectographyParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotTrajectographyParams = signal<ShotTrajectographyParams | null>(null);
@@ -1800,9 +2278,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotTrajectographyResponse> {
-    this.#fetchShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotTrajectographyResource);
-    return this.#fetchShotTrajectographyResource.value()!;
+    this.#fetchShotTrajectographyParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotTrajectographyResource);
   }
 
   // ── SHOT TRAJECTOGRAPHY: PUT ────────────────────────────────
@@ -1825,7 +2302,7 @@ export class ExecutionService {
     shotId: string,
     body: ShotTrajectographyRequest,
   ): void {
-    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotTrajectography(
@@ -1834,9 +2311,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotTrajectographyRequest,
   ): Promise<ShotTrajectographyResponse> {
-    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotTrajectographyResource);
-    return this.updateShotTrajectographyResource.value()!;
+    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotTrajectographyResource);
   }
 
   // ── SHOT ACOUSTIC LEVEL: GET ────────────────────────────────
@@ -1854,7 +2330,7 @@ export class ExecutionService {
   readonly shotShotAcousticLevelResource = this.shotAcousticLevelResource;
 
   getShotAcousticLevel(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotAcousticLevelParams = signal<ShotAcousticLevelParams | null>(null);
@@ -1873,9 +2349,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotAcousticLevelResponse> {
-    this.#fetchShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotAcousticLevelResource);
-    return this.#fetchShotAcousticLevelResource.value()!;
+    this.#fetchShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotAcousticLevelResource);
   }
 
   // ── SHOT ACOUSTIC LEVEL: PUT ────────────────────────────────
@@ -1898,7 +2373,7 @@ export class ExecutionService {
     shotId: string,
     body: ShotAcousticLevelRequest,
   ): void {
-    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotAcousticLevel(
@@ -1907,9 +2382,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotAcousticLevelRequest,
   ): Promise<ShotAcousticLevelResponse> {
-    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotAcousticLevelResource);
-    return this.updateShotAcousticLevelResource.value()!;
+    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotAcousticLevelResource);
   }
 
   // ── SHOT VIDEO DATA: GET ───────────────────────────────────
@@ -1926,7 +2400,7 @@ export class ExecutionService {
   });
 
   getShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotVideoDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+    this.#getShotVideoDataParams.set({ fireTrialId, seriesId, shotId });
   }
 
   readonly #fetchShotVideoDataParams = signal<ShotVideoDataParams | null>(null);
@@ -1945,9 +2419,8 @@ export class ExecutionService {
     seriesId: string,
     shotId: string,
   ): Promise<ShotVideoDataResponse> {
-    this.#fetchShotVideoDataParams.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-    await this.#awaitResource(this.#fetchShotVideoDataResource);
-    return this.#fetchShotVideoDataResource.value()!;
+    this.#fetchShotVideoDataParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotVideoDataResource);
   }
 
   // ── SHOT VIDEO DATA: PUT ───────────────────────────────────
@@ -1965,7 +2438,7 @@ export class ExecutionService {
   });
 
   setShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVideoDataRequest): void {
-    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
+    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
   async updateShotVideoData(
@@ -1974,9 +2447,8 @@ export class ExecutionService {
     shotId: string,
     body: ShotVideoDataRequest,
   ): Promise<ShotVideoDataResponse> {
-    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-    await this.#awaitResource(this.updateShotVideoDataResource);
-    return this.updateShotVideoDataResource.value()!;
+    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotVideoDataResource);
   }
 
   /**
@@ -1994,5 +2466,22 @@ export class ExecutionService {
     if (resource.error()) {
       throw resource.error();
     }
+  }
+
+  /**
+   * Espera a que un httpResource complete y devuelve su valor de forma segura.
+   * Lanza si el recurso reporta error o si el valor resultante es undefined.
+   */
+  async #awaitResourceValue<T>(resource: {
+    isLoading: Signal<boolean>;
+    error: Signal<unknown>;
+    value: Signal<T | undefined>;
+  }): Promise<T> {
+    await this.#awaitResource(resource);
+    const value = resource.value();
+    if (value === undefined) {
+      throw new Error('Resource response is undefined');
+    }
+    return value;
   }
 }

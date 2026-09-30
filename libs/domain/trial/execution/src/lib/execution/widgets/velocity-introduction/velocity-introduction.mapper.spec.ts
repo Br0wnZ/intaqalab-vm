@@ -88,6 +88,18 @@ describe('velocity-introduction.mapper', () => {
       ]);
     });
 
+    it('uses globalNumber when available', () => {
+      const result = mapShotsToDisparoOptions([
+        { shotId: 'shot-1', globalNumber: 10 },
+        { shotId: 'shot-2', globalNumber: null },
+      ]);
+
+      expect(result).toEqual([
+        { value: 'shot-1', label: 'Disparo 10' },
+        { value: 'shot-2', label: 'Disparo 2' },
+      ]);
+    });
+
     it('returns fallback options when shot list is empty or null', () => {
       const fallback = [{ value: 'def-1', label: 'Default' }];
       expect(mapShotsToDisparoOptions([], fallback)).toEqual(fallback);

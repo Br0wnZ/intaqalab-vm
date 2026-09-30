@@ -11,6 +11,7 @@ function generateUuid(): string {
 }
 
 interface TrialMunitionsResponse {
+  units?: { temperature: string | null; time: string | null } | null;
   series: SeriesMunitionsData[];
 }
 
@@ -20,11 +21,17 @@ interface SeriesMunitionsData {
   configurations: MunitionConfigResponse[];
 }
 
+interface MunitionDenominationRef {
+  id: string;
+  munitionTypeId: string;
+  name: string;
+}
+
 interface MunitionConfigResponse {
   id: string;
   seriesId: string;
   munitionTypeId?: string;
-  denomination: string;
+  denomination: string | MunitionDenominationRef;
   batch?: string;
   clientNumber?: string | number;
   reconditioning?: ReconditioningData;
@@ -173,11 +180,16 @@ function processConfigurationUpdates(
 }
 
 function transformConfigRequest(config: MunitionConfigRequest): MunitionConfigResponse {
+  const denominationRef: MunitionDenominationRef = {
+    id: config.denominationId || generateUuid(),
+    munitionTypeId: '',
+    name: config.denomination || 'Unknown Denomination',
+  };
   return {
     id: config.id || generateUuid(),
     seriesId: config.seriesId,
     munitionTypeId: undefined,
-    denomination: config.denominationId || config.denomination || 'Unknown Denomination',
+    denomination: denominationRef,
     batch: config.batch,
     clientNumber: config.clientNumber,
     reconditioning: config.reconditioning,

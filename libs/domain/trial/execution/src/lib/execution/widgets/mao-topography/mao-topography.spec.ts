@@ -127,4 +127,36 @@ describe('MaoTopography', () => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
     });
   });
+
+  it('clears fields when the selected shot has no topography data', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    vi.spyOn(execService, 'fetchShotMaoTopography').mockResolvedValue({ maoTopographyData: null });
+    store.updateMaoTopography({
+      observador: 'obs-01',
+      xPieza: 10,
+      yPieza: 20,
+      zPieza: 30,
+      xBlanco: 40,
+      yBlanco: 50,
+      zBlanco: 60,
+    });
+
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('s-1');
+    fixture.componentInstance.onDisparoSelected('d-1');
+
+    await vi.waitFor(() => {
+      expect(store.maoTopography()).toMatchObject({
+        observador: null,
+        xPieza: null,
+        yPieza: null,
+        zPieza: null,
+        xBlanco: null,
+        yBlanco: null,
+        zBlanco: null,
+      });
+    });
+  });
 });

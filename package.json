@@ -78,6 +78,10 @@
     "test:coverage:all": "npx nx run-many --target=test --codeCoverage=true",
     "coverage:merge": "node scripts/merge-coverage.js",
     "coverage:full": "npm run test:coverage:all && npm run coverage:merge",
+    "agents:status": "node scripts/agents-version.mjs status",
+    "agents:check": "node scripts/agents-version.mjs check",
+    "agents:bump": "node scripts/agents-version.mjs bump",
+    "agents:sync": "node scripts/agents-version.mjs sync",
     "prepare": "husky"
   },
   "private": true,

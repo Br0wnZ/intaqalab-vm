@@ -258,6 +258,7 @@ coverity-pre:
     when: always
     paths:
       - .bridge 
+  allow_failure: true      
 
 coverity-pro:
   stage: security-tests

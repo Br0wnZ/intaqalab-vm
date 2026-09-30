@@ -1,6 +1,8 @@
 ---
 name: mock-server-expert
-description: 'Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines.'
+version: 1.0.0
+last-updated: 2026-09-29
+description: Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines.
 argument-hint: 'Endpoint: [path], Method: [GET/POST/PUT], Model: [TypeScript interface], Options: [paginated, delay]'
 user-invocable: true
 ---

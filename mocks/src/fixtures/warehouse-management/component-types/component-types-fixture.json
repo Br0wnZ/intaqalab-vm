@@ -1,5 +1,38 @@
 [
   {
+    "id": "8b688c6f-60c2-4f7d-b1b3-9c34982726d1",
+    "label": "Disparo Organizado",
+    "name": {
+      "es": "Disparo Organizado",
+      "en": "Organized Shot"
+    },
+    "observations": "Tipo de munición principal para disparos organizados",
+    "category": "MUNITION",
+    "active": true
+  },
+  {
+    "id": "d1598b72-46ff-4808-974b-e2a00162334e",
+    "label": "Granada mortero",
+    "name": {
+      "es": "Granada mortero",
+      "en": "Mortar grenade"
+    },
+    "observations": "Tipo de munición granada mortero",
+    "category": "MUNITION",
+    "active": true
+  },
+  {
+    "id": "06ca4256-e992-4d97-afb1-083c2ed93739",
+    "label": "Espoleta",
+    "name": {
+      "es": "Espoleta",
+      "en": "Fuse"
+    },
+    "observations": "Componente tipo espoleta",
+    "category": "MUNITION_COMPONENT",
+    "active": true
+  },
+  {
     "id": "GRANADA_MORTERO",
     "label": "Granada mortero",
     "name": {

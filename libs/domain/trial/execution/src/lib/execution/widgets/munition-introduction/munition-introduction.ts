@@ -21,7 +21,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
+import type {
+  PlanningComponentType,
+  PlanningDenominationOption,
+  PlanningOptionsGroup,
+} from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import type { ShotMunitionResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -207,6 +212,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  readonly #planningOptionsTrial = signal<string | null>(null);
+  readonly #planningOptionsBySelection = signal<Record<string, PlanningOptionsGroup>>({});
+  readonly #planningOptionsByShot = signal<Record<string, PlanningOptionsGroup>>({});
+  readonly #planningOptionsBySeries = signal<Record<string, PlanningOptionsGroup>>({});
 
   // ── UI state (local) ───────────────────────────────────────────────────────
   protected readonly activeTab = signal<TabType>('identificacion');
@@ -307,6 +316,13 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         return;
       }
 
+      if (this.#planningOptionsTrial() !== fireTrialId) {
+        untracked(() => {
+          this.#planningOptionsTrial.set(fireTrialId);
+          void this.#loadPlanningOptions(fireTrialId);
+        });
+      }
+
       const selectionKey = `${activeSerieId}|${activeShotId}`;
       if (this.#lastLoadedActiveSelection() === selectionKey) {
         return;
@@ -319,6 +335,111 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     });
   }
 
+  async #loadPlanningOptions(fireTrialId: string): Promise<void> {
+    try {
+      const options = await this.#executionService.fetchPlanningMunitionOptions(fireTrialId);
+      this.#planningOptionsBySelection.set(options.optionsBySelection);
+      this.#planningOptionsByShot.set(options.optionsByShot);
+      this.#planningOptionsBySeries.set(options.optionsBySeries);
+      const selection = this.selectorFormModel();
+      this.#applyPlanningOptions(selection.serie, selection.disparo);
+    } catch {
+      // Keep local fallback options when planning catalogs are unavailable.
+    }
+  }
+
+  #applyPlanningOptions(serieId: string | null, shotId: string | null): void {
+    const options =
+      (serieId && shotId ? this.#planningOptionsBySelection()[`${serieId}|${shotId}`] : undefined) ??
+      (shotId ? this.#planningOptionsByShot()[shotId] : undefined) ??
+      (serieId ? this.#planningOptionsBySeries()[serieId] : undefined);
+
+    const compTypes: PlanningComponentType[] =
+      options?.componentTypes ??
+      (serieId
+        ? []
+        : this.#store.munitionIntroduction().componenteOptions.map(({ value, label, category }) => ({
+            id: value,
+            label,
+            category,
+          })));
+    const denoms: PlanningDenominationOption[] =
+      options?.denominations ??
+      (serieId
+        ? []
+        : this.#store
+            .munitionIntroduction()
+            .denominacionOptions.map(({ value, label, componenteId, batch, clientNumber }) => ({
+              id: value,
+              name: label,
+              componentTypeId: componenteId,
+              batch: batch ?? null,
+              clientNumber: clientNumber ?? null,
+            })));
+
+    this.#store.updateMunitionIntroductionPlanningOptions(compTypes, denoms);
+
+    const currentComp = this.#store.munitionIntroduction().selectedComponentId;
+    const available = compTypes.map((c) => c.id);
+    const targetComp = !currentComp || !available.includes(currentComp) ? (compTypes[0]?.id ?? null) : currentComp;
+
+    if (targetComp) {
+      this.onComponentChange(targetComp);
+    }
+  }
+
+  readonly #loadedWarehouseDenominationComponents = new Set<string>();
+
+  #patchPlanningIdentificationForComponent(componentId: string | null): void {
+    if (!componentId) return;
+
+    const selection = this.selectorFormModel();
+    const options =
+      (selection.serie && selection.disparo
+        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
+        : undefined) ??
+      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
+      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
+
+    const planningData = options?.componentData?.[componentId];
+    if (planningData) {
+      const stored = this.#store.munitionIntroduction();
+      const currentIdent = stored.identificacion;
+      const patched: MunitionIntroIdentificationState = {
+        ...currentIdent,
+        componente: componentId,
+        denominacion: planningData.denominationId ?? null,
+        lote: planningData.batch ?? null,
+        numeroCliente: planningData.clientNumber ?? null,
+      };
+      this.#store.updateMunitionIntroductionIdentification(patched);
+      this.identTab()?.applyData(patched);
+    }
+  }
+
+  async #loadWarehouseDenominationsForComponentIfMissing(componentId: string): Promise<void> {
+    const selection = this.selectorFormModel();
+    const options =
+      (selection.serie && selection.disparo
+        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
+        : undefined) ??
+      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
+      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
+
+    const planningData = options?.componentData?.[componentId];
+    if (planningData && !planningData.denominationId && !this.#loadedWarehouseDenominationComponents.has(componentId)) {
+      this.#loadedWarehouseDenominationComponents.add(componentId);
+      try {
+        const warehouseDenoms = await this.#executionService.fetchWarehouseDenominations(componentId);
+        if (warehouseDenoms.length > 0) {
+          this.#store.addMunitionIntroductionDenominations(warehouseDenoms);
+        }
+      } catch {
+        this.#loadedWarehouseDenominationComponents.delete(componentId);
+      }
+    }
+  }
+
   onSerieSelected(serie: string | null): void {
     const current = this.selectorFormModel();
     const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : null;
@@ -327,6 +448,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
+    this.#applyPlanningOptions(serie, disparo);
 
     this.#syncSelectionToStore(serie, disparo);
     void this.#loadSelectedShotData();
@@ -338,6 +460,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       ...current,
       disparo,
     });
+    this.#applyPlanningOptions(current.serie, disparo);
 
     this.#syncSelectionToStore(current.serie, disparo);
     void this.#loadSelectedShotData();
@@ -378,6 +501,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
+    this.#applyPlanningOptions(serie, disparo);
 
     this.#syncSelectionToStore(serie, disparo);
     void this.#loadSelectedShotData();
@@ -385,6 +509,8 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   onComponentChange(componentId: string): void {
     this.#store.selectMunitionComponent(componentId);
+    this.#patchPlanningIdentificationForComponent(componentId);
+    void this.#loadWarehouseDenominationsForComponentIfMissing(componentId);
 
     const stored = this.#store.munitionIntroduction();
     this.identTab()?.applyData(stored.identificacion);
@@ -514,9 +640,38 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const preferredComponent = this.#store.munitionIntroduction().selectedComponentId;
     this.#store.loadMunitionIntroductionRemoteResponse(response, preferredComponent);
 
+    const selection = this.selectorFormModel();
+    const options =
+      (selection.serie && selection.disparo
+        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
+        : undefined) ??
+      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
+      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
+
     const stored = this.#store.munitionIntroduction();
-    this.identTab()?.applyData(stored.identificacion);
-    this.pesosTab()?.applyData(stored.weight);
-    this.acondTab()?.applyData(stored.acondicionamiento);
+    const currentIdent = stored.identificacion;
+    const activeComp = stored.selectedComponentId;
+    const planningData = activeComp ? options?.componentData?.[activeComp] : undefined;
+
+    if (planningData) {
+      const patched: MunitionIntroIdentificationState = {
+        ...currentIdent,
+        denominacion: currentIdent.denominacion || (planningData.denominationId ?? null),
+        lote: currentIdent.lote || (planningData.batch ?? null),
+        numeroCliente: currentIdent.numeroCliente || (planningData.clientNumber ?? null),
+      };
+      if (
+        patched.denominacion !== currentIdent.denominacion ||
+        patched.lote !== currentIdent.lote ||
+        patched.numeroCliente !== currentIdent.numeroCliente
+      ) {
+        this.#store.updateMunitionIntroductionIdentification(patched);
+      }
+    }
+
+    const finalStored = this.#store.munitionIntroduction();
+    this.identTab()?.applyData(finalStored.identificacion);
+    this.pesosTab()?.applyData(finalStored.weight);
+    this.acondTab()?.applyData(finalStored.acondicionamiento);
   }
 }

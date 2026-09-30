@@ -1,5 +1,7 @@
 ---
 name: angular-architect
+version: 1.0.1
+last-updated: 2026-09-29
 description: Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns.
 argument-hint: "E.g. 'Migrate this component to Signal Forms and Signal Queries', 'Audit and optimize Signals usage', or 'Refactor this service to httpResource'."
 user-invocable: true
@@ -55,6 +57,10 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 ### 5. Quality & Clean Code
 
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). Always declare explicit types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.) from `@intaqalab/models` or local domain models.
+- **Zero Non-Null Assertions (`!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`).
+  - Never do `resource.value()!`. In imperative service methods, use safe unwrap helper `#awaitResourceValue(resource)`.
+  - In collections with optional fields, use `flatMap()` or explicit type guard predicates (`filter((x): x is ... => Boolean(...))`).
+  - In tests, use type narrowing or explicit assertions rather than non-null assertions.
 - **Deep Cloning:** Prohibited: `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
 - **Strict Comparisons:** All comparisons MUST be strict (`===` or `!==`).
 - **Event Isolation (`uiStopClick`):** Prohibited: Passing DOM `$event` into component methods solely to call `stopPropagation()` / `preventDefault()`. Use `uiStopClick` directive from `@intaqalab/ui` (`StopClick`) on the template element to keep component methods pure and DOM-independent.
