@@ -1,12 +1,17 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { form, FormField, max, min, required, validate } from '@angular/forms/signals';
+import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { createDirtyTracker, LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import {
+  LocaleDecimalInputDirective,
+  NoLeadingZerosDirective,
+  NoNegativeValuesDirective,
+  createDirtyTracker,
+} from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -66,6 +71,8 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
                 type="number"
                 libNoNegativeValues
                 libNoLeadingZeros
+                libLocalDecimal
+                [decimals]="0"
                 [formField]="shotForm.shotNumber"
               />
             </mat-form-field>

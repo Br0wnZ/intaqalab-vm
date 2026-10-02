@@ -12,15 +12,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ExecutionStore } from '../../../../+state/execution.store';
 import type { TrayectografiaTrayectoriaState } from '../../../../+state/execution.store';
+import { ExecutionStore } from '../../../../+state/execution.store';
 import { type InputFieldValue, numToField, parseNum } from '../trayectografia-introduction.mapper';
 
 @Component({
   selector: 'inta-trayectografia-trayectorias-tab',
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    TranslateModule,
+    InputSelect,
+    LocaleDecimalInputDirective,
+  ],
   template: `
     <div class="flex-1 grid grid-cols-7 gap-x-2 gap-y-1 min-h-0 items-end">
       <!-- Equipo -->
@@ -126,6 +134,7 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
         <input
           matInput
           type="number"
+          libLocalDecimal
           [placeholder]="
             'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_PLACEHOLDER' | translate
           "

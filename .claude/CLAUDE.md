@@ -10,29 +10,30 @@
 
 ## Codebase Intelligence for intaqalab-vm (Repowise)
 
-Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-09-24 (commit 113ed7d). Confidence: 99%.
+Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-10-02 (commit eb27896). Confidence: 99%.Scope: standard index · model content · full Git. Missing or unavailable evidence is not a negative finding. Machine-readable scope: `{"analysis": {"skipped": [], "unavailable": []}, "content_provenance": "model", "file_pages": {"configured_cap": null, "effective_cap": null, "eligible": null, "generated": null, "omitted": null}, "git_commit_cap": null, "git_history_coverage": null, "git_tier": "full", "provider": {"embedder": "gemini", "model": "gemini-3.5-flash-lite", "model_cost_possible": null, "name": "gemini", "reused": null}, "run_mode": "standard", "search": {"full_text": "unknown", "next_command": null, "semantic": "unknown"}, "upgrade": {"completed_stages": [], "next_stage": null, "retryable": null, "status": "unknown"}, "version": 1}`
 
 ### How to work in this repo
 
-- **Trust the index.** `verified: true` means the bytes were checked against the live tree, so never re-read those lines. Re-read only on `bounds: "approximate"`, `_meta.stale_warning`, `search_method: "bm25"` or `confidence: "low"`; `index_behind: true` alone is informational.
+- **Trust the index.** `verified: true` and `_meta.complete` mean the bytes were checked against the live tree, so never re-read them. Re-read only what `bounds: "approximate"` or `_meta.stale_warning` names. `confidence` rates the prose, not the evidence: on `low` read the `fallback_targets` or `best_guesses` the reply names, and run `repowise update` and ask again if `_meta.hint` says the index is behind HEAD. `index_behind: true` alone is informational.
+- **A zero carries its basis.** An empty `callers`/`callees`/`used_by` comes with a `*_basis` saying how much of that language's calls the graph resolved, so read it before concluding nothing calls a symbol. `_meta.scope_hint` names the areas the answer did not touch.
 - **Pre-edit, not instead-of-edit.** These tools decide _which_ files to read and edit. Claude Code requires a raw Read of any file you will Edit, and that Read is correct and expected.
 - **Noisy commands** (tests, builds, `git log`/`diff`, searches, listings): prefer `repowise distill <cmd>` — same command, exit code preserved, errors-first output. A `[repowise#<ref>: N lines omitted]` marker is recoverable via `repowise expand <ref>` (add `-q <regex>` to filter); never re-run the command to see omitted output.
 - **Recording a decision** you had to reason out: `repowise decision add --title T --decision D` records it without prompting and prints the id (`--format json` to parse it back). It lands `proposed`, for a person to confirm.
 
 ### Tools
 
-| Tool                                                       | When and why                                                                                                                                                                                |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------- | -------------------------------------------------------------------------------------- |
-| `get_answer(question)`                                     | First call for any how/where/why question. Cite `confidence: "high"` or `grounding: "extracted"` directly; `degraded` means judge by `retrieval_quality`. `symbol_bodies` has live bodies.  |
-| `get_context(targets=[...])`                               | Triage card for files/modules/symbols: docs, signatures, hotspot, fix history. No source bytes — `include=["skeleton"]` for the whole file verified, `["callers"                            | "decisions"]` for depth. Batch targets. |
-| `get_symbol(id)`                                           | **Follow-up, not an entry point** — one verified body for an id a prior response named (`path.py::Name`, `path.py:140-180`, `repowise#<hex>`). Never walk a file symbol by symbol; Read it. |
-| `search_codebase(query)`                                   | Hybrid search, auto-routed by query shape; force with `mode=symbol                                                                                                                          | path                                    | concept | hybrid`. A hit whose `sources`are`[fts]` only has no semantic agreement, so verify it. |
-| `get_why(query, targets?)`                                 | Why the code is shaped this way: decision records, git archaeology, rationale comments. Call before a refactor or a pattern divergence.                                                     |
-| `get_risk(targets, changed_files?)`                        | What history says about touching these files. PR mode (`changed_files`) leads with a `directive`: read `will_break` / `missing_cochanges` / `missing_tests` / `tests_to_run` first.         |
-| `get_change_risk(revspec, extensions?, exclude_patterns?)` | Defect score for a whole commit or `base..head` range, from its diff on the live checkout. Lead with `risk_percentile`. Scores a range; `get_risk` scores paths.                            |
-| `get_health(targets?, include?)`                           | Defect / maintainability / performance scores and findings. Self-check the files you touched before finishing.                                                                              |
-| `get_dead_code()`                                          | Confidence-tiered unreachable files / unused exports / zombie packages. For cleanup sweeps, not targeted fixes.                                                                             |
-| `get_overview()`                                           | Architecture map. Call once, first, in an unfamiliar repo; skip it after that.                                                                                                              |
+| Tool                                                        | When and why                                                                                                                                                                                       |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get_answer(question)`                                      | First call for any how/where/why question. Cite `confidence: "high"` or `grounding: "extracted"` directly; `degraded` means judge by `retrieval_quality`. `symbol_bodies` has live bodies.         |
+| `get_context(targets=[...])`                                | Triage card for files/modules/symbols: docs, signatures, hotspot, fix history. No source bytes — `include=["skeleton"]` for the whole file verified, `["callers"                                   | "decisions"]` for depth. Batch targets. |
+| `get_symbol(id, depth?)`                                    | **Follow-up, not an entry point** — one verified body for an id a prior response named (`path.py::Name`, `path.py:140-180`, `repowise#<hex>`). Never walk a file symbol by symbol; Read it.        |
+| `search_codebase(query)`                                    | Hybrid search, auto-routed by query shape; force with `mode=symbol                                                                                                                                 | path                                    | concept | hybrid`. A hit whose `sources`are`[fts]` only has no semantic agreement, so verify it. |
+| `get_why(query, targets?)`                                  | Why the code is shaped this way: decision records, git archaeology, rationale comments. Call before a refactor or a pattern divergence.                                                            |
+| `get_risk(targets, changed_files?, include?)`               | File history and structural reach. PR mode leads with `directive`; its 0-10 structural heuristic is uncalibrated, not a probability. Read typed test recommendations and coverage state first.     |
+| `get_change_risk(revspec?, extensions?, exclude_patterns?)` | Deterministic live-diff review signal for a commit or range. Lead with benchmarked percentile/classification; the 0-10 diff-shape score is supporting, not a probability. `get_risk` scores paths. |
+| `get_health(targets?, include?)`                            | Defect / maintainability / performance scores and findings. Self-check the files you touched before finishing.                                                                                     |
+| `get_dead_code(tier?, min_confidence?, safe_only?)`         | Confidence-tiered unreachable files / unused exports / zombie packages. For cleanup sweeps, not targeted fixes.                                                                                    |
+| `get_overview()`                                            | Architecture map. Call once, first, in an unfamiliar repo; skip it after that.                                                                                                                     |
 
 ### Architecture
 
@@ -59,23 +60,23 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 
 ### Files that need care (bug-fix history first, then churn — check `get_risk` before editing)
 
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 3 weeks ago; 7 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 3 weeks ago; 7 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 3 weeks ago; 9 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 3 weeks ago; 8 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/update-armament-dialog.ts` — 1 bug fix, last fix 3 weeks ago; 5 commits/90d
+- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 4 weeks ago; 8 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 4 weeks ago; 8 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 4 weeks ago; 9 commits/90d
+- `libs/domain/trial/execution/src/lib/execution/widgets/jlt-shot-data/jlt-shot-data.ts` — 1 bug fix, last fix 4 weeks ago; 5 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 4 weeks ago; 9 commits/90d
 
 ### Code health
 
-Three co-equal signals: defect risk 8.55/10 avg, hotspot health 6.09/10 (stable), worst `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` at 1.9/10 · maintainability 9.27/10 · performance risk 3 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
+Three co-equal signals: code health 8.17/10 avg (Good), hotspot health 6.23/10 (stable), worst `libs/domain/trial/execution/src/lib/services/execution.service.ts` at 1.9/10 · maintainability 8.57/10 · performance risk 18 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
 
 Critical files:
 
-- `mocks/src/routes/trials.routes.ts` — change entropy — impact −3.0
-- `mocks/src/routes/measures.routes.ts` — change entropy — impact −3.0
-- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.ts` — change entropy — impact −3.0
-- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.spec.ts` — change entropy — impact −3.0
-- `libs/domain/trial/trial-management/src/lib/components/shared/components/form/feature-trial-create-form.component.ts` — change entropy — impact −3.0
+- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.ts` — change entropy — impact −2.8
+- `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` — change entropy — impact −2.8
+- `apps/intaqalab/src/app/components/menu-left/menu-left.config.ts` — change entropy — impact −2.8
+- `libs/domain/trial/execution/src/lib/services/execution.service.spec.ts` — change entropy — impact −2.7
+- `libs/domain/trial/planning/src/lib/components/munitions/component-detail-form/component-detail-form.component.ts` — change entropy — impact −2.4
 
 ### Commands
 

@@ -62,6 +62,31 @@ describe('InputSelect', () => {
       expect(input).toHaveClass('placeholder:text-gray-500');
     });
 
+    it('should restrict internal input to two decimal places by default', async () => {
+      await render(InputSelect, { componentInputs: defaultInputs });
+      const input = screen.getByRole('textbox') as HTMLInputElement;
+      input.value = '1,23';
+      input.setSelectionRange(input.value.length, input.value.length);
+
+      const event = new KeyboardEvent('keydown', { key: '4', bubbles: true, cancelable: true });
+      input.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('should update its model with sanitized pasted input', async () => {
+      const { fixture } = await render(InputSelect, { componentInputs: defaultInputs });
+      const input = screen.getByRole('textbox') as HTMLInputElement;
+      const clipboardData = { getData: () => '1,234abc' } as unknown as DataTransfer;
+      const event = new Event('paste', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+
+      input.dispatchEvent(event);
+
+      expect(input).toHaveValue('1,23');
+      expect(fixture.componentInstance.value()).toEqual({ value: '1,23', unit: 'kg' });
+    });
+
     it('should have correct aria-label on input', async () => {
       await render(InputSelect, { componentInputs: defaultInputs });
       expect(screen.getByRole('textbox')).toHaveAttribute('aria-label', 'Peso');

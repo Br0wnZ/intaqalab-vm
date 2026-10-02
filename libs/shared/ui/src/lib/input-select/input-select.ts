@@ -15,12 +15,13 @@ import {
   signal,
 } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 
 import { InputSelectInput } from './input-select-input.directive';
 
 @Component({
   selector: 'ui-input-select',
-  imports: [MatSelectModule],
+  imports: [MatSelectModule, LocaleDecimalInputDirective],
   template: `
     <div class="relative h-11">
       <!-- Label flotante: solo visible cuando showLabel=true -->
@@ -52,6 +53,7 @@ import { InputSelectInput } from './input-select-input.directive';
         @if (!projectedInput()) {
           <input
             type="text"
+            libLocalDecimal
             inputmode="decimal"
             class="flex-1 px-4 h-full text-md outline-none bg-transparent w-full placeholder:text-gray-500"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"

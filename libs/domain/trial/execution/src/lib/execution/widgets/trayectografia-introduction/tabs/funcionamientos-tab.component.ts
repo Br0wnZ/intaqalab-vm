@@ -11,13 +11,22 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 
 @Component({
   selector: 'inta-trayectografia-funcionamientos-tab',
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule],
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    TranslateModule,
+    LocaleDecimalInputDirective,
+    NoLeadingZerosDirective,
+    NoNegativeValuesDirective,
+  ],
   template: `
     <div class="flex-1 grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 items-end">
       <!-- Equipo -->
@@ -91,6 +100,10 @@ import { ExecutionStore } from '../../../../+state/execution.store';
         <input
           matInput
           type="number"
+          libNoNegativeValues
+          libNoLeadingZeros
+          libLocalDecimal
+          [decimals]="0"
           [placeholder]="
             'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_PLACEHOLDER' | translate
           "

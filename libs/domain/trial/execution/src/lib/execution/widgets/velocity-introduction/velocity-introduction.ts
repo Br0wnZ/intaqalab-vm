@@ -213,6 +213,7 @@ interface DataFormModel {
           <input
             matInput
             type="number"
+            libLocalDecimal
             class="tabular-nums"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.CADENCIA_PLACEHOLDER' | translate"
             [disabled]="readOnly()"

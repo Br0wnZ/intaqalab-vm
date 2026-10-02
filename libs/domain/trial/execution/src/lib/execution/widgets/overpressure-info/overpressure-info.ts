@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { OverpressureInfoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -22,7 +22,15 @@ interface OverpressureFormModel {
 
 @Component({
   selector: 'inta-overpressure-info',
-  imports: [MatFormFieldModule, MatIconModule, MatSelectModule, TranslateModule, IntaIconComponent],
+  imports: [
+    MatFormFieldModule,
+    MatIconModule,
+    MatSelectModule,
+    TranslateModule,
+    IntaIconComponent,
+    LocaleDecimalInputDirective,
+    NoNegativeValuesDirective,
+  ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-2.5 flex flex-col gap-2 overflow-hidden">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
@@ -60,6 +68,8 @@ interface OverpressureFormModel {
             >
               <input
                 type="text"
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 class="text-base text-gray-500 font-normal bg-transparent border-none outline-none w-full leading-tight"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.VALUE_PLACEHOLDER' | translate"
@@ -79,6 +89,8 @@ interface OverpressureFormModel {
             >
               <input
                 type="text"
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 class="text-base text-gray-500 font-normal bg-transparent border-none outline-none w-full leading-tight"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.VALUE_PLACEHOLDER' | translate"
@@ -98,6 +110,8 @@ interface OverpressureFormModel {
             >
               <input
                 type="text"
+                libNoNegativeValues
+                libLocalDecimal
                 inputmode="decimal"
                 class="text-base text-gray-500 font-normal bg-transparent border-none outline-none w-full leading-tight"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.VALUE_PLACEHOLDER' | translate"

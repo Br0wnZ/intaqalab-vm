@@ -45,6 +45,8 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
 
   /** Stored JS number (source of truth). */
   #internalValue: number | null = null;
+  /** Whether a form control has initialized this directive through writeValue. */
+  #hasWrittenValue = false;
   /** Whether user is currently editing the field. */
   #isFocused = false;
 
@@ -61,7 +63,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     effect(() => {
       // Register reactive dependency on locale signal.
       this.#localeSignal();
-      if (!this.#isFocused) {
+      if (!this.#isFocused && (this.#hasWrittenValue || this.#internalValue !== null)) {
         this.#renderDisplayValue();
       }
     });
@@ -72,12 +74,15 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     el.type = 'text';
     el.autocomplete = 'off';
     el.inputMode = 'decimal';
-    this.#renderDisplayValue();
+    if (this.#hasWrittenValue) {
+      this.#renderDisplayValue();
+    }
   }
 
   // ── ControlValueAccessor ────────────────────────────────────────────────────
 
   writeValue(value: number | null | undefined): void {
+    this.#hasWrittenValue = true;
     this.#internalValue = value ?? null;
     if (!this.#isFocused) {
       this.#renderDisplayValue();
@@ -131,6 +136,10 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     const sanitized = this.#sanitizeInput(text);
     if (sanitized !== '') {
       this.#el.nativeElement.value = sanitized;
+      const parsed = this.#parseLocaleString(sanitized);
+      this.#internalValue = parsed;
+      this.#onChange(parsed);
+      this.#el.nativeElement.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 

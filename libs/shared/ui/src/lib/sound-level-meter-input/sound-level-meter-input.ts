@@ -1,6 +1,7 @@
 import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { MatSelectModule } from '@angular/material/select';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 
 export interface SoundLevelMeterValue {
   x: number | null;
@@ -11,7 +12,7 @@ export interface SoundLevelMeterValue {
 
 @Component({
   selector: 'ui-sound-level-meter-input',
-  imports: [MatSelectModule],
+  imports: [MatSelectModule, LocaleDecimalInputDirective],
   template: `
     <div class="relative w-full">
       @if (label()) {
@@ -48,6 +49,7 @@ export interface SoundLevelMeterValue {
           <div class="flex items-center gap-1 h-5">
             <input
               type="number"
+              libLocalDecimal
               class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
@@ -83,6 +85,7 @@ export interface SoundLevelMeterValue {
           <div class="flex items-center gap-1 h-5">
             <input
               type="number"
+              libLocalDecimal
               class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
@@ -118,6 +121,7 @@ export interface SoundLevelMeterValue {
           <div class="flex items-center gap-1 h-5">
             <input
               type="number"
+              libLocalDecimal
               class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
