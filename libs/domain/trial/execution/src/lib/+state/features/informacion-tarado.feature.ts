@@ -1,3 +1,4 @@
+import { SpeedUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
 import type { PropellantChargeParametersResponse } from '../../execution/models';
@@ -10,7 +11,7 @@ interface InformacionTaradoSlice {
 
 const initialState: InformacionTaradoSlice = {
   informacionTarado: {
-    velocidadUnit: 'm/s',
+    velocidadUnit: SpeedUnitEnum.M_S,
     series: [
       {
         numero: 'S1',

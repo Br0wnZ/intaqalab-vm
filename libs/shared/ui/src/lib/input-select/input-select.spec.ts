@@ -1,8 +1,24 @@
+import { Component, signal } from '@angular/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InputSelect } from './input-select';
+import { InputSelectInput } from './input-select-input.directive';
+
+@Component({
+  imports: [InputSelect, InputSelectInput],
+  template: `
+    <ui-input-select label="Velocidad" [opciones]="opciones" [value]="value()" [readOnly]="readOnly()">
+      <input inputSelectInput />
+    </ui-input-select>
+  `,
+})
+class ProjectedInputHost {
+  readonly opciones = [{ value: 'm/s', label: 'm/s' }];
+  readonly value = signal<{ value: string; unit: string } | null>(null);
+  readonly readOnly = signal(true);
+}
 
 describe('InputSelect', () => {
   const defaultOpciones = [
@@ -36,13 +52,14 @@ describe('InputSelect', () => {
 
     it('should render the label', async () => {
       await render(InputSelect, { componentInputs: defaultInputs });
-      expect(screen.getByText('Peso')).toBeInTheDocument();
+      expect(screen.getByText('Peso')).toHaveClass('text-gray-500');
     });
 
     it('should render input with placeholder', async () => {
       await render(InputSelect, { componentInputs: defaultInputs });
       const input = screen.getByRole('textbox');
       expect(input).toBeInTheDocument();
+      expect(input).toHaveClass('placeholder:text-gray-500');
     });
 
     it('should have correct aria-label on input', async () => {
@@ -66,6 +83,21 @@ describe('InputSelect', () => {
       expect(labels).toContain('Gramos');
       expect(labels).toContain('Libras');
     });
+  });
+
+  it('should make the projected input read-only when the component is read-only', async () => {
+    await render(ProjectedInputHost);
+
+    expect(screen.getByRole('textbox')).toHaveProperty('readOnly', true);
+  });
+
+  it('should reflect external value updates in the projected input', async () => {
+    const { fixture } = await render(ProjectedInputHost);
+    fixture.componentInstance.readOnly.set(false);
+    fixture.componentInstance.value.set({ value: '0.5', unit: 'm/s' });
+    await fixture.whenStable();
+
+    expect(screen.getByRole('textbox')).toHaveValue('0.5');
   });
 
   describe('Two-way binding with model', () => {

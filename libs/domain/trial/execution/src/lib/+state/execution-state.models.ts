@@ -3,8 +3,11 @@ import type { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import type {
   EquipmentItemSelection,
   EquipmentMagnitudeSelectionGroup,
+  ShotDifferentialPressureData,
   ShotManometerPressures,
   ShotMunitionResponse,
+  ShotPiezoPressureItem,
+  ShotTimesData,
 } from '../execution/models';
 
 export interface TechUnitStatus {
@@ -298,7 +301,7 @@ export interface MunitionIntroLoteOption {
 // EquipmentItemSelection is imported from execution/models
 
 /** Pestañas del widget Seguimiento */
-export type SeguimientoTab = 'velocidades' | 'p-manom' | 'p-pz-cie' | 'p-pz-int' | 'p-pz-cul' | 'p-ipg';
+export type SeguimientoTab = 'velocidades' | 'p-manom' | 'p-pz-cie' | 'p-pz-int' | 'p-pz-cul' | 'p-otro' | 'p-ipg';
 
 /** Fila de datos de un disparo en el widget Seguimiento */
 export interface SeguimientoShotRow {
@@ -322,6 +325,8 @@ export interface SeguimientoShotRow {
   pMaxIntermedio: (number | null)[];
   /** Pmáx por sensor piezoeléctrico — culote */
   pMaxCulote: (number | null)[];
+  /** Maximum pressure for the additional IPG position. */
+  pMaxOther: (number | null)[];
 }
 
 /** Datos de una serie en el widget Seguimiento */
@@ -376,7 +381,7 @@ export interface InformacionTaradoSerie {
 /** Estado del widget Información Tarado */
 export interface InformacionTaradoState {
   /** Unidad de velocidad seleccionada */
-  velocidadUnit: string;
+  velocidadUnit: SpeedUnitEnum;
   /** Datos por serie (procedentes de Planificación, read-only en este widget) */
   series: InformacionTaradoSerie[];
 }
@@ -815,10 +820,13 @@ export interface PiezoPressureIntroductionState {
   serie: string | null;
   disparo: string | null;
   estadoDisparo: 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
-  presiones: PiezoPressureDataState[];
-  cierre: PiezoPosicionState;
-  intermedio: PiezoPosicionState;
-  culote: PiezoPosicionState;
+  piezoPressures: ShotPiezoPressureItem[];
+  differentialPressureData: ShotDifferentialPressureData;
+  timesData: ShotTimesData;
+  presiones?: PiezoPressureDataState[];
+  cierre?: PiezoPosicionState;
+  intermedio?: PiezoPosicionState;
+  culote?: PiezoPosicionState;
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];
   captadorOptions: { value: string; label: string }[];

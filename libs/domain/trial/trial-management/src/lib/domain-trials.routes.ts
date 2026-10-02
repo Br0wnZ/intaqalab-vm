@@ -62,7 +62,7 @@ export const routes: Routes = [
         useFactory: () => {
           const router = inject(Router);
           return (command: CommandTab) => {
-            router.navigateByUrl(`/trial/view/${command.argument}`);
+            router.navigate(['/trial/view', command.argument], { queryParams: command.queryParams });
           };
         },
       },

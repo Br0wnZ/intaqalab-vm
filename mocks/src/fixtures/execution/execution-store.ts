@@ -114,22 +114,39 @@ export interface ShotVelocitiesResponse {
 
 // ── SHOT PRESSURES tipos ───────────────────────────────────────────────────
 
-export interface ShotPressuresData {
+export interface ShotPiezoPressureItem {
+  position: 'CLOSING' | 'HALF' | 'SHELL' | 'OTHER' | string;
   piezoelectricSensorId?: number | null;
   amplifierId?: number | null;
   dataAcquisitionSystemId?: number | null;
-  closingMaxPressure?: number | null;
-  closingMaxPressureUnit?: string;
-  halfMaxPressure?: number | null;
-  halfMaxPressureUnit?: string;
-  shellMaxPressure?: number | null;
-  shellMaxPressureUnit?: string;
+  maxPressure?: number | null;
+  maxPressureUnit?: string;
+  observations?: string | null;
+}
+
+export interface ShotDifferentialPressureData {
+  positiveDifferentialPressure?: number | null;
+  positiveDifferentialPressureUnit?: string;
+  negativeDifferentialPressure?: number | null;
+  negativeDifferentialPressureUnit?: string;
+  observations?: string | null;
+}
+
+export interface ShotTimesData {
+  actionTime?: number | null;
+  actionTimeUnit?: string;
+  delayTime?: number | null;
+  delayTimeUnit?: string;
   observations?: string | null;
 }
 
 export interface ShotPressuresResponse {
-  pressuresData: ShotPressuresData[];
+  timesData?: ShotTimesData;
+  piezoPressures: ShotPiezoPressureItem[];
+  differentialPressureData?: ShotDifferentialPressureData;
 }
+
+export type ShotPressuresData = ShotPiezoPressureItem;
 
 const executionStateMap = new Map<string, ExecutionState>();
 const countdownStateMap = new Map<string, SecurityCountdownState>();
@@ -619,7 +636,7 @@ export function setShotPressure(
   fireTrialId: string,
   seriesId: string,
   shotId: string,
-  payload: ShotPressuresData[],
+  payload: ShotPressuresResponse | ShotPiezoPressureItem[],
 ): ShotPressuresResponse {
   const shotProgress = getShotProgress(seriesId, shotId);
   if (!shotProgress) {
@@ -632,20 +649,45 @@ export function setShotPressure(
 
   const state = getOrCreatePressuresMap(fireTrialId);
   const key = `${seriesId}|${shotId}`;
-  const updated: ShotPressuresResponse = {
-    pressuresData: payload.map((entry) => ({
-      piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
-      amplifierId: entry.amplifierId ?? null,
-      dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
-      closingMaxPressure: entry.closingMaxPressure ?? null,
-      closingMaxPressureUnit: entry.closingMaxPressureUnit ?? 'BAR',
-      halfMaxPressure: entry.halfMaxPressure ?? null,
-      halfMaxPressureUnit: entry.halfMaxPressureUnit ?? 'BAR',
-      shellMaxPressure: entry.shellMaxPressure ?? null,
-      shellMaxPressureUnit: entry.shellMaxPressureUnit ?? 'BAR',
-      observations: entry.observations ?? null,
-    })),
-  };
+
+  let updated: ShotPressuresResponse;
+  if (Array.isArray(payload)) {
+    updated = {
+      piezoPressures: payload,
+    };
+  } else {
+    updated = {
+      timesData: payload.timesData
+        ? {
+            actionTime: payload.timesData.actionTime ?? null,
+            actionTimeUnit: payload.timesData.actionTimeUnit ?? 'MS',
+            delayTime: payload.timesData.delayTime ?? null,
+            delayTimeUnit: payload.timesData.delayTimeUnit ?? 'MS',
+            observations: payload.timesData.observations ?? null,
+          }
+        : undefined,
+      piezoPressures: (payload.piezoPressures ?? []).map((entry) => ({
+        position: entry.position,
+        piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
+        amplifierId: entry.amplifierId ?? null,
+        dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
+        maxPressure: entry.maxPressure ?? null,
+        maxPressureUnit: entry.maxPressureUnit ?? 'BAR',
+        observations: entry.observations ?? null,
+      })),
+      differentialPressureData: payload.differentialPressureData
+        ? {
+            positiveDifferentialPressure: payload.differentialPressureData.positiveDifferentialPressure ?? null,
+            positiveDifferentialPressureUnit:
+              payload.differentialPressureData.positiveDifferentialPressureUnit ?? 'BAR',
+            negativeDifferentialPressure: payload.differentialPressureData.negativeDifferentialPressure ?? null,
+            negativeDifferentialPressureUnit:
+              payload.differentialPressureData.negativeDifferentialPressureUnit ?? 'BAR',
+            observations: payload.differentialPressureData.observations ?? null,
+          }
+        : undefined,
+    };
+  }
 
   state.set(key, updated);
   return clonePressuresState(updated);

@@ -1,3 +1,4 @@
+import type { ElementRef, Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,11 +11,11 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { ElementRef, Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MEASURE_UNIT_LABELS, SpeedUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -27,7 +28,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 
 interface InformacionTaradoForm {
-  velocidadUnit: string;
+  velocidadUnit: SpeedUnitEnum;
 }
 
 @Component({
@@ -97,15 +98,13 @@ interface InformacionTaradoForm {
                 <span class="text-gray-500 font-medium mt-0.5">{{ serie.zona ?? '&mdash;' }}</span>
                 <span class="text-gray-500 font-medium mt-0.5 text-right">
                   {{
-                    serie.velocidadNominal !== null
-                      ? serie.velocidadNominal + ' ' + formModel().velocidadUnit
-                      : '&mdash;'
+                    serie.velocidadNominal !== null ? serie.velocidadNominal + ' ' + velocidadUnitLabel() : '&mdash;'
                   }}
                 </span>
                 <span class="text-gray-500 font-medium mt-0.5 text-right">
                   {{
                     serie.desviacionVelocidadMax !== null
-                      ? serie.desviacionVelocidadMax + ' ' + formModel().velocidadUnit
+                      ? serie.desviacionVelocidadMax + ' ' + velocidadUnitLabel()
                       : '&mdash;'
                   }}
                 </span>
@@ -150,10 +149,10 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
 
   protected readonly currentDotIndex = signal(0);
 
-  protected readonly velocidadUnitOptions = [
-    { value: 'm/s', label: 'm/s' },
-    { value: 'fps', label: 'fps' },
-  ];
+  protected readonly velocidadUnitOptions = Object.values(SpeedUnitEnum).map((value) => ({
+    value,
+    label: MEASURE_UNIT_LABELS[value],
+  }));
 
   /** Series data from the store (read-only, from Planning) */
   protected readonly seriesData = computed(() => this.#store.informacionTarado().series);
@@ -161,6 +160,7 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
   protected readonly formModel = signal<InformacionTaradoForm>({
     velocidadUnit: this.#store.informacionTarado().velocidadUnit,
   });
+  protected readonly velocidadUnitLabel = computed(() => MEASURE_UNIT_LABELS[this.formModel().velocidadUnit]);
   protected readonly taradoForm = form(this.formModel);
 
   constructor() {

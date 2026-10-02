@@ -7,14 +7,15 @@ import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, Speed
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-  EquipmentMagnitudeTagEnum,
-  EquipmentMeasureMagnitude,
-  EquipmentSelectionApiList,
+  EquipmentMeasurementGroup,
+  EquipmentSelectionItem,
+  EquipmentSelectionList,
   EquipmentTypeEnum,
   PropellantChargeParametersResponse,
   ShotAcousticLevelRequest,
   ShotAcousticLevelResponse,
   ShotCameraOrientationResponse,
+  ShotDifferentialPressureData,
   ShotJltMaoRequest,
   ShotJltMaoResponse,
   ShotManometerPressuresRequest,
@@ -23,6 +24,10 @@ import type {
   ShotMaoTopographyResponse,
   ShotMunitionRequest,
   ShotMunitionResponse,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
   ShotTopographyRequest,
   ShotTopographyResponse,
   ShotTrajectographyRequest,
@@ -31,6 +36,7 @@ import type {
   ShotVideoDataResponse,
   WidgetPreferenceId,
 } from '../execution/models';
+import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -128,15 +134,12 @@ export interface ShotMeasurementVelocity {
 }
 
 export interface ShotMeasurementPiezoPressure {
-  piezoelectricSensorId: number | null;
-  amplifierId: number | null;
-  dataAcquisitionSystemId: number | null;
-  closingMaxPressure: number | null;
-  closingMaxPressureUnit: string | null;
-  halfMaxPressure: number | null;
-  halfMaxPressureUnit: string | null;
-  shellMaxPressure: number | null;
-  shellMaxPressureUnit: string | null;
+  position: PiezoPosition;
+  piezoelectricSensorId?: number | null;
+  amplifierId?: number | null;
+  dataAcquisitionSystemId?: number | null;
+  maxPressure?: number | null;
+  maxPressureUnit?: string | null;
 }
 
 export interface ShotMeasurementShot {
@@ -402,24 +405,15 @@ interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
 
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
 
-export interface ShotPressuresData {
-  piezoelectricSensorId?: number | null;
-  amplifierId?: number | null;
-  dataAcquisitionSystemId?: number | null;
-  closingMaxPressure?: number | null;
-  closingMaxPressureUnit?: string;
-  halfMaxPressure?: number | null;
-  halfMaxPressureUnit?: string;
-  shellMaxPressure?: number | null;
-  shellMaxPressureUnit?: string;
-  observations?: string | null;
-}
-
-export type ShotPressuresRequest = ShotPressuresData[];
-
-export interface ShotPressuresResponse {
-  pressuresData: ShotPressuresData[];
-}
+export type ShotPressuresData = ShotPiezoPressureItem;
+export type {
+  PropellantChargeParametersResponse,
+  ShotDifferentialPressureData,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
+};
 
 export interface ArmamentEquipmentItem {
   id: number | string;
@@ -577,24 +571,13 @@ export type EquipmentSelectorItem = {
   equipmentType?: string;
 };
 
-export type EquipmentSelectorSelection = {
-  equipmentDenominationId: number;
-  categoryId: EquipmentTypeEnum;
-  magnitude?: EquipmentMeasureMagnitude | null;
-  channel?: number | null;
-  seriesIds?: string[];
-  shotIds?: string[];
-  shootIds?: string[];
-};
+export type EquipmentSelectorSelection = EquipmentSelectionItem;
 
-export type EquipmentSelectorMagnitudeGroup = {
-  measurementGroup: EquipmentMagnitudeTagEnum | string;
-  selections: EquipmentSelectorSelection[];
-};
+export type EquipmentSelectorMagnitudeGroup = EquipmentMeasurementGroup;
 
-export type EquipmentSelectorResponse = EquipmentSelectionApiList;
+export type EquipmentSelectorResponse = EquipmentSelectionList;
 
-export type EquipmentSelectorUpdateRequest = EquipmentSelectionApiList;
+export type EquipmentSelectorUpdateRequest = EquipmentSelectionList;
 
 export type EquipmentSelectorUpdateResponse = void;
 

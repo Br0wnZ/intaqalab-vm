@@ -271,9 +271,29 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR_PLACEHOLDER' | translate"
             [disabled]="readonly()"
             (selectionChange)="onComponentsChange($event.value)"
+            (openedChange)="onComponentPanelToggle($event)"
           >
+            <div class="px-3 py-2">
+              <input
+                matInput
+                type="text"
+                data-testid="component-search-input"
+                [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SEARCH_PLACEHOLDER' | translate"
+                [value]="componentSearchTerm()"
+                (input)="onComponentSearchInput($event)"
+                (keydown)="$event.stopPropagation()"
+                (click)="$event.stopPropagation()"
+                (mousedown)="$event.stopPropagation()"
+                #componentSearchInput
+              />
+            </div>
             @for (type of filteredComponentTypes(); track type.id) {
               <mat-option [value]="type.label.toLowerCase()">{{ type.label }}</mat-option>
+            }
+            @if (filteredComponentTypes().length === 0) {
+              <mat-option disabled>
+                {{ 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.NO_RESULTS' | translate }}
+              </mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -372,6 +392,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
 })
 export class ConfigurationFormComponent {
   readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
+  readonly componentSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('componentSearchInput');
   readonly #munitionsStore = inject(MunitionsStore);
 
   readonly config = input.required<Configuration>();
@@ -409,10 +430,14 @@ export class ConfigurationFormComponent {
   });
   readonly formModel = linkedSignal(() => this.config());
   readonly denominationSearchTerm = signal('');
+  readonly componentSearchTerm = signal('');
 
   readonly filteredComponentTypes = computed(() => {
     const components = this.componentTypes();
-    return components.filter((c) => c.category === 'MUNITION_COMPONENT');
+    const term = this.#normalizeText(this.componentSearchTerm());
+    return components.filter(
+      (component) => component.category === 'MUNITION_COMPONENT' && this.#normalizeText(component.label).includes(term),
+    );
   });
 
   readonly selectedComponents = computed(() => this.formModel().selectedComponents ?? []);
@@ -615,6 +640,21 @@ export class ConfigurationFormComponent {
       }, 0);
     } else {
       this.denominationSearchTerm.set('');
+    }
+  }
+
+  onComponentSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.componentSearchTerm.set(target?.value ?? '');
+  }
+
+  onComponentPanelToggle(opened: boolean): void {
+    if (opened) {
+      setTimeout(() => {
+        this.componentSearchInputRef()?.nativeElement.focus();
+      }, 0);
+    } else {
+      this.componentSearchTerm.set('');
     }
   }
 

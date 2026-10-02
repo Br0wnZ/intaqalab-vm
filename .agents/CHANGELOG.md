@@ -17,3 +17,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.0.1] - 2026-09-29
 
 - Implementación de ADR-015: sistema de versionado SemVer
+
+## [execution-domain-expert - 1.0.1] - 2026-09-30
+
+- Se modifica por completo el widget 5 (se queda como estaba al principio pero se añade nuevas entradas y salidas y funcionalidades). Cambia el contrato con back y hay que ajustar la integración. Este cambio conlleva a cambios en el widget 8 en cuanto a integración con back por cambios de contrato.

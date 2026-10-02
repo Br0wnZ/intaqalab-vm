@@ -24,7 +24,9 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
   providers: [TrialStore],
   template: `
     <div class="flex flex-wrap items-center justify-between gap-x-4 my-6">
-      <h2 class="text-base font-semibold text-gray-900">{{ 'MENU_LEFT.GESTION_TRIALS_LIST' | translate }}</h2>
+      <h2 class="text-base font-semibold text-gray-900">
+        {{ (isPlanningView() ? 'TAPS_TOP.TRIAL_PLANIFICATION' : 'MENU_LEFT.GESTION_TRIALS_LIST') | translate }}
+      </h2>
     </div>
 
     @if (isLoading()) {
@@ -41,7 +43,9 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
     } @else {
       <!-- ESTADO 3: ÉXITO / NORMAL (Componentes reales con datos) -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h3 class="text-lg text-gray-900 font-medium mb-6">Listado de pruebas de fuego</h3>
+        <h3 class="text-lg text-gray-900 font-medium mb-6">
+          {{ (isPlanningView() ? 'TRIALS_LIST.PLANNING_TITLE' : 'TAPS_TOP.TRIAL_LIST') | translate }}
+        </h3>
         <inta-trial-list-filter
           [allowedStatuses]="isPlanningView() ? planningStatuses : null"
           (filtersChange)="onFiltersChange($event)"
@@ -68,10 +72,16 @@ export class FeatureTrialListShellComponent {
   );
 
   onFiltersChange(filters: Partial<TrialSearchFilters>) {
-    this.filters.set(this.isPlanningView() ? { ...filters, status: [...this.planningStatuses] } : filters);
+    this.filters.set(
+      this.isPlanningView() && !filters.status?.length ? { ...filters, status: [...this.planningStatuses] } : filters,
+    );
   }
 
   handleNavigation(event: { id: string }) {
-    this.onAction({ command: 'TRIAL_DETAIL', argument: `${event.id}` });
+    this.onAction({
+      command: 'TRIAL_DETAIL',
+      argument: event.id,
+      ...(this.isPlanningView() ? { queryParams: { tab: '1' } } : {}),
+    });
   }
 }

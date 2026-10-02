@@ -182,7 +182,7 @@ export const TAG_CONFIGS: TagConfig[] = [
     allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
     fields: [
       { key: 'sensor_ipg', label: 'Sensor IPG', sourceCategoryId: EquipmentTypeEnum.IPG_SENSOR, type: 'select' },
-      { key: 'micromodulo', label: 'Micromódulo', sourceCategoryId: EquipmentTypeEnum.MICROMDULE, type: 'select' },
+      { key: 'micromodulo', label: 'Micromódulo', sourceCategoryId: EquipmentTypeEnum.MICROMODULE, type: 'select' },
     ],
   },
   {
@@ -211,6 +211,19 @@ export const TAG_CONFIGS: TagConfig[] = [
       { key: 'cronometro', label: 'Cronómetro', sourceCategoryId: EquipmentTypeEnum.CHRONOMETER, type: 'select' },
     ],
   },
+  {
+    id: EquipmentMagnitudeTagEnum.DATA_ACQUISITION_SYSTEM,
+    label: 'Osciloscopio',
+    allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
+    fields: [
+      {
+        key: 'registrador',
+        label: 'Registrador',
+        sourceCategoryId: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+        type: 'select',
+      },
+    ],
+  },
 ];
 
 export const EMPTY_ROW = (): TagRow => ({ rowId: 'row-0', fieldValues: {}, series: [], disparos: [] });
@@ -225,7 +238,7 @@ export function apiToDialogFormat(apiGroups: EquipmentMeasurementGroupApi[]): Eq
   return apiGroups.map((apiGroup) => ({
     id: apiGroup.measurementGroup,
     selections: apiGroup.selections.map((sel) => ({
-      itemId: String(sel.equipmentDenominationId),
+      itemId: String(sel.equipmentItemId ?? sel.equipmentDenominationId ?? ''),
       categoryId: sel.categoryId,
       magnitude: sel.magnitude ?? null,
       channel: sel.channel ?? null,

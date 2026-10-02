@@ -1,28 +1,50 @@
 {
-  "pressuresData": [
+  "timesData": {
+    "actionTime": 4.5,
+    "actionTimeUnit": "MS",
+    "delayTime": 1.2,
+    "delayTimeUnit": "MS",
+    "observations": "Tiempos registrados manualmente."
+  },
+  "piezoPressures": [
     {
-      "piezoelectricSensorId": 2001,
-      "amplifierId": 3001,
-      "dataAcquisitionSystemId": 4101,
-      "closingMaxPressure": 3250.5,
-      "closingMaxPressureUnit": "BAR",
-      "halfMaxPressure": 2840.0,
-      "halfMaxPressureUnit": "BAR",
-      "shellMaxPressure": 2510.2,
-      "shellMaxPressureUnit": "BAR",
-      "observations": "Registro nominal sin anomalías en sensores."
+      "position": "CLOSING",
+      "piezoelectricSensorId": 12,
+      "amplifierId": 15,
+      "dataAcquisitionSystemId": 20,
+      "maxPressure": 3200.5,
+      "maxPressureUnit": "BAR",
+      "observations": "Sin incidencias."
     },
     {
-      "piezoelectricSensorId": 2002,
-      "amplifierId": 3002,
-      "dataAcquisitionSystemId": 4102,
-      "closingMaxPressure": 3195.2,
-      "closingMaxPressureUnit": "BAR",
-      "halfMaxPressure": null,
-      "halfMaxPressureUnit": "BAR",
-      "shellMaxPressure": null,
-      "shellMaxPressureUnit": "BAR",
-      "observations": null
+      "position": "HALF",
+      "piezoelectricSensorId": 13,
+      "amplifierId": 16,
+      "dataAcquisitionSystemId": 21,
+      "maxPressure": 2800,
+      "maxPressureUnit": "BAR"
+    },
+    {
+      "position": "SHELL",
+      "piezoelectricSensorId": 14,
+      "amplifierId": 17,
+      "dataAcquisitionSystemId": 22,
+      "maxPressure": 2500.75,
+      "maxPressureUnit": "BAR"
+    },
+    {
+      "position": "OTHER",
+      "piezoelectricSensorId": 18,
+      "amplifierId": 19,
+      "dataAcquisitionSystemId": 23,
+      "maxPressure": 2400.4,
+      "maxPressureUnit": "BAR"
     }
-  ]
+  ],
+  "differentialPressureData": {
+    "positiveDifferentialPressure": 120.5,
+    "positiveDifferentialPressureUnit": "BAR",
+    "negativeDifferentialPressure": -35.2,
+    "negativeDifferentialPressureUnit": "BAR"
+  }
 }

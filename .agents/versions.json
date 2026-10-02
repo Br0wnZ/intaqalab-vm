@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "3002813e19052cd0",
+      "version": "1.0.1",
+      "lastUpdated": "2026-09-30",
+      "checksum": "61309c8fd5c055ff",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": ">"
     },

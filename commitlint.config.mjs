@@ -7,10 +7,10 @@ export default {
     'type-enum': [
       2,
       'always',
-      ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'],
+      ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert', 'ai'],
     ],
     'scope-case': [2, 'always', 'kebab-case'],
     'scope-enum': [2, 'always', ['intaqalab', 'admin', 'calendar', 'master-data', 'trial', 'ware-house', 'event-log', 'execution']],
-    'subject-max-length': [2, 'always', 100],
+    'subject-max-length': [2, 'always', 200],
   },
 };

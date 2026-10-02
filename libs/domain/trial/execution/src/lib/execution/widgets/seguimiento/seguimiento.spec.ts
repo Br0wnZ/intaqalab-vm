@@ -94,10 +94,41 @@ describe('SeguimientoWidget', () => {
     expect(tableData[0].computedRows[0].cells.length).toBeGreaterThan(0);
   });
 
+  it('shows OTHER piezo pressure as the IPG column', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance['setActiveTab']('p-ipg');
+    const cols = fixture.componentInstance['columns']();
+
+    expect(cols.some((column) => column.key === 'pmax_other_0')).toBe(true);
+  });
+
+  it('shows OTHER piezo pressure as the P Otro column', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance['setActiveTab']('p-otro');
+    const cols = fixture.componentInstance['columns']();
+
+    expect(cols.some((column) => column.key === 'pmax_other_0')).toBe(true);
+  });
+
+  it('tabOptions contains all 7 tab options', async () => {
+    const { fixture } = await renderWidget();
+    expect(fixture.componentInstance.tabOptions).toEqual([
+      'velocidades',
+      'p-manom',
+      'p-pz-cie',
+      'p-pz-int',
+      'p-pz-cul',
+      'p-otro',
+      'p-ipg',
+    ]);
+  });
+
   it('tabLabelKey returns correct i18n key for each tab', async () => {
     const { fixture } = await renderWidget();
-    const key = fixture.componentInstance['tabLabelKey']('p-pz-cie');
-    expect(key).toBe('TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CIE');
+    expect(fixture.componentInstance['tabLabelKey']('p-pz-cie')).toBe(
+      'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CIE',
+    );
+    expect(fixture.componentInstance['tabLabelKey']('p-otro')).toBe('TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_OTRO');
   });
 
   it('registers as autonomous widget and ignores subsequent activeSerieId updates', async () => {

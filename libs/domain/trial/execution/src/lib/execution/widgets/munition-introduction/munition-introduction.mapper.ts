@@ -51,13 +51,15 @@ export function mapPlanningSeriesToOptions(
  * Maps shots in a series to selector options.
  */
 export function mapShotsToDisparoOptions(
-  shots?: Array<{ shotId?: string; id?: string }> | null,
+  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
   fallbackOptions: Array<{ value: string; label: string }> = [],
+  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
 ): Array<{ value: string; label: string }> {
   if (shots?.length) {
+    const planningNumbersByShotId = new Map(planningShots.map((shot) => [shot.id, shot.globalNumber]));
     return shots.map((shot, index) => ({
       value: shot.shotId ?? shot.id ?? `disparo-${index + 1}`,
-      label: `Disparo ${index + 1}`,
+      label: `Disparo ${shot.globalNumber ?? planningNumbersByShotId.get(shot.shotId ?? shot.id ?? '') ?? index + 1}`,
     }));
   }
   return fallbackOptions;
@@ -89,11 +91,7 @@ function resolveBalanceId(balanceKey: string | null | undefined): number | null 
 
 function resolveCamaraValue(climaticChamberId: number | string | null | undefined): string | null {
   if (climaticChamberId === null || climaticChamberId === undefined) return null;
-  const str = String(climaticChamberId);
-  if (str === '21045' || str === 'camara-01') return 'camara-01';
-  if (str === '21046' || str === 'camara-02') return 'camara-02';
-  if (str === 'sala-01') return 'sala-01';
-  return str;
+  return String(climaticChamberId);
 }
 
 function resolveCamaraId(camaraKey: string | null | undefined): number | null {

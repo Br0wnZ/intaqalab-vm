@@ -6,7 +6,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CadenceUnitEnum, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -199,6 +199,51 @@ describe('VelocityIntroduction', () => {
     expect(mockExecutionService.fetchShotVelocities).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID);
   });
 
+  it('shows the current shot as in progress when its progress status is stale', async () => {
+    const previousProgress = executionProgress();
+    executionProgress.update((progress) => ({
+      ...progress,
+      series: progress.series.map((series) => ({
+        ...series,
+        shots: series.shots.map((shot) =>
+          shot.shotId === ACTIVE_SHOT_ID ? { ...shot, status: 'PENDING' as const } : shot,
+        ),
+      })),
+    }));
+
+    try {
+      const { fixture } = await renderWidget();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance['estadoLabel']()).toBe('En curso');
+    } finally {
+      executionProgress.set(previousProgress);
+    }
+  });
+
+  it('keeps unexecuted shots read-only even when they precede the active shot', async () => {
+    const previousProgress = executionProgress();
+    executionProgress.update((progress) => ({
+      ...progress,
+      series: progress.series.map((series) => ({
+        ...series,
+        shots: series.shots.map((shot) => (shot.shotId === 'shot-2' ? { ...shot, status: 'PENDING' as const } : shot)),
+      })),
+    }));
+
+    try {
+      const { fixture } = await renderWidget();
+      await fixture.whenStable();
+
+      fixture.componentInstance.onDisparoSelected('shot-2');
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance['readOnly']()).toBe(true);
+    } finally {
+      executionProgress.set(previousProgress);
+    }
+  });
+
   it('hydrates form fields from remote shot velocities response', async () => {
     const { fixture } = await renderWidget();
     await fixture.whenStable();
@@ -223,11 +268,28 @@ describe('VelocityIntroduction', () => {
     expect(fixture.componentInstance['observacionesField']()).toBe('Velocidad dentro del rango esperado');
   });
 
+  it('allows editing software uncertainty for the active shot', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+
+    const inputFields = screen
+      .getAllByRole('textbox')
+      .filter((element): element is HTMLInputElement => element instanceof HTMLInputElement);
+    const softwareUncertaintyInput = inputFields[1];
+
+    if (!softwareUncertaintyInput) {
+      throw new Error('Software uncertainty input was not rendered');
+    }
+
+    expect(softwareUncertaintyInput).toHaveProperty('readOnly', false);
+  });
+
   it('saveForm sends payload to executionService.setShotVelocity and updates snapshot', async () => {
     const { fixture } = await renderWidget();
     await fixture.whenStable();
 
     fixture.componentInstance['velocidadField'].set({ value: '860.0', unit: MeasureUnitEnum.M_S });
+    fixture.componentInstance['incertidumbreSoftwareField'].set({ value: '0.8', unit: SpeedUnitEnum.KM_H });
     fixture.componentInstance['observacionesField'].set('Actualizado con éxito');
 
     await fixture.componentInstance.saveForm();
@@ -238,6 +300,8 @@ describe('VelocityIntroduction', () => {
         antennaId: 4,
         initialVelocity: 860,
         initialVelocityUnit: MeasureUnitEnum.M_S,
+        softwareUncertainty: 0.8,
+        softwareUncertaintyUnit: SpeedUnitEnum.KM_H,
         observations: 'Actualizado con éxito',
       }),
     ]);
@@ -249,11 +313,16 @@ describe('VelocityIntroduction', () => {
     await fixture.whenStable();
 
     fixture.componentInstance['observacionesField'].set('Texto modificado');
+    fixture.componentInstance['incertidumbreSoftwareField'].set({ value: '9', unit: SpeedUnitEnum.KM_H });
     expect(fixture.componentInstance.formState().dirty).toBe(true);
 
     fixture.componentInstance.resetForm();
 
     expect(fixture.componentInstance['observacionesField']()).toBe('Velocidad dentro del rango esperado');
+    expect(fixture.componentInstance['incertidumbreSoftwareField']()).toEqual({
+      value: '0.5',
+      unit: MeasureUnitEnum.M_S,
+    });
     expect(fixture.componentInstance.formState().dirty).toBe(false);
   });
 

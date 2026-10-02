@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
+import { MEASURE_UNIT_LABELS, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -44,6 +46,20 @@ describe('InformacionTaradoWidget', () => {
     expect(document.querySelector('h3')).toBeTruthy();
   });
 
+  it('shows all supported speed units in the selector', async () => {
+    const { fixture } = await renderWidget();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const speedSelect = selects[0];
+    if (!speedSelect) throw new Error('Speed unit selector was not rendered');
+
+    expect(await speedSelect.getValueText()).toBe(MEASURE_UNIT_LABELS[SpeedUnitEnum.M_S]);
+    await speedSelect.open();
+
+    const optionLabels = screen.getAllByRole('option').map((option) => option.textContent?.trim() ?? '');
+    expect(optionLabels).toEqual(Object.values(SpeedUnitEnum).map((unit) => MEASURE_UNIT_LABELS[unit]));
+  });
+
   it('formState starts clean (not dirty)', async () => {
     const { fixture } = await renderWidget();
     expect(fixture.componentInstance.formState().dirty).toBe(false);
@@ -61,7 +77,7 @@ describe('InformacionTaradoWidget', () => {
   it('resetForm restores velocidadUnit from the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    fixture.componentInstance['formModel'].set({ velocidadUnit: 'fps' });
+    fixture.componentInstance['formModel'].set({ velocidadUnit: SpeedUnitEnum.KM_H });
     fixture.componentInstance.resetForm();
     expect(fixture.componentInstance['formModel']().velocidadUnit).toBe(store.informacionTarado().velocidadUnit);
   });

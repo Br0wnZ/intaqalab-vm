@@ -28,13 +28,13 @@ export const mapPlanningSeriesToOptions = (
  * Mapea los disparos de una serie a opciones para el selector.
  */
 export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId?: string; id?: string }> | null,
+  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
   fallbackOptions: Array<{ value: string; label: string }> = [],
 ): Array<{ value: string; label: string }> => {
   if (shots?.length) {
     return shots.map((shot, index) => ({
       value: shot.shotId ?? shot.id ?? `shot-${index + 1}`,
-      label: `Disparo ${index + 1}`,
+      label: `Disparo ${shot.globalNumber ?? index + 1}`,
     }));
   }
   return fallbackOptions;

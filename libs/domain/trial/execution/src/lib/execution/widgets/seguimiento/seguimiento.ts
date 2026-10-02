@@ -20,13 +20,13 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import type { ShotMeasurementShot } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapShotMeasurements } from './seguimiento.mapper';
 
 interface SeguimientoFormModel {
   presionVelocidadUnit: string;
@@ -71,28 +71,19 @@ interface ComputedSerie {
         </h3>
       </div>
 
-      <!-- Tab chips row -->
-      <div class="flex items-center gap-1 shrink-0 overflow-x-auto my-2">
-        @for (tab of activeTabs(); track tab) {
-          <button
-            type="button"
-            class="px-2.5 py-0.5 rounded-full text-[.6875rem] font-medium whitespace-nowrap transition-colors border shrink-0"
-            [class]="
-              activeTab() === tab
-                ? 'bg-[var(--inta-button)] text-white'
-                : 'bg-[var(--inta-button)]/50 text-white cursor-pointer'
-            "
-            (click)="setActiveTab(tab)"
-          >
-            {{ tabLabelKey(tab) | translate }}
-          </button>
-        }
-      </div>
+      <!-- Controls row: Tab selector + Unit selectors -->
+      <div class="flex items-center gap-2 shrink-0 my-1">
+        <!-- Tab selector -->
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36 small-select shrink-0">
+          <mat-select [value]="activeTab()" (valueChange)="setActiveTab($event)">
+            @for (tab of tabOptions; track tab) {
+              <mat-option [value]="tab">{{ tabLabelKey(tab) | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
 
-      <!-- Unit selectors row -->
-      <div class="flex items-center gap-2 shrink-0">
         <!-- Unit: Presión/Velocidad -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 small-select">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 small-select shrink-0">
           <mat-select [formField]="seguimientoForm.presionVelocidadUnit">
             @for (unit of presionUnits; track unit) {
               <mat-option [value]="unit">{{ unit }}</mat-option>
@@ -167,6 +158,17 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
 
+  // Tab options for selector
+  readonly tabOptions: readonly SeguimientoTab[] = [
+    'velocidades',
+    'p-manom',
+    'p-pz-cie',
+    'p-pz-int',
+    'p-pz-cul',
+    'p-otro',
+    'p-ipg',
+  ];
+
   // Static unit options
   readonly presionUnits = ['MPa', 'bar', 'PSI', 'kgf/cm²'];
   readonly pesoUnits = ['g', 'kg', 'mg'];
@@ -180,11 +182,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       return this.#store.seguimiento().series;
     }
 
-    return resource.value().series.map((series): SeguimientoSerieData => ({
-      serieId: series.seriesId,
-      serieLabel: this.#seriesLabel(series.seriesId),
-      rows: series.shots.map((shot, index) => this.#mapShot(series.seriesId, shot, index)),
-    }));
+    return mapShotMeasurements(resource.value(), this.#store.planningSeries?.() ?? []);
   });
 
   // Local UI signal for active tab
@@ -293,8 +291,16 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
           })),
         ];
 
+      case 'p-otro':
       case 'p-ipg':
-        return [...wcCols, ...wpCols];
+        return [
+          ...wcCols,
+          ...wpCols,
+          ...Array.from({ length: numPiezo }, (_, i): ColumnDef => ({
+            key: `pmax_other_${i}`,
+            label: numPiezo === 1 ? 'Pmáx' : `Pmáx${i + 1}`,
+          })),
+        ];
 
       default:
         return [];
@@ -347,6 +353,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       'p-pz-cie': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CIE',
       'p-pz-int': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_INT',
       'p-pz-cul': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_PZ_CUL',
+      'p-otro': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_OTRO',
       'p-ipg': 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TAB_P_IPG',
     };
     return keys[tab];
@@ -383,38 +390,10 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       const idx = parseInt(key.replace('pmax_cul_', ''), 10);
       return row.pMaxCulote[idx] ?? null;
     }
+    if (key.startsWith('pmax_other_')) {
+      const idx = parseInt(key.replace('pmax_other_', ''), 10);
+      return row.pMaxOther[idx] ?? null;
+    }
     return null;
-  }
-
-  #seriesLabel(seriesId: string): string {
-    const planningSeries = this.#store.planningSeries?.() ?? [];
-    const planningSerie = planningSeries.find((series) => series.id === seriesId);
-    return planningSerie?.name || seriesId;
-  }
-
-  #mapShot(seriesId: string, shot: ShotMeasurementShot, index: number): SeguimientoShotRow {
-    const planningSeries = this.#store.planningSeries?.() ?? [];
-    const planningSerie = planningSeries.find((series) => series.id === seriesId);
-    const planningShot = planningSerie?.shots?.find((plannedShot) => plannedShot.id === shot.shotId);
-
-    return {
-      disparo: planningShot?.globalNumber ?? index + 1,
-      wcValues: shot.powderWeights.map((item) => item.weight),
-      wpValues: shot.projectileWeights.map((item) => item.weight),
-      v0Values: shot.velocities.map((item) => item.initialVelocity),
-      v0c: this.#average(shot.velocities.map((item) => item.initialVelocity)),
-      pManomValues: [],
-      pManomMean: null,
-      pMaxCierre: shot.piezoPressures.map((item) => item.closingMaxPressure),
-      pMaxIntermedio: shot.piezoPressures.map((item) => item.halfMaxPressure),
-      pMaxCulote: shot.piezoPressures.map((item) => item.shellMaxPressure),
-    };
-  }
-
-  #average(values: (number | null)[]): number | null {
-    const definedValues = values.filter((value): value is number => value !== null);
-    return definedValues.length > 0
-      ? definedValues.reduce((sum, value) => sum + value, 0) / definedValues.length
-      : null;
   }
 }

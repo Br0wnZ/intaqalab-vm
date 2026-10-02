@@ -130,7 +130,7 @@ describe('FeatureTrialViewShellComponent', () => {
   let mockUiDialogs: { confirm: ReturnType<typeof vi.fn>; input: ReturnType<typeof vi.fn> };
   let mockTabCommand: ReturnType<typeof vi.fn>;
 
-  const setup = async (options: { trialData?: typeof MOCK_TRIAL | null; roles?: Role[] } = {}) => {
+  const setup = async (options: { trialData?: typeof MOCK_TRIAL | null; roles?: Role[]; initialTab?: number } = {}) => {
     const trialData = options.trialData !== undefined ? options.trialData : MOCK_TRIAL;
     const roles = options.roles ?? [];
     mockTrialStore = {
@@ -176,7 +176,7 @@ describe('FeatureTrialViewShellComponent', () => {
         { provide: TrialsDataService, useValue: mockTrialsDataService },
         { provide: TrialTransitionsService, useValue: mockTransitionsService },
         { provide: UiDialogService, useValue: mockUiDialogs },
-        { provide: injectionTokenTrialViewComponent, useValue: { id: 'someId' } },
+        { provide: injectionTokenTrialViewComponent, useValue: { id: 'someId', initialTab: options.initialTab } },
         { provide: injectionTokenTabCommand, useValue: mockTabCommand },
       ],
     });
@@ -610,6 +610,11 @@ describe('FeatureTrialViewShellComponent', () => {
     it('should default selectedTab to 0', async () => {
       const { component } = await setup();
       expect(component.selectedTab()).toBe(0);
+    });
+
+    it('should initialize selectedTab from the injected tab index', async () => {
+      const { component } = await setup({ initialTab: 1 });
+      expect(component.selectedTab()).toBe(1);
     });
 
     it('should update selectedTab when set', async () => {

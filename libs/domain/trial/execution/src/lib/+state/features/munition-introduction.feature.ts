@@ -109,11 +109,7 @@ const initialState: MunitionIntroductionSlice = {
       { value: 'bal-01', label: 'Balanza Precisión 500g', rangoMin: 0, rangoMax: 500, unit: 'g' },
       { value: 'bal-02', label: 'Balanza Precisión 2000g', rangoMin: 0, rangoMax: 2000, unit: 'g' },
     ],
-    camaraOptions: [
-      { value: 'camara-01', label: 'Cámara climática 01', temperatura: 20 },
-      { value: 'camara-02', label: 'Cámara climática 02', temperatura: -10 },
-      { value: 'sala-01', label: 'Sala climatizada 01', temperatura: 15 },
-    ],
+    camaraOptions: [],
   },
 };
 

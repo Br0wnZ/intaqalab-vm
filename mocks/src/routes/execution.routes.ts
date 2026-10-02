@@ -64,6 +64,11 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/progress', (r
   res.status(200).json(progress);
 });
 
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/shot-measurements', (_req, res) => {
+  const measurements = getFixture('fixtures/execution', 'execution-shot-measurements-fixture.json');
+  res.status(200).json(measurements);
+});
+
 // Obtener estado actual de la cuenta atrás
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/security-countdown', (req, res) => {
   const state = getCountdownState(req.params['fireTrialId']);

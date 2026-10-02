@@ -1,7 +1,9 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { fireEvent, render, screen, within } from '@testing-library/angular';
@@ -363,6 +365,26 @@ describe('ConfigurationFormComponent', () => {
       await waitFor(() => {
         expect(configChangeSpy).toHaveBeenCalled();
       });
+    });
+
+    it('should filter component options as the user types', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { config: defaultConfig, configIndex: 0 },
+      });
+      const loader = TestbedHarnessEnvironment.loader(fixture);
+      const selects = await loader.getAllHarnesses(MatSelectHarness);
+      const componentSelect = selects[3];
+
+      if (!componentSelect) throw new Error('Component selector harness was not found');
+      await componentSelect.open();
+      await user.type(screen.getByTestId('component-search-input'), 'deton');
+
+      expect(screen.getByRole('option', { name: 'Detonador' })).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'Espoleta' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'Proyectil' })).not.toBeInTheDocument();
     });
 
     it('should display chips of selected components', async () => {

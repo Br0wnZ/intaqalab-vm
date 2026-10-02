@@ -122,6 +122,19 @@ describe('CommandsTabService', () => {
       }
     });
 
+    it('should forward query params separately when opening a trial detail', () => {
+      const { service } = setup(true);
+      const spy = vi.spyOn(service, 'addTrialView').mockImplementation(async () => {});
+
+      service.executeCommand({
+        command: 'TRIAL_DETAIL',
+        argument: 'trial-42',
+        queryParams: { tab: '1' },
+      });
+
+      expect(spy).toHaveBeenCalledWith('trial-42', { tab: '1' });
+    });
+
     it('command "EXECUTION" → should navigate by url to execution page', () => {
       const { service, routerSpy } = setup(true);
 

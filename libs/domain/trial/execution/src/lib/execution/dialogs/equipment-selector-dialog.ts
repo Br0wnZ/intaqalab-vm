@@ -38,6 +38,8 @@ import {
   hydrateFromInitialEquipments,
 } from './equipment-selector-dialog.mapper';
 
+export type { EquipmentSelectorDialogData, EquipmentSelectorDialogResult } from '../models';
+
 // ── Public Types ───────────────────────────────────────────────────────────────
 
 export type EquipmentItemSelectionEntry = EquipmentItemSelection;

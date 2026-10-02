@@ -31,7 +31,7 @@ import { TrialGeneralDataStore } from '../shared/+state/trial-general-data.store
 import { FeatureTrialCreateFormComponent } from '../shared/components/form/feature-trial-create-form.component';
 import { mapFormToCreateDto } from '../shared/utils/helper';
 
-type ParamsComponent = { id: string };
+type ParamsComponent = { id: string; initialTab?: number };
 
 export const injectionTokenTrialViewComponent = new InjectionToken<ParamsComponent>('params');
 @Component({
@@ -129,7 +129,8 @@ export class FeatureTrialViewShellComponent {
   readonly #roles = injectCurrentUserRole();
   readonly #planningPermissions = inject(PlanningPermissionsService);
 
-  readonly id = this.#injector.get(injectionTokenTrialViewComponent).id;
+  readonly #viewParams = this.#injector.get(injectionTokenTrialViewComponent);
+  readonly id = this.#viewParams.id;
 
   readonly onAction = this.#injector.get(injectionTokenTabCommand);
 
@@ -138,7 +139,7 @@ export class FeatureTrialViewShellComponent {
 
   /** Pestaña activa sincronizada con query param ?tab= */
   readonly selectedTab = linkedQueryParam('tab', {
-    parse: (raw) => (raw ? Number(raw) : 0),
+    parse: (raw) => (raw ? Number(raw) : (this.#viewParams.initialTab ?? 0)),
     serialize: (value) => (value === 0 ? null : String(value)),
   });
 

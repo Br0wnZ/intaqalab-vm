@@ -15,16 +15,24 @@ const TopTabTrialList: TabTopProcess = {
   route: '/trial/list',
 };
 
-const TopTabTrialViewFactory = (id: number | string): TabTopProcess => ({
-  label: 'TAPS_TOP.TRIAL',
-  data: {
-    id,
-  },
-  loader: () =>
-    import('./components/view-shell/feature-trial-view-shell.component').then((m) => m.FeatureTrialViewShellComponent),
-  injector: injectionTokenTrialViewComponent,
-  route: `/trial/view/${id}`,
-});
+const TopTabTrialViewFactory = (id: number | string, queryParams?: Record<string, string>): TabTopProcess => {
+  const queryString = queryParams ? new URLSearchParams(queryParams).toString() : '';
+  const tab = queryParams?.['tab'];
+
+  return {
+    label: 'TAPS_TOP.TRIAL',
+    data: {
+      id,
+      initialTab: tab ? Number(tab) : undefined,
+    },
+    loader: () =>
+      import('./components/view-shell/feature-trial-view-shell.component').then(
+        (m) => m.FeatureTrialViewShellComponent,
+      ),
+    injector: injectionTokenTrialViewComponent,
+    route: `/trial/view/${id}${queryString ? `?${queryString}` : ''}`,
+  };
+};
 
 const TopTabTrialCreate: TabTopProcess = {
   label: 'TAPS_TOP.TRIAL_NEW',

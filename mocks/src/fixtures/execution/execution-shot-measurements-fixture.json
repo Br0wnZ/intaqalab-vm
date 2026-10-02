@@ -1,0 +1,68 @@
+{
+  "series": [
+    {
+      "seriesId": "550e8400-e29b-41d4-a716-446655440100",
+      "shots": [
+        {
+          "shotId": "550e8400-e29b-41d4-a716-446655440200",
+          "powderWeights": [
+            {
+              "balanceId": 21031,
+              "weight": 41.2,
+              "weightUnit": "G"
+            }
+          ],
+          "projectileWeights": [
+            {
+              "balanceId": 21032,
+              "weight": 261.5,
+              "weightUnit": "G"
+            }
+          ],
+          "velocities": [
+            {
+              "radarDopplerId": 1,
+              "antennaId": 4,
+              "initialVelocity": 850.5,
+              "initialVelocityUnit": "M_S"
+            }
+          ],
+          "piezoPressures": [
+            {
+              "position": "CLOSING",
+              "piezoelectricSensorId": 12,
+              "amplifierId": 15,
+              "dataAcquisitionSystemId": 20,
+              "maxPressure": 3200.5,
+              "maxPressureUnit": "BAR"
+            },
+            {
+              "position": "HALF",
+              "piezoelectricSensorId": 13,
+              "amplifierId": 16,
+              "dataAcquisitionSystemId": 21,
+              "maxPressure": 2800,
+              "maxPressureUnit": "BAR"
+            },
+            {
+              "position": "SHELL",
+              "piezoelectricSensorId": 14,
+              "amplifierId": 17,
+              "dataAcquisitionSystemId": 22,
+              "maxPressure": 2500.75,
+              "maxPressureUnit": "BAR"
+            },
+            {
+              "position": "OTHER",
+              "piezoelectricSensorId": 18,
+              "amplifierId": 19,
+              "dataAcquisitionSystemId": 23,
+              "maxPressure": 2400.4,
+              "maxPressureUnit": "BAR"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

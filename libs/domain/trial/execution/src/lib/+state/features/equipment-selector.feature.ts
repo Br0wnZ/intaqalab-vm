@@ -55,13 +55,14 @@ function toEquipmentSelectionApi(equipments: EquipmentMagnitudeSelectionGroup[])
     measurementGroup: group.id,
     selections: group.selections
       .map((selection) => {
-        const equipmentDenominationId = extractDenominationId(selection.itemId);
-        if (equipmentDenominationId === null) {
+        const equipmentItemId = extractDenominationId(selection.itemId);
+        if (equipmentItemId === null) {
           return null;
         }
 
         return {
-          equipmentDenominationId,
+          equipmentItemId,
+          equipmentDenominationId: equipmentItemId,
           categoryId: selection.categoryId,
           magnitude: selection.magnitude ?? null,
           channel: selection.channel ?? null,
@@ -84,14 +85,17 @@ function fromEquipmentSelectionApi(
     id: group.measurementGroup,
     selections: group.selections
       .filter((selection) => isEquipmentTypeEnum(selection.categoryId))
-      .map((selection) => ({
-        itemId: resolveItemIdFromDenomination(selection.equipmentDenominationId, items, selection.categoryId),
-        categoryId: selection.categoryId as EquipmentTypeEnum,
-        magnitude: selection.magnitude ?? null,
-        channel: selection.channel ?? null,
-        series: selection.seriesIds ?? [],
-        disparos: selection.shotIds ?? selection.shootIds ?? [],
-      })),
+      .map((selection) => {
+        const denominationId = selection.equipmentItemId ?? selection.equipmentDenominationId ?? 0;
+        return {
+          itemId: resolveItemIdFromDenomination(denominationId, items, selection.categoryId),
+          categoryId: selection.categoryId as EquipmentTypeEnum,
+          magnitude: selection.magnitude ?? null,
+          channel: selection.channel ?? null,
+          series: selection.seriesIds ?? [],
+          disparos: selection.shotIds ?? selection.shootIds ?? [],
+        };
+      }),
   }));
 }
 
@@ -380,7 +384,10 @@ export function withEquipmentSelector() {
     withState(initialState),
     withComputed((store, executionService = inject(ExecutionService)) => ({
       // Equipment Selector
-      equipmentSelectorRemote: computed(() => executionService.equipmentSelectorResource.value()),
+      equipmentSelectorRemote: computed(() => {
+        const resource = executionService.equipmentSelectorResource;
+        return resource.hasValue() ? resource.value() : undefined;
+      }),
 
       isLoadingEquipmentSelector: computed(() => executionService.equipmentSelectorResource.isLoading()),
 
@@ -406,6 +413,13 @@ export function withEquipmentSelector() {
     withHooks({
       onInit(store) {
         const executionService = inject(ExecutionService);
+
+        effect(() => {
+          const fireTrialId = store.fireTrialId();
+          if (fireTrialId) {
+            executionService.getEquipmentSelector(fireTrialId);
+          }
+        });
 
         effect(() => {
           const remote = store.equipmentSelectorRemote();

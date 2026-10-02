@@ -7,13 +7,14 @@ export const environment: AppEnvironment = {
   authConfig: {
     ...baseEnvironment.authConfig,
     authority: 'https://iam.pre.inta.es/realms/global',
-    secureRoutes: ['https://apis.pre.inta.es/intaqalab/'],
+    secureRoutes: ['https://apis.pre.inta.es/intaqalab/', 'https://apis.pre.inta.es/intaqalab-usersapitest/'],
     clientId: '74a8819d-43e4-479a-a603-2b2406b4fa69',
   },
   production: false,
   apiUrl: 'https://apis.pre.inta.es/intaqalab',
   endpoints: {
     ...baseEnvironment.endpoints,
+    users: 'https://apis.pre.inta.es/intaqalab-usersapitest/users-api/1.0.0',
     fireTrials: 'fire-trials-api/1.1.0/fire-trials',
     calendar: 'fire-trials-api/1.1.0/calendar',
     linesOfShot: 'fire-trials-api/1.1.0/lines-of-shoot',

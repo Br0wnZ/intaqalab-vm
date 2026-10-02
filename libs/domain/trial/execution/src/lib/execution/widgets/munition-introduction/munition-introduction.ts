@@ -240,13 +240,13 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.selectorFormModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.munitionIntroduction().disparoOptions);
+      return mapShotsToDisparoOptions(progressShots, this.#store.munitionIntroduction().disparoOptions, planningShots);
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, this.#store.munitionIntroduction().disparoOptions);
     }
@@ -475,7 +475,8 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       camara: stored.acondicionamiento.camara,
       componente: stored.acondicionamiento.componente,
     };
-    const camaraLabel = stored.camaraOptions.find((c) => c.value === acondModel.camara)?.label ?? '';
+    const camaraLabel =
+      stored.camaraOptions.find((c) => c.value === acondModel.camara)?.label ?? acondModel.camara ?? '';
 
     const data: MassiveConfigDialogData = {
       camaraLabel,

@@ -15,14 +15,32 @@ export enum EquipmentTypeEnum {
   CRUSHER = 'CRUSHER',
   PROBE = 'PROBE',
   IPG_SENSOR = 'IPG_SENSOR',
-  MICROMDULE = 'MICROMDULE',
+  MICROMODULE = 'MICROMODULE',
 }
 
 export interface EquipmentSelectionApiItem {
-  equipmentDenominationId: number;
+  equipmentItemId: number;
+  equipmentDenominationId?: number;
   categoryId: EquipmentTypeEnum;
+  magnitude?: 'ATTACK' | 'RECOIL' | null;
+  channel?: number | null;
   seriesIds?: string[];
   shotIds?: string[];
+}
+
+export enum EquipmentMeasurementGroupEnum {
+  INITIAL_VELOCITY = 'INITIAL_VELOCITY',
+  PIEZOELECTRIC_PRESSURE = 'PIEZOELECTRIC_PRESSURE',
+  TRAJECTOGRAPHY = 'TRAJECTOGRAPHY',
+  SOUND = 'SOUND',
+  HIGH_SPEED_VIDEO = 'HIGH_SPEED_VIDEO',
+  CONVENTIONAL_VIDEO = 'CONVENTIONAL_VIDEO',
+  LENGTH = 'LENGTH',
+  MANOMETER_PRESSURE = 'MANOMETER_PRESSURE',
+  IPG_PRESSURE = 'IPG_PRESSURE',
+  WEIGHT = 'WEIGHT',
+  CONDITIONING = 'CONDITIONING',
+  TIME = 'TIME',
 }
 
 export enum EquipmentMagnitudeTagEnum {
@@ -41,7 +59,7 @@ export enum EquipmentMagnitudeTagEnum {
 }
 
 export interface EquipmentMeasurementGroupApi {
-  measurementGroup: EquipmentMagnitudeTagEnum | string;
+  measurementGroup: EquipmentMeasurementGroupEnum | EquipmentMagnitudeTagEnum | string;
   selections: EquipmentSelectionApiItem[];
 }
 
@@ -54,9 +72,13 @@ export type EquipmentSelectorPutResponse = EquipmentMeasurementGroupApi[];
 const equipmentSelectorMap = new Map<string, EquipmentSelectorGetResponse>();
 
 function cloneEquipmentSelection(selection: EquipmentSelectionApiItem): EquipmentSelectionApiItem {
+  const itemId = selection.equipmentItemId ?? selection.equipmentDenominationId ?? 0;
   return {
-    equipmentDenominationId: selection.equipmentDenominationId,
+    equipmentItemId: itemId,
+    equipmentDenominationId: itemId,
     categoryId: selection.categoryId,
+    magnitude: selection.magnitude ?? null,
+    channel: selection.channel ?? null,
     seriesIds: selection.seriesIds ? [...selection.seriesIds] : undefined,
     shotIds: selection.shotIds ? [...selection.shotIds] : undefined,
   };
@@ -79,18 +101,21 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
       measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
       selections: [
         {
+          equipmentItemId: 9876,
           equipmentDenominationId: 9876,
           categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
           seriesIds: ['funcionamiento-1'],
           shotIds: ['disparo-1', 'disparo-2'],
         },
         {
+          equipmentItemId: 4321,
           equipmentDenominationId: 4321,
           categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
           seriesIds: ['funcionamiento-1'],
           shotIds: ['disparo-1', 'disparo-2'],
         },
         {
+          equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.ANTENNA,
           seriesIds: ['funcionamiento-1'],
@@ -102,12 +127,14 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
       measurementGroup: EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS,
       selections: [
         {
+          equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
           seriesIds: ['funcionamiento-1'],
           shotIds: ['disparo-1', 'disparo-2'],
         },
         {
+          equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.AMPLIFIER,
           seriesIds: ['funcionamiento-1'],
@@ -119,6 +146,7 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
       measurementGroup: EquipmentMagnitudeTagEnum.SONIDO,
       selections: [
         {
+          equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
           seriesIds: ['funcionamiento-2'],

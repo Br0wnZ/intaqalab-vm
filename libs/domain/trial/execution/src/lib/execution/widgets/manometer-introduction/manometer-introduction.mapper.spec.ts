@@ -33,10 +33,10 @@ describe('manometer-introduction.mapper', () => {
   });
 
   it('mapShotsToDisparoOptions maps shots or returns fallback', () => {
-    const shots = [{ shotId: 'shot-1' }, { shotId: 'shot-2' }];
+    const shots = [{ shotId: 'shot-1', globalNumber: 10 }, { shotId: 'shot-2' }];
     const result = mapShotsToDisparoOptions(shots, [{ value: 'fb', label: 'Fallback' }]);
     expect(result).toEqual([
-      { value: 'shot-1', label: 'Disparo 1' },
+      { value: 'shot-1', label: 'Disparo 10' },
       { value: 'shot-2', label: 'Disparo 2' },
     ]);
 

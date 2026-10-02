@@ -27,6 +27,8 @@ const DEFAULT_ANGLE_UNIT = MeasureUnitEnum.DEGREES;
 const DEFAULT_SPEED_UNIT = MeasureUnitEnum.M_S;
 /** Unidad de peso por defecto cuando el backend no la devuelve. */
 const DEFAULT_WEIGHT_UNIT = MeasureUnitEnum.KG;
+/** Unidad de peso de pólvora por defecto cuando el backend no la devuelve. */
+const DEFAULT_POWDER_WEIGHT_UNIT = MeasureUnitEnum.G;
 
 function mapShotRecord(shot: Record<string, unknown>, units: ShootingConditionsUnits): Shot {
   const date = shot['date'];
@@ -57,7 +59,7 @@ function mapShotRecord(shot: Record<string, unknown>, units: ShootingConditionsU
     nominalSpeed: (shot['nominalSpeed'] as number) ?? 0,
     nominalSpeedUnit: (shot['nominalSpeedUnit'] as string) ?? units.nominalSpeed ?? DEFAULT_SPEED_UNIT,
     powderWeight: (shot['powderWeight'] as number) ?? 0,
-    powderWeightUnit: (shot['powderWeightUnit'] as string) ?? units.powderWeight ?? DEFAULT_WEIGHT_UNIT,
+    powderWeightUnit: (shot['powderWeightUnit'] as string) ?? units.powderWeight ?? DEFAULT_POWDER_WEIGHT_UNIT,
     projectileWeight: ((shot['projectileWeight'] ?? shot['projectWeight']) as number) ?? 0,
     projectileWeightUnit: (shot['projectileWeightUnit'] as string) ?? units.projectileWeight ?? DEFAULT_WEIGHT_UNIT,
     observations: (shot['observations'] as string | null) ?? '',

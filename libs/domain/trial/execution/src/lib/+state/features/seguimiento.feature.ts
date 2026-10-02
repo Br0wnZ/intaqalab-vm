@@ -11,7 +11,7 @@ const initialState: SeguimientoSlice = {
     activeTab: 'p-manom' as SeguimientoTab,
     presionVelocidadUnit: 'MPa',
     pesosUnit: 'g',
-    activeTabs: ['velocidades', 'p-manom', 'p-pz-cie', 'p-pz-int', 'p-pz-cul', 'p-ipg'] as SeguimientoTab[],
+    activeTabs: ['velocidades', 'p-manom', 'p-pz-cie', 'p-pz-int', 'p-pz-cul', 'p-otro', 'p-ipg'] as SeguimientoTab[],
     numWeightScales: 2,
     numRadars: 2,
     numManometers: 3,
@@ -32,6 +32,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [261.48],
             pMaxIntermedio: [261.48],
             pMaxCulote: [261.48],
+            pMaxOther: [261.48],
           },
           {
             disparo: 2,
@@ -44,6 +45,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [261.48],
             pMaxIntermedio: [261.48],
             pMaxCulote: [261.48],
+            pMaxOther: [261.48],
           },
           {
             disparo: 3,
@@ -56,6 +58,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [261.48],
             pMaxIntermedio: [261.48],
             pMaxCulote: [261.48],
+            pMaxOther: [261.48],
           },
           {
             disparo: 4,
@@ -68,6 +71,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [261.48],
             pMaxIntermedio: [261.48],
             pMaxCulote: [261.48],
+            pMaxOther: [261.48],
           },
         ],
       },
@@ -86,6 +90,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [268.5],
             pMaxIntermedio: [267.8],
             pMaxCulote: [269.1],
+            pMaxOther: [268.5],
           },
           {
             disparo: 2,
@@ -98,6 +103,7 @@ const initialState: SeguimientoSlice = {
             pMaxCierre: [268.1],
             pMaxIntermedio: [267.5],
             pMaxCulote: [268.9],
+            pMaxOther: [268.1],
           },
         ],
       },

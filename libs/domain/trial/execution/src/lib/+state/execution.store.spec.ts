@@ -1,10 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { WidgetId } from '../execution/models/widget-id.enum';
+import { ExecutionService } from '../services/execution.service';
 import { ExecutionStore } from './execution.store';
 
 /**
@@ -40,6 +41,17 @@ describe('ExecutionStore (composición de features)', () => {
 
   it('expone los computeds de equipment-selector en estado idle', () => {
     expect(store.isLoadingEquipmentSelector()).toBe(false);
+  });
+
+  it('does not throw when the equipment selection request fails', () => {
+    TestBed.inject(ExecutionService).getEquipmentSelector('trial-1');
+    TestBed.tick();
+    TestBed.inject(HttpTestingController)
+      .expectOne((request) => request.url.includes('/equipment-selection'))
+      .flush([], { status: 500, statusText: 'Server Error' });
+
+    expect(() => store.equipmentSelectorRemote()).not.toThrow();
+    expect(store.equipmentSelectorRemote()).toBeUndefined();
   });
 
   it('expone los slices de widgets de orientación e introducción de datos', () => {

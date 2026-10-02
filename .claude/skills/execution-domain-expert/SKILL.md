@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-09-30
 description: >
 ---
 

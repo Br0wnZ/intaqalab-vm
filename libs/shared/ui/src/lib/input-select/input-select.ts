@@ -20,7 +20,7 @@ import { InputSelectInput } from './input-select-input.directive';
 
 @Component({
   selector: 'ui-input-select',
-  imports: [MatSelectModule, InputSelectInput],
+  imports: [MatSelectModule],
   template: `
     <div class="relative h-11">
       <!-- Label flotante: solo visible cuando showLabel=true -->
@@ -32,7 +32,7 @@ import { InputSelectInput } from './input-select-input.directive';
               ? isComputed()
                 ? 'top-0 -translate-y-1/2 text-[11px] text-violet-500'
                 : 'top-0 -translate-y-1/2 text-[11px] text-violet-500'
-              : 'top-1/2 -translate-y-1/2 text-sm text-slate-400'
+              : 'top-1/2 -translate-y-1/2 text-sm text-gray-500'
           "
         >
           {{ label() }}
@@ -53,7 +53,7 @@ import { InputSelectInput } from './input-select-input.directive';
           <input
             type="text"
             inputmode="decimal"
-            class="flex-1 px-4 h-full text-md outline-none bg-transparent w-full"
+            class="flex-1 px-4 h-full text-md outline-none bg-transparent w-full placeholder:text-gray-500"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
             [style.color]="textColor() ?? null"
             [value]="inputValue()"
@@ -144,6 +144,7 @@ export class InputSelect {
   readonly labelFloating = computed(() => this.readOnly() || !!this.inputValue() || this.focused());
   readonly isComputed = computed(() => this.variant() === 'computed');
   readonly containerClass = computed(() => {
+    if (this.readOnly()) return 'bg-gray-100 border-slate-200';
     if (this.isComputed()) return 'bg-violet-50/40 border-violet-200';
     return this.focused() ? 'border-[2px] bg-white border-violet-500' : 'bg-white border-slate-200';
   });
@@ -198,23 +199,26 @@ export class InputSelect {
    */
   #wireProjectedInput(): void {
     const projected = this.projectedInput();
-    if (!projected || this.#projectedWired) return;
-    this.#projectedWired = true;
+    if (!projected) return;
 
     const el = projected.el.nativeElement as HTMLInputElement;
+    this.#renderer.setProperty(el, 'readOnly', this.readOnly());
+    if (!this.focused() && el.value !== this.inputValue()) {
+      this.#renderer.setProperty(el, 'value', this.inputValue());
+    }
+
+    if (this.#projectedWired) return;
+    this.#projectedWired = true;
 
     // Estilos del input interno replicados sobre el elemento proyectado
     this.#renderer.setAttribute(
       el,
       'class',
-      'flex-1 px-4 h-full text-md outline-none bg-transparent w-full text-slate-700',
+      'flex-1 px-4 h-full text-md outline-none bg-transparent w-full text-slate-700 placeholder:text-gray-500',
     );
     this.#renderer.setAttribute(el, 'type', 'text');
     this.#renderer.setAttribute(el, 'inputmode', 'decimal');
     this.#renderer.setAttribute(el, 'placeholder', this.placeholder());
-
-    // Sincroniza el valor inicial
-    el.value = this.inputValue();
 
     // Conecta eventos
     this.#unlisteners.push(

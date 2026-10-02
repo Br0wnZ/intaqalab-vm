@@ -36,3 +36,6 @@ export * from './shot-video-data.models';
 
 // Propelling charge parameters models (Widget 9)
 export * from './propelling-charge-parameters.models';
+
+// Shot piezo pressures models (Widget 5)
+export * from './shot-piezo-pressures.models';

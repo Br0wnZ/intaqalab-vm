@@ -813,32 +813,38 @@ describe('ExecutionService', () => {
     const seriesId = 'series-1';
     const shotId = 'shot-1';
     const mockPressuresResponse: ShotPressuresResponse = {
-      pressuresData: [
+      timesData: {
+        actionTime: 4.5,
+        actionTimeUnit: 'MS',
+        delayTime: 1.2,
+        delayTimeUnit: 'MS',
+        observations: 'Tiempos registrados manualmente.',
+      },
+      piezoPressures: [
         {
+          position: 'CLOSING',
           piezoelectricSensorId: 12,
           amplifierId: 15,
           dataAcquisitionSystemId: 20,
-          closingMaxPressure: 3200.5,
-          closingMaxPressureUnit: 'BAR',
-          halfMaxPressure: 2800,
-          halfMaxPressureUnit: 'BAR',
-          shellMaxPressure: 2500.75,
-          shellMaxPressureUnit: 'BAR',
+          maxPressure: 3200.5,
+          maxPressureUnit: 'BAR',
           observations: 'Sin incidencias.',
         },
         {
+          position: 'HALF',
           piezoelectricSensorId: 13,
           amplifierId: 16,
           dataAcquisitionSystemId: 21,
-          closingMaxPressure: 3195.2,
-          closingMaxPressureUnit: 'BAR',
-          halfMaxPressure: null,
-          halfMaxPressureUnit: 'BAR',
-          shellMaxPressure: null,
-          shellMaxPressureUnit: 'BAR',
-          observations: null,
+          maxPressure: 2800,
+          maxPressureUnit: 'BAR',
         },
       ],
+      differentialPressureData: {
+        positiveDifferentialPressure: 120.5,
+        positiveDifferentialPressureUnit: 'BAR',
+        negativeDifferentialPressure: -35.2,
+        negativeDifferentialPressureUnit: 'BAR',
+      },
     };
 
     service.getShotPressures(DEMO_TRIAL_ID, seriesId, shotId);
@@ -853,12 +859,12 @@ describe('ExecutionService', () => {
       expect(service.shotPressuresResource.value()).toEqual(mockPressuresResponse);
     });
 
-    service.setShotPressure(DEMO_TRIAL_ID, seriesId, shotId, mockPressuresResponse.pressuresData);
+    service.setShotPressure(DEMO_TRIAL_ID, seriesId, shotId, mockPressuresResponse);
     TestBed.tick();
 
     const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/pressures/series/${seriesId}/shots/${shotId}`);
     expect(putReq.request.method).toBe('PUT');
-    expect(putReq.request.body).toEqual(mockPressuresResponse.pressuresData);
+    expect(putReq.request.body).toEqual(mockPressuresResponse);
     putReq.flush(mockPressuresResponse);
 
     await waitFor(() => {
@@ -1051,7 +1057,7 @@ describe('ExecutionService', () => {
         {
           componentId: '550e8400-e29b-41d4-a716-446655440210',
           identificationData: {
-            denominationId: '550e8400-e29b-41d4-a716-446655440212',
+            denominationId: 212,
             batch: 'LOT-HE-2026-02',
             clientNumber: 'CL-00124',
           },

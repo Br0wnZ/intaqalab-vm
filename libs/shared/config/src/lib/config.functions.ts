@@ -20,9 +20,15 @@ export function injectApiUrl(): string {
 export function injectApiEndpoint(endpointKey: ApiEndpointKey): string {
   const env = inject(APP_ENV);
   const path = env.endpoints[endpointKey];
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
   const baseUrl = env.apiUrl.endsWith('/') ? env.apiUrl.slice(0, -1) : env.apiUrl;
-  const endpointPath = path.startsWith('/') ? path : `/${path}`;
-  return `${baseUrl}${endpointPath}`;
+  if (path.startsWith('/')) {
+    const origin = new URL(baseUrl, window.location.origin).origin;
+    return `${origin}${path}`;
+  }
+  return `${baseUrl}/${path}`;
 }
 
 export function injectLinesOfShotEndpoint(): string {

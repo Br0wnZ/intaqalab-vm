@@ -14,18 +14,19 @@ import {
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { MEASURE_UNIT_LABELS, MeasureUnitEnum, TimeUnitEnum } from '@intaqalab/models';
+import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
   ExecutionService,
-  type ShotPressuresData,
+  type ShotDifferentialPressureData,
+  type ShotPiezoPressureItem,
   type ShotPressuresResponse,
+  type ShotTimesData,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { EquipmentTypeEnum } from '../../models';
@@ -35,31 +36,23 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
-  DEFAULT_PRESSURE_UNIT,
-  type InputFieldValue,
-  buildShotPressureData,
   buildShotPressuresRequest,
-  equipmentIdToString,
-  equipmentStringToId,
-  extractPressuresData,
+  extractPressuresResponse,
   mapPlanningSeriesToOptions,
   mapShotsToDisparoOptions,
-  numToField,
-  parseNum,
+  normalizeDifferentialPressure,
+  normalizePiezoPressures,
+  normalizeTimesData,
 } from './piezo-pressure-introduction.mapper';
+import { PiezoPressureDifferentialTab } from './tabs/piezo-pressure-differential-tab';
+import { PiezoPressureSensorTab } from './tabs/piezo-pressure-sensor-tab';
+import { PiezoPressureTimesTab } from './tabs/piezo-pressure-times-tab';
 
-// type PiezoTab = 'cierre' | 'intermedio' | 'culote';
+export type PiezoTab = 'cierre' | 'intermedio' | 'culote' | 'otro' | 'diferencial' | 'tiempos';
 
 interface SelectorFormModel {
   serie: string | null;
   disparo: string | null;
-}
-
-/** Selectores de equipos compartidos entre las 3 posiciones */
-interface EquiposFormModel {
-  captador: string | null;
-  amplificador: string | null;
-  registrador: string | null;
 }
 
 @Component({
@@ -70,14 +63,15 @@ interface EquiposFormModel {
     FormTouchDirective,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule,
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
-    InputSelect,
+    PiezoPressureSensorTab,
+    PiezoPressureDifferentialTab,
+    PiezoPressureTimesTab,
   ],
   template: `
-    <div class="h-full rounded-2xl border border-blue-200 bg-white p-3 flex flex-col gap-8 overflow-auto">
+    <div class="h-full rounded-2xl border border-blue-200 bg-white p-3 flex flex-col gap-6 overflow-auto">
       <!-- ── Header ─────────────────────────────────────────────────────── -->
       <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <!-- Icon + Title -->
@@ -119,47 +113,25 @@ interface EquiposFormModel {
           {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CURRENT_SHOT_BTN' | translate }}
         </button>
 
-        <div class="flex-1"></div>
-
         <!-- Tab chips -->
-        <!-- <div class="flex flex-wrap self-center gap-2 shrink-0">
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
-            [class]="
-              activeTab() === 'cierre'
-                ? 'bg-[var(--inta-button)] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
-            "
-            (click)="activeTab.set('cierre')"
-          >
-            {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CIERRE' | translate }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
-            [class]="
-              activeTab() === 'intermedio'
-                ? 'bg-[var(--inta-button)] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
-            "
-            (click)="activeTab.set('intermedio')"
-          >
-            {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_INTERMEDIO' | translate }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-full text-xs font-medium transition-colors"
-            [class]="
-              activeTab() === 'culote'
-                ? 'bg-[var(--inta-button)] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
-            "
-            (click)="activeTab.set('culote')"
-          >
-            {{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CULOTE' | translate }}
-          </button>
-        </div> -->
+        <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+          @for (tab of tabs; track tab.id) {
+            <button
+              type="button"
+              class="px-3.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer"
+              [class]="
+                activeTab() === tab.id
+                  ? 'bg-[var(--inta-button)] text-white shadow-sm'
+                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+              "
+              (click)="activeTab.set(tab.id)"
+            >
+              {{ tab.label | translate }}
+            </button>
+          }
+        </div>
+
+        <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
@@ -168,78 +140,70 @@ interface EquiposFormModel {
       </div>
 
       <!-- ── Body ───────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent intaFormTouch class="flex flex-col gap-10 min-h-0" #touch="intaFormTouch">
-        <!-- Fila 1: Selectores de equipos (compartidos) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
-            <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate"
-              [formField]="equiposForm.captador"
-              (selectionChange)="onCaptadorSelected($event.value)"
-            >
-              @for (opt of captadorOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+      <div intaReadonlyContent intaFormTouch class="flex-1 min-h-0 flex flex-col" #touch="intaFormTouch">
+        <!-- P. Cierre -->
+        <inta-piezo-pressure-sensor-tab
+          position="CLOSING"
+          [class.hidden]="activeTab() !== 'cierre'"
+          [model]="cierreItem()"
+          [captadorOptions]="captadorOptions()"
+          [registradorOptions]="registradorOptions()"
+          [amplificadorOptions]="amplificadorOptions()"
+          [pressureUnitOptions]="pressureUnitOptions"
+          (modelChange)="onSensorModelChange('CLOSING', $event)"
+        />
 
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
-            <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate"
-              [formField]="equiposForm.amplificador"
-              (selectionChange)="onEquipoSelected('amplificador', $event.value)"
-            >
-              @for (opt of amplificadorOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+        <!-- P. Intermedio -->
+        <inta-piezo-pressure-sensor-tab
+          position="HALF"
+          [class.hidden]="activeTab() !== 'intermedio'"
+          [model]="intermedioItem()"
+          [captadorOptions]="captadorOptions()"
+          [registradorOptions]="registradorOptions()"
+          [amplificadorOptions]="amplificadorOptions()"
+          [pressureUnitOptions]="pressureUnitOptions"
+          (modelChange)="onSensorModelChange('HALF', $event)"
+        />
 
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
-            <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate"
-              [formField]="equiposForm.registrador"
-              (selectionChange)="onEquipoSelected('registrador', $event.value)"
-            >
-              @for (opt of registradorOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
+        <!-- P. Culote -->
+        <inta-piezo-pressure-sensor-tab
+          position="SHELL"
+          [class.hidden]="activeTab() !== 'culote'"
+          [model]="culoteItem()"
+          [captadorOptions]="captadorOptions()"
+          [registradorOptions]="registradorOptions()"
+          [amplificadorOptions]="amplificadorOptions()"
+          [pressureUnitOptions]="pressureUnitOptions"
+          (modelChange)="onSensorModelChange('SHELL', $event)"
+        />
 
-        <!-- Fila 2: Presiones máximas (cierre / intermedio / culote) con ui-input-select -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <ui-input-select
-            subscriptSizing="dynamic"
-            [label]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_CIERRE_LABEL' | translate"
-            [opciones]="pressureUnitOptions"
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_PLACEHOLDER' | translate"
-            [value]="cierrePresionField()"
-            (valueChange)="onPressureChanged('cierre', $event)"
-          />
+        <!-- P. Otro -->
+        <inta-piezo-pressure-sensor-tab
+          position="OTHER"
+          [class.hidden]="activeTab() !== 'otro'"
+          [model]="otroItem()"
+          [captadorOptions]="captadorOptions()"
+          [registradorOptions]="registradorOptions()"
+          [amplificadorOptions]="amplificadorOptions()"
+          [pressureUnitOptions]="pressureUnitOptions"
+          (modelChange)="onSensorModelChange('OTHER', $event)"
+        />
 
-          <ui-input-select
-            subscriptSizing="dynamic"
-            [label]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_INTERMEDIO_LABEL' | translate"
-            [opciones]="pressureUnitOptions"
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_PLACEHOLDER' | translate"
-            [value]="intermedioPresionField()"
-            (valueChange)="onPressureChanged('intermedio', $event)"
-          />
+        <!-- P. Diferencial -->
+        <inta-piezo-pressure-differential-tab
+          [class.hidden]="activeTab() !== 'diferencial'"
+          [model]="differentialPressureData()"
+          [pressureUnitOptions]="pressureUnitOptions"
+          (modelChange)="onDifferentialModelChange($event)"
+        />
 
-          <ui-input-select
-            subscriptSizing="dynamic"
-            [label]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_CULOTE_LABEL' | translate"
-            [opciones]="pressureUnitOptions"
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_PLACEHOLDER' | translate"
-            [value]="culotePresionField()"
-            (valueChange)="onPressureChanged('culote', $event)"
-          />
-        </div>
+        <!-- Tiempos -->
+        <inta-piezo-pressure-times-tab
+          [class.hidden]="activeTab() !== 'tiempos'"
+          [model]="timesData()"
+          [timeUnitOptions]="timeUnitOptions"
+          (modelChange)="onTimesModelChange($event)"
+        />
       </div>
     </div>
   `,
@@ -252,12 +216,29 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
 
-  // ── Opciones de unidad de presión ───────────────────────────────────────────
+  // ── Opciones de unidad ──────────────────────────────────────────────────────
   protected readonly pressureUnitOptions = [
     { value: MeasureUnitEnum.BAR, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.BAR] },
     { value: MeasureUnitEnum.MPA, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.MPA] },
     { value: MeasureUnitEnum.KG_CM2, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.KG_CM2] },
   ];
+
+  protected readonly timeUnitOptions = [
+    { value: TimeUnitEnum.MS, label: MEASURE_UNIT_LABELS[TimeUnitEnum.MS] },
+    { value: TimeUnitEnum.S, label: MEASURE_UNIT_LABELS[TimeUnitEnum.S] },
+  ];
+
+  // ── Tabs ────────────────────────────────────────────────────────────────────
+  protected readonly tabs: Array<{ id: PiezoTab; label: string }> = [
+    { id: 'cierre', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CIERRE' },
+    { id: 'intermedio', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_INTERMEDIO' },
+    { id: 'culote', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_CULOTE' },
+    { id: 'otro', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_OTRO' },
+    { id: 'diferencial', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_DIFERENCIAL' },
+    { id: 'tiempos', label: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TAB_TIEMPOS' },
+  ];
+
+  protected readonly activeTab = signal<PiezoTab>('cierre');
 
   // ── Carga remota ────────────────────────────────────────────────────────────
   readonly #selectionGuard = createSelectionGuard(() =>
@@ -266,8 +247,38 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
 
-  // ── UI state ────────────────────────────────────────────────────────────────
-  // protected readonly activeTab = signal<PiezoTab>('cierre');
+  // ── Modelos locales editables ───────────────────────────────────────────────
+  protected readonly piezoPressures = signal<ShotPiezoPressureItem[]>(
+    normalizePiezoPressures(this.#store.piezoPressureIntroduction().piezoPressures),
+  );
+  protected readonly differentialPressureData = signal<ShotDifferentialPressureData>(
+    normalizeDifferentialPressure(this.#store.piezoPressureIntroduction().differentialPressureData),
+  );
+  protected readonly timesData = signal<ShotTimesData>(
+    normalizeTimesData(this.#store.piezoPressureIntroduction().timesData),
+  );
+
+  // ── Helpers por posición ───────────────────────────────────────────────────
+  protected readonly cierreItem = computed(() => this.#getItemByPosition('CLOSING'));
+  protected readonly intermedioItem = computed(() => this.#getItemByPosition('HALF'));
+  protected readonly culoteItem = computed(() => this.#getItemByPosition('SHELL'));
+  protected readonly otroItem = computed(() => this.#getItemByPosition('OTHER'));
+
+  #getItemByPosition(position: string): ShotPiezoPressureItem {
+    const list = this.piezoPressures();
+    const item = list.find((entry) => entry.position?.toUpperCase() === position.toUpperCase());
+    return (
+      item ?? {
+        position,
+        piezoelectricSensorId: null,
+        amplifierId: null,
+        dataAcquisitionSystemId: null,
+        maxPressure: null,
+        maxPressureUnit: MeasureUnitEnum.BAR,
+        observations: null,
+      }
+    );
+  }
 
   // ── Options: Series y Disparos dinámicos desde planning y progress ───────────
   protected readonly serieOptions = computed(() =>
@@ -290,7 +301,10 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   // ── Options: Equipos desde API (con fallback a store) ────────────────────────
   protected readonly captadorOptions = computed(() => {
     const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PIEZOELECTRIC_SENSOR];
-    return apiItems?.map((item) => ({ value: item.id, label: item.label })) ?? [];
+    if (apiItems?.length) {
+      return apiItems.map((item) => ({ value: item.id, label: item.label }));
+    }
+    return this.#store.piezoPressureIntroduction().captadorOptions;
   });
 
   protected readonly amplificadorOptions = computed(() => {
@@ -345,34 +359,11 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   });
   protected readonly selectorForm = form(this.selectorFormModel);
 
-  // ── Equipos form (captador / amplificador / registrador compartidos) ─────────
-  protected readonly equiposFormModel = signal<EquiposFormModel>({
-    captador: this.#store.piezoPressureIntroduction().cierre.captador,
-    amplificador: this.#store.piezoPressureIntroduction().cierre.amplificador,
-    registrador: this.#store.piezoPressureIntroduction().cierre.registrador,
-  });
-  protected readonly equiposForm = form(this.equiposFormModel);
-
-  // ── Presiones máximas con ui-input-select (valor + unidad) ─────────────────
-  protected readonly cierrePresionField = signal<InputFieldValue>(
-    numToField(this.#store.piezoPressureIntroduction().cierre.presionMaxima, MeasureUnitEnum.BAR),
-  );
-  protected readonly intermedioPresionField = signal<InputFieldValue>(
-    numToField(this.#store.piezoPressureIntroduction().intermedio.presionMaxima, MeasureUnitEnum.BAR),
-  );
-  protected readonly culotePresionField = signal<InputFieldValue>(
-    numToField(this.#store.piezoPressureIntroduction().culote.presionMaxima, MeasureUnitEnum.BAR),
-  );
-
-  // ── Snapshot para dirty tracking (selectores serie/disparo excluidos) ────────
+  // ── Snapshot para dirty tracking ─────────────────────────────────────────────
   readonly #dirtyTracker = createDirtyTracker(() => ({
-    presiones: this.#store.piezoPressureIntroduction().presiones,
-    captador: this.equiposFormModel().captador,
-    amplificador: this.equiposFormModel().amplificador,
-    registrador: this.equiposFormModel().registrador,
-    cierrePresion: this.cierrePresionField(),
-    intermedioPresion: this.intermedioPresionField(),
-    culotePresion: this.culotePresionField(),
+    piezoPressures: this.piezoPressures(),
+    differentialPressureData: this.differentialPressureData(),
+    timesData: this.timesData(),
   }));
 
   protected readonly isDirty = this.#dirtyTracker.isDirty;
@@ -384,7 +375,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     widgetId: this.widgetId(),
     dirty: this.isDirty(),
     touched: this.touchRef()?.touched() ?? false,
-    valid: this.equiposForm().valid(),
+    valid: true,
     hasChanges: this.isDirty(),
   }));
 
@@ -426,8 +417,17 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   // ── Handlers de selección ────────────────────────────────────────────────────
 
   onSerieSelected(serie: string | null): void {
-    this.selectorFormModel.set({ serie, disparo: null });
-    this.#syncSelectionToStore(serie, null);
+    const current = this.selectorFormModel();
+    const shotsInSerie = this.#getShotsForSerie(serie);
+    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : (shotsInSerie[0] ?? null);
+
+    this.selectorFormModel.set({
+      serie,
+      disparo,
+    });
+
+    this.#syncSelectionToStore(serie, disparo);
+    void this.loadSelectedShotData();
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -435,26 +435,6 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     this.selectorFormModel.set({ ...current, disparo });
     this.#syncSelectionToStore(current.serie, disparo);
     void this.loadSelectedShotData();
-  }
-
-  onCaptadorSelected(captador: string | null): void {
-    this.#loadCaptadorData(captador);
-  }
-
-  onEquipoSelected(field: 'amplificador' | 'registrador', value: string | null): void {
-    this.equiposFormModel.update((current) => ({ ...current, [field]: value }));
-    this.#syncCurrentDraftToStore();
-  }
-
-  onPressureChanged(position: 'cierre' | 'intermedio' | 'culote', value: InputFieldValue): void {
-    if (position === 'cierre') {
-      this.cierrePresionField.set(value);
-    } else if (position === 'intermedio') {
-      this.intermedioPresionField.set(value);
-    } else {
-      this.culotePresionField.set(value);
-    }
-    this.#syncCurrentDraftToStore();
   }
 
   setCurrentShot(): void {
@@ -469,34 +449,82 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     void this.loadSelectedShotData();
   }
 
+  #getShotsForSerie(serieId: string | null): string[] {
+    if (!serieId) {
+      return [];
+    }
+    const progressShots = this.#store.executionProgress()?.series?.find((s) => s.seriesId === serieId)?.shots;
+    if (progressShots?.length) {
+      return progressShots.map((s) => s.shotId);
+    }
+    const planningShots = this.#store.planningSeries()?.find((s) => s.id === serieId)?.shots;
+    if (planningShots?.length) {
+      return planningShots.map((s) => s.id);
+    }
+    return this.#store.piezoPressureIntroduction().disparoOptions.map((o) => o.value);
+  }
+
+  #isShotInSerie(disparo: string | null, serieId: string | null): boolean {
+    if (!disparo || !serieId) {
+      return false;
+    }
+    return this.#getShotsForSerie(serieId).includes(disparo);
+  }
+
+  // ── Handlers de cambios de modelos ───────────────────────────────────────────
+
+  onSensorModelChange(position: string, updated: ShotPiezoPressureItem): void {
+    this.piezoPressures.update((list) => {
+      const idx = list.findIndex((item) => item.position?.toUpperCase() === position.toUpperCase());
+      const next = [...list];
+      if (idx === -1) {
+        next.push(updated);
+      } else {
+        next[idx] = updated;
+      }
+      return next;
+    });
+  }
+
+  onDifferentialModelChange(data: ShotDifferentialPressureData): void {
+    this.differentialPressureData.set(data);
+  }
+
+  onTimesModelChange(data: ShotTimesData): void {
+    this.timesData.set(data);
+  }
+
   // ── Ciclo de vida del formulario ─────────────────────────────────────────────
 
   resetForm(): void {
     const stored = this.#store.piezoPressureIntroduction();
     this.selectorFormModel.set({ serie: stored.serie, disparo: stored.disparo });
-    const selectedCaptador = stored.cierre.captador;
-    const selectedData = stored.presiones.find(
-      (entry) => equipmentIdToString(entry.piezoelectricSensorId) === selectedCaptador,
-    );
-    this.#applyDataToForm(selectedData, selectedCaptador);
+    this.piezoPressures.set(structuredClone(stored.piezoPressures));
+    this.differentialPressureData.set(structuredClone(stored.differentialPressureData));
+    this.timesData.set(structuredClone(stored.timesData));
     this.#syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
-    this.#syncCurrentDraftToStore();
     const { serie, disparo } = this.selectorFormModel();
     const fireTrialId = this.#store.fireTrialId();
-    const presiones = this.#store.piezoPressureIntroduction().presiones;
+    const payload = buildShotPressuresRequest({
+      piezoPressures: this.piezoPressures(),
+      differentialPressureData: this.differentialPressureData(),
+      timesData: this.timesData(),
+    });
 
     // Actualizar store local
     this.#store.updatePiezoPressureIntroduction({
       serie,
       disparo,
+      piezoPressures: payload.piezoPressures,
+      differentialPressureData: payload.differentialPressureData ?? this.differentialPressureData(),
+      timesData: payload.timesData ?? this.timesData(),
     });
 
     // PUT remoto si hay IDs válidos
     if (fireTrialId && serie && disparo) {
-      const payload = buildShotPressuresRequest(presiones);
       const response = await this.#executionService.updateShotPressures(fireTrialId, serie, disparo, payload);
       this.applyRemoteShotData(response);
     }
@@ -526,116 +554,34 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
-      // Sin datos remotos o error — mantener estado
+      this.applyRemoteShotData(null);
     }
   }
 
-  protected applyRemoteShotData(response: ShotPressuresResponse | ShotPressuresData[]): void {
-    const data = extractPressuresData(response);
-    const currentCaptador = this.equiposFormModel().captador;
-    const selectedData =
-      data.find((entry) => equipmentIdToString(entry.piezoelectricSensorId) === currentCaptador) ?? data[0];
+  protected applyRemoteShotData(response: ShotPressuresResponse | ShotPiezoPressureItem[] | null | undefined): void {
+    const normalized = extractPressuresResponse(
+      response && !Array.isArray(response) && 'piezoPressures' in response
+        ? response
+        : {
+            piezoPressures: Array.isArray(response) ? response : [],
+          },
+    );
 
-    this.#store.setPiezoPressureData(data);
-    this.#applyDataToForm(selectedData, equipmentIdToString(selectedData?.piezoelectricSensorId) ?? currentCaptador);
+    this.piezoPressures.set(normalized.piezoPressures);
+    this.differentialPressureData.set(normalized.differentialPressureData);
+    this.timesData.set(normalized.timesData);
+
+    this.#store.updatePiezoPressureIntroduction({
+      piezoPressures: normalized.piezoPressures,
+      differentialPressureData: normalized.differentialPressureData,
+      timesData: normalized.timesData,
+    });
 
     this.#syncSnapshot();
   }
 
   #syncSelectionToStore(serie: string | null, disparo: string | null): void {
     this.#store.updatePiezoPressureIntroduction({ serie, disparo });
-  }
-
-  #loadCaptadorData(captador: string | null): void {
-    const captadorId = equipmentStringToId(captador);
-    let data = this.#store
-      .piezoPressureIntroduction()
-      .presiones.find((entry) => entry.piezoelectricSensorId === captadorId);
-
-    if (!data && captador) {
-      data = buildShotPressureData({
-        captador,
-        amplificador: null,
-        registrador: null,
-        cierrePresion: null,
-        intermedioPresion: null,
-        culotePresion: null,
-      });
-      this.#store.upsertPiezoPressureData(data);
-    }
-
-    this.#applyDataToForm(data, captador);
-  }
-
-  #applyDataToForm(data: ShotPressuresData | undefined, captador: string | null): void {
-    const captadorStr = equipmentIdToString(data?.piezoelectricSensorId) ?? captador;
-    const amplificadorStr = equipmentIdToString(data?.amplifierId);
-    const registradorStr = equipmentIdToString(data?.dataAcquisitionSystemId);
-
-    this.equiposFormModel.set({
-      captador: captadorStr,
-      amplificador: amplificadorStr,
-      registrador: registradorStr,
-    });
-    this.cierrePresionField.set(
-      numToField(data?.closingMaxPressure ?? null, data?.closingMaxPressureUnit || MeasureUnitEnum.BAR),
-    );
-    this.intermedioPresionField.set(
-      numToField(data?.halfMaxPressure ?? null, data?.halfMaxPressureUnit || MeasureUnitEnum.BAR),
-    );
-    this.culotePresionField.set(
-      numToField(data?.shellMaxPressure ?? null, data?.shellMaxPressureUnit || MeasureUnitEnum.BAR),
-    );
-    this.#updateCurrentProjection(data, captadorStr);
-  }
-
-  #syncCurrentDraftToStore(): void {
-    const { captador, amplificador, registrador } = this.equiposFormModel();
-    const entry = buildShotPressureData({
-      captador,
-      amplificador,
-      registrador,
-      cierrePresion: parseNum(this.cierrePresionField()),
-      cierreUnit: this.cierrePresionField()?.unit || DEFAULT_PRESSURE_UNIT,
-      intermedioPresion: parseNum(this.intermedioPresionField()),
-      intermedioUnit: this.intermedioPresionField()?.unit || DEFAULT_PRESSURE_UNIT,
-      culotePresion: parseNum(this.culotePresionField()),
-      culoteUnit: this.culotePresionField()?.unit || DEFAULT_PRESSURE_UNIT,
-    });
-    this.#store.upsertPiezoPressureData(entry);
-    this.#updateCurrentProjection(entry, captador);
-  }
-
-  #updateCurrentProjection(data: ShotPressuresData | undefined, captador: string | null): void {
-    const captadorStr = equipmentIdToString(data?.piezoelectricSensorId) ?? captador;
-    const amplificadorStr = equipmentIdToString(data?.amplifierId);
-    const registradorStr = equipmentIdToString(data?.dataAcquisitionSystemId);
-    this.#store.updatePiezoPressureIntroduction({
-      cierre: {
-        captador: captadorStr,
-        amplificador: amplificadorStr,
-        registrador: registradorStr,
-        presionMaxima: data?.closingMaxPressure ?? null,
-        tiempoAccion: null,
-        tiempoRetardo: null,
-      },
-      intermedio: {
-        captador: captadorStr,
-        amplificador: amplificadorStr,
-        registrador: registradorStr,
-        presionMaxima: data?.halfMaxPressure ?? null,
-        tiempoAccion: null,
-        tiempoRetardo: null,
-      },
-      culote: {
-        captador: captadorStr,
-        amplificador: amplificadorStr,
-        registrador: registradorStr,
-        presionMaxima: data?.shellMaxPressure ?? null,
-        tiempoAccion: null,
-        tiempoRetardo: null,
-      },
-    });
   }
 
   #syncSnapshot(): void {

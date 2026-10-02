@@ -1,13 +1,21 @@
-import { MeasureUnitEnum } from '@intaqalab/models';
+import { MeasureUnitEnum, TimeUnitEnum } from '@intaqalab/models';
 
 import type {
-  ShotPressuresData,
+  PiezoPosition,
+  ShotDifferentialPressureData,
+  ShotPiezoPressureItem,
   ShotPressuresRequest,
   ShotPressuresResponse,
-} from '../../../services/execution.service';
+  ShotTimesData,
+} from '../../models';
 
 /** Unidad de presión por defecto */
 export const DEFAULT_PRESSURE_UNIT = MeasureUnitEnum.BAR;
+
+/** Unidad de tiempo por defecto */
+export const DEFAULT_TIME_UNIT = TimeUnitEnum.MS;
+
+export const DEFAULT_PIEZO_POSITIONS: PiezoPosition[] = ['CLOSING', 'HALF', 'SHELL', 'OTHER'];
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
@@ -41,22 +49,6 @@ export const mapShotsToDisparoOptions = (
     }));
   }
   return fallbackOptions;
-};
-
-/**
- * Extrae y normaliza ShotPressuresData de la respuesta GET de la API.
- */
-export const extractPressuresData = (
-  response: ShotPressuresResponse | ShotPressuresData[] | null | undefined,
-): ShotPressuresData[] => {
-  if (!response) return [];
-  if (Array.isArray(response)) {
-    return response;
-  }
-  if ('pressuresData' in response) {
-    return response.pressuresData;
-  }
-  return [];
 };
 
 /**
@@ -94,43 +86,148 @@ export const equipmentStringToId = (value: string | null | undefined): number | 
 };
 
 /**
- * Construye el payload de ShotPressuresRequest para el PUT a la API.
+ * Normaliza la lista de presiones piezoeléctricas asegurando que existen las 4 posiciones.
+ */
+export const normalizePiezoPressures = (items?: ShotPiezoPressureItem[] | null): ShotPiezoPressureItem[] => {
+  const result: ShotPiezoPressureItem[] = [];
+  for (const pos of DEFAULT_PIEZO_POSITIONS) {
+    const existing = items?.find((item) => item.position?.toUpperCase() === pos);
+    if (existing) {
+      result.push({
+        position: pos,
+        piezoelectricSensorId: existing.piezoelectricSensorId ?? null,
+        amplifierId: existing.amplifierId ?? null,
+        dataAcquisitionSystemId: existing.dataAcquisitionSystemId ?? null,
+        maxPressure: existing.maxPressure ?? null,
+        maxPressureUnit: existing.maxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+        observations: existing.observations ?? null,
+      });
+    } else {
+      result.push({
+        position: pos,
+        piezoelectricSensorId: null,
+        amplifierId: null,
+        dataAcquisitionSystemId: null,
+        maxPressure: null,
+        maxPressureUnit: DEFAULT_PRESSURE_UNIT,
+        observations: null,
+      });
+    }
+  }
+  return result;
+};
+
+/**
+ * Normaliza los datos de presión diferencial.
+ */
+export const normalizeDifferentialPressure = (
+  data?: ShotDifferentialPressureData | null,
+): ShotDifferentialPressureData => ({
+  positiveDifferentialPressure: data?.positiveDifferentialPressure ?? null,
+  positiveDifferentialPressureUnit: data?.positiveDifferentialPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+  negativeDifferentialPressure: data?.negativeDifferentialPressure ?? null,
+  negativeDifferentialPressureUnit: data?.negativeDifferentialPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+  observations: data?.observations ?? null,
+});
+
+/**
+ * Normaliza los datos de tiempos.
+ */
+export const normalizeTimesData = (data?: ShotTimesData | null): ShotTimesData => ({
+  actionTime: data?.actionTime ?? null,
+  actionTimeUnit: data?.actionTimeUnit ?? DEFAULT_TIME_UNIT,
+  delayTime: data?.delayTime ?? null,
+  delayTimeUnit: data?.delayTimeUnit ?? DEFAULT_TIME_UNIT,
+  observations: data?.observations ?? null,
+});
+
+/**
+ * Extrae y normaliza ShotPressuresResponse de la respuesta de la API.
+ */
+export const extractPressuresResponse = (
+  response: ShotPressuresResponse | null | undefined,
+): {
+  piezoPressures: ShotPiezoPressureItem[];
+  differentialPressureData: ShotDifferentialPressureData;
+  timesData: ShotTimesData;
+} => ({
+  piezoPressures: normalizePiezoPressures(response?.piezoPressures),
+  differentialPressureData: normalizeDifferentialPressure(response?.differentialPressureData),
+  timesData: normalizeTimesData(response?.timesData),
+});
+
+/**
+ * Construye el payload completo de ShotPressuresRequest para el PUT a la API.
+ */
+export const buildShotPressuresRequest = (params: {
+  piezoPressures: ShotPiezoPressureItem[];
+  differentialPressureData: ShotDifferentialPressureData;
+  timesData: ShotTimesData;
+}): ShotPressuresRequest => ({
+  timesData: {
+    actionTime: params.timesData.actionTime ?? null,
+    actionTimeUnit: params.timesData.actionTimeUnit ?? DEFAULT_TIME_UNIT,
+    delayTime: params.timesData.delayTime ?? null,
+    delayTimeUnit: params.timesData.delayTimeUnit ?? DEFAULT_TIME_UNIT,
+    observations: params.timesData.observations ?? null,
+  },
+  piezoPressures: params.piezoPressures.map((entry) => ({
+    position: entry.position,
+    piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
+    amplifierId: entry.amplifierId ?? null,
+    dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
+    maxPressure: entry.maxPressure ?? null,
+    maxPressureUnit: entry.maxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    observations: entry.observations ?? null,
+  })),
+  differentialPressureData: {
+    positiveDifferentialPressure: params.differentialPressureData.positiveDifferentialPressure ?? null,
+    positiveDifferentialPressureUnit:
+      params.differentialPressureData.positiveDifferentialPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    negativeDifferentialPressure: params.differentialPressureData.negativeDifferentialPressure ?? null,
+    negativeDifferentialPressureUnit:
+      params.differentialPressureData.negativeDifferentialPressureUnit ?? DEFAULT_PRESSURE_UNIT,
+    observations: params.differentialPressureData.observations ?? null,
+  },
+});
+
+/**
+ * Extrae y normaliza ShotPiezoPressureItem[] de la respuesta GET de la API (legacy helper).
+ */
+export const extractPressuresData = (
+  response: ShotPressuresResponse | ShotPiezoPressureItem[] | null | undefined,
+): ShotPiezoPressureItem[] => {
+  if (!response) return [];
+  if (Array.isArray(response)) {
+    return normalizePiezoPressures(response);
+  }
+  if ('piezoPressures' in response && Array.isArray(response.piezoPressures)) {
+    return normalizePiezoPressures(response.piezoPressures);
+  }
+  return normalizePiezoPressures([]);
+};
+
+/**
+ * Helper legacy para construir ShotPiezoPressureItem.
  */
 export const buildShotPressureData = (params: {
+  position?: string;
   captador: string | null;
   amplificador: string | null;
   registrador: string | null;
   cierrePresion: number | null;
   cierreUnit?: string;
-  intermedioPresion: number | null;
+  intermedioPresion?: number | null;
   intermedioUnit?: string;
-  culotePresion: number | null;
+  culotePresion?: number | null;
   culoteUnit?: string;
   observations?: string | null;
-}): ShotPressuresData => ({
+}): ShotPiezoPressureItem => ({
+  position: params.position ?? 'CLOSING',
   piezoelectricSensorId: equipmentStringToId(params.captador),
   amplifierId: equipmentStringToId(params.amplificador),
   dataAcquisitionSystemId: equipmentStringToId(params.registrador),
-  closingMaxPressure: params.cierrePresion,
-  closingMaxPressureUnit: params.cierreUnit ?? DEFAULT_PRESSURE_UNIT,
-  halfMaxPressure: params.intermedioPresion,
-  halfMaxPressureUnit: params.intermedioUnit ?? DEFAULT_PRESSURE_UNIT,
-  shellMaxPressure: params.culotePresion,
-  shellMaxPressureUnit: params.culoteUnit ?? DEFAULT_PRESSURE_UNIT,
+  maxPressure: params.cierrePresion,
+  maxPressureUnit: params.cierreUnit ?? DEFAULT_PRESSURE_UNIT,
   observations: params.observations ?? null,
 });
-
-/** Construye el payload completo del PUT, conservando una entrada por captador. */
-export const buildShotPressuresRequest = (entries: ShotPressuresData[]): ShotPressuresRequest =>
-  entries.map((entry) => ({
-    piezoelectricSensorId: entry.piezoelectricSensorId ?? null,
-    amplifierId: entry.amplifierId ?? null,
-    dataAcquisitionSystemId: entry.dataAcquisitionSystemId ?? null,
-    closingMaxPressure: entry.closingMaxPressure ?? null,
-    closingMaxPressureUnit: entry.closingMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
-    halfMaxPressure: entry.halfMaxPressure ?? null,
-    halfMaxPressureUnit: entry.halfMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
-    shellMaxPressure: entry.shellMaxPressure ?? null,
-    shellMaxPressureUnit: entry.shellMaxPressureUnit ?? DEFAULT_PRESSURE_UNIT,
-    observations: entry.observations ?? null,
-  }));

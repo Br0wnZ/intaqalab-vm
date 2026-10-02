@@ -52,6 +52,7 @@
   },
   "TRIALS_LIST": {
     "ERROR": "Fehler beim Laden der Versuche",
+    "PLANNING_TITLE": "Planung der Brandprüfungen",
     "TABLE": {
       "ASSIGNED_USER": "Zugewiesener Benutzer"
     }
@@ -652,29 +653,36 @@
       },
       "PIEZO_PRESSURE": {
         "AMPLIFICADOR_LABEL": "Verstärker",
-        "AMPLIFICADOR_PLACEHOLDER": "Verstärker auswählen",
-        "CAPTADOR_LABEL": "Sensor",
-        "CAPTADOR_PLACEHOLDER": "Sensor auswählen",
+        "AMPLIFICADOR_PLACEHOLDER": "Gerät",
+        "CAPTADOR_LABEL": "Piezoelektrischer Sensor",
+        "CAPTADOR_PLACEHOLDER": "Gerät",
         "CURRENT_SHOT_BTN": "Aktueller Schuss",
-        "DESCRIPTION": "Eingabe von Druckdaten mit piezoelektrischen Sensoren",
+        "DESCRIPTION": "Druck piezoelektrischer Sensoren",
         "DISPARO_PLACEHOLDER": "Schuss",
+        "INPUT_PLACEHOLDER_XXX": "XXX",
+        "OBSERVACIONES_PLACEHOLDER": "Bemerkungen eingeben",
         "PRESION_CIERRE_LABEL": "Verschlussdruck",
         "PRESION_CULOTE_LABEL": "Bodendruck",
+        "PRESION_DIF_NEGATIVA_LABEL": "Negativer Differenzdruck",
+        "PRESION_DIF_POSITIVA_LABEL": "Positiver Differenzdruck",
         "PRESION_INTERMEDIO_LABEL": "Zwischendruck",
         "PRESION_MAXIMA_LABEL": "Maximaler Druck",
-        "PRESION_MAXIMA_PLACEHOLDER": "0,00",
-        "PRESION_PLACEHOLDER": "0,00",
+        "PRESION_MAXIMA_PLACEHOLDER": "XXX",
+        "PRESION_PLACEHOLDER": "XXX",
         "REGISTRADOR_LABEL": "Recorder",
-        "REGISTRADOR_PLACEHOLDER": "Recorder auswählen",
+        "REGISTRADOR_PLACEHOLDER": "Gerät",
         "SERIE_PLACEHOLDER": "Serie",
-        "TAB_CIERRE": "Piezo Verschluss",
-        "TAB_CULOTE": "Piezo Boden",
-        "TAB_INTERMEDIO": "Piezo Zwischen",
+        "TAB_CIERRE": "P. Cierre",
+        "TAB_CULOTE": "P. Culote",
+        "TAB_DIFERENCIAL": "P. Diferencial",
+        "TAB_INTERMEDIO": "P. Intermedio",
+        "TAB_OTRO": "P. Otro",
+        "TAB_TIEMPOS": "Tiempos",
         "TIEMPO_ACCION_LABEL": "Aktionszeit",
-        "TIEMPO_ACCION_PLACEHOLDER": "0,00",
+        "TIEMPO_ACCION_PLACEHOLDER": "XXX",
         "TIEMPO_RETARDO_LABEL": "Verzögerungszeit",
-        "TIEMPO_RETARDO_PLACEHOLDER": "0,00",
-        "TITLE": "Druckmessung piezoelektrisch"
+        "TIEMPO_RETARDO_PLACEHOLDER": "XXX",
+        "TITLE": "Druck piezoelektrischer Sensoren"
       },
       "RADAR_METCMQ": {
         "COPY_TOOLTIP": "Text kopieren",
@@ -721,6 +729,7 @@
         "NO_DATA": "Keine Daten",
         "TAB_P_IPG": "P IPG",
         "TAB_P_MANOM": "P Manom",
+        "TAB_P_OTRO": "P Andere",
         "TAB_P_PZ_CIE": "P PZ Cie",
         "TAB_P_PZ_CUL": "P PZ Cul",
         "TAB_P_PZ_INT": "P PZ Int",
@@ -988,6 +997,10 @@
     "WIDGETS_BTN": "Widgets",
     "WIDGET_LIBRARY_TITLE": "Widget-Bibliothek"
   },
+  "TAPS_TOP": {
+    "TRIAL_LIST": "Liste der Brandprüfungen",
+    "TRIAL_PLANIFICATION": "Planung"
+  },
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "Sie haben keinen Zugriff auf diesen Versuch",
     "ARMAMENT": {
@@ -1075,6 +1088,7 @@
       },
       "CONFIGURATION_FORM": {
         "CLIENT_NUMBER_LABEL": "Kundennummer",
+        "COMPONENT_SEARCH_PLACEHOLDER": "Komponente suchen",
         "MUNITION_TYPE_LABEL": "Munitionstyp",
         "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
         "POWDER_INDEX": "Pulver {{index}}"

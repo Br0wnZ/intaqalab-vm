@@ -9,7 +9,12 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ExecutionStore, type MunitionIntroAcondicionamientoState } from '../../../../+state/execution.store';
+import {
+  ExecutionStore,
+  type MunitionIntroAcondicionamientoState,
+  type MunitionIntroCamaraOption,
+} from '../../../../+state/execution.store';
+import { EquipmentTypeEnum } from '../../../models';
 import type { AcondFormModel } from '../munition-introduction';
 
 @Component({
@@ -212,7 +217,29 @@ export class MunitionAcondicionamientoTabComponent {
   readonly isValid = computed(() => this.acondForm().valid());
 
   readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
-  readonly camaraOptions = computed(() => this.#store.munitionIntroduction().camaraOptions);
+  readonly camaraOptions = computed<MunitionIntroCamaraOption[]>(() => {
+    const seen = new Set<string>();
+    return (
+      this.#store
+        .equipmentSelectorRemote()
+        ?.flatMap((group) =>
+          group.selections.flatMap((selection): MunitionIntroCamaraOption[] => {
+            if (selection.categoryId !== EquipmentTypeEnum.CLIMATIC_CHAMBER) return [];
+
+            const equipmentId = selection.equipmentItemId ?? selection.equipmentDenominationId;
+            if (equipmentId === undefined) return [];
+
+            const value = String(equipmentId);
+            return [{ value, label: value }];
+          }),
+        )
+        .filter((option) => {
+          if (seen.has(option.value)) return false;
+          seen.add(option.value);
+          return true;
+        }) ?? []
+    );
+  });
 
   readonly temperaturaCorregidaDisplay = computed(() => {
     const t = this.#store.munitionIntroduction().acondicionamiento.temperaturaCorregida;

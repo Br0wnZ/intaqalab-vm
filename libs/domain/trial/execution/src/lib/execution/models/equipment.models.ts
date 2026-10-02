@@ -17,10 +17,11 @@ export enum EquipmentTypeEnum {
   PRESSURE_GAUGE = 'PRESSURE_GAUGE',
   CRUSHER = 'CRUSHER',
   PROBE = 'PROBE',
-  IPG_SENSOR = 'IPG_SENSOR',
-  MICROMDULE = 'MICROMDULE',
   RECORDER = 'RECORDER',
+  IPG_SENSOR = 'IPG_SENSOR',
+  MICROMODULE = 'MICROMODULE',
   DATA_ACQUISITION_SYSTEM = 'DATA_ACQUISITION_SYSTEM',
+  MUNITION = 'MUNITION',
 }
 
 /** Physical equipment item returned by /equipment/items (individual unit from Calibry). */
@@ -38,6 +39,21 @@ export interface EquipmentItemsApiResponse {
   items: EquipmentItemApiEntry[];
 }
 
+export enum EquipmentMeasurementGroupEnum {
+  INITIAL_VELOCITY = 'INITIAL_VELOCITY',
+  PIEZOELECTRIC_PRESSURE = 'PIEZOELECTRIC_PRESSURE',
+  TRAJECTOGRAPHY = 'TRAJECTOGRAPHY',
+  SOUND = 'SOUND',
+  HIGH_SPEED_VIDEO = 'HIGH_SPEED_VIDEO',
+  CONVENTIONAL_VIDEO = 'CONVENTIONAL_VIDEO',
+  LENGTH = 'LENGTH',
+  MANOMETER_PRESSURE = 'MANOMETER_PRESSURE',
+  IPG_PRESSURE = 'IPG_PRESSURE',
+  WEIGHT = 'WEIGHT',
+  CONDITIONING = 'CONDITIONING',
+  TIME = 'TIME',
+}
+
 export enum EquipmentMagnitudeTagEnum {
   VELOCIDAD_INICIAL = 'INITIAL_VELOCITY',
   PRESION_PIEZOELECTRICOS = 'PIEZOELECTRIC_PRESSURE',
@@ -51,12 +67,21 @@ export enum EquipmentMagnitudeTagEnum {
   PESOS = 'WEIGHT',
   ACONDICIONAMIENTO = 'CONDITIONING',
   TIEMPO = 'TIME',
+  DATA_ACQUISITION_SYSTEM = 'DATA_ACQUISITION_SYSTEM',
 }
 
-export const EQUIPMENT_MAGNITUDE_TAGS: readonly EquipmentMagnitudeTagEnum[] = Object.values(EquipmentMagnitudeTagEnum);
+export const EQUIPMENT_MEASUREMENT_GROUPS: readonly EquipmentMeasurementGroupEnum[] =
+  Object.values(EquipmentMeasurementGroupEnum);
+
+export const EQUIPMENT_MAGNITUDE_TAGS: readonly (EquipmentMeasurementGroupEnum | EquipmentMagnitudeTagEnum)[] =
+  EQUIPMENT_MEASUREMENT_GROUPS;
+
+export function isEquipmentMeasurementGroupEnum(value: string): value is EquipmentMeasurementGroupEnum {
+  return (EQUIPMENT_MEASUREMENT_GROUPS as readonly string[]).includes(value);
+}
 
 export function isEquipmentMagnitudeTagEnum(value: string): value is EquipmentMagnitudeTagEnum {
-  return (EQUIPMENT_MAGNITUDE_TAGS as readonly string[]).includes(value);
+  return (EQUIPMENT_MEASUREMENT_GROUPS as readonly string[]).includes(value);
 }
 
 /** Magnitud seleccionada en Planificación: extiende el contrato de medida con sus grupos de medición asociados. */
@@ -64,7 +89,12 @@ export interface PlanningMagnitudeSelection extends MagnitudeMeasureSource {
   readonly measurements: readonly string[];
 }
 
-export type EquipmentMeasureMagnitude = 'ATTACK' | 'RECOIL';
+export enum EquipmentMagnitudeEnum {
+  ATTACK = 'ATTACK',
+  RECOIL = 'RECOIL',
+}
+
+export type EquipmentMeasureMagnitude = EquipmentMagnitudeEnum | 'ATTACK' | 'RECOIL';
 
 export interface EquipmentItemSelection {
   itemId: string;
@@ -76,47 +106,58 @@ export interface EquipmentItemSelection {
 }
 
 export interface EquipmentMagnitudeSelectionGroup {
-  id: EquipmentMagnitudeTagEnum | string;
+  id: EquipmentMeasurementGroupEnum | EquipmentMagnitudeTagEnum | string;
   selections: EquipmentItemSelection[];
 }
 
-export interface EquipmentSelectionApiItem {
-  equipmentDenominationId: number;
+/**
+ * Asignación de equipo de medida a series y disparos según contrato Swagger (`EquipmentSelectionItem`).
+ */
+export interface EquipmentSelectionItem {
+  /** Identificador de la denominación de equipamiento (ver `/centers/{centerId}/equipment/denominations` en Planning). */
+  equipmentItemId: number;
+  /** Categoría del equipo de medición (clave de filtrado en Calibry). */
   categoryId: EquipmentTypeEnum;
-  magnitude?: EquipmentMeasureMagnitude | null;
+  /** Magnitud de medida del equipo (ATTACK o RECOIL). */
+  magnitude?: EquipmentMagnitudeEnum | EquipmentMeasureMagnitude | null;
+  /** Canal del equipo de medida (1–32). */
   channel?: number | null;
+  /** Series a las que está asignado este equipo. */
   seriesIds?: string[];
+  /** Disparos a los que está asignado este equipo. */
   shotIds?: string[];
+  /** @deprecated Usar `equipmentItemId` según contrato Swagger */
+  equipmentDenominationId?: number;
+  /** @deprecated Usar `shotIds` según contrato Swagger */
   shootIds?: string[];
 }
 
-export interface EquipmentMeasurementGroupApi {
-  measurementGroup: EquipmentMagnitudeTagEnum | string;
-  selections: EquipmentSelectionApiItem[];
+/** @deprecated Usar `EquipmentSelectionItem` según contrato Swagger */
+export type EquipmentSelectionApiItem = EquipmentSelectionItem;
+
+/**
+ * Grupo de medida con sus equipos asignados según contrato Swagger (`EquipmentMeasurementGroup`).
+ */
+export interface EquipmentMeasurementGroup {
+  measurementGroup: EquipmentMeasurementGroupEnum | EquipmentMagnitudeTagEnum | string;
+  selections: EquipmentSelectionItem[];
 }
 
-export type EquipmentSelectionApiList = EquipmentMeasurementGroupApi[];
+/** @deprecated Usar `EquipmentMeasurementGroup` según contrato Swagger */
+export type EquipmentMeasurementGroupApi = EquipmentMeasurementGroup;
 
-export const API_EQUIPMENT_TYPES: readonly EquipmentTypeEnum[] = [
-  EquipmentTypeEnum.DOPPLER_RADAR,
-  EquipmentTypeEnum.TRAJECTOGRAPHY_RADAR,
-  EquipmentTypeEnum.ANTENNA,
-  EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
-  EquipmentTypeEnum.AMPLIFIER,
-  EquipmentTypeEnum.SOUND_LEVEL_METER,
-  EquipmentTypeEnum.CONVENTIONAL_CAMERA,
-  EquipmentTypeEnum.HIGH_SPEED_CAMERA,
-  EquipmentTypeEnum.TRACE_RULER,
-  EquipmentTypeEnum.CHRONOMETER,
-  EquipmentTypeEnum.BALANCE,
-  EquipmentTypeEnum.CLIMATIC_CHAMBER,
-  EquipmentTypeEnum.PRESSURE_GAUGE,
-  EquipmentTypeEnum.CRUSHER,
-  EquipmentTypeEnum.PROBE,
-];
+/**
+ * Lista de asignación de equipos según contrato Swagger (`EquipmentSelectionList`).
+ */
+export type EquipmentSelectionList = EquipmentMeasurementGroup[];
+
+/** @deprecated Usar `EquipmentSelectionList` según contrato Swagger */
+export type EquipmentSelectionApiList = EquipmentSelectionList;
+
+export const API_EQUIPMENT_TYPES: readonly EquipmentTypeEnum[] = Object.values(EquipmentTypeEnum);
 
 export function isEquipmentTypeEnum(value: EquipmentTypeEnum | string): value is EquipmentTypeEnum {
-  return API_EQUIPMENT_TYPES.includes(value as EquipmentTypeEnum);
+  return (API_EQUIPMENT_TYPES as readonly string[]).includes(value);
 }
 
 export const LEGACY_CATEGORY_TO_EQUIPMENT_TYPE: Record<string, EquipmentTypeEnum> = {
@@ -132,11 +173,14 @@ export const LEGACY_CATEGORY_TO_EQUIPMENT_TYPE: Record<string, EquipmentTypeEnum
   crusher: EquipmentTypeEnum.CRUSHER,
   palpador: EquipmentTypeEnum.PROBE,
   'sensor-ipg': EquipmentTypeEnum.IPG_SENSOR,
-  micromodulo: EquipmentTypeEnum.MICROMDULE,
+  micromodulo: EquipmentTypeEnum.MICROMODULE,
   balanza: EquipmentTypeEnum.BALANCE,
   camara: EquipmentTypeEnum.CLIMATIC_CHAMBER,
   cronometro: EquipmentTypeEnum.CHRONOMETER,
   sonometro: EquipmentTypeEnum.SOUND_LEVEL_METER,
+  grabador: EquipmentTypeEnum.RECORDER,
+  municion: EquipmentTypeEnum.MUNITION,
+  registrador: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
 };
 
 // ── Equipment Selector Types ──────────────────────────────────────────────────
@@ -184,5 +228,4 @@ export type EquipmentSelectorDialogData = {
 };
 
 export type EquipmentSelectorDialogResult =
-  | { action: 'save'; equipments: EquipmentMagnitudeSelectionGroup[] }
-  | { action: 'back' };
+  { action: 'save'; equipments: EquipmentMagnitudeSelectionGroup[] } | { action: 'back' };

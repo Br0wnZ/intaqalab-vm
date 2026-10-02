@@ -7,8 +7,8 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionService } from '../../services/execution.service';
-import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum } from '../models';
-import { EquipmentSelectorDialog, type EquipmentSelectorDialogData } from './equipment-selector-dialog';
+import { EquipmentMagnitudeTagEnum, type EquipmentSelectorDialogData, EquipmentTypeEnum } from '../models';
+import { EquipmentSelectorDialog } from './equipment-selector-dialog';
 
 // Items returned by the mocked loadEquipmentItemsByCategories
 const mockItemsByCategory = {
@@ -215,6 +215,7 @@ describe('EquipmentSelectorDialog', () => {
         measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
         selections: [
           {
+            equipmentItemId: 9876,
             equipmentDenominationId: 9876,
             categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
             seriesIds: ['s2'],

@@ -11,7 +11,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -161,6 +161,7 @@ interface DataFormModel {
           [opciones]="msOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.VELOCIDAD_PLACEHOLDER' | translate"
           [value]="velocidadField()"
+          [readOnly]="readOnly()"
           (valueChange)="velocidadField.set($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
@@ -174,6 +175,7 @@ interface DataFormModel {
             rows="4"
             class="resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
+            [disabled]="readOnly()"
             [value]="observacionesField() ?? ''"
             (input)="observacionesField.set($any($event.target).value || null)"
           ></textarea>
@@ -181,12 +183,14 @@ interface DataFormModel {
 
         <!-- Row 2 -->
 
-        <!-- Incert. Software (read-only, procede del tarado) -->
+        <!-- Incert. Software -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.INCERT_SOFTWARE_LABEL' | translate"
           [opciones]="msOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.VELOCIDAD_PLACEHOLDER' | translate"
           [value]="incertidumbreSoftwareField()"
+          [readOnly]="readOnly()"
+          (valueChange)="incertidumbreSoftwareField.set($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
         </ui-input-select>
@@ -197,6 +201,7 @@ interface DataFormModel {
           [opciones]="msOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.PERDIDA_PLACEHOLDER' | translate"
           [value]="perdidaField()"
+          [readOnly]="readOnly()"
           (valueChange)="perdidaField.set($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
@@ -210,6 +215,7 @@ interface DataFormModel {
             type="number"
             class="tabular-nums"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.CADENCIA_PLACEHOLDER' | translate"
+            [disabled]="readOnly()"
             [value]="cadenciaField()?.value ?? ''"
             (input)="onCadenciaChange($any($event.target).value)"
           />
@@ -336,24 +342,9 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       this.selectorFormModel().disparo === this.#store.activeShotId(),
   );
 
-  protected readonly selectedShotOrder = computed(() =>
-    this.#getShotOrder(this.selectorFormModel().serie, this.selectorFormModel().disparo),
+  protected readonly isUnexecutedShot = computed(
+    () => !this.isCurrentShot() && this.selectedShotProgress()?.status !== 'FIRED',
   );
-
-  protected readonly activeShotOrder = computed(() =>
-    this.#getShotOrder(this.#store.activeSerieId(), this.#store.activeShotId()),
-  );
-
-  protected readonly isFutureShot = computed(() => {
-    const selectedShotOrder = this.selectedShotOrder();
-    const activeShotOrder = this.activeShotOrder();
-
-    if (selectedShotOrder !== null && activeShotOrder !== null) {
-      return selectedShotOrder > activeShotOrder;
-    }
-
-    return !this.isCurrentShot() && this.selectedShotProgress()?.status === 'PENDING';
-  });
 
   protected readonly isHistoricalFiredShot = computed(
     () => !this.isCurrentShot() && this.selectedShotProgress()?.status === 'FIRED',
@@ -372,20 +363,27 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       !serie ||
       !disparo ||
       this.#store.isTrialReadOnly() ||
-      this.isFutureShot() ||
+      this.isUnexecutedShot() ||
       (this.isHistoricalFiredShot() && !this.historicalEditEnabled())
     );
   });
 
   // ── Read-only: incertidumbre del software ─────────────────────────────────
-  protected readonly incertidumbreSoftwareField = computed(() => {
-    const data = this.#store.velocityIntroduction();
-    return numToField(data.incertidumbreSoftware, data.incertidumbreSoftwareUnit || SpeedUnitEnum.M_S);
-  });
+  protected readonly incertidumbreSoftwareField = signal<InputFieldValue>(
+    numToField(
+      this.#store.velocityIntroduction().incertidumbreSoftware,
+      this.#store.velocityIntroduction().incertidumbreSoftwareUnit || SpeedUnitEnum.M_S,
+    ),
+  );
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoDisparo = computed(() =>
-    mapShotStatusToEstadoDisparo(this.selectedShotProgress()?.status, this.#store.velocityIntroduction().estadoDisparo),
+    this.isCurrentShot()
+      ? 'EN_CURSO'
+      : mapShotStatusToEstadoDisparo(
+          this.selectedShotProgress()?.status,
+          this.#store.velocityIntroduction().estadoDisparo,
+        ),
   );
 
   protected readonly estadoLabel = computed(() => {
@@ -427,7 +425,9 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       this.#store.velocityIntroduction().antena,
     ),
   });
-  protected readonly dataForm = form(this.dataFormModel);
+  protected readonly dataForm = form(this.dataFormModel, (path) => {
+    disabled(path.radarAntena, () => this.readOnly());
+  });
 
   // ── Plain signals ──────────────────────────────────────────────────────────
   protected readonly velocidadField = signal<InputFieldValue>(
@@ -448,6 +448,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   readonly #dirtyTracker = createDirtyTracker(() => ({
     radarAntena: this.dataFormModel().radarAntena,
     velocidad: this.velocidadField(),
+    incertidumbreSoftware: this.incertidumbreSoftwareField(),
     perdida: this.perdidaField(),
     cadencia: this.cadenciaField(),
     observaciones: this.observacionesField(),
@@ -524,6 +525,9 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       radarAntena: buildRadarAntenaCombinedValue(stored.radarDoppler, stored.antena),
     });
     this.velocidadField.set(numToField(stored.velocidad, stored.velocidadUnit || SpeedUnitEnum.M_S));
+    this.incertidumbreSoftwareField.set(
+      numToField(stored.incertidumbreSoftware, stored.incertidumbreSoftwareUnit || SpeedUnitEnum.M_S),
+    );
     this.perdidaField.set(numToField(stored.perdida, stored.perdidaUnit || SpeedUnitEnum.M_S));
     this.cadenciaField.set(numToField(stored.cadencia, stored.cadenciaUnit || CadenceUnitEnum.SPM));
     this.observacionesField.set(stored.observaciones);
@@ -542,6 +546,8 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
 
     const initialVelocity = parseNum(this.velocidadField());
     const initialVelocityUnit = (this.velocidadField()?.unit as SpeedUnitEnum) || SpeedUnitEnum.M_S;
+    const softwareUncertainty = parseNum(this.incertidumbreSoftwareField());
+    const softwareUncertaintyUnit = (this.incertidumbreSoftwareField()?.unit as SpeedUnitEnum) || SpeedUnitEnum.M_S;
     const velocityLoss = parseNum(this.perdidaField());
     const velocityLossUnit = (this.perdidaField()?.unit as SpeedUnitEnum) || SpeedUnitEnum.M_S;
     const cadence = parseNum(this.cadenciaField());
@@ -555,6 +561,8 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       antena: antennaId,
       velocidad: initialVelocity,
       velocidadUnit: initialVelocityUnit,
+      incertidumbreSoftware: softwareUncertainty,
+      incertidumbreSoftwareUnit: softwareUncertaintyUnit,
       perdida: velocityLoss,
       perdidaUnit: velocityLossUnit,
       cadencia: cadence,
@@ -568,8 +576,8 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
         radarAntena,
         initialVelocity,
         initialVelocityUnit,
-        softwareUncertainty: this.#store.velocityIntroduction().incertidumbreSoftware,
-        softwareUncertaintyUnit: SpeedUnitEnum.M_S,
+        softwareUncertainty,
+        softwareUncertaintyUnit,
         velocityLoss,
         velocityLossUnit,
         cadence,
@@ -637,24 +645,6 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
     );
   }
 
-  #getShotOrder(serie: string | null, disparo: string | null): number | null {
-    if (!serie || !disparo) {
-      return null;
-    }
-
-    let shotOrder = 0;
-    for (const series of this.#store.executionProgress()?.series ?? []) {
-      for (const shot of series.shots) {
-        if (series.seriesId === serie && shot.shotId === disparo) {
-          return shotOrder;
-        }
-        shotOrder += 1;
-      }
-    }
-
-    return null;
-  }
-
   #applyRemoteShotData(response: ShotVelocitiesResponse): void {
     const { serie, disparo } = this.selectorFormModel();
     const currentRadarAntena = this.dataFormModel().radarAntena;
@@ -670,6 +660,9 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
       radarAntena: buildRadarAntenaCombinedValue(nextState.radarDoppler ?? null, nextState.antena ?? null),
     });
     this.velocidadField.set(numToField(nextState.velocidad ?? null, nextState.velocidadUnit || SpeedUnitEnum.M_S));
+    this.incertidumbreSoftwareField.set(
+      numToField(nextState.incertidumbreSoftware ?? null, nextState.incertidumbreSoftwareUnit || SpeedUnitEnum.M_S),
+    );
     this.perdidaField.set(numToField(nextState.perdida ?? null, nextState.perdidaUnit || SpeedUnitEnum.M_S));
     this.cadenciaField.set(numToField(nextState.cadencia ?? null, nextState.cadenciaUnit || CadenceUnitEnum.SPM));
     this.observacionesField.set(nextState.observaciones ?? null);

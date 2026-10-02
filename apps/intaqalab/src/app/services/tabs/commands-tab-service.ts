@@ -17,9 +17,9 @@ export class CommandsTabService {
     this.#addNewTab(newTab);
   }
 
-  async addTrialView(id: number | string) {
+  async addTrialView(id: number | string, queryParams?: Record<string, string>) {
     const Commands = await import('@intaqalab/trial-management').then((m) => m.DomainTrialsTabsCommands);
-    const newTab = { ...Commands.TopTabTrialViewFactory(id) };
+    const newTab = { ...Commands.TopTabTrialViewFactory(id, queryParams) };
 
     this.#addNewTab(newTab);
   }
@@ -45,9 +45,13 @@ export class CommandsTabService {
     this.#addNewTab(newTab);
   }
 
-  executeCommand({ command, argument }: CommandTab) {
+  executeCommand({ command, argument, queryParams }: CommandTab) {
     if (command === 'TRIAL_DETAIL') {
-      this.addTrialView(argument);
+      if (queryParams) {
+        this.addTrialView(argument, queryParams);
+      } else {
+        this.addTrialView(argument);
+      }
     } else if (command === 'TRIAL_LIST') {
       this.addTrialList();
     } else if (command === 'TRIAL_VIEW_DOCUMENT') {

@@ -40,6 +40,20 @@ describe('munition-introduction.mapper', () => {
       ]);
       expect(mapShotsToDisparoOptions(null, [{ value: 'fb', label: 'FB' }])).toEqual([{ value: 'fb', label: 'FB' }]);
     });
+
+    it('should use planning globalNumber matched by shot ID for progress shots', () => {
+      const progressShots = [{ shotId: 'shot-b' }, { shotId: 'shot-a' }, { shotId: 'shot-legacy' }];
+      const planningShots = [
+        { id: 'shot-a', globalNumber: 12 },
+        { id: 'shot-b', globalNumber: 4 },
+      ];
+
+      expect(mapShotsToDisparoOptions(progressShots, [], planningShots)).toEqual([
+        { value: 'shot-b', label: 'Disparo 4' },
+        { value: 'shot-a', label: 'Disparo 12' },
+        { value: 'shot-legacy', label: 'Disparo 3' },
+      ]);
+    });
   });
 
   describe('mapRemoteToMunitionState', () => {
@@ -57,6 +71,14 @@ describe('munition-introduction.mapper', () => {
         weightDataByBalance: {},
         acondicionamiento: {},
       });
+    });
+
+    it('should preserve climatic chamber IDs from the server as select values', () => {
+      const res: ShotMunitionResponse = {
+        munitionData: [{ componentId: 'comp-1', conditioningData: { climaticChamberId: 21045 } }],
+      };
+
+      expect(mapRemoteToMunitionState(res).acondicionamiento.camara).toBe('21045');
     });
 
     it('should map a single-balance weightData array to weightDataByBalance', () => {

@@ -1,3 +1,5 @@
+import { MeasureUnitEnum } from '@intaqalab/models';
+
 import type {
   Serie,
   ShootingConditionsUnits,
@@ -115,7 +117,7 @@ export function buildSeriesFromStore(
           nominalSpeed: 0,
           nominalSpeedUnit: conditionsUnits?.nominalSpeed ?? 'M_S',
           powderWeight: 0,
-          powderWeightUnit: conditionsUnits?.powderWeight ?? 'KG',
+          powderWeightUnit: conditionsUnits?.powderWeight ?? MeasureUnitEnum.G,
           observations: '',
         };
       }),

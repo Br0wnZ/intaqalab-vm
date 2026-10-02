@@ -191,13 +191,19 @@ export class MaoTopography extends BaseFormWidgetComponent {
   protected readonly serieOptions = computed(() => mapPlanningSeriesToOptions(this.#store.planningSeries(), []));
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, []);
+      return mapShotsToDisparoOptions(
+        progressShots.map((shot) => ({
+          ...shot,
+          globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
+        })),
+        [],
+      );
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, []);
     }
