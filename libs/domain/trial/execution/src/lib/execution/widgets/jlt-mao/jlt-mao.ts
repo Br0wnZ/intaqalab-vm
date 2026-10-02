@@ -156,6 +156,7 @@ interface JltMaoSelectForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
             [formField]="selectForm.piqueta"
+            (selectionChange)="onPiquetaSelected($event.value)"
           >
             <mat-option [value]="null">—</mat-option>
             @for (opt of piquetaOptions(); track opt.value) {

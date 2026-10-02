@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -97,6 +100,40 @@ describe('JltMao', () => {
     expect(component['angularDifferenceReadOnly']()).toBe(false);
   });
 
+  it('selecting a stake through the UI makes OLT read-only and keeps angular difference editable', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const piquetaSelect = selects[3];
+    if (!piquetaSelect) throw new Error('Piqueta selector was not rendered');
+
+    expect(await piquetaSelect.isDisabled()).toBe(false);
+    await piquetaSelect.open();
+    await userEvent.setup().click(screen.getByText('Piqueta P1 (Principal)'));
+    fixture.detectChanges();
+
+    expect(component['formModel']().piqueta).toBe('piqueta-p1');
+    expect(component['oltReadOnly']()).toBe(true);
+    expect(component['angularDifferenceReadOnly']()).toBe(false);
+  });
+
+  it('entering a manual OLT disables the stake selector and calculates angular difference', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const piquetaSelect = selects[3];
+    if (!piquetaSelect) throw new Error('Piqueta selector was not rendered');
+
+    component.onOltChanged({ value: '120', unit: 'oo' });
+    fixture.detectChanges();
+
+    expect(await piquetaSelect.isDisabled()).toBe(true);
+    expect(component['oltReadOnly']()).toBe(false);
+    expect(component['angularDifferenceReadOnly']()).toBe(true);
+  });
+
   it('uses planned OLT and calculates read-only angular difference', async () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
@@ -120,7 +157,14 @@ describe('JltMao', () => {
     });
 
     await vi.waitFor(() => expect(component['plannedOlt']()).toBeCloseTo(266.667, 3));
+    fixture.detectChanges();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const piquetaSelect = selects[3];
+    if (!piquetaSelect) throw new Error('Piqueta selector was not rendered');
+
     expect(component['piquetaDisabled']()).toBe(true);
+    expect(await piquetaSelect.isDisabled()).toBe(true);
     expect(component['angularDifferenceReadOnly']()).toBe(true);
     expect(component['calculatedAngularDifference']()).toBe(0);
   });

@@ -64,8 +64,8 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
-            clearable
             id="cp-denomination"
+            clearable
             data-testid="denomination-select"
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
@@ -163,15 +163,17 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
-            clearable
             id="cp-zone-modules"
+            clearable
             [value]="loadingZoneId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.ZONE_MODULES' | translate"
-            [disabled]="readonly()"
+            [disabled]="readonly() || !denominationId()"
             (selectionChange)="onLoadingZoneChange($event.value)"
           >
-            @for (zone of filteredLoadingZones(); track zone.id) {
-              <mat-option [value]="zone.id">{{ zone.zone }}</mat-option>
+            @for (loadingZone of filteredLoadingZones(); track loadingZone.id) {
+              @for (zone of loadingZone.zone; track zone) {
+                <mat-option [value]="loadingZone.id">{{ zone }}</mat-option>
+              }
             }
           </mat-select>
         </mat-form-field>
@@ -225,14 +227,12 @@ export class CargaDetailFormComponent {
   readonly denominations = computed<MasterDataI18nItem[]>(() => {
     const response = this.#denominationsResource.value();
     return (
-      response?.items.map(
-        (item: WarehouseDenominationItem): MasterDataI18nItem => ({
-          id: item.id,
-          name: { es: item.name, en: item.name },
-          label: item.name,
-          active: item.active,
-        }),
-      ) ?? []
+      response?.items.map((item: WarehouseDenominationItem): MasterDataI18nItem => ({
+        id: item.id,
+        name: { es: item.name, en: item.name },
+        label: item.name,
+        active: item.active,
+      })) ?? []
     );
   });
 
@@ -241,7 +241,7 @@ export class CargaDetailFormComponent {
   readonly filteredLoadingZones = computed(() => {
     const denomId = this.denominationId();
     const zones = this.loadingZones();
-    if (!denomId) return zones;
+    if (!denomId) return [];
     return zones.filter((z) => z.denomination.id === denomId);
   });
 
@@ -332,7 +332,7 @@ export class CargaDetailFormComponent {
     this.detailChange.emit(value as ComponentDetail);
   }
 
-  onDenominationChange(denominationId: string): void {
+  onDenominationChange(denominationId: string | null): void {
     if (this.readonly()) {
       return;
     }
@@ -341,9 +341,16 @@ export class CargaDetailFormComponent {
       this.formModel.update((current) => ({
         ...current,
         denomination: { id: denom.id, name: denom.label },
+        loadingZoneId: '',
       }));
-      this.emitChanges();
+    } else {
+      this.formModel.update((current) => ({
+        ...current,
+        denomination: { id: '', name: '' },
+        loadingZoneId: '',
+      }));
     }
+    this.emitChanges();
   }
 
   onLoadingZoneChange(zoneId: string): void {

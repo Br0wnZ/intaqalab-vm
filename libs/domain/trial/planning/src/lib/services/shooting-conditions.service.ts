@@ -111,7 +111,7 @@ function parseSeriesArray(items: unknown[], units: ShootingConditionsUnits): Ser
 export interface LoadingZone {
   id: string;
   denomination: { id: string; name: string };
-  zone: string;
+  zone: string[];
   caliber: string;
   active: boolean;
 }

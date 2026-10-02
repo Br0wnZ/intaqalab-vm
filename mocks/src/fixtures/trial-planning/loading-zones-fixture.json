@@ -5,7 +5,7 @@
   "items": [
     {
       "id": "550e8400-e29b-41d4-a716-446655440031",
-      "denomination": { "id": "550e8400-e29b-41d4-a716-446655440032", "name": "Carga de proyección M4" },
+      "denomination": { "id": "cp-1", "name": "Carga de proyección 1" },
       "zone": ["Z1", "Z2"],
       "caliber": 155,
       "observations": "Configuración estándar",
@@ -13,7 +13,7 @@
     },
     {
       "id": "550e8400-e29b-41d4-a716-446655440033",
-      "denomination": { "id": "550e8400-e29b-41d4-a716-446655440034", "name": "Carga de proyección M3" },
+      "denomination": { "id": "cp-2", "name": "Carga de proyección 2" },
       "zone": ["Z3"],
       "caliber": 105,
       "observations": "Carga ligera",
