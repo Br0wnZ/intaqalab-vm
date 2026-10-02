@@ -14,6 +14,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FeatureFlagService } from '@intaqalab/config';
 import { Role, injectCurrentUserRole, injectionTokenTabCommand } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { TrialActions } from '@intaqalab/models';
@@ -119,6 +120,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
   providers: [TrialGeneralDataStore],
 })
 export class FeatureTrialViewShellComponent {
+  readonly #featureFlags = inject(FeatureFlagService);
   readonly formComponent = viewChild(FeatureTrialCreateFormComponent);
   readonly #trialTransitionsService = inject(TrialTransitionsService);
   readonly #trialDataService = inject(TrialsDataService);
@@ -201,7 +203,9 @@ export class FeatureTrialViewShellComponent {
 
   handleClickTrialAction(action: TrialActions) {
     if (action === 'EXECUTION') {
-      this.onAction({ command: 'EXECUTION', argument: this.id });
+      if (this.#featureFlags.executionEnabled()) {
+        this.onAction({ command: 'EXECUTION', argument: this.id });
+      }
     } else if (action === 'MODIFY') {
       this.editable.set(true);
     } else if (action === 'CANCEL') {

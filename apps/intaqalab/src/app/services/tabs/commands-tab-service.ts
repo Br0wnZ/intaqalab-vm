@@ -56,7 +56,7 @@ export class CommandsTabService {
       this.addTrialList();
     } else if (command === 'TRIAL_VIEW_DOCUMENT') {
       this.addDocumentTrial(argument);
-    } else if (command === 'EXECUTION') {
+    } else if (command === 'EXECUTION' && this.#featureFlags.executionEnabled()) {
       this.#router.navigateByUrl(`/execution/${argument}`);
     }
   }

@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import type { ResolveFn, Routes } from '@angular/router';
 import { Router } from '@angular/router';
+import { FeatureFlagService } from '@intaqalab/config';
 import type { CommandTab } from '@intaqalab/core';
 import { injectionTokenTabCommand } from '@intaqalab/core';
 
@@ -77,10 +78,11 @@ export const routes: Routes = [
         provide: injectionTokenTabCommand,
         useFactory: () => {
           const router = inject(Router);
+          const featureFlags = inject(FeatureFlagService);
           return (command: CommandTab) => {
             if (command.command === 'TRIAL_LIST') {
               router.navigateByUrl('/trial/list');
-            } else if (command.command === 'EXECUTION') {
+            } else if (command.command === 'EXECUTION' && featureFlags.executionEnabled()) {
               router.navigateByUrl(`/execution/${command.argument}`);
             } else {
               router.navigateByUrl(`/trial/document/${command.argument}`);

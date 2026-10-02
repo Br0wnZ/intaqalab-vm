@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { FeatureFlagService } from '@intaqalab/config';
 import type { HasStatus, TrialActions } from '@intaqalab/models';
 
 import { ButtonTrialActionsComponent } from '../button-trial-actions/button-trial-actions.component';
@@ -16,6 +17,7 @@ import { config } from './button-trial-actions-imp.constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonTrialActionsImplComponent {
+  readonly #featureFlags = inject(FeatureFlagService);
   readonly clicked = output<TrialActions>();
   readonly trial = input.required<HasStatus>();
 
@@ -25,7 +27,7 @@ export class ButtonTrialActionsImplComponent {
 
     return {
       label: 'UTILS_TRIALS.TRIAL_ACTIONS_LABEL',
-      list: config,
+      list: config.filter(({ option }) => option !== 'EXECUTION' || this.#featureFlags.executionEnabled()),
       trial,
     };
   });

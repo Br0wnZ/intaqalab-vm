@@ -1,4 +1,6 @@
-import type { Route } from '@angular/router';
+import { inject } from '@angular/core';
+import type { CanMatchFn, Route } from '@angular/router';
+import { FeatureFlagService } from '@intaqalab/config';
 import {
   ALL_ROLES_EXCEPT_VIEWER,
   MENU_EVENT_LOG_ROLES,
@@ -10,6 +12,8 @@ import {
 } from '@intaqalab/core';
 
 import { resolveLazyModule } from './lazy-utils';
+
+const canMatchExecutionEnabled: CanMatchFn = () => inject(FeatureFlagService).executionEnabled();
 
 export const appRoutes: Route[] = [
   {
@@ -89,7 +93,7 @@ export const appRoutes: Route[] = [
       breadcrumb: 'BREADCRUMB.EXECUTION',
       roles: [...MENU_EXECUTION_ROLES],
     },
-    canMatch: [canMatchRole],
+    canMatch: [canMatchRole, canMatchExecutionEnabled],
   },
   {
     path: '**',

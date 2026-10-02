@@ -3,6 +3,7 @@ import type { AppEnvironment } from '@intaqalab/config';
 export const baseEnvironment: Omit<AppEnvironment, 'production' | 'apiUrl'> = {
   features: {
     enableTabsNavigation: false,
+    enableExecution: true,
   },
   authConfig: {
     authority: 'https://iam.des.inta.es/realms/intaqalab',

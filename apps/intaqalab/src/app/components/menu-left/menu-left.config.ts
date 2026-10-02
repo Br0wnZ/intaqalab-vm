@@ -1,3 +1,4 @@
+import type { AppFeatures } from '@intaqalab/config';
 import {
   ALL_ROLES_EXCEPT_VIEWER,
   CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES,
@@ -42,6 +43,7 @@ export interface MenuNode {
   icon?: string;
   iconName?: IntaIconName;
   roles?: Role[];
+  feature?: keyof AppFeatures;
 }
 
 export const ACTION_ROUTES: Partial<Record<MenuAction, string>> = {
@@ -133,6 +135,7 @@ export const MENU_TREE: MenuNode[] = [
     name: 'MENU_LEFT.EXECUTION',
     id: 'EXECUTION',
     iconName: 'execution',
+    feature: 'enableExecution',
     roles: [...MENU_EXECUTION_ROLES],
   },
 

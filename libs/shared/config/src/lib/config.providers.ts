@@ -14,6 +14,7 @@ export function provideTestingEnvironment(): EnvironmentProviders {
     apiUrl: 'http://localhost:3000/api',
     features: {
       enableTabsNavigation: true,
+      enableExecution: true,
     },
     authConfig: {},
     endpoints: {

@@ -23,6 +23,7 @@ export type ApiEndpointKey = (typeof Endpoints)[keyof typeof Endpoints];
 
 export interface AppFeatures {
   enableTabsNavigation: boolean;
+  enableExecution: boolean;
 }
 
 export interface AppEnvironment {
@@ -34,7 +35,7 @@ export interface AppEnvironment {
    */
   apiUrl: string;
   enableMocksAuthBypass?: boolean;
-  authConfig: OpenIdConfiguration
+  authConfig: OpenIdConfiguration;
   features: AppFeatures;
   endpoints: Record<ApiEndpointKey, string>;
 }

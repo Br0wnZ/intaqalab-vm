@@ -4,6 +4,10 @@ import { baseEnvironment } from './environment.base';
 
 export const environment: AppEnvironment = {
   ...baseEnvironment,
+  features: {
+    ...baseEnvironment.features,
+    enableExecution: false,
+  },
   authConfig: {
     ...baseEnvironment.authConfig,
     authority: 'https://iam.pre.inta.es/realms/global',

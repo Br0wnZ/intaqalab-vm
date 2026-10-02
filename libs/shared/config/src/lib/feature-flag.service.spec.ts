@@ -11,6 +11,7 @@ const createMockEnvironment = (partial: Partial<AppEnvironment> = {}): AppEnviro
   apiUrl: 'https://apis.des.inta.es/intaqalab',
   features: {
     enableTabsNavigation: false,
+    enableExecution: true,
   },
   authConfig: {},
   endpoints: {
@@ -104,7 +105,7 @@ describe('FeatureFlagService', () => {
     it('should read initial tabs navigation value from environment features', () => {
       const service = setup(
         createMockEnvironment({
-          features: { enableTabsNavigation: true },
+          features: { enableTabsNavigation: true, enableExecution: true },
         }),
       );
 
@@ -115,7 +116,7 @@ describe('FeatureFlagService', () => {
       localStorage.setItem('ENABLED_TABS_NAVIGATION', 'true');
       const service = setup(
         createMockEnvironment({
-          features: { enableTabsNavigation: false },
+          features: { enableTabsNavigation: false, enableExecution: true },
         }),
       );
 

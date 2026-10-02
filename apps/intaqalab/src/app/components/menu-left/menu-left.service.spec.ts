@@ -32,12 +32,15 @@ const createAuthServiceMock = () => ({
 describe('MenuLeftService', () => {
   let routerMock: ReturnType<typeof createRouterMock>;
   let tabsMock: ReturnType<typeof createTabsServiceMock>;
-  let featureFlagsMock: { tabsNavigation: ReturnType<typeof vi.fn> };
+  let featureFlagsMock: { tabsNavigation: ReturnType<typeof vi.fn>; isEnabled: ReturnType<typeof vi.fn> };
 
-  const setup = (initialUrl = '/') => {
+  const setup = (initialUrl = '/', executionEnabled = true) => {
     routerMock = createRouterMock(initialUrl);
     tabsMock = createTabsServiceMock();
-    featureFlagsMock = { tabsNavigation: vi.fn().mockReturnValue(false) };
+    featureFlagsMock = {
+      tabsNavigation: vi.fn().mockReturnValue(false),
+      isEnabled: vi.fn().mockReturnValue(executionEnabled),
+    };
     const authServiceMock = createAuthServiceMock();
 
     TestBed.configureTestingModule({
@@ -66,6 +69,12 @@ describe('MenuLeftService', () => {
     it('should expose the MENU_TREE nodes', () => {
       const { service } = setup();
       expect(service.dataSource().length).toBeGreaterThan(0);
+    });
+
+    it('should hide feature-gated nodes when their feature is disabled', () => {
+      const { service } = setup('/', false);
+
+      expect(service.dataSource().some((node) => node.id === 'EXECUTION')).toBe(false);
     });
   });
 

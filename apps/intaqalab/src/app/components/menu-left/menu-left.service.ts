@@ -47,7 +47,7 @@ export class MenuLeftService {
   }
 
   navigate(node: MenuNode): void {
-    if (!node.id) return;
+    if (!node.id || (node.feature !== undefined && !this.#featureFlags.isEnabled(node.feature))) return;
 
     this.activeNodeId.set(node.id);
     this.#setActiveSectionFromAction(node.id);
@@ -100,7 +100,11 @@ export class MenuLeftService {
 
   #filterTree(nodes: MenuNode[]): MenuNode[] {
     return nodes
-      .filter((node) => !node.roles || this.#authService.hasAnyRole(node.roles))
+      .filter(
+        (node) =>
+          (!node.roles || this.#authService.hasAnyRole(node.roles)) &&
+          (node.feature === undefined || this.#featureFlags.isEnabled(node.feature)),
+      )
       .map((node) => {
         if (node.children) {
           const filteredChildren = this.#filterTree(node.children);

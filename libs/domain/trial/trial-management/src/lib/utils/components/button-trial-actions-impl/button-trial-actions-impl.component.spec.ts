@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { FeatureFlagService } from '@intaqalab/config';
 import type { Role } from '@intaqalab/core';
 import { AuthService } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
@@ -22,6 +23,10 @@ const AuthServiceMock = {
   userRoles: signal<Role[]>([]),
 };
 
+const FeatureFlagServiceMock = {
+  executionEnabled: signal(true),
+};
+
 describe('ButtonTrialActionsImplComponent', () => {
   it('should render the actions button', async () => {
     await render(ButtonTrialActionsImplComponent, {
@@ -34,6 +39,10 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: AuthService,
           useValue: AuthServiceMock,
+        },
+        {
+          provide: FeatureFlagService,
+          useValue: FeatureFlagServiceMock,
         },
       ],
       imports: [
@@ -55,6 +64,10 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: AuthService,
           useValue: AuthServiceMock,
+        },
+        {
+          provide: FeatureFlagService,
+          useValue: FeatureFlagServiceMock,
         },
       ],
       imports: [
@@ -82,6 +95,10 @@ describe('ButtonTrialActionsImplComponent', () => {
           provide: AuthService,
           useValue: AuthServiceMock,
         },
+        {
+          provide: FeatureFlagService,
+          useValue: FeatureFlagServiceMock,
+        },
       ],
       imports: [
         TranslateModule.forRoot({
@@ -94,5 +111,37 @@ describe('ButtonTrialActionsImplComponent', () => {
     const childComponent = childDebugEl.componentInstance as ButtonTrialActionsComponent;
     const actions = childComponent.list().map((item) => item.option);
     expect(actions).toContain('EXECUTION');
+  });
+
+  it('should hide EXECUTION action when the feature is disabled', async () => {
+    FeatureFlagServiceMock.executionEnabled.set(false);
+    const { fixture } = await render(ButtonTrialActionsImplComponent, {
+      inputs: {
+        trial: {
+          status: TrialStatus.EXECUTED,
+        },
+      },
+      providers: [
+        {
+          provide: AuthService,
+          useValue: AuthServiceMock,
+        },
+        {
+          provide: FeatureFlagService,
+          useValue: FeatureFlagServiceMock,
+        },
+      ],
+      imports: [
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
+      ],
+    });
+
+    const childDebugEl = fixture.debugElement.query(By.directive(ButtonTrialActionsComponent));
+    const childComponent = childDebugEl.componentInstance as ButtonTrialActionsComponent;
+    const actions = childComponent.list().map((item) => item.option);
+    expect(actions).not.toContain('EXECUTION');
+    FeatureFlagServiceMock.executionEnabled.set(true);
   });
 });

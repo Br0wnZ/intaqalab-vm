@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
+import { FeatureFlagService } from '@intaqalab/config';
 import type { CalendarTrialApiResponse } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
@@ -321,6 +322,7 @@ export class CalendarSharedTemplatesComponent {
   store = inject(CalendarTrialStore);
   #trialPersmissionsService = inject(TrialPersmissionsService);
   #router = inject(Router);
+  #featureFlags = inject(FeatureFlagService);
 
   canSchedule(trialStatus: TrialStatus) {
     return this.#trialPersmissionsService.canSchedule(trialStatus);
@@ -345,7 +347,7 @@ export class CalendarSharedTemplatesComponent {
       TrialStatus.CLOSED,
       TrialStatus.CANCELLED,
     ];
-    return executionStatuses.includes(status);
+    return this.#featureFlags.executionEnabled() && executionStatuses.includes(status);
   }
 
   viewTrial = output<string>();
@@ -381,7 +383,9 @@ export class CalendarSharedTemplatesComponent {
 
   handleExecution(trialId: string, event: MouseEvent) {
     event.stopPropagation();
-    this.#router.navigateByUrl(`/execution/${trialId}`);
+    if (this.#featureFlags.executionEnabled()) {
+      this.#router.navigateByUrl(`/execution/${trialId}`);
+    }
   }
 
   getStatusDotColor(status: TrialStatus): string {

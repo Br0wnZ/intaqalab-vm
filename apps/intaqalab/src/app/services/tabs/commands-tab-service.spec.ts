@@ -33,8 +33,11 @@ vi.mock('@intaqalab/calendar-trials', () => ({
 }));
 
 describe('CommandsTabService', () => {
-  const setup = (enabledTabs: boolean) => {
-    const featureFlagsSpy = { tabsNavigation: vi.fn().mockReturnValue(enabledTabs) };
+  const setup = (enabledTabs: boolean, executionEnabled = true) => {
+    const featureFlagsSpy = {
+      tabsNavigation: vi.fn().mockReturnValue(enabledTabs),
+      executionEnabled: vi.fn().mockReturnValue(executionEnabled),
+    };
 
     const routerSpy = { navigateByUrl: vi.fn() };
 
@@ -140,6 +143,14 @@ describe('CommandsTabService', () => {
 
       service.executeCommand({ command: 'EXECUTION' as any, argument: 'trial-123' });
       expect(routerSpy.navigateByUrl).toHaveBeenCalledWith('/execution/trial-123');
+    });
+
+    it('should not navigate to execution when the feature is disabled', () => {
+      const { service, routerSpy } = setup(true, false);
+
+      service.executeCommand({ command: 'EXECUTION' as any, argument: 'trial-123' });
+
+      expect(routerSpy.navigateByUrl).not.toHaveBeenCalled();
     });
 
     it('should not delegate for unknown commands', () => {
