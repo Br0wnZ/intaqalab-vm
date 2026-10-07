@@ -11,6 +11,11 @@ import type {
   ShotTrajectographyRequest,
   ShotTrajectographyResponse,
 } from '../../models/shot-trajectography.models';
+import {
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotsToDisparoOptions as mapSelectionShotsToDisparoOptions,
+} from '../utils/selection-options';
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
@@ -33,32 +38,14 @@ export const parseNum = (field: InputFieldValue): number | null => {
  * Mapea el estado del disparo al label legible del widget.
  */
 export const mapShotStatusToLabel = (status: TrayectografiaIntroductionState['estadoDisparo']): string => {
-  switch (status) {
-    case 'EN_CURSO':
-      return 'En curso';
-    case 'PENDIENTE':
-      return 'Pendiente';
-    case 'EJECUTADA':
-      return 'Ejecutada';
-    default:
-      return '—';
-  }
+  return mapSelectedShotStatusLabel(status);
 };
 
 /**
  * Mapea el estado del disparo a la clase CSS correspondiente.
  */
 export const mapShotStatusToClass = (status: TrayectografiaIntroductionState['estadoDisparo']): string => {
-  switch (status) {
-    case 'EN_CURSO':
-      return 'bg-green-100 text-green-700';
-    case 'PENDIENTE':
-      return 'bg-amber-100 text-amber-700';
-    case 'EJECUTADA':
-      return 'bg-blue-100 text-blue-700';
-    default:
-      return 'bg-gray-100 text-gray-500';
-  }
+  return mapSelectedShotStatusClass(status);
 };
 
 /**
@@ -81,17 +68,10 @@ export const mapPlanningSeriesToOptions = (
  * Mapea los disparos a opciones para el selector.
  */
 export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId?: string; id?: string }> | null,
+  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
   fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (shots?.length) {
-    return shots.map((shot, index) => ({
-      value: shot.shotId ?? shot.id ?? `disparo-${index + 1}`,
-      label: `Disparo ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
+  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
+): Array<{ value: string; label: string }> => mapSelectionShotsToDisparoOptions(shots, fallbackOptions, planningShots);
 
 /**
  * Mapea una unidad de distancia a enum DistanceUnitEnum para API.

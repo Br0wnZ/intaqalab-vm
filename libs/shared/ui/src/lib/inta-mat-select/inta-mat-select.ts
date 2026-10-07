@@ -11,10 +11,20 @@ import { MatSelectModule } from '@angular/material/select';
   imports: [MatFormFieldModule, MatIconModule, MatSelectModule],
   template: `
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2" [for]="id()">
-        {{ label() }}
-      </label>
-      <mat-form-field class="w-full" [appearance]="appearance()" [subscriptSizing]="'dynamic'">
+      @if (floatLabel() !== 'always') {
+        <label class="block text-sm font-medium text-gray-700 mb-2" [for]="id()">
+          {{ label() }}
+        </label>
+      }
+      <mat-form-field
+        class="w-full"
+        [appearance]="appearance()"
+        [floatLabel]="floatLabel()"
+        [subscriptSizing]="'dynamic'"
+      >
+        @if (floatLabel() === 'always') {
+          <mat-label>{{ label() }}</mat-label>
+        }
         @if (prefixIcon()) {
           <mat-icon matPrefix>
             {{ prefixIcon() }}

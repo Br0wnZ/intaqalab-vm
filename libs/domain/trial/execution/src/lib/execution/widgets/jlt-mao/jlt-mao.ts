@@ -17,7 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -31,9 +31,17 @@ import type { ShotJltMaoResponse } from '../../models/shot-jlt-mao.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
+import {
+  mapPlanningSeriesToOptions,
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotsToDisparoOptions,
+} from '../utils/selection-options';
 import type { JltMaoMassConfigDialogResult } from './jlt-mao-mass-config-dialog';
 import { JltMaoMassConfigDialog } from './jlt-mao-mass-config-dialog';
+import type { JltMaoMassConfigFields } from './jlt-mao-mass-config.mapper';
+import { mapJltMaoMassConfigToRequest } from './jlt-mao-mass-config.mapper';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -55,6 +63,7 @@ interface JltMaoSelectForm {
     MatSelectModule,
     TranslateModule,
     InputSelect,
+    InputSelectInput,
     IntaIconComponent,
     LocaleDecimalInputDirective,
   ],
@@ -123,6 +132,7 @@ interface JltMaoSelectForm {
         <!-- OLT: planificada, manual o calculada desde piqueta -->
         <ui-input-select
           label="OLT"
+          floatLabel="always"
           class="w-32 shrink-0"
           [opciones]="ooOptions"
           [placeholder]="'0,000'"
@@ -146,7 +156,7 @@ interface JltMaoSelectForm {
       <!-- Fields: 5 columns × 2 rows -->
       <div
         intaReadonlyContent
-        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 min-h-0 content-start"
+        class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-3 gap-y-8 min-h-0 content-start mt-4"
       >
         <!-- ── Row 1 ─────────────────────────────────────────────────────── -->
 
@@ -167,6 +177,7 @@ interface JltMaoSelectForm {
 
         <!-- Velocidad inicial teórica -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_LABEL' | translate"
           [opciones]="msOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_PLACEHOLDER' | translate"
@@ -178,6 +189,7 @@ interface JltMaoSelectForm {
 
         <!-- Distancia prevista pique -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_LABEL' | translate"
           [opciones]="metersOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_PLACEHOLDER' | translate"
@@ -189,6 +201,7 @@ interface JltMaoSelectForm {
 
         <!-- Deriva tabular -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_PLACEHOLDER' | translate"
@@ -200,6 +213,7 @@ interface JltMaoSelectForm {
 
         <!-- Tiempo vuelo teórico -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_LABEL' | translate"
           [opciones]="secondsOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_PLACEHOLDER' | translate"
@@ -213,6 +227,7 @@ interface JltMaoSelectForm {
 
         <!-- Diferencia angular -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
@@ -226,6 +241,7 @@ interface JltMaoSelectForm {
 
         <!-- Ángulo de tiro -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_PLACEHOLDER' | translate"
@@ -237,6 +253,7 @@ interface JltMaoSelectForm {
 
         <!-- Graduación espoleta -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_LABEL' | translate"
           [opciones]="secondsOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_PLACEHOLDER' | translate"
@@ -248,6 +265,7 @@ interface JltMaoSelectForm {
 
         <!-- Altura de funcionamiento -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_FUNCIONAMIENTO_LABEL' | translate"
           [opciones]="metersOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_FUNCIONAMIENTO_PLACEHOLDER' | translate"
@@ -259,6 +277,7 @@ interface JltMaoSelectForm {
 
         <!-- Distancia de funcionamiento -->
         <ui-input-select
+          floatLabel="always"
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_FUNCIONAMIENTO_LABEL' | translate"
           [opciones]="metersOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER' | translate"
@@ -353,31 +372,19 @@ export class JltMao extends BaseFormWidgetComponent {
   );
 
   // ── Estado del disparo ────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.jltMao().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.formModel().serie,
+      this.formModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.jltMao().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.jltMao().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-blue-100 text-blue-700';
-      case 'EJECUTADA':
-        return 'bg-gray-100 text-gray-600';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Numeric field signals (ui-input-select) ───────────────────────────────
   protected readonly velocidadInicialField = signal<InputFieldValue>(
@@ -711,6 +718,17 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   async openMassConfig(): Promise<void> {
+    const current: JltMaoMassConfigFields = {
+      velocidadInicial: this.velocidadInicialField(),
+      distanciaPique: this.distanciaPiqueField(),
+      derivaTabular: this.derivaTabularField(),
+      tiempoVuelo: this.tiempoVueloField(),
+      diferenciaAngular: this.diferenciaAngularField(),
+      anguloTiro: this.anguloTiroField(),
+      graduacionEspoleta: this.graduacionEspoletaField(),
+      alturaFuncionamiento: this.alturaFuncionamientoField(),
+      distanciaFuncionamiento: this.distanciaFuncionamientoField(),
+    };
     const ref = this.#dialog.open<JltMaoMassConfigDialog, unknown, JltMaoMassConfigDialogResult>(
       JltMaoMassConfigDialog,
       {
@@ -718,38 +736,39 @@ export class JltMao extends BaseFormWidgetComponent {
         maxWidth: '800px',
         data: {
           serieOptions: this.serieOptions(),
-          piquetaOptions: this.piquetaOptions(),
-          current: {
-            piqueta: this.formModel().piqueta,
-            velocidadInicial: this.velocidadInicialField(),
-            distanciaPique: this.distanciaPiqueField(),
-            derivaTabular: this.derivaTabularField(),
-            tiempoVuelo: this.tiempoVueloField(),
-            diferenciaAngular: this.diferenciaAngularField(),
-            anguloTiro: this.anguloTiroField(),
-            graduacionEspoleta: this.graduacionEspoletaField(),
-            alturaFuncionamiento: this.alturaFuncionamientoField(),
-            distanciaFuncionamiento: this.distanciaFuncionamientoField(),
-          },
+          current,
         },
       },
     );
 
     const result = await firstValueFrom(ref.afterClosed());
     if (result?.action !== 'apply') return;
-    if (result.piqueta !== undefined && this.plannedOlt() === null) {
-      this.onPiquetaSelected(result.piqueta ?? null);
+
+    const selectedSeries = result.series ?? [];
+    const fireTrialId = this.#store.fireTrialId();
+    if (!fireTrialId || selectedSeries.length === 0) return;
+
+    const planningSeries = this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+    const selectedShotGroups = selectedSeries.map((seriesId) => {
+      const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+      const executedShots = executionSeries.find((series) => series.seriesId === seriesId)?.shots;
+      const shotIds = plannedShots?.length
+        ? plannedShots.map((shot) => shot.id)
+        : (executedShots?.map((shot) => shot.shotId) ?? []);
+      return shotIds;
+    });
+    if (selectedShotGroups.some((shotIds) => shotIds.length === 0)) return;
+
+    const assignedShotIds = [...new Set(selectedShotGroups.flat())];
+    const request = mapJltMaoMassConfigToRequest(result, current, assignedShotIds);
+    if (!request) return;
+
+    const response = await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
+    const { serie, disparo } = this.formModel();
+    if (serie && disparo && selectedSeries.includes(serie) && response.updatedShotIds.includes(disparo)) {
+      await this.#loadSelectedShotData();
     }
-    if (result.velocidadInicial !== undefined) this.velocidadInicialField.set(result.velocidadInicial);
-    if (result.distanciaPique !== undefined) this.distanciaPiqueField.set(result.distanciaPique);
-    if (result.derivaTabular !== undefined) this.derivaTabularField.set(result.derivaTabular);
-    if (result.tiempoVuelo !== undefined) this.tiempoVueloField.set(result.tiempoVuelo);
-    if (result.diferenciaAngular !== undefined) this.diferenciaAngularField.set(result.diferenciaAngular);
-    if (result.anguloTiro !== undefined) this.anguloTiroField.set(result.anguloTiro);
-    if (result.graduacionEspoleta !== undefined) this.graduacionEspoletaField.set(result.graduacionEspoleta);
-    if (result.alturaFuncionamiento !== undefined) this.alturaFuncionamientoField.set(result.alturaFuncionamiento);
-    if (result.distanciaFuncionamiento !== undefined)
-      this.distanciaFuncionamientoField.set(result.distanciaFuncionamiento);
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

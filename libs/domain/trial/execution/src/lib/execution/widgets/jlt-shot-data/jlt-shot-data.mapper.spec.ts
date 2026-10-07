@@ -46,15 +46,15 @@ describe('jlt-shot-data.mapper', () => {
     it('maps estado disparo to display label', () => {
       expect(mapEstadoDisparoToLabel('EN_CURSO')).toBe('En curso');
       expect(mapEstadoDisparoToLabel('PENDIENTE')).toBe('Pendiente');
-      expect(mapEstadoDisparoToLabel('EJECUTADA')).toBe('Ejecutada');
-      expect(mapEstadoDisparoToLabel(null)).toBe('—');
+      expect(mapEstadoDisparoToLabel('EJECUTADA')).toBe('Ejecutado');
+      expect(mapEstadoDisparoToLabel(null)).toBe('');
     });
 
     it('maps estado disparo to badge CSS classes', () => {
-      expect(mapEstadoDisparoToClass('EN_CURSO')).toBe('bg-green-100 text-green-700');
-      expect(mapEstadoDisparoToClass('PENDIENTE')).toBe('bg-blue-100 text-blue-700');
-      expect(mapEstadoDisparoToClass('EJECUTADA')).toBe('bg-gray-100 text-gray-600');
-      expect(mapEstadoDisparoToClass(null)).toBe('bg-gray-100 text-gray-500');
+      expect(mapEstadoDisparoToClass('EN_CURSO')).toBe('bg-blue-100 text-blue-700');
+      expect(mapEstadoDisparoToClass('PENDIENTE')).toBe('bg-slate-100 text-slate-700');
+      expect(mapEstadoDisparoToClass('EJECUTADA')).toBe('bg-green-100 text-green-700');
+      expect(mapEstadoDisparoToClass(null)).toBe('');
     });
   });
 

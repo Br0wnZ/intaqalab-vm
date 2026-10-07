@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,6 +14,13 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import {
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotOptionsToPlanningNumbers,
+  mapShotsToDisparoOptions,
+} from '../utils/selection-options';
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
 
@@ -345,37 +352,41 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => this.#store.seguridad().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.seguridad().disparoOptions);
+  protected readonly disparoOptions = computed(() => {
+    const storedOptions = this.#store.seguridad().disparoOptions;
+    const planningSeries = this.#store.planningSeries();
+    const selectedSerie = this.formModel().serie;
+    const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
+    }
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, storedOptions);
+    }
+    return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
+  });
   protected readonly camaraOptions = computed(() => this.#store.seguridad().camaraOptions);
   protected readonly grabadorOptions = computed(() => this.#store.seguridad().grabadorOptions);
   protected readonly canalOptions = computed(() => this.#store.seguridad().canalOptions);
 
   // ── Estado del disparo ────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.seguridad().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.formModel().serie,
+      this.formModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.seguridad().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.seguridad().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Form model (selects) ──────────────────────────────────────────────────
   protected readonly formModel = signal<SeguridadSelectsModel>(this.#selectsFromStore());

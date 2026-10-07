@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,7 +11,6 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { Signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,6 +27,7 @@ import type { ShotTrajectographyResponse } from '../../models/shot-trajectograph
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { mapSelectedShotStatus } from '../utils/selection-options';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
@@ -205,13 +206,17 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   );
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.selectorFormModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.trayectografiaIntroduction().disparoOptions);
+      return mapShotsToDisparoOptions(
+        progressShots,
+        this.#store.trayectografiaIntroduction().disparoOptions,
+        planningShots,
+      );
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, this.#store.trayectografiaIntroduction().disparoOptions);
     }
@@ -219,13 +224,20 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() =>
-    mapShotStatusToLabel(this.#store.trayectografiaIntroduction().estadoDisparo),
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorFormModel().serie,
+      this.selectorFormModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.trayectografiaIntroduction().estadoDisparo,
+    ),
   );
 
-  protected readonly estadoClass = computed(() =>
-    mapShotStatusToClass(this.#store.trayectografiaIntroduction().estadoDisparo),
-  );
+  protected readonly estadoLabel = computed(() => mapShotStatusToLabel(this.estadoDisparo()));
+
+  protected readonly estadoClass = computed(() => mapShotStatusToClass(this.estadoDisparo()));
 
   // ── Selector form (serie / disparo) ────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({

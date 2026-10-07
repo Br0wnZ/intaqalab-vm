@@ -12,9 +12,9 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { type CalibryTubeOption, type CalibryWeaponOption, ExecutionStore } from '../../../+state/execution.store';
 import {
-  type ArmamentBulkConfigurationRequest,
-  type ArmamentEquipmentItem,
-  ExecutionService,
+    type ArmamentBulkConfigurationRequest,
+    type ArmamentEquipmentItem,
+    ExecutionService,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
@@ -147,6 +147,7 @@ interface MassConfigForm {
                 id="mass-armament-observations"
                 matInput
                 rows="2"
+                class="!resize-none"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_PLACEHOLDER' | translate"
                 [formField]="massForm.observations"
               ></textarea>

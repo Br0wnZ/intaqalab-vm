@@ -16,6 +16,13 @@ import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import {
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotOptionsToPlanningNumbers,
+  mapShotsToDisparoOptions,
+} from '../utils/selection-options';
+import {
   AplicarConfigMasivaDialog,
   type AplicarConfigMasivaDialogData,
   type AplicarConfigMasivaDialogResult,
@@ -214,37 +221,41 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => this.#store.datosBlancoBola().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.datosBlancoBola().disparoOptions);
+  protected readonly disparoOptions = computed(() => {
+    const storedOptions = this.#store.datosBlancoBola().disparoOptions;
+    const planningSeries = this.#store.planningSeries();
+    const selectedSerie = this.selectorFormModel().serie;
+    const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
+    }
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, storedOptions);
+    }
+    return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
+  });
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
 
   // ── Estado del disparo ────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.datosBlancoBola().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorFormModel().serie,
+      this.selectorFormModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.datosBlancoBola().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.datosBlancoBola().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Selector form ─────────────────────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({
@@ -306,7 +317,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
 
     const dialogData: AplicarConfigMasivaDialogData = {
       serieOptions: stored.serieOptions,
-      disparoOptions: stored.disparoOptions,
+      disparoOptions: this.disparoOptions(),
       currentData: {
         blancoBolax: blancoBola.x,
         blancoBolay: blancoBola.y,

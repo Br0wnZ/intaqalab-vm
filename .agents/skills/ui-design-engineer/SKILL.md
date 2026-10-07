@@ -1,7 +1,7 @@
 ---
 name: ui-design-engineer
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.2
+last-updated: 2026-10-06
 description: Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.
 argument-hint: "E.g. 'Create the munitions listing screen', 'Generate the card component', or 'Create a new widget for the execution grid'."
 user-invocable: true
@@ -34,6 +34,7 @@ You are the **UI Design System Engineer** of the Intaqalab project. Your mission
 - **Save/Submit Button (`ui-save-button`):** It is **MANDATORY** to use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) for any save, submit, create, or update action. E.g.: `<ui-save-button [isSaving]="saveResource.isLoading()" (save)="onSave()" />`. Never use a plain `mat-flat-button` for form mutations.
 - **Event Isolation (`uiStopClick`):** When nesting interactive actions (buttons, icons, toggles) inside clickable containers (`mat-option`, list items, accordion headers, table rows, cards), **always use the `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`)**. Prohibited: manually injecting `$event` into component methods to invoke `event.stopPropagation()` and `event.preventDefault()`. E.g.: `<button type="button" uiStopClick (click)="onAction()">`. Keeps component methods pure and testable without mock DOM events.
 - **Forms (Mandatory Floating Labels & Placeholders):** Always set `floatLabel="always"` on all `mat-form-field` elements with `subscriptSizing="dynamic"`. Always include `<mat-label>{{ '...' | translate }}</mat-label>` inside `mat-form-field` and its corresponding placeholder `[placeholder]="'...' | translate"`. External `<label>` or `<span>` tags outside `mat-form-field` are strictly forbidden.
+- **Execution Observations Textareas:** Every `<textarea>` that captures observations in the Trial Execution domain MUST include `!resize-none` in its `class` attribute to suppress the native resize handle, including textareas inside Angular Material fields and custom wrappers. Keep existing classes; plain `resize-none` is insufficient.
 
 ### 4. Non-Negotiable Accessibility (A11y) with Angular ARIA
 
@@ -81,6 +82,7 @@ When building a widget for the **Trial Execution Grid**, follow these architectu
 - **Root Container:** Use `h-full rounded-2xl border bg-white p-3 flex flex-col gap-2` (sized by `WidgetWidth` and `WidgetHeight` in the grid).
 - **Unit Inputs:** Always use `<ui-input-select>` from `@intaqalab/ui` for numeric values with units.
 - **Read-Only Data:** Displays read-only outputs from other widgets via computed signals.
+- **Selected Shot Status:** Any status badge for a selected shot must react to selected series/shot changes and reflect that shot's `executionProgress` status (`ACTIVE` → `EN_CURSO`, `PENDING` → `PENDIENTE`, `FIRED` → `EJECUTADA`). For the active series/shot show `EN_CURSO`; use feature-local status only when progress has no matching shot.
 - **Registration:** Register the widget type in `execution-grid.models.ts`, metadata in `execution.ts` (`widgets` array), imports and `@case` in `execution-grid.ts`, and i18n translation keys in all 3 language files.
 - If a chart is required, invoke `@chartjs-expert`.
 

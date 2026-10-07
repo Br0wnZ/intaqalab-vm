@@ -30,6 +30,7 @@ import type { ShotTopographyResponse } from '../../models/shot-topography.models
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { mapSelectedShotStatus } from '../utils/selection-options';
 import {
   type InputFieldValue,
   mapPlanningSeriesToOptions,
@@ -158,7 +159,7 @@ interface TopographyFormModel {
           <textarea
             matInput
             rows="3"
-            class="resize-none"
+            class="!resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
             (input)="onObservacionesInput($event)"
@@ -211,13 +212,17 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   );
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.topographyIntroduction().disparoOptions);
+      return mapShotsToDisparoOptions(
+        progressShots,
+        this.#store.topographyIntroduction().disparoOptions,
+        planningShots,
+      );
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, this.#store.topographyIntroduction().disparoOptions);
     }
@@ -267,13 +272,20 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() =>
-    mapShotStatusToLabel(this.#store.topographyIntroduction().estadoDisparo),
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.formModel().serie,
+      this.formModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.topographyIntroduction().estadoDisparo,
+    ),
   );
 
-  protected readonly estadoClass = computed(() =>
-    mapShotStatusToClass(this.#store.topographyIntroduction().estadoDisparo),
-  );
+  protected readonly estadoLabel = computed(() => mapShotStatusToLabel(this.estadoDisparo()));
+
+  protected readonly estadoClass = computed(() => mapShotStatusToClass(this.estadoDisparo()));
 
   // ── FormWidget implementation ──────────────────────────────────────────────
   readonly formState: Signal<WidgetFormState> = computed(() => ({

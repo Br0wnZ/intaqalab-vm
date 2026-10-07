@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.0.1
-last-updated: 2026-09-30
+version: 1.0.3
+last-updated: 2026-10-06
 description: >
 ---
 
@@ -111,11 +111,22 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
   - Widgets that must NOT auto-refresh or reset their local state when `GET /execution/state` returns a new `updatedAt` declare `protected override readonly autonomousWidgetType = WidgetId.<ID>;` in their `BaseFormWidgetComponent` subclass (e.g., `SeguimientoWidget` with `WidgetId.SEGUIMIENTO`).
   - `BaseFormWidgetComponent` automatically registers/unregisters `autonomousWidgetType` in `ExecutionStore` during its lifecycle, and `withGeneralData` / widget effects check `store.isWidgetAutonomous(widgetId)` before triggering `updatedAt`-driven refreshes.
 
+## 📝 Observation Textareas (Mandatory)
+
+- Every multiline observations field in an Execution widget MUST use `!resize-none` on its `<textarea>` so the browser resize handle stays hidden, whether the field uses `mat-form-field` or a custom wrapper.
+- Preserve other classes when adding `!resize-none`. Apply this across every widget and tab; plain `resize-none` does not satisfy the rule.
+
 ## 🔢 Shot Selector Numbering
 
 - Shot selectors MUST display each shot using its planning `globalNumber` when available: `Disparo ${shot.globalNumber ?? index + 1}`.
 - When execution progress does not include `globalNumber`, enrich progress shots with the matching planning shot before mapping selector options. Match by shot ID, never by array position.
 - Keep `index + 1` only as a fallback for legacy or incomplete data where `globalNumber` is `null` or `undefined`.
+
+## 🏷️ Selected Shot Status
+
+- Any execution widget that displays shot status MUST derive it from `executionProgress` using the currently selected series ID and shot ID. Recompute status whenever either selection changes; never display a feature-local `estadoDisparo` as if it belonged to every shot.
+- If selected series and shot match `activeSerieId` and `activeShotId`, display `EN_CURSO`. Otherwise map progress status `ACTIVE` → `EN_CURSO`, `PENDING` → `PENDIENTE`, and `FIRED` → `EJECUTADA`.
+- Use feature-local `estadoDisparo` only as a fallback when selected shot has no matching progress entry.
 
 ---
 

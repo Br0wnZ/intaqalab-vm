@@ -65,22 +65,22 @@ describe('topography-introduction.mapper', () => {
   describe('mapShotStatusToLabel and mapShotStatusToClass', () => {
     it('maps EN_CURSO correctly', () => {
       expect(mapShotStatusToLabel('EN_CURSO')).toBe('En curso');
-      expect(mapShotStatusToClass('EN_CURSO')).toBe('bg-green-100 text-green-700');
+      expect(mapShotStatusToClass('EN_CURSO')).toBe('bg-blue-100 text-blue-700');
     });
 
     it('maps PENDIENTE correctly', () => {
       expect(mapShotStatusToLabel('PENDIENTE')).toBe('Pendiente');
-      expect(mapShotStatusToClass('PENDIENTE')).toBe('bg-yellow-100 text-yellow-700');
+      expect(mapShotStatusToClass('PENDIENTE')).toBe('bg-slate-100 text-slate-700');
     });
 
     it('maps EJECUTADA correctly', () => {
-      expect(mapShotStatusToLabel('EJECUTADA')).toBe('Ejecutada');
-      expect(mapShotStatusToClass('EJECUTADA')).toBe('bg-blue-100 text-blue-700');
+      expect(mapShotStatusToLabel('EJECUTADA')).toBe('Ejecutado');
+      expect(mapShotStatusToClass('EJECUTADA')).toBe('bg-green-100 text-green-700');
     });
 
     it('maps fallback status for null or unknown', () => {
-      expect(mapShotStatusToLabel(null)).toBe('—');
-      expect(mapShotStatusToClass(null)).toBe('bg-slate-100 text-slate-500');
+      expect(mapShotStatusToLabel(null)).toBe('');
+      expect(mapShotStatusToClass(null)).toBe('');
     });
   });
 
@@ -111,6 +111,22 @@ describe('topography-introduction.mapper', () => {
       expect(result).toEqual([
         { value: 'shot-1', label: 'Disparo 1' },
         { value: 'shot-2', label: 'Disparo 2' },
+      ]);
+    });
+
+    it('uses planning global numbers matched by shot ID for progress shots', () => {
+      const result = mapShotsToDisparoOptions(
+        [{ shotId: 'shot-b' }, { shotId: 'shot-a' }],
+        [],
+        [
+          { id: 'shot-a', globalNumber: 12 },
+          { id: 'shot-b', globalNumber: 4 },
+        ],
+      );
+
+      expect(result).toEqual([
+        { value: 'shot-b', label: 'Disparo 4' },
+        { value: 'shot-a', label: 'Disparo 12' },
       ]);
     });
 

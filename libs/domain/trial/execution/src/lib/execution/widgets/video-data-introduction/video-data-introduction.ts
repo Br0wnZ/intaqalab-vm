@@ -29,6 +29,11 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import {
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+} from '../utils/selection-options';
 import { mapVideoFormToRequest, mapVideoResponseToForm, resolveVideoType } from './video-data-introduction.mapper';
 
 interface VideoDataIntroductionForm {
@@ -140,11 +145,9 @@ interface VideoDataIntroductionForm {
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <div class="flex items-center px-3 py-1.5 bg-[#d1fae5] rounded-xl shrink-0">
-          <span class="text-xs font-semibold text-[#065f46]">
-            {{ estadoDisparo() ?? ('TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.STATUS_IN_PROGRESS' | translate) }}
-          </span>
-        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
+          {{ estadoDisparo() }}
+        </span>
       </div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
@@ -246,7 +249,7 @@ interface VideoDataIntroductionForm {
             <textarea
               id="observaciones-input"
               matInput
-              class="h-full"
+              class="h-full !resize-none"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
               [value]="selectorModel().observaciones"
               (input)="updateObservaciones(observacionesInput.value)"
@@ -323,7 +326,18 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   protected readonly magnitudOptions = computed(() => this.#store.videoDataIntroduction().magnitudOptions);
 
   /** Estado del disparo seleccionado (read-only) */
-  protected readonly estadoDisparo = computed(() => this.#store.videoDataIntroduction().estadoDisparo);
+  protected readonly selectedShotStatus = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorModel().serie,
+      this.selectorModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.videoDataIntroduction().estadoDisparo,
+    ),
+  );
+  protected readonly estadoDisparo = computed(() => mapSelectedShotStatusLabel(this.selectedShotStatus()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.selectedShotStatus()));
 
   /** Disparo actual (informativo) */
   protected readonly disparoActual = computed(() => this.#store.activeShotId());

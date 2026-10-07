@@ -1,4 +1,4 @@
-import type { DistanceUnitEnum } from '@intaqalab/models';
+import type { AngleUnitEnum, DistanceUnitEnum } from '@intaqalab/models';
 
 export interface ShotMaoTopography {
   pieceX?: number | null;
@@ -13,10 +13,22 @@ export interface ShotMaoTopography {
   targetYUnit?: DistanceUnitEnum | null;
   targetZ?: number | null;
   targetZUnit?: DistanceUnitEnum | null;
+  olt?: number | null;
+  oltUnit?: AngleUnitEnum | null;
+  angularDifference?: number | null;
+  angularDifferenceUnit?: AngleUnitEnum | null;
   observations?: string | null;
 }
 
 export type ShotMaoTopographyRequest = ShotMaoTopography;
+
+export interface MaoTopographyBulkConfigurationRequest extends ShotMaoTopography {
+  assignedShotIds: string[];
+}
+
+export interface MaoTopographyBulkConfigurationResponse {
+  updatedShotIds: string[];
+}
 
 export interface ShotMaoTopographyResponse {
   maoTopographyData?: ShotMaoTopography | null;

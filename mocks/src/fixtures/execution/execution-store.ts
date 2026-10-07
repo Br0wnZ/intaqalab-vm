@@ -1119,6 +1119,14 @@ export interface ShotJltMaoResponse {
   jltMaoData?: ShotJltMao | null;
 }
 
+export interface JltMaoBulkConfigurationRequest extends Omit<ShotJltMao, 'stakeId'> {
+  assignedShotIds: string[];
+}
+
+export interface JltMaoBulkConfigurationResponse {
+  updatedShotIds: string[];
+}
+
 const jltMaoDataStateMap = new Map<string, Map<string, ShotJltMaoResponse>>();
 
 function defaultShotJltMaoState(): ShotJltMaoResponse {
@@ -1177,6 +1185,99 @@ export function setShotJltMao(
   return cloneShotJltMaoState(updated);
 }
 
+export function applyJltMaoBulkConfiguration(
+  fireTrialId: string,
+  payload: JltMaoBulkConfigurationRequest,
+): JltMaoBulkConfigurationResponse {
+  const { assignedShotIds, ...updates } = payload;
+  const applicableFields: Array<keyof ShotJltMao> = [
+    'numericFiringTable',
+    'theoreticalInitialVelocity',
+    'plannedImpactDistance',
+    'tabularDrift',
+    'theoreticalFlightTime',
+    'shootingAngle',
+    'fuseGraduation',
+    'functioningHeight',
+    'functioningDistance',
+    'observations',
+  ];
+  const unitPairs: Array<[keyof ShotJltMao, keyof ShotJltMao]> = [
+    ['theoreticalInitialVelocity', 'theoreticalInitialVelocityUnit'],
+    ['plannedImpactDistance', 'plannedImpactDistanceUnit'],
+    ['tabularDrift', 'tabularDriftUnit'],
+    ['theoreticalFlightTime', 'theoreticalFlightTimeUnit'],
+    ['angularDifference', 'angularDifferenceUnit'],
+    ['shootingAngle', 'shootingAngleUnit'],
+    ['fuseGraduation', 'fuseGraduationUnit'],
+    ['functioningHeight', 'functioningHeightUnit'],
+    ['functioningDistance', 'functioningDistanceUnit'],
+  ];
+  const hasUnitWithoutValue = unitPairs.some(
+    ([valueField, unitField]) =>
+      Object.prototype.hasOwnProperty.call(updates, unitField) &&
+      !Object.prototype.hasOwnProperty.call(updates, valueField),
+  );
+
+  if (
+    !Array.isArray(assignedShotIds) ||
+    assignedShotIds.length === 0 ||
+    new Set(assignedShotIds).size !== assignedShotIds.length ||
+    !applicableFields.some((field) => Object.prototype.hasOwnProperty.call(updates, field)) ||
+    hasUnitWithoutValue
+  ) {
+    throw new Error('INVALID_BULK_REQUEST');
+  }
+
+  const progress = getExecutionProgressFixture();
+  const targets = assignedShotIds.map((shotId) => {
+    const series = progress.series.find((item) => item.shots.some((shot) => shot.shotId === shotId));
+    if (!series) throw new Error('SHOT_NOT_FOUND');
+    return { seriesId: series.seriesId, shotId };
+  });
+
+  const state = getOrCreateShotJltMaoMap(fireTrialId);
+  for (const target of targets) {
+    const key = `${target.seriesId}|${target.shotId}`;
+    const current = state.get(key) ?? defaultShotJltMaoState();
+    const updatedData: ShotJltMao = { ...current.jltMaoData, ...updates };
+
+    if (updates.theoreticalInitialVelocity !== undefined) {
+      updatedData.theoreticalInitialVelocityUnit =
+        updates.theoreticalInitialVelocity === null ? null : (updates.theoreticalInitialVelocityUnit ?? 'M_S');
+    }
+    if (updates.plannedImpactDistance !== undefined) {
+      updatedData.plannedImpactDistanceUnit =
+        updates.plannedImpactDistance === null ? null : (updates.plannedImpactDistanceUnit ?? 'M');
+    }
+    if (updates.tabularDrift !== undefined) {
+      updatedData.tabularDriftUnit = updates.tabularDrift === null ? null : (updates.tabularDriftUnit ?? 'MILS');
+    }
+    if (updates.theoreticalFlightTime !== undefined) {
+      updatedData.theoreticalFlightTimeUnit =
+        updates.theoreticalFlightTime === null ? null : (updates.theoreticalFlightTimeUnit ?? 'S');
+    }
+    if (updates.shootingAngle !== undefined) {
+      updatedData.shootingAngleUnit = updates.shootingAngle === null ? null : (updates.shootingAngleUnit ?? 'MILS');
+    }
+    if (updates.fuseGraduation !== undefined) {
+      updatedData.fuseGraduationUnit = updates.fuseGraduation === null ? null : (updates.fuseGraduationUnit ?? 'S');
+    }
+    if (updates.functioningHeight !== undefined) {
+      updatedData.functioningHeightUnit =
+        updates.functioningHeight === null ? null : (updates.functioningHeightUnit ?? 'M');
+    }
+    if (updates.functioningDistance !== undefined) {
+      updatedData.functioningDistanceUnit =
+        updates.functioningDistance === null ? null : (updates.functioningDistanceUnit ?? 'M');
+    }
+
+    state.set(key, { jltMaoData: updatedData });
+  }
+
+  return { updatedShotIds: [...assignedShotIds] };
+}
+
 // ── SHOTMAOTOPOGRAPHY ───────────────────────────────────────────────────
 
 export interface ShotMaoTopography {
@@ -1192,7 +1293,19 @@ export interface ShotMaoTopography {
   targetYUnit?: string | null;
   targetZ?: number | null;
   targetZUnit?: string | null;
+  olt?: number | null;
+  oltUnit?: string | null;
+  angularDifference?: number | null;
+  angularDifferenceUnit?: string | null;
   observations?: string | null;
+}
+
+export interface MaoTopographyBulkConfigurationRequest extends ShotMaoTopography {
+  assignedShotIds: string[];
+}
+
+export interface MaoTopographyBulkConfigurationResponse {
+  updatedShotIds: string[];
 }
 
 export interface ShotMaoTopographyResponse {
@@ -1257,6 +1370,93 @@ export function setShotMaoTopography(
 
   state.set(key, updated);
   return cloneShotMaoTopographyState(updated);
+}
+
+export function applyMaoTopographyBulkConfiguration(
+  fireTrialId: string,
+  payload: MaoTopographyBulkConfigurationRequest,
+): MaoTopographyBulkConfigurationResponse {
+  const { assignedShotIds, ...updates } = payload;
+  const applicableFields: Array<keyof ShotMaoTopography> = [
+    'pieceX',
+    'pieceY',
+    'pieceZ',
+    'targetX',
+    'targetY',
+    'targetZ',
+    'olt',
+    'angularDifference',
+    'observations',
+  ];
+  const unitPairs: Array<[keyof ShotMaoTopography, keyof ShotMaoTopography]> = [
+    ['pieceX', 'pieceXUnit'],
+    ['pieceY', 'pieceYUnit'],
+    ['pieceZ', 'pieceZUnit'],
+    ['targetX', 'targetXUnit'],
+    ['targetY', 'targetYUnit'],
+    ['targetZ', 'targetZUnit'],
+    ['olt', 'oltUnit'],
+    ['angularDifference', 'angularDifferenceUnit'],
+  ];
+  const hasUnitWithoutValue = unitPairs.some(
+    ([valueField, unitField]) =>
+      Object.prototype.hasOwnProperty.call(updates, unitField) &&
+      !Object.prototype.hasOwnProperty.call(updates, valueField),
+  );
+
+  if (
+    !Array.isArray(assignedShotIds) ||
+    assignedShotIds.length === 0 ||
+    new Set(assignedShotIds).size !== assignedShotIds.length ||
+    !applicableFields.some((field) => Object.prototype.hasOwnProperty.call(updates, field)) ||
+    hasUnitWithoutValue
+  ) {
+    throw new Error('INVALID_BULK_REQUEST');
+  }
+
+  const progress = getExecutionProgressFixture();
+  const targets = assignedShotIds.map((shotId) => {
+    const series = progress.series.find((item) => item.shots.some((shot) => shot.shotId === shotId));
+    if (!series) throw new Error('SHOT_NOT_FOUND');
+    return { seriesId: series.seriesId, shotId };
+  });
+
+  const state = getOrCreateShotMaoTopographyMap(fireTrialId);
+  for (const target of targets) {
+    const key = `${target.seriesId}|${target.shotId}`;
+    const current = state.get(key) ?? defaultShotMaoTopographyState();
+    const updatedData: ShotMaoTopography = { ...current.maoTopographyData, ...updates };
+
+    if (updates.pieceX !== undefined) {
+      updatedData.pieceXUnit = updates.pieceX === null ? null : (updates.pieceXUnit ?? 'M');
+    }
+    if (updates.pieceY !== undefined) {
+      updatedData.pieceYUnit = updates.pieceY === null ? null : (updates.pieceYUnit ?? 'M');
+    }
+    if (updates.pieceZ !== undefined) {
+      updatedData.pieceZUnit = updates.pieceZ === null ? null : (updates.pieceZUnit ?? 'M');
+    }
+    if (updates.targetX !== undefined) {
+      updatedData.targetXUnit = updates.targetX === null ? null : (updates.targetXUnit ?? 'M');
+    }
+    if (updates.targetY !== undefined) {
+      updatedData.targetYUnit = updates.targetY === null ? null : (updates.targetYUnit ?? 'M');
+    }
+    if (updates.targetZ !== undefined) {
+      updatedData.targetZUnit = updates.targetZ === null ? null : (updates.targetZUnit ?? 'M');
+    }
+    if (updates.olt !== undefined) {
+      updatedData.oltUnit = updates.olt === null ? null : (updates.oltUnit ?? 'MILS');
+    }
+    if (updates.angularDifference !== undefined) {
+      updatedData.angularDifferenceUnit =
+        updates.angularDifference === null ? null : (updates.angularDifferenceUnit ?? 'MILS');
+    }
+
+    state.set(key, { maoTopographyData: updatedData });
+  }
+
+  return { updatedShotIds: [...assignedShotIds] };
 }
 
 // ── SHOTTOPOGRAPHY ───────────────────────────────────────────────────

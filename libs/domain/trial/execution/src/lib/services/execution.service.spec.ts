@@ -8,30 +8,34 @@ import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  EquipmentTypeEnum,
-  type ShotManometerPressuresRequest,
-  type ShotManometerPressuresResponse,
-  type ShotMunitionRequest,
-  type ShotMunitionResponse,
-  type ShotVideoDataRequest,
-  type ShotVideoDataResponse,
-  WidgetId,
+    EquipmentTypeEnum,
+    type JltMaoBulkConfigurationRequest,
+    type JltMaoBulkConfigurationResponse,
+    type MaoTopographyBulkConfigurationRequest,
+    type MaoTopographyBulkConfigurationResponse,
+    type ShotManometerPressuresRequest,
+    type ShotManometerPressuresResponse,
+    type ShotMunitionRequest,
+    type ShotMunitionResponse,
+    type ShotVideoDataRequest,
+    type ShotVideoDataResponse,
+    WidgetId,
 } from '../execution/models';
 import {
-  type ArmamentBulkConfigurationRequest,
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
-  type PlanningConditionsResponse,
-  type PlanningResponse,
-  type PlanningSeriesItem,
-  type PlanningStateResponse,
-  type ProfilesReadinessResponse,
-  type PropellantChargeParametersResponse,
-  type SecurityCountdownResponse,
-  type ShotArmamentResponse,
-  type ShotPressuresResponse,
-  type ShotVelocitiesResponse,
+    type ArmamentBulkConfigurationRequest,
+    type ArmamentEquipmentItem,
+    ExecutionService,
+    type PlanningArmamentResponse,
+    type PlanningConditionsResponse,
+    type PlanningResponse,
+    type PlanningSeriesItem,
+    type PlanningStateResponse,
+    type ProfilesReadinessResponse,
+    type PropellantChargeParametersResponse,
+    type SecurityCountdownResponse,
+    type ShotArmamentResponse,
+    type ShotPressuresResponse,
+    type ShotVelocitiesResponse,
 } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
@@ -994,6 +998,45 @@ describe('ExecutionService', () => {
     TestBed.tick();
 
     await expect(directPromise).resolves.toBeUndefined();
+  });
+
+  it('posts bulk JLT MAO configuration and returns updated shot IDs', async () => {
+    const body: JltMaoBulkConfigurationRequest = {
+      assignedShotIds: ['shot-1', 'shot-2'],
+      theoreticalInitialVelocity: 800,
+    };
+    const response: JltMaoBulkConfigurationResponse = { updatedShotIds: ['shot-1', 'shot-2'] };
+
+    const resultPromise = service.bulkConfigureJltMao(DEMO_TRIAL_ID, body);
+    TestBed.tick();
+
+    const request = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-mao/bulk-configuration`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(body);
+    request.flush(response);
+    TestBed.tick();
+
+    await expect(resultPromise).resolves.toEqual(response);
+  });
+
+  it('posts bulk MAO topography configuration and returns updated shot IDs', async () => {
+    const body: MaoTopographyBulkConfigurationRequest = {
+      assignedShotIds: ['shot-1', 'shot-2'],
+      pieceX: 500,
+      pieceXUnit: DistanceUnitEnum.M,
+    };
+    const response: MaoTopographyBulkConfigurationResponse = { updatedShotIds: ['shot-1', 'shot-2'] };
+
+    const resultPromise = service.bulkConfigureMaoTopography(DEMO_TRIAL_ID, body);
+    TestBed.tick();
+
+    const request = httpMock.expectOne(`${EXECUTION_BASE_URL}/mao-topography/bulk-configuration`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(body);
+    request.flush(response);
+    TestBed.tick();
+
+    await expect(resultPromise).resolves.toEqual(response);
   });
 
   it('handles shot munitions (Widget 20) GET and PUT resources and direct fetch', async () => {

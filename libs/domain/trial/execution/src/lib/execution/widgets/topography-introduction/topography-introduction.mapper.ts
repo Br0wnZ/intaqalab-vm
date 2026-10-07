@@ -6,6 +6,11 @@ import type {
   ShotTopographyRequest,
   ShotTopographyResponse,
 } from '../../models/shot-topography.models';
+import {
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotsToDisparoOptions as mapSelectionShotsToDisparoOptions,
+} from '../utils/selection-options';
 
 export interface SelectOption {
   value: string;
@@ -60,32 +65,14 @@ export const mapTimeUnitToUi = (unit?: TimeUnitEnum | string | null, fallback = 
  * Obtiene la etiqueta para el estado del disparo.
  */
 export const mapShotStatusToLabel = (status?: string | null): string => {
-  switch (status) {
-    case 'EN_CURSO':
-      return 'En curso';
-    case 'PENDIENTE':
-      return 'Pendiente';
-    case 'EJECUTADA':
-      return 'Ejecutada';
-    default:
-      return '—';
-  }
+  return mapSelectedShotStatusLabel(status);
 };
 
 /**
  * Obtiene las clases CSS de estilo para el badge del estado del disparo.
  */
 export const mapShotStatusToClass = (status?: string | null): string => {
-  switch (status) {
-    case 'EN_CURSO':
-      return 'bg-green-100 text-green-700';
-    case 'PENDIENTE':
-      return 'bg-yellow-100 text-yellow-700';
-    case 'EJECUTADA':
-      return 'bg-blue-100 text-blue-700';
-    default:
-      return 'bg-slate-100 text-slate-500';
-  }
+  return mapSelectedShotStatusClass(status);
 };
 
 /**
@@ -106,15 +93,10 @@ export const mapPlanningSeriesToOptions = (
  * Mapea disparos a opciones de selector.
  */
 export const mapShotsToDisparoOptions = (
-  shots: { shotId?: string; id?: string }[] | null | undefined,
+  shots: { shotId?: string; id?: string; globalNumber?: number | null }[] | null | undefined,
   fallback: SelectOption[] = [],
-): SelectOption[] => {
-  if (!shots || shots.length === 0) return fallback;
-  return shots.map((s, idx) => ({
-    value: s.shotId ?? s.id ?? '',
-    label: `Disparo ${idx + 1}`,
-  }));
-};
+  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
+): SelectOption[] => mapSelectionShotsToDisparoOptions(shots, fallback, planningShots);
 
 /**
  * Extrae los datos de topografía de la respuesta.

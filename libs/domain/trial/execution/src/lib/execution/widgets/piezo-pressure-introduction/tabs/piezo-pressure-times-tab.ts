@@ -40,7 +40,7 @@ import { DEFAULT_TIME_UNIT, type InputFieldValue, numToField, parseNum } from '.
         >
           <textarea
             rows="5"
-            class="w-full h-full resize-none border-none outline-none text-xs text-gray-700 placeholder-gray-400 bg-transparent flex-1"
+            class="w-full h-full !resize-none border-none outline-none text-xs text-gray-700 placeholder-gray-400 bg-transparent flex-1"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="model().observations ?? ''"
             (input)="onObservationsChange($event)"

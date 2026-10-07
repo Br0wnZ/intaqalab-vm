@@ -263,6 +263,49 @@ describe('Execution', () => {
     expect(screen.getByText('En curso')).toBeInTheDocument();
   });
 
+  it('shows active shot history with the widget status badge', async () => {
+    const { loader } = await setup();
+    const historyMenu = await loader.getHarness(MatMenuHarness.with({ triggerText: /TRIAL_EXECUTION\.PROGRESS/i }));
+
+    await historyMenu.open();
+
+    const activeShotBadges = screen.getAllByText('En curso').filter((badge) => badge.classList.contains('bg-blue-100'));
+    expect(activeShotBadges.length).toBeGreaterThan(0);
+    expect(activeShotBadges[0]).toHaveClass('text-blue-700');
+  });
+
+  it('includes the active shot when execution progress omits it', async () => {
+    const executionService = createMockExecutionService();
+    executionService.planningSeriesResource = createMockResource<PlanningSeriesItem[]>([
+      {
+        id: 'serie-1',
+        name: 'Serie 1',
+        shots: [
+          { id: 'shot-1', globalNumber: 1 },
+          { id: 'shot-2', globalNumber: 2 },
+        ],
+      },
+    ]);
+    executionService.executionProgressResource = createMockResource<ExecutionProgressResponse>({
+      series: [
+        {
+          seriesId: 'serie-1',
+          shots: [{ shotId: 'shot-2', status: 'PENDING', updatedAt: '2026-08-19T10:10:00Z' }],
+        },
+      ],
+    });
+
+    const { loader } = await setup({ executionService });
+    const historyMenu = await loader.getHarness(MatMenuHarness.with({ triggerText: /TRIAL_EXECUTION\.PROGRESS/i }));
+
+    await historyMenu.open();
+
+    const activeShotBadges = screen.getAllByText('En curso').filter((badge) => badge.classList.contains('bg-blue-100'));
+    expect(activeShotBadges).toHaveLength(1);
+    expect(activeShotBadges[0]).toHaveClass('text-blue-700');
+    expect(screen.getByText('Pendiente')).toHaveClass('bg-slate-100', 'text-slate-700');
+  });
+
   it('keeps the shell mounted when execution state resource is in error', async () => {
     const executionService = createMockExecutionService();
     const executionStateError = new Error('execution state failed');

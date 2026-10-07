@@ -5,6 +5,7 @@ import { vi } from 'vitest';
 
 import { AuthService } from './auth-service';
 import { Role } from './models/role.model';
+import type { UserData } from './models/user.model';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -92,5 +93,28 @@ describe('AuthService', () => {
   it('should setRawRoles assign validr roles', () => {
     service.setRawRoles([Role.INTAQALAB_ADMIN, 'foo', 'bar']);
     expect(service.userRoles()).toStrictEqual([Role.INTAQALAB_ADMIN]);
+  });
+
+  it('should clear user data and roles when clear is called', () => {
+    const mockUserData: UserData = {
+      sub: 'user-123',
+      email_verified: true,
+      name: 'Test User',
+      preferred_username: 'test.user',
+      given_name: 'Test',
+      family_name: 'User',
+      email: 'test@intaqalab.local',
+    };
+
+    service.setUserData(mockUserData);
+    service.setRoles([Role.INTAQALAB_ADMIN]);
+
+    expect(service.getUserData()).toEqual(mockUserData);
+    expect(service.userRoles()).toEqual([Role.INTAQALAB_ADMIN]);
+
+    service.clear();
+
+    expect(service.getUserData()).toBeUndefined();
+    expect(service.userRoles()).toEqual([]);
   });
 });

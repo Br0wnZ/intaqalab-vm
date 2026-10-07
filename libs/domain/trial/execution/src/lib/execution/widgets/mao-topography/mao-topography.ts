@@ -30,9 +30,17 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
-import type { MaoTopographyMassConfigDialogResult } from './mao-topography-mass-config-dialog';
+import type {
+  MaoTopographyMassConfigDialogData,
+  MaoTopographyMassConfigDialogResult,
+} from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
-import { fromPosition, numToField, parseNum, toPosition } from './mao-topography.mapper';
+import {
+  fromPosition,
+  numToField,
+  parseNum,
+  toPosition,
+} from './mao-topography.mapper';
 
 interface MaoTopographySelectForm {
   serie: string | null;
@@ -102,16 +110,16 @@ interface MaoTopographySelectForm {
           {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_BTN' | translate }}
         </button>
 
-        <!-- En curso badge -->
-        <span class="px-2.5 py-0.5 rounded-full text-md font-medium bg-green-100 text-green-700 shrink-0">
-          {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.STATUS_ACTIVE' | translate }}
+        <!-- Estado del disparo -->
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start bg-blue-100 text-blue-700">
+          En curso
         </span>
       </div>
 
       <!-- Fields: 4 columns layout -->
       <div
         intaReadonlyContent
-        class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-3 items-end content-start min-h-0 pt-2.5 pb-2 overflow-y-auto"
+        class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-8 items-end content-start min-h-0 pt-2.5 pb-2 overflow-y-auto"
       >
         <!-- Pieza Position -->
         <ui-sound-level-meter-input
@@ -321,16 +329,21 @@ export class MaoTopography extends BaseFormWidgetComponent {
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
+      this.#clearShotData();
     }
   }
 
   #applyRemoteShotData(response: ShotMaoTopographyResponse): void {
     const data = response?.maoTopographyData ?? null;
 
+    if (!data) {
+      this.#clearShotData();
+      return;
+    }
+
     this.#remoteObservations.set(data?.observations ?? null);
 
     this.#store.updateMaoTopography({
-      ...(data ? {} : { observador: null }),
       xPieza: data?.pieceX ?? null,
       yPieza: data?.pieceY ?? null,
       zPieza: data?.pieceZ ?? null,
@@ -339,6 +352,22 @@ export class MaoTopography extends BaseFormWidgetComponent {
       zBlanco: data?.targetZ ?? null,
     });
 
+    this.#applyFieldsFromStore();
+    this.#syncSnapshot();
+  }
+
+  #clearShotData(): void {
+    this.#remoteObservations.set(null);
+    this.formModel.update((model) => ({ ...model, observador: null }));
+    this.#store.updateMaoTopography({
+      observador: null,
+      xPieza: null,
+      yPieza: null,
+      zPieza: null,
+      xBlanco: null,
+      yBlanco: null,
+      zBlanco: null,
+    });
     this.#applyFieldsFromStore();
     this.#syncSnapshot();
   }
@@ -413,53 +442,62 @@ export class MaoTopography extends BaseFormWidgetComponent {
   async openMassConfig(): Promise<void> {
     const pieza = fromPosition(this.piezaPosition());
     const blanco = fromPosition(this.blancoPosition());
+    const current = {
+      xPieza: pieza.x,
+      yPieza: pieza.y,
+      zPieza: pieza.z,
+      xBlanco: blanco.x,
+      yBlanco: blanco.y,
+      zBlanco: blanco.z,
+    };
 
-    const ref = this.#dialog.open<MaoTopographyMassConfigDialog, unknown, MaoTopographyMassConfigDialogResult>(
+    const fireTrialId = this.#store.fireTrialId() ?? null;
+    const planningSeries = this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+    const shotIdsBySeries = Object.fromEntries(
+      this.serieOptions().map((option) => {
+        const plannedShots = planningSeries.find((series) => series.id === option.value)?.shots;
+        const executedShots = executionSeries.find((series) => series.seriesId === option.value)?.shots;
+        const shotIds = plannedShots?.length
+          ? plannedShots.map((shot) => shot.id)
+          : (executedShots?.map((shot) => shot.shotId) ?? []);
+        return [option.value, shotIds];
+      }),
+    );
+    const data: MaoTopographyMassConfigDialogData = {
+      fireTrialId,
+      serieOptions: this.serieOptions(),
+      shotIdsBySeries,
+      observadorOptions: this.observadorOptions(),
+      current: {
+        ...current,
+        observador: this.formModel().observador,
+      },
+    };
+
+    const ref = this.#dialog.open<
+      MaoTopographyMassConfigDialog,
+      MaoTopographyMassConfigDialogData,
+      MaoTopographyMassConfigDialogResult
+    >(
       MaoTopographyMassConfigDialog,
       {
         width: '800px',
         maxWidth: '800px',
-        data: {
-          serieOptions: this.serieOptions(),
-          observadorOptions: this.observadorOptions(),
-          current: {
-            xPieza: pieza.x,
-            yPieza: pieza.y,
-            zPieza: pieza.z,
-            xBlanco: blanco.x,
-            yBlanco: blanco.y,
-            zBlanco: blanco.z,
-            observador: this.formModel().observador,
-          },
-        },
+        data,
       },
     );
 
     const result = await firstValueFrom(ref.afterClosed());
 
     if (result?.action !== 'apply') return;
-
-    // Apply values to local form signals
-    if (result.xPieza !== undefined || result.yPieza !== undefined || result.zPieza !== undefined) {
-      const currentPieza = this.piezaPosition();
-      this.piezaPosition.set({
-        x: result.xPieza ? parseFloat(result.xPieza.value) : null,
-        y: result.yPieza ? parseFloat(result.yPieza.value) : null,
-        z: result.zPieza ? parseFloat(result.zPieza.value) : null,
-        unit: result.xPieza?.unit ?? result.yPieza?.unit ?? result.zPieza?.unit ?? currentPieza?.unit ?? 'm',
-      });
-    }
-    if (result.xBlanco !== undefined || result.yBlanco !== undefined || result.zBlanco !== undefined) {
-      const currentBlanco = this.blancoPosition();
-      this.blancoPosition.set({
-        x: result.xBlanco ? parseFloat(result.xBlanco.value) : null,
-        y: result.yBlanco ? parseFloat(result.yBlanco.value) : null,
-        z: result.zBlanco ? parseFloat(result.zBlanco.value) : null,
-        unit: result.xBlanco?.unit ?? result.yBlanco?.unit ?? result.zBlanco?.unit ?? currentBlanco?.unit ?? 'm',
-      });
-    }
     if (result.observador !== undefined) {
       this.formModel.update((m) => ({ ...m, observador: result.observador ?? null }));
+    }
+
+    const { serie, disparo } = this.formModel();
+    if (serie && disparo && result.updatedShotIds.includes(disparo)) {
+      await this.#loadSelectedShotData();
     }
   }
 

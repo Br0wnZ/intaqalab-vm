@@ -1,18 +1,23 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { CalibryObserverOption } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { MaoTopographyMassConfigValues } from './mao-topography.mapper';
+import { mapMaoTopographyMassConfigToRequest } from './mao-topography.mapper';
 
 export interface MaoTopographyMassConfigDialogData {
+  fireTrialId: string | null;
   serieOptions: { value: string; label: string }[];
+  shotIdsBySeries: Record<string, string[]>;
   observadorOptions: CalibryObserverOption[];
   current: {
     xPieza: { value: string; unit: string } | null;
@@ -25,17 +30,9 @@ export interface MaoTopographyMassConfigDialogData {
   };
 }
 
-export interface MaoTopographyMassConfigDialogResult {
-  action: 'apply' | 'cancel';
-  series?: string[];
-  xPieza?: { value: string; unit: string } | null;
-  yPieza?: { value: string; unit: string } | null;
-  zPieza?: { value: string; unit: string } | null;
-  xBlanco?: { value: string; unit: string } | null;
-  yBlanco?: { value: string; unit: string } | null;
-  zBlanco?: { value: string; unit: string } | null;
-  observador?: string | null;
-}
+export type MaoTopographyMassConfigDialogResult =
+  | { action: 'apply'; updatedShotIds: string[]; observador: string | null }
+  | { action: 'cancel' };
 
 interface MassConfigForm {
   series: string[];
@@ -48,6 +45,7 @@ type InputFieldValue = { value: string; unit: string } | null;
   selector: 'inta-mao-topography-mass-config-dialog',
   imports: [
     FormField,
+    SaveButton,
     ReadonlyContentDirective,
     MatButtonModule,
     MatDialogModule,
@@ -94,6 +92,7 @@ type InputFieldValue = { value: string; unit: string } | null;
           [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.PIEZA_GROUP_LABEL' | translate"
           [placeholder]="'0'"
           [unitOptions]="metersOptions"
+          [disabled]="isSaving()"
           [value]="piezaPosition()"
           (valueChange)="piezaPosition.set($event)"
         />
@@ -105,6 +104,7 @@ type InputFieldValue = { value: string; unit: string } | null;
           [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
           [placeholder]="'0'"
           [unitOptions]="metersOptions"
+          [disabled]="isSaving()"
           [value]="blancoPosition()"
           (valueChange)="blancoPosition.set($event)"
         />
@@ -122,14 +122,20 @@ type InputFieldValue = { value: string; unit: string } | null;
           </mat-select>
         </mat-form-field>
       </div>
+      @if (errorKey(); as key) {
+        <p role="alert" class="mt-2 text-sm text-red-700">{{ key | translate }}</p>
+      }
     </mat-dialog-content>
 
     <!-- Actions -->
     <mat-dialog-actions class="!flex gap-2 !justify-center !pb-4">
-      <button mat-flat-button color="primary" (click)="apply()">
-        {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_APPLY_BTN' | translate }}
-      </button>
-      <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
+      <ui-save-button
+        label="TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_APPLY_BTN"
+        [isSaving]="isSaving()"
+        [isDisabled]="!canApply()"
+        (save)="apply()"
+      />
+      <button mat-stroked-button type="button" [disabled]="isSaving()" (click)="cancel()">
         {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_CANCEL_BTN' | translate }}
       </button>
     </mat-dialog-actions>
@@ -141,6 +147,9 @@ export class MaoTopographyMassConfigDialog {
   readonly #dialogRef =
     inject<MatDialogRef<MaoTopographyMassConfigDialog, MaoTopographyMassConfigDialogResult>>(MatDialogRef);
   readonly data = inject<MaoTopographyMassConfigDialogData>(MAT_DIALOG_DATA);
+  readonly #executionService = inject(ExecutionService);
+  readonly isSaving = signal(false);
+  readonly errorKey = signal<string | null>(null);
 
   // ── Unit options ─────────────────────────────────────────────────────────
   readonly metersOptions = [{ value: 'm', label: 'm' }];
@@ -150,7 +159,9 @@ export class MaoTopographyMassConfigDialog {
     series: [],
     observador: this.data.current.observador,
   });
-  readonly massForm = form(this.formModel);
+  readonly massForm = form(this.formModel, (path) => disabled(path, () => this.isSaving()));
+
+  readonly canApply = computed(() => this.#buildRequest() !== null);
 
   // ── Position signals ──────────────────────────────────────────────────────
   readonly piezaPosition = signal<SoundLevelMeterValue | null>(
@@ -183,19 +194,50 @@ export class MaoTopographyMassConfigDialog {
     };
   }
 
-  apply(): void {
+  async apply(): Promise<void> {
+    if (this.isSaving()) return;
+    const request = this.#buildRequest();
+    if (!request || !this.data.fireTrialId) return;
+
+    this.errorKey.set(null);
+    this.isSaving.set(true);
+    try {
+      const response = await this.#executionService.bulkConfigureMaoTopography(this.data.fireTrialId, request);
+      this.#dialogRef.close({
+        action: 'apply',
+        updatedShotIds: response.updatedShotIds,
+        observador: this.formModel().observador,
+      });
+    } catch {
+      this.errorKey.set('TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_ERROR');
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  cancel(): void {
+    if (this.isSaving()) return;
+    this.#dialogRef.close({ action: 'cancel' });
+  }
+
+  #buildRequest() {
+    if (!this.data.fireTrialId) return null;
+    const selectedSeries = this.formModel().series;
+    if (selectedSeries.length === 0) return null;
+
+    const shotGroups = selectedSeries.map((seriesId) => this.data.shotIdsBySeries[seriesId] ?? []);
+    if (shotGroups.some((shotIds) => shotIds.length === 0)) return null;
+
     const pieza = this.#fromPosition(this.piezaPosition());
     const blanco = this.#fromPosition(this.blancoPosition());
-    this.#dialogRef.close({
-      action: 'apply',
-      series: this.formModel().series,
-      observador: this.formModel().observador,
+    const values: MaoTopographyMassConfigValues = {
       xPieza: pieza.x,
       yPieza: pieza.y,
       zPieza: pieza.z,
       xBlanco: blanco.x,
       yBlanco: blanco.y,
       zBlanco: blanco.z,
-    });
+    };
+    return mapMaoTopographyMassConfigToRequest(values, this.data.current, shotGroups.flat());
   }
 }

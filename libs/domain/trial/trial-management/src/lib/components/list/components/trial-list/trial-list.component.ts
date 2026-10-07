@@ -288,6 +288,7 @@ export class TrialListComponent {
 
   readonly goTrialDetail = output<{ id: FireTrial['id'] }>();
   readonly scheduleTrial = output<FireTrial>();
+  readonly sortChange = output<string>();
 
   readonly #filtersSignal = signal<Partial<TrialSearchFilters>>({});
 
@@ -364,7 +365,9 @@ export class TrialListComponent {
   }
 
   onSort(event: Sort): void {
-    this.store.setSort(event.active, event.direction || 'asc');
+    const direction = event.direction || 'asc';
+    this.store.setSort(event.active, direction);
+    this.sortChange.emit(`${event.active};${direction}`);
   }
 
   public get filtersSignal(): Signal<Partial<TrialSearchFilters>> {

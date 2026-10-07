@@ -7,34 +7,38 @@ import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, Speed
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-  EquipmentMeasurementGroup,
-  EquipmentSelectionItem,
-  EquipmentSelectionList,
-  EquipmentTypeEnum,
-  PropellantChargeParametersResponse,
-  ShotAcousticLevelRequest,
-  ShotAcousticLevelResponse,
-  ShotCameraOrientationResponse,
-  ShotDifferentialPressureData,
-  ShotJltMaoRequest,
-  ShotJltMaoResponse,
-  ShotManometerPressuresRequest,
-  ShotManometerPressuresResponse,
-  ShotMaoTopographyRequest,
-  ShotMaoTopographyResponse,
-  ShotMunitionRequest,
-  ShotMunitionResponse,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
-  ShotTopographyRequest,
-  ShotTopographyResponse,
-  ShotTrajectographyRequest,
-  ShotTrajectographyResponse,
-  ShotVideoDataRequest,
-  ShotVideoDataResponse,
-  WidgetPreferenceId,
+    EquipmentMeasurementGroup,
+    EquipmentSelectionItem,
+    EquipmentSelectionList,
+    EquipmentTypeEnum,
+    JltMaoBulkConfigurationRequest,
+    JltMaoBulkConfigurationResponse,
+    MaoTopographyBulkConfigurationRequest,
+    MaoTopographyBulkConfigurationResponse,
+    PropellantChargeParametersResponse,
+    ShotAcousticLevelRequest,
+    ShotAcousticLevelResponse,
+    ShotCameraOrientationResponse,
+    ShotDifferentialPressureData,
+    ShotJltMaoRequest,
+    ShotJltMaoResponse,
+    ShotManometerPressuresRequest,
+    ShotManometerPressuresResponse,
+    ShotMaoTopographyRequest,
+    ShotMaoTopographyResponse,
+    ShotMunitionRequest,
+    ShotMunitionResponse,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData,
+    ShotTopographyRequest,
+    ShotTopographyResponse,
+    ShotTrajectographyRequest,
+    ShotTrajectographyResponse,
+    ShotVideoDataRequest,
+    ShotVideoDataResponse,
+    WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
@@ -353,6 +357,14 @@ interface ShotJltMaoUpdateParams extends ShotJltMaoParams {
   body: ShotJltMaoRequest;
 }
 
+interface JltMaoBulkConfigurationParams extends ExecutionParams {
+  body: JltMaoBulkConfigurationRequest;
+}
+
+interface MaoTopographyBulkConfigurationParams extends ExecutionParams {
+  body: MaoTopographyBulkConfigurationRequest;
+}
+
 interface ShotMaoTopographyParams {
   fireTrialId: FireTrial['id'];
   seriesId: string;
@@ -407,12 +419,12 @@ interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
 
 export type ShotPressuresData = ShotPiezoPressureItem;
 export type {
-  PropellantChargeParametersResponse,
-  ShotDifferentialPressureData,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
+    PropellantChargeParametersResponse,
+    ShotDifferentialPressureData,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData
 };
 
 export interface ArmamentEquipmentItem {
@@ -2073,6 +2085,28 @@ export class ExecutionService {
     return this.#awaitResourceValue(this.updateShotJltMaoResource);
   }
 
+  // ── JLT MAO BULK CONFIGURATION: POST (Widget 15) ─────────────────────────
+
+  readonly #bulkConfigureJltMaoParams = signal<JltMaoBulkConfigurationParams | null>(null);
+
+  readonly #bulkConfigureJltMaoResource = httpResource<JltMaoBulkConfigurationResponse>(() => {
+    const params = this.#bulkConfigureJltMaoParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/bulk-configuration`,
+      method: 'POST',
+      body: params.body,
+    };
+  });
+
+  async bulkConfigureJltMao(
+    fireTrialId: FireTrial['id'],
+    body: JltMaoBulkConfigurationRequest,
+  ): Promise<JltMaoBulkConfigurationResponse> {
+    this.#bulkConfigureJltMaoParams.set({ fireTrialId, body });
+    return this.#awaitResourceValue(this.#bulkConfigureJltMaoResource);
+  }
+
   // ── SHOT CAMERA ORIENTATION: GET (Widget 6) ─────────────────────────────
 
   readonly #getShotCameraOrientationParams = signal<ShotCameraOrientationParams | null>(null);
@@ -2159,6 +2193,28 @@ export class ExecutionService {
   ): Promise<ShotMaoTopographyResponse> {
     this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body });
     return this.#awaitResourceValue(this.updateShotMaoTopographyResource);
+  }
+
+  // ── MAO TOPOGRAPHY BULK CONFIGURATION: POST (Widget 16) ────────────────
+
+  readonly #bulkConfigureMaoTopographyParams = signal<MaoTopographyBulkConfigurationParams | null>(null);
+
+  readonly #bulkConfigureMaoTopographyResource = httpResource<MaoTopographyBulkConfigurationResponse>(() => {
+    const params = this.#bulkConfigureMaoTopographyParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/bulk-configuration`,
+      method: 'POST',
+      body: params.body,
+    };
+  });
+
+  async bulkConfigureMaoTopography(
+    fireTrialId: FireTrial['id'],
+    body: MaoTopographyBulkConfigurationRequest,
+  ): Promise<MaoTopographyBulkConfigurationResponse> {
+    this.#bulkConfigureMaoTopographyParams.set({ fireTrialId, body });
+    return this.#awaitResourceValue(this.#bulkConfigureMaoTopographyResource);
   }
 
   // ── SHOT TOPOGRAPHY: GET ────────────────────────────────

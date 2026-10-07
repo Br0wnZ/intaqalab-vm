@@ -140,6 +140,26 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       ).toBeInTheDocument();
     });
 
+    it('should render the caliber label and placeholder', async () => {
+      await setup(null);
+
+      expect(screen.getByText('MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL')).toBeInTheDocument();
+      expect(
+        screen.getByRole('textbox', { name: 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' }),
+      ).toHaveAttribute('placeholder', '0');
+    });
+
+    it('should render floating labels for denomination and zone controls', async () => {
+      await setup(null);
+
+      expect(
+        screen.getByRole('combobox', { name: 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('textbox', { name: 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.LABEL' }),
+      ).toHaveAttribute('placeholder', 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER');
+    });
+
     it('should pre-populate zone and caliber fields in edit mode', async () => {
       const { view } = await setup(MOCK_LOADING_ZONE);
       view.fixture.detectChanges();

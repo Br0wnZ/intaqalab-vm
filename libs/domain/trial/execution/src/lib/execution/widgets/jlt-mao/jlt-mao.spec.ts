@@ -3,6 +3,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -10,6 +11,7 @@ import { AngleUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
+import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -81,6 +83,50 @@ describe('JltMao', () => {
 
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
+    });
+  });
+
+  it('posts the selected bulk values to all shots in selected planning series', async () => {
+    const result = {
+      action: 'apply' as const,
+      series: ['series-1', 'series-2'],
+      velocidadInicial: { value: '810', unit: 'm/s' },
+    };
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(result) });
+    const { fixture } = await render(JltMao, {
+      inputs: { widgetId: 'test-jlt-mao' },
+      providers: [
+        provideNoopAnimations(),
+        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: MatDialog, useValue: { open: dialogOpen } },
+        ExecutionStore,
+      ],
+      imports: [TranslateModule.forRoot()],
+    });
+    const store = TestBed.inject(ExecutionStore);
+    const executionService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
+      updatedShotIds: ['shot-1', 'shot-2'],
+    });
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const planningSeriesRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/series'));
+    planningSeriesRequest.flush([
+      { id: 'series-1', name: 'Series 1', shots: [{ id: 'shot-1' }, { id: 'shot-2' }] },
+      { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }] },
+    ]);
+    TestBed.tick();
+
+    await fixture.componentInstance.openMassConfig();
+
+    expect(bulkSpy).toHaveBeenCalledWith('trial-123', {
+      assignedShotIds: ['shot-1', 'shot-2', 'shot-3'],
+      theoreticalInitialVelocity: 810,
     });
   });
 

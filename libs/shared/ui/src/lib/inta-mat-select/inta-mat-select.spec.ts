@@ -26,6 +26,22 @@ describe('IntaMatSelect', () => {
     expect(screen.getByText('Select...')).toBeInTheDocument();
   });
 
+  it('renders a Material floating label when configured', async () => {
+    await render(IntaSignalSelectComponent, {
+      componentProperties: {
+        label: () => 'Floating label',
+        placeholder: () => 'Select...',
+        options: () => [{ value: 'a', label: 'Option A' }],
+        valueKey: () => 'value',
+        labelKey: () => 'label',
+        floatLabel: () => 'always',
+      } as any,
+      excludeComponentDeclaration: true,
+    });
+
+    expect(screen.getByText('Floating label', { selector: 'mat-label' })).toBeInTheDocument();
+  });
+
   it('accepts arbitrary option objects when valueKey/labelKey provided', async () => {
     const clients = [
       { id: 1, name: 'Client One' },

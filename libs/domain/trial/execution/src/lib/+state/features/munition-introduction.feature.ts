@@ -1,8 +1,9 @@
+import { inject } from '@angular/core';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import type { ShotMunitionResponse } from '../../execution/models';
+import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../execution/models';
 import { mapRemoteToMunitionState } from '../../execution/widgets/munition-introduction/munition-introduction.mapper';
-import type { PlanningComponentType } from '../../services/execution.service';
+import { ExecutionService, type PlanningComponentType } from '../../services/execution.service';
 import type {
   MunitionIntroAcondicionamientoState,
   MunitionIntroIdentificationState,
@@ -105,10 +106,7 @@ const initialState: MunitionIntroductionSlice = {
       { value: 'ppd', label: 'PPD (Retardo)' },
       { value: 'superpercusion', label: 'Superpercusión' },
     ],
-    balanzaOptions: [
-      { value: 'bal-01', label: 'Balanza Precisión 500g', rangoMin: 0, rangoMax: 500, unit: 'g' },
-      { value: 'bal-02', label: 'Balanza Precisión 2000g', rangoMin: 0, rangoMax: 2000, unit: 'g' },
-    ],
+    balanzaOptions: [],
     camaraOptions: [],
   },
 };
@@ -116,7 +114,24 @@ const initialState: MunitionIntroductionSlice = {
 export function withMunitionIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store) => ({
+    withState({
+      munitionBalanceItems: null as Array<{ id: string; label: string }> | null,
+      isLoadingMunitionBalanceItems: false,
+    }),
+    withMethods((store, executionService = inject(ExecutionService)) => ({
+      async loadMunitionBalanceItems(): Promise<void> {
+        if (store.munitionBalanceItems() !== null || store.isLoadingMunitionBalanceItems()) return;
+        patchState(store, { isLoadingMunitionBalanceItems: true });
+        try {
+          const itemsByCategory = await executionService.loadEquipmentItemsByCategories([EquipmentTypeEnum.BALANCE]);
+          patchState(store, { munitionBalanceItems: itemsByCategory[EquipmentTypeEnum.BALANCE] ?? [] });
+        } catch {
+          patchState(store, { munitionBalanceItems: [] });
+        } finally {
+          patchState(store, { isLoadingMunitionBalanceItems: false });
+        }
+      },
+
       updateMunitionIntroductionPlanningOptions(
         componentTypes: PlanningComponentType[],
         denominations: Array<{

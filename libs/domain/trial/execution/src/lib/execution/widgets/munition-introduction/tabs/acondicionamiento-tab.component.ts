@@ -103,7 +103,7 @@ import type { AcondFormModel } from '../munition-introduction';
         <textarea
           matInput
           rows="4"
-          class="resize-none"
+          class="!resize-none"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
           [value]="observacionesField() ?? ''"
           (input)="observacionesField.set($any($event.target).value || null)"

@@ -55,6 +55,27 @@ describe('InputSelect', () => {
       expect(screen.getByText('Peso')).toHaveClass('text-gray-500');
     });
 
+    it('should keep an empty field label floating when configured to always float', async () => {
+      await render(InputSelect, { componentInputs: { ...defaultInputs, floatLabel: 'always' } });
+
+      expect(screen.getByText('Peso')).toHaveClass('top-0', 'text-[11px]');
+      expect(screen.getByRole('textbox')).toHaveClass('min-w-0', 'w-0');
+      expect(screen.getByRole('combobox')).toBeVisible();
+    });
+
+    it('should preserve a descriptive placeholder while truncating overflowing text', async () => {
+      await render(InputSelect, {
+        componentInputs: {
+          ...defaultInputs,
+          floatLabel: 'always',
+          placeholder: 'Velocidad inicial teórica',
+        },
+      });
+
+      expect(screen.getByRole('textbox')).toHaveAttribute('placeholder', 'Velocidad inicial teórica');
+      expect(screen.getByRole('textbox')).toHaveClass('truncate', 'min-w-0');
+    });
+
     it('should render input with placeholder', async () => {
       await render(InputSelect, { componentInputs: defaultInputs });
       const input = screen.getByRole('textbox');
@@ -114,6 +135,13 @@ describe('InputSelect', () => {
     await render(ProjectedInputHost);
 
     expect(screen.getByRole('textbox')).toHaveProperty('readOnly', true);
+  });
+
+  it('should allow the projected input to shrink alongside the unit selector', async () => {
+    await render(ProjectedInputHost);
+
+    expect(screen.getByRole('textbox')).toHaveClass('min-w-0', 'w-0', 'truncate');
+    expect(screen.getByRole('combobox')).toBeVisible();
   });
 
   it('should reflect external value updates in the projected input', async () => {

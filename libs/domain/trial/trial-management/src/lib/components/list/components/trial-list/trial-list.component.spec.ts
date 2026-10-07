@@ -184,6 +184,18 @@ describe('TrialListComponent', () => {
     });
   });
 
+  describe('Sorting', () => {
+    it('emits the active sort criterion for export', async () => {
+      const { fixture } = await setup();
+      const sortSpy = vi.fn();
+      fixture.componentInstance.sortChange.subscribe(sortSpy);
+
+      fixture.componentInstance.onSort({ active: 'createdAt', direction: 'desc' });
+
+      expect(sortSpy).toHaveBeenCalledWith('createdAt;desc');
+    });
+  });
+
   describe('getTrialStatusLabel', () => {
     it('should return the label for CANCELLED status', async () => {
       const { fixture } = await setup();

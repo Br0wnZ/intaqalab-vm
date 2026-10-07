@@ -104,6 +104,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
                 placeholder="..."
                 id="shot-observations"
                 matInput
+                class="!resize-none"
                 [rows]="width() === 1 ? 1 : width() === 3 ? 1 : 2"
                 [formField]="shotForm.observations"
               ></textarea>

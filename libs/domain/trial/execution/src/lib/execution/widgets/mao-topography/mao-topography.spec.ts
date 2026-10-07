@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
+import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MaoTopography } from './mao-topography';
+import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
 
 const mockWidgetStateService = {
   updateWidgetFormState: () => {},
@@ -128,10 +132,62 @@ describe('MaoTopography', () => {
     });
   });
 
+  it('passes target context to the dialog without posting from the parent', async () => {
+    const dialogResult = {
+      action: 'apply' as const,
+      updatedShotIds: ['shot-1'],
+      observador: null,
+    };
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(dialogResult) });
+    const { fixture } = await render(MaoTopography, {
+      inputs: { widgetId: 'test-mao-topo' },
+      providers: [
+        provideNoopAnimations(),
+        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: MatDialog, useValue: { open: dialogOpen } },
+        ExecutionStore,
+      ],
+      imports: [TranslateModule.forRoot()],
+    });
+    const store = TestBed.inject(ExecutionStore);
+    const executionService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const bulkSpy = vi.spyOn(executionService, 'bulkConfigureMaoTopography');
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const planningSeriesRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/series'));
+    planningSeriesRequest.flush([{ id: 'series-1', name: 'Serie 1', shots: [{ id: 'shot-1' }, { id: 'shot-2' }] }]);
+    TestBed.tick();
+    await vi.waitFor(() => expect(store.planningSeries()).toHaveLength(1));
+
+    await fixture.componentInstance.openMassConfig();
+
+    expect(dialogOpen).toHaveBeenCalledWith(
+      MaoTopographyMassConfigDialog,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          fireTrialId: 'trial-123',
+          shotIdsBySeries: { 'series-1': ['shot-1', 'shot-2'] },
+        }),
+      }),
+    );
+    expect(bulkSpy).not.toHaveBeenCalled();
+  });
+
   it('clears fields when the selected shot has no topography data', async () => {
     const { fixture } = await renderWidget();
     const execService = TestBed.inject(ExecutionService);
     const store = TestBed.inject(ExecutionStore);
+    const component = fixture.componentInstance as unknown as {
+      formModel: () => { observador: string | null };
+      piezaPosition: (() => { x: number | null; y: number | null; z: number | null; unit: string } | null) & {
+        set: (value: { x: number | null; y: number | null; z: number | null; unit: string } | null) => void;
+      };
+    };
     vi.spyOn(execService, 'fetchShotMaoTopography').mockResolvedValue({ maoTopographyData: null });
     store.updateMaoTopography({
       observador: 'obs-01',
@@ -142,6 +198,8 @@ describe('MaoTopography', () => {
       yBlanco: 50,
       zBlanco: 60,
     });
+    component.piezaPosition.set({ x: 10, y: 20, z: 30, unit: 'm' });
+    fixture.detectChanges();
 
     store.setFireTrialId('trial-123');
     fixture.componentInstance.onSerieSelected('s-1');
@@ -158,5 +216,36 @@ describe('MaoTopography', () => {
         zBlanco: null,
       });
     });
+
+    expect(component.piezaPosition()).toBeNull();
+    expect(component.formModel().observador).toBeNull();
+
+    const [pieceXInput] = screen.getAllByRole<HTMLInputElement>('textbox', { name: 'X' });
+    if (!pieceXInput) throw new Error('Piece X input was not rendered');
+    await userEvent.setup().click(pieceXInput);
+    expect(pieceXInput).toHaveValue('');
+  });
+
+  it('clears previous shot values when the selected shot GET has no response', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotMaoTopography').mockRejectedValue(new Error('No response'));
+    const component = fixture.componentInstance as unknown as {
+      piezaPosition: (() => { x: number | null; y: number | null; z: number | null; unit: string } | null) & {
+        set: (value: { x: number | null; y: number | null; z: number | null; unit: string } | null) => void;
+      };
+    };
+    store.updateMaoTopography({ xPieza: 10, yPieza: 20, zPieza: 30 });
+    component.piezaPosition.set({ x: 10, y: 20, z: 30, unit: 'm' });
+    fixture.detectChanges();
+    store.setFireTrialId('trial-123');
+
+    fixture.componentInstance.onSerieSelected('s-1');
+    fixture.componentInstance.onDisparoSelected('d-1');
+
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1'));
+    await vi.waitFor(() => expect(component.piezaPosition()).toBeNull());
+    expect(store.maoTopography()).toMatchObject({ xPieza: null, yPieza: null, zPieza: null });
   });
 });

@@ -27,7 +27,13 @@ import type { ShotAcousticLevelResponse } from '../../models/shot-acoustic-level
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
+import {
+  mapPlanningSeriesToOptions,
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+  mapShotsToDisparoOptions,
+} from '../utils/selection-options';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -99,7 +105,7 @@ interface DataFormModel {
         <div class="flex-1 min-w-0"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0" [class]="estadoClass()">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
         </span>
       </div>
@@ -153,7 +159,7 @@ interface DataFormModel {
           <textarea
             matInput
             rows="3"
-            class="resize-none"
+            class="!resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
             (input)="observacionesField.set($any($event.target).value || null)"
@@ -201,13 +207,17 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   );
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.selectorFormModel().serie;
+    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     const progressShots = this.#store
       .executionProgress()
       ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
     if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.acousticLevelIntroduction().disparoOptions);
+      return mapShotsToDisparoOptions(
+        progressShots,
+        this.#store.acousticLevelIntroduction().disparoOptions,
+        planningShots,
+      );
     }
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
     if (planningShots?.length) {
       return mapShotsToDisparoOptions(planningShots, this.#store.acousticLevelIntroduction().disparoOptions);
     }
@@ -219,31 +229,19 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.acousticLevelIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorFormModel().serie,
+      this.selectorFormModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.acousticLevelIntroduction().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.acousticLevelIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Form models ────────────────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({

@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +17,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
 
 interface TaradoVelocidadForm {
   selectedSerie: string[] | null;
@@ -217,7 +218,12 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
 
   // Data from store
   protected readonly serieOptions = computed(() => this.#store.taradoVelocidadChart().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.taradoVelocidadChart().disparoOptions);
+  protected readonly disparoOptions = computed(() =>
+    mapShotOptionsToPlanningNumbers(
+      this.#store.taradoVelocidadChart().disparoOptions,
+      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+    ),
+  );
   protected readonly velocidadNominalOptions = computed(
     () => this.#store.taradoVelocidadChart().velocidadNominalOptions,
   );

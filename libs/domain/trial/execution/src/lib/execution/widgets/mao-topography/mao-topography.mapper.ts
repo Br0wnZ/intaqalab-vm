@@ -1,6 +1,12 @@
+import { DistanceUnitEnum } from '@intaqalab/models';
 import type { SoundLevelMeterValue } from '@intaqalab/ui';
 
+import type { MaoTopographyBulkConfigurationRequest } from '../../models/shot-mao-topography.models';
+
 export type InputFieldValue = { value: string; unit: string } | null;
+
+export type MaoTopographyMassConfigField = 'xPieza' | 'yPieza' | 'zPieza' | 'xBlanco' | 'yBlanco' | 'zBlanco';
+export type MaoTopographyMassConfigValues = Partial<Record<MaoTopographyMassConfigField, InputFieldValue>>;
 
 export const toPosition = (x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null => {
   if (!x && !y && !z) return null;
@@ -36,3 +42,53 @@ export const parseNum = (field: InputFieldValue): number | null => {
   const parsed = parseFloat(field.value.replace(',', '.'));
   return isNaN(parsed) ? null : parsed;
 };
+
+function valueToApply(value: InputFieldValue | undefined, current: InputFieldValue | undefined): number | null | undefined {
+  if (value === undefined) return undefined;
+  const parsedValue = parseNum(value);
+  if (parsedValue === null && parseNum(current ?? null) === null) return undefined;
+  return parsedValue;
+}
+
+export function mapMaoTopographyMassConfigToRequest(
+  values: MaoTopographyMassConfigValues,
+  current: MaoTopographyMassConfigValues,
+  assignedShotIds: string[],
+): MaoTopographyBulkConfigurationRequest | null {
+  const body: MaoTopographyBulkConfigurationRequest = { assignedShotIds: [...new Set(assignedShotIds)] };
+
+  const pieceX = valueToApply(values.xPieza, current.xPieza);
+  const pieceY = valueToApply(values.yPieza, current.yPieza);
+  const pieceZ = valueToApply(values.zPieza, current.zPieza);
+  const targetX = valueToApply(values.xBlanco, current.xBlanco);
+  const targetY = valueToApply(values.yBlanco, current.yBlanco);
+  const targetZ = valueToApply(values.zBlanco, current.zBlanco);
+
+  if (pieceX !== undefined) {
+    body.pieceX = pieceX;
+    if (pieceX !== null) body.pieceXUnit = DistanceUnitEnum.M;
+  }
+  if (pieceY !== undefined) {
+    body.pieceY = pieceY;
+    if (pieceY !== null) body.pieceYUnit = DistanceUnitEnum.M;
+  }
+  if (pieceZ !== undefined) {
+    body.pieceZ = pieceZ;
+    if (pieceZ !== null) body.pieceZUnit = DistanceUnitEnum.M;
+  }
+  if (targetX !== undefined) {
+    body.targetX = targetX;
+    if (targetX !== null) body.targetXUnit = DistanceUnitEnum.M;
+  }
+  if (targetY !== undefined) {
+    body.targetY = targetY;
+    if (targetY !== null) body.targetYUnit = DistanceUnitEnum.M;
+  }
+  if (targetZ !== undefined) {
+    body.targetZ = targetZ;
+    if (targetZ !== null) body.targetZUnit = DistanceUnitEnum.M;
+  }
+
+  const hasFieldToApply = [pieceX, pieceY, pieceZ, targetX, targetY, targetZ].some((value) => value !== undefined);
+  return body.assignedShotIds.length > 0 && hasFieldToApply ? body : null;
+}

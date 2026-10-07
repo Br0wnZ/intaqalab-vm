@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -98,7 +98,7 @@ interface BalanceFields {
         <textarea
           matInput
           rows="4"
-          class="resize-none"
+          class="!resize-none"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
           [value]="observationsField() ?? ''"
           (input)="observationsField.set($any($event.target).value || null)"
@@ -111,10 +111,15 @@ interface BalanceFields {
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_LABEL' | translate }}</mat-label>
         <input
+          id="munition-weighing-date-time"
           matInput
+          type="datetime-local"
+          step="60"
           [value]="weighingDateTimeField() ?? ''"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
+          (click)="openWeighingDateTimePicker(weighingDateTimeInput)"
           (input)="weighingDateTimeField.set($any($event.target).value || null)"
+          #weighingDateTimeInput
         />
         <button mat-icon-button matSuffix type="button" (click)="captureWeighingDateTime()">
           <mat-icon class="!text-[16px] text-slate-400">schedule</mat-icon>
@@ -194,6 +199,13 @@ export class MunitionPesosTabComponent {
 
   // ── Pristine baseline tracking for all balances of the active component ─────
   readonly #pristineBalances = signal<Record<string, BalanceFields>>({});
+  readonly #pristineWithoutBalance = signal<BalanceFields>({
+    weight: null,
+    weightAdded: null,
+    weightRemoved: null,
+    observations: null,
+    weighingDateTime: null,
+  });
 
   #extractBalanceFields(entry: Partial<MunitionIntroWeightState> | null | undefined): BalanceFields {
     return {
@@ -216,6 +228,9 @@ export class MunitionPesosTabComponent {
       snapshot[activeKey] = this.#extractBalanceFields(this.#buildCurrentWeightState(activeKey));
     }
     this.#pristineBalances.set(snapshot);
+    if (!activeKey) {
+      this.#pristineWithoutBalance.set(this.#extractBalanceFields(this.#store.munitionIntroduction().weight));
+    }
   }
 
   // ── Dirty tracking: checks whether any balance differs from pristine server baseline ─────
@@ -224,6 +239,17 @@ export class MunitionPesosTabComponent {
     const pristine = this.#pristineBalances();
     const activeKey = this.#activeBalanceKey() ?? this.weightFormModel().balance;
     const storeMap = this.#store.munitionIntroduction().weightDataByBalance;
+    const activeFields: BalanceFields = {
+      weight: this.#parseNum(this.weightField()),
+      weightAdded: this.#parseNum(this.weightAddedField()),
+      weightRemoved: this.#parseNum(this.weightRemovedField()),
+      observations: this.observationsField(),
+      weighingDateTime: this.weighingDateTimeField(),
+    };
+
+    if (!activeKey && !deepEqual(activeFields, this.#pristineWithoutBalance())) {
+      return true;
+    }
 
     const allKeys = new Set([...Object.keys(pristine), ...Object.keys(storeMap)]);
     if (activeKey) allKeys.add(activeKey);
@@ -238,15 +264,7 @@ export class MunitionPesosTabComponent {
       };
 
       const currentForBalance: BalanceFields =
-        key === activeKey
-          ? {
-              weight: this.#parseNum(this.weightField()),
-              weightAdded: this.#parseNum(this.weightAddedField()),
-              weightRemoved: this.#parseNum(this.weightRemovedField()),
-              observations: this.observationsField(),
-              weighingDateTime: this.weighingDateTimeField(),
-            }
-          : this.#extractBalanceFields(storeMap[key]);
+        key === activeKey ? activeFields : this.#extractBalanceFields(storeMap[key]);
 
       if (!deepEqual(currentForBalance, pristineForBalance)) {
         return true;
@@ -270,37 +288,37 @@ export class MunitionPesosTabComponent {
    * Filtra según los datos recibidos del backend en remoteMunitionResponse para este componente.
    */
   readonly balanceOptions = computed(() => {
-    const catalog = this.#store.munitionIntroduction().balanzaOptions;
+    const equipmentItems = this.#store.munitionBalanceItems() ?? [];
     const remote = this.#store.munitionIntroduction().remoteMunitionResponse;
     const selectedComponentId =
       this.weightFormModel().componente ?? this.#store.munitionIntroduction().selectedComponentId;
 
     const comp = remote?.munitionData?.find((c) => c.componentId === selectedComponentId);
-    if (comp?.weightData && comp.weightData.length > 0) {
-      return comp.weightData.map((entry) => {
-        const key = resolveBalanceKey(entry.balanceId) ?? String(entry.balanceId);
-        const fromCatalog = catalog.find((b) => b.value === key);
-        if (fromCatalog) return fromCatalog;
-        return {
-          value: key,
-          label: entry.weighingRange ? `Balanza (${entry.weighingRange})` : `Balanza ${key}`,
-          rangoMin: undefined,
-          rangoMax: undefined,
-          unit: entry.weightUnit?.toLowerCase() ?? 'g',
-        };
-      });
+    const componentBalanceIds = new Set<string>();
+    const weightUnitByBalanceId = new Map<string, string>();
+    for (const entry of comp?.weightData ?? []) {
+      if (entry.balanceId === null || entry.balanceId === undefined) continue;
+      const balanceId = resolveBalanceKey(entry.balanceId) ?? String(entry.balanceId);
+      componentBalanceIds.add(balanceId);
+      if (entry.weightUnit) weightUnitByBalanceId.set(balanceId, entry.weightUnit.toLowerCase());
     }
 
-    const inMemoryKeys = Object.keys(this.#store.munitionIntroduction().weightDataByBalance);
-    if (inMemoryKeys.length > 0) {
-      return inMemoryKeys.map((key) => {
-        const fromCatalog = catalog.find((b) => b.value === key);
-        if (fromCatalog) return fromCatalog;
-        return { value: key, label: `Balanza ${key}`, unit: 'g' };
-      });
+    for (const [key, weight] of Object.entries(this.#store.munitionIntroduction().weightDataByBalance)) {
+      if (!selectedComponentId || weight.componente === selectedComponentId) {
+        componentBalanceIds.add(resolveBalanceKey(key) ?? key);
+      }
     }
 
-    return catalog;
+    const matchingItems = equipmentItems.filter((item) => {
+      const itemId = resolveBalanceKey(item.id) ?? item.id;
+      return componentBalanceIds.has(itemId);
+    });
+    const availableItems = matchingItems.length > 0 ? matchingItems : equipmentItems;
+
+    return availableItems.map((item) => {
+      const id = resolveBalanceKey(item.id) ?? item.id;
+      return { value: id, label: item.label, unit: weightUnitByBalanceId.get(id) ?? 'g' };
+    });
   });
 
   readonly isPolvo = computed(() => {
@@ -314,10 +332,7 @@ export class MunitionPesosTabComponent {
     if (stored?.weighingRange) return stored.weighingRange;
     const activeWeight = this.#store.munitionIntroduction().weight;
     if (activeWeight.weighingRange && activeWeight.balance === balanceKey) return activeWeight.weighingRange;
-    // Fallback: derive from balance option range
-    const opt = this.balanceOptions().find((b) => b.value === balanceKey);
-    if (!opt || opt.rangoMin === undefined || opt.rangoMax === undefined) return null;
-    return `${opt.rangoMin} - ${opt.rangoMax}`;
+    return null;
   });
 
   readonly weighingRangeUnit = computed(() => {
@@ -327,6 +342,14 @@ export class MunitionPesosTabComponent {
 
   constructor() {
     this.#syncPristineSnapshot();
+    effect(() => {
+      const componentId = this.weightFormModel().componente ?? this.#store.munitionIntroduction().selectedComponentId;
+      const isLoaded = this.#store.munitionBalanceItems() !== null;
+      const isLoading = this.#store.isLoadingMunitionBalanceItems();
+      if (componentId && !isLoaded && !isLoading) {
+        untracked(() => void this.#store.loadMunitionBalanceItems());
+      }
+    });
   }
 
   readonly balanceChange = output<string>();
@@ -363,7 +386,7 @@ export class MunitionPesosTabComponent {
     const stored =
       this.#store.munitionIntroduction().weightDataByBalance[newBalanceKey] ??
       this.#store.munitionIntroduction().weight;
-    this.#applyWeightState(stored);
+    this.#applyWeightState(stored, true);
 
     // 5. Notify parent so it can keep touched state clean
     this.balanceChange.emit(newBalanceKey);
@@ -377,6 +400,12 @@ export class MunitionPesosTabComponent {
 
   captureWeighingDateTime(): void {
     this.weighingDateTimeField.set(new Date().toISOString().substring(0, 16));
+  }
+
+  openWeighingDateTimePicker(input: HTMLInputElement): void {
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+    }
   }
 
   getFormUpdates(): Partial<MunitionIntroWeightState> {
@@ -424,10 +453,10 @@ export class MunitionPesosTabComponent {
     };
   }
 
-  #applyWeightState(data: Partial<MunitionIntroWeightState>): void {
+  #applyWeightState(data: Partial<MunitionIntroWeightState>, preserveComponent = false): void {
     this.weightFormModel.update((m) => ({
       ...m,
-      componente: data.componente !== undefined ? data.componente : m.componente,
+      componente: preserveComponent ? m.componente : data.componente !== undefined ? data.componente : m.componente,
       balance: data.balance !== undefined ? data.balance : m.balance,
     }));
     this.weightField.set(data.weight !== undefined && data.weight !== null ? this.#numToField(data.weight, 'g') : null);

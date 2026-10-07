@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { InputSelect, InputSelectInput, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
-import { NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
 import { DenominationsStore } from '@intaqalab/warehouse-management';
 import { TranslateModule } from '@ngx-translate/core';
@@ -29,6 +29,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     SaveButton,
     InputSelect,
     InputSelectInput,
+    LocaleDecimalInputDirective,
     NoNegativeValuesDirective,
   ],
   template: `
@@ -42,45 +43,55 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     </h2>
 
     <mat-dialog-content>
-      <ui-inta-signal-select
-        appearance="outline"
-        [id]="'denomination'"
-        [valueKey]="'id'"
-        [labelKey]="'name'"
-        [formField]="form.denominationId"
-        [searchable]="true"
-        [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
-        [options]="denominationsStore.items() || []"
-      />
+      <div class="flex flex-col gap-6">
+        <ui-inta-signal-select
+          appearance="outline"
+          floatLabel="always"
+          [id]="'denomination'"
+          [valueKey]="'id'"
+          [labelKey]="'name'"
+          [formField]="form.denominationId"
+          [searchable]="true"
+          [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
+          [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
+          [options]="denominationsStore.items() || []"
+        />
 
-      <div>
-        <label for="zones" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
+        <div>
+          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+            <mat-label>{{ 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.LABEL' | translate }}</mat-label>
+            <input
+              id="zones"
+              matInput
+              [formField]="form.zone"
+              [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
+
+        <ui-input-select
+          placeholder="0"
+          floatLabel="always"
+          [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
+          [opciones]="caliberUnitOptions"
+          [value]="{
+            value: formModel().caliber?.toString() ?? '',
+            unit: formModel().caliberUnit,
+          }"
+          (valueChange)="onCaliberUnitChanges($event)"
+        >
           <input
-            id="zones"
-            matInput
-            [formField]="form.zone"
-            [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER' | translate"
+            placeholder="0"
+            type="number"
+            inputSelectInput
+            libLocalDecimal
+            libNoNegativeValues
+            [decimals]="2"
+            [attr.aria-label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
+            [formField]="form.caliber"
           />
-        </mat-form-field>
+        </ui-input-select>
       </div>
-
-      <ui-input-select
-        placeholder="0"
-        [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
-        [opciones]="caliberUnitOptions"
-        [showLabel]="false"
-        [value]="{
-          value: formModel().caliber?.toString() ?? '',
-          unit: formModel().caliberUnit,
-        }"
-        (valueChange)="onCaliberUnitChanges($event)"
-      >
-        <input type="number" inputSelectInput libNoNegativeValues [formField]="form.caliber" />
-      </ui-input-select>
     </mat-dialog-content>
 
     <mat-dialog-actions>

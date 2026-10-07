@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +13,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapShotOptionsToPlanningNumbers, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -163,7 +164,23 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => this.#store.targetData().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.targetData().disparoOptions);
+  protected readonly disparoOptions = computed(() => {
+    const storedOptions = this.#store.targetData().disparoOptions;
+    const planningSeries = this.#store.planningSeries();
+    const selectedSerie = this.serieModel();
+    const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
+    const progressShots = this.#store
+      .executionProgress()
+      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
+
+    if (progressShots?.length) {
+      return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
+    }
+    if (planningShots?.length) {
+      return mapShotsToDisparoOptions(planningShots, storedOptions);
+    }
+    return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
+  });
   protected readonly blancoOptions = computed(() => this.#store.targetData().blancoOptions);
   protected readonly materialOptions = computed(() => this.#store.targetData().materialOptions);
   protected readonly dimensionesOptions = computed(() => this.#store.targetData().dimensionesOptions);

@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +15,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
 
 interface TaradoPresionForm {
   selectedSerie: string[] | null;
@@ -168,7 +169,12 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
 
   // Data from store (read-only)
   protected readonly serieOptions = computed(() => this.#store.taradoPresionChart().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.taradoPresionChart().disparoOptions);
+  protected readonly disparoOptions = computed(() =>
+    mapShotOptionsToPlanningNumbers(
+      this.#store.taradoPresionChart().disparoOptions,
+      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+    ),
+  );
   protected readonly regression = computed(() => this.#store.taradoPresionChart().regression);
   protected readonly r2 = computed(() => {
     const reg = this.regression();

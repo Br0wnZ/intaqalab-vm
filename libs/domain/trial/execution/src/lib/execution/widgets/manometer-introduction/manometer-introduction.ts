@@ -34,6 +34,11 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import {
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+} from '../utils/selection-options';
 import type { InputFieldValue } from './manometer-introduction.mapper';
 import {
   buildShotManometerPressureData,
@@ -323,12 +328,12 @@ export interface DataFormModel {
         </div>
 
         <!-- Observaciones (fixed width, full height) -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-70 h-full">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-70 my-6">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.OBSERVACIONES_LABEL' | translate }}</mat-label>
           <textarea
             matInput
             rows="4"
-            class="resize-none"
+            class="!resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
             (input)="onObservacionesInput($event)"
@@ -418,31 +423,19 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.manometerIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorFormModel().serie,
+      this.selectorFormModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.manometerIntroduction().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.manometerIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Form models ────────────────────────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({

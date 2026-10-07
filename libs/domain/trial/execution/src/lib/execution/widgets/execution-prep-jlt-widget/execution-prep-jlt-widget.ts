@@ -117,7 +117,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full flex-1 small-textarea min-h-0">
               <textarea
                 matInput
-                class="custom-scrollbar"
+                class="custom-scrollbar !resize-none"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.OBSERVATIONS_PLACEHOLDER' | translate"
                 [value]="jltDraft().observations"
                 (input)="updateJltObservations($event)"
@@ -224,12 +224,8 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   readonly shotOptions = computed(() => {
     const serieId = this.resolvedSerieId();
     const planningSeries = this.#executionStore.planningSeries() ?? [];
-    const planningSerieIndex = planningSeries.findIndex((item) => item.id === serieId);
     const progressSeries = this.#executionStore.executionProgress()?.series;
-    const progressShots = serieId
-      ? (progressSeries?.find((serie) => serie.seriesId === serieId)?.shots ??
-        progressSeries?.[planningSerieIndex]?.shots)
-      : undefined;
+    const progressShots = serieId ? progressSeries?.find((serie) => serie.seriesId === serieId)?.shots : undefined;
     const firedShotIds = new Set(
       (progressShots ?? []).filter((shot) => shot.status === 'FIRED').map((shot) => shot.shotId),
     );
@@ -239,7 +235,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
       return serie.shots.map((shot, index) => ({
         value: shot.id,
         label: `Disparo ${shot.globalNumber ?? index + 1}`,
-        disabled: firedShotIds.has(shot.id) || progressShots?.[index]?.status === 'FIRED',
+        disabled: firedShotIds.has(shot.id),
       }));
     }
 

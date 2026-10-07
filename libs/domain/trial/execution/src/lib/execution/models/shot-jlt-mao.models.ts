@@ -30,3 +30,11 @@ export type ShotJltMaoRequest = ShotJltMao;
 export interface ShotJltMaoResponse {
   jltMaoData?: ShotJltMao | null;
 }
+
+export interface JltMaoBulkConfigurationRequest extends Omit<ShotJltMao, 'stakeId'> {
+  assignedShotIds: string[];
+}
+
+export interface JltMaoBulkConfigurationResponse {
+  updatedShotIds: string[];
+}

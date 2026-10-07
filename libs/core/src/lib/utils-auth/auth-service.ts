@@ -57,6 +57,11 @@ export class AuthService {
     return roles.some((role) => this.userRoles().includes(role));
   }
 
+  clear(): void {
+    this.#userData.set(undefined);
+    this.userRoles.set([]);
+  }
+
   constructor() {
     this.#monitorRoutePermissions();
   }

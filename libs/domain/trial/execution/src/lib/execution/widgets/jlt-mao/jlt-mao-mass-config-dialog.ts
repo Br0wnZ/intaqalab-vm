@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,32 +8,20 @@ import { MatSelectModule } from '@angular/material/select';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { CalibryPiquetaOption } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { JltMaoMassConfigFields, JltMaoMassConfigInputField } from './jlt-mao-mass-config.mapper';
+import { canApplyJltMaoMassConfig } from './jlt-mao-mass-config.mapper';
 
-type InputFieldValue = { value: string; unit: string } | null;
+type InputFieldValue = JltMaoMassConfigInputField;
 
 export interface JltMaoMassConfigDialogData {
   serieOptions: { value: string; label: string }[];
-  piquetaOptions: CalibryPiquetaOption[];
-  current: {
-    piqueta: string | null;
-    velocidadInicial: InputFieldValue;
-    distanciaPique: InputFieldValue;
-    derivaTabular: InputFieldValue;
-    tiempoVuelo: InputFieldValue;
-    diferenciaAngular: InputFieldValue;
-    anguloTiro: InputFieldValue;
-    graduacionEspoleta: InputFieldValue;
-    alturaFuncionamiento: InputFieldValue;
-    distanciaFuncionamiento: InputFieldValue;
-  };
+  current: JltMaoMassConfigFields;
 }
 
 export interface JltMaoMassConfigDialogResult {
   action: 'apply' | 'cancel';
   series?: string[];
-  piqueta?: string | null;
   velocidadInicial?: InputFieldValue;
   distanciaPique?: InputFieldValue;
   derivaTabular?: InputFieldValue;
@@ -47,7 +35,6 @@ export interface JltMaoMassConfigDialogResult {
 
 interface MassConfigForm {
   series: string[];
-  piqueta: string | null;
 }
 
 @Component({
@@ -91,21 +78,8 @@ interface MassConfigForm {
         </mat-form-field>
       </div>
 
-      <!-- 2-column grid: Piqueta + all numeric fields -->
+      <!-- 2-column grid: numeric fields -->
       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
-        <!-- Piqueta -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
-            [formField]="massForm.piqueta"
-          >
-            @for (opt of data.piquetaOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
         <!-- Velocidad inicial teórica -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_LABEL' | translate"
@@ -194,7 +168,7 @@ interface MassConfigForm {
       <button mat-stroked-button type="button" (click)="cancel()">
         {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_CANCEL_BTN' | translate }}
       </button>
-      <button mat-flat-button color="primary" type="button" (click)="apply()">
+      <button mat-flat-button color="primary" type="button" [disabled]="!canApply()" (click)="apply()">
         {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_APPLY_BTN' | translate }}
       </button>
     </mat-dialog-actions>
@@ -215,9 +189,28 @@ export class JltMaoMassConfigDialog {
   // ── Form (series multi-select + piqueta selector) ─────────────────────────
   protected readonly formModel = signal<MassConfigForm>({
     series: [],
-    piqueta: this.data.current.piqueta,
   });
   protected readonly massForm = form(this.formModel);
+
+  protected readonly canApply = computed(() => {
+    return (
+      this.formModel().series.length > 0 &&
+      canApplyJltMaoMassConfig(
+        {
+          velocidadInicial: this.velocidadInicialField(),
+          distanciaPique: this.distanciaPiqueField(),
+          derivaTabular: this.derivaTabularField(),
+          tiempoVuelo: this.tiempoVueloField(),
+          diferenciaAngular: this.diferenciaAngularField(),
+          anguloTiro: this.anguloTiroField(),
+          graduacionEspoleta: this.graduacionEspoletaField(),
+          alturaFuncionamiento: this.alturaFuncionamientoField(),
+          distanciaFuncionamiento: this.distanciaFuncionamientoField(),
+        },
+        this.data.current,
+      )
+    );
+  });
 
   // ── Numeric field signals (pre-filled from current values) ────────────────
   protected readonly velocidadInicialField = signal<InputFieldValue>(this.data.current.velocidadInicial);
@@ -231,11 +224,11 @@ export class JltMaoMassConfigDialog {
   protected readonly distanciaFuncionamientoField = signal<InputFieldValue>(this.data.current.distanciaFuncionamiento);
 
   apply(): void {
-    const { series, piqueta } = this.formModel();
+    if (!this.canApply()) return;
+    const { series } = this.formModel();
     this.#dialogRef.close({
       action: 'apply',
       series,
-      piqueta,
       velocidadInicial: this.velocidadInicialField(),
       distanciaPique: this.distanciaPiqueField(),
       derivaTabular: this.derivaTabularField(),

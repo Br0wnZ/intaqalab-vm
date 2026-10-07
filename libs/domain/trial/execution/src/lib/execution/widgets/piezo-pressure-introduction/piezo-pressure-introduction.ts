@@ -36,6 +36,11 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
+  mapSelectedShotStatus,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+} from '../utils/selection-options';
+import {
   buildShotPressuresRequest,
   extractPressuresResponse,
   mapPlanningSeriesToOptions,
@@ -326,31 +331,19 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   });
 
   // ── Estado del disparo ──────────────────────────────────────────────────────
-  protected readonly estadoLabel = computed(() => {
-    switch (this.#store.piezoPressureIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'En curso';
-      case 'PENDIENTE':
-        return 'Pendiente';
-      case 'EJECUTADA':
-        return 'Ejecutada';
-      default:
-        return '—';
-    }
-  });
+  protected readonly estadoDisparo = computed(() =>
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.selectorFormModel().serie,
+      this.selectorFormModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.piezoPressureIntroduction().estadoDisparo,
+    ),
+  );
 
-  protected readonly estadoClass = computed(() => {
-    switch (this.#store.piezoPressureIntroduction().estadoDisparo) {
-      case 'EN_CURSO':
-        return 'bg-green-100 text-green-700';
-      case 'PENDIENTE':
-        return 'bg-amber-100 text-amber-700';
-      case 'EJECUTADA':
-        return 'bg-blue-100 text-blue-700';
-      default:
-        return 'bg-gray-100 text-gray-500';
-    }
-  });
+  protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
+  protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));
 
   // ── Selector form ────────────────────────────────────────────────────────────
   protected readonly selectorFormModel = signal<SelectorFormModel>({

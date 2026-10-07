@@ -14,7 +14,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
   selector: 'inta-munition-identificacion-tab',
   imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslateModule, InputSelect],
   template: `
-    <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-4 min-h-0 content-start">
       <!-- Componente -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
@@ -72,7 +72,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
         <textarea
           matInput
           rows="4"
-          class="resize-none"
+          class="!resize-none"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
           [value]="observacionesField() ?? ''"
           (input)="observacionesField.set($any($event.target).value || null)"
@@ -175,7 +175,24 @@ export class MunitionIdentificacionTabComponent {
   readonly filteredDenominacionOptions = computed(() => {
     const componente = this.identFormModel().componente;
     const opts = this.#store.munitionIntroduction().denominacionOptions;
-    return componente ? opts.filter((d) => d.componenteId === componente) : opts;
+    const filtered = componente ? opts.filter((d) => d.componenteId === componente) : opts;
+    const currentDenomination = this.identFormModel().denominacion;
+    const storedIdentification = this.#store.munitionIntroduction().identificacion;
+
+    if (
+      componente &&
+      currentDenomination &&
+      storedIdentification.componente === componente &&
+      storedIdentification.denominacion === currentDenomination &&
+      !filtered.some((denomination) => denomination.value === currentDenomination)
+    ) {
+      return [
+        ...filtered,
+        { value: currentDenomination, label: currentDenomination, componenteId: componente, inStock: true },
+      ];
+    }
+
+    return filtered;
   });
 
   readonly filteredLoteOptions = computed(() => {

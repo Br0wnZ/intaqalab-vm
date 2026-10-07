@@ -1,48 +1,50 @@
 import { Router } from 'express';
 
 import {
-  getEquipmentSelectorState,
-  updateEquipmentSelectorState,
+    getEquipmentSelectorState,
+    updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
-  applyArmamentBulkConfiguration,
-  approvePlanning,
-  bumpPlanningVersion,
-  getCountdownState,
-  getExecutionState,
-  getJltPreparation,
-  getJltShotData,
-  getPlanningState,
-  getReadiness,
-  getShotAcousticLevel,
-  getShotArmament,
-  getShotJltMao,
-  getShotManometerPressures,
-  getShotMaoTopography,
-  getShotMunition,
-  getShotPressures,
-  getShotTopography,
-  getShotTrajectography,
-  getShotVelocities,
-  getShotVideoData,
-  registerFireShot,
-  selectActiveShot,
-  setExecutionStatus,
-  setJltReadiness,
-  setJltShotData,
-  setSeriesProfileReadiness,
-  setShotAcousticLevel,
-  setShotArmament,
-  setShotJltMao,
-  setShotManometerPressures,
-  setShotMaoTopography,
-  setShotMunition,
-  setShotPressure,
-  setShotTopography,
-  setShotTrajectography,
-  setShotVelocity,
-  setShotVideoData,
-  updateCountdownState,
+    applyArmamentBulkConfiguration,
+    applyJltMaoBulkConfiguration,
+    applyMaoTopographyBulkConfiguration,
+    approvePlanning,
+    bumpPlanningVersion,
+    getCountdownState,
+    getExecutionState,
+    getJltPreparation,
+    getJltShotData,
+    getPlanningState,
+    getReadiness,
+    getShotAcousticLevel,
+    getShotArmament,
+    getShotJltMao,
+    getShotManometerPressures,
+    getShotMaoTopography,
+    getShotMunition,
+    getShotPressures,
+    getShotTopography,
+    getShotTrajectography,
+    getShotVelocities,
+    getShotVideoData,
+    registerFireShot,
+    selectActiveShot,
+    setExecutionStatus,
+    setJltReadiness,
+    setJltShotData,
+    setSeriesProfileReadiness,
+    setShotAcousticLevel,
+    setShotArmament,
+    setShotJltMao,
+    setShotManometerPressures,
+    setShotMaoTopography,
+    setShotMunition,
+    setShotPressure,
+    setShotTopography,
+    setShotTrajectography,
+    setShotVelocity,
+    setShotVideoData,
+    updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
 
@@ -662,6 +664,22 @@ executionRouter.put(
   },
 );
 
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/jlt-mao/bulk-configuration', (req, res) => {
+  const { fireTrialId } = req.params as { fireTrialId: string };
+
+  try {
+    const response = applyJltMaoBulkConfiguration(fireTrialId, req.body);
+    res.status(200).json(response);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Target shot not found; no shots updated' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid JLT MAO bulk configuration' });
+  }
+});
+
 executionRouter.get(
   '/:centerId/fire-trials/:fireTrialId/execution/mao-topography/series/:seriesId/shots/:shotId',
   (req, res) => {
@@ -702,6 +720,22 @@ executionRouter.put(
     }
   },
 );
+
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/mao-topography/bulk-configuration', (req, res) => {
+  const { fireTrialId } = req.params as { fireTrialId: string };
+
+  try {
+    const response = applyMaoTopographyBulkConfiguration(fireTrialId, req.body);
+    res.status(200).json(response);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Target shot not found; no shots updated' });
+      return;
+    }
+
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid MAO topography bulk configuration' });
+  }
+});
 
 executionRouter.get(
   '/:centerId/fire-trials/:fireTrialId/execution/topography/series/:seriesId/shots/:shotId',

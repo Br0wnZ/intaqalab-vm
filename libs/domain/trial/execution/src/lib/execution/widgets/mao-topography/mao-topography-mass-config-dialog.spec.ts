@@ -6,16 +6,22 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ExecutionService } from '../../../services/execution.service';
 import type { MaoTopographyMassConfigDialogData } from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
 
 const mockDialogData: MaoTopographyMassConfigDialogData = {
+  fireTrialId: 'trial-123',
   serieOptions: [
     { value: 'serie-01', label: 'Funcionamiento I' },
     { value: 'serie-02', label: 'Funcionamiento II' },
   ],
+  shotIdsBySeries: {
+    'serie-01': ['shot-01'],
+    'serie-02': ['shot-02'],
+  },
   observadorOptions: [
     { value: 'obs-01', label: 'Observador 01' },
     { value: 'obs-02', label: 'Observador 02' },
@@ -34,8 +40,16 @@ const mockDialogData: MaoTopographyMassConfigDialogData = {
 const mockDialogRef = {
   close: vi.fn(),
 };
+const mockExecutionService = {
+  bulkConfigureMaoTopography: vi.fn().mockResolvedValue({ updatedShotIds: ['shot-01'] }),
+};
 
 describe('MaoTopographyMassConfigDialog', () => {
+  beforeEach(() => {
+    mockDialogRef.close.mockClear();
+    mockExecutionService.bulkConfigureMaoTopography.mockReset().mockResolvedValue({ updatedShotIds: ['shot-01'] });
+  });
+
   const renderDialog = (data: MaoTopographyMassConfigDialogData = mockDialogData) =>
     render(MaoTopographyMassConfigDialog, {
       providers: [
@@ -45,6 +59,7 @@ describe('MaoTopographyMassConfigDialog', () => {
         provideHttpClientTesting(),
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: MatDialogRef, useValue: mockDialogRef },
+        { provide: ExecutionService, useValue: mockExecutionService },
       ],
       imports: [TranslateModule.forRoot()],
     });
@@ -74,18 +89,55 @@ describe('MaoTopographyMassConfigDialog', () => {
     expect(formValues.series).toEqual([]);
   });
 
-  it('apply() calls dialogRef.close with action=apply and current field values', async () => {
+  it('enables apply for selected target series with prefilled coordinates', async () => {
     const { fixture } = await renderDialog();
-    mockDialogRef.close.mockClear();
+    fixture.componentInstance.formModel.update((model) => ({ ...model, series: ['serie-01'] }));
+    fixture.detectChanges();
 
-    fixture.componentInstance.apply();
+    expect(fixture.componentInstance.canApply()).toBe(true);
+    expect(screen.getByRole('button', { name: /MASS_CONFIG_APPLY_BTN/ })).toBeEnabled();
+  });
 
-    expect(mockDialogRef.close).toHaveBeenCalledOnce();
-    const result = mockDialogRef.close.mock.calls[0][0];
-    expect(result.action).toBe('apply');
-    expect(result.xPieza).toEqual({ value: '100.0', unit: 'm' });
-    expect(result.observador).toBe('obs-01');
-    expect(result.series).toEqual([]);
+  it('posts bulk configuration and closes only after success', async () => {
+    const { fixture } = await renderDialog();
+    fixture.componentInstance.formModel.update((model) => ({ ...model, series: ['serie-01'] }));
+    fixture.componentInstance.piezaPosition.set({ x: 101, y: 200, z: 10, unit: 'm' });
+
+    await fixture.componentInstance.apply();
+
+    expect(mockExecutionService.bulkConfigureMaoTopography).toHaveBeenCalledWith('trial-123', {
+      assignedShotIds: ['shot-01'],
+      pieceX: 101,
+      pieceXUnit: 'M',
+      pieceY: 200,
+      pieceYUnit: 'M',
+      pieceZ: 10,
+      pieceZUnit: 'M',
+      targetX: 300,
+      targetXUnit: 'M',
+      targetY: 400,
+      targetYUnit: 'M',
+      targetZ: 15,
+      targetZUnit: 'M',
+    });
+    expect(mockDialogRef.close).toHaveBeenCalledExactlyOnceWith({
+      action: 'apply',
+      updatedShotIds: ['shot-01'],
+      observador: 'obs-01',
+    });
+  });
+
+  it('keeps the dialog open and displays an error when bulk request fails', async () => {
+    const { fixture } = await renderDialog();
+    mockExecutionService.bulkConfigureMaoTopography.mockRejectedValueOnce(new Error('Request failed'));
+    fixture.componentInstance.formModel.update((model) => ({ ...model, series: ['serie-01'] }));
+    fixture.componentInstance.piezaPosition.set({ x: 101, y: 200, z: 10, unit: 'm' });
+
+    await fixture.componentInstance.apply();
+
+    expect(mockDialogRef.close).not.toHaveBeenCalled();
+    fixture.detectChanges();
+    expect(screen.getByRole('alert')).toHaveTextContent('TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_ERROR');
   });
 
   it('cancel button closes dialog with action=cancel', async () => {

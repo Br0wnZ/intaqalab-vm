@@ -21,3 +21,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [execution-domain-expert - 1.0.1] - 2026-09-30
 
 - Se modifica por completo el widget 5 (se queda como estaba al principio pero se añade nuevas entradas y salidas y funcionalidades). Cambia el contrato con back y hay que ajustar la integración. Este cambio conlleva a cambios en el widget 8 en cuanto a integración con back por cambios de contrato.
+
+## [execution-domain-expert - 1.0.2] - 2026-10-05
+
+- Document selected-shot status derivation
+
+## [ui-design-engineer - 1.0.1] - 2026-10-05
+
+- Document selected-shot status badges
+
+## [ui-design-engineer - 1.0.2] - 2026-10-06
+
+- Require hidden resize handles on execution observation textareas
+
+## [execution-domain-expert - 1.0.3] - 2026-10-06
+
+- Require hidden resize handles on execution observation textareas

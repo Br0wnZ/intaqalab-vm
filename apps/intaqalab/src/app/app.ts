@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+
 /* eslint-disable no-restricted-properties */
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -6,7 +7,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FeatureFlagService } from '@intaqalab/config';
 import type { CommandTab } from '@intaqalab/core';
 import { AuthService, LoaderComponent, MutationProgressBar, Role, TabsTopComponent } from '@intaqalab/core';
-import { OidcSecurityService } from 'angular-auth-oidc-client';
+import { EventTypes, OidcSecurityService, PublicEventsService } from 'angular-auth-oidc-client';
 import { EMPTY, catchError, filter, of, switchMap, tap } from 'rxjs';
 
 import { environment } from '../environments/environment';
@@ -17,7 +18,15 @@ import { BreadcrumbService } from './services/breadcrumb/breadcrumb.service';
 import { CommandsTabService } from './services/tabs/commands-tab-service';
 
 @Component({
-  imports: [RouterModule, MenuLeftComponent, HeaderComponent, BreadcrumbComponent, LoaderComponent, MutationProgressBar, TabsTopComponent],
+  imports: [
+    RouterModule,
+    MenuLeftComponent,
+    HeaderComponent,
+    BreadcrumbComponent,
+    LoaderComponent,
+    MutationProgressBar,
+    TabsTopComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -28,11 +37,34 @@ export class App {
   readonly featureFlags = inject(FeatureFlagService);
   readonly #router = inject(Router);
   readonly #oidcSecurityService = inject(OidcSecurityService);
+  readonly #publicEventsService = inject(PublicEventsService, { optional: true });
   readonly #authService = inject(AuthService);
 
   userData$ = this.#oidcSecurityService.userData$;
 
   isAuthenticated = signal(false);
+
+  // eslint-disable-next-line no-unused-private-class-members
+  readonly #tokenExpiry = toSignal(
+    environment.enableMocksAuthBypass || !this.#publicEventsService
+      ? of(null)
+      : this.#publicEventsService.registerForEvents().pipe(
+          filter(
+            (event) =>
+              event.type === EventTypes.SilentRenewFailed ||
+              (!environment.authConfig?.silentRenew && event.type === EventTypes.TokenExpired),
+          ),
+          tap(() => {
+            this.isAuthenticated.set(false);
+            this.#authService.clear();
+            this.#oidcSecurityService.logoff().subscribe({
+              error: () => {
+                this.#oidcSecurityService.logoffLocal();
+              },
+            });
+          }),
+        ),
+  );
 
   // eslint-disable-next-line no-unused-private-class-members
   readonly #authCheck = toSignal(
@@ -100,10 +132,14 @@ export class App {
   }
 
   logout(): void {
+    this.isAuthenticated.set(false);
+    this.#authService.clear();
     this.#oidcSecurityService.logoff().subscribe((result) => console.log(result));
   }
 
   logoffAndRevokeTokens(): void {
+    this.isAuthenticated.set(false);
+    this.#authService.clear();
     this.#oidcSecurityService.logoffAndRevokeTokens().subscribe((result) => console.log('logoffffffffff', result));
   }
 }

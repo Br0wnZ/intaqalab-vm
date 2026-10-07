@@ -9,9 +9,9 @@ import { IntaIconComponent, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../../../models/execution-page.models';
+import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../../widgets/utils/selection-options';
 
 @Component({
-   
   selector: 'inta-execution-header',
   imports: [
     DatePipe,
@@ -78,8 +78,8 @@ import type { ExecutionHeaderData, ExecutionShotInfo } from '../../../models/exe
           <!-- Botón Guardar -->
           <button
             mat-icon-button
-            class="!bg-transparent !shadow-none !size-12"
             style="color: var(--inta-color-primary)"
+            class="!bg-transparent !shadow-none !size-12"
             [disabled]="isSaving() || !hasUnsavedChanges()"
             [class.!opacity-30]="isSaving() || !hasUnsavedChanges()"
             [attr.aria-disabled]="isSaving() || !hasUnsavedChanges()"
@@ -169,13 +169,13 @@ import type { ExecutionHeaderData, ExecutionShotInfo } from '../../../models/exe
                 <div>
                   <span
                     class="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight inline-block"
-                    [ngClass]="getStatusClass(historicShot.status)"
+                    [ngClass]="getShotStatusClass(historicShot.status)"
                   >
-                    {{ historicShot.status }}
+                    {{ getShotStatusLabel(historicShot.status) }}
                   </span>
                 </div>
                 <span class="text-sm text-gray-500 font-medium">
-                  {{ historicShot.timestamp | date: 'dd/MM/yyyy' }}
+                  {{ historicShot.timestamp ? (historicShot.timestamp | date: 'dd/MM/yyyy') : '—' }}
                 </span>
               </div>
             }
@@ -206,5 +206,13 @@ export class ExecutionHeader {
 
   getStatusClass(status?: string): string {
     return getTrialStatusToneClass(status);
+  }
+
+  getShotStatusClass(status?: string): string {
+    return mapSelectedShotStatusClass(status);
+  }
+
+  getShotStatusLabel(status?: string): string {
+    return mapSelectedShotStatusLabel(status);
   }
 }

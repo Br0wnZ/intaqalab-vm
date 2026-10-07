@@ -60,7 +60,7 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
         <textarea
           matInput
           rows="3"
-          class="resize-none"
+          class="!resize-none"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
           [value]="observacionesField() ?? ''"
           (input)="observacionesField.set($any($event.target).value || null)"

@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Provider } from '@angular/core';
 import { Injectable, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -15,7 +15,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
-import type { ShotMunitionResponse } from '../../models';
+import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MunitionIntroduction } from './munition-introduction';
 
@@ -156,6 +156,22 @@ describe('MunitionIntroduction', () => {
     expect(fixture.componentInstance.formState().widgetId).toBe('test-widget');
   });
 
+  it('enables global save when weight changes before a balance is selected', async () => {
+    const { fixture } = await renderWidget('test-widget', [
+      { provide: WidgetStateService, useClass: WidgetStateService },
+    ]);
+    const widgetState = TestBed.inject(WidgetStateService);
+    const pesosTab = fixture.componentInstance.pesosTab();
+    if (!pesosTab) throw new Error('Pesos tab not rendered');
+
+    pesosTab.weightField.set({ value: '99', unit: 'g' });
+
+    await vi.waitFor(() => {
+      expect(fixture.componentInstance.formState().dirty).toBe(true);
+      expect(widgetState.hasUnsavedChanges()).toBe(true);
+    });
+  });
+
   it('formState has widgetId equal to provided input', async () => {
     const { fixture } = await renderWidget('munition-widget-1');
     expect(fixture.componentInstance.formState().widgetId).toBe('munition-widget-1');
@@ -164,6 +180,34 @@ describe('MunitionIntroduction', () => {
   it('activeTab starts on identificacion', async () => {
     const { fixture } = await renderWidget();
     expect(fixture.componentInstance['activeTab']()).toBe('identificacion');
+  });
+
+  it('updates displayed status when selected shot changes', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const executionService = TestBed.inject(ExecutionService);
+
+    store.setOptimisticActiveShot('active-serie', 'active-shot');
+    executionService.executionProgressResource.set({
+      series: [
+        {
+          seriesId: 'serie-1',
+          shots: [
+            { shotId: 'shot-fired', status: 'FIRED', updatedAt: '2026-10-05T10:00:00Z' },
+            { shotId: 'shot-pending', status: 'PENDING', updatedAt: '2026-10-05T10:01:00Z' },
+          ],
+        },
+      ],
+    });
+
+    fixture.componentInstance.onSerieSelected('serie-1');
+    fixture.componentInstance.onDisparoSelected('shot-fired');
+    expect(fixture.componentInstance['estadoDisparo']()).toBe('EJECUTADA');
+    expect(fixture.componentInstance['estadoLabel']()).toBe('Ejecutado');
+
+    fixture.componentInstance.onDisparoSelected('shot-pending');
+    expect(fixture.componentInstance['estadoDisparo']()).toBe('PENDIENTE');
+    expect(fixture.componentInstance['estadoLabel']()).toBe('Pendiente');
   });
 
   it('saveForm persists selection to the store and calls ExecutionService', async () => {
@@ -330,6 +374,22 @@ describe('MunitionIntroduction', () => {
 
     await vi.waitFor(() => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
+    });
+    TestBed.tick();
+    const balanceItemsRequest = TestBed.inject(HttpTestingController).expectOne(
+      (request) =>
+        request.url.includes('/equipment/items') && request.params.get('categoryId') === EquipmentTypeEnum.BALANCE,
+    );
+    balanceItemsRequest.flush({
+      totalElements: 2,
+      items: [
+        { id: 21031, denominationName: 'Balance 500g', tag: 'BAL-01' },
+        { id: 21032, denominationName: 'Balance 2kg', tag: 'BAL-02' },
+      ],
+    });
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(fixture.componentInstance.pesosTab()?.balanceOptions()).toHaveLength(2);
     });
 
     // granada-01 has 2 balances (21031 -> bal-01, 21032 -> bal-02)
@@ -577,6 +637,22 @@ describe('MunitionIntroduction', () => {
     expect(fixture.componentInstance.identTab()?.identFormModel().lote).toBe('LOT-ESP-002');
     expect(fixture.componentInstance.identTab()?.numeroClienteField()).toBe('34');
 
+    store.loadMunitionIntroductionRemoteResponse(
+      {
+        munitionData: [
+          {
+            componentId: 'type-esp',
+            identificationData: { clientNumber: '2345' },
+            weightData: [],
+            conditioningData: null,
+          },
+        ],
+      },
+      'type-esp',
+    );
+    fixture.componentInstance.onComponentChange('type-esp');
+    expect(fixture.componentInstance.identTab()?.numeroClienteField()).toBe('2345');
+
     // 3. Select Serie Aseguramiento: displays only Granada mortero and patches its data
     fixture.componentInstance.onSerieSelected('serie-aseguramiento');
 
@@ -646,9 +722,64 @@ describe('MunitionIntroduction', () => {
     expect(filteredDenoms.map((d) => d.value)).toEqual(['denom-wh-1', 'denom-wh-2']);
     expect(filteredDenoms.map((d) => d.label)).toEqual(['Espoleta M578', 'Espoleta 4AP']);
 
+    store.loadMunitionIntroductionRemoteResponse(
+      {
+        munitionData: [
+          {
+            componentId: 'type-esp',
+            identificationData: { denominationId: 'denom-wh-2' },
+            weightData: [],
+            conditioningData: null,
+          },
+        ],
+      },
+      'type-esp',
+    );
+    fixture.componentInstance.onComponentChange('type-esp');
+
+    // A denomination already received for this component takes precedence over empty planning data.
+    expect(identTab?.identFormModel().denominacion).toBe('denom-wh-2');
+
     // User selects one denomination
     identTab?.onDenominacionChange('denom-wh-1');
     identTab?.identFormModel.update((m) => ({ ...m, denominacion: 'denom-wh-1' }));
     expect(identTab?.identFormModel().denominacion).toBe('denom-wh-1');
+  });
+
+  it('loads and filters the global warehouse denomination catalog when component has no planning mapping', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchDenominationsSpy = vi.spyOn(execService, 'fetchWarehouseDenominations').mockResolvedValue([
+      {
+        id: 'denom-esp-1',
+        name: 'Espoleta M578',
+        componentTypeId: 'type-esp',
+        batch: null,
+        clientNumber: null,
+      },
+      {
+        id: 'denom-gr-1',
+        name: 'Granada M107',
+        componentTypeId: 'type-gr',
+        batch: null,
+        clientNumber: null,
+      },
+    ]);
+
+    fixture.componentInstance.onComponentChange('type-esp');
+
+    await vi.waitFor(() => {
+      expect(fetchDenominationsSpy).toHaveBeenCalledWith();
+      expect(fixture.componentInstance.identTab()?.filteredDenominacionOptions()).toHaveLength(1);
+    });
+
+    expect(store.munitionIntroduction().identificacion.componente).toBe('type-esp');
+    expect(
+      fixture.componentInstance
+        .identTab()
+        ?.filteredDenominacionOptions()
+        .map((option) => option.value),
+    ).toEqual(['denom-esp-1']);
   });
 });

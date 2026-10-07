@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-09-30",
-      "checksum": "61309c8fd5c055ff",
+      "version": "1.0.3",
+      "lastUpdated": "2026-10-06",
+      "checksum": "790a4440cc47dea9",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": ">"
     },
@@ -161,9 +161,9 @@
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
     "ui-design-engineer": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "5d24c007c4f0e8bc",
+      "version": "1.0.2",
+      "lastUpdated": "2026-10-06",
+      "checksum": "ba2aeb93d31b7712",
       "path": ".agents/skills/ui-design-engineer/SKILL.md",
       "description": "Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards."
     },

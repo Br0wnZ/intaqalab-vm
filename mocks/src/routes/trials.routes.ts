@@ -20,6 +20,12 @@ import { getFixture } from '../utils';
 
 export const trialsRouter = Router();
 
+trialsRouter.get('/:centerId/fire-trials/xlsx', (_req, res) => {
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="fire-trials-empty.xlsx"');
+  res.status(200).send(Buffer.alloc(0));
+});
+
 // Listar pruebas de fuego de un centro
 trialsRouter.get('/:centerId/fire-trials', (req, res) => res.send(trialsDispatch(req)));
 

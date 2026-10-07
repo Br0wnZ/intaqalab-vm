@@ -31,6 +31,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { mapSelectedShotStatus } from '../utils/selection-options';
 import type { InputFieldValue, JltInheritedDefaults } from './jlt-shot-data.mapper';
 import {
   calculateShotOrder,
@@ -42,7 +43,6 @@ import {
   mapPlanningSeriesToOptions,
   mapPlanningShotsToDisparoOptions,
   mapRemoteToJltShotState,
-  mapShotStatusToEstadoDisparo,
   numToField,
   parseNum,
 } from './jlt-shot-data.mapper';
@@ -221,7 +221,7 @@ interface JltShotDataSelectForm {
             <textarea
               matInput
               rows="4"
-              class="resize-none !h-full"
+              class="!resize-none !h-full"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.OBSERVACIONES_PLACEHOLDER' | translate"
               [value]="observacionesField() ?? ''"
               (input)="observacionesField.set($any($event.target).value || null)"
@@ -363,7 +363,14 @@ export class JltShotData extends BaseFormWidgetComponent {
   );
 
   protected readonly estadoDisparo = computed(() =>
-    mapShotStatusToEstadoDisparo(this.selectedShotProgress()?.status, this.#store.jltShotData().estadoDisparo),
+    mapSelectedShotStatus(
+      this.#store.executionProgress(),
+      this.formModel().serie,
+      this.formModel().disparo,
+      this.#store.activeSerieId(),
+      this.#store.activeShotId(),
+      this.#store.jltShotData().estadoDisparo,
+    ),
   );
 
   // ── Estado del disparo (read-only output) ─────────────────────────────────

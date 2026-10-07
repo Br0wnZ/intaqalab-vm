@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +14,7 @@ import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
 
 interface UniformidadForm {
   selectedConfig: string | null;
@@ -166,7 +167,12 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
   // Data from store (read-only)
   protected readonly configOptions = computed(() => this.#store.uniformidadChart().configOptions);
   protected readonly serieOptions = computed(() => this.#store.uniformidadChart().serieOptions);
-  protected readonly disparoOptions = computed(() => this.#store.uniformidadChart().disparoOptions);
+  protected readonly disparoOptions = computed(() =>
+    mapShotOptionsToPlanningNumbers(
+      this.#store.uniformidadChart().disparoOptions,
+      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+    ),
+  );
 
   protected readonly selectedConfigData = computed(() => {
     const state = this.#store.uniformidadChart();

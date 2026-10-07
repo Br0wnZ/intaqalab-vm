@@ -27,7 +27,8 @@ import { InputSelectInput } from './input-select-input.directive';
       <!-- Label flotante: solo visible cuando showLabel=true -->
       @if (showLabel()) {
         <span
-          class="absolute left-3 bg-white px-1 pointer-events-none transition-all duration-200 z-10 leading-none select-none"
+          class="absolute left-3 max-w-[calc(100%-1.5rem)] truncate bg-white px-1 pointer-events-none transition-all duration-200 z-10 leading-none select-none"
+          [title]="label()"
           [class]="
             labelFloating()
               ? isComputed()
@@ -55,7 +56,7 @@ import { InputSelectInput } from './input-select-input.directive';
             type="text"
             libLocalDecimal
             inputmode="decimal"
-            class="flex-1 px-4 h-full text-md outline-none bg-transparent w-full placeholder:text-gray-500"
+            class="flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 placeholder:text-gray-500"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
             [style.color]="textColor() ?? null"
             [value]="inputValue()"
@@ -133,6 +134,7 @@ export class InputSelect {
    * @default true
    */
   readonly showLabel = input<boolean>(true);
+  readonly floatLabel = input<'auto' | 'always'>('auto');
 
   // ── Two-way binding ───────────────────────────────────────────────────────
   readonly value = model<{ value: string; unit: string } | null>(null);
@@ -143,7 +145,9 @@ export class InputSelect {
 
   // ── Label flotante ────────────────────────────────────────────────────────
   readonly focused = signal(false);
-  readonly labelFloating = computed(() => this.readOnly() || !!this.inputValue() || this.focused());
+  readonly labelFloating = computed(
+    () => this.floatLabel() === 'always' || this.readOnly() || !!this.inputValue() || this.focused(),
+  );
   readonly isComputed = computed(() => this.variant() === 'computed');
   readonly containerClass = computed(() => {
     if (this.readOnly()) return 'bg-gray-100 border-slate-200';
@@ -216,7 +220,7 @@ export class InputSelect {
     this.#renderer.setAttribute(
       el,
       'class',
-      'flex-1 px-4 h-full text-md outline-none bg-transparent w-full text-slate-700 placeholder:text-gray-500',
+      'flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 text-slate-700 placeholder:text-gray-500',
     );
     this.#renderer.setAttribute(el, 'type', 'text');
     this.#renderer.setAttribute(el, 'inputmode', 'decimal');

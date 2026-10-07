@@ -1,7 +1,9 @@
 /* eslint-disable testing-library/no-node-access */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,9 +18,7 @@ const mockDialogData: JltMaoMassConfigDialogData = {
     { value: 'S1', label: 'Serie 1' },
     { value: 'S2', label: 'Serie 2' },
   ],
-  piquetaOptions: [{ value: 'P1', label: 'P1', x: 0, y: 0 }],
   current: {
-    piqueta: null,
     velocidadInicial: null,
     distanciaPique: null,
     derivaTabular: null,
@@ -52,11 +52,13 @@ describe('JltMaoMassConfigDialog', () => {
     expect(document.querySelector('[mat-dialog-title]')).toBeTruthy();
   });
 
-  it('shows series and piqueta mat-select elements', async () => {
-    await renderDialog();
-    const selects = document.querySelectorAll('mat-select');
-    // series multi-select + piqueta select = at least 2
-    expect(selects.length).toBeGreaterThanOrEqual(2);
+  it('shows the series selector', async () => {
+    const { fixture } = await renderDialog();
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const seriesSelect = selects[0];
+    if (!seriesSelect) throw new Error('Series selector was not rendered');
+    expect(await seriesSelect.isMultiple()).toBe(true);
   });
 
   it('cancel button closes dialog with action cancel', async () => {
@@ -67,11 +69,12 @@ describe('JltMaoMassConfigDialog', () => {
 
   it('apply button closes dialog with action apply and selected data', async () => {
     const { fixture } = await renderDialog();
+    fixture.componentInstance['formModel'].update((model) => ({ ...model, series: ['S1'] }));
+    fixture.componentInstance['velocidadInicialField'].set({ value: '800', unit: 'm/s' });
     fixture.componentInstance.apply();
     const result = closeSpy.mock.calls[closeSpy.mock.calls.length - 1][0];
     expect(result.action).toBe('apply');
     expect(result).toHaveProperty('series');
-    expect(result).toHaveProperty('piqueta');
   });
 
   it('formModel series starts empty', async () => {
@@ -79,13 +82,16 @@ describe('JltMaoMassConfigDialog', () => {
     expect(fixture.componentInstance['formModel']().series).toEqual([]);
   });
 
-  it('formModel piqueta reflects current value from data', async () => {
-    const data: JltMaoMassConfigDialogData = {
-      ...mockDialogData,
-      current: { ...mockDialogData.current, piqueta: 'P1' },
-    };
-    const { fixture } = await renderDialog(data);
-    expect(fixture.componentInstance['formModel']().piqueta).toBe('P1');
+  it('requires a target series and applicable field before applying', async () => {
+    const { fixture } = await renderDialog();
+    const dialog = fixture.componentInstance;
+
+    expect(dialog['canApply']()).toBe(false);
+    dialog['formModel'].update((model) => ({ ...model, series: ['S1'] }));
+    expect(dialog['canApply']()).toBe(false);
+
+    dialog['velocidadInicialField'].set({ value: '800', unit: 'm/s' });
+    expect(dialog['canApply']()).toBe(true);
   });
 
   it('apply includes all numeric fields in result', async () => {
@@ -98,6 +104,7 @@ describe('JltMaoMassConfigDialog', () => {
       },
     };
     const { fixture } = await renderDialog(data);
+    fixture.componentInstance['formModel'].update((model) => ({ ...model, series: ['S1'] }));
     fixture.componentInstance.apply();
     const result = closeSpy.mock.calls[closeSpy.mock.calls.length - 1][0];
     expect(result.velocidadInicial).toEqual({ value: '800', unit: 'm/s' });

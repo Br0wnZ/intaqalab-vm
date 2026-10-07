@@ -1,15 +1,15 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-  untracked,
-  viewChild,
+    ChangeDetectionStrategy,
+    Component,
+    ViewEncapsulation,
+    computed,
+    effect,
+    inject,
+    input,
+    signal,
+    untracked,
+    viewChild,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,9 +25,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
+    type ArmamentEquipmentItem,
+    ExecutionService,
+    type PlanningArmamentResponse,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -169,6 +169,7 @@ interface ArmamentIntroductionSelectForm {
             id="armament-observations"
             matInput
             rows="1"
+            class="!resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_PLACEHOLDER' | translate"
             [formField]="selectForm.observations"
           ></textarea>

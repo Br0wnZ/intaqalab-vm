@@ -2,6 +2,7 @@ import { DistanceUnitEnum } from '@intaqalab/models';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import type { JltShotDataPayload, JltShotDataRequest, JltShotDataResponse } from '../../../services/execution.service';
+import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
@@ -74,32 +75,14 @@ export const mapShotStatusToEstadoDisparo = (
  * Devuelve la etiqueta i18n/texto legible para el badge de estado.
  */
 export const mapEstadoDisparoToLabel = (estado: string | null | undefined): string => {
-  switch (estado) {
-    case 'EN_CURSO':
-      return 'En curso';
-    case 'PENDIENTE':
-      return 'Pendiente';
-    case 'EJECUTADA':
-      return 'Ejecutada';
-    default:
-      return '—';
-  }
+  return mapSelectedShotStatusLabel(estado);
 };
 
 /**
  * Devuelve las clases CSS correspondientes al badge de estado.
  */
 export const mapEstadoDisparoToClass = (estado: string | null | undefined): string => {
-  switch (estado) {
-    case 'EN_CURSO':
-      return 'bg-green-100 text-green-700';
-    case 'PENDIENTE':
-      return 'bg-blue-100 text-blue-700';
-    case 'EJECUTADA':
-      return 'bg-gray-100 text-gray-600';
-    default:
-      return 'bg-gray-100 text-gray-500';
-  }
+  return mapSelectedShotStatusClass(estado);
 };
 
 /**

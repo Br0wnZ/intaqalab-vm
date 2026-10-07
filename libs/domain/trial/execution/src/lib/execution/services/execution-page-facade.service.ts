@@ -92,6 +92,52 @@ export class ExecutionPageFacade {
       (total, serie) => total + serie.shots.filter((shot) => shot.status === 'FIRED').length,
       0,
     );
+    const history = progressSeries.map((serie, serieIndex) => {
+      const planningSerie =
+        planningSeries.find((item) => item.id === serie.seriesId) ?? planningSeries[serieIndex] ?? null;
+
+      return {
+        serie: planningSerie?.name?.trim() || `Serie ${serieIndex + 1}`,
+        shots: serie.shots.map((shot, shotIndex) => {
+          const planningShot =
+            planningSerie?.shots?.find((item) => item.id === shot.shotId) ?? planningSerie?.shots?.[shotIndex];
+
+          return {
+            shot: `Disparo ${planningShot?.globalNumber ?? shotIndex + 1}`,
+            timestamp: shot.updatedAt,
+            status:
+              serie.seriesId === activeSerieId && shot.shotId === activeShotId
+                ? 'EN_CURSO'
+                : this.#mapShotStatus(shot.status),
+          };
+        }),
+      };
+    });
+
+    if (
+      activeSerie &&
+      activeShot &&
+      !progressSeries.some(
+        (serie) => serie.seriesId === activeSerieId && serie.shots.some((shot) => shot.shotId === activeShotId),
+      )
+    ) {
+      const activeSerieHistory = history.find((_, index) => progressSeries[index]?.seriesId === activeSerieId);
+      const activeShotIndex = activeSerie.shots?.findIndex((shot) => shot.id === activeShotId) ?? -1;
+      const activeShotHistory = {
+        shot: `Disparo ${activeShot.globalNumber ?? activeShotIndex + 1}`,
+        timestamp: '',
+        status: 'EN_CURSO',
+      };
+
+      if (activeSerieHistory) {
+        activeSerieHistory.shots.push(activeShotHistory);
+      } else {
+        history.push({
+          serie: activeSerie.name?.trim() || '—',
+          shots: [activeShotHistory],
+        });
+      }
+    }
 
     return {
       actual: {
@@ -99,24 +145,7 @@ export class ExecutionPageFacade {
         shot: activeShot ? `Disparo ${activeShot.globalNumber ?? activeShotIndex + 1}` : '—',
         percentage: String(totalShots > 0 ? Math.round((firedShots / totalShots) * 100) : 0),
       },
-      all: progressSeries.map((serie, serieIndex) => {
-        const planningSerie =
-          planningSeries.find((item) => item.id === serie.seriesId) ?? planningSeries[serieIndex] ?? null;
-
-        return {
-          serie: planningSerie?.name?.trim() || `Serie ${serieIndex + 1}`,
-          shots: serie.shots.map((shot, shotIndex) => {
-            const planningShot =
-              planningSerie?.shots?.find((item) => item.id === shot.shotId) ?? planningSerie?.shots?.[shotIndex];
-
-            return {
-              shot: `Disparo ${planningShot?.globalNumber ?? shotIndex + 1}`,
-              timestamp: shot.updatedAt,
-              status: this.#mapShotStatus(shot.status),
-            };
-          }),
-        };
-      }),
+      all: history,
     };
   });
 
@@ -359,11 +388,12 @@ export class ExecutionPageFacade {
   #mapShotStatus(status: string): string {
     switch (status) {
       case 'FIRED':
-        return 'Ejecutada';
+        return 'EJECUTADA';
       case 'ACTIVE':
-        return 'Analizando';
+        return 'EN_CURSO';
+      case 'PENDING':
       default:
-        return 'Planificada';
+        return 'PENDIENTE';
     }
   }
 

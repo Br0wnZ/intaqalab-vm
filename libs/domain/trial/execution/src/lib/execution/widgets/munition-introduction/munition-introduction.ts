@@ -175,17 +175,17 @@ export interface AcondFormModel {
           >
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TAB_ACONDICIONAMIENTO' | translate }}
           </button>
-        </div>
 
-        <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
-          {{ estadoLabel() }}
-        </span>
+          <!-- Estado del disparo -->
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
+            {{ estadoLabel() }}
+          </span>
+        </div>
       </div>
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- Se utiliza [class.hidden] en lugar de @switch para preservar el estado interno de las tabs -->
-      <div intaFormTouch class="flex-1 min-h-0" #touch="intaFormTouch">
+      <div intaFormTouch class="flex-1 min-h-0 mt-8 gap-8" #touch="intaFormTouch">
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
           (componentChange)="onComponentChange($event)"
@@ -253,10 +253,36 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     return this.#store.munitionIntroduction().disparoOptions;
   });
 
-  protected readonly estadoDisparo = computed(() => this.#store.munitionIntroduction().estadoDisparo);
+  protected readonly selectedShotProgress = computed(() => {
+    const { serie, disparo } = this.selectorFormModel();
+    const selectedSeries = this.#store.executionProgress()?.series.find((item) => item.seriesId === serie);
+    return disparo ? (selectedSeries?.shots.find((shot) => shot.shotId === disparo) ?? null) : null;
+  });
+
+  protected readonly isCurrentShot = computed(() => {
+    const { serie, disparo } = this.selectorFormModel();
+    return serie === this.#store.activeSerieId() && disparo === this.#store.activeShotId();
+  });
+
+  protected readonly estadoDisparo = computed(() => {
+    if (this.isCurrentShot()) {
+      return 'EN_CURSO';
+    }
+
+    switch (this.selectedShotProgress()?.status) {
+      case 'ACTIVE':
+        return 'EN_CURSO';
+      case 'PENDING':
+        return 'PENDIENTE';
+      case 'FIRED':
+        return 'EJECUTADA';
+      default:
+        return this.#store.munitionIntroduction().estadoDisparo;
+    }
+  });
   protected readonly estadoLabel = computed(() => {
     const e = this.estadoDisparo();
-    return e === 'EN_CURSO' ? 'En curso' : e === 'PENDIENTE' ? 'Pendiente' : e === 'EJECUTADA' ? 'Ejecutada' : '';
+    return e === 'EN_CURSO' ? 'En curso' : e === 'PENDIENTE' ? 'Pendiente' : e === 'EJECUTADA' ? 'Ejecutado' : '';
   });
   protected readonly estadoClass = computed(() => {
     const e = this.estadoDisparo();
@@ -388,7 +414,8 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     }
   }
 
-  readonly #loadedWarehouseDenominationComponents = new Set<string>();
+  readonly #loadingWarehouseDenominationComponents = new Set<string>();
+  readonly #warehouseDenominationsByComponent = new Map<string, PlanningDenominationOption[]>();
 
   #patchPlanningIdentificationForComponent(componentId: string | null): void {
     if (!componentId) return;
@@ -402,19 +429,16 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
 
     const planningData = options?.componentData?.[componentId];
-    if (planningData) {
-      const stored = this.#store.munitionIntroduction();
-      const currentIdent = stored.identificacion;
-      const patched: MunitionIntroIdentificationState = {
-        ...currentIdent,
-        componente: componentId,
-        denominacion: planningData.denominationId ?? null,
-        lote: planningData.batch ?? null,
-        numeroCliente: planningData.clientNumber ?? null,
-      };
-      this.#store.updateMunitionIntroductionIdentification(patched);
-      this.identTab()?.applyData(patched);
-    }
+    const currentIdent = this.#store.munitionIntroduction().identificacion;
+    const patched: MunitionIntroIdentificationState = {
+      ...currentIdent,
+      componente: componentId,
+      denominacion: currentIdent.denominacion ?? planningData?.denominationId ?? null,
+      lote: currentIdent.lote ?? planningData?.batch ?? null,
+      numeroCliente: currentIdent.numeroCliente ?? planningData?.clientNumber ?? null,
+    };
+    this.#store.updateMunitionIntroductionIdentification(patched);
+    this.identTab()?.applyData(patched);
   }
 
   async #loadWarehouseDenominationsForComponentIfMissing(componentId: string): Promise<void> {
@@ -426,17 +450,28 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
       (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
 
-    const planningData = options?.componentData?.[componentId];
-    if (planningData && !planningData.denominationId && !this.#loadedWarehouseDenominationComponents.has(componentId)) {
-      this.#loadedWarehouseDenominationComponents.add(componentId);
-      try {
-        const warehouseDenoms = await this.#executionService.fetchWarehouseDenominations(componentId);
-        if (warehouseDenoms.length > 0) {
-          this.#store.addMunitionIntroductionDenominations(warehouseDenoms);
-        }
-      } catch {
-        this.#loadedWarehouseDenominationComponents.delete(componentId);
-      }
+    if (options?.componentData?.[componentId]) return;
+
+    const cachedDenominations = this.#warehouseDenominationsByComponent.get(componentId);
+    if (cachedDenominations) {
+      this.#store.addMunitionIntroductionDenominations(cachedDenominations);
+      return;
+    }
+
+    if (this.#loadingWarehouseDenominationComponents.has(componentId)) return;
+
+    this.#loadingWarehouseDenominationComponents.add(componentId);
+    try {
+      const warehouseDenominations = await this.#executionService.fetchWarehouseDenominations();
+      const componentDenominations = warehouseDenominations.filter(
+        (denomination) => denomination.componentTypeId === componentId,
+      );
+      this.#warehouseDenominationsByComponent.set(componentId, componentDenominations);
+      this.#store.addMunitionIntroductionDenominations(componentDenominations);
+    } catch {
+      this.#warehouseDenominationsByComponent.delete(componentId);
+    } finally {
+      this.#loadingWarehouseDenominationComponents.delete(componentId);
     }
   }
 
@@ -668,6 +703,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       ) {
         this.#store.updateMunitionIntroductionIdentification(patched);
       }
+    }
+
+    if (activeComp) {
+      void this.#loadWarehouseDenominationsForComponentIfMissing(activeComp);
     }
 
     const finalStored = this.#store.munitionIntroduction();
