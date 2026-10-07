@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { FireTrial, TrialSearchFilters } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
-import { TrialListComponent } from '@intaqalab/trial-management';
+import { TrialListComponent, TrialStore } from '@intaqalab/trial-management';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -32,6 +32,7 @@ const EXECUTION_SELECTOR_STATUSES: TrialStatus[] = [
 
 @Component({
   selector: 'inta-trial-selector-dialog',
+  providers: [TrialStore],
   imports: [
     FormsModule,
     TranslateModule,

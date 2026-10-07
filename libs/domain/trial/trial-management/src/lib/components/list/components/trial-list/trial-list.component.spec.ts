@@ -2,6 +2,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
@@ -117,6 +118,7 @@ describe('TrialListComponent', () => {
           useValue: { getTrialsList: vi.fn().mockReturnValue(() => undefined) },
         },
       ],
+      componentProviders: [{ provide: TrialStore, useValue: mockStore }],
       componentInputs: {
         filters: options?.filters,
       },

@@ -55,12 +55,14 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
           [allowedStatuses]="isPlanningView() ? planningStatuses : null"
           (filtersChange)="onFiltersChange($event)"
         />
-        <div class="my-4 flex justify-end">
-          <button mat-stroked-button type="button" [disabled]="isExporting()" (click)="exportToExcel()">
-            <mat-icon>download</mat-icon>
-            {{ 'TRIALS_LIST.EXPORT_EXCEL_BUTTON' | translate }}
-          </button>
-        </div>
+        @if (hasResults()) {
+          <div class="my-4 flex justify-end">
+            <button mat-stroked-button type="button" [disabled]="isExporting()" (click)="exportToExcel()">
+              <mat-icon>download</mat-icon>
+              {{ 'TRIALS_LIST.EXPORT_EXCEL_BUTTON' | translate }}
+            </button>
+          </div>
+        }
         <inta-trial-list
           [filters]="filters()"
           (sortChange)="onSortChange($event)"
@@ -79,7 +81,14 @@ export class FeatureTrialListShellComponent {
   readonly #exportService = inject(DataTrialCreateModifyService);
   readonly onAction = this.#injector.get(injectionTokenTabCommand);
 
-  readonly isLoading = computed(() => this.#store.isLoading());
+  readonly #hasInitiallyLoaded = signal(false);
+
+  readonly isLoading = computed(() => {
+    if (this.#hasInitiallyLoaded()) {
+      return false;
+    }
+    return this.#store.isLoading();
+  });
   readonly error = computed(() => this.#store.error());
   readonly isPlanningView = signal(this.#route.snapshot.queryParamMap.get('planning') === 'true');
 
@@ -88,8 +97,19 @@ export class FeatureTrialListShellComponent {
   );
   readonly #sort = signal<string[]>([]);
   readonly isExporting = computed(() => this.#exportService.exportFireTrialsResource.isLoading());
+  readonly hasResults = computed(() => this.#store.totalElements() > 0);
 
   constructor() {
+    if (this.isPlanningView()) {
+      this.#store.search(this.filters());
+    }
+
+    effect(() => {
+      if (!this.#store.isLoading() && !this.#store.error()) {
+        untracked(() => this.#hasInitiallyLoaded.set(true));
+      }
+    });
+
     effect(() => {
       const response = this.#exportService.exportFireTrialsResource.value();
       if (!(response?.body instanceof Blob)) return;

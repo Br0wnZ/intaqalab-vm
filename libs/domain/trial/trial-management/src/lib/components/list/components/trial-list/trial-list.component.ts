@@ -275,7 +275,7 @@ const EXECUTION_SELECTOR_COLUMNS = [
   `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TrialStore, IntaDatePipe],
+  providers: [IntaDatePipe],
 })
 export class TrialListComponent {
   readonly #trialStatus = injectTrialStatus();

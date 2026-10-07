@@ -22,6 +22,8 @@ export type MunitionComponent = {
   type: MunitionComponentType;
   denomination: MunitionDenomination | null;
   batch?: string;
+  loadingZoneValue?: string | null;
+  quantity?: number | null;
   reconditioning?: ReconditioningData | null;
   clientNumber?: string | number;
   observations?: string;
@@ -65,6 +67,8 @@ export type BackendMunitionComponent = {
   denominationId?: BackendDenominationRef | null;
   fuseWorkingModeId?: string | null;
   batch?: string;
+  loadingZoneValue?: string | null;
+  quantity?: number | null;
   reconditioning?: ReconditioningData | null;
   clientNumber?: string | number;
   observations?: string;
@@ -76,6 +80,8 @@ export type MunitionComponentRequest = {
   typeId: string;
   denominationId: string;
   batch?: string;
+  loadingZoneValue?: string | null;
+  quantity?: number | null;
   reconditioning?: ReconditioningData;
   clientNumber?: string | number;
   observations?: string;
@@ -164,7 +170,7 @@ export type ComponentDetail = {
   maxAllowedErrors: number;
   manufacturerNumber: string;
   quantity?: number;
-  loadingZoneId?: string;
+  loadingZoneValue?: string;
 };
 
 export type Configuration = {
@@ -230,7 +236,7 @@ export function createEmptyComponentDetail(typeValue: string): ComponentDetail {
     manufacturerNumber: '',
     reconditioning: undefined,
     quantity: 0,
-    loadingZoneId: '',
+    loadingZoneValue: '',
   };
 }
 

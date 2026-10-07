@@ -450,13 +450,15 @@ export class MeasurementsAndRecordsDialogComponent {
 
       const values = value();
 
-      const notFullFilled = values.some((value) => {
-        const hasEs = !!value.name.es?.trim();
-        const hasEn = !!value.name.en?.trim();
-        return !hasEs && !hasEn;
-      });
+      if (this.data === null) {
+        const notFullFilled = values.some((value) => {
+          const hasEs = !!value.name.es?.trim();
+          const hasEn = !!value.name.en?.trim();
+          return !hasEs && !hasEn;
+        });
 
-      if (notFullFilled) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+        if (notFullFilled) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+      }
 
       const hasIncompleteValues = values.some((value) => {
         const hasEs = !!value.name.es?.trim();
@@ -488,7 +490,7 @@ export class MeasurementsAndRecordsDialogComponent {
       minValue: data.minValue ?? this.defaultFormValues.minValue,
       maxValue: data.maxValue ?? this.defaultFormValues.maxValue,
       uncertainty: data.uncertainty ?? this.defaultFormValues.uncertainty,
-      values: Array.isArray(data.values) && data.values.length ? data.values : this.defaultFormValues.values,
+      values: Array.isArray(data.values) ? data.values : [],
       equipmentTypes: Array.isArray(data.equipmentTypes) ? data.equipmentTypes : this.defaultFormValues.equipmentTypes,
       accreditation: data.accreditation ?? this.defaultFormValues.accreditation,
       grubbs: data.grubbs ?? this.defaultFormValues.grubbs,

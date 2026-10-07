@@ -26,7 +26,7 @@ class TrialListStubComponent {
 const loadTrials = vi.fn<(arg: Signal<string>) => void>();
 const search = vi.fn();
 const items = vi.fn();
-const totalElements = vi.fn();
+const totalElements = vi.fn(() => 10);
 const currentSearch = signal({});
 const mockStore = {
   trials: signal(null),
@@ -45,6 +45,11 @@ const mockStore = {
 };
 
 describe('FeatureTrialListShellComponent', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    totalElements.mockReturnValue(10);
+  });
+
   it('should render success state by default', async () => {
     mockStore.isLoading.set(false);
     mockStore.error.set(null);
@@ -169,5 +174,47 @@ describe('FeatureTrialListShellComponent', () => {
 
     expect(container.querySelector('ui-error-state')).toBeTruthy();
     expect(container.querySelector('inta-trial-list')).toBeFalsy();
+  });
+
+  it('should not render the Excel button when there are no results from store', async () => {
+    mockStore.isLoading.set(false);
+    mockStore.error.set(null);
+    totalElements.mockReturnValue(0);
+
+    await render(FeatureTrialListShellComponent, {
+      declarations: [TrialListStubComponent],
+      imports: [TranslateModule.forRoot()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      componentProviders: [
+        { provide: TrialStore, useValue: mockStore },
+        {
+          provide: injectionTokenTabCommand,
+          useValue: null,
+        },
+      ],
+    });
+
+    expect(screen.queryByRole('button', { name: 'TRIALS_LIST.EXPORT_EXCEL_BUTTON' })).not.toBeInTheDocument();
+  });
+
+  it('should render the Excel button when there are results from store', async () => {
+    mockStore.isLoading.set(false);
+    mockStore.error.set(null);
+    totalElements.mockReturnValue(5);
+
+    await render(FeatureTrialListShellComponent, {
+      declarations: [TrialListStubComponent],
+      imports: [TranslateModule.forRoot()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      componentProviders: [
+        { provide: TrialStore, useValue: mockStore },
+        {
+          provide: injectionTokenTabCommand,
+          useValue: null,
+        },
+      ],
+    });
+
+    expect(screen.getByRole('button', { name: 'TRIALS_LIST.EXPORT_EXCEL_BUTTON' })).toBeInTheDocument();
   });
 });

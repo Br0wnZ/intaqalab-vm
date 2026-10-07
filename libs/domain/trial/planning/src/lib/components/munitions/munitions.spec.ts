@@ -20,7 +20,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { MunitionsService } from '../../services/munitions-service';
 import { SeriesAndShotsService } from '../../services/series-and-shots-service';
-import type { Serie } from '../../utils-models/munitions.model';
+import type { Serie, SeriesMunitionsData } from '../../utils-models/munitions.model';
 import {
   createEmptyComponentDetail,
   createEmptyConfiguration,
@@ -783,6 +783,55 @@ describe('Munitions', () => {
 
       const request = mapLocalToRequest(local);
       expect(request[0].clientNumber).toBe('42');
+    });
+
+    it('should map loading zone values and supplement quantity according to component type', () => {
+      const backendSeries: SeriesMunitionsData[] = [
+        {
+          seriesId: 'series-1',
+          seriesName: 'Serie 1',
+          configurations: [
+            {
+              id: 'configuration-1',
+              seriesId: 'series-1',
+              denomination: null,
+              components: [
+                {
+                  id: 'charge-1',
+                  type: { id: 'type-charge', type: 'PROPELLANT_CHARGE', label: 'Carga de proyección' },
+                  denomination: { id: 'denomination-charge', name: 'Charge' },
+                  loadingZoneValue: '3G',
+                },
+                {
+                  id: 'supplement-1',
+                  type: { id: 'type-supplement', type: 'SUPPLEMENT', label: 'Suplemento' },
+                  denomination: { id: 'denomination-supplement', name: 'Supplement' },
+                  quantity: 2,
+                },
+                {
+                  id: 'fuse-1',
+                  type: { id: 'type-fuse', type: 'FUZE', label: 'Espoleta' },
+                  denomination: { id: 'denomination-fuse', name: 'Fuse' },
+                  quantity: 4,
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const local = mapBackendToLocal(backendSeries, [], [], []);
+      const localComponents = local[0]?.configurations[0]?.components ?? [];
+
+      expect(localComponents[0]?.loadingZoneValue).toBe('3G');
+      expect(localComponents[1]?.quantity).toBe(2);
+      expect(localComponents[2]?.quantity).toBeUndefined();
+
+      const requestComponents = mapLocalToRequest(local)[0]?.components ?? [];
+      expect(requestComponents[0]).toHaveProperty('loadingZoneValue', '3G');
+      expect(requestComponents[0]).not.toHaveProperty('quantity');
+      expect(requestComponents[1]).toHaveProperty('quantity', 2);
+      expect(requestComponents[2]).not.toHaveProperty('quantity');
     });
   });
 });

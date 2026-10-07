@@ -61,8 +61,8 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
-            clearable
             id="supl-denomination"
+            clearable
             data-testid="denomination-select"
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
@@ -163,7 +163,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             type="number"
             libNoNegativeValues
             libNoLeadingZeros
-            [formField]="detailForm.quantity!"
+            [formField]="detailForm.quantity"
             (blur)="emitChanges()"
           />
         </mat-form-field>
@@ -216,14 +216,12 @@ export class SuplementoDetailFormComponent {
   readonly denominations = computed<MasterDataI18nItem[]>(() => {
     const response = this.#denominationsResource.value();
     return (
-      response?.items.map(
-        (item: WarehouseDenominationItem): MasterDataI18nItem => ({
-          id: item.id,
-          name: { es: item.name, en: item.name },
-          label: item.name,
-          active: item.active,
-        }),
-      ) ?? []
+      response?.items.map((item: WarehouseDenominationItem): MasterDataI18nItem => ({
+        id: item.id,
+        name: { es: item.name, en: item.name },
+        label: item.name,
+        active: item.active,
+      })) ?? []
     );
   });
 
@@ -244,7 +242,10 @@ export class SuplementoDetailFormComponent {
     });
   });
 
-  readonly formModel = linkedSignal(() => this.detail());
+  readonly formModel = linkedSignal(() => {
+    const detail = this.detail();
+    return { ...detail, quantity: detail.quantity ?? 0 };
+  });
 
   readonly componentTypeLabel = computed(() => this.detail().type.label || this.detail().type.type);
   readonly denominationId = computed(() => this.formModel().denomination?.id ?? '');
@@ -255,7 +256,7 @@ export class SuplementoDetailFormComponent {
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
     disabled(f.observations, () => this.readonly());
-    disabled(f.quantity!, () => this.readonly());
+    disabled(f.quantity, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return null;

@@ -113,10 +113,17 @@ describe('LoadingZoneUpsertDialogComponent', () => {
       expect(view.fixture.componentInstance).toBeTruthy();
     });
 
-    it('should search active denominations on initialization', async () => {
+    it('should search active denominations on initialization when creating', async () => {
       const { mockDenominationsStore: store } = await setup(null);
       expect(store.search).toHaveBeenCalledWith({
         active: true,
+        munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER,
+      });
+    });
+
+    it('should search all denominations without active filter on initialization when editing', async () => {
+      const { mockDenominationsStore: store } = await setup(MOCK_LOADING_ZONE);
+      expect(store.search).toHaveBeenCalledWith({
         munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER,
       });
     });

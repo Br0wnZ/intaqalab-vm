@@ -131,6 +131,21 @@ describe('ComponentDetailFormComponent', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('should render supplement quantity when the initial value is omitted', async () => {
+      const supplementDetail: ComponentDetail = {
+        ...nonEspoletaDetail,
+        type: { id: 'ctype-003', type: 'suplemento', label: 'Suplemento' },
+      };
+
+      await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { detail: supplementDetail },
+      });
+
+      expect(screen.getByPlaceholderText('0')).toBeInTheDocument();
+    });
+
     it('should display the conditioning checkbox', async () => {
       await render(ComponentDetailFormComponent, {
         imports: defaultImports,

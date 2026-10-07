@@ -101,7 +101,7 @@ describe('CargaDetailFormComponent', () => {
     expect(await Promise.all(options.map((option) => option.getText()))).toEqual(['1', '2', '3', '4']);
   });
 
-  it('should keep the selected loading zone id when selecting a zone option', async () => {
+  it('should keep the selected loading zone value when selecting a zone option', async () => {
     const { component, fixture, loader, documentLoader } = await renderForm();
     component.formModel.update((current) => ({
       ...current,
@@ -114,6 +114,6 @@ describe('CargaDetailFormComponent', () => {
     const options = await documentLoader.getAllHarnesses(MatOptionHarness);
     await options[2].click();
 
-    expect(component.formModel().loadingZoneId).toBe('loading-zone-1');
+    expect(component.formModel().loadingZoneValue).toBe('3');
   });
 });

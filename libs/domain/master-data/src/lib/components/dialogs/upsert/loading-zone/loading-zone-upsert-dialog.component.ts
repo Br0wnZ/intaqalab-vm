@@ -124,7 +124,10 @@ export class LoadingZoneUpsertDialogComponent {
   }
 
   constructor() {
-    this.denominationsStore.search({ active: true, munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER });
+    this.denominationsStore.search({
+      ...(!this.data && { active: true }),
+      munitionTypeId: LOADING_ZONE_UPSERT_DENOMINATION_FILTER,
+    });
 
     effect(() => {
       const data = this.data;

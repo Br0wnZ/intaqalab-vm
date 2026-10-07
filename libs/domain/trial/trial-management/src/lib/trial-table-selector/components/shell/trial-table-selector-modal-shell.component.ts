@@ -15,10 +15,12 @@ import { TrialStatus } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { TrialStore } from '../../../components/list/+state/trial-list.store';
 import { TrialListComponent } from '../../../components/list/components/trial-list/trial-list.component';
 
 @Component({
   selector: 'inta-trial-table-selector-modal-shell',
+  providers: [TrialStore],
   imports: [
     FormsModule,
     TranslateModule,

@@ -344,6 +344,30 @@ describe('MeasurementsAndRecordsDialogComponent', () => {
       expect(formValue.values[0].name.es).toBe('Valor Uno');
     });
 
+    it('should enable save button in edit mode for QUALITATIVE measure with empty values array', async () => {
+      const mockQualitativeNoValues: MasterDataMeasures = {
+        ...MOCK_QUALITATIVE,
+        values: [],
+      };
+      const { view } = await setup(mockQualitativeNoValues);
+      view.fixture.detectChanges();
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      expect(saveBtn).toBeEnabled();
+      expect(view.fixture.componentInstance.form().invalid()).toBe(false);
+    });
+
+    it('should enable save button in edit mode for QUALITATIVE measure with an empty value row', async () => {
+      const mockQualitativeEmptyRow: MasterDataMeasures = {
+        ...MOCK_QUALITATIVE,
+        values: [{ code: '', name: { es: '', en: '' }, active: true }],
+      };
+      const { view } = await setup(mockQualitativeEmptyRow);
+      view.fixture.detectChanges();
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      expect(saveBtn).toBeEnabled();
+      expect(view.fixture.componentInstance.form().invalid()).toBe(false);
+    });
+
     it('should disable immutable fields in edit mode', async () => {
       const { view } = await setup(MOCK_QUANTITATIVE);
       const loader = TestbedHarnessEnvironment.loader(view.fixture);

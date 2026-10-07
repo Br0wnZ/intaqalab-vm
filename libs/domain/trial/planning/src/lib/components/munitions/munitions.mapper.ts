@@ -28,6 +28,10 @@ export function mapLocalToRequest(series: Serie[]): MunitionConfigRequest[] {
           typeId: comp.type.id,
           denominationId: comp.denomination.id,
           batch: comp.batch,
+          ...(isPropellingCharge(comp.type) && comp.loadingZoneValue
+            ? { loadingZoneValue: comp.loadingZoneValue }
+            : {}),
+          ...(isSupplement(comp.type) && comp.quantity !== undefined ? { quantity: comp.quantity } : {}),
           reconditioning: comp.reconditioning,
           clientNumber: comp.clientNumber,
           observations: comp.observations,
@@ -98,11 +102,15 @@ function mapComponentToDetail(
   denominations: MasterDataI18nItem[],
   fuseWorkingModes: MasterDataIItem[],
 ): ComponentDetail {
+  const type = resolveComponentType(component, componentTypes);
+
   return {
     id: component.id,
-    type: resolveComponentType(component, componentTypes),
+    type,
     denomination: resolveDenomination(component, denominations),
     batch: component.batch ?? '',
+    loadingZoneValue: isPropellingCharge(type) ? component.loadingZoneValue ?? undefined : undefined,
+    quantity: isSupplement(type) ? component.quantity ?? undefined : undefined,
     reconditioning: component.reconditioning ?? undefined,
     clientNumber:
       component.clientNumber !== undefined && component.clientNumber !== null ? String(component.clientNumber) : '',
@@ -112,6 +120,22 @@ function mapComponentToDetail(
     maxAllowedErrors: component.maxAllowedErrors ?? 0,
     manufacturerNumber: '',
   };
+}
+
+function isPropellingCharge(type: ComponentType): boolean {
+  return normalizeComponentType(type) === 'carga de proyeccion';
+}
+
+function isSupplement(type: ComponentType): boolean {
+  return normalizeComponentType(type) === 'suplemento';
+}
+
+function normalizeComponentType(type: ComponentType): string {
+  return type.type
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 function resolveDenominationId(denomination: string | null | undefined, denominations: MasterDataI18nItem[]): string {

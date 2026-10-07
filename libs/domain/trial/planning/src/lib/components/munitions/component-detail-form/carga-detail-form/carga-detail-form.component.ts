@@ -165,14 +165,14 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
           <mat-select
             id="cp-zone-modules"
             clearable
-            [value]="loadingZoneId()"
+            [value]="loadingZoneValue()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.ZONE_MODULES' | translate"
             [disabled]="readonly() || !denominationId()"
             (selectionChange)="onLoadingZoneChange($event.value)"
           >
             @for (loadingZone of filteredLoadingZones(); track loadingZone.id) {
               @for (zone of loadingZone.zone; track zone) {
-                <mat-option [value]="loadingZone.id">{{ zone }}</mat-option>
+                <mat-option [value]="zone">{{ zone }}</mat-option>
               }
             }
           </mat-select>
@@ -272,7 +272,7 @@ export class CargaDetailFormComponent {
 
   readonly componentTypeLabel = computed(() => this.detail().type.label || this.detail().type.type);
   readonly denominationId = computed(() => this.formModel().denomination?.id ?? '');
-  readonly loadingZoneId = computed(() => this.formModel().loadingZoneId ?? '');
+  readonly loadingZoneValue = computed(() => this.formModel().loadingZoneValue ?? '');
 
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
@@ -341,23 +341,23 @@ export class CargaDetailFormComponent {
       this.formModel.update((current) => ({
         ...current,
         denomination: { id: denom.id, name: denom.label },
-        loadingZoneId: '',
+        loadingZoneValue: '',
       }));
     } else {
       this.formModel.update((current) => ({
         ...current,
         denomination: { id: '', name: '' },
-        loadingZoneId: '',
+        loadingZoneValue: '',
       }));
     }
     this.emitChanges();
   }
 
-  onLoadingZoneChange(zoneId: string): void {
+  onLoadingZoneChange(zoneValue: string): void {
     if (this.readonly()) {
       return;
     }
-    this.formModel.update((current) => ({ ...current, loadingZoneId: zoneId }));
+    this.formModel.update((current) => ({ ...current, loadingZoneValue: zoneValue }));
     this.emitChanges();
   }
 
