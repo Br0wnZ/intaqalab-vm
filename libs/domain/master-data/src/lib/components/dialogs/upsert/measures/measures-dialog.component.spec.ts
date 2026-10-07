@@ -11,7 +11,7 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
-import type { MasterDataMeasures } from '../../../../models/master-data-measures.model';
+import type { MasterDataMeasures, MasterDataMeasuresFormModel } from '../../../../models/master-data-measures.model';
 import { MasterDataService } from '../../../../services/master-data.service';
 import { MeasurementsAndRecordsDialogComponent } from './measures-dialog.component';
 
@@ -71,7 +71,7 @@ const MOCK_QUALITATIVE: MasterDataMeasures = {
   active: true,
 };
 
-const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
+const VALID_QUANTITATIVE_FORM: MasterDataMeasuresFormModel = {
   unit: 'TOPOGRAPHY',
   measurementArea: 'TOP_ATMOSPHERE',
   measurements: ['INITIAL_VELOCITY'],
@@ -89,7 +89,7 @@ const VALID_QUANTITATIVE_FORM: MasterDataMeasures = {
   grubbs: false,
 };
 
-const VALID_QUALITATIVE_FORM: MasterDataMeasures = {
+const VALID_QUALITATIVE_FORM: MasterDataMeasuresFormModel = {
   unit: 'MUNITIONS',
   measurementArea: 'MUN_PROJECTILE',
   measurements: ['WEIGHT'],

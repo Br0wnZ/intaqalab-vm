@@ -14,34 +14,30 @@ import {
 
 export function mapLocalToRequest(series: Serie[]): MunitionConfigRequest[] {
   return series.flatMap((serie) =>
-    serie.configurations.map(
-      (config): MunitionConfigRequest => ({
-        id: config.id,
-        seriesId: serie.seriesId,
-        denominationId: config.denomination,
-        batch: config.batch,
-        clientNumber: config.clientNumber || undefined,
-        observations: config.observations,
-        reconditioning: config.reconditioning,
-        maxAllowedErrors: config.maxAllowedErrors,
-        components: config.components.map((comp) => ({
-          typeId: comp.type.id,
-          denominationId: comp.denomination.id,
-          batch: comp.batch,
-          ...(isPropellingCharge(comp.type) && comp.loadingZoneValue
-            ? { loadingZoneValue: comp.loadingZoneValue }
-            : {}),
-          ...(isSupplement(comp.type) && comp.quantity !== undefined ? { quantity: comp.quantity } : {}),
-          reconditioning: comp.reconditioning,
-          clientNumber: comp.clientNumber,
-          observations: comp.observations,
-          fuseWorkingModeId: comp.fuseWorkingMode?.id,
-          fuseMeasurement: comp.fuseMeasurement,
-          maxAllowedErrors: comp.maxAllowedErrors,
-        })),
-        assignedShotIds: config.assignedShotIds ?? undefined,
-      }),
-    ),
+    serie.configurations.map((config): MunitionConfigRequest => ({
+      id: config.id,
+      seriesId: serie.seriesId,
+      denominationId: config.denomination,
+      batch: config.batch,
+      clientNumber: config.clientNumber || undefined,
+      observations: config.observations,
+      reconditioning: config.reconditioning,
+      maxAllowedErrors: config.maxAllowedErrors,
+      components: config.components.map((comp) => ({
+        typeId: comp.type.id,
+        denominationId: comp.denomination.id,
+        batch: comp.batch,
+        ...(isPropellingCharge(comp.type) && comp.loadingZoneValue ? { loadingZoneValue: comp.loadingZoneValue } : {}),
+        ...(isSupplement(comp.type) && comp.quantity !== undefined ? { quantity: comp.quantity } : {}),
+        reconditioning: comp.reconditioning,
+        clientNumber: comp.clientNumber,
+        observations: comp.observations,
+        fuseWorkingModeId: comp.fuseWorkingMode?.id,
+        fuseMeasurement: comp.fuseMeasurement,
+        maxAllowedErrors: comp.maxAllowedErrors,
+      })),
+      assignedShotIds: config.assignedShotIds ?? undefined,
+    })),
   );
 }
 export function mapBackendToLocal(
@@ -109,8 +105,8 @@ function mapComponentToDetail(
     type,
     denomination: resolveDenomination(component, denominations),
     batch: component.batch ?? '',
-    loadingZoneValue: isPropellingCharge(type) ? component.loadingZoneValue ?? undefined : undefined,
-    quantity: isSupplement(type) ? component.quantity ?? undefined : undefined,
+    loadingZoneValue: isPropellingCharge(type) ? (component.loadingZoneValue ?? undefined) : undefined,
+    quantity: isSupplement(type) ? (component.quantity ?? undefined) : undefined,
     reconditioning: component.reconditioning ?? undefined,
     clientNumber:
       component.clientNumber !== undefined && component.clientNumber !== null ? String(component.clientNumber) : '',
