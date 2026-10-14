@@ -1966,6 +1966,8 @@
         "DISPARO_ACTUAL_LABEL": "Disparo actual",
         "DISPARO_LABEL": "Disparo",
         "DISPARO_PLACEHOLDER": "Disparo",
+        "EQUIPOS_LABEL": "Cámara / Grabador / Canal",
+        "EQUIPOS_PLACEHOLDER": "Selecciona equipo",
         "ESTADO_DISPARO_LABEL": "Estado del disparo",
         "GRABADOR_LABEL": "Grabador",
         "GRABADOR_PLACEHOLDER": "Selecciona grabador",

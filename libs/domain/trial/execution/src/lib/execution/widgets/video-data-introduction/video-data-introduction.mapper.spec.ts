@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ShotVideoDataResponse } from '../../models';
-import { mapVideoFormToRequest, mapVideoResponseToForm, resolveVideoType } from './video-data-introduction.mapper';
+import {
+  buildVideoEquipmentCombinedValue,
+  mapVideoFormToRequest,
+  mapVideoResponseToForm,
+  matchesEquipmentId,
+  resolveVideoType,
+  splitVideoEquipmentCombinedValue,
+} from './video-data-introduction.mapper';
 
 const response: ShotVideoDataResponse = {
   highSpeedVideoData: {
@@ -36,6 +43,7 @@ describe('video-data-introduction.mapper', () => {
 
   it('maps API data to UI fields and zero-pads channel', () => {
     expect(mapVideoResponseToForm(response, 'C')).toEqual({
+      equipment: 'camera-c|recorder-c|02',
       camera: 'camera-c',
       grabador: 'recorder-c',
       canal: '02',
@@ -72,6 +80,34 @@ describe('video-data-introduction.mapper', () => {
     });
   });
 
+  it('maps UI fields using equipment when individual fields are missing', () => {
+    expect(
+      mapVideoFormToRequest(
+        {
+          tipoVideo: 'AV',
+          equipment: 'camera-av-updated|recorder-av|03',
+          camera: null,
+          grabador: null,
+          canal: null,
+          magnitud: 'measure-av',
+          resultadoObservado: '',
+          observaciones: '',
+        },
+        response,
+      ),
+    ).toEqual({
+      highSpeedVideoData: {
+        cameraId: 'camera-av-updated',
+        recorderId: 'recorder-av',
+        channel: 3,
+        measureId: 'measure-av',
+        observedResult: null,
+        observations: null,
+      },
+      conventionalVideoData: response.conventionalVideoData,
+    });
+  });
+
   it('returns null when required API fields are missing', () => {
     expect(
       mapVideoFormToRequest(
@@ -87,5 +123,33 @@ describe('video-data-introduction.mapper', () => {
         response,
       ),
     ).toBeNull();
+  });
+
+  describe('combined equipment helpers', () => {
+    it('builds combined value from components', () => {
+      expect(buildVideoEquipmentCombinedValue('cam1', 'rec1', 1)).toBe('cam1|rec1|01');
+      expect(buildVideoEquipmentCombinedValue('cam1', null, 2)).toBe('cam1||02');
+      expect(buildVideoEquipmentCombinedValue(null, null, null)).toBeNull();
+    });
+
+    it('splits combined value into components', () => {
+      expect(splitVideoEquipmentCombinedValue('cam1|rec1|01')).toEqual({
+        camera: 'cam1',
+        grabador: 'rec1',
+        canal: '01',
+      });
+      expect(splitVideoEquipmentCombinedValue(null)).toEqual({
+        camera: null,
+        grabador: null,
+        canal: null,
+      });
+    });
+
+    it('matches equipment id directly or by numeric suffix', () => {
+      expect(matchesEquipmentId(new Set(['1']), '1')).toBe(true);
+      expect(matchesEquipmentId(new Set(['1']), 'cam-av-1')).toBe(true);
+      expect(matchesEquipmentId(new Set(['1']), 'cam-av-001')).toBe(true);
+      expect(matchesEquipmentId(new Set(['2']), 'cam-av-1')).toBe(false);
+    });
   });
 });

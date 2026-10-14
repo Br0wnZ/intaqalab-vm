@@ -63,10 +63,7 @@ const initialState: VideoDataIntroductionSlice = {
     ],
     cameraOptions: [],
     grabadorOptions: [],
-    canalOptions: Array.from({ length: 32 }, (_, i) => ({
-      value: String(i + 1).padStart(2, '0'),
-      label: String(i + 1).padStart(2, '0'),
-    })),
+    canalOptions: [],
     magnitudOptions: [],
   },
 };

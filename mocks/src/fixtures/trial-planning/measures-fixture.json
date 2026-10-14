@@ -45,6 +45,20 @@
             "minLimit": 50,
             "maxLimit": 500,
             "deviation": 10
+          },
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440044",
+            "name": "Vídeo de alta velocidad",
+            "minLimit": null,
+            "maxLimit": null,
+            "deviation": null
+          },
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440045",
+            "name": "Vídeo convencional",
+            "minLimit": null,
+            "maxLimit": null,
+            "deviation": null
           }
         ]
       }

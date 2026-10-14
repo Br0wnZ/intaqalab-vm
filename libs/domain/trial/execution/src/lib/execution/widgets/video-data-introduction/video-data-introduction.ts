@@ -34,12 +34,21 @@ import {
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
 } from '../utils/selection-options';
-import { mapVideoFormToRequest, mapVideoResponseToForm, resolveVideoType } from './video-data-introduction.mapper';
+import { injectInitialVideoEquipments } from './inject-initial-video-equipments';
+import {
+  buildVideoEquipmentCombinedValue,
+  mapVideoFormToRequest,
+  mapVideoResponseToForm,
+  matchesEquipmentId,
+  resolveVideoType,
+  splitVideoEquipmentCombinedValue,
+} from './video-data-introduction.mapper';
 
 interface VideoDataIntroductionForm {
   serie: string | null;
   disparo: string | null;
   tipoVideo: 'AV' | 'C' | null;
+  equipment: string | null;
   camera: string | null;
   grabador: string | null;
   canal: string | null;
@@ -154,47 +163,20 @@ interface VideoDataIntroductionForm {
       <div class="flex-1 flex gap-3 min-h-0">
         <!-- Columna izquierda: 2 filas -->
         <div class="flex-[2.4] min-w-0 flex flex-col justify-evenly gap-2.5">
-          <!-- Fila 1: Cámara | Grabador | Canal -->
-          <div class="grid grid-cols-3 gap-3">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_LABEL' | translate }}</mat-label>
-              <mat-select
-                id="camera-select"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CAMARA_LABEL' | translate"
-                [formField]="form.camera"
-              >
-                @for (opt of cameraOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_LABEL' | translate }}</mat-label>
-              <mat-select
-                id="grabador-select"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.GRABADOR_LABEL' | translate"
-                [formField]="form.grabador"
-              >
-                @for (opt of grabadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_LABEL' | translate }}</mat-label>
-              <mat-select
-                id="canal-select"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.CANAL_LABEL' | translate"
-                [formField]="form.canal"
-              >
-                @for (opt of canalOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+          <!-- Fila 1: Equipo (Cámara / Grabador / Canal) -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="w-full">
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.EQUIPOS_LABEL' | translate }}</mat-label>
+            <mat-select
+              id="equipment-select"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.EQUIPOS_PLACEHOLDER' | translate"
+              [formField]="form.equipment"
+              (selectionChange)="onEquipmentSelected($event.value)"
+            >
+              @for (opt of equipmentOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
           <!-- Fila 2: Magnitud (col 1) | Resultado observado (cols 2-3) -->
           <div class="grid grid-cols-3 gap-3">
@@ -277,8 +259,112 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
   readonly #selectionKey = computed(() => shotSelectionKey(this.selectorModel().serie, this.selectorModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
+  readonly #initialVideoEquipments = injectInitialVideoEquipments(() => this.selectorModel().tipoVideo);
 
   // ── Datos desde el store y API ────────────────────────────────────────────
+
+  /**
+   * Opciones combinadas Cámara / Grabador / Canal procedentes de la asignación de equipos
+   * filtradas por serie y disparo activo y categoría según tag (AV / C).
+   */
+  protected readonly equipmentOptions = computed(() => {
+    const { serie, disparo, tipoVideo } = this.selectorModel();
+    if (!serie || !disparo || !tipoVideo) return [];
+
+    const selections = this.#initialVideoEquipments().filter(
+      (selection) =>
+        (!selection.seriesIds?.length || selection.seriesIds.includes(serie)) &&
+        (!selection.shotIds?.length || selection.shotIds.includes(disparo)),
+    );
+
+    if (selections.length === 0) {
+      return [];
+    }
+
+    const cameraCategory =
+      tipoVideo === 'AV' ? EquipmentTypeEnum.HIGH_SPEED_CAMERA : EquipmentTypeEnum.CONVENTIONAL_CAMERA;
+
+    const cameraSelections = selections.filter((s) => s.categoryId === cameraCategory);
+    const recorderSelections = selections.filter(
+      (s) =>
+        s.categoryId === EquipmentTypeEnum.RECORDER ||
+        s.categoryId === EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+    );
+
+    const calibryCameras = this.#itemsByCategory()[cameraCategory] ?? [];
+    const calibryRecorders = [
+      ...(this.#itemsByCategory()[EquipmentTypeEnum.RECORDER] ?? []),
+      ...(this.#itemsByCategory()[EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM] ?? []),
+    ];
+
+    const result: Array<{ value: string; label: string }> = [];
+    const seen = new Set<string>();
+
+    const addOption = (
+      camId: string | null,
+      camLabel: string | null,
+      recId: string | null,
+      recLabel: string | null,
+      channel: number | string | null,
+    ) => {
+      const value = buildVideoEquipmentCombinedValue(camId, recId, channel);
+      if (!value || seen.has(value)) return;
+      seen.add(value);
+
+      const chStr =
+        channel !== null && channel !== undefined && channel !== '' ? String(channel).padStart(2, '0') : null;
+      const parts: string[] = [];
+      if (camLabel) parts.push(camLabel);
+      if (recLabel) parts.push(recLabel);
+      if (chStr) parts.push(`Canal ${chStr}`);
+
+      result.push({
+        value,
+        label: parts.join(' / ') || value,
+      });
+    };
+
+    if (cameraSelections.length > 0) {
+      for (const cam of cameraSelections) {
+        const camStrId = String(cam.equipmentItemId);
+        const camItem = calibryCameras.find((item) => matchesEquipmentId(new Set([camStrId]), item.id));
+        const camId = camItem?.id ?? camStrId;
+        const camLabel = camItem?.label ?? `Cámara ${camId}`;
+
+        const matchingRecorders =
+          cam.channel !== null && cam.channel !== undefined
+            ? recorderSelections.filter((r) => r.channel === cam.channel)
+            : recorderSelections;
+
+        const effectiveRecorders = matchingRecorders.length > 0 ? matchingRecorders : recorderSelections;
+
+        if (effectiveRecorders.length > 0) {
+          for (const rec of effectiveRecorders) {
+            const recStrId = String(rec.equipmentItemId);
+            const recItem = calibryRecorders.find((item) => matchesEquipmentId(new Set([recStrId]), item.id));
+            const recId = recItem?.id ?? recStrId;
+            const recLabel = recItem?.label ?? `Grabador ${recId}`;
+            const channel = cam.channel ?? rec.channel ?? null;
+
+            addOption(camId, camLabel, recId, recLabel, channel);
+          }
+        } else {
+          addOption(camId, camLabel, null, null, cam.channel ?? null);
+        }
+      }
+    } else if (recorderSelections.length > 0) {
+      for (const rec of recorderSelections) {
+        const recStrId = String(rec.equipmentItemId);
+        const recItem = calibryRecorders.find((item) => matchesEquipmentId(new Set([recStrId]), item.id));
+        const recId = recItem?.id ?? recStrId;
+        const recLabel = recItem?.label ?? `Grabador ${recId}`;
+
+        addOption(null, null, recId, recLabel, rec.channel ?? null);
+      }
+    }
+
+    return result;
+  });
 
   /** Lista de cámaras Calibry disponibles (filtradas por tipo de vídeo / items API) */
   protected readonly cameraOptions = computed(() => {
@@ -301,7 +387,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       return apiCameras.map((c) => ({ value: c.id, label: c.label }));
     }
 
-    return this.#store.videoDataIntroduction().cameraOptions;
+    return [];
   });
 
   /** Lista de grabadores Calibry disponibles (procedentes de items API) */
@@ -316,11 +402,11 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       return apiRecorders.map((r) => ({ value: r.id, label: r.label }));
     }
 
-    return this.#store.videoDataIntroduction().grabadorOptions;
+    return [];
   });
 
-  /** Lista de canales (01-32) */
-  protected readonly canalOptions = computed(() => this.#store.videoDataIntroduction().canalOptions);
+  /** Lista de canales (01-32) - vacía si el GET de equipos no devuelve nada */
+  protected readonly canalOptions = computed(() => []);
 
   /** Lista de magnitudes disponibles (procedentes de planificación) */
   protected readonly magnitudOptions = computed(() => this.#store.videoDataIntroduction().magnitudOptions);
@@ -362,6 +448,11 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     serie: this.#store.videoDataIntroduction().serie,
     disparo: this.#store.videoDataIntroduction().disparo,
     tipoVideo: this.#store.videoDataIntroduction().tipoVideo,
+    equipment: buildVideoEquipmentCombinedValue(
+      this.#store.videoDataIntroduction().camera,
+      this.#store.videoDataIntroduction().grabador,
+      this.#store.videoDataIntroduction().canal,
+    ),
     camera: this.#store.videoDataIntroduction().camera,
     grabador: this.#store.videoDataIntroduction().grabador,
     canal: this.#store.videoDataIntroduction().canal,
@@ -417,6 +508,18 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     this.#applyRemoteBlock(tipo, this.#remoteVideoData());
   }
 
+  onEquipmentSelected(value: string | null): void {
+    const { camera, grabador, canal } = splitVideoEquipmentCombinedValue(value);
+    this.selectorModel.update((current) => ({
+      ...current,
+      equipment: value,
+      camera,
+      grabador,
+      canal,
+    }));
+    this.#store.updateVideoDataIntroduction({ camera, grabador, canal });
+  }
+
   onSerieSelected(serie: string | null): void {
     this.selectorModel.update((value) => ({ ...value, serie, disparo: null }));
     this.#store.updateVideoDataIntroduction({ serie, disparo: null });
@@ -446,10 +549,12 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
   resetForm(): void {
     const stored = this.#store.videoDataIntroduction();
+    const equipment = buildVideoEquipmentCombinedValue(stored.camera, stored.grabador, stored.canal);
     this.selectorModel.set({
       serie: stored.serie,
       disparo: stored.disparo,
       tipoVideo: stored.tipoVideo,
+      equipment,
       camera: stored.camera,
       grabador: stored.grabador,
       canal: stored.canal,
@@ -518,16 +623,36 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   }
 
   #applyRemoteBlock(tipoVideo: 'AV' | 'C' | null, response: ShotVideoDataResponse | null): void {
+    const formValues = mapVideoResponseToForm(response, tipoVideo);
+    const combined = buildVideoEquipmentCombinedValue(formValues.camera, formValues.grabador, formValues.canal);
+    const matchingOpt = this.equipmentOptions().find(
+      (opt) =>
+        opt.value === combined ||
+        this.#matchesOption(opt.value, formValues.camera, formValues.grabador, formValues.canal),
+    );
+    const equipment = matchingOpt ? matchingOpt.value : combined;
+
     this.selectorModel.update((value) => ({
       ...value,
-      ...mapVideoResponseToForm(response, tipoVideo),
+      ...formValues,
+      equipment,
     }));
     this.#store.updateVideoDataIntroduction(this.selectorModel());
     this.#dirtyTracker.syncSnapshot();
   }
 
+  #matchesOption(optValue: string, camera: string | null, grabador: string | null, canal: string | null): boolean {
+    const parts = splitVideoEquipmentCombinedValue(optValue);
+    const cameraMatches =
+      !camera || parts.camera === camera || matchesEquipmentId(new Set([parts.camera ?? '']), camera);
+    const grabadorMatches =
+      !grabador || parts.grabador === grabador || matchesEquipmentId(new Set([parts.grabador ?? '']), grabador);
+    const canalMatches = !canal || Number(parts.canal) === Number(canal);
+    return cameraMatches && grabadorMatches && canalMatches;
+  }
+
   #editableValues(): Omit<VideoDataIntroductionForm, 'serie' | 'disparo' | 'tipoVideo'> {
-    const { camera, grabador, canal, magnitud, resultadoObservado, observaciones } = this.selectorModel();
-    return { camera, grabador, canal, magnitud, resultadoObservado, observaciones };
+    const { equipment, camera, grabador, canal, magnitud, resultadoObservado, observaciones } = this.selectorModel();
+    return { equipment, camera, grabador, canal, magnitud, resultadoObservado, observaciones };
   }
 }

@@ -1966,6 +1966,8 @@
         "DISPARO_ACTUAL_LABEL": "Current shot",
         "DISPARO_LABEL": "Shot",
         "DISPARO_PLACEHOLDER": "Shot",
+        "EQUIPOS_LABEL": "Camera / Recorder / Channel",
+        "EQUIPOS_PLACEHOLDER": "Select equipment",
         "ESTADO_DISPARO_LABEL": "Shot status",
         "GRABADOR_LABEL": "Recorder",
         "GRABADOR_PLACEHOLDER": "Select recorder",

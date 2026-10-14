@@ -1966,6 +1966,8 @@
         "DISPARO_ACTUAL_LABEL": "Aktueller Schuss",
         "DISPARO_LABEL": "Schuss",
         "DISPARO_PLACEHOLDER": "Schuss",
+        "EQUIPOS_LABEL": "Kamera / Recorder / Kanal",
+        "EQUIPOS_PLACEHOLDER": "Ausrüstung auswählen",
         "ESTADO_DISPARO_LABEL": "Schussstatus",
         "GRABADOR_LABEL": "Recorder",
         "GRABADOR_PLACEHOLDER": "Recorder auswählen",

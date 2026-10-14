@@ -288,6 +288,28 @@
       "active": true
     },
     {
+      "id": "meas-rec-001",
+      "tag": "REC-001",
+      "serialNumber": "SN-REC-001",
+      "denominationId": 6501,
+      "denominationName": "Grabador de Vídeo Fastcam R1",
+      "modelName": "Fastcam R1",
+      "itemType": "MEASUREMENT",
+      "categoryId": "RECORDER",
+      "active": true
+    },
+    {
+      "id": "meas-rec-002",
+      "tag": "REC-002",
+      "serialNumber": "SN-REC-002",
+      "denominationId": 6502,
+      "denominationName": "Grabador de Vídeo Fastcam R2",
+      "modelName": "Fastcam R2",
+      "itemType": "MEASUREMENT",
+      "categoryId": "RECORDER",
+      "active": true
+    },
+    {
       "id": "meas-trr-001",
       "tag": "REG-TR-001",
       "serialNumber": "SN-RT-001",

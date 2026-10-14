@@ -107,6 +107,17 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
     '3fa85f64-5717-4562-b3fc-2c963f66bfa2',
   ];
 
+  const allSeriesIds = [
+    ...commonSeriesIds,
+    'funcionamiento-2',
+    '3fa85f64-5717-4562-b3fc-2c963f66afa2',
+  ];
+  const allShotIds = [
+    ...commonShotIds,
+    'disparo-3',
+    '3fa85f64-5717-4562-b3fc-2c963f66bfa3',
+  ];
+
   return [
     {
       measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
@@ -176,6 +187,88 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
           seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
           shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_AV,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 6001,
+          categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+          channel: 1,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 6501,
+          categoryId: EquipmentTypeEnum.RECORDER,
+          channel: 1,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 6002,
+          categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+          channel: 2,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 6502,
+          categoryId: EquipmentTypeEnum.RECORDER,
+          channel: 2,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_C,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 7001,
+          categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+          channel: 2,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 6501,
+          categoryId: EquipmentTypeEnum.RECORDER,
+          channel: 2,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 7002,
+          categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+          channel: 1,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 6502,
+          categoryId: EquipmentTypeEnum.RECORDER,
+          channel: 1,
+          magnitude: 'ATTACK',
+          seriesIds: [...allSeriesIds],
+          shotIds: [...allShotIds],
         },
       ],
     },

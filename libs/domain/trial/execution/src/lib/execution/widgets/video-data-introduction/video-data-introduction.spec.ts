@@ -9,8 +9,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
-import { EquipmentTypeEnum } from '../../models/equipment.models';
+import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models/equipment.models';
 import { WidgetStateService } from '../../services/widget-state.service';
+import { injectInitialVideoEquipments } from './inject-initial-video-equipments';
 import { VideoDataIntroduction } from './video-data-introduction';
 
 const mockWidgetStateService = {
@@ -94,7 +95,79 @@ describe('VideoDataIntroduction', () => {
     ]);
   });
 
-  it('loads equipment items for cameras and recorders from ExecutionService', async () => {
+  it('injectInitialVideoEquipments extracts selections from resource for AV and C', () => {
+    const mockExecutionService = {
+      equipmentSelectorResource: {
+        hasValue: () => true,
+        value: () => [
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.HIGH_SPEED_VIDEO,
+            selections: [
+              {
+                equipmentItemId: 101,
+                categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+              },
+            ],
+          },
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.CONVENTIONAL_VIDEO,
+            selections: [
+              {
+                equipmentItemId: 202,
+                categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: ExecutionService, useValue: mockExecutionService }],
+    });
+
+    const avSelections = TestBed.runInInjectionContext(() => injectInitialVideoEquipments(() => 'AV'));
+    expect(avSelections()).toEqual([
+      {
+        equipmentItemId: 101,
+        categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+      },
+    ]);
+
+    const cSelections = TestBed.runInInjectionContext(() => injectInitialVideoEquipments(() => 'C'));
+    expect(cSelections()).toEqual([
+      {
+        equipmentItemId: 202,
+        categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+      },
+    ]);
+  });
+
+  it('equipmentOptions returns empty array when GET of equipment returns nothing (no hardcoded data)', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    const { fixture } = await renderWidget();
+    const executionService = TestBed.inject(ExecutionService);
+
+    Object.defineProperty(executionService, 'equipmentSelectorResource', {
+      value: {
+        hasValue: () => true,
+        value: () => [],
+      },
+      configurable: true,
+    });
+
+    fixture.componentInstance['selectorModel'].update((v) => ({
+      ...v,
+      serie: 'series-1',
+      disparo: 'shot-1',
+      tipoVideo: 'AV',
+    }));
+
+    expect(fixture.componentInstance['equipmentOptions']()).toEqual([]);
+    expect(fixture.componentInstance['canalOptions']()).toEqual([]);
+  });
+
+  it('equipmentOptions builds combined options for camera, recorder, and channel based on tag (AV or C)', async () => {
     vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.HIGH_SPEED_CAMERA]: [{ id: 'cam-av-1', label: 'Photron SA-X2 / CAM-AV-001' }],
       [EquipmentTypeEnum.CONVENTIONAL_CAMERA]: [{ id: 'cam-c-1', label: 'Sony PXW-Z280 / CAM-C-001' }],
@@ -103,27 +176,90 @@ describe('VideoDataIntroduction', () => {
     });
 
     const { fixture } = await renderWidget();
-    await vi.waitFor(() => {
-      expect(fixture.componentInstance['cameraOptions']().length).toBeGreaterThan(0);
+    const executionService = TestBed.inject(ExecutionService);
+
+    Object.defineProperty(executionService, 'equipmentSelectorResource', {
+      value: {
+        hasValue: () => true,
+        value: () => [
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.HIGH_SPEED_VIDEO,
+            selections: [
+              {
+                equipmentItemId: 'cam-av-1',
+                categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+                channel: 1,
+                seriesIds: ['series-1'],
+                shotIds: ['shot-1'],
+              },
+              {
+                equipmentItemId: 'rec-1',
+                categoryId: EquipmentTypeEnum.RECORDER,
+                channel: 1,
+                seriesIds: ['series-1'],
+                shotIds: ['shot-1'],
+              },
+            ],
+          },
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.CONVENTIONAL_VIDEO,
+            selections: [
+              {
+                equipmentItemId: 'cam-c-1',
+                categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+                channel: 2,
+                seriesIds: ['series-1'],
+                shotIds: ['shot-1'],
+              },
+            ],
+          },
+        ],
+      },
+      configurable: true,
     });
 
-    // Test camera options when AV is selected
-    fixture.componentInstance.updateTipoVideo('AV');
-    expect(fixture.componentInstance['cameraOptions']()).toEqual([
-      { value: 'cam-av-1', label: 'Photron SA-X2 / CAM-AV-001' },
-    ]);
+    fixture.componentInstance['selectorModel'].update((v) => ({
+      ...v,
+      serie: 'series-1',
+      disparo: 'shot-1',
+      tipoVideo: 'AV',
+    }));
 
-    // Test camera options when C is selected
+    await vi.waitFor(() => {
+      expect(fixture.componentInstance['equipmentOptions']()).toEqual([
+        {
+          value: 'cam-av-1|rec-1|01',
+          label: 'Photron SA-X2 / CAM-AV-001 / Fastcam R1 / REC-001 / Canal 01',
+        },
+      ]);
+    });
+
+    // Switch to conventional video tag (C)
     fixture.componentInstance.updateTipoVideo('C');
-    expect(fixture.componentInstance['cameraOptions']()).toEqual([
-      { value: 'cam-c-1', label: 'Sony PXW-Z280 / CAM-C-001' },
+    expect(fixture.componentInstance['equipmentOptions']()).toEqual([
+      {
+        value: 'cam-c-1||02',
+        label: 'Sony PXW-Z280 / CAM-C-001 / Canal 02',
+      },
     ]);
+  });
 
-    // Test grabador options
-    expect(fixture.componentInstance['grabadorOptions']()).toEqual([
-      { value: 'rec-1', label: 'Fastcam R1 / REC-001' },
-      { value: 'daq-1', label: 'Yokogawa DL850 / DAQ-001' },
-    ]);
+  it('onEquipmentSelected splits value and updates camera, grabador, and canal in the form', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+
+    fixture.componentInstance.onEquipmentSelected('cam-av-1|rec-1|01');
+
+    const model = fixture.componentInstance['selectorModel']();
+    expect(model.equipment).toBe('cam-av-1|rec-1|01');
+    expect(model.camera).toBe('cam-av-1');
+    expect(model.grabador).toBe('rec-1');
+    expect(model.canal).toBe('01');
+
+    const stored = store.videoDataIntroduction();
+    expect(stored.camera).toBe('cam-av-1');
+    expect(stored.grabador).toBe('rec-1');
+    expect(stored.canal).toBe('01');
   });
 
   it('loads initial shot data and preserves the other video block when saving', async () => {
@@ -158,6 +294,7 @@ describe('VideoDataIntroduction', () => {
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1');
       expect(fixture.componentInstance['selectorModel']().camera).toBe('camera-av-1');
+      expect(fixture.componentInstance['selectorModel']().equipment).toBe('camera-av-1|recorder-1|01');
     });
 
     fixture.componentInstance['selectorModel'].update((value) => ({ ...value, camera: 'camera-av-2' }));

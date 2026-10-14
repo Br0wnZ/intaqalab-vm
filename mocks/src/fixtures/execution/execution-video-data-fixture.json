@@ -1,7 +1,7 @@
 {
   "highSpeedVideoData": {
     "cameraId": "meas-hsc-001",
-    "recorderId": "meas-daq-001",
+    "recorderId": "meas-rec-001",
     "channel": 1,
     "measureId": "velocity",
     "observedResult": "Secuencia capturada correctamente.",
@@ -9,7 +9,7 @@
   },
   "conventionalVideoData": {
     "cameraId": "meas-cc-001",
-    "recorderId": "meas-daq-001",
+    "recorderId": "meas-rec-001",
     "channel": 2,
     "measureId": "trajectory",
     "observedResult": "Sin incidencias visibles.",
