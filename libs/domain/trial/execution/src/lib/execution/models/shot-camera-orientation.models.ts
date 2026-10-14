@@ -12,5 +12,18 @@ export interface ShotCameraOrientation {
 }
 
 export interface ShotCameraOrientationResponse {
-  cameraOrientationData: ShotCameraOrientation;
+  cameraId: number;
+  sameForAllSeries: boolean;
+  series: ShotCameraOrientationSeries[];
+}
+
+export interface ShotCameraOrientationSeries {
+  seriesId: string;
+  sameForAllShots: boolean;
+  shots: ShotCameraOrientationShot[];
+}
+
+export interface ShotCameraOrientationShot {
+  shotId: string;
+  orientationData: ShotCameraOrientation;
 }

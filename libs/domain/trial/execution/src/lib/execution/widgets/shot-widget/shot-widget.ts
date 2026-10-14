@@ -65,13 +65,13 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <input
-                placeholder="Ej: 001"
                 id="shot-number"
                 matInput
                 type="number"
                 libNoNegativeValues
                 libNoLeadingZeros
                 libLocalDecimal
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.SHOT.SHOT_NUMBER_PLACEHOLDER' | translate"
                 [decimals]="0"
                 [formField]="shotForm.shotNumber"
               />
@@ -85,10 +85,10 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
             </label>
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <input
-                placeholder="Ej: 850"
                 id="shot-velocity"
                 matInput
                 libLocalDecimal
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.SHOT.SPEED_PLACEHOLDER' | translate"
                 [formField]="shotForm.velocity"
               />
             </mat-form-field>

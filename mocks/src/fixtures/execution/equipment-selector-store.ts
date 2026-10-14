@@ -14,8 +14,11 @@ export enum EquipmentTypeEnum {
   PRESSURE_GAUGE = 'PRESSURE_GAUGE',
   CRUSHER = 'CRUSHER',
   PROBE = 'PROBE',
+  RECORDER = 'RECORDER',
   IPG_SENSOR = 'IPG_SENSOR',
   MICROMODULE = 'MICROMODULE',
+  DATA_ACQUISITION_SYSTEM = 'DATA_ACQUISITION_SYSTEM',
+  MUNITION = 'MUNITION',
 }
 
 export interface EquipmentSelectionApiItem {
@@ -96,6 +99,14 @@ function cloneEquipmentSelectorState(state: EquipmentSelectorGetResponse): Equip
 }
 
 function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
+  const commonSeriesIds = ['funcionamiento-1', '3fa85f64-5717-4562-b3fc-2c963f66afa1'];
+  const commonShotIds = [
+    'disparo-1',
+    'disparo-2',
+    '3fa85f64-5717-4562-b3fc-2c963f66bfa1',
+    '3fa85f64-5717-4562-b3fc-2c963f66bfa2',
+  ];
+
   return [
     {
       measurementGroup: EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
@@ -104,22 +115,22 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           equipmentItemId: 9876,
           equipmentDenominationId: 9876,
           categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
-          seriesIds: ['funcionamiento-1'],
-          shotIds: ['disparo-1', 'disparo-2'],
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
         {
           equipmentItemId: 4321,
           equipmentDenominationId: 4321,
           categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
-          seriesIds: ['funcionamiento-1'],
-          shotIds: ['disparo-1', 'disparo-2'],
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
         {
           equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.ANTENNA,
-          seriesIds: ['funcionamiento-1'],
-          shotIds: ['disparo-1', 'disparo-2'],
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
       ],
     },
@@ -130,15 +141,29 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
-          seriesIds: ['funcionamiento-1'],
-          shotIds: ['disparo-1', 'disparo-2'],
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 2,
+          categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 1,
+          categoryId: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
         {
           equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.AMPLIFIER,
-          seriesIds: ['funcionamiento-1'],
-          shotIds: ['disparo-1', 'disparo-2'],
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
       ],
     },
@@ -149,8 +174,8 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           equipmentItemId: 1,
           equipmentDenominationId: 1,
           categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
-          seriesIds: ['funcionamiento-2'],
-          shotIds: ['disparo-3'],
+          seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
+          shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
         },
       ],
     },

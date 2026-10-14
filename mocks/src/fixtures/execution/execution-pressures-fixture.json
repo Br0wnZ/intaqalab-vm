@@ -9,18 +9,18 @@
   "piezoPressures": [
     {
       "position": "CLOSING",
-      "piezoelectricSensorId": 12,
-      "amplifierId": 15,
-      "dataAcquisitionSystemId": 20,
+      "piezoelectricSensorId": 1,
+      "amplifierId": 1,
+      "dataAcquisitionSystemId": 1,
       "maxPressure": 3200.5,
       "maxPressureUnit": "BAR",
       "observations": "Sin incidencias."
     },
     {
       "position": "HALF",
-      "piezoelectricSensorId": 13,
-      "amplifierId": 16,
-      "dataAcquisitionSystemId": 21,
+      "piezoelectricSensorId": 2,
+      "amplifierId": 1,
+      "dataAcquisitionSystemId": 1,
       "maxPressure": 2800,
       "maxPressureUnit": "BAR"
     },

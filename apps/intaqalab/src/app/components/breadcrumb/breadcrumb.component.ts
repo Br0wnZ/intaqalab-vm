@@ -9,7 +9,11 @@ import { BreadcrumbService } from '../../services/breadcrumb/breadcrumb.service'
   selector: 'app-breadcrumb',
   imports: [RouterLink, TranslatePipe, IntaIconComponent],
   template: `
-    <nav aria-label="Ruta de navegación" data-testid="breadcrumb" class="flex items-center justify-between gap-4 mb-6">
+    <nav
+      data-testid="breadcrumb"
+      class="flex items-center justify-between gap-4 mb-6"
+      [attr.aria-label]="'BREADCRUMB.ARIA_LABEL' | translate"
+    >
       <div class="flex min-w-0 items-center gap-3">
         <ui-inta-icon name="hamburguer" size="xl" />
 

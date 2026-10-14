@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSelectClearable } from '@intaqalab/ui';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { SelectOption } from '../../utils-models/catalog.model';
 import type { MeasureSelectionData } from '../../utils-models/measure-serie.model';
@@ -13,7 +14,15 @@ export type { MeasureSelectionData, SelectOption };
 
 @Component({
   selector: 'inta-multi-select-searchable',
-  imports: [MatFormFieldModule, MatSelectModule, MatSelectClearable, MatInputModule, MatIconModule, MatButtonModule],
+  imports: [
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSelectClearable,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    TranslatePipe,
+  ],
   template: `
     <div class="multi-select-container">
       @if (label()) {
@@ -44,8 +53,8 @@ export type { MeasureSelectionData, SelectOption };
           >
             <mat-icon class="search-icon">search</mat-icon>
             <input
-              placeholder="Buscar"
               class="search-input"
+              [placeholder]="'COMMONS.SEARCH' | translate"
               [value]="searchTerm()"
               (input)="onSearchInput($event)"
               (click)="$event.stopPropagation()"
@@ -70,7 +79,7 @@ export type { MeasureSelectionData, SelectOption };
             </mat-option>
           }
           @if (filteredOptions().length === 0) {
-            <div class="no-results">No se encontraron resultados</div>
+            <div class="no-results">{{ 'COMMONS.NO_RESULTS' | translate }}</div>
           }
         </mat-select>
       </mat-form-field>
@@ -234,7 +243,6 @@ export class MultiSelectSearchableComponent {
   readonly _internalIds = signal<string[]>([]);
 
   readonly searchTerm = signal<string>('');
-  readonly starredItems = signal<string[]>([]);
 
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -244,35 +252,13 @@ export class MultiSelectSearchableComponent {
   readonly filteredOptions = computed(() => {
     const search = this.searchTerm().toLowerCase();
     const opts = this.options();
-    const starred = this.starredItems();
-
-    let filtered = opts;
-    if (search) {
-      filtered = opts.filter((option) => option.name.toLowerCase().includes(search));
-    }
-
-    return filtered.sort((a, b) => {
-      const aIsStarred = starred.includes(a.id);
-      const bIsStarred = starred.includes(b.id);
-
-      if (aIsStarred && !bIsStarred) return -1;
-      if (!aIsStarred && bIsStarred) return 1;
-
-      return String(a.name ?? '').localeCompare(String(b.name ?? ''));
-    });
+    return search ? opts.filter((option) => option.name.toLowerCase().includes(search)) : opts;
   });
 
   constructor() {
     // Sync selectedValues → _internalIds so mat-select gets explicit writeValue()
     effect(() => {
       this._internalIds.set(this.selectedValues().map((v) => v.id));
-    });
-
-    effect(() => {
-      const starred = this.options()
-        .filter((opt) => opt.favorite)
-        .map((opt) => opt.id);
-      this.starredItems.set(starred);
     });
   }
 
@@ -301,17 +287,11 @@ export class MultiSelectSearchableComponent {
   toggleStar(value: string, event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    const current = this.starredItems();
-    const isCurrentlyStarred = current.includes(value);
-
-    // Instead of updating the local state, emit the event to the parent
-    // to call the service. The local state will be updated via effect
-    // when the new options come from the API correctly.
-    this.toggleFavorite.emit({ id: value, isFavorite: !isCurrentlyStarred });
+    this.toggleFavorite.emit({ id: value, isFavorite: !this.isStarred(value) });
   }
 
   isStarred(value: string): boolean {
-    return this.starredItems().includes(value);
+    return this.options().find((option) => option.id === value)?.favorite === true;
   }
 
   clearSearch(): void {

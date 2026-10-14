@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { injectCurrentUser } from '@intaqalab/core';
+import { injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
@@ -9,12 +9,14 @@ import { firstValueFrom } from 'rxjs';
 import { ExecutionStore } from '../../+state/execution.store';
 import { CancelExecutionDialog } from '../dialogs/cancel-execution-dialog';
 import { EquipmentSelectorDialog } from '../dialogs/equipment-selector-dialog';
+import { TAG_CONFIGS } from '../dialogs/equipment-selector-dialog.mapper';
 import { InterruptExecutionDialog } from '../dialogs/interrupt-execution-dialog';
 import { PauseExecutionDialog } from '../dialogs/pause-execution-dialog';
 import type { EquipmentSelectorDialogResult } from '../models';
 import type { PlacedWidget, Widget, WidgetPreferenceId } from '../models/execution-grid.models';
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../models/execution-page.models';
 import { WidgetId } from '../models/widget-id.enum';
+import { resolveVisibleEquipmentTags } from '../utils/equipment-planning.utils';
 import { injectWidgets } from '../utils/inject-widgets';
 import { WidgetGridFullError, WidgetStateService } from './widget-state.service';
 
@@ -28,6 +30,7 @@ export class ExecutionPageFacade {
   readonly #translate = inject(TranslateService);
   readonly #toastr = inject(ToastrService);
   readonly #currentUser = injectCurrentUser();
+  readonly #userRoles = injectCurrentUserRole();
   readonly #pageVisible = injectPageVisibility();
   readonly #fireTrialId = signal<string | null>(null);
   readonly #isSaving = signal(false);
@@ -61,6 +64,12 @@ export class ExecutionPageFacade {
   readonly isLoading = computed(() => !this.#initialLoadDone());
   //readonly loadError = computed(() => this.#store.executionStateError() ?? this.#store.executionProgressError());
   readonly loadError = computed(() => false);
+
+  /**
+   * `true` si el usuario tiene al menos un tag de equipamiento visible según sus roles (funcional 4.3).
+   * Sin permisos sobre ningún tag, el botón "Seleccionar equipos" se deshabilita.
+   */
+  readonly canSelectEquipment = computed(() => resolveVisibleEquipmentTags(this.#userRoles(), TAG_CONFIGS).length > 0);
 
   readonly executionData = computed<ExecutionHeaderData>(() => {
     const trial = this.#store.fireTrialData();
@@ -270,7 +279,7 @@ export class ExecutionPageFacade {
 
   async openEquipmentSelector(): Promise<void> {
     const fireTrialId = this.#fireTrialId();
-    if (!fireTrialId) {
+    if (!fireTrialId || !this.canSelectEquipment()) {
       return;
     }
 

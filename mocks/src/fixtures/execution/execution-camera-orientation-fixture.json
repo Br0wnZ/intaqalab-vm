@@ -1,0 +1,70 @@
+{
+  "cameraId": 21051,
+  "sameForAllSeries": false,
+  "series": [
+    {
+      "seriesId": "10000000-0000-4000-8000-000000000001",
+      "sameForAllShots": true,
+      "shots": [
+        {
+          "shotId": "20000000-0000-4000-8000-000000000001",
+          "orientationData": {
+            "plannedImpactDistance": 1200,
+            "plannedImpactDistanceUnit": "M",
+            "functioningHeight": 20,
+            "functioningHeightUnit": "M",
+            "functioningDistance": 1150,
+            "functioningDistanceUnit": "M",
+            "cameraAngularDifference": 1.25,
+            "cameraAngularDifferenceUnit": "DEGREES"
+          }
+        },
+        {
+          "shotId": "20000000-0000-4000-8000-000000000002",
+          "orientationData": {
+            "plannedImpactDistance": 1200,
+            "plannedImpactDistanceUnit": "M",
+            "functioningHeight": 20,
+            "functioningHeightUnit": "M",
+            "functioningDistance": 1150,
+            "functioningDistanceUnit": "M",
+            "cameraAngularDifference": 1.25,
+            "cameraAngularDifferenceUnit": "DEGREES"
+          }
+        }
+      ]
+    },
+    {
+      "seriesId": "10000000-0000-4000-8000-000000000002",
+      "sameForAllShots": false,
+      "shots": [
+        {
+          "shotId": "20000000-0000-4000-8000-000000000003",
+          "orientationData": {
+            "plannedImpactDistance": 1800,
+            "plannedImpactDistanceUnit": "M",
+            "functioningHeight": null,
+            "functioningHeightUnit": "M",
+            "functioningDistance": 1720,
+            "functioningDistanceUnit": "M",
+            "cameraAngularDifference": 2.1,
+            "cameraAngularDifferenceUnit": "DEGREES"
+          }
+        },
+        {
+          "shotId": "20000000-0000-4000-8000-000000000004",
+          "orientationData": {
+            "plannedImpactDistance": 1800,
+            "plannedImpactDistanceUnit": "M",
+            "functioningHeight": null,
+            "functioningHeightUnit": "M",
+            "functioningDistance": 1720,
+            "functioningDistanceUnit": "M",
+            "cameraAngularDifference": 2.35,
+            "cameraAngularDifferenceUnit": "DEGREES"
+          }
+        }
+      ]
+    }
+  ]
+}

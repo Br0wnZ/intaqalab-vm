@@ -180,7 +180,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     </mat-checkbox>
                   </div>
                   @for (shot of allShots(); track shot.id) {
-                    <mat-option [value]="shot.id">Disparo {{ shot.globalNumber }}</mat-option>
+                    <mat-option [value]="shot.id">
+                      {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.SHOT' | translate }} {{ shot.globalNumber }}
+                    </mat-option>
                   }
                 </mat-select>
               </mat-form-field>

@@ -29,7 +29,10 @@ import {
                   : (viewDateValue | calendarDate: viewValue + 'ViewTitle' | titlecase) || ''
             }}
           </span>
-          <div aria-label="Calendar navigation" class="calendar-trials-header__navigation">
+          <div
+            class="calendar-trials-header__navigation"
+            [attr.aria-label]="'CALENDAR_TRIALS.CONTROLS.NAVIGATION_ARIA' | translate"
+          >
             <button
               type="button"
               mwlCalendarPreviousView

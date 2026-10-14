@@ -31,7 +31,7 @@ export function mapCatalogToMagnitudesOptions(catalog: MasterDataMeasureItem[]):
       id: item.id,
       name: formatMeasureOptionName(rawName),
       active: item.active,
-      favorite: item.favorite,
+      favorite: item.isFavorite,
     };
   };
 

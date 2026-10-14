@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -10,17 +10,25 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
+import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
 import { PiezoPressureIntroduction } from './piezo-pressure-introduction';
+import {
+  buildPiezoEquipmentCombinedValue,
+  equipmentStringToId,
+  matchesEquipmentId,
+  splitPiezoEquipmentCombinedValue,
+} from './piezo-pressure-introduction.mapper';
 
 const mockWidgetStateService = {
-  updateWidgetFormState: () => {},
-  addWidget: () => {},
+  updateWidgetFormState: vi.fn(),
+  addWidget: vi.fn(),
   placedWidgets: () => [],
 };
 
 describe('PiezoPressureIntroduction', () => {
-  const renderWidget = (widgetId = 'test-widget') =>
+  const renderWidget = (widgetId = 'test-widget', extraProviders: Provider[] = []) =>
     render(PiezoPressureIntroduction, {
       inputs: { widgetId },
       providers: [
@@ -30,6 +38,7 @@ describe('PiezoPressureIntroduction', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
+        ...extraProviders,
       ],
       imports: [TranslateModule.forRoot()],
     });
@@ -210,5 +219,172 @@ describe('PiezoPressureIntroduction', () => {
       expect(fixture.componentInstance['cierreItem']().piezoelectricSensorId).toBe(99);
       expect(fixture.componentInstance['timesData']().actionTime).toBe(7.8);
     });
+  });
+
+  it('builds combined equipment options for active serie and shot from equipment selector resource', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+      [EquipmentTypeEnum.PIEZOELECTRIC_SENSOR]: [{ id: '1', label: 'Sensor Kistler 6215' }],
+      [EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM]: [{ id: '2', label: 'Registrador Yokogawa DL850' }],
+      [EquipmentTypeEnum.AMPLIFIER]: [{ id: '3', label: 'Amplificador Kistler 5018' }],
+    });
+
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    Object.defineProperty(execService, 'equipmentSelectorResource', {
+      value: {
+        hasValue: () => true,
+        value: () => [
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.PIEZOELECTRIC_PRESSURE,
+            selections: [
+              {
+                equipmentItemId: 1,
+                categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+                seriesIds: ['funcionamiento-1'],
+                shotIds: ['disparo-1'],
+              },
+              {
+                equipmentItemId: 2,
+                categoryId: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+                seriesIds: ['funcionamiento-1'],
+                shotIds: ['disparo-1'],
+              },
+              {
+                equipmentItemId: 3,
+                categoryId: EquipmentTypeEnum.AMPLIFIER,
+                seriesIds: ['funcionamiento-1'],
+                shotIds: ['disparo-1'],
+              },
+            ],
+          },
+        ],
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    await fixture.whenStable();
+    fixture.componentInstance.onSerieSelected('funcionamiento-1');
+    fixture.componentInstance.onDisparoSelected('disparo-1');
+    await fixture.whenStable();
+
+    const options = fixture.componentInstance['piezoEquipmentOptions']();
+    expect(options).toEqual([
+      {
+        value: '1|2|3',
+        label: 'Sensor Kistler 6215 / Registrador Yokogawa DL850 / Amplificador Kistler 5018',
+      },
+    ]);
+  });
+
+  it('returns empty piezoEquipmentOptions when equipmentSelector has no selections for PIEZOELECTRIC_PRESSURE', async () => {
+    const { fixture } = await renderWidget('piezo-empty-equipments');
+    const executionService = TestBed.inject(ExecutionService);
+
+    Object.defineProperty(executionService, 'equipmentSelectorResource', {
+      value: {
+        hasValue: () => true,
+        value: () => [],
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    await fixture.whenStable();
+    fixture.componentInstance.onSerieSelected('funcionamiento-1');
+    fixture.componentInstance.onDisparoSelected('disparo-1');
+    await fixture.whenStable();
+
+    const options = fixture.componentInstance['piezoEquipmentOptions']();
+    expect(options).toEqual([]);
+  });
+
+  it('injectInitialPiezoPressureEquipments extracts selections from resource', () => {
+    const mockExecutionService = {
+      equipmentSelectorResource: {
+        hasValue: () => true,
+        value: () => [
+          {
+            measurementGroup: EquipmentMeasurementGroupEnum.PIEZOELECTRIC_PRESSURE,
+            selections: [
+              {
+                equipmentItemId: 42,
+                categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: ExecutionService, useValue: mockExecutionService }],
+    });
+
+    const selections = TestBed.runInInjectionContext(() => injectInitialPiezoPressureEquipments());
+    expect(selections()).toEqual([
+      {
+        equipmentItemId: 42,
+        categoryId: EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
+      },
+    ]);
+  });
+
+  it('builds and splits combined piezo equipment values properly', () => {
+    expect(buildPiezoEquipmentCombinedValue(10, 20, 30)).toBe('10|20|30');
+    expect(splitPiezoEquipmentCombinedValue('10|20|30')).toEqual({
+      captadorId: '10',
+      registradorId: '20',
+      amplificadorId: '30',
+    });
+    expect(buildPiezoEquipmentCombinedValue(null, 20, 30)).toBeNull();
+    expect(buildPiezoEquipmentCombinedValue(10, undefined, 30)).toBeNull();
+    expect(buildPiezoEquipmentCombinedValue(10, 20, '')).toBeNull();
+    expect(splitPiezoEquipmentCombinedValue(null)).toEqual({
+      captadorId: null,
+      registradorId: null,
+      amplificadorId: null,
+    });
+    expect(splitPiezoEquipmentCombinedValue('invalid-val')).toEqual({
+      captadorId: null,
+      registradorId: null,
+      amplificadorId: null,
+    });
+  });
+
+  it('updates sensor tab model when combo selection changes', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance.onSensorModelChange('CLOSING', {
+      position: 'CLOSING',
+      piezoelectricSensorId: 10,
+      dataAcquisitionSystemId: 20,
+      amplifierId: 30,
+      maxPressure: 1200,
+      maxPressureUnit: 'BAR',
+      observations: null,
+    });
+
+    const cierre = fixture.componentInstance['cierreItem']();
+    expect(cierre.piezoelectricSensorId).toBe(10);
+    expect(cierre.dataAcquisitionSystemId).toBe(20);
+    expect(cierre.amplifierId).toBe(30);
+  });
+
+  it('matches equipment IDs directly or by numeric suffix', () => {
+    const idSet = new Set(['1', '2']);
+    expect(matchesEquipmentId(idSet, '1')).toBe(true);
+    expect(matchesEquipmentId(idSet, 'meas-pe-001')).toBe(true);
+    expect(matchesEquipmentId(idSet, 'meas-pe-002')).toBe(true);
+    expect(matchesEquipmentId(idSet, 'meas-pe-003')).toBe(false);
+    expect(matchesEquipmentId(idSet, 'other')).toBe(false);
+  });
+
+  it('parses direct numbers and equipment item strings to numeric ID', () => {
+    expect(equipmentStringToId('1')).toBe(1);
+    expect(equipmentStringToId('meas-pe-001')).toBe(1);
+    expect(equipmentStringToId('meas-daq-002')).toBe(2);
+    expect(equipmentStringToId(null)).toBeNull();
+    expect(equipmentStringToId('')).toBeNull();
+    expect(equipmentStringToId('no-digits')).toBeNull();
   });
 });

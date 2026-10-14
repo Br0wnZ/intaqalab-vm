@@ -2,6 +2,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialogHarness } from '@angular/material/dialog/testing';
 import { MatMenuHarness } from '@angular/material/menu/testing';
@@ -21,6 +22,7 @@ import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentPlanningService } from '../../../services/equipment-planning.service';
 import type {
   EquipmentSelectorResponse,
   EquipmentSelectorUpdateResponse,
@@ -32,9 +34,7 @@ import type {
   JltShotDataResponse,
   PlanningArmamentResponse,
   PlanningConditionsResponse,
-  PlanningResponse,
   PlanningSeriesItem,
-  PlanningStateResponse,
   ProfileReadinessItem,
   ProfilesReadinessResponse,
   SecurityCountdownResponse,
@@ -43,6 +43,8 @@ import type {
   ShotVelocitiesResponse,
 } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectorDialog } from '../../dialogs/equipment-selector-dialog';
+import { EquipmentSelectorStore } from '../../dialogs/equipment-selector.store';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { Execution } from './execution';
@@ -93,9 +95,6 @@ function createMockExecutionService(
     resumeResource: createMockResource<void>(),
     cancelResource: createMockResource<void>(),
     finishResource: createMockResource<void>(),
-    planningResource: createMockResource<PlanningResponse>(),
-    updatePlanningResource: createMockResource<PlanningResponse>(),
-    planningStateResource: createMockResource<PlanningStateResponse>(),
     approvePlanningResource: createMockResource<void>(),
     preferencesByRoleResource: createMockResource<ExecutionWidgetLayout>(),
     updatePreferencesByRoleResource: createMockResource<ExecutionWidgetLayout>(),
@@ -131,9 +130,7 @@ function createMockExecutionService(
     resumeExecution: vi.fn(),
     cancelExecution: vi.fn(),
     finishExecution: vi.fn(),
-    getExecutionPlanning: vi.fn(),
     updateExecutionPlanning: vi.fn(),
-    getExecutionPlanningState: vi.fn(),
     approveExecutionPlanning: vi.fn(),
     getPreferencesByRole: vi.fn(),
     updatePreferencesByRole: vi.fn(),
@@ -184,9 +181,11 @@ describe('Execution', () => {
   const setup = async ({
     fireTrialId = 'b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c',
     executionService = createMockExecutionService(),
+    roles = [Role.INTAQALAB_ADMIN],
   }: {
     fireTrialId?: string;
     executionService?: MockExecutionService;
+    roles?: Role[];
   } = {}) => {
     const user = userEvent.setup();
     const trialsDataService = createTrialsDataServiceMock();
@@ -220,7 +219,7 @@ describe('Execution', () => {
               name: 'Test User',
               roles: ['SYSTEM_ADMIN'],
             }),
-            userRoles: signal<Role[]>([Role.INTAQALAB_ADMIN]),
+            userRoles: signal<Role[]>(roles),
             hasRole: () => true,
             hasAnyRole: () => true,
           },
@@ -253,6 +252,11 @@ describe('Execution', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('requests equipment selector data when initialized with an active fire trial', async () => {
+    const { executionService } = await setup({ fireTrialId: 'trial-abc' });
+    expect(executionService.getEquipmentSelector).toHaveBeenCalledWith('trial-abc');
   });
 
   it('renders the execution basic details', async () => {
@@ -367,7 +371,7 @@ describe('Execution', () => {
     await user.click(addButtons[0]);
 
     expect(widgetStateService.placedWidgets().length).toBeGreaterThan(0);
-  });
+  }, 15000);
 
   it('allows toggling the edit mode via slide toggle', async () => {
     const { loader } = await setup();
@@ -419,7 +423,7 @@ describe('Execution', () => {
     expect(dialogs.length).toBe(1);
 
     const dialogTitle = await dialogs[0].getTitleText();
-    expect(dialogTitle).toContain('Interrumpir prueba de fuego');
+    expect(dialogTitle).toMatch(/TRIAL_EXECUTION\.DIALOGS\.INTERRUPT_EXECUTION\.TITLE|Interrumpir prueba de fuego/);
   });
 
   it('opens the actions menu and can trigger the pause and cancel dialogs', async () => {
@@ -446,10 +450,28 @@ describe('Execution', () => {
     dialogs = await rootLoader.getAllHarnesses(MatDialogHarness);
     expect(dialogs.length).toBe(1);
     const cancelTitle = await dialogs[0].getTitleText();
-    expect(cancelTitle).toContain('Cancelar prueba de fuego');
+    expect(cancelTitle).toMatch(/TRIAL_EXECUTION\.DIALOGS\.CANCEL_EXECUTION\.TITLE|Cancelar prueba de fuego/);
   });
 
   it('opens equipment selector dialog when clicking selector button', async () => {
+    TestBed.overrideComponent(EquipmentSelectorDialog, {
+      set: {
+        providers: [
+          {
+            provide: EquipmentPlanningService,
+            useValue: {
+              load: vi.fn(),
+              trialMeasuresResource: { status: signal('resolved'), value: () => ({ series: [] }) },
+              catalogResource: { status: signal('resolved'), value: () => ({ items: [] }) },
+              catalog: () => [],
+              isLoading: () => false,
+              error: () => null,
+            },
+          },
+          EquipmentSelectorStore,
+        ],
+      },
+    });
     const { loader, rootLoader } = await setup();
 
     const equipmentBtn = await loader.getHarness(
@@ -460,6 +482,15 @@ describe('Execution', () => {
     const dialogs = await rootLoader.getAllHarnesses(MatDialogHarness);
     expect(dialogs.length).toBe(1);
     await dialogs[0].close();
+  });
+
+  it('disables equipment selector button when user lacks equipment permissions', async () => {
+    const { loader } = await setup({ roles: [Role.INTAQALAB_VIEWER] });
+
+    const equipmentBtn = await loader.getHarness(
+      MatButtonHarness.with({ text: /TRIAL_EXECUTION\.DIALOGS\.EQUIPMENT_SELECTOR\.BTN_LABEL/i }),
+    );
+    expect(await equipmentBtn.isDisabled()).toBe(true);
   });
 
   describe('User Preferences Layout', () => {

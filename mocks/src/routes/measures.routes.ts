@@ -31,7 +31,7 @@ function toCatalogItem(item: Partial<MeasureCatalogItem> & Pick<MeasureCatalogIt
     magnitudeLabel,
     procedureLabel,
     active: true,
-    favorite: false,
+    isFavorite: false,
     ...item,
   };
 }
@@ -75,6 +75,10 @@ measuresRouter.get('/measures', (req: Request, res: Response) => {
       const rightValue = String(right[sortField as keyof MeasureCatalogItem] ?? '');
       return leftValue.localeCompare(rightValue) * (sortDirection === 'asc' ? 1 : -1);
     });
+  } else {
+    filtered.sort(
+      (left, right) => Number(right.isFavorite) - Number(left.isFavorite) || left.label.localeCompare(right.label),
+    );
   }
 
   const start = (page - 1) * pageSize;
@@ -134,7 +138,7 @@ measuresRouter.put('/measures/:measureId/favorite', (req: Request, res: Response
   const index = MEASURES_CATALOG.findIndex((m) => m.id === measureId);
 
   if (index !== -1) {
-    MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], favorite: true };
+    MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], isFavorite: true };
     res.status(204).send();
   } else {
     res.status(404).json({ title: 'Not found', status: 404 });
@@ -146,7 +150,7 @@ measuresRouter.delete('/measures/:measureId/favorite', (req: Request, res: Respo
   const index = MEASURES_CATALOG.findIndex((m) => m.id === measureId);
 
   if (index !== -1) {
-    MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], favorite: false };
+    MEASURES_CATALOG[index] = { ...MEASURES_CATALOG[index], isFavorite: false };
     res.status(204).send();
   } else {
     res.status(404).json({ title: 'Not found', status: 404 });

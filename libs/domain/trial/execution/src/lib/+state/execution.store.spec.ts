@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WidgetId } from '../execution/models/widget-id.enum';
 import { ExecutionService } from '../services/execution.service';
@@ -34,9 +34,43 @@ describe('ExecutionStore (composición de features)', () => {
     expect(store.fireTrialId()).toBe('trial-1');
   });
 
+  it('does not load the security countdown when execution initializes', () => {
+    store.setFireTrialId('trial-1');
+    TestBed.tick();
+
+    TestBed.inject(HttpTestingController).expectNone((request) =>
+      request.url.includes('/execution/security-countdown'),
+    );
+  });
+
+  it('does not request planning state when trial loads', () => {
+    const http = TestBed.inject(HttpTestingController);
+    store.setFireTrialId('trial-1');
+    TestBed.tick();
+    http.expectNone((request) => request.url.endsWith('/execution/planning/state'));
+
+    http.expectOne((request) => request.url.endsWith('/fire-trials/trial-1')).flush({ id: 'trial-1' });
+    TestBed.tick();
+    http.expectNone((request) => request.url.endsWith('/execution/planning/state'));
+  });
+
   it('expone el slice de readiness', () => {
     expect(store.techUnits().length).toBeGreaterThan(0);
     expect(store.jltStatus()).toBeDefined();
+  });
+
+  it('does not request planning state for a mismatched trial response', async () => {
+    const http = TestBed.inject(HttpTestingController);
+    store.setFireTrialId('trial-1');
+    TestBed.tick();
+    http.expectOne((request) => request.url.endsWith('/fire-trials/trial-1')).flush({ id: 'trial-2' });
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(store.fireTrial()).not.toBeNull();
+    });
+
+    http.expectNone((request) => request.url.endsWith('/execution/planning/state'));
   });
 
   it('expone los computeds de equipment-selector en estado idle', () => {

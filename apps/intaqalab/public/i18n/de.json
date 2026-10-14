@@ -1,7 +1,21 @@
 {
   "ADMIN": {
     "ADMIN_DOCS_SECTION": {
-      "SYNC": "Wird geladen..."
+      "DOCUMENTS_LIST": "Liste der Dokumenttypen",
+      "FILTER_BY_STATUS": "Nach Status filtern",
+      "HEADER": "Verwaltung der Dokumenttypen",
+      "NEW_DOCUMENT_TYPE": "Neuer Dokumenttyp",
+      "NO_RESULTS": "Keine Dokumente gefunden.",
+      "PAGINATION_ARIA": "Dokumentseite auswählen",
+      "SEARCH_PLACEHOLDER": "Nach Dokumentnamen suchen",
+      "SYNC": "Wird geladen...",
+      "TABLE": {
+        "ACTIONS": "Aktionen",
+        "CATEGORY": "Kategorie",
+        "NAME": "Name des Dokumenttyps",
+        "OBSERVATIONS": "Bemerkungen",
+        "STATUS": "Status"
+      }
     }
   },
   "ASSOCIATED_TRIAL_DIALOG": {
@@ -20,14 +34,835 @@
     "YEAR_LABEL": "Jahr",
     "YEAR_SEARCH_PLACEHOLDER": "Jahr auswählen"
   },
+  "BREADCRUMB": {
+    "ARIA_LABEL": "Brotkrumennavigation",
+    "CALENDAR": "Kalender",
+    "CALENDAR_TRIALS": "Versuchskalender",
+    "CATALOG": "Katalog",
+    "CATALOG_DIMENSION": "Dimension",
+    "CATALOG_DOCUMENT_TYPE": "Dokumenttyp",
+    "CATALOG_FUZE_TYPE": "Zündertyp",
+    "CATALOG_LOADING_ZONE": "Ladezonen",
+    "CATALOG_MATERIAL": "Material",
+    "CATALOG_MEASUREMENTS_AND_RECORDS": "Messungen und Datensätze",
+    "CATALOG_STANAG": "STANAG-Kriterien",
+    "CATALOG_TARGET_TYPE": "Zieltyp",
+    "CATALOG_TRIAL_TYPE": "Versuchstyp",
+    "DEMOS": "Demos",
+    "EVENT_LOG": "Ereignisprotokoll",
+    "EXECUTION": "Ausführung",
+    "PLANNING": "Versuchsplanung",
+    "PLANNING_DETAIL": "Planungsblatt",
+    "PLANNING_TRIAL": "Planung",
+    "TRIALS": "Versuchsverwaltung",
+    "TRIAL_DOCUMENT": "Dokumentation",
+    "TRIAL_LIST": "Versuchsliste",
+    "TRIAL_NEW": "Neuer Versuch",
+    "TRIAL_VIEW": "Versuchsblatt",
+    "WAREHOUSE": "Lagerverwaltung",
+    "WAREHOUSE_DENOMINATIONS": "Bezeichnungsverwaltung",
+    "WAREHOUSE_MOVEMENTS": "Bewegungshistorie",
+    "WAREHOUSE_MUNITIONS": "Munitionserfassung",
+    "WAREHOUSE_MUNITIONS_DUMPS": "Munitionslagerverwaltung",
+    "WAREHOUSE_MUNITION_COMPONENTS": "Munitionstypverwaltung",
+    "WAREHOUSE_STOCK": "Munitionsbestand"
+  },
+  "CALENDAR_TRIALS": {
+    "ACTIONS": {
+      "ADD_OBS": "Bemerkungen hinzufügen",
+      "DELETE_OBS": "Bemerkungen löschen",
+      "EDIT_OBS": "Bemerkungen bearbeiten",
+      "PROGAM": "Versuch planen",
+      "UNPROGAM": "Planung aufheben"
+    },
+    "ALL_LINES": "Alle Linien",
+    "CELL_HOLIDAY": "ARBEITSFREI",
+    "CELL_NO_NOTAM": "OHNE NOTAM",
+    "CONFIRM_DELETE_OBS": {
+      "DESCRIPTION": "Sie sind im Begriff, die Bemerkung für den Tag {{day}} zu löschen",
+      "LABEL_COFIRM": "Löschen",
+      "TITLE": "Bemerkungen löschen"
+    },
+    "CONTROLS": {
+      "DAY": "Täglich",
+      "LINE": "Linie",
+      "MONTH": "Monatlich",
+      "NAVIGATION_ARIA": "Kalendernavigation",
+      "NEXT": ">",
+      "PREVIOUS": "<",
+      "SHOW_WEEKENDS": "Wochenenden anzeigen",
+      "TODAY": "Heute",
+      "WEEK": "Wöchentlich"
+    },
+    "EVENT": {
+      "APPLIER": "Kunde",
+      "DESCRIPTION": "Beschreibung",
+      "TRIAL": "Versuch"
+    },
+    "EVENT_TOOLTIP": {
+      "APPLIER": "Kunde",
+      "DESCRIPTION": "Beschreibung",
+      "TRIAL": "Versuch"
+    },
+    "MODAL_ADD_OBS": {
+      "ADD": "Hinzufügen",
+      "EDIT": "Bearbeiten",
+      "PLACEHOLDER": "Bemerkungen hier eingeben...",
+      "TITLE": "Bemerkungen"
+    }
+  },
   "COMMONS": {
+    "ACCEPT": "Annehmen",
+    "ACTIONS": "Aktionen",
+    "ADD": "Hinzufügen",
+    "CANCEL": "Abbrechen",
+    "CONFIRM": "Bestätigen",
+    "CREATE": "Erstellen",
+    "DELETE": "Löschen",
+    "DELETE_DATA": "Daten löschen",
+    "DRAG_TO_REORDER": "Ziehen zum Neuanordnen",
+    "EDIT": "Bearbeiten",
+    "INVALID_DATE_FORMAT": "Ungültiges Datumsformat",
     "LOADING": "Wird geladen...",
+    "NO_OBSERVATIONS": "Keine Beobachtungen",
     "NO_RESULTS": "Keine Ergebnisse gefunden",
+    "OBSERVATIONS": "Beobachtungen",
+    "OPTIONAL": "Optional",
+    "REGISTER": "Registrieren",
+    "REQUIRED_FIELD": "Pflichtfeld",
+    "RETURN": "Zurück",
+    "SAVE": "Speichern",
+    "SAVING_CHANGES": "Änderungen werden gespeichert",
     "SEARCH": "Suchen"
+  },
+  "CONFIRM_DELETE_DIALOG": {
+    "CANCEL": "Abbrechen",
+    "CONFIRM": "Löschen",
+    "MESSAGE": "Möchten Sie das Dokument {{ name }} wirklich löschen?",
+    "TITLE": "Dokument löschen"
+  },
+  "EVENT_LOG": {
+    "DOCUMENTS": {
+      "ACTIONS": {
+        "ADD": "Hinzufügen",
+        "DELETE": "Löschen",
+        "LINK": "Verknüpfen",
+        "MODIFY": "Bearbeiten",
+        "VIEW": "Anzeigen"
+      },
+      "FILTERS": {
+        "TYPE": {
+          "LABEL": "Dokumenttyp",
+          "PLACEHOLDER": "Dokumenttyp auswählen"
+        }
+      },
+      "LABELS": {
+        "ACCESS_COUNT": "Zugriffe",
+        "TITLE": "Dokumentname",
+        "TYPE": "Dokumenttyp"
+      },
+      "TYPES": {
+        "APPLICATION": "Antrag",
+        "AUTH": "Autorisierung",
+        "BUDGET": "Kostenvoranschlag",
+        "CERT_CONF": "Konformitätsbescheinigung",
+        "COMMUNICATIONS": "Mitteilungen",
+        "EXT_REPORT": "Externer Bericht",
+        "METEO_DATA": "Meteorologische Daten",
+        "NOTE_EXP": "Erfahrungsbericht",
+        "OTHER": "Sonstiges",
+        "REF_DOC": "Referenzdokumentation",
+        "TECH_ACT_REPORT": "Technischer Tätigkeitsbericht",
+        "TEST_CATALOG": "Versuchskatalog",
+        "TEST_PLAN": "Versuchsplan"
+      }
+    },
+    "FILTERS": {
+      "ACTION": {
+        "LABEL": "Aktion",
+        "PLACEHOLDER": "Aktion"
+      },
+      "CLEAN_BUTTON": "Filter zurücksetzen",
+      "DATE": {
+        "ERROR": "Ein Enddatum ist erforderlich",
+        "LABEL": "Datum",
+        "PLACEHOLDER_END": "Enddatum",
+        "PLACEHOLDER_START": "Startdatum"
+      },
+      "EXPORT_EXCEL_BUTTON": "Excel exportieren",
+      "EXPORT_PDF_BUTTON": "PDF exportieren",
+      "HARDWARE": {
+        "LABEL": "Gerät",
+        "PLACEHOLDER": "Gerät"
+      },
+      "SEARCH_BUTTON": "Suchen",
+      "TOGGLE_FILTERS_PANEL_BUTTON": "Filter",
+      "USER": {
+        "LABEL": "Benutzer",
+        "PLACEHOLDER": "Benutzer"
+      }
+    },
+    "GENERAL_DATA": {
+      "ACTIONS": {
+        "CREATE": "Erstellen",
+        "EDIT": "Bearbeiten"
+      },
+      "FILTERS": {
+        "VALUE": {
+          "LABEL": "Wert",
+          "PLACEHOLDER": "Wert hier eingeben"
+        }
+      },
+      "LABELS": {
+        "VALUE": "Wert"
+      }
+    },
+    "LIST_LABELS": {
+      "ACTION": "Aktion",
+      "DATE": "Datum",
+      "HARDWARE_ID": "Gerät",
+      "USER": "Benutzer"
+    },
+    "MEASURES": {
+      "ACTIONS": {
+        "CREATE": "Erstellen",
+        "EDIT": "Bearbeiten"
+      },
+      "ELEMENT": {
+        "SERIE": "Serie",
+        "SHOOT": "Schuss"
+      },
+      "FILTERS": {
+        "INSTRUMENT": {
+          "LABEL": "Gerät",
+          "PLACEHOLDER": "Gerät"
+        },
+        "MEASURE": {
+          "LABEL": "Messung",
+          "PLACEHOLDER": "Messung"
+        },
+        "SERIE": {
+          "LABEL": "Serie",
+          "PLACEHOLDER": "Serie"
+        },
+        "SHOOT": {
+          "LABEL": "Schuss",
+          "PLACEHOLDER": "Schuss"
+        },
+        "VALUE": {
+          "LABEL": "Wert",
+          "PLACEHOLDER": "Wert"
+        }
+      },
+      "LABELS": {
+        "INSTRUMENT": "Gerät",
+        "MEASURE": "Messung",
+        "SERIE": "Serie",
+        "SHOOT": "Schuss",
+        "VALUE": "Wert"
+      }
+    },
+    "SERIES_AND_SHOOTS": {
+      "ACTIONS": {
+        "CREATE": "Erstellen",
+        "EDIT": "Bearbeiten"
+      },
+      "ELEMENT": {
+        "SERIE": "Serie",
+        "SHOOT": "Schuss"
+      },
+      "FILTERS": {
+        "ELEMENT": {
+          "LABEL": "Element",
+          "PLACEHOLDER": "Element"
+        },
+        "INTERNAL_ID": {
+          "LABEL": "Interne ID",
+          "PLACEHOLDER": "Interne ID"
+        },
+        "VISIBLE_NUMBER": {
+          "LABEL": "Sichtbare Nummer",
+          "PLACEHOLDER": "Sichtbare Nummer"
+        }
+      },
+      "LABELS": {
+        "ELEMENT": "Element",
+        "INTERNAL_ID": "Interne ID",
+        "VISIBLE_NUMBER": "Aktuell sichtbare Nummer"
+      }
+    },
+    "TABS": {
+      "DOCUMENTS": "Dokumente",
+      "GENERAL_DATA": "Allgemeine Daten",
+      "MEASURES": "Messungen",
+      "SERIES_AND_SHOOTS": "Serien und Schüsse"
+    }
   },
   "HEADER_TOOLS": {
     "CURRENT_ROLES": "Aktuelle Rollen",
     "TITLE": "Kopfzeilen-Tools"
+  },
+  "HTTP_ERRORS": {
+    "BAD_REQUEST": "Überprüfen Sie die gesendeten Daten.",
+    "DEFAULT": "Ein unerwarteter Fehler ist aufgetreten.",
+    "FORBIDDEN": "Sie haben keinen Zugriff auf diese Ressource.",
+    "NOT_FOUND": "Die angeforderte Ressource existiert nicht.",
+    "NO_CONNECTION": "Verbindung zum Server konnte nicht hergestellt werden.",
+    "SERVER_ERROR": "Auf dem Server ist ein Problem aufgetreten. Versuchen Sie es später erneut.",
+    "TITLE": "Fehler",
+    "UNAUTHORIZED": "Ihre Sitzung ist abgelaufen oder Sie besitzen keine Berechtigungen."
+  },
+  "MASTER_DATA": {
+    "DIALOGS": {
+      "DELETE": {
+        "BUTTONS": {
+          "CANCEL": "Abbrechen",
+          "REMOVE": "Löschen"
+        },
+        "CONFIRMATION": "Diese Aktion kann nicht rückgängig gemacht werden."
+      },
+      "SWITCH_STATUS": {
+        "BUTTONS": {
+          "CANCEL": "Abbrechen",
+          "SWITCH": "Bestätigen"
+        },
+        "INFO": "<b>Sie können den Status jederzeit wieder ändern</b>. Beachten Sie, dass <b>bei einer Deaktivierung das Element nicht verfügbar ist.</b>"
+      },
+      "UPSERT": {
+        "BUTTONS": {
+          "CANCEL": "Abbrechen",
+          "SAVE": "Annehmen"
+        },
+        "CREATE_TITLE": "Datensatz erstellen",
+        "EDIT_TITLE": "Datensatz bearbeiten",
+        "INPUTS": {
+          "DESCRIPTION": "Beschreibung (Optional)",
+          "NAME_EN": {
+            "LABEL": "Englischer Name",
+            "PLACEHOLDER": "Geben Sie den englischen Namen ein"
+          },
+          "NAME_ES": {
+            "LABEL": "Name",
+            "PLACEHOLDER": "Geben Sie den Namen ein"
+          }
+        }
+      }
+    },
+    "DIMENSION": {
+      "DIALOGS": {
+        "CREATE": {
+          "BUTTONS": {
+            "CANCEL": "Abbrechen",
+            "OK": "Hinzufügen"
+          },
+          "DESCRIPTION": {
+            "EN": {
+              "LABEL": "Bemerkungen auf Englisch (Optional)",
+              "PLACEHOLDER": "Geben Sie hier die Dimensionsbeschreibung auf Englisch ein"
+            },
+            "ES": {
+              "LABEL": "Bemerkungen (Optional)",
+              "PLACEHOLDER": "Geben Sie hier die Dimensionsbeschreibung ein"
+            }
+          },
+          "INPUT": {
+            "EN": {
+              "LABEL": "Dimensionsname auf Englisch",
+              "PLACEHOLDER": "Geben Sie hier den Dimensionsnamen auf Englisch ein"
+            },
+            "ES": {
+              "LABEL": "Dimensionsname",
+              "PLACEHOLDER": "Geben Sie hier den Dimensionsnamen ein"
+            }
+          },
+          "TITLE": "Dimension erstellen"
+        },
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diese Dimension wirklich löschen?<br><b>Diese Aktion kann nicht rückgängig gemacht werden.</b>",
+          "TITLE": "Dimension löschen"
+        },
+        "EDIT": {
+          "BUTTONS": {
+            "CANCEL": "Abbrechen",
+            "OK": "Hinzufügen"
+          },
+          "DESCRIPTION": {
+            "EN": {
+              "LABEL": "Bemerkungen auf Englisch (Optional)",
+              "PLACEHOLDER": "Geben Sie hier die Dimensionsbeschreibung auf Englisch ein"
+            },
+            "ES": {
+              "LABEL": "Bemerkungen (Optional)",
+              "PLACEHOLDER": "Geben Sie hier die Dimensionsbeschreibung ein"
+            }
+          },
+          "INPUT": {
+            "EN": {
+              "LABEL": "Dimensionsname auf Englisch",
+              "PLACEHOLDER": "Geben Sie hier den Dimensionsnamen auf Englisch ein"
+            },
+            "ES": {
+              "LABEL": "Dimensionsname",
+              "PLACEHOLDER": "Geben Sie hier den Dimensionsnamen ein"
+            }
+          },
+          "TITLE": "Dimension bearbeiten"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie diese Dimension wirklich aktivieren/deaktivieren?",
+          "TITLE": "Status der Dimension ändern"
+        },
+        "UPSERT": {
+          "DIAMETER": "Durchmesser",
+          "ERROR": {
+            "HEIGHT": "Sie müssen die Höhe angeben, wenn Sie die Breite angeben",
+            "POSITIVE": "Eine positive Zahl ist erforderlich",
+            "WIDTH": "Sie müssen die Breite angeben, wenn Sie die Höhe angeben"
+          },
+          "HEIGHT": "Höhe",
+          "WIDTH": "Breite"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "DESCRIPTION": "Bemerkungen",
+        "ID": "Dimensions-ID",
+        "NAME": "Name",
+        "TITLE": "Dimensionsarten"
+      },
+      "TITLE": "Dimensionsverwaltung"
+    },
+    "DIMENSIONS_DIALOG": {
+      "TITLE_CREATE": "Datensatz erstellen",
+      "TITLE_CREATE1": "Breite",
+      "TITLE_CREATE2": "Höhe",
+      "TITLE_CREATE3": "Durchmesser",
+      "TITLE_EDIT": "Datensatz bearbeiten"
+    },
+    "DOCUMENT_TYPE": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diesen Dokumenttyp wirklich löschen?",
+          "TITLE": "Dokumenttyp löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses Dokumenttyps wirklich ändern?",
+          "TITLE": "Dokumenttyp aktivieren / deaktivieren"
+        },
+        "UPSERT": {
+          "DOCUMENT_TYPE": "Dokumenttyp"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "CATEGORY": {
+          "TITLE": "Kategorie",
+          "VALUES": {
+            "GENERAL": "Allgemein",
+            "SPECIFIC": "Besonders"
+          }
+        },
+        "DESCRIPTION": "Bemerkungen",
+        "NAME": "Name",
+        "STATUS": "Status",
+        "TITLE": "Dokumenttypen"
+      },
+      "TITLE": "Dokumenttypverwaltung"
+    },
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "Die erforderlichen Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut.",
+      "LOAD_FAILED_TITLE": "Fehler beim Laden der Daten"
+    },
+    "FUZE_TYPE": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diesen Zündertyp wirklich löschen?",
+          "TITLE": "Zündertyp löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses Zündertyps wirklich ändern?",
+          "TITLE": "Zündertyp aktivieren / deaktivieren"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "DESCRIPTION": "Bemerkungen",
+        "ID": "Funktionsmodus-ID",
+        "MODE": "Funktionsmodus",
+        "TITLE": "Zünderfunktionsarten"
+      },
+      "TITLE": "Zündertypverwaltung"
+    },
+    "LOADING_ZONE": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diese Ladezone wirklich löschen?",
+          "TITLE": "Ladezone löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieser Ladezone wirklich ändern?",
+          "TITLE": "Ladezone aktivieren / deaktivieren"
+        },
+        "UPSERT": {
+          "CALIBER": {
+            "LABEL": "Kaliber (Optional)",
+            "PLACEHOLDER": "Kaliber angeben"
+          },
+          "DENOMINATION": {
+            "LABEL": "Name des Ladetyps",
+            "PLACEHOLDER": "Name des Ladetyps angeben"
+          },
+          "DESCRIPTION": "Bemerkungen (Optional)",
+          "WEAPON": {
+            "LABEL": "Waffe (Optional)",
+            "PLACEHOLDER": "Waffe angeben"
+          },
+          "ZONE": {
+            "LABEL": "Ladezonen",
+            "PLACEHOLDER": "Ladezone(n) angeben"
+          }
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "CALIBER": "Kaliber",
+        "DENOMINATION": "Name des Ladetyps",
+        "DESCRIPTION": "Bemerkungen",
+        "ID": "Ladezonen-ID",
+        "WEAPON": "Waffe",
+        "ZONE": "Zone"
+      },
+      "TITLE": "Ladezonenverwaltung"
+    },
+    "MATERIAL": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie dieses Material wirklich löschen?",
+          "TITLE": "Material löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses Materials wirklich ändern?",
+          "TITLE": "Material aktivieren / deaktivieren"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "DESCRIPTION": "Bemerkungen",
+        "ID": "Material-ID",
+        "NAME": "Name",
+        "TITLE": "Materialarten"
+      },
+      "TITLE": "Materialverwaltung"
+    },
+    "MEASURES": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie die ausgewählte Messung wirklich löschen?",
+          "TITLE": "Messung löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status der ausgewählten Messung wirklich ändern?",
+          "TITLE": "Messungsstatus ändern"
+        },
+        "UPSERT": {
+          "ACCREDITATION": "Akkreditierung",
+          "EQUIPMENT_TYPES": {
+            "LABEL": "Geräte",
+            "PLACEHOLDER": "Geräte auswählen"
+          },
+          "GRUBBS": "GRUBBS",
+          "MAGNITUDE_CODE": {
+            "LABEL": "Messgrößencode",
+            "PLACEHOLDER": "Messgrößencode eingeben"
+          },
+          "MAGNITUDE_EN": {
+            "LABEL": "Messgrößenname auf Englisch",
+            "PLACEHOLDER": "Messgrößenname auf Englisch eingeben"
+          },
+          "MAGNITUDE_ES": {
+            "LABEL": "Messgrößenname auf Spanisch",
+            "PLACEHOLDER": "Messgrößenname auf Spanisch eingeben"
+          },
+          "MAX_VALUE": {
+            "LABEL": "Maximalwert",
+            "PLACEHOLDER": "Maximalwert eingeben"
+          },
+          "MEASUREMENTS": {
+            "LABEL": "Messung",
+            "PLACEHOLDER": "Wählen Sie eine oder mehrere Messungen aus"
+          },
+          "MEASUREMENT_AREA_CODE": {
+            "LABEL": "Messbereich",
+            "PLACEHOLDER": "Messbereichscode eingeben"
+          },
+          "MEASURE_UNIT": {
+            "LABEL": "Maßeinheit",
+            "PLACEHOLDER": "Maßeinheit auswählen"
+          },
+          "MIN_VALUE": {
+            "LABEL": "Minimalwert",
+            "PLACEHOLDER": "Minimalwert eingeben"
+          },
+          "PROCEDURE_EN": {
+            "LABEL": "Verfahrensname auf Englisch",
+            "PLACEHOLDER": "Verfahrensname auf Englisch eingeben"
+          },
+          "PROCEDURE_ES": {
+            "LABEL": "Verfahrensname auf Spanisch",
+            "PLACEHOLDER": "Verfahrensname auf Spanisch eingeben"
+          },
+          "QUALIFICATION_TYPE": {
+            "PLACEHOLDER": "Qualifikationstyp auswählen",
+            "TITLE": "Qualifikationstyp",
+            "VALUES": {
+              "QUALITATIVE": "Qualitativ",
+              "QUANTITATIVE": "Quantitativ"
+            }
+          },
+          "UNCERTAINTY": {
+            "LABEL": "Messunsicherheit",
+            "PLACEHOLDER": "Messunsicherheitswert eingeben"
+          },
+          "UNIT": {
+            "LABEL": "Einheit",
+            "PLACEHOLDER": "Einheit auswählen"
+          },
+          "VALUES": {
+            "ACTIVE": "Aktiv",
+            "CODE": {
+              "LABEL": "Code",
+              "PLACEHOLDER": "Automatisch generiert anhand des englischen Namens"
+            },
+            "NAME_EN": {
+              "LABEL": "Wertname auf Englisch",
+              "PLACEHOLDER": "Wertname auf Englisch eingeben"
+            },
+            "NAME_ES": {
+              "LABEL": "Wertname auf Spanisch",
+              "PLACEHOLDER": "Wertname auf Spanisch eingeben"
+            },
+            "SUBTITLE": "Wert {{index}}",
+            "TITLE": "Werte"
+          }
+        }
+      },
+      "LIST": {
+        "ACREDITATION": "Akkreditierung",
+        "ACTIONS": "Aktionen",
+        "EQUIPMENT_TYPES": {
+          "TITLE": "Geräte",
+          "VALUES": {
+            "AMPLIFIER": "Verstärker",
+            "ANTENNA": "Antenne",
+            "BALANCE": "Waage",
+            "CHRONOMETER": "Stoppuhr",
+            "CLIMATIC_CHAMBER": "Klimakammer",
+            "CONVENTIONAL_CAMERA": "Konventionelle Kamera",
+            "CRUSHER": "Crusher",
+            "DOPPLER_RADAR": "Doppler-Radar",
+            "HIGH_SPEED_CAMERA": "Hochgeschwindigkeitskamera",
+            "IPG": "IPG",
+            "PIEZOELECTRIC_SENSOR": "Piezoelektrischer Sensor",
+            "PRESSURE_GAUGE": "Manometer",
+            "PROBE": "Tastkopf",
+            "RECORDER": "Aufzeichnungsgerät",
+            "SOUND_LEVEL_METER": "Schallpegelmesser",
+            "TRACE_RULER": "Strichmaßstab",
+            "TRAJECTOGRAPHY_RADAR": "Flugbahnradar"
+          }
+        },
+        "GRUBBS": "GRUBBS",
+        "MAGNITUDE_LABEL": "Messgröße",
+        "MAX_VALUE": "Maximalwert",
+        "MEASUREMENTS": "Messung",
+        "MEASUREMENT_AREA_CODE": "Messbereich",
+        "MEASURE_UNIT": "Maßeinheit",
+        "MIN_VALUE": "Minimalwert",
+        "PROCEDURE_LABEL": "Verfahren",
+        "QUALIFICATION_TYPE": {
+          "TITLE": "Qualifikationstyp",
+          "VALUES": {
+            "QUALITATIVE": "Qualitativ",
+            "QUANTITATIVE": "Quantitativ"
+          }
+        },
+        "UNIT": {
+          "TITLE": "Einheit",
+          "VALUES": {
+            "ARMAMENT": "Bewaffnung",
+            "BALLISTICS": "Ballistik",
+            "MUNITIONS": "Munition",
+            "TOPOGRAPHY": "Topographie"
+          }
+        },
+        "VALUES": "Werte"
+      },
+      "TITLE": "Verwaltung von Messungen und Datensätzen",
+      "VALIDATION": {
+        "BOTH_FIELDS": "Beide Felder müssen ausgefüllt werden"
+      }
+    },
+    "STANAG": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie dieses STANAG-Kriterium wirklich löschen?",
+          "TITLE": "STANAG-Kriterium löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses STANAG-Kriteriums wirklich ändern?",
+          "TITLE": "STANAG-Kriterium aktivieren / deaktivieren"
+        },
+        "UPSERT": {
+          "CALC_TYPE": {
+            "LABEL": "Berechnungsart",
+            "PLACEHOLDER": "Berechnungsart auswählen",
+            "VALUE": {
+              "CONSECUTIVE_LAYERS": "Aufeinanderfolgende Schichten",
+              "LAYER_DIFFERENCE": "Differenz zwischen Schichten",
+              "SINGLE_VALUE": "Einzelwert"
+            }
+          },
+          "DESCRIPTION": "Beschreibung",
+          "END_LAYER": {
+            "LABEL": "Endschicht",
+            "PLACEHOLDER": "Endschicht angeben"
+          },
+          "INV_LAYERS": {
+            "LABEL": "Betroffene Schichten",
+            "PLACEHOLDER": "Betroffene Schichten auswählen",
+            "VALUE": {
+              "APPROXIMATE_HEIGHT": "Ungefähre Höhe",
+              "BETWEEN_TWO_HEIGHTS": "Zwischen zwei Höhen",
+              "CONSECUTIVE_LAYERS": "Aufeinanderfolgende Schichten",
+              "MAX_WIND_LEVEL": "Maximale Windpfeilhöhe",
+              "SURFACE": "Oberfläche"
+            }
+          },
+          "MEASURE_UNIT": {
+            "LABEL": "Einheit",
+            "PLACEHOLDER": "Einheit auswählen"
+          },
+          "NUM_THRESHOLD": {
+            "LABEL": "Numerischer Schwellenwert",
+            "PLACEHOLDER": "Numerischen Schwellenwert eingeben"
+          },
+          "START_LAYER": {
+            "LABEL": "Startschicht",
+            "PLACEHOLDER": "Startschicht angeben"
+          },
+          "VARIABLE": {
+            "LABEL": "Variable",
+            "PLACEHOLDER": "Variable auswählen",
+            "VALUE": {
+              "DENSITY": "Dichte",
+              "PRESSURE": "Druck",
+              "TEMPERATURE": "Temperatur",
+              "WIND_DIRECTION": "Windrichtung",
+              "WIND_SPEED": "Windgeschwindigkeit"
+            }
+          }
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "ACTIVE": "Status",
+        "CALC_TYPE": "Berechnungsart",
+        "DESCRIPTION": "Bemerkungen",
+        "END_LAYER": "Endschicht",
+        "INV_LAYERS": "Betroffene Schichten",
+        "MEASURE_UNIT": "Einheit",
+        "NUM_THRESHOLD": "Numerischer Schwellenwert",
+        "START_LAYER": "Startschicht",
+        "VARIABLE": "Variable"
+      },
+      "TITLE": "STANAG-Kriterienverwaltung"
+    },
+    "STATUS": {
+      "ACTIVE": "Aktiv",
+      "INACTIVE": "Inaktiv"
+    },
+    "TARGET_TYPE": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diesen Zieltyp wirklich löschen?",
+          "TITLE": "Zieltyp löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses Zieltyps wirklich ändern?",
+          "TITLE": "Zieltyp aktivieren / deaktivieren"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "DESCRIPTION": "Bemerkungen",
+        "NAME": "Name",
+        "STATUS": "Status",
+        "TITLE": "Zielarten"
+      },
+      "TITLE": "Zieltypverwaltung"
+    },
+    "TRIAL_TYPE": {
+      "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Möchten Sie diesen Versuchstyp wirklich löschen?",
+          "TITLE": "Versuchstyp löschen"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Möchten Sie den Status dieses Versuchstyps wirklich ändern?",
+          "TITLE": "Versuchstyp aktivieren / deaktivieren"
+        }
+      },
+      "LIST": {
+        "ACTIONS": "Aktionen",
+        "DESCRIPTION": "Bemerkungen",
+        "NAME": "Name",
+        "STATUS": "Status",
+        "TITLE": "Versuchsarten"
+      },
+      "TITLE": "Versuchstypverwaltung"
+    }
+  },
+  "MENU_LEFT": {
+    "CALENDAR_TRIALS": "Schießversuchskalender",
+    "CATALOG": {
+      "OPTIONS": {
+        "DIMENSION": "Dimension",
+        "DOCUMENT_TYPE": "Dokumenttyp",
+        "FUZE_TYPE": "Zündertyp",
+        "LOADING_ZONE": "Ladezone",
+        "MATERIAL": "Material",
+        "MEASUREMENTS_AND_RECORDS": "Messungen und Datensätze",
+        "STANAG": "STANAG-Kriterien",
+        "TARGET_TYPE": "Zieltyp",
+        "TRIAL_TYPE": "Versuchstyp"
+      },
+      "TITLE": "Katalog"
+    },
+    "EVENT_LOG": "Ereignisprotokoll",
+    "EXECUTION": "Ausführung",
+    "GESTION_TRIALS": "Versuchsverwaltung",
+    "GESTION_TRIALS_LIST": "Schießversuche",
+    "GESTION_TRIALS_NEW": "Neuer Schießversuch",
+    "PLANNING": "Planung",
+    "WHAREHOUSE": {
+      "OPTIONS": {
+        "DENOMINATIONS": "Bezeichnungsverwaltung",
+        "MUNITIONS_COMPONENTS": "Munitionstypverwaltung",
+        "MUNITIONS_DUMPS": "Munitionslagerverwaltung",
+        "MUNITION_NEW": "Munitionserfassung",
+        "MUNITION_STOCK": "Munitionsbestand"
+      },
+      "TITLE": "Lagerverwaltung"
+    }
+  },
+  "MODIFY_DOC_DIALOG": {
+    "CANCEL": "Abbrechen",
+    "NAME_LABEL": "Dokumentname",
+    "NAME_PLACEHOLDER": "Dokumentname",
+    "SAVE": "Annehmen",
+    "TITLE": "Dokument bearbeiten",
+    "TYPE_LABEL": "Dokumenttyp",
+    "TYPE_PLACEHOLDER": "Dokumenttyp auswählen"
   },
   "ROLES": {
     "ADMINISTRATIVE": "Verwaltung",
@@ -50,13 +885,150 @@
     "PLANNING_TECHNICIAN": "Planungstechniker",
     "UNIT_TECHNICIAN": "Gerätetechniker"
   },
+  "SPECIAL_DAYS_MANAGER": {
+    "BUTTON_ANNUL": "Annullieren",
+    "BUTTON_MANAGE_SPECIAL_DAYS": "Verwaltung von Sondertagen",
+    "DAY_HOLIDAY": "Arbeitsfrei",
+    "DAY_NO_NOTAM": "Ohne NOTAM",
+    "DAY_TYPES": "Art der Sondertage",
+    "DAY_TYPES_PLACEHOLDER": "Tagestyp auswählen",
+    "TITLE": "Verwaltung von Sondertagen"
+  },
+  "SPECIMENS_MANAGMENT_DIALOG": {
+    "CANCEL": "Abbrechen",
+    "GROUP_DENOMINATIONS": "Bezeichnungen",
+    "GROUP_WEAPONS_TUBES": "Waffen und Rohre",
+    "LOT_LABEL": "Los",
+    "LOT_PLACEHOLDER": "Los",
+    "NO_RESULTS": "Keine Ergebnisse gefunden",
+    "REMOVE_ARIA": "Probeexemplar entfernen",
+    "SAVE": "Speichern",
+    "SELECTED_HEADER_LOT_SERIAL": "Los / Serien-Nr.",
+    "SELECTED_HEADER_SPECIMEN": "Probeexemplar",
+    "SELECTED_TITLE": "Ausgewähltes Probeexemplar",
+    "SERIAL_NUMBER_LABEL": "Serien-Nr.",
+    "SERIAL_NUMBER_PLACEHOLDER": "Seriennummer",
+    "SPECIMEN_LABEL": "Probeexemplar",
+    "SPECIMEN_PLACEHOLDER": "Probeexemplar auswählen",
+    "TITLE": "Probenverwaltung",
+    "TYPE_BUNDLE": "Waffensystem",
+    "TYPE_LABEL": "Probentyp",
+    "TYPE_MORTAR": "Mörser",
+    "TYPE_MUNITION": "Munition",
+    "TYPE_PLACEHOLDER": "Typ auswählen",
+    "TYPE_TUBE": "Rohr",
+    "TYPE_WEAPON": "Waffe"
+  },
+  "TAPS_TOP": {
+    "CALENDAR_TRIALS": "Schießversuchskalender",
+    "TRIAL": "Versuchsblatt",
+    "TRIAL_DOCUMENT": "Dokument",
+    "TRIAL_EXECUTION": "Ausführung",
+    "TRIAL_GENERAL_INFO": "Allgemeine Informationen",
+    "TRIAL_LIST": "Liste der Brandprüfungen",
+    "TRIAL_NEW": "Neuer Schießversuch",
+    "TRIAL_PLANIFICATION": "Planung"
+  },
+  "TOAST": {
+    "DEFAULT_ERROR_MESSAGE": "Fehler beim Ausführen der Operation",
+    "DEFAULT_ERROR_TITLE": "Fehler",
+    "DEFAULT_MESSAGE": "Datensatz erfolgreich gespeichert",
+    "DEFAULT_POST_MESSAGE": "Operation erfolgreich abgeschlossen",
+    "DEFAULT_TITLE": "Speichern"
+  },
   "TRIALS_LIST": {
     "ERROR": "Fehler beim Laden der Versuche",
     "EXPORT_EXCEL_BUTTON": "Excel exportieren",
+    "FILTERS": {
+      "CLEAN_FILTERS": "Filter zurücksetzen",
+      "CLIENT": "Kunde",
+      "CLIENT_PLACEHOLDER": "Kunde auswählen",
+      "DATE_FROM_PLACEHOLDER": "Von",
+      "DATE_TO_PLACEHOLDER": "Bis",
+      "DESCRIPTION": "Beschreibung",
+      "DESCRIPTION_PLACEHOLDER": "Nach Beschreibung suchen",
+      "DOCUMENT_TYPE": "Dokumenttyp",
+      "DOCUMENT_TYPE_PLACEHOLDER": "Dokumenttyp auswählen",
+      "FIRE_TRIAL_TYPE": "Versuchstyp",
+      "FIRE_TRIAL_TYPE_PLACEHOLDER": "Versuchstyp auswählen",
+      "SCHEDULED_DATE_RANGE": "Geplantes Datum",
+      "STATUS": "Status",
+      "STATUS_PLACEHOLDER": "Status auswählen",
+      "TRIAL_NUMBER": "Versuchs-Nr.",
+      "TRIAL_NUMBER_PLACEHOLDER": "Versuchs-Nr. auswählen",
+      "YEAR": "Jahr",
+      "YEAR_ALL": "Alle Jahre",
+      "YEAR_PLACEHOLDER": "Jahr auswählen"
+    },
     "PLANNING_TITLE": "Planung der Brandprüfungen",
     "TABLE": {
-      "ASSIGNED_USER": "Zugewiesener Benutzer"
+      "ACTIONS": "Aktionen",
+      "ASSIGNED_USER": "Zugewiesener Benutzer",
+      "CLIENT": "Kunde",
+      "DESCRIPTION": "Beschreibung",
+      "OBSERVATIONS": "Bemerkungen",
+      "OTHER_DATA": "Weitere Daten",
+      "REQUESTED_DATE": "Vom Kunden gewünschtes Datum",
+      "SCHEDULED_DATE": "Geplante(s) Datum/Daten: {{date}}",
+      "SCHEDULED_DATES": "Geplante Daten",
+      "STATUS": "Status",
+      "TRIAL_NUMBER": "Versuchs-Nr.",
+      "TYPE": "Versuchstyp"
     }
+  },
+  "TRIAL_ACTIONS": {
+    "ANNUL_BUTTON_CONFIRM": "Versuch annullieren",
+    "ANNUL_PLACEHOLDER": "Geben Sie hier den Annullierungsgrund ein",
+    "ANNUL_TITLE": "Versuchsannullierung",
+    "CANCEL_BUTTON_CONFIRM": "Versuch abbrechen",
+    "CANCEL_PLACEHOLDER": "Geben Sie hier den Abbruchgrund ein",
+    "CANCEL_TITLE": "Versuchsabbruch",
+    "CLOSE_BUTTON_CONFIRM": "Versuch schließen",
+    "CLOSE_DESCRIPTION": "Diese Aktion beendet endgültig den Lebenszyklus des Versuchs. Alle Aktionen werden gesperrt und keine weiteren Änderungen sind zulässig.",
+    "CLOSE_TITLE": "Versuchsabschluss",
+    "CLOSE_TITLE2": "Sie sind im Begriff, folgenden Versuch zu schließen: {{ paramTitle2 }}",
+    "REACTIVATE_BUTTON_CONFIRM": "Versuch reaktivieren",
+    "REACTIVATE_DESCRIPTION": "Diese Aktion stellt den Lebenszyklus wieder her und aktiviert erneut die Aktionen und Zustände eines laufenden Versuchs.",
+    "REACTIVATE_TITLE": "Versuchsreaktivierung",
+    "REACTIVATE_TITLE2": "Sie sind im Begriff, folgenden Versuch zu reaktivieren: {{ paramTitle2 }}",
+    "REMOVE_BUTTON_CONFIRM": "Versuch löschen",
+    "REMOVE_DESCRIPTION": "Diese Aktion führt zur endgültigen Löschung des Versuchs aus dem System. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "REMOVE_TITLE": "Versuchslöschung",
+    "REMOVE_TITLE2": "Sie sind im Begriff, folgenden Versuch zu löschen: {{ paramTitle2 }}",
+    "REOPEN_BUTTON_CONFIRM": "Versuch wiedereröffnen",
+    "REOPEN_DESCRIPTION": "Diese Aktion ermöglicht das Rückgängigmachen einer irrtümlichen Schließung und versetzt den Versuch in einen Zustand, der einen korrekten Abschluss ermöglicht.",
+    "REOPEN_TITLE": "Versuchswiedereröffnung",
+    "REOPEN_TITLE2": "Sie sind im Begriff, folgenden Versuch wiederzueröffnen: {{ paramTitle2 }}"
+  },
+  "TRIAL_CREATE_MODIFY_FORM": {
+    "ASSOCIATED_TRIAL": "Zugeordneter Versuch",
+    "ASSOCIATED_TRIAL_REQUIRED": "Der zugeordnete Versuch ist erforderlich",
+    "CLIENT": "Kunde",
+    "CLIENT_PLACEHOLDER": "Kunde auswählen",
+    "CLIENT_REFERENCE": "Kundenreferenz (Optional)",
+    "CLIENT_REFERENCE_PLACEHOLDER": "Referenz hier eingeben",
+    "CODE": "Versuchsnummer",
+    "CREATE_SUCCESS": "Versuch erfolgreich erstellt",
+    "DESCRIPTION": "Versuchsbeschreibung (Optional)",
+    "DESCRIPTION_PLACEHOLDER": "Versuchsbeschreibung hier eingeben",
+    "DOCUMENTS_LOAD_ERROR": "Der Dokumentationsbereich konnte nicht geladen werden.",
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "Die Testformulardaten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+      "LOAD_FAILED_TITLE": "Fehler beim Laden des Testformulars"
+    },
+    "HEADING_PAGE": "Versuchsblatt",
+    "LINKED_TRIAL": "Verknüpfter Versuch",
+    "MODIFY_SUCCESS": "Versuch erfolgreich geändert",
+    "OBSERVATIONS": "Bemerkungen (Optional)",
+    "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+    "REQUESTED_DATE": "Vom Kunden gewünschtes Datum (Optional)",
+    "REQUESTED_DATE_PLACEHOLDER": "Datum auswählen",
+    "RESET_DATA": "Daten löschen",
+    "SAVE_TRIAL": "Registrieren",
+    "SCHEDULED_DATE": "Geplantes Datum",
+    "SCHEDULER_LOAD_ERROR": "Der Planungsbereich konnte nicht geladen werden.",
+    "TYPE": "Versuchstyp",
+    "TYPE_PLACEHOLDER": "Versuchstyp auswählen"
   },
   "TRIAL_DOCS": {
     "ADD_DOC": "Dokumentation hinzufügen",
@@ -83,11 +1055,11 @@
       "ACTIONS": "Aktionen",
       "ACTIVE": "Gültig",
       "ASSOCIATED_TRIALS": "Link zu anderen Versuchen",
-      "CATEGORY": "Kategorie",
       "CATEGORIES": {
         "GENERAL": "Allgemein",
         "SPECIFIC": "Spezifisch"
       },
+      "CATEGORY": "Kategorie",
       "CLOSE_BUTTON": "Schließen",
       "DATE_UPLOADED": "Uploaddatum",
       "DELETE": "Löschen",
@@ -123,6 +1095,10 @@
       "VERSION": "Version",
       "VERSIONS_MAT_LABEL": "Revisionen und Versionen",
       "VINCULATED_TRIALS": "Versuche, mit denen es verknüpft ist"
+    },
+    "DOC_VIEWER": {
+      "LOADING": "Dokument wird geladen...",
+      "NO_DOCUMENT_OR_UNSUPPORTED": "Kein Dokument ausgewählt oder Format nicht unterstützt (muss PDF sein)"
     },
     "DOWNLOAD_REQUIRED_DIALOG": {
       "ACCEPT": "Akzeptieren",
@@ -200,6 +1176,18 @@
     },
     "VERSION_SET_ACTIVE_SUCCESS": "Dokumentversion erfolgreich festgelegt"
   },
+  "TRIAL_DOC_PICKER_DIALOG": {
+    "ADD": "Hinzufügen",
+    "CANCEL": "Abbrechen",
+    "DOCUMENT_LABEL": "Dokumentation",
+    "DOCUMENT_PLACEHOLDER": "Nach Dateinamen suchen",
+    "DOCUMENT_TYPE_LABEL": "Dokumenttyp",
+    "DOCUMENT_TYPE_PLACEHOLDER": "Dokumenttyp auswählen",
+    "DRAG_HERE": "oder Dateien hierher ziehen und ablegen",
+    "SELECT_DOC": "Dokumentation auswählen",
+    "TITLE": "Dokument-Upload",
+    "UPLOADING": "Wird hochgeladen"
+  },
   "TRIAL_EXECUTION": {
     "ACTIONS": "Aktionen",
     "ACTION_CANCEL": "Ausführung abbrechen",
@@ -216,6 +1204,15 @@
     },
     "CLOSE_WIDGET_PANEL": "Widget-Panel schließen",
     "DIALOGS": {
+      "CANCEL_EXECUTION": {
+        "CONFIRM_BTN": "Abbruch bestätigen",
+        "REASON_LABEL": "Grund für den Abbruch",
+        "REASON_PLACEHOLDER": "Geben Sie den Grund für den Abbruch ein",
+        "TEXT_PREFIX": "Sie sind im Begriff, endgültig abzubrechen:",
+        "TITLE": "Feuerversuch abbrechen",
+        "TRIAL_NAME_PREFIX": "Versuch:",
+        "WARNING": "Diese Aktion schließt den Versuch aufgrund eines unüberwindbaren Vorfalls und kann nicht wieder aufgenommen werden."
+      },
       "EQUIPMENT_SELECTOR": {
         "ADD_EQUIPMENT": "Gerät hinzufügen",
         "BACK": "Zurück",
@@ -226,8 +1223,8 @@
         "DELETE": "Löschen",
         "EQUIPMENT_HEADING": "Geräte",
         "ERRORS": {
-          "LOAD_FAILED_TITLE": "Fehler beim Laden der Geräteauswahl",
-          "LOAD_FAILED_DETAIL": "Die Geräteinformationen für den Versuch konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
+          "LOAD_FAILED_DETAIL": "Die Geräteinformationen für den Versuch konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut.",
+          "LOAD_FAILED_TITLE": "Fehler beim Laden der Geräteauswahl"
         },
         "FIELDS": {
           "AMPLIFICADOR": "Verstärker",
@@ -252,8 +1249,11 @@
           "SENSOR_PIEZOELECTRICO": "Piezoelektrischer Sensor",
           "SERIES": "Serien"
         },
+        "INCOMPLETE_ASSIGNMENTS": "Vervollständigen Sie Geräte, Serien und Schüsse in jeder Zeile. Prüfen Sie gegebenenfalls auch Kanal und Messgröße.",
+        "NO_PLANNED_MEASURES": "Für Ihre Einheit sind keine geplanten Messungen verfügbar.",
         "SAVE": "Speichern",
         "SELECTION_LIMIT": "Auswahl ({{max}} max)",
+        "SELECT_ALL_SERIES": "Alle Serien auswählen",
         "SELECT_TAG": "Messung/Gerät auswählen",
         "SERIES_PLACEHOLDER": "Serie auswählen",
         "SHOTS_PLACEHOLDER": "Alle Schüsse in der Serie",
@@ -270,7 +1270,19 @@
           "VIDEO_AV": "AV-Video",
           "VIDEO_C": "C-Video"
         },
-        "TITLE": "Geräteauswahl"
+        "TAG_SELECTION_ARIA": "Tag-Auswahl",
+        "TITLE": "Geräteauswahl",
+        "UNSUPPORTED_SELECTION": "Diese Auswahl erfordert Unterstützung in der Ausführungs-API."
+      },
+      "INTERRUPT_EXECUTION": {
+        "CONFIRM_BTN": "Versuch unterbrechen",
+        "DESCRIPTION": "Sie unterbrechen die Ausführung vorübergehend und ändern den Status auf Unterbrochen.",
+        "REASON_LABEL": "Grund für die Unterbrechung",
+        "REASON_PLACEHOLDER": "Geben Sie den Grund für die Unterbrechung ein",
+        "START_SECURITY_COUNT_BTN": "Sicherheitszählung starten",
+        "TEXT_PREFIX": "Sie sind im Begriff zu unterbrechen:",
+        "TITLE": "Feuerversuch unterbrechen",
+        "TRIAL_NAME_PREFIX": "Versuch:"
       },
       "PAUSE_EXECUTION": {
         "CANCEL": "Abbrechen",
@@ -290,26 +1302,24 @@
     "EMPTY_PANEL_DESC_2": "um Module hinzuzufügen",
     "EMPTY_PANEL_DESC_WIDGETS_BTN": "'Widgets'",
     "EMPTY_PANEL_TITLE": "Ihr Panel ist leer",
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "Die Ausführungsinformationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut.",
+      "LOAD_FAILED_TITLE": "Fehler beim Laden der Ausführung"
+    },
     "FREE_SPACE_DESC_1": "Klicken Sie auf",
     "FREE_SPACE_DESC_2": "um weitere Module hinzuzufügen",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Sie haben Platz auf Ihrem Panel",
-    "WIDGET_NO_SPACE_MESSAGE": "Schaffen Sie etwas Platz oder entfernen Sie ein anderes Widget, bevor Sie es erneut versuchen.",
-    "WIDGET_NO_SPACE_TITLE": "Dieses Widget passt nicht auf das Panel",
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Fehler beim Laden der Ausführung",
-      "LOAD_FAILED_DETAIL": "Die Ausführungsinformationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
-    },
     "HISTORY": {
+      "EXECUTION_DATE": "Ausführungsdatum",
       "SERIES": "Serien",
       "SHOT": "Schuss",
-      "STATUS": "Status",
-      "EXECUTION_DATE": "Ausführungsdatum"
+      "STATUS": "Status"
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "Keine Widgets gefunden",
-    "SEARCH_WIDGET_PLACEHOLDER": "Widget suchen...",
     "PROGRESS": "% Testfortschritt",
+    "SEARCH_WIDGET_PLACEHOLDER": "Widget suchen...",
     "SHOT_HISTORY_DESC": "Letzte Aufzeichnungen der Ausführung",
     "SHOT_HISTORY_TITLE": "Schussverlauf",
     "TITLE": "Ausführung",
@@ -342,16 +1352,13 @@
         "CURRENT_SHOT_BTN": "Aktueller Schuss",
         "DESCRIPTION": "Waffe, Serie, Rohr, angegriffene Ausrüstung und Rücklaufvorrichtung",
         "DISPARO_PLACEHOLDER": "Schuss",
-        "INSTRUMENTED_LABEL": "Instrumentiert",
-        "INSTRUMENTED_YES": "Ja",
-        "INSTRUMENTED_NO": "Nein",
-        "OBSERVATIONS_LABEL": "Bemerkungen",
-        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen",
-        "USEFUL_LIFE_LABEL": "% Nutzungsdauer",
         "EQUIPO_ATACADO_LABEL": "Angegriffenes Gerät",
         "EQUIPO_ATACADO_PLACEHOLDER": "Gerät",
         "EQUIPO_RETROCESO_LABEL": "Rücklaufvorrichtung",
         "EQUIPO_RETROCESO_PLACEHOLDER": "Gerät",
+        "INSTRUMENTED_LABEL": "Instrumentiert",
+        "INSTRUMENTED_NO": "Nein",
+        "INSTRUMENTED_YES": "Ja",
         "MASS_CONFIG_APPLY_BTN": "Anwenden",
         "MASS_CONFIG_BTN": "Massenkonfiguration anwenden",
         "MASS_CONFIG_CANCEL_BTN": "Abbrechen",
@@ -363,10 +1370,13 @@
         "NÑ_SERIE_ARMA_PLACEHOLDER": "Seriennummer",
         "NÑ_SERIE_TUBO_LABEL": "Rohrseriennummer",
         "NÑ_SERIE_TUBO_PLACEHOLDER": "Seriennummer",
-        "SERIE_PLACEHOLDER": "Betrieb",
+        "OBSERVATIONS_LABEL": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen",
+        "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "Waffendaten eingeben",
         "TUBO_LABEL": "Rohr",
-        "TUBO_PLACEHOLDER": "Rohr"
+        "TUBO_PLACEHOLDER": "Rohr",
+        "USEFUL_LIFE_LABEL": "% Nutzungsdauer"
       },
       "COMMON": {
         "PENDING_CHANGES": "Ausstehende Änderungen zu speichern"
@@ -449,8 +1459,8 @@
         "TITLE": "Eichungsinformationen"
       },
       "JLT_MAO": {
-        "ALTURA_EXPLOSION_LABEL": "Explosionshöhe",
-        "ALTURA_EXPLOSION_PLACEHOLDER": "XXX",
+        "ALTURA_EXPLOSION_LABEL": "Funktionshöhe",
+        "ALTURA_EXPLOSION_PLACEHOLDER": "Funktionshöhe",
         "ALTURA_FUNCIONAMIENTO_LABEL": "Funktionshöhe",
         "ALTURA_FUNCIONAMIENTO_PLACEHOLDER": "Funktionshöhe",
         "ANGULO_TIRO_LABEL": "Schusswinkel",
@@ -463,8 +1473,8 @@
         "DIFERENCIA_ANGULAR_PLACEHOLDER": "Differenz",
         "DISPARO_LABEL": "Schuss",
         "DISPARO_PLACEHOLDER": "Schuss",
-        "DISTANCIA_EXPLOSION_LABEL": "Explosionsdistanz",
-        "DISTANCIA_EXPLOSION_PLACEHOLDER": "XXX",
+        "DISTANCIA_EXPLOSION_LABEL": "Funktionsentfernung",
+        "DISTANCIA_EXPLOSION_PLACEHOLDER": "Funktionsentfernung",
         "DISTANCIA_FUNCIONAMIENTO_LABEL": "Funktionsdistanz",
         "DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER": "Funktionsdistanz",
         "DISTANCIA_PIQUE_LABEL": "Erwartete Aufpralldistanz",
@@ -478,9 +1488,9 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Serien auswählen",
         "MASS_CONFIG_TITLE": "Konfiguration erweitern",
         "PIQUETA_LABEL": "Richtpunkt",
-        "PIQUETA_PLACEHOLDER": "XXX",
+        "PIQUETA_PLACEHOLDER": "Richtpunkt",
         "SERIE_LABEL": "Serie",
-        "SERIE_PLACEHOLDER": "Betrieb",
+        "SERIE_PLACEHOLDER": "Serie",
         "TIEMPO_VUELO_LABEL": "Theoretische Flugzeit",
         "TIEMPO_VUELO_PLACEHOLDER": "Theoretische Flugzeit",
         "TITLE": "JLT MAO Balistik-Daten",
@@ -508,7 +1518,7 @@
         "OPERADOR_PIEZA_PLACEHOLDER": "Schreiben...",
         "RETROCESO_LABEL": "Rücklauf",
         "RETROCESO_PLACEHOLDER": "0,00",
-        "SERIE_PLACEHOLDER": "Betrieb",
+        "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "JLT Schussdaten"
       },
       "MANOMETER_INTRODUCTION": {
@@ -545,7 +1555,7 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Serien auswählen",
         "MASS_CONFIG_TITLE": "Konfiguration erweitern",
         "OBSERVADOR_LABEL": "Beobachter",
-        "OBSERVADOR_PLACEHOLDER": "XXX",
+        "OBSERVADOR_PLACEHOLDER": "Beobachter",
         "PIEZA_GROUP_LABEL": "Teil",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Betrieb",
@@ -619,6 +1629,7 @@
         "TITLE": "Munitionsdaten"
       },
       "OVERPRESSURE_CHART": {
+        "CHART_ARIA": "Überdruck-Diagramm",
         "DESCRIPTION": "Grafische Darstellung des Drucks und seiner Abweichungen",
         "LEGEND_DESV_MAX": "Maximalabweichung",
         "LEGEND_DESV_MIN": "Mindestabweichung",
@@ -626,9 +1637,11 @@
         "LEGEND_PRES_MIN": "Mindestdruck",
         "LEGEND_RECTA": "Eichungsgerade",
         "LEGEND_SEGURIDAD": "Sicherheitsdruck",
+        "PRESSURE_LABEL": "Druck",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Alle",
-        "TITLE": "Überdruckdiagramm"
+        "TITLE": "Überdruckdiagramm",
+        "WEIGHT_LABEL": "Gewicht"
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Spezifische Druckwerte für den Versuch",
@@ -661,7 +1674,9 @@
         "CURRENT_SHOT_BTN": "Aktueller Schuss",
         "DESCRIPTION": "Druck piezoelektrischer Sensoren",
         "DISPARO_PLACEHOLDER": "Schuss",
-        "INPUT_PLACEHOLDER_XXX": "XXX",
+        "EQUIPOS_LABEL": "Sensor / Rekorder / Verstärker",
+        "EQUIPOS_PLACEHOLDER": "Sensor, Rekorder und Verstärker auswählen",
+        "INPUT_PLACEHOLDER_XXX": "Schuss",
         "OBSERVACIONES_LABEL": "Beobachtungen",
         "OBSERVACIONES_PLACEHOLDER": "Bemerkungen eingeben",
         "PRESION_CIERRE_LABEL": "Verschlussdruck",
@@ -670,8 +1685,8 @@
         "PRESION_DIF_POSITIVA_LABEL": "Positiver Differenzdruck",
         "PRESION_INTERMEDIO_LABEL": "Zwischendruck",
         "PRESION_MAXIMA_LABEL": "Maximaler Druck",
-        "PRESION_MAXIMA_PLACEHOLDER": "XXX",
-        "PRESION_PLACEHOLDER": "XXX",
+        "PRESION_MAXIMA_PLACEHOLDER": "Maximaldruck",
+        "PRESION_PLACEHOLDER": "Druck",
         "REGISTRADOR_LABEL": "Recorder",
         "REGISTRADOR_PLACEHOLDER": "Gerät",
         "SERIE_PLACEHOLDER": "Serie",
@@ -682,9 +1697,9 @@
         "TAB_OTRO": "P. Otro",
         "TAB_TIEMPOS": "Tiempos",
         "TIEMPO_ACCION_LABEL": "Aktionszeit",
-        "TIEMPO_ACCION_PLACEHOLDER": "XXX",
+        "TIEMPO_ACCION_PLACEHOLDER": "Aktionszeit",
         "TIEMPO_RETARDO_LABEL": "Verzögerungszeit",
-        "TIEMPO_RETARDO_PLACEHOLDER": "XXX",
+        "TIEMPO_RETARDO_PLACEHOLDER": "Verzögerungszeit",
         "TITLE": "Druck piezoelektrischer Sensoren"
       },
       "RADAR_METCMQ": {
@@ -762,6 +1777,8 @@
         "DESCRIPTION": "Schussnummer, Geschwindigkeit und Beobachtungen",
         "NUMBER": "Schussnummer",
         "OBSERVATIONS": "Beobachtungen",
+        "SHOT_NUMBER_PLACEHOLDER": "Z.B.: 001",
+        "SPEED_PLACEHOLDER": "Z.B.: 850",
         "TITLE": "Schussdaten",
         "VELOCITY": "Geschwindigkeit"
       },
@@ -774,9 +1791,11 @@
         "STATUS_FAIL": "Nicht erfüllt",
         "STATUS_PASS": "Erfüllt",
         "STATUS_UNKNOWN": "Nicht überprüft",
-        "TITLE": "STANAG-Kriterien"
+        "TITLE": "STANAG-Kriterien",
+        "UPDATE_CRITERIA_ARIA": "Kriterien aktualisieren"
       },
       "TARADO_PRESION": {
+        "CHART_ARIA": "Kalibrierungs-Druckdiagramm",
         "DESCRIPTION": "Lineare Regression Mittlerer Druck (MPa) vs Wc/g zur Bestimmung des Ladungsgewichts durch Pulvereichung",
         "DISPARO_LABEL": "Schuss",
         "DISPARO_PLACEHOLDER": "Alle Schüsse",
@@ -792,6 +1811,7 @@
         "WC_LABEL": "Wc/g"
       },
       "TARADO_VELOCIDAD": {
+        "CHART_ARIA": "Kalibrierungs-Geschwindigkeitsdiagramm",
         "CONFIG_BTN": "Konfiguration",
         "CONFIG_LABEL": "Konfiguration auswählen",
         "CONFIG_PLACEHOLDER": "Konfiguration",
@@ -815,16 +1835,16 @@
       },
       "TARGET_DATA": {
         "BLANCO_LABEL": "Ziel",
-        "BLANCO_PLACEHOLDER": "Ziel auswählen",
+        "BLANCO_PLACEHOLDER": "Ziel",
         "DESCRIPTION": "Zieldaten, Abmessungen, Material und Abstände für die Schüsse",
         "DIMENSIONES_LABEL": "Abmessungen",
-        "DIMENSIONES_PLACEHOLDER": "Auswählen",
+        "DIMENSIONES_PLACEHOLDER": "Abmessungen",
         "DISPARO_PLACEHOLDER": "Schuss",
         "DISTANCIA_LABEL": "Abstand",
         "ESPESOR_LABEL": "Dicke",
         "INCLINACION_LABEL": "Neigung",
         "MATERIAL_LABEL": "Material",
-        "MATERIAL_PLACEHOLDER": "Material auswählen",
+        "MATERIAL_PLACEHOLDER": "Material",
         "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "Zieldaten"
       },
@@ -881,6 +1901,7 @@
         "TITLE": "Trajektoriendaten"
       },
       "UNIFORMIDAD": {
+        "CHART_ARIA": "Gleichmäßigkeits-Diagramm",
         "CONFIG_LABEL": "Eichungskonf.",
         "CONFIG_PLACEHOLDER": "Konfiguration auswählen",
         "DESCRIPTION": "Grafische Darstellung der korrigierten Geschwindigkeiten in Bezug auf die ausgewählte Eichungskonfiguration",
@@ -936,37 +1957,37 @@
         "TITLE": "Ausrichtung der Videokameras"
       },
       "VIDEO_DATA_INTRODUCTION": {
+        "CAMARA_LABEL": "Kamera",
+        "CAMARA_PLACEHOLDER": "Kamera auswählen",
+        "CANAL_LABEL": "Kanal",
+        "CANAL_PLACEHOLDER": "Kanal auswählen",
         "CURRENT_SHOT_BTN": "Aktueller Schuss",
         "DESCRIPTION": "Kamera, Recorder, Kanal, Magnitude, beobachtetes Ergebnis und Beobachtungen",
         "DISPARO_ACTUAL_LABEL": "Aktueller Schuss",
         "DISPARO_LABEL": "Schuss",
         "DISPARO_PLACEHOLDER": "Schuss",
+        "ESTADO_DISPARO_LABEL": "Schussstatus",
+        "GRABADOR_LABEL": "Recorder",
+        "GRABADOR_PLACEHOLDER": "Recorder auswählen",
+        "INPUT_DATA_SECTION": "EINGABEDATEN",
+        "MAGNITUD_HINT": "(wird aus den geplanten Größen ausgewählt)",
         "MAGNITUD_LABEL": "Magnitude",
         "MAGNITUD_PLACEHOLDER": "Magnitude auswählen",
-        "MAGNITUD_HINT": "(wird aus den geplanten Größen ausgewählt)",
-        "RESULTADO_OBSERVADO_LABEL": "Beobachtetes Ergebnis",
-        "RESULTADO_OBSERVADO_PLACEHOLDER": "Beobachtetes Ergebnis eingeben",
         "OBSERVACIONES_LABEL": "Beobachtungen",
         "OBSERVACIONES_PLACEHOLDER": "Ihre Beobachtungen eingeben",
+        "RESULTADO_OBSERVADO_LABEL": "Beobachtetes Ergebnis",
+        "RESULTADO_OBSERVADO_PLACEHOLDER": "Beobachtetes Ergebnis eingeben",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Serie",
-        "TIPO_VIDEO_LABEL": "Videotyp",
-        "TIPO_VIDEO_PLACEHOLDER": "Videotyp auswählen",
+        "STATUS_EXECUTED": "Ausgeführt",
+        "STATUS_IN_PROGRESS": "In Bearbeitung",
+        "STATUS_PENDING": "Ausstehend",
         "TIPO_VIDEO_AV": "Video AV (Hochgeschwindigkeit)",
         "TIPO_VIDEO_AV_SHORT": "Video AV",
         "TIPO_VIDEO_C": "Video C (konventionell)",
         "TIPO_VIDEO_C_SHORT": "Video C",
-        "INPUT_DATA_SECTION": "EINGABEDATEN",
-        "CAMARA_LABEL": "Kamera",
-        "CAMARA_PLACEHOLDER": "Kamera auswählen",
-        "GRABADOR_LABEL": "Recorder",
-        "GRABADOR_PLACEHOLDER": "Recorder auswählen",
-        "CANAL_LABEL": "Kanal",
-        "CANAL_PLACEHOLDER": "Kanal auswählen",
-        "ESTADO_DISPARO_LABEL": "Schussstatus",
-        "STATUS_IN_PROGRESS": "In Bearbeitung",
-        "STATUS_PENDING": "Ausstehend",
-        "STATUS_EXECUTED": "Ausgeführt",
+        "TIPO_VIDEO_LABEL": "Videotyp",
+        "TIPO_VIDEO_PLACEHOLDER": "Videotyp auswählen",
         "TITLE": "Videodaten eingeben"
       },
       "VIGILANCIA": {
@@ -998,36 +2019,116 @@
       }
     },
     "WIDGETS_BTN": "Widgets",
-    "WIDGET_LIBRARY_TITLE": "Widget-Bibliothek"
-  },
-  "TAPS_TOP": {
-    "TRIAL_LIST": "Liste der Brandprüfungen",
-    "TRIAL_PLANIFICATION": "Planung"
+    "WIDGET_LIBRARY_TITLE": "Widget-Bibliothek",
+    "WIDGET_NO_SPACE_MESSAGE": "Schaffen Sie etwas Platz oder entfernen Sie ein anderes Widget, bevor Sie es erneut versuchen.",
+    "WIDGET_NO_SPACE_TITLE": "Dieses Widget passt nicht auf das Panel"
   },
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "Sie haben keinen Zugriff auf diesen Versuch",
     "ARMAMENT": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden der Bewaffnung",
-        "LOAD_FAILED_DETAIL": "Die Bewaffnungsinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+        "LOAD_FAILED_DETAIL": "Die Bewaffnungsinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Bewaffnung"
       },
+      "FOOTER": {
+        "SAVE_DRAFT": "Entwurf speichern"
+      },
+      "HEADER": {
+        "CANCEL_BUTTON": "Abbrechen",
+        "EMPTY_STATE": "Keine Serien konfiguriert.",
+        "MASSIVE_CONFIG_BUTTON": "Massenkonfiguration anwenden",
+        "SAVE_BUTTON": "Konfiguration speichern",
+        "TRIAL_NUMBER": "Versuchsnummer"
+      },
+      "MASSIVE_SHOTS_DIALOG": {
+        "APPLY_BUTTON": "Anwenden",
+        "CANCEL_BUTTON": "Abbrechen",
+        "INSTRUMENTED_LABEL": "Instrumentiert",
+        "INSTRUMENTED_NO": "Nein",
+        "INSTRUMENTED_PLACEHOLDER": "Instrumentierung auswählen",
+        "INSTRUMENTED_YES": "Ja",
+        "LIFE_LABEL": "Lebensdauer",
+        "LIFE_PLACEHOLDER": "% Lebensdauer auswählen",
+        "OBSERVATIONS": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben...",
+        "REMOVE_ARIA_LABEL": "Löschen",
+        "SELECTED_ITEMS_ARIA": "Ausgewählte Elemente",
+        "SERIES_LABEL": "Serien",
+        "SERIES_PLACEHOLDER": "Serien auswählen",
+        "TITLE": "Massenkonfiguration von Schüssen",
+        "TUBE_LABEL": "Rohrbezeichnung",
+        "TUBE_PLACEHOLDER": "Rohrbezeichnung auswählen",
+        "TYPE_LABEL": "Typ",
+        "TYPE_PLACEHOLDER": "Typ auswählen",
+        "WEAPON_LABEL": "Waffenbezeichnung",
+        "WEAPON_PLACEHOLDER": "Waffe auswählen"
+      },
+      "SERIE_PANEL": {
+        "TITLE": "Serie {{index}} - {{name}}",
+        "add_weapon": "Waffe hinzufügen"
+      },
+      "TABLE": {
+        "INSTRUMENTED": "Instrumentiert",
+        "LIFE": "Lebensdauer",
+        "NO": "Nein",
+        "OBSERVATIONS": "Bemerkungen",
+        "SERIE": "Serie",
+        "SHOT": "Schuss",
+        "TUBE": "Rohrbezeichnung",
+        "TYPE": "Typ",
+        "WEAPON": "Waffenbezeichnung",
+        "YES": "Ja"
+      },
+      "TABLE_TITLE": "Bewaffnungstabelle",
+      "TITLE": "Bewaffnung",
       "UPDATE_SHOT_DIALOG": {
-        "OBSERVATIONS_LABEL": "Beobachtungen"
+        "APPLY_BUTTON": "Anwenden",
+        "CANCEL_BUTTON": "Abbrechen",
+        "INSTRUMENTED_LABEL": "Instrumentiert",
+        "INSTRUMENTED_NO": "Nein",
+        "INSTRUMENTED_PLACEHOLDER": "Instrumentierung auswählen",
+        "INSTRUMENTED_YES": "Ja",
+        "LIFE_LABEL": "Lebensdauer",
+        "LIFE_PLACEHOLDER": "% Lebensdauer auswählen",
+        "OBSERVATIONS_LABEL": "Beobachtungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben...",
+        "REMOVE_ARIA_LABEL": "Löschen",
+        "SERIES_LABEL": "Serien",
+        "SERIES_PLACEHOLDER": "Serien auswählen",
+        "TITLE": "Schuss bearbeiten",
+        "TUBE_LABEL": "Rohrbezeichnung",
+        "TUBE_PLACEHOLDER": "Rohrbezeichnung auswählen",
+        "WEAPON_LABEL": "Waffenbezeichnung",
+        "WEAPON_PLACEHOLDER": "Waffe auswählen"
       }
+    },
+    "DELETE_SERIE_DIALOG": {
+      "CANCEL": "Zurück",
+      "CONFIRM": "Löschen",
+      "DESCRIPTION": "Sie sind im Begriff, eine Serie zu löschen",
+      "MESSAGE": "<b>Diese Aktion führt zum Löschen aller zugeordneten Schüsse.</b>",
+      "TITLE": "Serie löschen"
+    },
+    "DELETE_SHOT_DIALOG": {
+      "CANCEL": "Zurück",
+      "CONFIRM": "Löschen",
+      "DESCRIPTION": "Sie sind im Begriff, einen Schuss zu löschen",
+      "MESSAGE": "<b>Diese Aktion führt zur endgültigen Löschung des Schusses.</b>",
+      "TITLE": "Schuss löschen"
     },
     "GENERAL_DATA_SECTION": {
       "ADDITIONAL_INFO_LABEL": "Zusätzliche Kundeninformationen",
       "ADDITIONAL_INFO_PLACEHOLDER": "Geben Sie hier zusätzliche Informationen ein",
       "CANCEL": "Abbrechen",
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden der allgemeinen Daten",
-        "LOAD_FAILED_DETAIL": "Die Versuchsplanungsinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-      },
       "DATE_PARAMS_CONTROL": "Datumskontrollparameter",
       "DAYS_SIGN_REPORT_LABEL": "Tage zur Berichtssignatur",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Geben Sie die Tage für die Berichtssignatur ein",
       "END_PERCENTAGE_LABEL": "Prozentsatz zum Testende",
       "END_PERCENTAGE_PLACEHOLDER": "Geben Sie den Prozentsatz zum Testende ein",
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Die Versuchsplanungsinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der allgemeinen Daten"
+      },
       "EXECUTION_DATE_LABEL": "Geplantes Ausführungsdatum",
       "EXECUTION_DATE_PLACEHOLDER": "Geplantes Ausführungsdatum wählen",
       "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "Nach dem Test",
@@ -1036,7 +2137,6 @@
       "LIMIT_DATE_LABEL": "Ausführungsfrist",
       "LIMIT_DATE_PLACEHOLDER": "Wählen Sie das Ausführungsfristdatum",
       "MANAGE_SPECIMEN_BUTTON": "Probe verwalten",
-      "SPECIMEN_TOOLTIP": "Ausgewählte Proben",
       "MAX_DATE_REPORT_LABEL": "Maximale Tage zur Berichtsausgabe",
       "MAX_DATE_REPORT_PLACEHOLDER": "Geben Sie die maximalen Tage zur Berichtsausgabe ein",
       "MODIFY_PLANNING": "Planung ändern",
@@ -1051,6 +2151,7 @@
       "SPECIMEN_LABEL": "Probe",
       "SPECIMEN_PLACEHOLDER": "Probe auswählen",
       "SPECIMEN_REQUIRED": "Probe ist erforderlich",
+      "SPECIMEN_TOOLTIP": "Ausgewählte Proben",
       "TAB_TITLE": "Allgemein",
       "TRIAL_GOAL_LABEL": "Testzweck",
       "TRIAL_GOAL_PLACEHOLDER": "Geben Sie den Testzweck ein",
@@ -1060,48 +2161,155 @@
       "VALIDATE": "Validieren",
       "VALIDATION_ERRORS_TITLE": "Gründe für die fehlende Validierung"
     },
-    "SERIES_AND_SHOTS_SECTION": {
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden von Serien und Schüssen",
-        "LOAD_FAILED_DETAIL": "Die Serien und Schüsse konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-      },
-      "SINGLE_SHOT_DELETE_TOOLTIP": "Um den einzigen Schuss der Serie zu löschen, muss die gesamte Serie gelöscht werden."
-    },
-    "SHOOTING_CONDITIONS_SECTION": {
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden der Schussbedingungen",
-        "LOAD_FAILED_DETAIL": "Die Schussbedingungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-      }
-    },
+    "LOADING": "Planung wird geladen...",
     "MEASURES": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden der Messgrößen und Aufzeichnungen",
-        "LOAD_FAILED_DETAIL": "Die Messgrößen und Aufzeichnungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+        "LOAD_FAILED_DETAIL": "Die Messgrößen und Aufzeichnungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Messgrößen und Aufzeichnungen"
       },
       "FOOTER": {
+        "CANCEL_BUTTON": "Abbrechen",
         "SAVE_DRAFT": "Entwurf speichern",
-        "SAVING_DRAFT": "Wird gespeichert...",
-        "CANCEL_BUTTON": "Abbrechen"
-      }
+        "SAVING_DRAFT": "Wird gespeichert..."
+      },
+      "LIMIT_CARD": {
+        "DEVIATION": "Abweichung",
+        "ENTER_VALUE": "Wert eingeben",
+        "MAX_LIMIT": "Höchstgrenze",
+        "MIN_LIMIT": "Mindestgrenze"
+      },
+      "TITLE": "Messungen"
     },
     "MUNITIONS": {
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Fehler beim Laden der Munitionskonfigurationen",
-        "LOAD_FAILED_DETAIL": "Die Munitionskonfigurationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      "COMPONENT_DETAIL_FORM": {
+        "ADD_POWDER_BUTTON": "Pulver hinzufügen",
+        "CONDITIONING_CHECKBOX": "Konditionierung",
+        "FUZE_GRADUATION_LABEL": "Zündereinstellung",
+        "FUZE_MODE_LABEL": "Zünderfunktionsmodus",
+        "HEADERS": {
+          "CLIENT_NUMBER": "Kunden-Nr.",
+          "DENOMINATION": "Bezeichnung",
+          "LOT": "Los",
+          "MAX_FAILURES": "Max. zulässige Fehleranzahl",
+          "QUANTITY": "Menge",
+          "TYPE": "Munitionstyp",
+          "ZONE_MODULES": "Zone/Module"
+        },
+        "MANUFACTURER_NUMBER_LABEL": "Kunden-Nr.",
+        "OBSERVATIONS_LABEL": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+        "PLACEHOLDERS": {
+          "CLIENT": "Kunden-Nr.",
+          "FAILURES": "Fehleranzahl",
+          "FUZE_GRADUATION": "Einstellung",
+          "FUZE_MODE": "Modus auswählen",
+          "LOT": "Los",
+          "MANUFACTURER_NUMBER": "Hersteller-Nr.",
+          "MODEL": "Bezeichnung",
+          "MODULES": "Modul auswählen",
+          "ZONE_MODULES": "Zone/Modul auswählen"
+        }
+      },
+      "CONDITIONING_FIELDS": {
+        "MAX_TIME_LABEL": "Maximale Zeit (h)",
+        "MIN_TIME_LABEL": "Minimale Zeit (h)",
+        "OBSERVATIONS_LABEL": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Konditionierungsbemerkungen",
+        "REQUIRED_ERROR": "Dieses Feld ist ein Pflichtfeld",
+        "TEMPERATURE_LABEL": "Konditionierungstemperatur (ºC)",
+        "TOLERANCE_LABEL": "Toleranz (ºC)"
       },
       "CONFIGURATION_FORM": {
+        "ASSOCIATED_SHOTS": "Zugeordnete Schüsse",
+        "ASSOCIATED_SHOTS_LABEL": "Zugeordnete Schüsse",
         "CLIENT_NUMBER_LABEL": "Kundennummer",
         "COMPONENT_SEARCH_PLACEHOLDER": "Komponente suchen",
+        "COMPONENT_SELECTOR_LABEL": "Komponentenauswahl",
+        "COMPONENT_SELECTOR_PLACEHOLDER": "Komponententypen auswählen",
+        "CONDITIONING_CHECKBOX": "Konditionierung",
+        "DENOMINATION_LABEL": "Bezeichnung",
+        "LOT_LABEL": "Los",
+        "LOT_PLACEHOLDER": "Los",
+        "MAX_FAILURES_LABEL": "Max. zulässige Fehleranzahl",
+        "MAX_FAILURES_PLACEHOLDER": "Fehleranzahl",
         "MUNITION_TYPE_LABEL": "Munitionstyp",
         "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp",
-        "POWDER_INDEX": "Pulver {{index}}"
-      }
+        "NO_RESULTS": "Keine Ergebnisse",
+        "OBSERVATIONS_LABEL": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+        "OPTIONS": {
+          "ALL": "Alle",
+          "SELECT": "Auswählen",
+          "SOME": "Einige"
+        },
+        "POWDER_INDEX": "Pulver {{index}}",
+        "SEARCH_PLACEHOLDER": "Bezeichnung suchen",
+        "SELECT_ALL_SHOTS": "Alle auswählen",
+        "VALIDATION": {
+          "MUNITION_TYPE_REQUIRED": "Der Munitionstyp ist erforderlich"
+        }
+      },
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Die Munitionskonfigurationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Munitionskonfigurationen"
+      },
+      "HEADER": {
+        "CANCEL_BUTTON": "Abbrechen",
+        "EMPTY_STATE": "Keine Serien konfiguriert.",
+        "MASSIVE_CONFIG_BUTTON": "Massenkonfiguration anwenden",
+        "SAVE_BUTTON": "Konfiguration speichern",
+        "TRIAL_NUMBER": "Versuchsnummer"
+      },
+      "MASSIVE_CONFIG_DIALOG": {
+        "APPLY_BUTTON": "Anwenden",
+        "ASSOCIATED_SHOTS_LABEL": "Zugeordnete Schüsse",
+        "CANCEL_BUTTON": "Abbrechen",
+        "CLIENT_NUMBER_LABEL": "Kunden-Nr.",
+        "COMPONENT_LABELS": {
+          "ESPOLETA": "Zünder",
+          "ESTOPIN": "Anzündhütchen",
+          "PROYECTIL": "Geschoss"
+        },
+        "COMPONENT_SELECTOR_LABEL": "Komponentenauswahl",
+        "COMPONENT_SELECTOR_PLACEHOLDER": "Komponententypen auswählen",
+        "CONDITIONING_CHECKBOX": "Konditionierung",
+        "DENOMINATION_LABEL": "Bezeichnung",
+        "LOT_LABEL": "Los",
+        "MAX_FAILURES_LABEL": "Max. zulässige Fehleranzahl",
+        "OBSERVATIONS_LABEL": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+        "TITLE": "Massenkonfiguration von Munition",
+        "VALIDATION": {
+          "COMPONENT_DENOMINATION_REQUIRED": "Bezeichnung erforderlich für {{component}}",
+          "COMPONENT_LOT_REQUIRED": "Los erforderlich für {{component}}",
+          "DENOMINATION_REQUIRED": "Bezeichnung ist erforderlich",
+          "LOT_REQUIRED": "Los ist erforderlich",
+          "MAX_TIME_REQUIRED": "Maximale Zeit ist erforderlich",
+          "MIN_TIME_REQUIRED": "Minimale Zeit ist erforderlich",
+          "TEMPERATURE_REQUIRED": "Konditionierungstemperatur ist erforderlich",
+          "TOLERANCE_REQUIRED": "Toleranz ist erforderlich"
+        }
+      },
+      "SERIE_PANEL": {
+        "CONFIG_TITLE": "Konfiguration {{index}}",
+        "DELETE_CONFIG": "Konfiguration löschen",
+        "EMPTY_CONFIGS": "Keine Munitionskonfigurationen vorhanden. Klicken Sie auf \"Munition hinzufügen\", um zu beginnen.",
+        "TITLE": "Serie {{index}} - {{name}}",
+        "add_munition": "Munition hinzufügen"
+      },
+      "TITLE": "Munition"
     },
     "RATING_CRITERIA": {
       "COLUMNS": {
         "PROPERTY": "Eigenschaft",
         "USEFUL_1": "Nützlich-1",
         "USELESS": "Nutzlos"
+      },
+      "INFO_TOOLTIP": {
+        "RULE_1": "Ein Wert wird als Nützlich-1 eingestuft, wenn er innerhalb des Bereichs Nützlich-1 liegt.",
+        "RULE_2": "Ein Wert wird als Unbrauchbar eingestuft, wenn er außerhalb des Bereichs Unbrauchbar liegt.",
+        "RULE_3": "Jeder Wert, der innerhalb des Bereichs Unbrauchbar, aber außerhalb des Bereichs Nützlich-1 liegt, wird als Nützlich-2 eingestuft.",
+        "TITLE": "Bewertungskriterien"
       },
       "PRESSURE_LABEL": "Druck",
       "PROPERTIES": {
@@ -1116,29 +2324,209 @@
       },
       "TITLE": "Qualifikationskriterien",
       "VELOCITY_LABEL": "Geschwindigkeit"
+    },
+    "SERIES_AND_SHOTS_SECTION": {
+      "ADD_SHOT_BUTTON": "Schuss hinzufügen",
+      "CREATE_SERIE_BUTTON": "Serie erstellen",
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Die Serien und Schüsse konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden von Serien und Schüssen"
+      },
+      "NEW_SERIE_BUTTON": "Neue Serie",
+      "NOT_SHOTS_IN_SERIE": "Keine Schüsse in der Serie vorhanden",
+      "NO_SERIES_RESULTS": "Keine Serien gefunden.",
+      "NO_SHOTS_RESULTS": "Keine Schüsse gefunden.",
+      "SERIES_SHOTS": "Schüsse der Serie",
+      "SERIES_TABLE": {
+        "ACTIONS": "Aktionen",
+        "EXECUTION_ORDER": "Ausführungsreihenfolge",
+        "OBSERVATIONS": "Bemerkungen",
+        "SERIE_NAME": "Serienname",
+        "SHOTS_QUANTITY": "Schussanzahl"
+      },
+      "SHOTS_TABLE": {
+        "ACTIONS": "Aktionen",
+        "OBSERVATIONS": "Bemerkungen",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen",
+        "SHOT_NUMBER": "Schuss-Nr."
+      },
+      "SINGLE_SHOT_DELETE_TOOLTIP": "Um den einzigen Schuss der Serie zu löschen, muss die gesamte Serie gelöscht werden.",
+      "TAB_TITLE": "Serien und Schüsse",
+      "TITLE": "Versuchsserien"
+    },
+    "SHOOTING_CONDITIONS_SECTION": {
+      "ACTIONS": {
+        "CANCEL": "Abbrechen",
+        "MASSIVE_CONFIG_BUTTON": "Massenkonfiguration anwenden",
+        "SAVE": "Entwurf speichern"
+      },
+      "EMPTY_STATE": "Keine Schüsse in dieser Serie vorhanden",
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Die Schussbedingungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        "LOAD_FAILED_TITLE": "Fehler beim Laden der Schussbedingungen"
+      },
+      "MASSIVE_CONFIG_DIALOG": {
+        "ANGLE_LABEL": "Schusswinkel",
+        "APPLY_BUTTON": "Anwenden",
+        "CANCEL_BUTTON": "Abbrechen",
+        "DATE_LABEL": "Datum",
+        "DATE_PLACEHOLDER": "Datum auswählen",
+        "DISTANCE_LABEL": "Entfernung",
+        "ELEVATION_LABEL": "Höhenrichtung",
+        "FUNCTIONING_HEIGHT_LABEL": "Funktionshöhe",
+        "IMPACT_ZONE_LABEL": "Einschlagzone",
+        "IMPACT_ZONE_PLACEHOLDER": "Einschlagzone auswählen",
+        "INCLINATION_LABEL": "Neigung",
+        "NOMINAL_SPEED_LABEL": "Nenngeschwindigkeit",
+        "ORIENTATION_LABEL": "Ausrichtung",
+        "POWDER_WEIGHT_LABEL": "Pulvergewicht",
+        "PROJECTILE_WEIGHT_LABEL": "Geschossgewicht",
+        "RANGE_LABEL": "Reichweite",
+        "SERIES_LABEL": "Serien",
+        "SERIES_PLACEHOLDER": "Serien auswählen",
+        "TARGET_DIMENSIONS_LABEL": "Zielabmessungen",
+        "TARGET_DIMENSIONS_PLACEHOLDER": "Zielabmessungen auswählen",
+        "TARGET_LABEL": "Ziel",
+        "TARGET_MATERIAL_LABEL": "Zielmaterial",
+        "TARGET_MATERIAL_PLACEHOLDER": "Zielmaterial auswählen",
+        "TARGET_PLACEHOLDER": "Ziel auswählen",
+        "TARGET_THICKNESS_LABEL": "Zieldicke",
+        "TARGET_THICKNESS_PLACEHOLDER": "Zieldicke auswählen",
+        "TITLE": "Massenkonfiguration von Schüssen",
+        "VALIDATIONS": {
+          "NEGATIVE_VALUE": "Der Wert darf nicht negativ sein",
+          "REQUIRED_SERIES": "Mindestens eine Serie muss ausgewählt sein"
+        }
+      },
+      "TABLE": {
+        "ANGLE": "Schusswinkel",
+        "DATE": "Datum",
+        "DISTANCE": "Entfernung",
+        "ELEVATION": "Höhenrichtung",
+        "FUNCTIONING_HEIGHT": "Funktionshöhe",
+        "IMPACT_ZONE": "Einschlagzone",
+        "INCLINATION": "Neigung",
+        "NOMINAL_SPEED": "Nenngeschwindigkeit",
+        "NOMINAL_VELOCITY": "Nenngeschwindigkeit",
+        "OBSERVATIONS": "Bemerkungen",
+        "ORIENTATION": "Ausrichtung",
+        "POWDER_WEIGHT": "Pulvergewicht",
+        "PROJECTILE_WEIGHT": "Geschossgewicht",
+        "RANGE": "Reichweite",
+        "SHOT": "Schuss",
+        "TARGET": "Ziel",
+        "TARGET_DIMENSIONS": "Zielabmessungen",
+        "TARGET_MATERIAL": "Zielmaterial",
+        "TARGET_THICKNESS": "Zieldicke"
+      },
+      "TITLE": "Schießbedingungen"
+    },
+    "UPSERT_SERIE_DIALOG": {
+      "CANCEL": "Abbrechen",
+      "NUMBER_OF_SHOTS_LABEL": "Schussanzahl",
+      "NUMBER_OF_SHOTS_PLACEHOLDER": "Schussanzahl angeben",
+      "OBSERVATIONS_LABEL": "Bemerkungen",
+      "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+      "SAVE": "Speichern",
+      "SERIE_NAME_LABEL": "Serienname",
+      "SERIE_NAME_PLACEHOLDER": "Seriennamen eingeben",
+      "TITLE_EDIT": "Serie bearbeiten",
+      "TITLE_NEW": "Neue Serie erstellen",
+      "UPDATE": "Änderungen speichern"
     }
   },
-  "UI": {
-    "SKELETON": {
-      "LOADING": "Wird geladen..."
+  "TRIAL_SCHEDULER": {
+    "DATA_LABEL": "Daten:",
+    "LEGEND": {
+      "ARIA_LABEL": "Diagrammlegende",
+      "BUSY": "Tag mit Versuchen",
+      "LABEL_COFIRM": "Planung aufheben",
+      "NO_NOTAM": "Ohne NOTAM",
+      "SELECTED": "Ausgewählt",
+      "SPECIAL_DAY": "Arbeitsfrei"
     },
+    "SCHEDULE_TRIAL": "Versuch planen",
+    "SCHEDULE_TRIAL_INLINE_LABEL": "Geplantes Datum",
+    "SCHEDULE_TRIAL_TITLE": "Versuchsplanung",
+    "SELECT_DAYS": "Wählen Sie die Tage für den Versuch aus",
+    "TRIAL_NUMBER": "Versuchsnummer",
+    "UNPROGAM": {
+      "DESCRIPTION": "Sie sind im Begriff, die Planung des Versuchs {{id}} für den Tag {{day}} aufzuheben",
+      "LABEL_COFIRM": "Planung aufheben",
+      "TITLE": "Versuchsplanung aufheben"
+    }
+  },
+  "TRIAL_TABLE_SELECTOR_MODAL": {
+    "CANCEL": "ABBRECHEN",
+    "PENDING_TRIALS": "Ausstehende Versuche",
+    "SEARCH_PLACEHOLDER": "Nach Beschreibung suchen",
+    "TITLE": "Versuchsplanung"
+  },
+  "UI": {
     "SAVE_BUTTON": {
       "LABEL": "Speichern",
       "SAVING_TOOLTIP": "Änderungen werden gespeichert..."
+    },
+    "SKELETON": {
+      "LOADING": "Wird geladen..."
     }
   },
   "UTILS_TRIALS": {
     "TRIAL_ACTIONS": {
+      "ANNUL": "Annullieren",
+      "CANCEL": "Abbrechen",
+      "CLOSE": "Schließen",
       "EXECUTION": "Ausführung",
-      "MODIFY": "Ändern"
+      "MODIFY": "Ändern",
+      "REACTIVATE": "Reaktivieren",
+      "REMOVE": "Löschen",
+      "REOPEN": "Wiedereröffnen"
+    },
+    "TRIAL_ACTIONS_LABEL": "Aktionen",
+    "TRIAL_STATUS": {
+      "ANALYZING": "In Analyse",
+      "CANCELLED": "Abgebrochen",
+      "CLOSED": "Geschlossen",
+      "EXECUTED": "Ausgeführt",
+      "FINALIZING": "Wird abgeschlossen",
+      "INTERRUPTED": "Unterbrochen",
+      "IN_PROGRESS": "In Bearbeitung",
+      "PLANNED": "Geplant",
+      "PREPARED": "Vorbereitet",
+      "STARTED": "Gestartet",
+      "UNDER_REVIEW": "In Prüfung",
+      "VOIDED": "Annulliert"
     }
   },
+  "VALIDATIONS": {
+    "DATE_MIN": "Das Datum darf nicht vor heute liegen",
+    "INVALID_DATE": "Geben Sie ein gültiges Datum ein"
+  },
   "WHAREHOUSE_MANAGMENT": {
-    "DIALOGS": {
-      "SWITCH_STATUS": {
-        "CONTENT_HTML": "Möchten Sie die Statusänderung des Datensatzes bestätigen?",
-        "TITLE": "Status ändern"
-      }
+    "CERTIFICATES": {
+      "ACTIONS": "Aktionen",
+      "ACTION_DELETE_HTML": "Sie sind im Begriff, ein zugeordnetes Zertifikat zu löschen",
+      "ACTION_DELETE_TITLE": "Zugeordnetes Zertifikat löschen",
+      "BUTTON_ADD": "Dokumentation hinzufügen",
+      "COMPONENT": "Komponenten",
+      "DATE": "Datum",
+      "FILENAME": "Datei",
+      "HEADING": "Zertifikate",
+      "INTRO": "Zugeordnete Dokumentation"
+    },
+    "CERTIFICATES_DOC_PICKER_DIALOG": {
+      "ADD": "Hinzufügen",
+      "CANCEL": "Abbrechen",
+      "COMPONENTS_LABEL": "Komponenten",
+      "COMPONENTS_PLACEHOLDER": "Komponenten auswählen",
+      "DOCUMENT_LABEL": "Dokumentation",
+      "DOCUMENT_PLACEHOLDER": "Nach Dateinamen suchen",
+      "DOCUMENT_TYPE_LABEL": "Dokumenttyp",
+      "DOCUMENT_TYPE_PLACEHOLDER": "Dokumenttyp auswählen",
+      "DRAG_HERE": "oder Dateien hierher ziehen und ablegen",
+      "SELECT_DOC": "Dokumentation auswählen",
+      "TITLE": "Dokument-Upload",
+      "UPLOADING": "Wird hochgeladen"
     },
     "DENOMINATIONS": {
       "ACTIONS": "Aktionen",
@@ -1190,6 +2578,217 @@
       "STATUS": "Status",
       "TITLE": "Munitionsbezeichnung"
     },
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "Möchten Sie die Statusänderung des Datensatzes bestätigen?",
+        "TITLE": "Status ändern"
+      }
+    },
+    "DIALOG_EDIT_COMPONENT": {
+      "ADD": "Komponente hinzufügen",
+      "BATCH_LABEL": "Los",
+      "BATCH_PLACEHOLDER": "Los",
+      "DENOMINATION": "Bezeichnung",
+      "DENOMINATION_LABEL": "Bezeichnung",
+      "DENOMINATION_PLACEHOLDER": "Bezeichnung eingeben",
+      "EDIT": "Komponenteninformationen bearbeiten",
+      "MUNITION_TYPE_LABEL": "Typ",
+      "MUNITION_TYPE_PLACEHOLDER": "Typ auswählen",
+      "TYPE": "Typ"
+    },
+    "DIALOG_RETIRE": {
+      "BATCH": "Los",
+      "BUTTON_CONFIRM": "Ausmustern",
+      "DENOMINATION": "Bezeichnung",
+      "INTRO": "Wählen Sie die auszumusternde Munition aus",
+      "QUANTITY_LABEL": "Menge",
+      "REASON_DESTRUCTION": "Vernichtung",
+      "REASON_EXTERNAL": "Externe Prüfungen",
+      "REASON_LABEL": "Ausmusterungsgründe",
+      "REASON_PLACEHOLDER": "Grund auswählen",
+      "REASON_RETURN": "Rückgabe an den Kunden",
+      "STOCK": "Bestand",
+      "TITLE": "Manuelle Munitionsausmusterung",
+      "TITLE_TABLE": "Auswahl der auszumusternden Munition"
+    },
+    "DIALOG_TRANSFER": {
+      "BUTTON_CONFIRM": "Fortfahren",
+      "CELL_LABEL": "Zielzelle",
+      "CELL_PLACEHOLDER": "Zielzelle auswählen",
+      "DESTINATION_LABEL": "Ziel-Munitionslager",
+      "DESTINATION_PLACEHOLDER": "Ziel-Munitionslager auswählen",
+      "INTRO": "Auswahl von Herkunft und Ziel",
+      "QUANTITY_LABEL": "Menge",
+      "TITLE": "Verlegung in ein anderes Munitionslager"
+    },
+    "LINK": {
+      "BATCH": "Los",
+      "BUTTON_CONFIRM": "Verknüpfen",
+      "CLIENT": "Kunde",
+      "CLIENT_LABEL": "Kunde",
+      "CLIENT_PLACEHOLDER": "Kunde auswählen",
+      "DENOMINATION": "Bezeichnung",
+      "TABLE_INTRO": "Zugeordnete Dokumentation",
+      "TITLE": "Dokument mit einer Munition verknüpfen",
+      "TRIAL": "Geplanter Versuch",
+      "TRIAL_LABEL": "Geplanter Versuch",
+      "TRIAL_PLACEHOLDER": "Versuch eingeben",
+      "TYPE": "Typ",
+      "TYPE_LABEL": "Typ",
+      "TYPE_PLACEHOLDER": "Typ auswählen"
+    },
+    "MOVEMENTS": {
+      "FILTER": {
+        "DATE_FROM": "Datum von",
+        "DATE_PLACEHOLDER": "Datum auswählen",
+        "DATE_TO": "Datum bis",
+        "HOUR_FROM": "Uhrzeit von",
+        "HOUR_PLACEHOLDER": "Uhrzeit auswählen",
+        "HOUR_TO": "Uhrzeit bis",
+        "MOVEMENT_TYPE_LABEL": "Bewegungsart",
+        "MOVEMENT_TYPE_PLACEHOLDER": "Typ auswählen",
+        "MUNITION_DUMP_DESTINATION": "Ziel-Munitionslager",
+        "MUNITION_DUMP_ORIGIN": "Herkunfts-Munitionslager",
+        "NEQ_AFECTED": "Betroffene NEQ",
+        "QUANTITY_MAX": "Maximale Menge",
+        "QUANTITY_MIN": "Minimale Menge",
+        "REASON": "Grund",
+        "TRIAL_ASSOCIATED": "Zugeordneter Versuch",
+        "USER": "Benutzer"
+      },
+      "MOVEMENT_RETIRE": "Ausmusterung",
+      "MOVEMENT_TRANSFER": "Umlagerung",
+      "TABLE": {
+        "COL_DATE": "Datum",
+        "COL_HOUR": "Uhrzeit",
+        "COL_MOVEMENT_TYPE": "Bewegungsart",
+        "COL_MUNITION_DUMP_DESTINATION": "Ziel-Lager",
+        "COL_MUNITION_DUMP_ORIGIN": "Herkunfts-Lager",
+        "COL_NEQ_AFECTED": "Betroffene NEQ",
+        "COL_QUANTITY": "Menge",
+        "COL_REASON": "Grund",
+        "COL_TRIAL_ASSOCIATED": "Zugeordneter Versuch",
+        "COL_USER": "Benutzer",
+        "REASON_DESTRUCTION": "Vernichtung",
+        "REASON_EXTERNAL": "Externe Prüfungen",
+        "REASON_RETURN": "Rückgabe an den Kunden"
+      },
+      "TITLE": "Bewegungshistorie"
+    },
+    "MUNITION": "Munition",
+    "MUNITIONS_DUMPS": {
+      "COLUMNS": {
+        "ACTIONS": "Aktionen",
+        "CELLS_COUNT": "Zellenanzahl",
+        "NAME": "Munitionslager-ID",
+        "NEQMAX": "Max. NEQ Munitionslager",
+        "NEQMAXCELL": "Max. NEQ Zelle",
+        "STATUS": "Status"
+      },
+      "CREATE": "Munitionslager erstellen",
+      "MODAL": {
+        "CELLS_COUNT": "Anzahl der Zellen",
+        "CELLS_COUNT_PLACEHOLDER": "Wert auswählen",
+        "CELL_PREFIX": "Zelle",
+        "CELL_PREFIX_PLACEHOLDER": "Zellennamen eingeben",
+        "CELL_VALUE_REQUIRED": "Sie müssen einen Namen für jede Zelle dieses Munitionslagers angeben",
+        "ID": "Munitionslager-ID",
+        "ID_PLACEHOLDER": "Munitionslager-ID",
+        "NEQMAXCELL": "Max. NEQ Zelle GR 1.1 und 1.2",
+        "NEQMAXCELL_PLACEHOLDER": "Kilogramm eingeben",
+        "NEQMAXTOTAL": "Max. NEQ Munitionslager",
+        "NEQMAXTOTAL_PLACEHOLDER": "Kilogramm eingeben",
+        "STATUS": "Status",
+        "TITLE_CREATE": "Munitionslager erstellen",
+        "TITLE_EDIT": "Munitionslager bearbeiten"
+      },
+      "MODAL_DELETE": {
+        "CONTENT_HTML": "Sie sind im Begriff, ein Munitionslager zu löschen, obwohl es mit registrierten Elementen verknüpft ist. <b>Das Munitionslager wird in Dropdown-Listen nicht mehr verfügbar sein.</b>",
+        "TITLE": "Munitionslager löschen"
+      },
+      "TITLE": "Munitionslager"
+    },
+    "MUNITION_COMPONENT": "Munitionskomponente",
+    "MUNITION_COMPONENTS": {
+      "ACTIONS": "Aktionen",
+      "CATEGORY": "Kategorie",
+      "COMPONENT_TYPE": "Komponententyp",
+      "CREATE": "Komponente erstellen",
+      "MODAL": {
+        "CATEGORY": "Kategorie",
+        "CATEGORY_PLACEHOLDER": "Wert auswählen",
+        "NAME_EN_LABEL": "Komponententyp (Englisch)",
+        "NAME_EN_PLACEHOLDER": "Namen für die Komponente eingeben (Englisch)",
+        "NAME_LABEL": "Komponententyp",
+        "NAME_PLACEHOLDER": "Namen für die Komponente eingeben",
+        "OBSERVATIONS_PLACEHOLDER": "Bemerkungen eingeben",
+        "TITLE_CREATE": "Komponente erstellen",
+        "TITLE_EDIT": "Komponente bearbeiten"
+      },
+      "MODAL_DELETE": {
+        "CONTENT_HTML": "Sie sind im Begriff, eine Komponente zu löschen, obwohl sie mit registrierten Elementen verknüpft ist. <b>Die Komponente wird in Dropdown-Listen nicht mehr verfügbar sein.</b>",
+        "TITLE": "Komponente löschen"
+      },
+      "OBSERVATIONS": "Bemerkungen",
+      "STATUS": "Status",
+      "TITLE": "Munitionskomponenten"
+    },
+    "MUNITION_CREATE": {
+      "ADD_COMPONENT": "Komponente hinzufügen",
+      "BATCH_LABEL": "Los",
+      "BATCH_PLACEHOLDER": "Los hier eingeben",
+      "CATEGORY": "Kategorie",
+      "CATEGORY_PLACEHOLDER": "Kategorie",
+      "CLIENT_LABEL": "Kunde",
+      "CLIENT_NO_TRIAL_ERROR": "Sie müssen einen mit dem Kunden verknüpften Versuch erstellen, um ihm Munition zuweisen zu können",
+      "CLIENT_PLACEHOLDER": "Kunde auswählen",
+      "CONFIRM_COMPATIBILITY_TEXT": "Eine Inkompatibilität wurde festgestellt. Bitte bestätigen Sie, falls dies korrekt ist",
+      "CONFIRM_COMPATIBILITY_TITLE": "Kompatibilitätskontrolle",
+      "CONFIRM_NEQ_CONTROL_TEXT": "Die autorisierte NEQ-Grenze wurde überschritten. Bitte bestätigen Sie, falls dies korrekt ist",
+      "CONFIRM_NEQ_CONTROL_TITLE": "NEQ-Kontrolle",
+      "DENOMINATION_LABEL": "Bezeichnung",
+      "DENOMINATION_PLACEHOLDER": "Bezeichnung eingeben",
+      "ENTRY_DATE_LABEL": "Eingangsdatum",
+      "ENTRY_DATE_PLACEHOLDER": "Eingangsdatum auswählen",
+      "MUNITIONS_DUMPS_ARRIVAL_LABEL": "Ziel-Munitionslager",
+      "MUNITIONS_DUMPS_ARRIVAL_PLACEHOLDER": "Munitionslager auswählen",
+      "MUNITIONS_DUMPS_CELL_LABEL": "Munitionslagerzelle",
+      "MUNITIONS_DUMPS_CELL_PLACEHOLDER": "Zelle auswählen",
+      "MUNITION_TYPE_LABEL": "Munitionstyp",
+      "MUNITION_TYPE_PLACEHOLDER": "Munitionstyp auswählen",
+      "OBSERVATIONS_LABEL": "Bemerkungen",
+      "OBSERVATIONS_PLACEHOLDER": "Bemerkungen hier eingeben",
+      "PLANNED_TRIAL_LABEL": "Geplanter Versuch",
+      "PLANNED_TRIAL_PLACEHOLDER": "Geplanten Versuch auswählen",
+      "QUANTITY_LABEL": "Menge",
+      "RESET": "Daten löschen",
+      "SAVE": "Registrieren",
+      "SECTION_COMPONENTS": "Komponenten",
+      "SECTION_GENERAL_DATA": "Allgemeine Daten",
+      "SECTION_IDENTIFICATION": "Munitionsidentifikation",
+      "SECTION_LOCATION": "Standort und Logistik",
+      "SHOW_UBICATON_LABEL": "Standort",
+      "TYPE": "Typ"
+    },
+    "MUNITION_DETAIL": {
+      "ACTIONS": "Aktionen",
+      "ACTION_MOVEMENTS": "Bewegungshistorie",
+      "ACTION_RETIRE": "Munition ausmustern",
+      "ACTION_TRANSFER": "In ein anderes Lager verlegen",
+      "CELL": "Zelle",
+      "DAY_UTILIZATION": "Vorgesehenes Nutzungsdatum",
+      "HEADING": "Elementdatenblatt",
+      "MUNITIONS_DUMP": "Munitionslager",
+      "NOMINAL_WEIGHT": "Nenngewicht",
+      "RETIREMENT_DATE": "Ausmusterungsdatum",
+      "RETIREMENT_REASON": "Ausmusterungsgrund",
+      "STATUS": "Status",
+      "STATUS_AVAILABLE": "Verfügbar",
+      "STATUS_RETIRE": "Ausgemustert",
+      "STATUS_RETIRED": "Ausgemustert",
+      "TOTAL_NEQ": "Gesamt-NEQ"
+    },
+    "SEARH_LIST_PLACEHOLDER": "Suchbegriff eingeben",
     "STOCK_LIST": {
       "CLEAN_FILTERS_BUTTON": "Filter leeren",
       "COL_BATCH": "Los",
@@ -1230,6 +2829,18 @@
       "TRANSFER": "Transfer in ein anderes Pulvermagazin",
       "TRIAL_PREVIEW": "Geplanter Versuch"
     },
+    "TABLE_COMPONENTS": {
+      "ACTIONS": "Aktionen",
+      "ACTION_DELETE_HTML": "Sie sind im Begriff, eine Komponente zu löschen",
+      "ACTION_DELETE_TITLE": "Zugeordnete Komponente löschen",
+      "ADD_COMPONENTS": "Komponenten hinzufügen",
+      "BATCH": "Los",
+      "DENOMINATION": "Bezeichnung",
+      "HEADING": "Verknüpfte Komponenten",
+      "TYPE": "Typ"
+    },
+    "TRIAL_NOT_FOUND": "Kein Versuch mit diesem Code gefunden",
+    "TRIAL_NOT_FOUND_NETWORK": "Die Existenz des Versuchs konnte nicht überprüft werden",
     "VALIDATIONS": {
       "CELL_GREATER_THAN_MUNITIONDUMP": "Maximales NEQ pro Zelle darf nicht höher sein als maximales NEQ pro Pulvermagazin",
       "DATE_TIME_INTERVAL_WRONG": "Zeitintervall ist falsch definiert",
@@ -1240,31 +2851,6 @@
       "MIN_GREATER_THAN_ZERO": "Geben Sie einen Mindestwert größer als Null ein",
       "NUMERIC_INTERVAL_WRONG": "Numerisches Intervall ist falsch definiert",
       "TRIAL_PATTERN": "Geben Sie einen korrekt formatierten Prüfcode ein"
-    }
-  },
-  "TRIAL_CREATE_MODIFY_FORM": {
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Fehler beim Laden des Testformulars",
-      "LOAD_FAILED_DETAIL": "Die Testformulardaten konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-    }
-  },
-  "MASTER_DATA": {
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Fehler beim Laden der Daten",
-      "LOAD_FAILED_DETAIL": "Die erforderlichen Informationen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut."
-    },
-    "MEASURES": {
-      "DIALOGS": {
-        "UPSERT": {
-          "MEASUREMENTS": {
-            "LABEL": "Messung",
-            "PLACEHOLDER": "Wählen Sie eine oder mehrere Messungen aus"
-          }
-        }
-      },
-      "LIST": {
-        "MEASUREMENTS": "Messung"
-      }
     }
   }
 }

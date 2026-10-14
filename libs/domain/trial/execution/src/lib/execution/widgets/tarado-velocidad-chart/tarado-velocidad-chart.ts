@@ -114,7 +114,12 @@ interface TaradoVelocidadForm {
 
       <!-- Chart canvas -->
       <div intaReadonlyContent class="flex-1 relative min-h-40 w-full">
-        <canvas uiChart aria-label="Tarado Velocidad Chart" role="img" [config]="chartConfig()"></canvas>
+        <canvas
+          uiChart
+          role="img"
+          [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.CHART_ARIA' | translate"
+          [config]="chartConfig()"
+        ></canvas>
       </div>
 
       <!-- Bottom: legend + stats -->

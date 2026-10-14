@@ -84,7 +84,12 @@ interface UniformidadForm {
 
       <!-- Chart: full width -->
       <div class="flex-1 relative min-h-40 w-full">
-        <canvas uiChart aria-label="Gráfica Uniformidad" role="img" [config]="chartConfig()"></canvas>
+        <canvas
+          uiChart
+          role="img"
+          [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.CHART_ARIA' | translate"
+          [config]="chartConfig()"
+        ></canvas>
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->

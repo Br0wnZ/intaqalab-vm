@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService, type ShotVelocitiesResponse } from '../../../services/execution.service';
+import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { VelocityIntroduction } from './velocity-introduction';
 
@@ -122,10 +123,49 @@ describe('VelocityIntroduction', () => {
     }),
     setShotVelocity: vi.fn(),
     loadEquipmentItemsByCategories: vi.fn().mockResolvedValue({}),
+    equipmentSelectorResource: {
+      hasValue: vi.fn(() => true),
+      value: vi.fn(() => [
+        {
+          measurementGroup: EquipmentMeasurementGroupEnum.INITIAL_VELOCITY,
+          selections: [
+            {
+              equipmentItemId: 1,
+              categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+              seriesIds: [ACTIVE_SERIE_ID],
+              shotIds: [ACTIVE_SHOT_ID],
+            },
+            {
+              equipmentItemId: 4,
+              categoryId: EquipmentTypeEnum.ANTENNA,
+              seriesIds: [ACTIVE_SERIE_ID],
+              shotIds: [ACTIVE_SHOT_ID],
+            },
+            {
+              equipmentItemId: 2,
+              categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+              seriesIds: ['funcionamiento-2'],
+              shotIds: ['shot-5'],
+            },
+            {
+              equipmentItemId: 5,
+              categoryId: EquipmentTypeEnum.ANTENNA,
+              seriesIds: ['funcionamiento-2'],
+              shotIds: ['shot-5'],
+            },
+          ],
+        },
+        {
+          measurementGroup: EquipmentMeasurementGroupEnum.HIGH_SPEED_VIDEO,
+          selections: [{ equipmentItemId: 2, categoryId: EquipmentTypeEnum.DOPPLER_RADAR }],
+        },
+      ]),
+    },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExecutionService.loadEquipmentItemsByCategories.mockResolvedValue({});
 
     velocityState.set({
       serie: null,
@@ -186,6 +226,27 @@ describe('VelocityIntroduction', () => {
     const { fixture } = await renderWidget('velocity-widget-1');
     expect(fixture.componentInstance.formState().widgetId).toBe('velocity-widget-1');
     expect(document.querySelector('h3')).toBeTruthy();
+  });
+
+  it('shows only radar and antenna selected for initial velocity', async () => {
+    mockExecutionService.loadEquipmentItemsByCategories.mockResolvedValue({
+      [EquipmentTypeEnum.DOPPLER_RADAR]: [
+        { id: '1', label: 'Selected radar' },
+        { id: '2', label: 'Radar assigned to another shot' },
+        { id: '3', label: 'Unselected radar' },
+      ],
+      [EquipmentTypeEnum.ANTENNA]: [
+        { id: '4', label: 'Selected antenna' },
+        { id: '5', label: 'Antenna assigned to another shot' },
+      ],
+    });
+
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance['radarAntenaOptions']()).toEqual([
+      { value: '1|4', label: 'Selected radar / Selected antenna' },
+    ]);
   });
 
   it('automatically sets selection from store active serie and active shot on init', async () => {

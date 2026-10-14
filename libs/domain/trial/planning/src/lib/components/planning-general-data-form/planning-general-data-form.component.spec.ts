@@ -338,10 +338,18 @@ describe('PlanningGeneralDataFormComponent', () => {
     });
 
     it('should call reloadPlanningInfo when cancel button is clicked', async () => {
-      const { view, mockStore, user } = await setup();
+      const { view, mockStore, user } = await setup({ isValidable: true });
 
-      const cancelButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL');
+      view.fixture.componentInstance.formModel.set({
+        ...view.fixture.componentInstance.formModel(),
+        ...validFormValues,
+        goal: 'Nuevo objetivo modificado',
+      });
+      view.fixture.detectChanges();
+
+      const cancelButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL').closest('button');
       expect(cancelButton).toBeInTheDocument();
+      if (!cancelButton) return;
       await user.click(cancelButton);
       await view.fixture.whenStable();
 

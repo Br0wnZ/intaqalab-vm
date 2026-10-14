@@ -41,7 +41,7 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
               <inta-series-and-shots [readonly]="isReadonly()" />
             } @placeholder {
               <div class="h-40 flex items-center justify-center">
-                <span class="text-sm text-gray-400">Cargando...</span>
+                <span class="text-sm text-gray-400">{{ 'COMMONS.LOADING' | translate }}</span>
               </div>
             }
           </ng-template>
@@ -55,7 +55,7 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
               <inta-shooting-conditions [readonly]="isReadonly()" />
             } @placeholder {
               <div class="h-40 flex items-center justify-center">
-                <span class="text-sm text-gray-400">Cargando...</span>
+                <span class="text-sm text-gray-400">{{ 'COMMONS.LOADING' | translate }}</span>
               </div>
             }
           </ng-template>
@@ -66,7 +66,7 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
               <inta-munitions [readonly]="isReadonly()" />
             } @placeholder {
               <div class="h-40 flex items-center justify-center">
-                <span class="text-sm text-gray-400">Cargando...</span>
+                <span class="text-sm text-gray-400">{{ 'COMMONS.LOADING' | translate }}</span>
               </div>
             }
           </ng-template>
@@ -77,18 +77,18 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
               <inta-armament [readonly]="isReadonly()" />
             } @placeholder {
               <div class="h-40 flex items-center justify-center">
-                <span class="text-sm text-gray-400">Cargando...</span>
+                <span class="text-sm text-gray-400">{{ 'COMMONS.LOADING' | translate }}</span>
               </div>
             }
           </ng-template>
         </mat-tab>
-        <mat-tab label="Medidas" [disabled]="disableSeriesDependentTab()">
+        <mat-tab label="{{ 'TRIAL_PLANNING.MEASURES.TITLE' | translate }}" [disabled]="disableSeriesDependentTab()">
           <ng-template matTabContent>
             @defer (on idle) {
               <inta-measures [readonly]="isReadonly()" />
             } @placeholder {
               <div class="h-40 flex items-center justify-center">
-                <span class="text-sm text-gray-400">Cargando...</span>
+                <span class="text-sm text-gray-400">{{ 'COMMONS.LOADING' | translate }}</span>
               </div>
             }
           </ng-template>

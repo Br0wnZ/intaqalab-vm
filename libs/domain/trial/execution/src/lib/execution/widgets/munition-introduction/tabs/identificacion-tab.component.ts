@@ -123,6 +123,7 @@ export class MunitionIdentificacionTabComponent {
   readonly #store = inject(ExecutionStore);
 
   readonly componentChange = output<string>();
+  readonly denominationChange = output<string>();
 
   readonly identFormModel = signal<IdentFormModel>({
     componente: this.#store.munitionIntroduction().identificacion.componente,
@@ -248,12 +249,11 @@ export class MunitionIdentificacionTabComponent {
     if (!denominacionId) return;
     const option = this.filteredDenominacionOptions().find((d) => d.value === denominacionId);
     if (option) {
-      if (option.batch !== undefined && option.batch !== null) {
-        this.identFormModel.update((m) => ({ ...m, lote: option.batch || null }));
-      }
+      this.identFormModel.update((m) => ({ ...m, lote: option.batch || null }));
       if (option.clientNumber !== undefined && option.clientNumber !== null) {
         this.numeroClienteField.set(option.clientNumber || null);
       }
+      this.denominationChange.emit(denominacionId);
     }
   }
 

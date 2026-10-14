@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MutationLoaderService } from '../../services/mutation-loader.service';
 
@@ -12,14 +13,14 @@ import { MutationLoaderService } from '../../services/mutation-loader.service';
  */
 @Component({
   selector: 'lib-mutation-progress-bar',
-  imports: [MatProgressBarModule],
+  imports: [MatProgressBarModule, TranslatePipe],
   template: `
     @if (mutationLoader.isMutating()) {
       <mat-progress-bar
         mode="indeterminate"
-        aria-label="Guardando cambios"
         aria-live="polite"
         class="mutation-progress-bar"
+        [attr.aria-label]="'COMMONS.SAVING_CHANGES' | translate"
       />
     }
   `,

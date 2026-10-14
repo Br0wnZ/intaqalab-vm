@@ -31,7 +31,7 @@ const defaultCatalogData = [
     active: true,
     unit: 'TOPOGRAPHY',
     magnitude: 'Presión',
-    favorite: true,
+    isFavorite: true,
     qualificationType: 'QUANTITATIVE',
   },
   {
@@ -40,7 +40,7 @@ const defaultCatalogData = [
     active: true,
     unit: 'MUNITIONS',
     magnitude: 'Velocidad',
-    favorite: false,
+    isFavorite: false,
     qualificationType: 'QUANTITATIVE',
   },
 ];
@@ -161,15 +161,23 @@ describe('Measures', () => {
 
     it('should render save and cancel buttons', async () => {
       await runSetup();
-      expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Cancelar/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.CANCEL_BUTTON|Cancelar/i }),
+      ).toBeInTheDocument();
     });
 
     it('should disable actions when loaded data is unchanged', async () => {
       await runSetup();
 
-      expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /Cancelar/i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i }),
+      ).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.CANCEL_BUTTON|Cancelar/i }),
+      ).toBeDisabled();
     });
 
     it('should enable actions when loaded data is changed', async () => {
@@ -180,8 +188,12 @@ describe('Measures', () => {
       ]);
       view.fixture.detectChanges();
 
-      expect(screen.getByRole('button', { name: /Guardar borrador/i })).toBeEnabled();
-      expect(screen.getByRole('button', { name: /Cancelar/i })).toBeEnabled();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i }),
+      ).toBeEnabled();
+      expect(
+        screen.getByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.CANCEL_BUTTON|Cancelar/i }),
+      ).toBeEnabled();
     });
   });
 
@@ -217,7 +229,9 @@ describe('Measures', () => {
         { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
       ]);
 
-      const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
+      const saveButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i,
+      });
       await user.click(saveButton);
 
       expect(mockMeasuresService.updateMeasures).toHaveBeenCalled();
@@ -230,7 +244,9 @@ describe('Measures', () => {
         { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: true },
       ]);
 
-      const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
+      const saveButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i,
+      });
       await user.click(saveButton);
 
       expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith('trial-123', {
@@ -271,7 +287,9 @@ describe('Measures', () => {
         { id: 'cat-2', minLimit: 2, maxLimit: 6, deviation: 0.2, expanded: true },
       ]);
 
-      const saveButton = screen.getByRole('button', { name: /Guardar borrador/i });
+      const saveButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i,
+      });
       await user.click(saveButton);
 
       expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith('trial-123', {
@@ -299,9 +317,16 @@ describe('Measures', () => {
     });
 
     it('should reset data on cancel', async () => {
-      const { user } = await runSetup();
+      const { user, view } = await runSetup();
 
-      const cancelButton = screen.getByRole('button', { name: /Cancelar/i });
+      view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: 1, maxLimit: 5, deviation: 0.1, expanded: false },
+      ]);
+      view.fixture.detectChanges();
+
+      const cancelButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.CANCEL_BUTTON|Cancelar/i,
+      });
       await user.click(cancelButton);
 
       expect(screen.getByText('Magnitudes y registros de topografía')).toBeInTheDocument();
@@ -373,7 +398,7 @@ describe('Measures', () => {
           active: true,
           unit: 'TOPOGRAPHY',
           magnitude: 'Topografía',
-          favorite: true,
+          isFavorite: true,
         },
         {
           id: 'cat-2',
@@ -381,12 +406,24 @@ describe('Measures', () => {
           active: false,
           unit: 'BALLISTICS',
           magnitude: 'Balística',
-          favorite: false,
+          isFavorite: false,
         },
       ] as any;
       const result = mapCatalogToMagnitudesOptions(catalog);
       expect(result.topografia).toEqual([{ id: 'cat-1', name: 'Topografía', active: true, favorite: true }]);
       expect(result.balistica).toEqual([{ id: 'cat-2', name: 'Balística', active: false, favorite: false }]);
+    });
+
+    it('preserves backend order and maps favorite flags within a category', () => {
+      const catalog = [
+        { id: 'later', label: 'Zeta', active: true, unit: 'TOPOGRAPHY', isFavorite: false },
+        { id: 'favorite', label: 'Alfa', active: true, unit: 'TOPOGRAPHY', isFavorite: true },
+      ] as Parameters<typeof mapCatalogToMagnitudesOptions>[0];
+
+      expect(mapCatalogToMagnitudesOptions(catalog).topografia).toEqual([
+        { id: 'later', name: 'Zeta', active: true, favorite: false },
+        { id: 'favorite', name: 'Alfa', active: true, favorite: true },
+      ]);
     });
   });
 
@@ -399,7 +436,7 @@ describe('Measures', () => {
           active: true,
           unit: 'ARMAMENT',
           magnitude: 'Cadencia',
-          favorite: false,
+          isFavorite: false,
         },
         {
           id: 'cat-11',
@@ -407,7 +444,7 @@ describe('Measures', () => {
           active: true,
           unit: 'MUNITIONS',
           magnitude: 'Velocidad',
-          favorite: false,
+          isFavorite: false,
         },
         {
           id: 'cat-12',
@@ -415,7 +452,7 @@ describe('Measures', () => {
           active: true,
           unit: 'TOPOGRAPHY',
           magnitude: 'Presión',
-          favorite: false,
+          isFavorite: false,
         },
       ];
       const { view } = await runSetup({ catalogData: customCatalog });
@@ -574,8 +611,12 @@ describe('Measures', () => {
   describe('Readonly Mode', () => {
     it('should not render save and cancel buttons when readonly is true', async () => {
       await runSetup({ readonly: true });
-      expect(screen.queryByRole('button', { name: /Guardar borrador/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /Cancelar/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.SAVE_DRAFT|Guardar borrador/i }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /TRIAL_PLANNING\.MEASURES\.FOOTER\.CANCEL_BUTTON|Cancelar/i }),
+      ).not.toBeInTheDocument();
     });
 
     it('should prevent modifications when readonly is true', async () => {

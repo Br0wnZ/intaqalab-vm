@@ -71,7 +71,13 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
         </div>
 
         <div class="flex items-center gap-4">
-          <button mat-flat-button color="primary" (click)="equipmentSelectorRequested.emit()">
+          <button
+            id="execution-header-equipment-selector-btn"
+            mat-flat-button
+            color="primary"
+            [disabled]="!canSelectEquipment()"
+            (click)="equipmentSelectorRequested.emit()"
+          >
             {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.BTN_LABEL' | translate }}
           </button>
 
@@ -192,6 +198,7 @@ export class ExecutionHeader {
   readonly hasUnsavedChanges = input.required<boolean>();
   readonly isSaving = input.required<boolean>();
   readonly editMode = input.required<boolean>();
+  readonly canSelectEquipment = input.required<boolean>();
 
   readonly startRequested = output<void>();
   readonly pauseRequested = output<void>();

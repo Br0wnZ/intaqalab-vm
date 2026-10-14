@@ -123,9 +123,13 @@ describe('SeriesAndShots', () => {
         return header as HTMLElement;
       });
 
-      expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/Editar/i))).toHaveLength(3);
-      expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/Eliminar/i))).toHaveLength(3);
-      expect(screen.getAllByTitle(/Arrastrar para reordenar/i)).toHaveLength(3);
+      expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/COMMONS\.EDIT|Editar/i))).toHaveLength(
+        3,
+      );
+      expect(
+        seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/COMMONS\.DELETE|Eliminar/i)),
+      ).toHaveLength(3);
+      expect(screen.getAllByTitle(/COMMONS\.DRAG_TO_REORDER|Arrastrar para reordenar/i)).toHaveLength(3);
     });
   });
 
@@ -190,7 +194,7 @@ describe('SeriesAndShots', () => {
 
     it('should open edit series dialog', async () => {
       const { user } = await runSetup();
-      const editButtons = screen.getAllByLabelText(/Editar/i);
+      const editButtons = screen.getAllByLabelText(/COMMONS\.EDIT|Editar/i);
 
       await user.click(editButtons[0]);
 
@@ -207,7 +211,7 @@ describe('SeriesAndShots', () => {
 
     it('should open delete series dialog on click', async () => {
       const { user } = await runSetup();
-      const deleteButtons = screen.getAllByLabelText(/Eliminar/i);
+      const deleteButtons = screen.getAllByLabelText(/COMMONS\.DELETE|Eliminar/i);
 
       await user.click(deleteButtons[0]);
 
@@ -258,13 +262,13 @@ describe('SeriesAndShots', () => {
 
       const panelQueries = within(expandedPanel as HTMLElement);
 
-      const editButtons = panelQueries.getAllByTitle('Editar');
+      const editButtons = panelQueries.getAllByTitle(/COMMONS\.EDIT|Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
       await userEvent.setup().click(editButtons[0]);
       view.fixture.detectChanges();
 
       await waitFor(() => {
-        const saveButton = panelQueries.getByTitle('Guardar');
+        const saveButton = panelQueries.getByTitle(/COMMONS\.SAVE|Guardar/i);
         expect(saveButton).toBeInTheDocument();
       });
 
@@ -277,7 +281,7 @@ describe('SeriesAndShots', () => {
       await user.type(input as HTMLInputElement, 'New Observation');
       view.fixture.detectChanges();
 
-      const saveButton = panelQueries.getByTitle('Guardar');
+      const saveButton = panelQueries.getByTitle(/COMMONS\.SAVE|Guardar/i);
       await user.click(saveButton);
       view.fixture.detectChanges();
 
@@ -311,7 +315,7 @@ describe('SeriesAndShots', () => {
       if (!expandedPanel) return;
 
       const panelQueries = within(expandedPanel as HTMLElement);
-      const deleteButtons = panelQueries.getAllByLabelText('Eliminar');
+      const deleteButtons = panelQueries.getAllByLabelText(/COMMONS\.DELETE|Eliminar/i);
       const shotDeleteButton = deleteButtons.find((button) => button.hasAttribute('disabled'));
 
       expect(shotDeleteButton).toBeTruthy();

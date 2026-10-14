@@ -74,7 +74,7 @@ export type MasterDataMeasureItem = {
   magnitudeLabel: string;
   procedureLabel: string;
   active: boolean;
-  favorite?: boolean;
+  isFavorite?: boolean;
 };
 
 export type MasterDataMeasureListResponse = {

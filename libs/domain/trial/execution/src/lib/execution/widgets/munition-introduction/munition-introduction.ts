@@ -189,6 +189,7 @@ export interface AcondFormModel {
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
           (componentChange)="onComponentChange($event)"
+          (denominationChange)="onDenominationSelected($event)"
         />
         <inta-munition-pesos-tab
           [class.hidden]="activeTab() !== 'pesos'"
@@ -546,6 +547,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   onComponentChange(componentId: string): void {
     this.#store.selectMunitionComponent(componentId);
     this.#patchPlanningIdentificationForComponent(componentId);
+    const identification = this.#store.munitionIntroduction().identificacion;
+    if (identification.denominacion && !identification.lote) {
+      void this.#loadStockBatchesForDenominations([identification.denominacion]);
+    }
     void this.#loadWarehouseDenominationsForComponentIfMissing(componentId);
 
     const stored = this.#store.munitionIntroduction();
@@ -553,6 +558,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     this.pesosTab()?.applyData(stored.weight);
     this.acondTab()?.applyData(stored.acondicionamiento);
     this.touchRef()?.reset();
+  }
+
+  onDenominationSelected(denominationId: string): void {
+    void this.#loadStockBatchesForDenominations([denominationId]);
   }
 
   onBalanceChange(): void {
@@ -644,7 +653,19 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
-      this.#applyRemoteShotData(response);
+      if (this.#hasMissingBatch(response)) {
+        const missingBatchDenominationIds = response.munitionData.flatMap((component) => {
+          const identification = component.identificationData;
+          return identification?.denominationId && !identification.batch ? [identification.denominationId] : [];
+        });
+        await this.#loadStockBatchesForDenominations(missingBatchDenominationIds);
+        if (!ticket.isFresh(selectionKey)) {
+          return;
+        }
+        this.#applyRemoteShotData(response);
+      } else {
+        this.#applyRemoteShotData(response);
+      }
     } catch {
       if (!ticket.isFresh(selectionKey)) {
         return;
@@ -670,6 +691,25 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         .executionProgress()
         ?.series.some((s) => s.seriesId === serie && s.shots.some((shot) => shot.shotId === disparo)) ?? false
     );
+  }
+
+  #hasMissingBatch(response: ShotMunitionResponse): boolean {
+    return response.munitionData.some(
+      (component) => component.identificationData?.denominationId && !component.identificationData.batch,
+    );
+  }
+
+  async #loadStockBatchesForDenominations(denominationIds: string[]): Promise<void> {
+    const missingDenominations = new Set(denominationIds);
+    if (missingDenominations.size === 0) return;
+
+    try {
+      const stockBatches = await this.#executionService.fetchAvailableStockBatches([...missingDenominations]);
+      const matchingBatches = stockBatches.filter(({ denominationId }) => missingDenominations.has(denominationId));
+      this.#store.addMunitionIntroductionBatches(matchingBatches);
+    } catch {
+      // Keep the shot response usable when warehouse stock is unavailable.
+    }
   }
 
   #applyRemoteShotData(response: ShotMunitionResponse): void {

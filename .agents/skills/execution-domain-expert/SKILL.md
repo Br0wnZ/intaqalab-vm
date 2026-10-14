@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.0.3
-last-updated: 2026-10-06
+version: 1.0.4
+last-updated: 2026-10-09
 description: >
 ---
 
@@ -127,6 +127,37 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 - Any execution widget that displays shot status MUST derive it from `executionProgress` using the currently selected series ID and shot ID. Recompute status whenever either selection changes; never display a feature-local `estadoDisparo` as if it belonged to every shot.
 - If selected series and shot match `activeSerieId` and `activeShotId`, display `EN_CURSO`. Otherwise map progress status `ACTIVE` → `EN_CURSO`, `PENDING` → `PENDIENTE`, and `FIRED` → `EJECUTADA`.
 - Use feature-local `estadoDisparo` only as a fallback when selected shot has no matching progress entry.
+
+## ⚙️ Equipment Assignment & Widget Consumption (Functional 4.3)
+
+- **Two-Layer Architecture:**
+  - **Ephemeral Dialog State (`EquipmentSelectorStore`):** Local store inside `EquipmentSelectorDialog`. Resolves planned measures (`EquipmentPlanningService`) and displays only tags matching both:
+    1. Authorized by user's technical unit role (`resolveVisibleEquipmentTags`).
+    2. Planned in the trial (`enabledTagIds`).
+    - **Zero Disabled Chips Rule:** Unplanned or unauthorized tags MUST NOT be rendered in the UI (do not render disabled chips).
+  - **Global Trial State (`ExecutionStore.withEquipmentSelector`):** Stores persisted assignments (`equipments` and `selections`).
+- **Header Button Guard:**
+  - If user roles have 0 visible tags (`canSelectEquipment() === false`), the "Selector equipos" button in `ExecutionHeader` is disabled (`[disabled]="!canSelectEquipment()"`), and `openEquipmentSelector()` guards execution.
+- **Persistence & Synchronization Flow:**
+  - On dialog save, `ExecutionPageFacadeService` calls `store.updateEquipmentSelections(equipments)`.
+  - `updateEquipmentSelections` executes `PUT /equipment-selection` and immediately patches local state.
+  - An `effect` in `withEquipmentSelector` watches for `updateEquipmentSelectorResource.status() === 'resolved'` and automatically re-fetches `GET /equipment-selection`, updating `equipmentSelectorRemote()`.
+- **Widget Consumption:**
+  - Widgets inject `ExecutionStore` privately (`readonly #store = inject(ExecutionStore)`).
+  - Available signals:
+    - `store.equipmentSelector().equipments`: Grouped by tag (`EquipmentMagnitudeSelectionGroup[]`).
+    - `store.equipmentSelector().selections`: Flattened array (`EquipmentItemSelection[]` with `itemId`, `categoryId`, `series`, `disparos`, `magnitude`, `channel`).
+    - `store.equipmentSelectorRemote()`: Raw HTTP resource.
+  - Filter by active series/shot:
+    ```typescript
+    readonly activeEquipments = computed(() => {
+      const serieId = this.#store.activeSerieId();
+      const shotId = this.#store.activeShotId();
+      return this.#store.equipmentSelector().selections.filter(
+        (sel) => sel.series.includes(serieId) && sel.disparos.includes(shotId)
+      );
+    });
+    ```
 
 ---
 

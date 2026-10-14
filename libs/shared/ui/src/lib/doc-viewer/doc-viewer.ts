@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, 
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 import { DOC_VIEWER_SERVICE } from './doc-viewer.contract';
@@ -13,7 +14,7 @@ export interface DocViewerData {
 
 @Component({
   selector: 'ui-doc-viewer',
-  imports: [PdfViewerModule, MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [PdfViewerModule, MatDialogModule, MatButtonModule, MatIconModule, TranslatePipe],
   template: `
     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
       <h2 mat-dialog-title class="!m-0 text-lg font-medium text-gray-900 truncate pr-4">
@@ -37,13 +38,13 @@ export interface DocViewerData {
           class="flex flex-col flex-1 items-center justify-center m-4 rounded border bg-gray-50 shadow-sm min-h-[600px]"
         >
           <mat-icon class="animate-spin text-gray-400 mb-2">refresh</mat-icon>
-          <p class="text-gray-500">Cargando documento...</p>
+          <p class="text-gray-500">{{ 'TRIAL_DOCS.DOC_VIEWER.LOADING' | translate }}</p>
         </div>
       } @else {
         <div
           class="flex flex-1 items-center justify-center m-4 rounded border bg-gray-50 shadow-sm text-center p-4 min-h-[600px]"
         >
-          <p class="text-gray-500">Ningún documento seleccionado o el formato no es soportado (debe ser PDF)</p>
+          <p class="text-gray-500">{{ 'TRIAL_DOCS.DOC_VIEWER.NO_DOCUMENT_OR_UNSUPPORTED' | translate }}</p>
         </div>
       }
     </mat-dialog-content>

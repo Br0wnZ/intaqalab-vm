@@ -118,9 +118,15 @@ describe('MeasureLimitCard', () => {
         measure: { id: 'm-1', expanded: true, minLimit: 15, maxLimit: 85, deviation: 3 },
       });
 
-      const maxInput = screen.getByLabelText(/Límite máximo/i) as HTMLInputElement;
-      const minInput = screen.getByLabelText(/Límite mínimo/i) as HTMLInputElement;
-      const devInput = screen.getByLabelText(/Desviación/i) as HTMLInputElement;
+      const maxInput = screen.getByLabelText(
+        /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i,
+      ) as HTMLInputElement;
+      const minInput = screen.getByLabelText(
+        /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i,
+      ) as HTMLInputElement;
+      const devInput = screen.getByLabelText(
+        /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.DEVIATION|Desviación/i,
+      ) as HTMLInputElement;
 
       expect(maxInput).toBeInTheDocument();
       expect(maxInput.value).toBe('85');
@@ -157,7 +163,7 @@ describe('MeasureLimitCard', () => {
         isQuantitative: true,
         measure: { id: 'm-1', expanded: true, minLimit: 10, maxLimit: 50, deviation: 2 },
       });
-      const maxInput = screen.getByLabelText(/Límite máximo/i);
+      const maxInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i);
       await user.clear(maxInput);
       await user.type(maxInput, '90');
       expect(host.onLimitChange).toHaveBeenCalledWith({ field: 'maxLimit', value: 90 });
@@ -168,7 +174,7 @@ describe('MeasureLimitCard', () => {
         isQuantitative: true,
         measure: { id: 'm-1', expanded: true, minLimit: 10, maxLimit: 50, deviation: 2 },
       });
-      const minInput = screen.getByLabelText(/Límite mínimo/i);
+      const minInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i);
       await user.clear(minInput);
       await user.type(minInput, '5');
       expect(host.onLimitChange).toHaveBeenCalledWith({ field: 'minLimit', value: 5 });
@@ -179,7 +185,7 @@ describe('MeasureLimitCard', () => {
         isQuantitative: true,
         measure: { id: 'm-1', expanded: true, minLimit: 10, maxLimit: 50, deviation: 2 },
       });
-      const devInput = screen.getByLabelText(/Desviación/i);
+      const devInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.DEVIATION|Desviación/i);
       await user.clear(devInput);
       await user.type(devInput, '4');
       expect(host.onLimitChange).toHaveBeenCalledWith({ field: 'deviation', value: 4 });
@@ -201,9 +207,9 @@ describe('MeasureLimitCard', () => {
       });
       const deleteBtn = screen.getByText('delete').closest('button');
       expect(deleteBtn).toBeDisabled();
-      expect(screen.getByLabelText(/Límite máximo/i)).toBeDisabled();
-      expect(screen.getByLabelText(/Límite mínimo/i)).toBeDisabled();
-      expect(screen.getByLabelText(/Desviación/i)).toBeDisabled();
+      expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i)).toBeDisabled();
+      expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i)).toBeDisabled();
+      expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.DEVIATION|Desviación/i)).toBeDisabled();
     });
 
     it('should not emit limitChange when onLimitChange is called while readonly', async () => {

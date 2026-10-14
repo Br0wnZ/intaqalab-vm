@@ -1,12 +1,15 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { AuthService, Role } from '@intaqalab/core';
+import { QualificationTypeEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../services/execution.service';
+import { EquipmentSelectorPlanningService } from '../../services/equipment-selector-planning.service';
+import { type EquipmentSelectorResponse, ExecutionService } from '../../services/execution.service';
 import { EquipmentMagnitudeTagEnum, type EquipmentSelectorDialogData, EquipmentTypeEnum } from '../models';
 import { EquipmentSelectorDialog } from './equipment-selector-dialog';
 
@@ -19,16 +22,20 @@ const mockItemsByCategory = {
   [EquipmentTypeEnum.ANTENNA]: [{ id: 'ant-001', label: 'ANT-001 / ANT-001' }],
 };
 
-function createMockExecutionService() {
-  // Simulates a 404 (no existing equipment selection)
-  const statusSignal = signal<'idle' | 'loading' | 'resolved' | 'error'>('error');
+function createMockExecutionService(initialSelections: EquipmentSelectorResponse = []) {
+  const statusSignal = signal<'idle' | 'loading' | 'resolved' | 'error'>('resolved');
+  const errorSignal = signal<unknown>(null);
   return {
     getEquipmentSelector: vi.fn(),
     loadEquipmentItemsByCategories: vi.fn().mockResolvedValue(mockItemsByCategory),
     updateEquipmentSelector: vi.fn(),
+    setEquipmentSelectorStatus: (status: 'idle' | 'loading' | 'resolved' | 'error') => statusSignal.set(status),
+    setEquipmentSelectorError: (error: unknown) => errorSignal.set(error),
     equipmentSelectorResource: {
       status: statusSignal.asReadonly(),
-      value: () => undefined,
+      value: () => initialSelections,
+      hasValue: () => statusSignal() === 'resolved',
+      error: errorSignal.asReadonly(),
       isLoading: () => false,
     },
     updateEquipmentSelectorResource: {
@@ -51,12 +58,61 @@ const mockData: EquipmentSelectorDialogData = {
   serieDisparoMap: { s1: ['d1'], s2: ['d2'] },
 };
 
+function createMockPlanningService(
+  measureIds: string[] = ['velocity', 'time'],
+  failure: Error | null = null,
+  seriesIds: string[] = ['s1', 's2'],
+) {
+  return {
+    load: vi.fn(),
+    trialMeasuresResource: {
+      status: signal<'resolved'>('resolved').asReadonly(),
+      value: () => ({
+        series: seriesIds.map((seriesId) => ({
+          seriesId,
+          measures: { ballisticsMeasures: measureIds.map((id) => ({ id })) },
+        })),
+      }),
+    },
+    catalogResource: {
+      status: signal<'resolved'>('resolved').asReadonly(),
+      value: () => ({ items: [] }),
+      isLoading: () => false,
+      error: () => null,
+    },
+    catalog: () => [
+      {
+        id: 'velocity',
+        magnitudeCode: 'BAL_INITIAL_VELOCITY',
+        magnitudeLabel: 'Velocidad inicial',
+        qualificationType: QualificationTypeEnum.QUANTITATIVE,
+        measurements: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
+      },
+      {
+        id: 'time',
+        magnitudeCode: 'TOP_FLIGHT_TIME',
+        magnitudeLabel: 'Tiempo de vuelo',
+        qualificationType: QualificationTypeEnum.QUANTITATIVE,
+        measurements: [EquipmentMagnitudeTagEnum.TIEMPO],
+      },
+    ],
+    isLoading: () => false,
+    error: () => failure,
+  };
+}
+
 describe('EquipmentSelectorDialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
 
-  const setup = async (data: EquipmentSelectorDialogData = mockData, roles: Role[] = [Role.INTAQALAB_ADMIN]) => {
+  const setup = async (
+    data: EquipmentSelectorDialogData = mockData,
+    roles: Role[] = [Role.INTAQALAB_ADMIN],
+    planningService = createMockPlanningService(),
+    executionService = createMockExecutionService(),
+  ) => {
     closeMock = vi.fn();
     const view = await render(EquipmentSelectorDialog, {
+      componentProviders: [{ provide: EquipmentSelectorPlanningService, useValue: planningService }],
       providers: [
         provideNoopAnimations(),
         {
@@ -67,7 +123,7 @@ describe('EquipmentSelectorDialog', () => {
             return auth;
           },
         },
-        { provide: ExecutionService, useValue: createMockExecutionService() },
+        { provide: ExecutionService, useValue: executionService },
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -78,26 +134,157 @@ describe('EquipmentSelectorDialog', () => {
 
   it('renders dialog without errors', async () => {
     await setup();
-    expect(document.querySelector('[mat-dialog-title]')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
+  });
+
+  it('shows the error view when planning data cannot be loaded', async () => {
+    const { component } = await setup(
+      mockData,
+      [Role.INTAQALAB_ADMIN],
+      createMockPlanningService(undefined, new Error('Planning unavailable')),
+    );
+
+    expect(component.isLoading()).toBe(false);
+    expect(screen.getByText('TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.ERRORS.LOAD_FAILED_TITLE')).toBeInTheDocument();
+  });
+
+  it('treats a 404 equipment selection response as an empty selection', async () => {
+    const executionService = createMockExecutionService();
+    executionService.setEquipmentSelectorStatus('error');
+    executionService.setEquipmentSelectorError(new HttpErrorResponse({ status: 404, statusText: 'Not Found' }));
+
+    const { component, fixture } = await setup(
+      mockData,
+      [Role.INTAQALAB_ADMIN],
+      createMockPlanningService(),
+      executionService,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(component.error()).toBe(false);
+      expect(component.isLoading()).toBe(false);
+      expect(
+        screen.queryByText('TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.ERRORS.LOAD_FAILED_TITLE'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('does not show the error view for a resolved equipment selection response', async () => {
+    const executionService = createMockExecutionService([
+      {
+        measurementGroup: 'INITIAL_VELOCITY',
+        selections: [
+          {
+            equipmentItemId: 10543,
+            categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+            magnitude: null,
+            channel: null,
+            seriesIds: ['series-1'],
+            shotIds: ['shot-1'],
+          },
+          {
+            equipmentItemId: 4711,
+            categoryId: EquipmentTypeEnum.ANTENNA,
+            magnitude: null,
+            channel: null,
+            seriesIds: ['series-1'],
+            shotIds: ['shot-1'],
+          },
+        ],
+      },
+      {
+        measurementGroup: 'HIGH_SPEED_VIDEO',
+        selections: [
+          {
+            equipmentItemId: 168,
+            categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+            magnitude: 'ATTACK',
+            channel: 2,
+            seriesIds: ['series-1'],
+            shotIds: ['shot-1'],
+          },
+        ],
+      },
+      {
+        measurementGroup: 'PIEZOELECTRIC_PRESSURE',
+        selections: [
+          {
+            equipmentItemId: 149,
+            categoryId: EquipmentTypeEnum.AMPLIFIER,
+            magnitude: null,
+            channel: null,
+            seriesIds: [],
+            shotIds: [],
+          },
+        ],
+      },
+    ]);
+
+    const { component } = await setup(mockData, [Role.INTAQALAB_ADMIN], createMockPlanningService(), executionService);
+
+    expect(component.error()).toBe(false);
+    expect(
+      screen.queryByText('TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.ERRORS.LOAD_FAILED_TITLE'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows the empty state when no measures are planned for visible tags', async () => {
+    const { component, fixture } = await setup(mockData, [Role.INTAQALAB_ADMIN], createMockPlanningService([]));
+    expect(component.enabledTagIds().size).toBe(0);
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.NO_PLANNED_MEASURES',
+      );
+    });
   });
 
   it('shows one chip per visible tag for an admin role', async () => {
-    const { component } = await setup();
-    const chips = document.querySelectorAll('mat-chip-option');
+    const { component, fixture } = await setup();
     expect(component.visibleTags().length).toBeGreaterThan(0);
-    expect(chips.length).toBe(component.visibleTags().length);
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(screen.getAllByRole('option')).toHaveLength(component.visibleTags().length);
+    });
   });
 
   it('hides all tags when the user has no matching role', async () => {
     const { component } = await setup(mockData, []);
     expect(component.visibleTags()).toEqual([]);
-    expect(document.querySelectorAll('mat-chip-option').length).toBe(0);
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
   });
 
   it('auto-selects the first visible tag with one empty row', async () => {
     const { component } = await setup();
     expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);
     expect(component.activeTagRows()).toHaveLength(1);
+  });
+
+  it('only displays planned tags and loads equipment only for enabled categories', async () => {
+    const mockService = createMockExecutionService();
+    const { component, fixture } = await setup(
+      mockData,
+      [Role.INTAQALAB_ADMIN],
+      createMockPlanningService(['time'], null, ['s1']),
+      mockService,
+    );
+
+    expect(component.enabledTagIds()).toEqual(new Set([EquipmentMagnitudeTagEnum.TIEMPO]));
+    expect(component.visibleTags().map((tag) => tag.id)).toEqual([EquipmentMagnitudeTagEnum.TIEMPO]);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.TIEMPO);
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(screen.getAllByRole('option')).toHaveLength(1);
+      expect(screen.getByRole('option', { name: /tiempo/i })).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: /sonido/i })).not.toBeInTheDocument();
+    });
+    component.selectTag(EquipmentMagnitudeTagEnum.SONIDO);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.TIEMPO);
+    expect(component.activeSeriesOptions().map((serie) => serie.value)).toEqual(['s1']);
+    component.handleSeriesSelection(component.activeTagRows()[0].rowId, ['s2']);
+    expect(component.activeTagRows()[0].series).toEqual([]);
+    expect(mockService.loadEquipmentItemsByCategories).toHaveBeenCalledWith([EquipmentTypeEnum.CHRONOMETER]);
   });
 
   it('selectTag switches tag and initializes its state', async () => {
@@ -165,6 +352,16 @@ describe('EquipmentSelectorDialog', () => {
     expect(row.disparos).toEqual(['d2']);
   });
 
+  it('shows shots only for selected series and rejects shots outside them', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.handleSeriesSelection(rowId, ['s1']);
+
+    expect(component.getShotOptions(['s1']).map((shot) => shot.value)).toEqual(['d1']);
+    component.setRowDisparos(rowId, ['d1', 'd2']);
+    expect(component.activeTagRows()[0].disparos).toEqual(['d1']);
+  });
+
   it('getItemsByCategory returns items loaded from the service', async () => {
     const { component } = await setup();
     // Simulate service promise resolving with mock items
@@ -173,16 +370,17 @@ describe('EquipmentSelectorDialog', () => {
     expect(items.map((i) => i.id)).toEqual(['rd-001', 'rd-002']);
   });
 
-  it('save() closes with empty equipments when no field is filled', async () => {
+  it('does not save when no equipment has changed', async () => {
     const { component } = await setup();
     component.save();
-    expect(closeMock).toHaveBeenCalledWith({ action: 'save', equipments: [] });
+    expect(closeMock).not.toHaveBeenCalled();
   });
 
   it('save() collects filled rows into equipment groups', async () => {
     const { component } = await setup();
     const rowId = component.activeTagRows()[0].rowId;
     component.setFieldValue(rowId, 'radar_doppler', 'rd-001');
+    component.setFieldValue(rowId, 'antena', 'ant-001');
     component.setRowSeries(rowId, ['s1']);
     component.setRowDisparos(rowId, ['d1']);
 
@@ -202,10 +400,59 @@ describe('EquipmentSelectorDialog', () => {
               series: ['s1'],
               disparos: ['d1'],
             },
+            {
+              itemId: 'ant-001',
+              categoryId: EquipmentTypeEnum.ANTENNA,
+              channel: null,
+              magnitude: null,
+              series: ['s1'],
+              disparos: ['d1'],
+            },
           ],
         },
       ],
     });
+  });
+
+  it('prevents saving rows missing a required equipment item', async () => {
+    const { component } = await setup();
+    const rowId = component.activeTagRows()[0].rowId;
+    component.setFieldValue(rowId, 'radar_doppler', 'rd-001');
+    component.handleSeriesSelection(rowId, ['s1']);
+
+    expect(component.canSave()).toBe(false);
+    component.save();
+    expect(closeMock).not.toHaveBeenCalled();
+  });
+
+  it('preserves assignments belonging to other technical units in the replacement payload', async () => {
+    const executionService = createMockExecutionService([
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.TIEMPO,
+        selections: [
+          { equipmentItemId: 71, categoryId: EquipmentTypeEnum.CHRONOMETER, seriesIds: ['s1'], shotIds: ['d1'] },
+        ],
+      },
+    ]);
+    const { component } = await setup(
+      mockData,
+      [Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN],
+      createMockPlanningService(),
+      executionService,
+    );
+
+    expect(component.visibleTags().some((tag) => tag.id === EquipmentMagnitudeTagEnum.TIEMPO)).toBe(false);
+    const rowId = component.activeTagRows()[0].rowId;
+    component.setFieldValue(rowId, 'radar_doppler', 'rd-001');
+    component.setFieldValue(rowId, 'antena', 'ant-001');
+    component.handleSeriesSelection(rowId, ['s1']);
+    component.save();
+
+    const result = closeMock.mock.calls[0]?.[0];
+    expect(result?.equipments.map((group: { id: string }) => group.id)).toEqual([
+      EquipmentMagnitudeTagEnum.TIEMPO,
+      EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL,
+    ]);
   });
 
   it('hydrates rows from API data when GET resolves with equipment', async () => {
@@ -231,6 +478,8 @@ describe('EquipmentSelectorDialog', () => {
       equipmentSelectorResource: {
         status: resolvedStatus.asReadonly(),
         value: () => apiData,
+        hasValue: () => true,
+        error: () => null,
         isLoading: () => false,
       },
       updateEquipmentSelectorResource: {
@@ -240,6 +489,7 @@ describe('EquipmentSelectorDialog', () => {
     };
 
     const { component } = await render(EquipmentSelectorDialog, {
+      componentProviders: [{ provide: EquipmentSelectorPlanningService, useValue: createMockPlanningService() }],
       providers: [
         provideNoopAnimations(),
         {

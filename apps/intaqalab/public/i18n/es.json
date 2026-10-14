@@ -6,6 +6,7 @@
       "HEADER": "Gestión de tipos de documento",
       "NEW_DOCUMENT_TYPE": "Nuevo tipo de documento",
       "NO_RESULTS": "No se han encontrado documentos.",
+      "PAGINATION_ARIA": "Seleccionar página de documentos",
       "SEARCH_PLACEHOLDER": "Buscar por nombre de documento",
       "SYNC": "Cargando...",
       "TABLE": {
@@ -34,6 +35,7 @@
     "YEAR_SEARCH_PLACEHOLDER": "Seleccionar el año"
   },
   "BREADCRUMB": {
+    "ARIA_LABEL": "Ruta de navegación",
     "CALENDAR": "Calendario",
     "CALENDAR_TRIALS": "Calendario de pruebas",
     "CATALOG": "Catálogo",
@@ -51,10 +53,10 @@
     "EXECUTION": "Ejecución",
     "PLANNING": "Planificación de la prueba",
     "PLANNING_DETAIL": "Ficha de planificación",
+    "PLANNING_TRIAL": "Planificación",
     "TRIALS": "Gestión de pruebas",
     "TRIAL_DOCUMENT": "Documentación",
     "TRIAL_LIST": "Listado de pruebas",
-    "PLANNING_TRIAL": "Planificación",
     "TRIAL_NEW": "Nueva prueba",
     "TRIAL_VIEW": "Ficha de prueba",
     "WAREHOUSE": "Gestión de almacén",
@@ -85,6 +87,7 @@
       "DAY": "Diario",
       "LINE": "Línea",
       "MONTH": "Mensual",
+      "NAVIGATION_ARIA": "Navegación del calendario",
       "NEXT": ">",
       "PREVIOUS": "<",
       "SHOW_WEEKENDS": "Mostrar fines de semana",
@@ -110,19 +113,26 @@
   },
   "COMMONS": {
     "ACCEPT": "Aceptar",
+    "ACTIONS": "Acciones",
+    "ADD": "Añadir",
     "CANCEL": "Cancelar",
     "CONFIRM": "Confirmar",
     "CREATE": "Crear",
+    "DELETE": "Eliminar",
     "DELETE_DATA": "Borrar datos",
+    "DRAG_TO_REORDER": "Arrastrar para reordenar",
     "EDIT": "Editar",
     "INVALID_DATE_FORMAT": "Formato de fecha no válido",
     "LOADING": "Cargando...",
+    "NO_OBSERVATIONS": "Sin observaciones",
     "NO_RESULTS": "No se encontraron resultados",
+    "OBSERVATIONS": "Observaciones",
     "OPTIONAL": "Opcional",
     "REGISTER": "Registrar",
     "REQUIRED_FIELD": "Valor requerido",
     "RETURN": "Volver",
     "SAVE": "Guardar",
+    "SAVING_CHANGES": "Guardando cambios",
     "SEARCH": "Buscar"
   },
   "CONFIRM_DELETE_DIALOG": {
@@ -303,10 +313,6 @@
     "UNAUTHORIZED": "Tu sesión ha expirado o no tienes permisos."
   },
   "MASTER_DATA": {
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Error al cargar los datos",
-      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información requerida. Inténtelo de nuevo más tarde."
-    },
     "DIALOGS": {
       "DELETE": {
         "BUTTONS": {
@@ -463,6 +469,10 @@
       },
       "TITLE": "Gestión de tipos de documento"
     },
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información requerida. Inténtelo de nuevo más tarde.",
+      "LOAD_FAILED_TITLE": "Error al cargar los datos"
+    },
     "FUZE_TYPE": {
       "DIALOGS": {
         "DELETE": {
@@ -577,13 +587,13 @@
             "LABEL": "Valor máximo",
             "PLACEHOLDER": "Indique el valor máximo"
           },
-          "MEASUREMENT_AREA_CODE": {
-            "LABEL": "Área de medición",
-            "PLACEHOLDER": "Indique el código de área de medición"
-          },
           "MEASUREMENTS": {
             "LABEL": "Medida",
             "PLACEHOLDER": "Seleccione una o varias medidas"
+          },
+          "MEASUREMENT_AREA_CODE": {
+            "LABEL": "Área de medición",
+            "PLACEHOLDER": "Indique el código de área de medición"
           },
           "MEASURE_UNIT": {
             "LABEL": "Unidad de medida",
@@ -664,8 +674,8 @@
         "GRUBBS": "GRUBBS",
         "MAGNITUDE_LABEL": "Magnitud",
         "MAX_VALUE": "Valor máximo",
-        "MEASUREMENT_AREA_CODE": "Área de medición",
         "MEASUREMENTS": "Medida",
+        "MEASUREMENT_AREA_CODE": "Área de medición",
         "MEASURE_UNIT": "Unidad de medida",
         "MIN_VALUE": "Valor mínimo",
         "PROCEDURE_LABEL": "Procedimiento",
@@ -829,11 +839,11 @@
       "TITLE": "Catálogo"
     },
     "EVENT_LOG": "Event Log",
-    "PLANNING": "Planificación",
     "EXECUTION": "Ejecución",
     "GESTION_TRIALS": "Gestión de pruebas",
     "GESTION_TRIALS_LIST": "Pruebas de Fuego",
     "GESTION_TRIALS_NEW": "Nueva Prueba de Fuego",
+    "PLANNING": "Planificación",
     "WHAREHOUSE": {
       "OPTIONS": {
         "DENOMINATIONS": "Gestión de denominaciones",
@@ -929,7 +939,6 @@
   "TRIALS_LIST": {
     "ERROR": "Error al cargar las pruebas",
     "EXPORT_EXCEL_BUTTON": "Exportar Excel",
-    "PLANNING_TITLE": "Planificación de Pruebas de Fuego",
     "FILTERS": {
       "CLEAN_FILTERS": "Limpiar filtros",
       "CLIENT": "Cliente",
@@ -951,6 +960,7 @@
       "YEAR_ALL": "Todos los años",
       "YEAR_PLACEHOLDER": "Seleccionar año"
     },
+    "PLANNING_TITLE": "Planificación de Pruebas de Fuego",
     "TABLE": {
       "ACTIONS": "Acciones",
       "ASSIGNED_USER": "Usuario asignado",
@@ -1003,8 +1013,8 @@
     "DESCRIPTION_PLACEHOLDER": "Escribe aquí la descripción de la prueba",
     "DOCUMENTS_LOAD_ERROR": "No se ha podido cargar la sección de documentación.",
     "ERRORS": {
-      "LOAD_FAILED_TITLE": "Error al cargar el formulario de prueba",
-      "LOAD_FAILED_DETAIL": "No se han podido cargar los datos del formulario de la prueba. Por favor, reintente más tarde."
+      "LOAD_FAILED_DETAIL": "No se han podido cargar los datos del formulario de la prueba. Por favor, reintente más tarde.",
+      "LOAD_FAILED_TITLE": "Error al cargar el formulario de prueba"
     },
     "HEADING_PAGE": "Ficha de la prueba",
     "LINKED_TRIAL": "Prueba vinculada",
@@ -1045,11 +1055,11 @@
       "ACTIONS": "Acciones",
       "ACTIVE": "En vigor",
       "ASSOCIATED_TRIALS": "Asociar a otras pruebas",
-      "CATEGORY": "Categoría",
       "CATEGORIES": {
         "GENERAL": "General",
         "SPECIFIC": "Particular"
       },
+      "CATEGORY": "Categoría",
       "CLOSE_BUTTON": "Cerrar",
       "DATE_UPLOADED": "Fecha de subida",
       "DELETE": "Eliminar",
@@ -1085,6 +1095,10 @@
       "VERSION": "Versión",
       "VERSIONS_MAT_LABEL": "Revisiones y versiones",
       "VINCULATED_TRIALS": "Pruebas a las que está vinculado"
+    },
+    "DOC_VIEWER": {
+      "LOADING": "Cargando documento...",
+      "NO_DOCUMENT_OR_UNSUPPORTED": "Ningún documento seleccionado o el formato no es soportado (debe ser PDF)"
     },
     "DOWNLOAD_REQUIRED_DIALOG": {
       "ACCEPT": "Aceptar",
@@ -1190,6 +1204,15 @@
     },
     "CLOSE_WIDGET_PANEL": "Cerrar panel de widgets",
     "DIALOGS": {
+      "CANCEL_EXECUTION": {
+        "CONFIRM_BTN": "Confirmar cancelación",
+        "REASON_LABEL": "Motivo de la cancelación",
+        "REASON_PLACEHOLDER": "Escribe el motivo de la cancelación",
+        "TEXT_PREFIX": "Vas a cancelar definitivamente la",
+        "TITLE": "Cancelar prueba de fuego",
+        "TRIAL_NAME_PREFIX": "prueba:",
+        "WARNING": "Esta acción cerrará el ensayo por incidencia insalvable y no podrá reanudarse."
+      },
       "EQUIPMENT_SELECTOR": {
         "ADD_EQUIPMENT": "Añadir equipo",
         "BACK": "Volver",
@@ -1200,8 +1223,8 @@
         "DELETE": "Eliminar",
         "EQUIPMENT_HEADING": "Equipo",
         "ERRORS": {
-          "LOAD_FAILED_TITLE": "Error al cargar la selección de equipos",
-          "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de los equipos del ensayo. Intente de nuevo más tarde."
+          "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de los equipos del ensayo. Intente de nuevo más tarde.",
+          "LOAD_FAILED_TITLE": "Error al cargar la selección de equipos"
         },
         "FIELDS": {
           "AMPLIFICADOR": "Amplificador",
@@ -1226,8 +1249,11 @@
           "SENSOR_PIEZOELECTRICO": "Sensor piezoeléctrico",
           "SERIES": "Series"
         },
+        "INCOMPLETE_ASSIGNMENTS": "Completa los equipos, la serie y los disparos de cada fila. Comprueba también el canal y la magnitud cuando correspondan.",
+        "NO_PLANNED_MEASURES": "No hay medidas planificadas disponibles para tu unidad.",
         "SAVE": "Guardar",
         "SELECTION_LIMIT": "Selección ({{max}} máx)",
+        "SELECT_ALL_SERIES": "Seleccionar todas las series",
         "SELECT_TAG": "Selecciona medida/equipo",
         "SERIES_PLACEHOLDER": "Selecciona una serie",
         "SHOTS_PLACEHOLDER": "Todos los disparos de la serie",
@@ -1244,7 +1270,19 @@
           "VIDEO_AV": "Vídeo AV",
           "VIDEO_C": "Vídeo C"
         },
-        "TITLE": "Medidas y equipos"
+        "TAG_SELECTION_ARIA": "Selección de etiquetas",
+        "TITLE": "Medidas y equipos",
+        "UNSUPPORTED_SELECTION": "Esta selección requiere soporte en la API de ejecución."
+      },
+      "INTERRUPT_EXECUTION": {
+        "CONFIRM_BTN": "Interrumpir prueba",
+        "DESCRIPTION": "Vas a interrumpir temporalmente la ejecución, cambiando el estado a Interrumpida.",
+        "REASON_LABEL": "Motivo de la interrupción",
+        "REASON_PLACEHOLDER": "Escribe el motivo de la interrupción",
+        "START_SECURITY_COUNT_BTN": "Iniciar cuenta de seguridad",
+        "TEXT_PREFIX": "Vas a interrumpir la",
+        "TITLE": "Interrumpir prueba de fuego",
+        "TRIAL_NAME_PREFIX": "prueba:"
       },
       "PAUSE_EXECUTION": {
         "CANCEL": "Cancelar",
@@ -1264,26 +1302,24 @@
     "EMPTY_PANEL_DESC_2": "para añadir módulos",
     "EMPTY_PANEL_DESC_WIDGETS_BTN": "'Widgets'",
     "EMPTY_PANEL_TITLE": "Tu panel está vacío",
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de ejecución. Inténtelo de nuevo más tarde.",
+      "LOAD_FAILED_TITLE": "Error al cargar la ejecución"
+    },
     "FREE_SPACE_DESC_1": "Haz clic en",
     "FREE_SPACE_DESC_2": "para añadir más módulos",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "Tienes espacio en tu panel",
-    "WIDGET_NO_SPACE_MESSAGE": "Libera algo de espacio o elimina otro widget antes de volver a intentarlo.",
-    "WIDGET_NO_SPACE_TITLE": "Este widget no cabe en el panel",
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Error al cargar la ejecución",
-      "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de ejecución. Inténtelo de nuevo más tarde."
-    },
     "HISTORY": {
+      "EXECUTION_DATE": "Fecha de ejecución",
       "SERIES": "Series",
       "SHOT": "Disparo",
-      "STATUS": "Estado",
-      "EXECUTION_DATE": "Fecha de ejecución"
+      "STATUS": "Estado"
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No se encontraron widgets",
-    "SEARCH_WIDGET_PLACEHOLDER": "Buscar widget...",
     "PROGRESS": "% avance prueba",
+    "SEARCH_WIDGET_PLACEHOLDER": "Buscar widget...",
     "SHOT_HISTORY_DESC": "Últimos registros de la ejecución",
     "SHOT_HISTORY_TITLE": "Historial de Disparos",
     "TITLE": "Ejecución",
@@ -1316,16 +1352,13 @@
         "CURRENT_SHOT_BTN": "Disparo actual",
         "DESCRIPTION": "Arma, serie, tubo, equipo atacado y equipo retroceso",
         "DISPARO_PLACEHOLDER": "Disparo",
-        "INSTRUMENTED_LABEL": "Instrumentado",
-        "INSTRUMENTED_YES": "Sí",
-        "INSTRUMENTED_NO": "No",
-        "OBSERVATIONS_LABEL": "Observaciones",
-        "OBSERVATIONS_PLACEHOLDER": "Observaciones",
-        "USEFUL_LIFE_LABEL": "% vida útil",
         "EQUIPO_ATACADO_LABEL": "Equipo Atacado",
         "EQUIPO_ATACADO_PLACEHOLDER": "Equipo",
         "EQUIPO_RETROCESO_LABEL": "Equipo Retroceso",
         "EQUIPO_RETROCESO_PLACEHOLDER": "Equipo",
+        "INSTRUMENTED_LABEL": "Instrumentado",
+        "INSTRUMENTED_NO": "No",
+        "INSTRUMENTED_YES": "Sí",
         "MASS_CONFIG_APPLY_BTN": "Aplicar",
         "MASS_CONFIG_BTN": "Aplicar configuración masiva",
         "MASS_CONFIG_CANCEL_BTN": "Cancelar",
@@ -1337,10 +1370,13 @@
         "NÑ_SERIE_ARMA_PLACEHOLDER": "Nº serie",
         "NÑ_SERIE_TUBO_LABEL": "Nº serie tubo",
         "NÑ_SERIE_TUBO_PLACEHOLDER": "Nº serie",
-        "SERIE_PLACEHOLDER": "Funcionamiento",
+        "OBSERVATIONS_LABEL": "Observaciones",
+        "OBSERVATIONS_PLACEHOLDER": "Observaciones",
+        "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "Introducción datos armamento",
         "TUBO_LABEL": "Tubo",
-        "TUBO_PLACEHOLDER": "Tubo"
+        "TUBO_PLACEHOLDER": "Tubo",
+        "USEFUL_LIFE_LABEL": "% vida útil"
       },
       "COMMON": {
         "PENDING_CHANGES": "Cambios pendientes de guardar"
@@ -1423,8 +1459,8 @@
         "TITLE": "Información Tarado"
       },
       "JLT_MAO": {
-        "ALTURA_EXPLOSION_LABEL": "Altura de explosión",
-        "ALTURA_EXPLOSION_PLACEHOLDER": "XXX",
+        "ALTURA_EXPLOSION_LABEL": "Altura de funcionamiento",
+        "ALTURA_EXPLOSION_PLACEHOLDER": "Altura de funcionamiento",
         "ALTURA_FUNCIONAMIENTO_LABEL": "Altura de funcionamiento",
         "ALTURA_FUNCIONAMIENTO_PLACEHOLDER": "Altura de funcionamiento",
         "ANGULO_TIRO_LABEL": "Ángulo tiro",
@@ -1437,8 +1473,8 @@
         "DIFERENCIA_ANGULAR_PLACEHOLDER": "Diferencia",
         "DISPARO_LABEL": "Disparo",
         "DISPARO_PLACEHOLDER": "Disparo",
-        "DISTANCIA_EXPLOSION_LABEL": "Distancia de explosión",
-        "DISTANCIA_EXPLOSION_PLACEHOLDER": "XXX",
+        "DISTANCIA_EXPLOSION_LABEL": "Distancia de funcionamiento",
+        "DISTANCIA_EXPLOSION_PLACEHOLDER": "Distancia de funcionamiento",
         "DISTANCIA_FUNCIONAMIENTO_LABEL": "Distancia de funcionamiento",
         "DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER": "Distancia de funcionamiento",
         "DISTANCIA_PIQUE_LABEL": "Distancia prevista pique",
@@ -1452,9 +1488,9 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Selecciona las series",
         "MASS_CONFIG_TITLE": "Extender configuración",
         "PIQUETA_LABEL": "Piqueta",
-        "PIQUETA_PLACEHOLDER": "XXX",
+        "PIQUETA_PLACEHOLDER": "Piqueta",
         "SERIE_LABEL": "Serie",
-        "SERIE_PLACEHOLDER": "Funcionamiento",
+        "SERIE_PLACEHOLDER": "Serie",
         "TIEMPO_VUELO_LABEL": "Tiempo vuelo teórico",
         "TIEMPO_VUELO_PLACEHOLDER": "Tiempo vuelo teórico",
         "TITLE": "Introduc. datos JLT MAO",
@@ -1482,7 +1518,7 @@
         "OPERADOR_PIEZA_PLACEHOLDER": "Escribe...",
         "RETROCESO_LABEL": "Retroceso",
         "RETROCESO_PLACEHOLDER": "0,00",
-        "SERIE_PLACEHOLDER": "Funcionamiento",
+        "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "Introducción datos JLT"
       },
       "MANOMETER_INTRODUCTION": {
@@ -1519,7 +1555,7 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Selecciona las series",
         "MASS_CONFIG_TITLE": "Extender configuración",
         "OBSERVADOR_LABEL": "Observador",
-        "OBSERVADOR_PLACEHOLDER": "XXX",
+        "OBSERVADOR_PLACEHOLDER": "Observador",
         "PIEZA_GROUP_LABEL": "Pieza",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Funcionamiento",
@@ -1593,6 +1629,7 @@
         "TITLE": "Introducción datos municiones"
       },
       "OVERPRESSURE_CHART": {
+        "CHART_ARIA": "Gráfica Sobrepresión",
         "DESCRIPTION": "Gráfica de sobrepresión: recta de presión, bandas de desviación y líneas de referencia",
         "LEGEND_DESV_MAX": "Desv. máxima",
         "LEGEND_DESV_MIN": "Desv. mínima",
@@ -1600,9 +1637,11 @@
         "LEGEND_PRES_MIN": "Presión mínima",
         "LEGEND_RECTA": "Recta presión",
         "LEGEND_SEGURIDAD": "Pres. Seguridad",
+        "PRESSURE_LABEL": "Presión",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Todas",
-        "TITLE": "Gráfica Sobrepresión"
+        "TITLE": "Gráfica Sobrepresión",
+        "WEIGHT_LABEL": "Peso"
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Gestión de presiones del ensayo: máxima, mínima, referencia y presión de seguridad",
@@ -1635,7 +1674,9 @@
         "CURRENT_SHOT_BTN": "Disparo actual",
         "DESCRIPTION": "Presión sensores piezoeléctricos",
         "DISPARO_PLACEHOLDER": "Disparo",
-        "INPUT_PLACEHOLDER_XXX": "XXX",
+        "EQUIPOS_LABEL": "Captador / Registrador / Amplificador",
+        "EQUIPOS_PLACEHOLDER": "Selecciona captador, registrador y amplificador",
+        "INPUT_PLACEHOLDER_XXX": "Disparo",
         "OBSERVACIONES_LABEL": "Observaciones",
         "OBSERVACIONES_PLACEHOLDER": "Escribe tus observaciones",
         "PRESION_CIERRE_LABEL": "Presión cierre",
@@ -1644,8 +1685,8 @@
         "PRESION_DIF_POSITIVA_LABEL": "Presión Diferencial Positiva",
         "PRESION_INTERMEDIO_LABEL": "Presión intermedia",
         "PRESION_MAXIMA_LABEL": "Presión máxima",
-        "PRESION_MAXIMA_PLACEHOLDER": "XXX",
-        "PRESION_PLACEHOLDER": "XXX",
+        "PRESION_MAXIMA_PLACEHOLDER": "Presión máxima",
+        "PRESION_PLACEHOLDER": "Presión",
         "REGISTRADOR_LABEL": "Registrador",
         "REGISTRADOR_PLACEHOLDER": "Equipo",
         "SERIE_PLACEHOLDER": "Serie",
@@ -1656,9 +1697,9 @@
         "TAB_OTRO": "P. Otro",
         "TAB_TIEMPOS": "Tiempos",
         "TIEMPO_ACCION_LABEL": "Tiempo de Acción",
-        "TIEMPO_ACCION_PLACEHOLDER": "XXX",
+        "TIEMPO_ACCION_PLACEHOLDER": "Tiempo de Acción",
         "TIEMPO_RETARDO_LABEL": "Tiempo de Retardo",
-        "TIEMPO_RETARDO_PLACEHOLDER": "XXX",
+        "TIEMPO_RETARDO_PLACEHOLDER": "Tiempo de Retardo",
         "TITLE": "Presión sensores piezoeléctricos"
       },
       "RADAR_METCMQ": {
@@ -1736,6 +1777,8 @@
         "DESCRIPTION": "Número de disparo, velocidad y observaciones",
         "NUMBER": "Número de disparo",
         "OBSERVATIONS": "Observaciones",
+        "SHOT_NUMBER_PLACEHOLDER": "Ej: 001",
+        "SPEED_PLACEHOLDER": "Ej: 850",
         "TITLE": "Datos de disparo",
         "VELOCITY": "Velocidad"
       },
@@ -1748,9 +1791,11 @@
         "STATUS_FAIL": "No cumple",
         "STATUS_PASS": "Cumple",
         "STATUS_UNKNOWN": "Sin verificar",
-        "TITLE": "Criterios STANAG"
+        "TITLE": "Criterios STANAG",
+        "UPDATE_CRITERIA_ARIA": "Actualizar criterios"
       },
       "TARADO_PRESION": {
+        "CHART_ARIA": "Tarado Presión Chart",
         "DESCRIPTION": "Regresión lineal Presión media (MPa) vs Wc/g para determinar el peso de carga por tarado de pólvora",
         "DISPARO_LABEL": "Disparo",
         "DISPARO_PLACEHOLDER": "Todos los disparos",
@@ -1766,6 +1811,7 @@
         "WC_LABEL": "Wc/g"
       },
       "TARADO_VELOCIDAD": {
+        "CHART_ARIA": "Tarado Velocidad Chart",
         "CONFIG_BTN": "Configuración",
         "CONFIG_LABEL": "Seleccionar configuración",
         "CONFIG_PLACEHOLDER": "Configuración",
@@ -1789,16 +1835,16 @@
       },
       "TARGET_DATA": {
         "BLANCO_LABEL": "Blanco",
-        "BLANCO_PLACEHOLDER": "XXXX",
+        "BLANCO_PLACEHOLDER": "Blanco",
         "DESCRIPTION": "Blanco, material, dimensiones, espesor, distancia e inclinación procedentes de la planificación",
         "DIMENSIONES_LABEL": "Dimensiones",
-        "DIMENSIONES_PLACEHOLDER": "XXXX",
+        "DIMENSIONES_PLACEHOLDER": "Dimensiones",
         "DISPARO_PLACEHOLDER": "Disparo",
         "DISTANCIA_LABEL": "Distancia",
         "ESPESOR_LABEL": "Espesor",
         "INCLINACION_LABEL": "Inclinación",
         "MATERIAL_LABEL": "Material",
-        "MATERIAL_PLACEHOLDER": "XXXX",
+        "MATERIAL_PLACEHOLDER": "Material",
         "SERIE_PLACEHOLDER": "Serie",
         "TITLE": "Datos del Blanco"
       },
@@ -1855,6 +1901,7 @@
         "TITLE": "Introducción datos trayectografía"
       },
       "UNIFORMIDAD": {
+        "CHART_ARIA": "Gráfica Uniformidad",
         "CONFIG_LABEL": "Conf. Tarado",
         "CONFIG_PLACEHOLDER": "Selecciona configuración",
         "DESCRIPTION": "Representación gráfica de la uniformidad de velocidades corregidas respecto a la configuración de tarado seleccionada",
@@ -1910,37 +1957,37 @@
         "TITLE": "Orientación cámaras de vídeo"
       },
       "VIDEO_DATA_INTRODUCTION": {
+        "CAMARA_LABEL": "Cámara",
+        "CAMARA_PLACEHOLDER": "Selecciona cámara",
+        "CANAL_LABEL": "Canal",
+        "CANAL_PLACEHOLDER": "Selecciona canal",
         "CURRENT_SHOT_BTN": "Disparo actual",
         "DESCRIPTION": "Cámara, grabador, canal, magnitud, resultado observado y observaciones",
         "DISPARO_ACTUAL_LABEL": "Disparo actual",
         "DISPARO_LABEL": "Disparo",
         "DISPARO_PLACEHOLDER": "Disparo",
+        "ESTADO_DISPARO_LABEL": "Estado del disparo",
+        "GRABADOR_LABEL": "Grabador",
+        "GRABADOR_PLACEHOLDER": "Selecciona grabador",
+        "INPUT_DATA_SECTION": "DATOS DE ENTRADA",
+        "MAGNITUD_HINT": "(se seleccionará de las magnitudes planificadas)",
         "MAGNITUD_LABEL": "Magnitud",
         "MAGNITUD_PLACEHOLDER": "Selecciona magnitud",
-        "MAGNITUD_HINT": "(se seleccionará de las magnitudes planificadas)",
-        "RESULTADO_OBSERVADO_LABEL": "Resultado observado",
-        "RESULTADO_OBSERVADO_PLACEHOLDER": "Escribe el resultado observado",
         "OBSERVACIONES_LABEL": "Observaciones",
         "OBSERVACIONES_PLACEHOLDER": "Escribe tus observaciones",
+        "RESULTADO_OBSERVADO_LABEL": "Resultado observado",
+        "RESULTADO_OBSERVADO_PLACEHOLDER": "Escribe el resultado observado",
         "SERIE_LABEL": "Serie",
         "SERIE_PLACEHOLDER": "Serie",
-        "TIPO_VIDEO_LABEL": "Tipo de vídeo",
-        "TIPO_VIDEO_PLACEHOLDER": "Selecciona tipo de vídeo",
+        "STATUS_EXECUTED": "Ejecutado",
+        "STATUS_IN_PROGRESS": "En curso",
+        "STATUS_PENDING": "Pendiente",
         "TIPO_VIDEO_AV": "Video AV (alta velocidad)",
         "TIPO_VIDEO_AV_SHORT": "Video AV",
         "TIPO_VIDEO_C": "Video C (convencional)",
         "TIPO_VIDEO_C_SHORT": "Video C",
-        "INPUT_DATA_SECTION": "DATOS DE ENTRADA",
-        "CAMARA_LABEL": "Cámara",
-        "CAMARA_PLACEHOLDER": "Selecciona cámara",
-        "GRABADOR_LABEL": "Grabador",
-        "GRABADOR_PLACEHOLDER": "Selecciona grabador",
-        "CANAL_LABEL": "Canal",
-        "CANAL_PLACEHOLDER": "Selecciona canal",
-        "ESTADO_DISPARO_LABEL": "Estado del disparo",
-        "STATUS_IN_PROGRESS": "En curso",
-        "STATUS_PENDING": "Pendiente",
-        "STATUS_EXECUTED": "Ejecutado",
+        "TIPO_VIDEO_LABEL": "Tipo de vídeo",
+        "TIPO_VIDEO_PLACEHOLDER": "Selecciona tipo de vídeo",
         "TITLE": "Introducción datos vídeo"
       },
       "VIGILANCIA": {
@@ -1972,14 +2019,16 @@
       }
     },
     "WIDGETS_BTN": "Widgets",
-    "WIDGET_LIBRARY_TITLE": "Biblioteca de widgets"
+    "WIDGET_LIBRARY_TITLE": "Biblioteca de widgets",
+    "WIDGET_NO_SPACE_MESSAGE": "Libera algo de espacio o elimina otro widget antes de volver a intentarlo.",
+    "WIDGET_NO_SPACE_TITLE": "Este widget no cabe en el panel"
   },
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "No tienes acceso a esta prueba",
     "ARMAMENT": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar el armamento",
-        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de armamento de la prueba. Por favor, reintente más tarde."
+        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de armamento de la prueba. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar el armamento"
       },
       "FOOTER": {
         "SAVE_DRAFT": "Guardar borrador"
@@ -2003,6 +2052,7 @@
         "OBSERVATIONS": "Observaciones",
         "OBSERVATIONS_PLACEHOLDER": "Escribe aquí las observaciones...",
         "REMOVE_ARIA_LABEL": "Eliminar",
+        "SELECTED_ITEMS_ARIA": "Elementos seleccionados",
         "SERIES_LABEL": "Series",
         "SERIES_PLACEHOLDER": "Selecciona las series",
         "TITLE": "Configuración masiva de disparos",
@@ -2070,15 +2120,15 @@
       "ADDITIONAL_INFO_LABEL": "Información adicional del cliente",
       "ADDITIONAL_INFO_PLACEHOLDER": "Escribe aquí la información adicional",
       "CANCEL": "Cancelar",
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar los datos generales",
-        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de la planificación de la prueba. Por favor, reintente más tarde."
-      },
       "DATE_PARAMS_CONTROL": "Parámetros de control de fechas",
       "DAYS_SIGN_REPORT_LABEL": "Días para firma del informe",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Indica los días para firma del informe",
       "END_PERCENTAGE_LABEL": "Porcentaje para fin de prueba",
       "END_PERCENTAGE_PLACEHOLDER": "Indica el porcentaje para fin de prueba",
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "No se ha podido cargar la información de la planificación de la prueba. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar los datos generales"
+      },
       "EXECUTION_DATE_LABEL": "Fecha de ejecución programada",
       "EXECUTION_DATE_PLACEHOLDER": "Seleccionar Fecha de ejecución programada",
       "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "Después de la prueba",
@@ -2087,7 +2137,6 @@
       "LIMIT_DATE_LABEL": "Fecha límite de ejecución",
       "LIMIT_DATE_PLACEHOLDER": "Selecciona la fecha límite de ejecución",
       "MANAGE_SPECIMEN_BUTTON": "Gestionar espécimen",
-      "SPECIMEN_TOOLTIP": "Especímenes seleccionados",
       "MAX_DATE_REPORT_LABEL": "Máximos días para emisión de informe",
       "MAX_DATE_REPORT_PLACEHOLDER": "Indica los días máximos para emisión de informe",
       "MODIFY_PLANNING": "Modificar planificación",
@@ -2102,6 +2151,7 @@
       "SPECIMEN_LABEL": "Espécimen",
       "SPECIMEN_PLACEHOLDER": "Seleccionar Espécimen",
       "SPECIMEN_REQUIRED": "El espécimen es obligatorio",
+      "SPECIMEN_TOOLTIP": "Especímenes seleccionados",
       "TAB_TITLE": "General",
       "TRIAL_GOAL_LABEL": "Objeto de la prueba",
       "TRIAL_GOAL_PLACEHOLDER": "Escribe el objeto de la prueba",
@@ -2111,22 +2161,26 @@
       "VALIDATE": "Validar",
       "VALIDATION_ERRORS_TITLE": "Motivos por los que no se puede validar"
     },
+    "LOADING": "Cargando planificación...",
     "MEASURES": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar las magnitudes y registros",
-        "LOAD_FAILED_DETAIL": "No se han podido cargar las magnitudes y registros de la prueba. Por favor, reintente más tarde."
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las magnitudes y registros de la prueba. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar las magnitudes y registros"
       },
       "FOOTER": {
+        "CANCEL_BUTTON": "Cancelar",
         "SAVE_DRAFT": "Guardar borrador",
-        "SAVING_DRAFT": "Guardando...",
-        "CANCEL_BUTTON": "Cancelar"
-      }
+        "SAVING_DRAFT": "Guardando..."
+      },
+      "LIMIT_CARD": {
+        "DEVIATION": "Desviación",
+        "ENTER_VALUE": "Ingrese valor",
+        "MAX_LIMIT": "Límite máximo",
+        "MIN_LIMIT": "Límite mínimo"
+      },
+      "TITLE": "Medidas"
     },
     "MUNITIONS": {
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar las configuraciones de munición",
-        "LOAD_FAILED_DETAIL": "No se han podido cargar las configuraciones de munición de la prueba. Por favor, reintente más tarde."
-      },
       "COMPONENT_DETAIL_FORM": {
         "ADD_POWDER_BUTTON": "Añadir pólvora",
         "CONDITIONING_CHECKBOX": "Acondicionamiento",
@@ -2194,6 +2248,10 @@
         "VALIDATION": {
           "MUNITION_TYPE_REQUIRED": "El tipo de munición es requerido"
         }
+      },
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las configuraciones de munición de la prueba. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar las configuraciones de munición"
       },
       "HEADER": {
         "CANCEL_BUTTON": "Cancelar",
@@ -2271,15 +2329,14 @@
       "ADD_SHOT_BUTTON": "Añadir disparo",
       "CREATE_SERIE_BUTTON": "Crear serie",
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar las series y disparos",
-        "LOAD_FAILED_DETAIL": "No se han podido cargar las series y disparos de la prueba. Por favor, reintente más tarde."
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las series y disparos de la prueba. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar las series y disparos"
       },
       "NEW_SERIE_BUTTON": "Nueva serie",
       "NOT_SHOTS_IN_SERIE": "No hay disparos en la serie",
       "NO_SERIES_RESULTS": "No se han encontrado series.",
       "NO_SHOTS_RESULTS": "No se han encontrado disparos.",
       "SERIES_SHOTS": "Disparos de la serie",
-      "SINGLE_SHOT_DELETE_TOOLTIP": "Para eliminar el único disparo de la serie es necesario eliminar la serie completa.",
       "SERIES_TABLE": {
         "ACTIONS": "Acciones",
         "EXECUTION_ORDER": "Orden de ejecución",
@@ -2293,18 +2350,20 @@
         "OBSERVATIONS_PLACEHOLDER": "Observaciones",
         "SHOT_NUMBER": "Nº del disparo"
       },
+      "SINGLE_SHOT_DELETE_TOOLTIP": "Para eliminar el único disparo de la serie es necesario eliminar la serie completa.",
       "TAB_TITLE": "Series y disparos",
       "TITLE": "Series de la prueba"
     },
     "SHOOTING_CONDITIONS_SECTION": {
       "ACTIONS": {
         "CANCEL": "Cancelar",
+        "MASSIVE_CONFIG_BUTTON": "Aplicar configuración masiva",
         "SAVE": "Guardar borrador"
       },
       "EMPTY_STATE": "No hay disparos en esta serie",
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error al cargar las condiciones de disparo",
-        "LOAD_FAILED_DETAIL": "No se han podido cargar las condiciones de disparo. Por favor, reintente más tarde."
+        "LOAD_FAILED_DETAIL": "No se han podido cargar las condiciones de disparo. Por favor, reintente más tarde.",
+        "LOAD_FAILED_TITLE": "Error al cargar las condiciones de disparo"
       },
       "MASSIVE_CONFIG_DIALOG": {
         "ANGLE_LABEL": "Ángulo tiro",
@@ -2377,7 +2436,9 @@
     }
   },
   "TRIAL_SCHEDULER": {
+    "DATA_LABEL": "Datos:",
     "LEGEND": {
+      "ARIA_LABEL": "Leyenda del gráfico",
       "BUSY": "Día con pruebas",
       "LABEL_COFIRM": "Desprogramar",
       "NO_NOTAM": "Sin NOTAM",
@@ -2388,6 +2449,7 @@
     "SCHEDULE_TRIAL_INLINE_LABEL": "Fecha programada",
     "SCHEDULE_TRIAL_TITLE": "Programación de pruebas",
     "SELECT_DAYS": "Selecciona los días parea realizar la prueba",
+    "TRIAL_NUMBER": "Número de prueba",
     "UNPROGAM": {
       "DESCRIPTION": "Vas a desprogramar la prueba: {{id}} el día {{day}}",
       "LABEL_COFIRM": "Desprogramar",
@@ -2401,12 +2463,12 @@
     "TITLE": "Programación de pruebas"
   },
   "UI": {
-    "SKELETON": {
-      "LOADING": "Cargando..."
-    },
     "SAVE_BUTTON": {
       "LABEL": "Guardar",
       "SAVING_TOOLTIP": "Guardando cambios..."
+    },
+    "SKELETON": {
+      "LOADING": "Cargando..."
     }
   },
   "UTILS_TRIALS": {
@@ -2441,12 +2503,6 @@
     "INVALID_DATE": "Introduzca una fecha válida"
   },
   "WHAREHOUSE_MANAGMENT": {
-    "DIALOGS": {
-      "SWITCH_STATUS": {
-        "CONTENT_HTML": "¿Desea confirmar el cambio de estado del registro?",
-        "TITLE": "Cambiar estado"
-      }
-    },
     "CERTIFICATES": {
       "ACTIONS": "Acciones",
       "ACTION_DELETE_HTML": "Vas a eliminar un certificado asociado",
@@ -2521,6 +2577,12 @@
       "QUANTITY_ERROR": "La cantidad debe ser como mínimo uno",
       "STATUS": "Estado",
       "TITLE": "Denominación de munición"
+    },
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "¿Desea confirmar el cambio de estado del registro?",
+        "TITLE": "Cambiar estado"
+      }
     },
     "DIALOG_EDIT_COMPONENT": {
       "ADD": "Añadir componente",

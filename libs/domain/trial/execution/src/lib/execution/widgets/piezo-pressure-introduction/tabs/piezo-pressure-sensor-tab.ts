@@ -9,10 +9,11 @@ import type { ShotPiezoPressureItem } from '../../../models';
 import {
   DEFAULT_PRESSURE_UNIT,
   type InputFieldValue,
-  equipmentIdToString,
+  buildPiezoEquipmentCombinedValue,
   equipmentStringToId,
   numToField,
   parseNum,
+  splitPiezoEquipmentCombinedValue,
 } from '../piezo-pressure-introduction.mapper';
 
 @Component({
@@ -22,45 +23,16 @@ import {
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0 items-start">
       <!-- ── Left: Equipment & Pressure input ───────────────────────────── -->
       <div class="lg:col-span-3 flex flex-col gap-8">
-        <!-- Row 1: Captador, Registrador, Amplificador -->
+        <!-- Row 1: Captador / Registrador / Amplificador (selector único combinado) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-3 gap-y-5">
-          <!-- Captador piezoeléctrico -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_LABEL' | translate }}</mat-label>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:col-span-2">
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.EQUIPOS_LABEL' | translate }}</mat-label>
             <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.CAPTADOR_PLACEHOLDER' | translate"
-              [value]="captadorValue()"
-              (selectionChange)="onCaptadorChange($event.value)"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.EQUIPOS_PLACEHOLDER' | translate"
+              [value]="pressureEquipments()"
+              (selectionChange)="onEquiposChange($event.value)"
             >
-              @for (opt of captadorOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Registrador -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_LABEL' | translate }}</mat-label>
-            <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.REGISTRADOR_PLACEHOLDER' | translate"
-              [value]="registradorValue()"
-              (selectionChange)="onRegistradorChange($event.value)"
-            >
-              @for (opt of registradorOptions(); track opt.value) {
-                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Amplificador -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_LABEL' | translate }}</mat-label>
-            <mat-select
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.AMPLIFICADOR_PLACEHOLDER' | translate"
-              [value]="amplificadorValue()"
-              (selectionChange)="onAmplificadorChange($event.value)"
-            >
-              @for (opt of amplificadorOptions(); track opt.value) {
+              @for (opt of equipmentOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
               }
             </mat-select>
@@ -81,7 +53,7 @@ import {
       </div>
 
       <!-- ── Right: Observaciones ────────────────────────────────────────── -->
-      <div class="lg:col-span-1 h-full min-h-[140px] flex flex-col">
+      <div class="lg:col-span-1 h-full flex flex-col">
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full h-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.OBSERVACIONES_LABEL' | translate }}</mat-label>
           <textarea
@@ -104,37 +76,44 @@ export class PiezoPressureSensorTab {
   readonly position = input.required<string>();
   readonly model = model.required<ShotPiezoPressureItem>();
 
-  readonly captadorOptions = input<Array<{ value: string; label: string }>>([]);
-  readonly registradorOptions = input<Array<{ value: string; label: string }>>([]);
-  readonly amplificadorOptions = input<Array<{ value: string; label: string }>>([]);
+  readonly equipmentOptions = input<Array<{ value: string; label: string }>>([]);
   readonly pressureUnitOptions = input<Array<{ value: string; label: string }>>([]);
 
-  protected readonly captadorValue = computed(() => equipmentIdToString(this.model().piezoelectricSensorId));
-  protected readonly registradorValue = computed(() => equipmentIdToString(this.model().dataAcquisitionSystemId));
-  protected readonly amplificadorValue = computed(() => equipmentIdToString(this.model().amplifierId));
+  protected readonly pressureEquipments = computed(() => {
+    const sensorId = this.model().piezoelectricSensorId;
+    const daqId = this.model().dataAcquisitionSystemId;
+    const ampId = this.model().amplifierId;
+    if (sensorId === null || daqId === null || ampId === null) return null;
+
+    const directCombined = buildPiezoEquipmentCombinedValue(sensorId, daqId, ampId);
+    const options = this.equipmentOptions();
+    if (options.some((opt) => opt.value === directCombined)) {
+      return directCombined;
+    }
+
+    const matchingOpt = options.find((opt) => {
+      const parts = splitPiezoEquipmentCombinedValue(opt.value);
+      return (
+        equipmentStringToId(parts.captadorId) === sensorId &&
+        equipmentStringToId(parts.registradorId) === daqId &&
+        equipmentStringToId(parts.amplificadorId) === ampId
+      );
+    });
+
+    return matchingOpt ? matchingOpt.value : null;
+  });
 
   protected readonly presionMaximaField = computed(() =>
     numToField(this.model().maxPressure, this.model().maxPressureUnit ?? DEFAULT_PRESSURE_UNIT),
   );
 
-  protected onCaptadorChange(value: string | null): void {
+  protected onEquiposChange(value: string | null): void {
+    const { captadorId, registradorId, amplificadorId } = splitPiezoEquipmentCombinedValue(value);
     this.model.update((current) => ({
       ...current,
-      piezoelectricSensorId: equipmentStringToId(value),
-    }));
-  }
-
-  protected onRegistradorChange(value: string | null): void {
-    this.model.update((current) => ({
-      ...current,
-      dataAcquisitionSystemId: equipmentStringToId(value),
-    }));
-  }
-
-  protected onAmplificadorChange(value: string | null): void {
-    this.model.update((current) => ({
-      ...current,
-      amplifierId: equipmentStringToId(value),
+      piezoelectricSensorId: equipmentStringToId(captadorId),
+      dataAcquisitionSystemId: equipmentStringToId(registradorId),
+      amplifierId: equipmentStringToId(amplificadorId),
     }));
   }
 

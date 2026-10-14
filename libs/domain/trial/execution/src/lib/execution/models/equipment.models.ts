@@ -67,7 +67,6 @@ export enum EquipmentMagnitudeTagEnum {
   PESOS = 'WEIGHT',
   ACONDICIONAMIENTO = 'CONDITIONING',
   TIEMPO = 'TIME',
-  DATA_ACQUISITION_SYSTEM = 'DATA_ACQUISITION_SYSTEM',
 }
 
 export const EQUIPMENT_MEASUREMENT_GROUPS: readonly EquipmentMeasurementGroupEnum[] =
@@ -86,8 +85,28 @@ export function isEquipmentMagnitudeTagEnum(value: string): value is EquipmentMa
 
 /** Magnitud seleccionada en Planificación: extiende el contrato de medida con sus grupos de medición asociados. */
 export interface PlanningMagnitudeSelection extends MagnitudeMeasureSource {
+  readonly id: string;
   readonly measurements: readonly string[];
 }
+
+export type TrialPlanningMeasuresResponse = {
+  readonly series: ReadonlyArray<{
+    readonly seriesId: string;
+    readonly measures: Partial<
+      Record<
+        'topographyMeasures' | 'munitionsMeasures' | 'armamentMeasures' | 'ballisticsMeasures',
+        ReadonlyArray<{ readonly id: string }>
+      >
+    >;
+  }>;
+};
+
+export type EquipmentMeasuresCatalogResponse = {
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalElements: number;
+  readonly items: readonly PlanningMagnitudeSelection[];
+};
 
 export enum EquipmentMagnitudeEnum {
   ATTACK = 'ATTACK',

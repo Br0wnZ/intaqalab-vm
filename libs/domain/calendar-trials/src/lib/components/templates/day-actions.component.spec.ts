@@ -278,10 +278,10 @@ describe('DayActionsComponent', () => {
       expect(trigger.disabled).toBe(false);
     });
 
-    it('should render the trigger button with aria-label "Actions"', async () => {
+    it('should render the trigger button with aria-label "COMMONS.ACTIONS"', async () => {
       const { fixture } = await setup();
       const trigger = fixture.nativeElement.querySelector('.day-actions__trigger') as HTMLButtonElement;
-      expect(trigger).toHaveAttribute('aria-label', 'Actions');
+      expect(trigger).toHaveAttribute('aria-label', 'COMMONS.ACTIONS');
     });
   });
 });

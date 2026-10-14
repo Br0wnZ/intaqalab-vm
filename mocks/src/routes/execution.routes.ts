@@ -1,54 +1,59 @@
 import { Router } from 'express';
 
 import {
-    getEquipmentSelectorState,
-    updateEquipmentSelectorState,
+  getEquipmentSelectorState,
+  updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
-    applyArmamentBulkConfiguration,
-    applyJltMaoBulkConfiguration,
-    applyMaoTopographyBulkConfiguration,
-    approvePlanning,
-    bumpPlanningVersion,
-    getCountdownState,
-    getExecutionState,
-    getJltPreparation,
-    getJltShotData,
-    getPlanningState,
-    getReadiness,
-    getShotAcousticLevel,
-    getShotArmament,
-    getShotJltMao,
-    getShotManometerPressures,
-    getShotMaoTopography,
-    getShotMunition,
-    getShotPressures,
-    getShotTopography,
-    getShotTrajectography,
-    getShotVelocities,
-    getShotVideoData,
-    registerFireShot,
-    selectActiveShot,
-    setExecutionStatus,
-    setJltReadiness,
-    setJltShotData,
-    setSeriesProfileReadiness,
-    setShotAcousticLevel,
-    setShotArmament,
-    setShotJltMao,
-    setShotManometerPressures,
-    setShotMaoTopography,
-    setShotMunition,
-    setShotPressure,
-    setShotTopography,
-    setShotTrajectography,
-    setShotVelocity,
-    setShotVideoData,
-    updateCountdownState,
+  applyArmamentBulkConfiguration,
+  applyJltMaoBulkConfiguration,
+  applyMaoTopographyBulkConfiguration,
+  approvePlanning,
+  bumpPlanningVersion,
+  getCountdownState,
+  getExecutionState,
+  getJltPreparation,
+  getJltShotData,
+  getPlanningState,
+  getReadiness,
+  getShotAcousticLevel,
+  getShotArmament,
+  getShotJltMao,
+  getShotManometerPressures,
+  getShotMaoTopography,
+  getShotMunition,
+  getShotPressures,
+  getShotTopography,
+  getShotTrajectography,
+  getShotVelocities,
+  getShotVideoData,
+  registerFireShot,
+  selectActiveShot,
+  setExecutionStatus,
+  setJltReadiness,
+  setJltShotData,
+  setSeriesProfileReadiness,
+  setShotAcousticLevel,
+  setShotArmament,
+  setShotJltMao,
+  setShotManometerPressures,
+  setShotMaoTopography,
+  setShotMunition,
+  setShotPressure,
+  setShotTopography,
+  setShotTrajectography,
+  setShotVelocity,
+  setShotVideoData,
+  updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
 
 export const executionRouter = Router();
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/trajectography-radar/orientation', (_req, res) => {
+  const response = getFixture('fixtures/execution', 'execution-trajectography-radar-orientation-fixture.json');
+  res.status(200).json(response);
+});
 
 // ==========================================
 // EXECUTION STATE
@@ -536,6 +541,11 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/armament/bul
 // ==========================================
 // DATA ENTRY - WIDGET 20 MUNITIONS
 // ==========================================
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/cameras/:cameraId/orientation', (req, res) => {
+  const orientation = getFixture('fixtures/execution', 'execution-camera-orientation-fixture.json');
+  res.status(200).json({ ...orientation, cameraId: Number(req.params['cameraId']) });
+});
 
 executionRouter.get(
   '/:centerId/fire-trials/:fireTrialId/execution/munitions/series/:seriesId/shots/:shotId',

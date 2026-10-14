@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -63,6 +63,35 @@ describe('VideoDataIntroduction', () => {
     fixture.componentInstance.resetForm();
     const stored = TestBed.inject(ExecutionStore).videoDataIntroduction();
     expect(fixture.componentInstance['selectorModel']().tipoVideo).toBe(stored.tipoVideo);
+  });
+
+  it('uses global shot numbers without a hash in shot options', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const planningSeriesRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/series'));
+    planningSeriesRequest.flush([
+      {
+        id: 'series-1',
+        name: 'Serie 1',
+        shots: [
+          { id: 'shot-1', globalNumber: 12 },
+          { id: 'shot-2', globalNumber: 3 },
+        ],
+      },
+    ]);
+
+    await vi.waitFor(() => expect(store.planningSeries()).toHaveLength(1));
+    fixture.componentInstance['selectorModel'].update((value) => ({ ...value, serie: 'series-1' }));
+
+    expect(fixture.componentInstance['disparoOptions']()).toEqual([
+      { value: 'shot-1', label: 'Disparo 12' },
+      { value: 'shot-2', label: 'Disparo 3' },
+    ]);
   });
 
   it('loads equipment items for cameras and recorders from ExecutionService', async () => {

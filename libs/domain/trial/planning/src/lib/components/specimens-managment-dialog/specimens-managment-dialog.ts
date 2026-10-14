@@ -137,7 +137,9 @@ import {
         }
         @if (showSerialNumberField() || showLotField()) {
           <div class="flex justify-end">
-            <button mat-flat-button type="button" [disabled]="!specimenForm().valid()" (click)="onAdd()">Añadir</button>
+            <button mat-flat-button type="button" [disabled]="!specimenForm().valid()" (click)="onAdd()">
+              {{ 'COMMONS.ADD' | translate }}
+            </button>
           </div>
         }
         @if (selectedSpecimens().length > 0) {

@@ -36,8 +36,10 @@ describe('PauseExecutionDialog', () => {
     return view;
   };
 
-  const getPauseBtn = () => screen.getByRole('button', { name: 'Pausar prueba' });
-  const getCancelBtn = () => screen.getByRole('button', { name: 'Cancelar pausa' });
+  const getPauseBtn = () =>
+    screen.getByRole('button', { name: /TRIAL_EXECUTION\.DIALOGS\.PAUSE_EXECUTION\.CONFIRM|Pausar prueba/i });
+  const getCancelBtn = () =>
+    screen.getByRole('button', { name: /TRIAL_EXECUTION\.DIALOGS\.PAUSE_EXECUTION\.CANCEL|Cancelar pausa/i });
 
   it('renders the dialog title with pause icon', async () => {
     await setup();

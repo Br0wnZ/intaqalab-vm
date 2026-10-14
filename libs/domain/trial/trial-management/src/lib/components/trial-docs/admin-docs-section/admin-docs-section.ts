@@ -190,8 +190,8 @@ interface DocumentType {
 
         <mat-paginator
           showFirstLastButtons
-          aria-label="Seleccionar página de documentos"
           class="!border-t !border-gray-100 !bg-white"
+          [attr.aria-label]="'ADMIN.ADMIN_DOCS_SECTION.PAGINATION_ARIA' | translate"
           [length]="filteredDocuments().length"
           [pageSize]="pageSize()"
           [pageIndex]="pageIndex()"

@@ -187,8 +187,8 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                       <button
                         mat-icon-button
                         cdkDragHandle
-                        title="Arrastrar para reordenar"
                         class="!w-8 !h-8 !flex !items-center !justify-center drag-handle-btn !-ml-2"
+                        [attr.title]="'COMMONS.DRAG_TO_REORDER' | translate"
                         [disabled]="readonly()"
                         [class.!text-purple-400]="openSerieId() === serie.id"
                         [class.hover:!text-purple-600]="openSerieId() === serie.id"
@@ -226,16 +226,16 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                     <div class="flex items-center gap-4">
                       @if (!readonly()) {
                         <button
-                          aria-label="Editar"
                           class="cursor-pointer"
+                          [attr.aria-label]="'COMMONS.EDIT' | translate"
                           (click)="updateSerie(serie.id); $event.stopPropagation()"
                         >
                           <ui-inta-icon name="edit" size="xl" />
                         </button>
 
                         <button
-                          aria-label="Eliminar"
                           class="cursor-pointer"
+                          [attr.aria-label]="'COMMONS.DELETE' | translate"
                           (click)="deleteSerie(serie.id); $event.stopPropagation()"
                         >
                           <ui-inta-icon name="remove" size="xl" />
@@ -307,14 +307,18 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                             @if (!readonly()) {
                               @if (editingShotId() === shot.id) {
                                 <button
-                                  title="Guardar"
                                   class="cursor-pointer flex items-center"
+                                  [attr.title]="'COMMONS.SAVE' | translate"
                                   (click)="saveShot(shot)"
                                 >
                                   <mat-icon class="!text-xl">save</mat-icon>
                                 </button>
                               } @else {
-                                <button title="Editar" class="cursor-pointer" (click)="toggleEdit(shot)">
+                                <button
+                                  class="cursor-pointer"
+                                  [attr.title]="'COMMONS.EDIT' | translate"
+                                  (click)="toggleEdit(shot)"
+                                >
                                   <ui-inta-icon name="edit" size="xl" />
                                 </button>
                               }
@@ -324,8 +328,8 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                                 (mouseleave)="singleShotDeleteTooltipId.set(null)"
                               >
                                 <button
-                                  aria-label="Eliminar"
                                   class="flex items-center"
+                                  [attr.aria-label]="'COMMONS.DELETE' | translate"
                                   [class.cursor-pointer]="!isOnlyShotInSerie(serie)"
                                   [class.cursor-not-allowed]="isOnlyShotInSerie(serie)"
                                   [class.opacity-40]="isOnlyShotInSerie(serie)"

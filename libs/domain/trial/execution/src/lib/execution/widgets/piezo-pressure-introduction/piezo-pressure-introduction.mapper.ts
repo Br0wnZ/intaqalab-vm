@@ -81,8 +81,12 @@ export const equipmentIdToString = (id: number | null | undefined): string | nul
  */
 export const equipmentStringToId = (value: string | null | undefined): number | null => {
   if (!value) return null;
-  const num = Number(value);
-  return isNaN(num) ? null : num;
+  const direct = Number(value);
+  if (!isNaN(direct)) return direct;
+  const numericSuffix = value.match(/(\d+)$/)?.[1];
+  if (!numericSuffix) return null;
+  const parsed = Number(numericSuffix);
+  return isNaN(parsed) ? null : parsed;
 };
 
 /**
@@ -231,3 +235,58 @@ export const buildShotPressureData = (params: {
   maxPressureUnit: params.cierreUnit ?? DEFAULT_PRESSURE_UNIT,
   observations: params.observations ?? null,
 });
+
+/** Separador interno para el valor compuesto Captador / Registrador / Amplificador */
+export const PIEZO_EQUIPMENT_SEPARATOR = '|';
+
+/**
+ * Construye el valor compuesto "captadorId|registradorId|amplificadorId" para el selector único.
+ * Devuelve null si alguno de los IDs es nulo o vacío.
+ */
+export const buildPiezoEquipmentCombinedValue = (
+  captadorId: string | number | null | undefined,
+  registradorId: string | number | null | undefined,
+  amplificadorId: string | number | null | undefined,
+): string | null => {
+  if (
+    captadorId === null ||
+    captadorId === undefined ||
+    captadorId === '' ||
+    registradorId === null ||
+    registradorId === undefined ||
+    registradorId === '' ||
+    amplificadorId === null ||
+    amplificadorId === undefined ||
+    amplificadorId === ''
+  ) {
+    return null;
+  }
+  return `${captadorId}${PIEZO_EQUIPMENT_SEPARATOR}${registradorId}${PIEZO_EQUIPMENT_SEPARATOR}${amplificadorId}`;
+};
+
+/**
+ * Descompone el valor compuesto "captadorId|registradorId|amplificadorId" en sus partes.
+ * Devuelve { captadorId: null, registradorId: null, amplificadorId: null } si el valor es nulo o inválido.
+ */
+export const splitPiezoEquipmentCombinedValue = (
+  value: string | null | undefined,
+): { captadorId: string | null; registradorId: string | null; amplificadorId: string | null } => {
+  if (!value) return { captadorId: null, registradorId: null, amplificadorId: null };
+  const parts = value.split(PIEZO_EQUIPMENT_SEPARATOR);
+  if (parts.length !== 3) return { captadorId: null, registradorId: null, amplificadorId: null };
+  return {
+    captadorId: parts[0] || null,
+    registradorId: parts[1] || null,
+    amplificadorId: parts[2] || null,
+  };
+};
+
+/**
+ * Comprueba si el ID de un equipo coincide directamente o mediante sufijo numérico
+ * con el conjunto de IDs seleccionados (ej. 'meas-pe-001' coincide con '1' o '001').
+ */
+export const matchesEquipmentId = (idSet: ReadonlySet<string>, itemId: string): boolean => {
+  if (idSet.has(itemId)) return true;
+  const num = itemId.match(/(\d+)$/)?.[1];
+  return Boolean(num && (idSet.has(num) || idSet.has(String(Number(num)))));
+};

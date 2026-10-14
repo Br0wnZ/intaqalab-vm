@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
   selector: 'ui-legend-trial-scheduler',
   imports: [TranslateModule],
   template: `
-    <div role="list" aria-label="Leyenda del gráfico" class="legend">
+    <div role="list" class="legend" [attr.aria-label]="'TRIAL_SCHEDULER.LEGEND.ARIA_LABEL' | translate">
       <div role="listitem" class="legend-item">
         <span aria-hidden="true" class="swatch special-date"></span>
         <span class="label">

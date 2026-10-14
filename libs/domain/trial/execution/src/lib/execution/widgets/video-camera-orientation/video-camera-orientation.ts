@@ -18,7 +18,6 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -64,40 +63,44 @@ interface CameraSelectionForm {
           </div>
 
           <!-- Serie -->
-          <div class="flex flex-col gap-0.5">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label for="serie-select">
-                {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_LABEL' | translate }}
-              </mat-label>
-              <mat-select
-                id="serie-select"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_PLACEHOLDER' | translate"
-                [formField]="selectorForm.serie"
-              >
-                @for (opt of serieOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+          @if (!sameForAllSeries() && serieOptions().length > 0) {
+            <div class="flex flex-col gap-0.5">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label for="serie-select">
+                  {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_LABEL' | translate }}
+                </mat-label>
+                <mat-select
+                  id="serie-select"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_PLACEHOLDER' | translate"
+                  [formField]="selectorForm.serie"
+                >
+                  @for (opt of serieOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
 
           <!-- Disparo -->
-          <div class="flex flex-col gap-0.5">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label for="disparo-select">
-                {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_LABEL' | translate }}
-              </mat-label>
-              <mat-select
-                id="disparo-select"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_PLACEHOLDER' | translate"
-                [formField]="selectorForm.disparo"
-              >
-                @for (opt of disparoOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+          @if (!sameForAllShots() && disparoOptions().length > 0) {
+            <div class="flex flex-col gap-0.5">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+                <mat-label for="disparo-select">
+                  {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_LABEL' | translate }}
+                </mat-label>
+                <mat-select
+                  id="disparo-select"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_PLACEHOLDER' | translate"
+                  [formField]="selectorForm.disparo"
+                >
+                  @for (opt of disparoOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
         </div>
         <div class="h-px bg-slate-100 mb-2"></div>
       </div>
@@ -162,51 +165,83 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
 
   // ── Datos desde el store ──────────────────────────────────────────────────
 
   /** Lista de cámaras Calibry disponibles */
   protected readonly cameraOptions = computed(() => this.#store.videoCameraOrientation().cameraOptions);
 
-  /** Outputs del widget MAO (read-only) */
-  protected readonly estimatedDistancePique = computed(
-    () =>
-      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.plannedImpactDistance ?? null,
-  );
-  protected readonly operatingHeight = computed(
-    () => this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.functioningHeight ?? null,
-  );
-  protected readonly operatingRange = computed(
-    () =>
-      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.functioningDistance ?? null,
-  );
+  protected readonly orientationResponse = computed(() => {
+    const response = this.#store.videoCameraOrientationResponse();
+    return response?.cameraId === Number(this.selectorModel().camera) ? response : null;
+  });
 
-  /** Diferencia angular calculada en el store, formateada a 2 decimales */
+  /** Datos de orientación para serie y disparo seleccionados */
+  protected readonly selectedOrientationData = computed(() => {
+    const response = this.orientationResponse();
+    if (!response) return null;
+    const selection = this.selectorModel();
+    const selectedSeries = response.sameForAllSeries
+      ? response.series[0]
+      : response.series.find((serie) => serie.seriesId === selection.serie);
+    const selectedShot = selectedSeries?.sameForAllShots
+      ? selectedSeries.shots[0]
+      : selectedSeries?.shots.find((shot) => shot.shotId === selection.disparo);
+    return selectedShot?.orientationData ?? null;
+  });
+
+  protected readonly sameForAllSeries = computed(() => this.orientationResponse()?.sameForAllSeries ?? false);
+  protected readonly sameForAllShots = computed(() => {
+    const response = this.orientationResponse();
+    if (!response) return false;
+    if (response.sameForAllSeries) return true;
+    const selectedSeries = response.series.find((serie) => serie.seriesId === this.selectorModel().serie);
+    return selectedSeries?.sameForAllShots ?? false;
+  });
+
+  /** Datos de orientación devueltos por API */
+  protected readonly estimatedDistancePique = computed(
+    () => this.selectedOrientationData()?.plannedImpactDistance ?? null,
+  );
+  protected readonly operatingHeight = computed(() => this.selectedOrientationData()?.functioningHeight ?? null);
+  protected readonly operatingRange = computed(() => this.selectedOrientationData()?.functioningDistance ?? null);
+
+  /** Diferencia angular devuelta por API, formateada a 2 decimales */
   protected readonly angularDifferenceFormatted = computed(() => {
-    const val =
-      this.#executionService.shotCameraOrientationResource.value()?.cameraOrientationData.cameraAngularDifference;
+    const val = this.selectedOrientationData()?.cameraAngularDifference;
     return val !== null && val !== undefined ? val.toFixed(2) : null;
   });
 
-  protected readonly serieOptions = computed(() =>
-    (this.#store.planningSeries() ?? []).map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    })),
-  );
+  protected readonly serieOptions = computed(() => {
+    const series = this.orientationResponse()?.series ?? [];
+    const planningSeries = this.#store.planningSeries() ?? [];
+    return series.map((serie, index) => ({
+      value: serie.seriesId,
+      label: planningSeries.find((planned) => planned.id === serie.seriesId)?.name?.trim() || `Serie ${index + 1}`,
+    }));
+  });
+
   protected readonly disparoOptions = computed(() => {
-    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.selectorModel().serie)?.shots ?? [];
-    return shots.map((shot, index) => ({
-      value: shot.id,
-      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
+    const response = this.orientationResponse();
+    const selectedId = this.selectorModel().serie;
+    const selectedSeries = response?.sameForAllSeries
+      ? response.series[0]
+      : response?.series.find((serie) => serie.seriesId === selectedId);
+    const plannedShots =
+      this.#store.planningSeries()?.find((serie) => serie.id === selectedSeries?.seriesId)?.shots ?? [];
+    return (selectedSeries?.shots ?? []).map((shot, index) => ({
+      value: shot.shotId,
+      label: `Disparo #${String(plannedShots.find((planned) => planned.id === shot.shotId)?.globalNumber ?? index + 1).padStart(2, '0')}`,
     }));
   });
 
   // ── Signal Form (estado local del formulario) ─────────────────────────────
 
   protected readonly selectorModel = signal<CameraSelectionForm>({
-    camera: this.#store.videoCameraOrientation().camera,
+    camera:
+      this.#store.videoCameraOrientation().camera ??
+      this.#store.videoCameraOrientation().cameraOptions[0]?.value ??
+      null,
     serie: this.#store.videoCameraOrientation().serie,
     disparo: this.#store.videoCameraOrientation().disparo,
   });
@@ -216,22 +251,63 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   constructor() {
     super();
     let lastRequestedSelection: string | null = null;
+    let lastRequestedCamera: string | null = null;
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const camera = this.selectorModel().camera ?? this.cameraOptions()[0]?.value;
+      if (!fireTrialId || !camera) return;
+      const cameraId = Number(camera);
+      if (!Number.isInteger(cameraId)) return;
+
+      untracked(() => {
+        const current = this.selectorModel();
+        if (current.camera !== camera) {
+          this.selectorModel.set({ ...current, camera });
+        }
+        if (lastRequestedCamera !== null && lastRequestedCamera !== camera) {
+          this.selectorModel.set({ ...this.selectorModel(), serie: null, disparo: null });
+        }
+      });
+      lastRequestedCamera = camera;
+
+      const selectionKey = `${fireTrialId}:${cameraId}`;
+      if (selectionKey === lastRequestedSelection) return;
+      lastRequestedSelection = selectionKey;
+      this.#store.loadVideoCameraOrientation(fireTrialId, cameraId);
+    });
+
     effect(() => {
       const serie = this.#store.activeSerieId();
       const disparo = this.#store.activeShotId();
-      const camera = this.selectorModel().camera;
-      const fireTrialId = this.#store.fireTrialId();
-      if (!serie || !disparo || !camera || !fireTrialId) return;
+      if (!serie || !disparo) return;
       untracked(() => {
         const current = this.selectorModel();
         if (current.serie !== serie || current.disparo !== disparo) {
           this.selectorModel.set({ ...current, serie, disparo });
         }
       });
-      const selectionKey = `${fireTrialId}:${serie}:${disparo}:${camera}`;
-      if (selectionKey === lastRequestedSelection) return;
-      lastRequestedSelection = selectionKey;
-      this.#executionService.getShotCameraOrientation(fireTrialId, serie, disparo, camera);
+    });
+
+    effect(() => {
+      const response = this.orientationResponse();
+      const selection = this.selectorModel();
+      if (!response) return;
+
+      const selectedSeries = response.sameForAllSeries
+        ? response.series[0]
+        : (response.series.find((serie) => serie.seriesId === selection.serie) ?? response.series[0]);
+      const selectedShot = selectedSeries?.sameForAllShots
+        ? selectedSeries.shots[0]
+        : (selectedSeries?.shots.find((shot) => shot.shotId === selection.disparo) ?? selectedSeries?.shots[0]);
+
+      untracked(() => {
+        const current = this.selectorModel();
+        const serie = selectedSeries?.seriesId ?? null;
+        const disparo = selectedShot?.shotId ?? null;
+        if (current.serie !== serie || current.disparo !== disparo) {
+          this.selectorModel.set({ ...current, serie, disparo });
+        }
+      });
     });
   }
 

@@ -1,5 +1,5 @@
 ```
-Página: 1 de 58 Edición: 0 X
+Página: 1 de 59 Edición: 0 X
 ```
 ## INTAQLALAB - EJECUCIÓN ENSAYO DE FUEGO
 
@@ -34,6 +34,18 @@ EDICIÓN FECHA INFORMACIÓN
 ```
 01 12 / 2025 Edición inicial.
 ```
+```
+02 06/2026 Actualización del documento, así como las pantallas en base a los comentarios facilitados.
+```
+```
+03 10/
+```
+```
+Se amplía la funcionalidad de ejecución de ensayos de fuego incorporando nuevas configuraciones de
+equipos de medida, mejoras en la gestión de orientaciones, ampliación de la información de armamento y
+municiones, un nuevo módulo de presión IPG y nuevos registros para la captura de datos de presión mediante
+sensores piezoeléctricos.
+```
 (^)
 INTA posee en propiedad este documento. Las copias de este documento que se suministren no podrán ser utilizadas para fines diferentes
 a aquellos para los cuales son facilitadas, ni tampoco podrán ser distribuidas ni reproducidas total o parcialmente sin la autorización previa
@@ -43,10 +55,11 @@ Cualquier persona, aparte de las autorizadas, que encuentre este documento, debe
 Carretera de Ajalvir, Km. 4
 28850 Torrejón de Ardoz
 (Madrid)
+
+
+## Página: 2 de 59 Edición: 0 X
+
 Si lo tiene que imprimir, recicle el papel una vez lo haya usado
-
-
-## Página: 2 de 58 Edición: 0 X
 
 
 
@@ -91,9 +104,9 @@ Si lo tiene que imprimir, recicle el papel una vez lo haya usado
       - 4.3.13 Familia Acondicionamiento (Unidad de Municiones)
       - 4.3.14 Familia Tiempo (Unidad de Ensayos de Fuego)
    - 4.4 Botón Acciones
-      - 4.4.1 Jefe de línea de tiro (JLT)
+      - 4.4.1 Jefe de línea de tiro (JLT) Página: 3 de 59 Edición: 0 X
       - 4.4.2 Ingeniero de Ensayos
-      - 4.4.3 Jefes de unidades técnicas Página: 3 de 58 Edición: 0 X
+      - 4.4.3 Jefes de unidades técnicas
       - 4.4.4 Otros perfiles
    - 4.5 Instrucciones por radio del Jefe de Línea de Tiro (JLT)
 - 5 Biblioteca de widgets
@@ -138,9 +151,9 @@ Si lo tiene que imprimir, recicle el papel una vez lo haya usado
       - 5.6.9 Orientación cámaras de vídeo
       - 5.6.10 Orientación Radar Trayectografía
       - 5.6.11 Cálculo Coordenadas de paso
-      - 5.6.12 Criterios STANAG
+      - 5.6.12 Criterios STANAG Página: 4 de 59 Edición: 0 X
       - 5.6.13 Radar Trayectografía METCMQ
-      - 5.6.14 Seguridad Página: 4 de 58 Edición: 0 X
+      - 5.6.14 Seguridad
    - 5.7 Análisis
       - 5.7.1 Vigilancia
       - 5.7.2 Criterio de Grubbs
@@ -170,7 +183,7 @@ Si lo tiene que imprimir, recicle el papel una vez lo haya usado
 
 
 ```
-Página: 5 de 58 Edición: 0 X
+Página: 5 de 59 Edición: 0 X
 ```
 ## 1 INTRODUCCIÓN ÍNDICE
 
@@ -231,7 +244,7 @@ No aplicable.
 ```
 
 ```
-Página: 6 de 58 Edición: 0 X
+Página: 6 de 59 Edición: 0 X
 ```
 ## 3 PERFILES
 
@@ -295,7 +308,7 @@ dos tipos de perfiles diferentes en función de las tareas que realizan, por un 
 ```
 
 ```
-Página: 7 de 58 Edición: 0 X
+Página: 7 de 59 Edición: 0 X
 ```
 ```
 unidad con labores de supervisión y por otro el perfil de técnico de la unidad, encargado de registrar los
@@ -359,7 +372,7 @@ correcto desarrollo del ensayo.
 ```
 
 ```
-Página: 8 de 58 Edición: 0 X
+Página: 8 de 59 Edición: 0 X
 ```
 ```
 Adicionalmente, por cada tipo de usuario se puede personalizar la disposición y selección de elementos,
@@ -423,7 +436,7 @@ La pantalla de ejecución del ensayo podrá abrirse desde las siguientes ubicaci
 
 
 ```
-Página: 9 de 58 Edición: 0 X
+Página: 9 de 59 Edición: 0 X
 ```
 - Tipo de prueba
 - Cliente
@@ -482,7 +495,7 @@ Se mostrará en pantalla la siguiente información para todos los perfiles logad
 
 
 ```
-Página: 10 de 58 Edición: 0 X
+Página: 10 de 59 Edición: 0 X
 ```
 ```
 Se mostrará un listado con los componentes, y de cada componente se mostrará su tamaño (S,
@@ -543,7 +556,7 @@ se podrán configurar de manera obligatoria los siguientes campos:
 ```
 
 ```
-Página: 11 de 58 Edición: 0 X
+Página: 11 de 59 Edición: 0 X
 ```
 - **Radar Doppler** : desplegable que mostrará los equipos disponibles en Calibry. El sistema
     recuperará específicamente los equipos pertenecientes a la familia: Tiempo y Frecuencia /
@@ -566,8 +579,11 @@ interfaz de filas donde se podrán configurar de manera obligatoria los siguient
 - **Sensor piezoeléctrico** : desplegable que mostrará los equipos disponibles en Calibry. El sistema
     recuperará específicamente los equipos pertenecientes a la familia: _Presión / Medidores de_
     _Presión Hidráulica Relativa / Transductores_
-- **Amplificador** : desplegable que mostrará las antenas disponibles en Calibry. Se recuperarán los
+- **Amplificador** : desplegable que mostrará los equipos disponibles en Calibry. Se recuperarán los
     equipos de la familia: _Instrumentación y características de señal / Amplificadores de carga_
+- **Registrador:** desplegable que mostrará los equipos disponibles en Calibry. Se recuperarán los
+    equipos de la familia: _Instrumentación y Características de Señal/Sistemas de Adquisición y_
+    _Registradores_
 - **Series** : selector múltiple que muestra todas las series definidas para la prueba. Incluirá una
     opción para "Seleccionar todas las series" de forma simultánea.
 - **Disparos** : selector múltiple. Al seleccionar una serie, el sistema marcará por defecto todos los
@@ -595,15 +611,15 @@ Esta pestaña permite a los técnicos y jefes de la Unidad de Balística asignar
 la medición de magnitudes con sonómetro. El sistema presentará una interfaz de filas donde se podrán
 configurar de manera obligatoria los siguientes campos:
 
+
+```
+Página: 12 de 59 Edición: 0 X
+```
 - **Sonómetro** : desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
-    específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    específicamente los equipos pertenecientes a la familia: _Acústica y Vibraciones/Equipos de_
+    _medición acústica/Sonometros integradores de clase 1_
 - **Series** : selector múltiple que muestra todas las series definidas para la prueba. Incluirá una
     opción para "Seleccionar todas las series" de forma simultánea.
-
-
-```
-Página: 12 de 58 Edición: 0 X
-```
 - **Disparos:** selector múltiple. Al seleccionar una serie, el sistema marcará por defecto todos los
     disparos pertenecientes a dicha serie. El usuario conservará la capacidad de modificar esta
     selección de forma individual para excluir o incluir disparos específicos según sea necesario.
@@ -615,9 +631,10 @@ la medición de magnitudes del área de Vídeo de Alta Velocidad. El sistema pre
 donde se podrán configurar de manera obligatoria los siguientes campos:
 
 - **Cámara AV** : desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
-    específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    específicamente los equipos pertenecientes a la familia: _Tiempo y frecuencia/Sistemas de_
+    _video/Video de alta velocidad_
 - **Grabador:** desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
-    específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    específicamente los equipos pertenecientes a la familia: _Tiempo y frecuencia/Sistemas de video_
 - **Canal** : desplegable que permitirá seleccionar un número del 01 al 32.
 - **Magnitud** _:_ desplegable con selector múltiple que permitirá seleccionar las magnitudes de las
     solicitadas en planificación que se vayan a registrar con la configuración de cámara, grabador y
@@ -635,9 +652,10 @@ la medición de magnitudes del área de Vídeo Convencional. El sistema presenta
 donde se podrán configurar de manera obligatoria los siguientes campos:
 
 - **Cámara C** : desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
-    específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    específicamente los equipos pertenecientes a la familia: _Tiempo y frecuencia/Sistemas de_
+    _video/Video convencional_
 - **Grabador:** desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
-    específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    específicamente los equipos pertenecientes a la familia: _Tiempo y frecuencia/Sistemas de video_
 - **Canal** : desplegable que permitirá seleccionar un número del 01 al 32.
 - **Magnitud** _:_ desplegable con selector múltiple que permitirá seleccionar las magnitudes de las
     solicitadas en planificación que se vayan a registrar con la configuración de cámara, grabador y
@@ -648,6 +666,10 @@ donde se podrán configurar de manera obligatoria los siguientes campos:
     disparos pertenecientes a dicha serie. El usuario conservará la capacidad de modificar esta
     selección de forma individual para excluir o incluir disparos específicos según sea necesario.
 
+
+```
+Página: 13 de 59 Edición: 0 X
+```
 #### 4.3.9 Familia Longitud (Unidad de Armamento)
 
 Esta pestaña permite a los técnicos y jefes de la Unidad de Armamento asignar los equipos necesarios
@@ -655,15 +677,11 @@ para la medición de magnitudes del área de Longitud (Atacado y Retroceso). El 
 interfaz de filas donde se podrán configurar de manera obligatoria los siguientes campos:
 
 - **Regla de Trazos** : desplegable que mostrará los equipos disponibles en Calibry. El sistema
-    recuperará específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    recuperará específicamente los equipos pertenecientes a la familia:
+    _Dimensional/Longitud/Trazos_Escala Lineal/Flexómero/Cinta métrica_
 - **Magnitud** _:_ desplegable con selector múltiple que permitirá seleccionar las magnitudes de las
     solicitadas en planificación que se vayan a registrar con la regla de trazos seleccionada
     anteriormente.
-
-
-```
-Página: 13 de 58 Edición: 0 X
-```
 - **Series** : selector múltiple que muestra todas las series definidas para la prueba. Incluirá una
     opción para "Seleccionar todas las series" de forma simultánea.
 - **Disparos:** selector múltiple. Al seleccionar una serie, el sistema marcará por defecto todos los
@@ -677,11 +695,13 @@ la medición de magnitudes del área de presión con manómetros. El sistema pre
 donde se podrán configurar de manera obligatoria los siguientes campos:
 
 - **Manómetro** : desplegable que mostrará los equipos disponibles en Calibry. El sistema
-    recuperará específicamente los equipos pertenecientes a la familia: _PENDIENTE_
+    recuperará específicamente los equipos pertenecientes a la familia: _Presión/Medidores de_
+    _presión neumática absoluta/Manómetros_
 - **Crusher** : desplegable que mostrará las antenas disponibles en Calibry. Se recuperarán los
     equipos de la familia: _PENDIENTE_
 - **Palpador:** desplegable que mostrará las antenas disponibles en Calibry. Se recuperarán los
-    equipos de la familia: _PENDIENTE_
+    equipos de la familia: _Dimensional/Longitud/Instrumentos micrométricos/Micrometros de_
+    _interiores de tres contactos_
 - **Series** : selector múltiple que muestra todas las series definidas para la prueba. Incluirá una
     opción para "Seleccionar todas las series" de forma simultánea.
 - **Disparos** : selector múltiple. Al seleccionar una serie, el sistema marcará por defecto todos los
@@ -704,12 +724,17 @@ donde se podrán configurar de manera obligatoria los siguientes campos:
     disparos pertenecientes a dicha serie. El usuario conservará la capacidad de modificar esta
     selección de forma individual para excluir o incluir disparos específicos según sea necesario.
 
+
+```
+Página: 14 de 59 Edición: 0 X
+```
 #### 4.3.12 Familia Pesos (Unidad de Municiones)..............................................................................................
 
+```
 Esta pestaña permite a los técnicos y jefes de la Unidad de Municiones asignar los equipos necesarios para
 la medición de magnitudes del área de pesos. El sistema presentará una interfaz de filas donde se podrán
 configurar de manera obligatoria los siguientes campos:
-
+```
 - **Balanza** : desplegable que mostrará los equipos disponibles en Calibry. El sistema recuperará
     específicamente los equipos pertenecientes a la familia: _Masa y Derivadas/Instrumentos de_
     _pesaje de funcionamiento no automático/Balanzas de precisión_
@@ -717,11 +742,6 @@ configurar de manera obligatoria los siguientes campos:
     planificación.
 - **Series** : selector múltiple que muestra todas las series definidas para la prueba. Incluirá una
     opción para "Seleccionar todas las series" de forma simultánea.
-
-
-```
-Página: 14 de 58 Edición: 0 X
-```
 - **Disparos** : selector múltiple. Al seleccionar una serie, el sistema marcará por defecto todos los
     disparos pertenecientes a dicha serie. El usuario conservará la capacidad de modificar esta
     selección de forma individual para excluir o incluir disparos específicos según sea necesario.
@@ -767,12 +787,15 @@ filas donde se podrán configurar de manera obligatoria los siguientes campos:
 La pantalla de ejecución contará con un botón de acciones, que serán diferentes en función del usuario y
 del estado de la prueba.
 ```
-#### 4.4.1 Jefe de línea de tiro (JLT)
 
 ```
+Página: 15 de 59 Edición: 0 X
+```
+#### 4.4.1 Jefe de línea de tiro (JLT) Página: 3 de 59 Edición: 0 X
+
 Dado que se trata del perfil encargado del control del ensayo, dispone de la mayor cantidad de acciones
 disponibles sobre la misma, como son:
-```
+
 - **Iniciar** la prueba de fuego**.** El jefe de la línea de tiro dará comienzo a la ejecución del ensayo
     de fuego, registrando la fecha y hora de inicio de esta. _El estado de la prueba cambiaría a “En_
     _curso”._
@@ -781,17 +804,10 @@ disponibles sobre la misma, como son:
     del ensayo con normalidad. Si la interrupción se motiva porque no se ha producido el disparo,
     debido a un fallo durante la ejecución de este, podrá activar la cuenta de seguridad definida
     para el arma empleada. La duración de la cuenta de seguridad se fijará en función del arma y
-
-
-```
-Página: 15 de 58 Edición: 0 X
-```
-```
-las condiciones del ensayo, pudiendo el JLT modificar su valor quedando registrado dicho
-cambio, el ensayo no podrá reanudarse hasta que finalice la cuenta de seguridad. Esta cuenta
-de seguridad será visible para todos los usuarios, aunque solo el JLT podrá iniciar, pausar o
-definir la duración. El estado de la prueba cambiaría a “Interrumpida”.
-```
+    las condiciones del ensayo, pudiendo el JLT modificar su valor quedando registrado dicho
+    cambio, el ensayo no podrá reanudarse hasta que finalice la cuenta de seguridad. Esta cuenta
+    de seguridad será visible para todos los usuarios, aunque solo el JLT podrá iniciar, pausar o
+    definir la duración. _El estado de la prueba cambiaría a “Interrumpida”._
 - **Cancelar** el ensayo, si durante la ejecución del ensayo se produce algún tipo de incidencia que
     impida continuar con el normal desarrollo del ensayo. El jefe de la línea de tiro puede cancelar
     el ensayo, dando por finalizado el mismo. En casos excepcionales cabe la posibilidad de
@@ -829,6 +845,10 @@ Toda modificación deberá quedar registrada en la auditoría del sistema , incl
 - Fecha y hora de la modificación.
 - Campo afectado y valor anterior/posterior.
 
+
+```
+Página: 16 de 59 Edición: 0 X
+```
 ```
 Habitualmente, los cambios sobre la planificación requieren aceptación por parte del cliente. En ese
 caso, el Ingeniero de ensayos es el responsable de indicar qué cambios requieren aprobación. El
@@ -843,15 +863,10 @@ funcionamiento es el siguiente:
     Cliente apruebe dichos cambios.
 4. Los usuarios con perfil Cliente verán un aviso de cambios pendientes y podrán revisar el
     detalle (campo, valor anterior y valor nuevo) y aceptar cambios de planificación.
-
-
-```
-Página: 16 de 58 Edición: 0 X
-```
 5. Tras la aceptación del Cliente: La prueba queda desbloqueada para continuar. Se registra
     la aceptación con usuario Cliente, fecha/hora, lista de cambios aceptados.
 
-**4.4.3 Jefes de unidades técnicas**
+#### 4.4.3 Jefes de unidades técnicas
 
 Los jefes de las unidades de Balística, Topografía, Municiones y Armamento podrán validar los datos
 registrados durante la prueba mediante la acción **Validar** del botón de acciones. Una vez hayan sido
@@ -869,62 +884,63 @@ que cada acción esté disponible y el estado al que pasará la prueba una vez e
 ```
 Acción Estado actual Estado resultante
 Iniciar Planificada En curso
+```
+
+```
+Página: 17 de 59 Edición: 0 X
+```
+```
 Pausar En curso/Interrumpida Iniciada
 Cancelar En curso/Interrumpida/Iniciada Cancelada
 Interrumpir En curso Interrumpida
 Reanudar Interrumpida/Cancelada/Iniciada En curso
 Finalizar En curso/Interrumpida Ejecutada
 Validar Ejecutada Analizando*
+*La prueba solo cambiará a estado Analizando cuando los 4 responsables de unidad hayan validado sus
+datos.
 ```
-_*La prueba solo cambiará a estado Analizando cuando los 4 responsables de unidad hayan validado sus
-datos._
-
 ### 4.5 Instrucciones por radio del Jefe de Línea de Tiro (JLT)
 
-
-```
-Página: 17 de 58 Edición: 0 X
 ```
 El Jefe de Línea de Tiro dispondrá, en la pantalla de ejecución, de un botón que permitirá acceder a la
 orden de tiro correspondiente a la prueba. Esta orden se generará automáticamente a partir de los datos
 introducidos en la fase de planificación.
-
 En la pantalla de orden de tiro se mostrará una orden por cada fila. El usuario podrá reorganizar libremente
 el orden de las filas y contará además con un campo de texto para añadir instrucciones adicionales cuando
 sea necesario.
-
 A continuación, se muestra la plantilla que utilizará el sistema para generar la orden de tiro. Los campos
 resaltados en negrita vendrán de Planificación.
-
-**Orden de tiro 1**
-
-INICIAMOS LA PRUEBA [ **número de prueba** ] [ **descripción de la prueba** ]
-
+```
+```
+Orden de tiro 1
+INICIAMOS LA PRUEBA [ número de prueba ] [ descripción de la prueba ]
+```
 - Número de prueba, autogenerado por el sistema en la creación de la prueba.
 - Descripción de la prueba, campo de texto informado en la planificación general.
 
-Ejemplo: _Iniciamos la prueba 0043/26, prueba de pólvora M1 para cargas M4A_
-
-**Orden de tiro 2**
-
-COMENZAREMOS CON LA SERIE DE [ **nombre primera serie** ] [ **disparos de la serie** ] DE INTAQALAB
-
+```
+Ejemplo: Iniciamos la prueba 0043/26, prueba de pólvora M1 para cargas M4A
+```
+```
+Orden de tiro 2
+COMENZAREMOS CON LA SERIE DE [ nombre primera serie ] [ disparos de la serie ] DE INTAQALAB
+```
 - Nombre de la primera serie, registrado en Series y Disparos en Planificación.
 - Disparos de la serie, registrados en Series y Disparos en Planificación.
 
-Ejemplo (serie con 1 disparo): _Comenzaremos con la serie de Calentamiento, disparo 1 de INTAQALAB_
-
-Ejemplo 2 (serie con varios disparos _): Comenzaremos con la serie de Funcionamiento, disparos 2 al 6 de
-INTAQALAB_
-
-**Orden de tiro 3**
-
-CHARLIE ENVÍE EL DISPARO NÚMERO [ **número del primer disparo** ] DE INTA-QA-LAB PROYECTIL
-[ **denominación proyectil** ] ESPOLETA [ **denominación espoleta** ] EN MODO [ **modo de funcionamiento** ]
-GRADUACIÓN DE ESPOLETA [ **graduación de espoleta** ] CARGA **[denominación de carga de
-proyección]** ZONA **[zona]** PESO PÓLVORA **[peso de pólvora]** TEMPERATURA DE **[componente]
-[temperatura de acondicionamiento]**
-
+```
+Ejemplo (serie con 1 disparo): Comenzaremos con la serie de Calentamiento, disparo 1 de INTAQALAB
+Ejemplo 2 (serie con varios disparos ): Comenzaremos con la serie de Funcionamiento, disparos 2 al 6 de
+INTAQALAB
+```
+```
+Orden de tiro 3
+CHARLIE ENVÍE EL DISPARO NÚMERO [ número del primer disparo ] DE INTA-QA-LAB PROYECTIL
+[ denominación proyectil ] ESPOLETA [ denominación espoleta ] EN MODO [ modo de funcionamiento ]
+GRADUACIÓN DE ESPOLETA [ graduación de espoleta ] CARGA [denominación de carga de
+proyección] ZONA [zona] PESO PÓLVORA [peso de pólvora] TEMPERATURA DE [componente]
+[temperatura de acondicionamiento]
+```
 - Número del primer disparo, correspondiente al primer disparo de la primera serie en este caso.
 - Denominación proyectil, introducida por la unidad de municiones en la pestaña Identificación del
     widget de introducción de datos de municiones (componente: proyectil). Puede venir informado
@@ -932,6 +948,11 @@ proyección]** ZONA **[zona]** PESO PÓLVORA **[peso de pólvora]** TEMPERATURA 
 - Denominación espoleta, introducida por la unidad de municiones en la pestaña Identificación del
     widget de introducción de datos de municiones (componente espoleta). Puede venir informado
     de planificación.
+
+
+```
+Página: 18 de 59 Edición: 0 X
+```
 - Modo de funcionamiento, introducido por la unidad de municiones en la pestaña Identificación
     del widget de introducción de datos de municiones (componente espoleta). Puede venir
     informado de planificación.
@@ -941,11 +962,6 @@ proyección]** ZONA **[zona]** PESO PÓLVORA **[peso de pólvora]** TEMPERATURA 
 - Denominación carga de proyección, introducida por la unidad de municiones en la pestaña
     Identificación del widget de introducción de datos de municiones (componente carga de
     proyección). Puede venir informado de planificación.
-
-
-```
-Página: 18 de 58 Edición: 0 X
-```
 - Zona, introducida por la unidad de municiones en la pestaña Identificación del widget de
     introducción de datos de municiones (componente carga de proyección). Puede venir informado
     de planificación.
@@ -992,6 +1008,10 @@ Este patrón se repetirá sucesivamente hasta completar todas las series y dispa
 Mediante el botón “Widgets” el usuario accederá a la biblioteca de widgets disponibles. Los widgets se
 clasificarán en las siguientes secciones:
 ```
+
+```
+Página: 19 de 59 Edición: 0 X
+```
 - Seguimiento
 - Ensayos de Fuego
 - Armamento
@@ -1001,21 +1021,18 @@ clasificarán en las siguientes secciones:
 
 ### 5.1 Introducción de datos – Información general
 
-
-```
-Página: 19 de 58 Edición: 0 X
 ```
 Los widgets de Introducción de datos permiten al usuario registrar, consultar y gestionar los valores
 asociados a un disparo concreto dentro de una serie.
-
+```
 #### 5.1.1 Tabs de magnitudes/registros disponibles
 
+```
 En los widgets de introducción de datos se muestran todas las magnitudes o registros que el usuario está
 autorizado a medir y que se hayan definido previamente en la fase de planificación de la prueba. Estas
-
-magnitudes y registros están definidas en el módulo de **Gestión del Catálogo de Servicios** , donde se
+magnitudes y registros están definidas en el módulo de Gestión del Catálogo de Servicios , donde se
 configura:
-
+```
 - El nombre de la magnitud o registro (ej. velocidad, presión, temperatura).
 - La **familia funcional** a la que pertenece cada medida o registro. Las familias funcionales serán:
     o **Topografía**
@@ -1023,35 +1040,40 @@ configura:
     o **Municiones**
     o **Armamento**
 
+```
 Al seleccionar una magnitud, el contenido del widget se actualiza para mostrar los campos de entrada o
 lectura correspondientes.
-
 Cada usuario podrá visualizar las magnitudes de la familia funcional a la que pertenece según el rol
 asignado a su perfil.
-
+```
 #### 5.1.2 Estado del disparo
 
+```
 En el extremo derecho aparece un indicador de estado que muestra la situación del disparo actualmente
 visualizado. Los estados posibles son:
-
+```
 - Ejecutado
 - En curso
 - Pendiente
 
+```
 Este estado se actualiza automáticamente conforme avanza la ejecución de la prueba y siempre refleja el
 estado real del disparo seleccionado.
-
+```
 #### 5.1.3 Selector de serie y disparo
 
+```
 Se habilitarán selectores para series y disparos. Estos desplegables permiten al usuario navegar entre las
 distintas series y los disparos que las componen, facilitando la introducción de datos en el disparo deseado.
-
 Se podrá seleccionar una única serie y disparo, excepto en el caso del acondicionamiento de munición y
 datos de armamento, que se podrán seleccionar varias series o disparos.
-
-_Además, el botón “Disparo actual” permite que el sistema lleve al usuario directamente al disparo que está_
+Además, el botón “Disparo actual” permite que el sistema lleve al usuario directamente al disparo que está
 en curso, evitando búsquedas manuales.
+```
 
+```
+Página: 20 de 59 Edición: 0 X
+```
 #### 5.1.4 Volcado automático de datos
 
 Algunos equipos de medida podrán realizar **volcado automático de datos** al sistema:
@@ -1063,59 +1085,317 @@ Algunos equipos de medida podrán realizar **volcado automático de datos** al s
     por parte de perfiles autorizados (técnicos y jefes de la unidad encargada de registrar dicha medida),
     registrando dicha modificación en la auditoría.
 
-
-```
-Página: 20 de 58 Edición: 0 X
-```
 #### 5.1.5 Campos de entrada
 
-```
 Se definirán los campos de entrada asociados a cada magnitud de acuerdo con lo establecido en el
 Catálogo de Servicios, el cual se gestiona desde el módulo de Administración del sistema.
+
 Dicho catálogo actúa como fuente de configuración, determinando qué información debe registrarse para
 cada magnitud y qué unidades organizativas son responsables de su registro.
-```
-```
-Reglas de Validación
+
+**Reglas de Validación**
+
 Todos los valores introducidos en los campos deberán cumplir las siguientes reglas de validación numérica
 decimal:
-```
+
 - Solo se permiten valores numéricos.
 - Se admiten números decimales.
 - Cualquier carácter no numérico, excepto el separador decimal, invalidará la entrada.
 
-```
 El widget mostrará indicadores visuales que permitirán al técnico identificar de forma inmediata si los datos
 introducidos son válidos o no, conforme a las reglas anteriores.
+
 A continuación, se detallan los campos de entrada correspondientes a cada unidad organizativa, en función
 de las magnitudes y servicios que tengan asignados dentro del ensayo.
-```
-### 5.2 Seguimiento........................................................................................................................................................
+
+### 5.3 Ensayos de Fuego
+
+#### 5.3.1 Preparación ejecución – JLT
+
+**Roles**
+
+- JLT
+- Jefe Unidad de Ensayos de Fuego
+
+Previo al inicio de la ejecución del ensayo y para facilitar el comienzo de este, el JLT tendrá disponible un
+widget con la información del estado de cada uno de los perfiles variables que participan en el ensayo, en
+función de las magnitudes y registros que el ensayo requiera, como son:
+
+- **Conformidad de balística** , indicará si la unidad está lista y preparada para dar comienzo a las
+    series y disparos que componen el ensayo, de forma única o bien diferenciando por las
+    magnitudes que pueden intervenir en el ensayo (velocidades, presiones, video y trayectografía).
+
 
 ```
-Todos los perfiles tienen acceso a la visualización de los widgets disponibles en esta sección.
-A continuación, se detallan los widgets que forman parte de la sección de Seguimiento :
+Página: 21 de 59 Edición: 0 X
 ```
+- **Conformidad de armamento** , indicará si la unidad está lista y preparada para dar comienzo a
+    las series y disparos que componen el ensayo.
+- **Conformidad de municiones** , indicará si la unidad está lista y preparada para dar comienzo a
+    las series y disparos que componen el ensayo.
+
+Adicionalmente, el JLT deberá registrar la confirmada de los perfiles fijos que participan en el ensayo de
+fuego, como son:
+
+- **Seguridad** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
+- **Servicios sanitarios** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
+- **Embarcación** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
+
+Dado que la información de conformidad depende de la serie, el widget incorporará un selector de serie
+que permitirá visualizar o registrar los datos correspondientes a la serie seleccionada.
+
+Una vez que todos los perfiles intervinientes hayan confirmado su disponibilidad para la serie elegida, el
+JLT podrá seleccionar la serie y el disparo a ejecutar. Solo podrán seleccionarse disparos que no hayan
+sido ejecutados previamente.
+
+El widget dispondrá de:
+
+- **Botón “Seleccionar disparo”:** marca el disparo elegido como disparo actual.
+- **Botón “Disparar”:** habilitado únicamente cuando exista un disparo actual seleccionado.
+
+Al pulsarlo, el sistema registrará fecha y hora exacta de la acción y el usuario que la ha realizado,
+garantizando la trazabilidad.
+
+#### 5.3.2 Introducción de datos JLT – MAO
+
+**Roles**
+
+- JLT
+- Jefe Unidad de Ensayos de Fuego
+
+**Filtros**
+
+- Selector de serie
+- Selector de disparo
+- Botón disparo actual
+
+**Botón Aplicar configuración masiva**. Modal con selectores múltiples de serie y disparo y todos los
+campos de entrada.
+
+**Campos de entrada**
+
+- Tabla de tiro numérica ( **TTN** ), campo de texto.
+- **OLT,** campo numérico en milésimas (ºº) con 3 decimales. Puede venir informado de planificación
+    en condiciones del disparo, campo OLT (en ese caso sería lectura).
+- **Unidad OLT** , por defecto milésimas (ºº).
+- **Piqueta** , selector. El usuario seleccionará la piqueta de las disponibles en Calibry.
+- **Ángulo de tiro** , campo numérico con decimales. Puede venir informado de planificación
+    (Condiciones del disparo).
+- **Unidad ángulo de tiro** , por defecto milésimas (ºº).
+
+
+```
+Página: 22 de 59 Edición: 0 X
+```
+- **Distancia prevista pique,** campo numérico con decimales.
+- **Unidad distancia prevista pique** , por defecto metros (m).
+- **Deriva tabular,** campo numérico con decimales.
+- **Unidad deriva tabular,** por defecto en milésimas (ºº).
+- **Velocidad inicial teórica,** campo numérico con decimales.
+- **Unidad velocidad inicial teórica,** por defecto en m/s.
+- **Tiempo de vuelo teórico,** campo numérico con decimales.
+- **Unidad tiempo de vuelo,** por defecto segundos (s).
+- **Graduación de espoleta,** campo numérico con decimales. Puede venir informada desde
+    planificación, en la sección de Municiones.
+- **Unidad graduación espoleta,** por defecto segundos (s).
+- **Altura de funcionamiento,** campo numérico con decimales.
+- **Unidad altura de funcionamiento,** por defecto en metros.
+- **Distancia de funcionamiento,** campo numérico con decimales.
+- **Unidad distancia de funcionamiento** , por defecto en metros (m).
+- **Diferencia angular,** campo numérico con decimales.
+- **Unidad diferencia angular** , por defecto en milésimas (ºº).
+
+**Campos de salida**
+
+- **OLT,** campo numérico con decimales. Puede venir de Condiciones del disparo en planificación o
+    ser calculado en función de las coordenadas de la pieza, las coordenadas de la piqueta
+    seleccionada y la diferencia angular de este widget.
+- **Diferencia angular,** campo numérico con decimales.
+- **Unidad diferencia angular** , por defecto en milésimas (ºº).
+- Estado del disparo seleccionado
+
+**Lógica de funcionamiento**
+
+- Los campos OLT y Piqueta son mutuamente excluyentes. Por tanto, cuando se informe una OLT
+    como referencia de orientación, no podrá seleccionarse una piqueta, y viceversa.
+- Si en la planificación existe una OLT definida, el campo OLT se mostrará como un campo
+    informativo (solo lectura) con el valor planificado. En este caso, el campo Piqueta permanecerá
+    deshabilitado y el campo Diferencia angular será de solo lectura, calculado automáticamente por
+    el sistema.
+- Si no existe una OLT definida en planificación, los campos OLT y Piqueta estarán habilitados
+    inicialmente. En este escenario:
+       o Si el usuario selecciona una Piqueta, el campo OLT pasará a ser un campo calculado
+          de solo lectura y el campo Diferencia angular permanecerá editable.
+       o Si el usuario informa una OLT, el campo Piqueta se deshabilitará y el campo Diferencia
+          angular pasará a ser un campo calculado de solo lectura.
+
+#### 5.3.3 Introducción de datos Topografía – MAO
+
+
+```
+Página: 23 de 59 Edición: 0 X
+```
+```
+Roles
+```
+- Técnico Topografía
+- Jefe Unidad de Ensayos de Fuego
+
+```
+Filtros
+```
+- Selector de serie
+- Selector de disparo
+- Botón disparo actual
+
+```
+Botón Aplicar configuración masiva. Modal con selectores múltiples de serie y disparo y todos los
+campos de entrada.
+Campos de entrada
+```
+- **Coordenadas de la pieza** (x,y,z del arma), serán 3 campos numéricos, por defecto en metros
+    con 1 decimal. El sistema deberá recuperar de Calibry esta información, basándose en el arma
+    seleccionada en el widget de introducción de datos de armamento. Si el arma no fuera fija (o no
+    tuviera coordenadas informadas en Calibry) y esta información no se pudiese recuperar de forma
+    automática, se introducirán los valores manualmente.
+- **Observador** , desplegable con los posibles observadores dados de alta en Calibry.
+- **Coordenadas del blanco** (x,y,z del blanco), serán 3 campos numéricos, por defecto en metros
+    (m) con 1 decimal. Solo estará disponible si el campo Blanco, dentro de Condiciones del disparo
+    en Planificación, se encuentra habilitado.
+
+```
+Campos de salida de topografía
+```
+- Estado del disparo seleccionado (etiqueta)
+- **Diferencia angular teórica.** En milésimas. Campo calculado.
+Estos campos no se mostrarán en pantalla, pero deben almacenarse en la base de datos para mostrarlos
+posteriormente en el informe de resultados:
+- **Distancia boca-blanco** , campo calculado por defecto en metros. Se calculará como la diferencia
+entre las coordenadas del blanco y de la pieza.
+- **Unidad distancia boca-blanco,** metros.
+
+#### 5.3.4 Introducción de datos JLT
+
+```
+Roles
+```
+- JLT
+- Jefe Unidad de Ensayos de Fuego
+
+```
+Filtros
+```
+- Selector de serie
+- Selector de disparo
+- Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT
+    en el widget anterior.
+
+```
+Campos de entrada
+```
+
+```
+Página: 24 de 59 Edición: 0 X
+```
+- **JET** , texto libre.
+- **Operador de la pieza** , texto libre
+- **Atacado** , numérico con decimales.
+- **Unidad de atacado** , por defecto milímetros (mm).
+- **Retroceso** , numérico con decimales.
+- **Unidad de retroceso** , por defecto mm.
+- **Observaciones** , texto libre.
+
+**Datos de salida**
+
+- Estado del disparo seleccionado (etiqueta)
+
+#### 5.3.5 Introducción de datos – Topografía
+
+**Roles**
+
+- Técnico Topografía
+- Jefe Unidad de Ensayos de Fuego
+
+**Filtros**
+
+- Selector de serie
+- Selector de disparo
+- Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT.
+
+**Datos de entrada**
+
+- **Equipo** , familia: Tiempo y Frecuencia/Cronómetros y Temporizadores
+- **Tiempo de vuelo.** Number.
+- **Unidad tiempo de vuelo.** Por defecto segundos.
+- **Tiempo de iluminación**. Number.
+- **Unidad Tiempo de iluminación.** Por defecto segundos.
+- **Nº estelas de humo.** Integer.
+- **Observaciones** , texto libre.
+
+**Datos de salida**
+
+- Estado del disparo seleccionado (etiqueta)
+
+#### 5.3.6 Cálculo de datos a la bola
+
+**Roles**
+
+
+```
+Página: 25 de 59 Edición: 0 X
+```
+- Técnico Topografía
+- Jefe Unidad de Ensayos de Fuego
+
+**Filtros**
+
+- Selector de serie
+- Selector de disparo
+- Botón disparo actual
+
+**Botón Aplicar configuración masiva**. Modal con selectores múltiples de serie y disparo y todos los
+campos de entrada.
+
+**Campos de entrada**
+
+- **Coordenadas blanco bola** (x, y, z de la bola), serán 3 campos distintos. Number con 1 decimal.
+    Por defecto en metros (m).
+- **Coordenadas boca de pieza,** (x, y, z de la boca de pieza), serán 3 campos distintos. Number
+    con 1 decimal.
+- **Diámetro bola** , number. Por defecto en metros (m). Puede venir informado desde la
+    planificación, en el campo Dimensiones, de la pestaña Condiciones del disparo.
+- **Altura bola** (estación total), number. Por defecto en metros (m).
+- **Coordenadas cámara frontal** (x, y, z de la cámara frontal), serán 3 campos distintos. Number
+    con 1 decimal.
+- **Altura trípode cámara frontal,** number. Por defecto en metros (m).
+- **Coordenadas cámara transversal** (x, y, z de la cámara frontal), serán 3 campos distintos.
+    Number con 1 decimal. Por defecto en metros (m).
+- **Altura trípode cámara transversal,** number. Por defecto en metros (m).
+
 #### 5.2.1 Seguimiento
 
-```
+Todos los perfiles tienen acceso a la visualización de los widgets disponibles en esta sección.
+
+A continuación, se detallan los widgets que forman parte de la sección de **Seguimiento** :
+
+**5.3.1 Seguimiento**
+
 El widget de Seguimiento proporciona una vista de los datos introducidos para cada disparo dentro de una
 serie, permitiendo al usuario revisar rápidamente la información aportada por todas las unidades en los
 widgets de Introducción de datos, así como campos calculados a partir de estos valores.
-Roles
+
+**Roles**
+
+
+```
+Página: 26 de 59 Edición: 0 X
 ```
 - Todos
 
-```
-Filtros disponibles
-```
+**Filtros disponibles**
+
 - Selector de serie
 - Selector de disparos
-
-
-```
-Página: 21 de 58 Edición: 0 X
-```
 - Etiquetas de magnitudes: **Velocidades/ P Manom/ P PZ Cie/P PZ Int/P PZ Cul/P IPG**. El
     contenido mostrado se adapta dinámicamente a la etiqueta seleccionada. Solo se mostrarán las
     pestañas correspondientes a las magnitudes seleccionadas en Planificación.
@@ -1169,6 +1449,11 @@ Aplica la misma condición en cuanto al número de columnas que en la pestaña a
     Introducción de datos de municiones, en la pestaña Pesos. Numérico con decimales.
 - **Wp/g,** peso de proyectil, es un dato que introduce la unidad de municiones en el widget de
     Introducción de datos de municiones, en la pestaña Pesos. Numérico con decimales.
+
+
+```
+Página: 27 de 59 Edición: 0 X
+```
 - **Pmáx,** dato que se introduce en el widget de Introducción de datos _–_ Presión con sensores
     piezoeléctricos (en la pestaña correspondiente: cierre, intermedio o culote). Numérico con
     decimales.
@@ -1177,10 +1462,6 @@ Aplica la misma condición en cuanto al número de columnas que en la pestaña a
 
 **Campos de salida (P IPG)**
 
-
-```
-Página: 22 de 58 Edición: 0 X
-```
 - **Wc/g,** peso de pólvora, es un dato que introduce la unidad de municiones en el widget de
     Introducción de datos de municiones, en la pestaña Pesos. Numérico con decimales.
 - **Wp/g,** peso de proyectil, es un dato que introduce la unidad de municiones en el widget de
@@ -1214,7 +1495,7 @@ widget.
 
 
 ```
-Página: 23 de 58 Edición: 0 X
+Página: 28 de 59 Edición: 0 X
 ```
 #### 5.2.3 Gráfica Tarado – Velocidad
 
@@ -1247,9 +1528,9 @@ Página: 23 de 58 Edición: 0 X
 
 
 ```
-Página: 24 de 58 Edición: 0 X
+Página: 29 de 59 Edición: 0 X
 ```
-#### 5.2.4 Gráfica Uniformidad............................................................................................................................
+**5.3.4 Gráfica Uniformidad**
 
 **Roles**
 
@@ -1279,7 +1560,7 @@ Página: 24 de 58 Edición: 0 X
 
 
 ```
-Página: 25 de 58 Edición: 0 X
+Página: 30 de 59 Edición: 0 X
 ```
 #### 5.2.5 Gráfica Tarado – Presiones
 
@@ -1317,7 +1598,7 @@ Solo introduce datos el Ingeniero de ensayos. Para los demás serán campos de s
 
 
 ```
-Página: 26 de 58 Edición: 0 X
+Página: 31 de 59 Edición: 0 X
 ```
 ```
 Campos de entrada
@@ -1364,278 +1645,33 @@ Campos de salida
 - **Desviación máxima,** calculado, recta de presión + 3 desviaciones típicas
 - **Desviación mínima,** calculado, recta de presión + 2 desviaciones típicas
 
-### 5.3 Ensayos de Fuego
-
-
-```
-Página: 27 de 58 Edición: 0 X
-```
-#### 5.3.1 Preparación ejecución – JLT
-
-**Roles**
-
-- JLT
-- Jefe Unidad de Ensayos de Fuego
-
-Previo al inicio de la ejecución del ensayo y para facilitar el comienzo de este, el JLT tendrá disponible un
-widget con la información del estado de cada uno de los perfiles variables que participan en el ensayo, en
-función de las magnitudes y registros que el ensayo requiera, como son:
-
-- **Conformidad de balística** , indicará si la unidad está lista y preparada para dar comienzo a las
-    series y disparos que componen el ensayo, de forma única o bien diferenciando por las
-    magnitudes que pueden intervenir en el ensayo (velocidades, presiones, video y trayectografía).
-- **Conformidad de armamento** , indicará si la unidad está lista y preparada para dar comienzo a
-    las series y disparos que componen el ensayo.
-- **Conformidad de municiones** , indicará si la unidad está lista y preparada para dar comienzo a
-    las series y disparos que componen el ensayo.
-
-Adicionalmente, el JLT deberá registrar la confirmada de los perfiles fijos que participan en el ensayo de
-fuego, como son:
-
-- **Seguridad** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
-- **Servicios sanitarios** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
-- **Embarcación** , comunicará al JLT su disponibilidad para dar comienzo al ensayo.
-
-Dado que la información de conformidad depende de la serie, el widget incorporará un selector de serie
-que permitirá visualizar o registrar los datos correspondientes a la serie seleccionada.
-
-Una vez que todos los perfiles intervinientes hayan confirmado su disponibilidad para la serie elegida, el
-JLT podrá seleccionar la serie y el disparo a ejecutar. Solo podrán seleccionarse disparos que no hayan
-sido ejecutados previamente.
-
-El widget dispondrá de:
-
-- **Botón “Seleccionar disparo”:** marca el disparo elegido como disparo actual.
-- **Botón “Disparar”:** habilitado únicamente cuando exista un disparo actual seleccionado.
-
-Al pulsarlo, el sistema registrará fecha y hora exacta de la acción y el usuario que la ha realizado,
-garantizando la trazabilidad.
-
-#### 5.3.2 Introducción de datos JLT – MAO
-
-**Roles**
-
-- JLT
-- Jefe Unidad de Ensayos de Fuego
-
-
-```
-Página: 28 de 58 Edición: 0 X
-```
-**Filtros**
-
-- Selector de serie
-- Selector de disparo
-- Botón disparo actual
-
-**Botón Aplicar configuración masiva**. Modal con selectores múltiples de serie y disparo y todos los
-campos de entrada.
-
-**Campos de entrada**
-
-- Tabla de tiro numérica ( **TTN** ), campo de texto.
-- **Unidad OLT** , por defecto milésimas (ºº).
-- **Piqueta** , selector. El usuario seleccionará la piqueta de las disponibles en Calibry.
-- **Ángulo de tiro** , campo numérico con decimales. Puede venir informado de planificación
-    (Condiciones del disparo).
-- **Unidad ángulo de tiro** , por defecto milésimas (ºº).
-- **Distancia prevista pique,** campo numérico con decimales.
-- **Unidad distancia prevista pique** , por defecto metros (m).
-- **Deriva tabular,** campo numérico con decimales.
-- **Unidad deriva tabular,** por defecto en milésimas (ºº).
-- **Velocidad inicial teórica,** campo numérico con decimales.
-- **Unidad velocidad inicial teórica,** por defecto en m/s.
-- **Tiempo de vuelo teórico,** campo numérico con decimales.
-- **Unidad tiempo de vuelo,** por defecto segundos (s).
-- **Graduación de espoleta,** campo numérico con decimales. Puede venir informada desde
-    planificación, en la sección de Municiones.
-- **Unidad graduación espoleta,** por defecto segundos (s).
-- **Altura de funcionamiento,** campo numérico con decimales.
-- **Unidad altura de funcionamiento,** por defecto en metros.
-- **Distancia de funcionamiento,** campo numérico con decimales.
-- **Unidad distancia de funcionamiento** , por defecto en metros (m).
-- **Diferencia angular,** campo numérico con decimales.
-- **Unidad diferencia angular** , por defecto en milésimas (ºº).
-
-**Campos de salida**
-
-- **OLT,** campo numérico con decimales. Puede venir de Condiciones del disparo en planificación o
-    ser calculado en función de las coordenadas de la pieza, las coordenadas de la piqueta
-    seleccionada y la diferencia angular de este widget.
-- Estado del disparo seleccionado
-
-#### 5.3.3 Introducción de datos Topografía – MAO
-
-**Roles**
-
-- Técnico Topografía
-- Jefe Unidad de Ensayos de Fuego
-
-
-```
-Página: 29 de 58 Edición: 0 X
-```
-```
-Filtros
-```
-- Selector de serie
-- Selector de disparo
-- Botón disparo actual
-
-```
-Botón Aplicar configuración masiva. Modal con selectores múltiples de serie y disparo y todos los
-campos de entrada.
-Campos de entrada
-```
-- **OLT para diferencia angular,** campo numérico en milésimas (ºº) con 3 decimales. Puede venir
-    informado de planificación en condiciones del disparo, campo OLT.
-- **Coordenadas de la pieza** (x,y,z del arma), serán 3 campos numéricos, por defecto en metros
-    con 1 decimal. El sistema deberá recuperar de Calibry esta información, basándose en el arma
-    seleccionada en el widget de introducción de datos de armamento. Si el arma no fuera fija y esta
-    información no se pudiese recuperar de forma automática, se introducirán los valores
-    manualmente.
-- **Observador** , desplegable con los posibles observadores dados de alta en Calibry.
-- **Coordenadas del blanco** (x,y,z del blanco), serán 3 campos numéricos, por defecto en metros
-    (m) con 1 decimal. Solo estará disponible si el campo Blanco, dentro de Condiciones del disparo
-    en Planificación, se encuentra habilitado.
-
-```
-Campos de salida de topografía
-Estos campos no se mostrarán en pantalla, pero deben almacenarse en la base de datos para mostrarlos
-posteriormente en el informe de resultados:
-```
-- **Distancia boca-blanco** , campo calculado por defecto en metros. Se calculará como la diferencia
-    entre las coordenadas del blanco y de la pieza.
-- **Unidad distancia boca-blanco,** metros.
-- Estado del disparo seleccionado (etiqueta)
-
-#### 5.3.4 Introducción de datos JLT
-
-```
-Roles
-```
-- JLT
-- Jefe Unidad de Ensayos de Fuego
-
-```
-Filtros
-```
-- Selector de serie
-- Selector de disparo
-- Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT
-    en el widget anterior.
-
-```
-Campos de entrada
-```
-- **JET** , texto libre.
-- **Operador de la pieza** , texto libre
-- **Atacado** , numérico con decimales.
-
-
-```
-Página: 30 de 58 Edición: 0 X
-```
-- **Unidad de atacado** , por defecto milímetros (mm).
-- **Retroceso** , numérico con decimales.
-- **Unidad de retroceso** , por defecto mm.
-- **Observaciones** , texto libre.
-
-**Datos de salida**
-
-- Estado del disparo seleccionado (etiqueta)
-
-#### 5.3.5 Introducción de datos – Topografía
-
-**Roles**
-
-- Técnico Topografía
-- Jefe Unidad de Ensayos de Fuego
-
-**Filtros**
-
-- Selector de serie
-- Selector de disparo
-- Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT.
-
-**Datos de entrada**
-
-- **Equipo** , familia: Tiempo y Frecuencia/Cronómetros y Temporizadores
-- **Tiempo de vuelo.** Number.
-- **Unidad tiempo de vuelo.** Por defecto segundos.
-- **Tiempo de iluminación**. Number.
-- **Unidad Tiempo de iluminación.** Por defecto segundos.
-- **Nº estelas de humo.** Integer.
-- **Observaciones** , texto libre.
-
-**Datos de salida**
-
-- Estado del disparo seleccionado (etiqueta)
-
-#### 5.3.6 Cálculo de datos a la bola
-
-**Roles**
-
-- Técnico Topografía
-- Jefe Unidad de Ensayos de Fuego
-
-**Filtros**
-
-
-```
-Página: 31 de 58 Edición: 0 X
-```
-- Selector de serie
-- Selector de disparo
-- Botón disparo actual
-
-```
-Botón Aplicar configuración masiva. Modal con selectores múltiples de serie y disparo y todos los
-campos de entrada.
-Campos de entrada
-```
-- **Coordenadas blanco bola** (x, y, z de la bola), serán 3 campos distintos. Number con 1 decimal.
-    Por defecto en metros (m).
-- **Coordenadas boca de pieza,** (x, y, z de la boca de pieza), serán 3 campos distintos. Number
-    con 1 decimal.
-- **Diámetro bola** , number. Por defecto en metros (m). Puede venir informado desde la
-    planificación, en el campo Dimensiones, de la pestaña Condiciones del disparo.
-- **Altura bola** (estación total), number. Por defecto en metros (m).
-- **Coordenadas cámara frontal** (x, y, z de la cámara frontal), serán 3 campos distintos. Number
-    con 1 decimal.
-- **Altura trípode cámara frontal,** number. Por defecto en metros (m).
-- **Coordenadas cámara transversal** (x, y, z de la cámara frontal), serán 3 campos distintos.
-    Number con 1 decimal. Por defecto en metros (m).
-- **Altura trípode cámara transversal,** number. Por defecto en metros (m).
-
 ### 5.4 Armamento
 
-#### 5.4.1 Preparación ejecución – Armamento
 
 ```
-Roles
+Página: 32 de 59 Edición: 0 X
 ```
+#### 5.4.1 Preparación ejecución – Armamento
+
+**Roles**
+
 - Técnico Unidad de Armamento
 - Jefe Unidad de Armamento
 
-```
 La finalidad de este widget es indicar que el técnico se encuentra preparado para el inicio de una o varias
 series de la prueba.
-Campos de entrada
-```
+
+**Campos de entrada**
+
 - Check box por serie
 - Observaciones, texto libre.
 
-```
-Esta información será de salida en el widget Preparación ejecución – JLT.
-Datos de salida
-```
+Esta información será de salida en el widget _Preparación ejecución – JLT._
+
+**Datos de salida**
+
 - Estado del disparo seleccionado (etiqueta)
 
-
-```
-Página: 32 de 58 Edición: 0 X
-```
 #### 5.4.2 Introducción de datos – Armamento
 
 **Roles**
@@ -1654,37 +1690,42 @@ campos de entrada.
 
 **Datos de entrada**
 
-- **Arma.** Texto. Selector de las armas de Calibry.
+- **Arma.** Texto. Informado en planificación.
 - **Nº serie del arma.** Texto. Selector de Calibry filtrado por el arma seleccionada anteriormente.
-- **Tubo**. Texto. Selector de los tubos de Calibry.
+- **Tubo**. Texto. Selector de los tubos de Calibry. Puede venir informado de planificación.
+
+
+```
+Página: 33 de 59 Edición: 0 X
+```
 - **Nº serie del tubo.** Texto. Selector de Calibry filtrado por el tubo seleccionado anteriormente.
+- **Instrumentado.** Informado de planificación.
+- **% vida útil.** Informado de planificación.
 - **Observaciones** , texto libre.
 
 #### 5.4.3 Datos del blanco
 
-**Roles**
-
+```
+Roles
+```
 - Técnico Unidad de Armamento
 - Jefe Unidad de Armamento
 
-**Filtros**
-
+```
+Filtros
+```
 - Selector de serie
 - Selector de disparo
 
-**Campos de salida (vendrán informados de planificación, pestaña Condiciones del disparo)**
-
+```
+Campos de salida (vendrán informados de planificación, pestaña Condiciones del disparo)
+```
 - Blanco, texto.
 - Material, texto.
 - Dimensiones, texto.
 - Espesor, number.
 - Unidad de Espesor, por defecto mm.
 - Distancia, number.
-
-
-```
-Página: 33 de 58 Edición: 0 X
-```
 - Unidad de distancia, por defecto m.
 - Inclinación, number.
 - Unidad de Inclinación, por defecto º.
@@ -1697,32 +1738,31 @@ selectores de disparo y/o serie.
 
 #### 5.5.1 Preparación ejecución – Municiones
 
+
 ```
-Roles
+Página: 34 de 59 Edición: 0 X
 ```
+**Roles**
+
 - Técnico Unidad de Municiones
 - Jefe Unidad de Municiones
 
-```
 La finalidad de este widget es indicar que el técnico se encuentra preparado para el inicio de una o varias
 series de la prueba.
-Campos de entrada
-```
+
+**Campos de entrada**
+
 - Check box por serie
 - Observaciones, texto libre.
 
-```
-Esta información será de salida en el widget Preparación ejecución – JLT.
-Datos de salida
-```
+Esta información será de salida en el widget _Preparación ejecución – JLT._
+
+**Datos de salida**
+
 - Estado del disparo seleccionado (etiqueta)
 
 #### 5.5.2 Introducción de datos – Municiones
 
-
-```
-Página: 34 de 58 Edición: 0 X
-```
 **Roles**
 
 - Técnico Unidad de Municiones
@@ -1741,8 +1781,15 @@ Página: 34 de 58 Edición: 0 X
     hayan planificado para la configuración de munición del disparo seleccionado. Se mostrarán
     _tanto los componentes de munición seleccionados (estopín, proyectil, espoleta...) como la_
     munición (disparo organizado o granada) solo si se ha informado denominación. Los campos
-    que vienen a continuación se tienen que completar para todos los componentes de este
-    desplegable.
+
+
+```
+Página: 35 de 59 Edición: 0 X
+```
+```
+que vienen a continuación se tienen que completar para todos los componentes de este
+desplegable.
+```
 - **Denominación.** Texto. Desplegable filtrado por el componente seleccionado. En él se mostrarán
     todas las denominaciones de munición (del componente, granada o disparo seleccionado en el
     paso anterior) que estén en stock en el almacén y cuya prueba prevista coincida con la prueba
@@ -1758,18 +1805,15 @@ Página: 34 de 58 Edición: 0 X
 - **Modo funcionamiento espoleta.** Solo cuando el componente sea espoleta. Desplegable con
     _los valores del maestro “Modos de funcionamiento espoleta”, puede venir informado de_
     planificación.
-- **Graduación espoleta.** Solo cuando el componente sea espoleta. Number por defecto en
-    segundos, puede venir informado de planificación.
 - **Zona/Módulos.** Solo si el componente es carga de proyección.
 - **Observaciones** , texto libre.
 
 **Datos de salida Tag Identificación**
 
-
-```
-Página: 35 de 58 Edición: 0 X
-```
 - Estado del disparo seleccionado (etiqueta)
+- **Graduación espoleta.** Solo cuando el componente sea espoleta. Number por defecto en
+    segundos, puede venir informado de planificación o del widget de Introducción de datos JLT _–_
+    MAO.
 
 **Datos de entrada Tag Pesos**
 
@@ -1798,6 +1842,10 @@ Página: 35 de 58 Edición: 0 X
 - **Fecha y hora de salida.** Botón que captura la fecha y hora del momento.
 - **Observaciones** , texto libre.
 
+
+```
+Página: 36 de 59 Edición: 0 X
+```
 **Datos de salida Tag Acondicionamiento**
 
 - **Temperatura.** Number. Informado en planificación.
@@ -1818,13 +1866,10 @@ Página: 35 de 58 Edición: 0 X
 
 - Selector de serie
 - Selector de disparo
-
-
-```
-Página: 36 de 58 Edición: 0 X
-```
 - Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT.
+
 **Datos de entrada**
+
 - **Manómetro.** Desplegable con los equipos configurados anteriormente.
 - **Crusher.** Desplegable con los equipos configurados anteriormente.
 - **Micrómetro palpador.** Desplegable con los equipos configurados anteriormente.
@@ -1840,11 +1885,45 @@ Página: 36 de 58 Edición: 0 X
 - **Unidad H5** , por defecto micras.
 - **Observaciones** , texto libre.
 
+**Datos de salida**
+
+- **Altura media,** number. Calculado como la media de H1, H2, H3, H4 y H5.
+- **Presión,** number. Calculado en función de la altura media y unas tablas que estarán en Calibry.
+
+
+```
+Página: 37 de 59 Edición: 0 X
+```
+```
+5.5.4 Introducción de datos – Presión IPG
+```
+```
+Roles
+```
+- Técnico Unidad de Municiones
+- Jefe Unidad de Municiones
+
+```
+Filtros
+```
+- Selector de serie
+- Selector de disparo
+- Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT.
+
+```
+Datos de entrada
+```
+- **Sensor IPG.** Desplegable con los equipos configurados previamente en el módulo de Asignación
+    de Equipos para la familia Presión IPG.
+- **Micromódulo.** Desplegable con los equipos configurados previamente en el módulo de
+    Asignación de Equipos para la familia Presión IPG.
+- **Presión máxima (Pmax),** number medida en bares (bar).
+- **Observaciones** , texto libre.
+
 ```
 Datos de salida
 ```
-- **Altura media,** number. Calculado como la media de H1, H2, H3, H4 y H5.
-- **Presión,** number. Calculado en función de la altura media y unas tablas que estarán en Calibry.
+- Estado del disparo seleccionado (etiqueta).
 
 ### 5.6 Balística
 
@@ -1864,16 +1943,16 @@ Campos de entrada
 - Check box por serie
 - Observaciones, texto libre.
 
+
 ```
-Esta información será de salida en el widget Preparación ejecución – JLT.
-Datos de salida
+Página: 38 de 59 Edición: 0 X
 ```
+Esta información será de salida en el widget _Preparación ejecución – JLT._
+
+**Datos de salida**
+
 - Estado del disparo seleccionado (etiqueta)
 
-
-```
-Página: 37 de 58 Edición: 0 X
-```
 #### 5.6.2 Preparación ejecución – Presiones
 
 **Roles**
@@ -1908,6 +1987,11 @@ series de la prueba.
 **Campos de entrada**
 
 - Check box por serie
+
+
+```
+Página: 39 de 59 Edición: 0 X
+```
 - Observaciones, texto libre.
 
 Esta información será de salida en el widget _Preparación ejecución – JLT._
@@ -1916,10 +2000,6 @@ Esta información será de salida en el widget _Preparación ejecución – JLT.
 
 - Estado del disparo seleccionado (etiqueta)
 
-
-```
-Página: 38 de 58 Edición: 0 X
-```
 #### 5.6.4 Preparación ejecución – Trayectografía
 
 **Roles**
@@ -1957,17 +2037,16 @@ Esta información será de salida en el widget _Preparación ejecución – JLT.
 
 **Datos de entrada**
 
+
+```
+Página: 40 de 59 Edición: 0 X
+```
 - Radar Doppler. Desplegable con los equipos configurados anteriormente.
 - Antena. Familia: Desplegable con los equipos configurados anteriormente.
 - Velocidad, numérico con decimales.
 - Unidad de velocidad, por defecto m/s.
 - Incertidumbre del software, numérico con decimales.
 - Unidad de Incertidumbre del software, por defecto m/s.
-
-
-```
-Página: 39 de 58 Edición: 0 X
-```
 - Pérdida, numérico con decimales.
 - Unidad de Pérdida, por defecto m/s.
 - Cadencia, number.
@@ -1990,26 +2069,39 @@ Página: 39 de 58 Edición: 0 X
 - Selector de serie
 - Selector de disparo
 - Botón Disparo actual, te selecciona automáticamente el disparo actual seleccionado por el JLT.
-- Etiquetas Piezo cierre, Piezo intermedio y Piezo culote. Se mostrarán las etiquetas en función de
-    las magnitudes seleccionadas en Planificación.
+- Etiquetas P cierre, P intermedio, P culote, P Otro, P Diferencial, Tiempos. Se mostrarán las
+    etiquetas en función de las magnitudes seleccionadas en Planificación.
 
-**Datos de entrada**
+**Datos de entrada (P Cierre, P Intermedio, P culote, P otro)**
 
-- Captador (equipo). Desplegable con los equipos configurados anteriormente.
-- Amplificador (equipo). Desplegable con los equipos configurados anteriormente.
-- Registrador (equipo). Desplegable con los equipos configurados anteriormente.
+- Captador (equipo). Familia: Presión/Medidores de Presión Hidráulica Relativa/ Transductores
+- Amplificador (equipo). Familia: Instrumentación y características de señal/ Amplificadores de carga
+- Osciloscopio (equipo). Familia: Instrumentación y Características de Señal/Sistemas de Adquisición
+    y Registradores
 - Presión máxima, number en bar.
-- Tiempo de acción, number en ms (milisegundo).
-- Tiempo de retardo, number en ms (milisegundo).
+- Observaciones
+
+**Datos de entrada (Tiempos)**
+
+- Tiempo de Acción, number en ms (milisegundo).
+- Tiempo de Retardo, number en ms (milisegundo).
+- Observaciones
+
+**Datos de entrada (P Diferencial)**
+
+- Presión Diferencial Positiva, number en bar.
+- Presión Diferencial Negativa, number en bar.
+
+
+```
+Página: 41 de 59 Edición: 0 X
+```
+- Observaciones
 
 **Datos de salida**
 
 - Estado del disparo seleccionado (etiqueta)
 
-
-```
-Página: 40 de 58 Edición: 0 X
-```
 #### 5.6.7 Introducción de datos – Trayectografía..............................................................................................
 
 **Roles**
@@ -2037,15 +2129,16 @@ Página: 40 de 58 Edición: 0 X
 - **Altura de funcionamiento de espoleta.** Number. Unidad: m.
 - **Alcance de funcionamiento de espoleta.** Number. Unidad: m.
 - **Flecha.** Number. Unidad: m.
+
+
+```
+Página: 42 de 59 Edición: 0 X
+```
 - **Calificación del vuelo.** Texto. Desplegable.
 - **Coeficiente aerodinámico.** Number. SIN UNIDAD.
 - **Tiempo eyección de botes fumígenos.** Number. Unidad: s.
 - **Observaciones** , texto libre.
 
-
-```
-Página: 41 de 58 Edición: 0 X
-```
 **Datos de entrada Funcionamientos**
 
 - **Equipo.** Campo duplicado de la pestaña anterior. Todas las medidas de este widget se medirán
@@ -2092,14 +2185,14 @@ Página: 41 de 58 Edición: 0 X
 - **Nivel acústico.** Number en decibelios (db).
 - **Observaciones.** Texto.
 
+
+```
+Página: 43 de 59 Edición: 0 X
+```
 **Datos de salida**
 
 - Estado del disparo seleccionado (etiqueta)
 
-
-```
-Página: 42 de 58 Edición: 0 X
-```
 #### 5.6.9 Orientación cámaras de vídeo
 
 **Roles**
@@ -2125,6 +2218,10 @@ Página: 42 de 58 Edición: 0 X
 
 #### 5.6.10 Orientación Radar Trayectografía
 
+
+```
+Página: 44 de 59 Edición: 0 X
+```
 **Roles**
 
 - Técnico Unidad de Balística
@@ -2132,10 +2229,6 @@ Página: 42 de 58 Edición: 0 X
 
 **Filtros**
 
-
-```
-Página: 43 de 58 Edición: 0 X
-```
 - Selector de serie
 - Selector de disparo
 - Selector de radar, de los disponibles en Calibry. Familia: Tiempo y Frecuencia/Radares Doppler
@@ -2182,15 +2275,15 @@ Página: 43 de 58 Edición: 0 X
 - **Unidad graduación espoleta, por** defecto s.
 - **Ángulo de tiro** , numérico con decimales. Valor introducido por JLT en el widget de introducción
     de datos del MAO de JLT.
+
+
+```
+Página: 45 de 59 Edición: 0 X
+```
 - **Unidad ángulo de tiro** , por defecto grados.
 - **Peso nominal del proyectil,** valor informado en Planificación, en la pestaña de Condiciones del
     disparo. Numérico con decimales.
 - **Unidad peso proyectil** , por defecto gramos.
-
-
-```
-Página: 44 de 58 Edición: 0 X
-```
 - **Altura de boca,** campo calculado, numérico con decimales, en función de la altura de la pieza
     (coordenada z), el Ángulo de tiro informado por JLT y la longitud del tubo (información disponible
     en Calibry para el tubo seleccionado en el widget de introducción de datos de Armamento).
@@ -2225,9 +2318,9 @@ Página: 44 de 58 Edición: 0 X
 
 
 ```
-Página: 45 de 58 Edición: 0 X
+Página: 46 de 59 Edición: 0 X
 ```
-#### 5.6.12 Criterios STANAG
+**5.6.12 Criterios STANAG**
 
 **Roles**
 
@@ -2264,11 +2357,10 @@ _Se incluye el botón “actualizar” para volver a comprobar los criterios en 
 
 
 ```
-Página: 46 de 58 Edición: 0 X
+Página: 47 de 59 Edición: 0 X
 ```
-```
-5.6.14 Seguridad
-```
+#### 5.6.14 Seguridad
+
 ```
 Roles
 ```
@@ -2301,7 +2393,7 @@ Datos de salida
 
 
 ```
-Página: 47 de 58 Edición: 0 X
+Página: 48 de 59 Edición: 0 X
 ```
 #### 5.7.1 Vigilancia
 
@@ -2338,7 +2430,7 @@ Tabla de Criterios de calificación de planificación general. Además, se añad
 
 
 ```
-Página: 48 de 58 Edición: 0 X
+Página: 49 de 59 Edición: 0 X
 ```
 - Desviación de Velocidad inicial corregida inutilmin, number.
 - Desviación de Velocidad inicial corregida inutilmax, number.
@@ -2380,7 +2472,7 @@ la ejecución, introducidos por las diferentes unidades en los widgets de introd
 
 
 ```
-Página: 49 de 58 Edición: 0 X
+Página: 50 de 59 Edición: 0 X
 ```
 #### 5.7.2 Criterio de Grubbs
 
@@ -2438,7 +2530,7 @@ meteorológico”.
 ```
 
 ```
-Página: 50 de 58 Edición: 0 X
+Página: 51 de 59 Edición: 0 X
 ```
 ### 6.2 Estructura del boletín METCMQ
 
@@ -2503,7 +2595,7 @@ Grupo 5 – Viento
 ```
 
 ```
-Página: 51 de 58 Edición: 0 X
+Página: 52 de 59 Edición: 0 X
 ```
 ```
 ZnZndddFFF
@@ -2566,7 +2658,7 @@ varios widgets independientes, cada uno orientado a un uso concreto.
 ```
 
 ```
-Página: 52 de 58 Edición: 0 X
+Página: 53 de 59 Edición: 0 X
 ```
 ```
 Esta separación responde a que no todas las funcionalidades son utilizadas por el mismo personal, ni en
@@ -2635,7 +2727,7 @@ tenso) se marcan automáticamente como no evaluables, sin afectar al resultado g
 ```
 
 ```
-Página: 53 de 58 Edición: 0 X
+Página: 54 de 59 Edición: 0 X
 ```
 ```
 D. Presentación del resultado al usuario
@@ -2676,9 +2768,8 @@ Este widget es independiente del widget STANAG, ya que se usa en otro momento de
 otro perfil de usuario, y su lógica depende exclusivamente de la hora del disparo, no de la hora actual.
 A. Funcionamiento general
 ```
-El widget parte del boletín METCMQ ya anexado a la prueba.
-
 ```
+El widget parte del boletín METCMQ ya anexado a la prueba.
 Las acciones del usuario consisten en:
 ```
 - Seleccionar el disparo del que desea obtener el bloque horario.
@@ -2690,8 +2781,9 @@ Las acciones del usuario consisten en:
 ```
 B. Campos visibles en el widget
 ```
+```
 Los campos visibles en el widget son los siguientes:
-
+```
 - Selector de serie y disparo (solo se podrá seleccionar un único disparo).
 - Bloque horario del boletín. Contenido íntegro del bloque, exactamente en el formato del boletín
     original, sin traducciones ni alteraciones, ya que es el formato requerido por el radar.
@@ -2702,7 +2794,7 @@ Los campos visibles en el widget son los siguientes:
 
 
 ```
-Página: 54 de 58 Edición: 0 X
+Página: 55 de 59 Edición: 0 X
 ```
 ```
 La selección del bloque horario del boletín meteorológico depende del momento del proceso y del propósito
@@ -2769,7 +2861,7 @@ Para el cálculo de la velocidad inicial corregida utilizaremos la siguiente fó
 ```
 
 ```
-Página: 55 de 58 Edición: 0 X
+Página: 56 de 59 Edición: 0 X
 ```
 ##### 𝑉 0 𝑐= 𝑉 0 · √
 
@@ -2861,7 +2953,7 @@ En el informe de revisión hipocelométrica se mostrarán los siguientes element
 ```
 
 ```
-Página: 56 de 58 Edición: 0 X
+Página: 57 de 59 Edición: 0 X
 ```
 - **Diez medidas de desgaste** , expresadas en pulgadas, obtenidas por un técnico de armamento
     mediante un hipocelómetro.
@@ -2931,7 +3023,7 @@ El procedimiento es el siguiente:
 
 
 ```
-Página: 57 de 58 Edición: 0 X
+Página: 58 de 59 Edición: 0 X
 ```
 4. **Comprobación de la temperatura (si existe).** Si la carga dispone de un valor de **temperatura**
     **de acondicionamiento** , se verifica que el disparo coincide con la temperatura registrada o con
@@ -2996,7 +3088,7 @@ No aplicable.
 ```
 
 ```
-Página: 58 de 58 Edición: 0 X
+Página: 59 de 59 Edición: 0 X
 ```
 ## 11 PLANTILLAS
 

@@ -8,6 +8,7 @@ import { explicitEffect, injectParams } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
+import { ExecutionService } from '../../../services/execution.service';
 import type { TrialSelectorDialogResult } from '../../dialogs/trial-selector-dialog';
 import { TrialSelectorDialog } from '../../dialogs/trial-selector-dialog';
 import { ExecutionPageFacade } from '../../services/execution-page-facade.service';
@@ -28,6 +29,7 @@ import { ExecutionHeader } from './execution-header/execution-header';
         [hasUnsavedChanges]="hasUnsavedChanges()"
         [isSaving]="isSaving()"
         [editMode]="isEditMode()"
+        [canSelectEquipment]="canSelectEquipment()"
         (startRequested)="startExecution()"
         (pauseRequested)="pauseExecution()"
         (resumeRequested)="resumeExecution()"
@@ -78,6 +80,7 @@ export class Execution implements OnDestroy {
   readonly #location = inject(Location);
   readonly #router = inject(Router);
   readonly #executionFacade = inject(ExecutionPageFacade);
+  readonly #executionService = inject(ExecutionService);
   readonly #fireTrialId = injectParams('fireTrialId');
   #trialSelectorOpen = false;
 
@@ -89,6 +92,7 @@ export class Execution implements OnDestroy {
   readonly isLoading = this.#executionFacade.isLoading;
   readonly loadError = this.#executionFacade.loadError;
   readonly placedWidgets = this.#executionFacade.placedWidgets;
+  readonly canSelectEquipment = this.#executionFacade.canSelectEquipment;
   readonly isWidgetsPanelOpen = signal(false);
   readonly isEditMode = signal(false);
 
@@ -96,6 +100,7 @@ export class Execution implements OnDestroy {
   readonly #routeSyncEffect = explicitEffect([this.#fireTrialId], ([fireTrialId]) => {
     if (fireTrialId) {
       this.#executionFacade.initialize(fireTrialId);
+      this.#executionService.getEquipmentSelector(fireTrialId);
       return;
     }
     void this.#openTrialSelectorDialog();

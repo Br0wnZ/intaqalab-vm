@@ -18,8 +18,8 @@ import { EventsActionsService } from '../../services/events-actions.service';
     <span class="cal-actions">
       <button
         matIconButton
-        aria-label="Actions"
         class="day-actions__trigger"
+        [attr.aria-label]="'COMMONS.ACTIONS' | translate"
         [matMenuTriggerFor]="menu"
         [disabled]="isDisabled() || (!canSchedule && !canAddObservations())"
         [class.day-actions__trigger--disabled]="isDisabled() || (!canSchedule && !canAddObservations())"

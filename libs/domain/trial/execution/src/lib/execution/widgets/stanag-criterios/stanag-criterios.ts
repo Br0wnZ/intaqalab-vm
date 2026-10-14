@@ -27,10 +27,10 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
           </h3>
         </div>
         <button
-          aria-label="Actualizar criterios"
           mat-flat-button
           color="primary"
           class="!px-2.5 !min-w-auto"
+          [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.UPDATE_CRITERIA_ARIA' | translate"
           [disabled]="checking()"
           (click)="onActualizar()"
         >

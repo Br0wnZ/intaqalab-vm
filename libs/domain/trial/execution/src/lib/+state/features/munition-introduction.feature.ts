@@ -3,7 +3,11 @@ import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/si
 
 import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../execution/models';
 import { mapRemoteToMunitionState } from '../../execution/widgets/munition-introduction/munition-introduction.mapper';
-import { ExecutionService, type PlanningComponentType } from '../../services/execution.service';
+import {
+  ExecutionService,
+  type PlanningComponentType,
+  type WarehouseStockBatch,
+} from '../../services/execution.service';
 import type {
   MunitionIntroAcondicionamientoState,
   MunitionIntroIdentificationState,
@@ -207,6 +211,21 @@ export function withMunitionIntroduction() {
               denominacionOptions: [...existing, ...newOptions],
             },
           };
+        });
+      },
+
+      addMunitionIntroductionBatches(batches: WarehouseStockBatch[]): void {
+        if (batches.length === 0) return;
+
+        patchState(store, (state) => {
+          const loteOptions = [...state.munitionIntroduction.loteOptions];
+          for (const { denominationId, batch } of batches) {
+            if (!loteOptions.some((option) => option.denominacionId === denominationId && option.value === batch)) {
+              loteOptions.push({ value: batch, label: batch, denominacionId: denominationId });
+            }
+          }
+
+          return { munitionIntroduction: { ...state.munitionIntroduction, loteOptions } };
         });
       },
 

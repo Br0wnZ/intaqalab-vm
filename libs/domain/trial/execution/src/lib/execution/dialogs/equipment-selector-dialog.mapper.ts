@@ -1,42 +1,29 @@
 import type { Role } from '@intaqalab/core';
 import { Role as RoleEnum } from '@intaqalab/core';
-import { resolveMagnitudeDisplayConfig } from '@intaqalab/utils';
 
 import type {
   EquipmentItemSelection,
   EquipmentMagnitudeSelectionGroup,
   EquipmentMeasureMagnitude,
   EquipmentMeasurementGroupApi,
-  PlanningMagnitudeSelection,
   TagConfig,
   TagRow,
   TagTableState,
 } from '../models';
-import {
-  EquipmentMagnitudeTagEnum,
-  EquipmentTypeEnum,
-  isEquipmentMagnitudeTagEnum,
-  isEquipmentTypeEnum,
-} from '../models';
+import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../models';
+import { MAGNITUDE_OPTIONS } from '../utils/equipment-planning.utils';
 
 // ── Public Types ───────────────────────────────────────────────────────────────
 
 export const SELECT_ALL_SERIES_VALUE = '__ALL_SERIES__';
 
-export const MAGNITUDE_OPTIONS: Array<{ id: EquipmentMeasureMagnitude; label: string }> = [
-  { id: 'ATTACK', label: 'Atacado' },
-  { id: 'RECOIL', label: 'Retroceso' },
-];
+export { MAGNITUDE_OPTIONS };
 
 export type EquipmentItemSelectionEntry = EquipmentItemSelection;
 
 // ── Role Groups ────────────────────────────────────────────────────────────────
 
-export const ADMIN_ROLES: Role[] = [
-  RoleEnum.INTAQALAB_ADMIN,
-  RoleEnum.INTAQALAB_PLANNING_ANALYSIS_HEAD,
-  RoleEnum.HEAD_ARMAMENT_TRIALS,
-];
+export const ADMIN_ROLES: Role[] = [RoleEnum.INTAQALAB_ADMIN, RoleEnum.INTAQALAB_PLANNING_ANALYSIS_HEAD];
 
 export const BALLISTICS_ROLES: Role[] = [
   RoleEnum.INTAQALAB_BALLISTICS_UNIT_HEAD,
@@ -87,6 +74,12 @@ export const TAG_CONFIGS: TagConfig[] = [
         type: 'select',
       },
       { key: 'amplificador', label: 'Amplificador', sourceCategoryId: EquipmentTypeEnum.AMPLIFIER, type: 'select' },
+      {
+        key: 'registrador',
+        label: 'Registrador',
+        sourceCategoryId: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+        type: 'select',
+      },
     ],
   },
   {
@@ -126,7 +119,7 @@ export const TAG_CONFIGS: TagConfig[] = [
         sourceCategoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
         type: 'select',
       },
-      { key: 'grabador', label: 'Grabador', sourceCategoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA, type: 'select' },
+      { key: 'grabador', label: 'Grabador', sourceCategoryId: EquipmentTypeEnum.RECORDER, type: 'select' },
       { key: 'canal', label: 'Canal (01 al 32)', sourceCategoryId: '', type: 'number', maxValue: 32 },
       { key: 'magnitud', label: 'Magnitud', sourceCategoryId: 'magnitud', type: 'select' },
     ],
@@ -145,7 +138,7 @@ export const TAG_CONFIGS: TagConfig[] = [
       {
         key: 'grabador',
         label: 'Grabador',
-        sourceCategoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+        sourceCategoryId: EquipmentTypeEnum.RECORDER,
         type: 'select',
       },
       { key: 'canal', label: 'Canal (01 al 32)', sourceCategoryId: '', type: 'number', maxValue: 32 },
@@ -209,19 +202,6 @@ export const TAG_CONFIGS: TagConfig[] = [
     allowedRoles: [...ADMIN_ROLES, ...TOPOGRAPHY_ROLES],
     fields: [
       { key: 'cronometro', label: 'Cronómetro', sourceCategoryId: EquipmentTypeEnum.CHRONOMETER, type: 'select' },
-    ],
-  },
-  {
-    id: EquipmentMagnitudeTagEnum.DATA_ACQUISITION_SYSTEM,
-    label: 'Osciloscopio',
-    allowedRoles: [...ADMIN_ROLES, ...MUNITIONS_ROLES],
-    fields: [
-      {
-        key: 'registrador',
-        label: 'Registrador',
-        sourceCategoryId: EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
-        type: 'select',
-      },
     ],
   },
 ];
@@ -355,25 +335,43 @@ export function dialogStatesToApiFormat(tagStates: Record<string, TagTableState>
   return equipments;
 }
 
-/**
- * Cruza las magnitudes seleccionadas en Planificación con la resolución de medida compartida
- * (`resolveMagnitudeDisplayConfig`) y devuelve solo los tags de equipamiento que Ejecución debe mostrar.
- * Descarta magnitudes sin `qualificationType` reconocido (borradores incompletos del catálogo maestro).
- */
-export function resolveNeededEquipmentTags(
-  planningMeasures: readonly PlanningMagnitudeSelection[],
-): EquipmentMagnitudeTagEnum[] {
-  const neededTags = new Set<EquipmentMagnitudeTagEnum>();
+export {
+  collectPlannedMeasureIds,
+  resolveNeededEquipmentTags,
+  resolvePlannedEquipmentTags,
+  resolvePlannedLengthMagnitudes,
+  resolvePlannedSeriesByTag,
+} from '../utils/equipment-planning.utils';
 
-  for (const measure of planningMeasures) {
-    if (!resolveMagnitudeDisplayConfig(measure)) continue;
+export function hasIncompleteEquipmentRows(
+  tagStates: Readonly<Record<string, TagTableState>>,
+  activeTags: readonly TagConfig[],
+): boolean {
+  return activeTags.some((tag) =>
+    (tagStates[tag.id]?.rows ?? []).some((row) => {
+      const equipmentFields = tag.fields.filter(
+        (field) => field.type === 'select' && isEquipmentTypeEnum(field.sourceCategoryId),
+      );
+      const touched = Object.values(row.fieldValues).some(Boolean) || row.series.length > 0 || row.disparos.length > 0;
+      if (!touched) return false;
 
-    for (const measurement of measure.measurements) {
-      if (isEquipmentMagnitudeTagEnum(measurement)) {
-        neededTags.add(measurement);
+      if (!row.series.length || !row.disparos.length || equipmentFields.some((field) => !row.fieldValues[field.key])) {
+        return true;
       }
-    }
-  }
 
-  return [...neededTags];
+      if (
+        tag.id === EquipmentMagnitudeTagEnum.LONGITUD &&
+        !MAGNITUDE_OPTIONS.some((option) => option.id === row.fieldValues['magnitud'])
+      ) {
+        return true;
+      }
+
+      if (tag.fields.some((field) => field.key === 'canal')) {
+        const channel = Number(row.fieldValues['canal']);
+        return !Number.isInteger(channel) || channel < 1 || channel > 32;
+      }
+
+      return false;
+    }),
+  );
 }

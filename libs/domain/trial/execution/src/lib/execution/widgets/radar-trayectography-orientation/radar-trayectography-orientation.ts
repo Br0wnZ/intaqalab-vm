@@ -42,7 +42,7 @@ interface RadarTrayectographyFilters {
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-auto">
       <!-- Header: título + filtros -->
-      <div class="flex items-center gap-2 shrink-0 flex-wrap">
+      <div data-testid="radar-filters" class="flex items-center gap-2 shrink-0 flex-wrap">
         <div class="flex items-center gap-2 shrink-0">
           <ui-inta-icon name="edit_line" color="var(--inta-button)" />
           <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
@@ -51,37 +51,41 @@ interface RadarTrayectographyFilters {
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_PLACEHOLDER' | translate"
-            [formField]="radarForm.serie"
-          >
-            @for (opt of serieOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        @if (showSerieSelector()) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
+            <mat-select [formField]="radarForm.serie">
+              <mat-label>
+                {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_PLACEHOLDER' | translate }}
+              </mat-label>
+              @for (opt of serieOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.DISPARO_PLACEHOLDER' | translate"
-            [formField]="radarForm.disparo"
-          >
-            @for (opt of disparoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        @if (showDisparoSelector()) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+            <mat-select [formField]="radarForm.disparo">
+              <mat-label>
+                {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.DISPARO_PLACEHOLDER' | translate }}
+              </mat-label>
+              @for (opt of disparoOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
 
         <div class="flex-1"></div>
 
         <!-- Radar -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.RADAR_PLACEHOLDER' | translate"
-            [formField]="radarForm.radar"
-          >
+          <mat-select [formField]="radarForm.radar">
+            <mat-label>
+              {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.RADAR_PLACEHOLDER' | translate }}
+            </mat-label>
             @for (opt of radarOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -90,7 +94,7 @@ interface RadarTrayectographyFilters {
       </div>
 
       <!-- Campos de datos en dos filas de 8 -->
-      <div intaReadonlyContent class="flex-1 gap-6 flex flex-col justify-end min-h-0">
+      <div intaReadonlyContent class="flex-1 gap-6 flex flex-col justify-evenly min-h-0">
         <!-- Fila 1: Pieza X/Y/Z, Alcance previsto, X/Y P. Caída, OLT geográfico, Dif. angular radar -->
         <div class="grid grid-cols-4 lg:grid-cols-8 gap-2">
           <!-- Pieza X -->
@@ -285,41 +289,97 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
 
   protected readonly radarOptions = computed(() => this.#store.radarTrayectographyOrientation().radarOptions);
   protected readonly serieOptions = computed(() =>
-    (this.#store.planningSeries() ?? []).map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    })),
+    (this.#store.radarTrayectographyOrientationResponse()?.series ?? []).map((serie, index) => {
+      const plannedSerie = (this.#store.planningSeries() ?? []).find((item) => item.id === serie.seriesId);
+      return {
+        value: serie.seriesId,
+        label: plannedSerie?.name?.trim() || `Serie ${index + 1}`,
+      };
+    }),
   );
   protected readonly disparoOptions = computed(() => {
-    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.formModel().serie)?.shots ?? [];
-    return shots.map((shot, index) => ({
-      value: shot.id,
-      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
-    }));
+    const response = this.#store.radarTrayectographyOrientationResponse();
+    const serie = response?.series.find((item) => item.seriesId === this.formModel().serie) ?? response?.series[0];
+    const plannedSerie = (this.#store.planningSeries() ?? []).find((item) => item.id === serie?.seriesId);
+    return (serie?.shots ?? []).map((shot, index) => {
+      const plannedShot = (plannedSerie?.shots ?? []).find((item) => item.id === shot.shotId);
+      return { value: shot.shotId, label: `Disparo ${String(plannedShot?.globalNumber ?? index + 1)}` };
+    });
+  });
+  protected readonly showSerieSelector = computed(() => {
+    const response = this.#store.radarTrayectographyOrientationResponse();
+    return response !== undefined && response.series.length > 1 && !response.sameForAllSeries;
+  });
+  protected readonly showDisparoSelector = computed(() => {
+    const response = this.#store.radarTrayectographyOrientationResponse();
+    const serie = response?.series.find((item) => item.seriesId === this.formModel().serie) ?? response?.series[0];
+    return serie !== undefined && serie.shots.length > 1 && !serie.sameForAllShots;
+  });
+  protected readonly selectedOrientationData = computed(() => {
+    const response = this.#store.radarTrayectographyOrientationResponse();
+    const serie = response?.series.find((item) => item.seriesId === this.formModel().serie) ?? response?.series[0];
+    return (
+      serie?.shots.find((item) => item.shotId === this.formModel().disparo)?.orientationData ??
+      serie?.shots[0]?.orientationData ??
+      null
+    );
   });
 
   /** Valores de entrada de otros widgets MAO (formateados para display) */
-  protected readonly xPieza = computed(() => this.#store.radarTrayectographyOrientation().xPieza?.toFixed(1) ?? null);
-  protected readonly yPieza = computed(() => this.#store.radarTrayectographyOrientation().yPieza?.toFixed(1) ?? null);
-  protected readonly zPieza = computed(() => this.#store.radarTrayectographyOrientation().zPieza?.toFixed(1) ?? null);
-  protected readonly alcancePrevisto = computed(
-    () => this.#store.radarTrayectographyOrientation().alcancePrevistoPique?.toFixed(1) ?? null,
-  );
-  protected readonly velocidadInicial = computed(
-    () => this.#store.radarTrayectographyOrientation().velocidadInicialTeorica?.toFixed(2) ?? null,
-  );
-  protected readonly tiempoVuelo = computed(
-    () => this.#store.radarTrayectographyOrientation().tiempoVueloTeorico?.toFixed(2) ?? null,
-  );
-  protected readonly gradEspoleta = computed(
-    () => this.#store.radarTrayectographyOrientation().graduacionEspoleta?.toFixed(2) ?? null,
-  );
-  protected readonly anguloTiroFmt = computed(
-    () => this.#store.radarTrayectographyOrientation().anguloTiro?.toFixed(2) ?? null,
-  );
-  protected readonly pesoProyectil = computed(
-    () => this.#store.radarTrayectographyOrientation().pesoNominalProyectil?.toFixed(2) ?? null,
-  );
+  protected readonly xPieza = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().xPieza?.toFixed(1) ?? null)
+      : (data.pieceX?.toFixed(1) ?? null);
+  });
+  protected readonly yPieza = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().yPieza?.toFixed(1) ?? null)
+      : (data.pieceY?.toFixed(1) ?? null);
+  });
+  protected readonly zPieza = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().zPieza?.toFixed(1) ?? null)
+      : (data.pieceZ?.toFixed(1) ?? null);
+  });
+  protected readonly alcancePrevisto = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().alcancePrevistoPique?.toFixed(1) ?? null)
+      : (data.plannedImpactDistance?.toFixed(1) ?? null);
+  });
+  protected readonly velocidadInicial = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().velocidadInicialTeorica?.toFixed(2) ?? null)
+      : (data.theoreticalInitialVelocity?.toFixed(2) ?? null);
+  });
+  protected readonly tiempoVuelo = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().tiempoVueloTeorico?.toFixed(2) ?? null)
+      : (data.theoreticalFlightTime?.toFixed(2) ?? null);
+  });
+  protected readonly gradEspoleta = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().graduacionEspoleta?.toFixed(2) ?? null)
+      : (data.fuseGraduation?.toFixed(2) ?? null);
+  });
+  protected readonly anguloTiroFmt = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().anguloTiro?.toFixed(2) ?? null)
+      : (data.shootingAngle?.toFixed(2) ?? null);
+  });
+  protected readonly pesoProyectil = computed(() => {
+    const data = this.selectedOrientationData();
+    return data === null
+      ? (this.#store.radarTrayectographyOrientation().pesoNominalProyectil?.toFixed(2) ?? null)
+      : (data.nominalProjectileWeight?.toFixed(2) ?? null);
+  });
 
   /** Valores calculados en el store */
   protected readonly xPCaida = computed(() => this.#store.radarTrayectographyXPCaida()?.toFixed(2) ?? null);
@@ -427,11 +487,36 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
 
   constructor() {
     super();
+    let previousFireTrialId: string | null = null;
+    let previousRadarId: string | null = null;
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const radarId = this.formModel().radar;
+      if (!fireTrialId || (fireTrialId === previousFireTrialId && radarId === previousRadarId)) return;
+      previousFireTrialId = fireTrialId;
+      previousRadarId = radarId;
+      untracked(() => this.#store.loadRadarTrayectographyOrientation(fireTrialId, radarId));
+    });
+
     effect(() => {
       const serie = this.#store.activeSerieId();
       const disparo = this.#store.activeShotId();
       if (!serie || !disparo) return;
       untracked(() => this.formModel.update((value) => ({ ...value, serie, disparo })));
+    });
+
+    effect(() => {
+      const response = this.#store.radarTrayectographyOrientationResponse();
+      const current = this.formModel();
+      if (!response) return;
+
+      const serie = response.series.find((item) => item.seriesId === current.serie) ?? response.series[0] ?? null;
+      const disparo = serie?.shots.find((item) => item.shotId === current.disparo) ?? serie?.shots[0] ?? null;
+      const serieId = serie?.seriesId ?? null;
+      const disparoId = disparo?.shotId ?? null;
+      if (current.serie === serieId && current.disparo === disparoId) return;
+
+      untracked(() => this.formModel.update((value) => ({ ...value, serie: serieId, disparo: disparoId })));
     });
   }
 

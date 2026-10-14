@@ -108,7 +108,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
             <inta-feature-planning-general-data-shell [trial]="store.trial()!" [trialId]="id" />
           } @placeholder {
             <div class="h-40 flex items-center justify-center">
-              <span class="text-sm text-gray-400">Cargando planificación...</span>
+              <span class="text-sm text-gray-400">{{ 'TRIAL_PLANNING.LOADING' | translate }}</span>
             </div>
           }
         </ng-template>

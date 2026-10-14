@@ -304,6 +304,42 @@ describe('MunitionIntroduction', () => {
     expect(store.munitionIntroduction().identificacion.denominacion).toBe('den-01');
   });
 
+  it('fills missing batch from available warehouse stock matching denomination', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const responseWithoutBatch: ShotMunitionResponse = {
+      munitionData: [
+        {
+          componentId: 'granada-01',
+          identificationData: { denominationId: 'den-01', batch: null },
+        },
+      ],
+    };
+
+    vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(responseWithoutBatch);
+    vi.spyOn(execService, 'fetchAvailableStockBatches').mockResolvedValue([
+      { denominationId: 'den-other', batch: 'LOT-OTHER' },
+      { denominationId: 'den-01', batch: 'LOT-MATCHED' },
+      { denominationId: 'den-01', batch: 'LOT-MATCHED-2' },
+    ]);
+    vi.spyOn(execService, 'fetchWarehouseDenominations').mockResolvedValue([]);
+    store.setFireTrialId('trial-123');
+
+    fixture.componentInstance.onSerieSelected('funcionamiento-1');
+    fixture.componentInstance.onDisparoSelected('disparo-2');
+
+    await vi.waitFor(() => {
+      const optionValues = fixture.componentInstance
+        .identTab()
+        ?.filteredLoteOptions()
+        .map((option) => option.value);
+      expect(optionValues).toEqual(expect.arrayContaining(['LOT-MATCHED', 'LOT-MATCHED-2']));
+    });
+    expect(store.munitionIntroduction().identificacion.lote).toBeNull();
+    expect(execService.fetchAvailableStockBatches).toHaveBeenCalledWith(['den-01']);
+  });
+
   it('setCurrentShot selects active shot from store and triggers load', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
@@ -697,6 +733,11 @@ describe('MunitionIntroduction', () => {
     };
 
     vi.spyOn(execService, 'fetchPlanningMunitionOptions').mockResolvedValue(mockPlanningOptions);
+    const fetchStockBatchesSpy = vi.spyOn(execService, 'fetchAvailableStockBatches').mockResolvedValue([
+      { denominationId: 'denom-wh-1', batch: 'LOT-WH-1' },
+      { denominationId: 'denom-wh-1', batch: 'LOT-WH-1-2' },
+      { denominationId: 'denom-wh-2', batch: 'LOT-WH-2' },
+    ]);
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue({ munitionData: [] });
 
     store.setFireTrialId('trial-unassigned-denom');
@@ -704,6 +745,7 @@ describe('MunitionIntroduction', () => {
     await vi.waitFor(() => {
       expect(execService.fetchPlanningMunitionOptions).toHaveBeenCalledWith('trial-unassigned-denom');
     });
+    expect(fetchStockBatchesSpy).not.toHaveBeenCalled();
 
     fixture.componentInstance.onSerieSelected('serie-unassigned');
 
@@ -739,11 +781,33 @@ describe('MunitionIntroduction', () => {
 
     // A denomination already received for this component takes precedence over empty planning data.
     expect(identTab?.identFormModel().denominacion).toBe('denom-wh-2');
+    await vi.waitFor(() => {
+      expect(fetchStockBatchesSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(fetchStockBatchesSpy).toHaveBeenLastCalledWith(['denom-wh-2']);
 
     // User selects one denomination
-    identTab?.onDenominacionChange('denom-wh-1');
     identTab?.identFormModel.update((m) => ({ ...m, denominacion: 'denom-wh-1' }));
+    identTab?.onDenominacionChange('denom-wh-1');
     expect(identTab?.identFormModel().denominacion).toBe('denom-wh-1');
+
+    await vi.waitFor(() => {
+      expect(fetchStockBatchesSpy).toHaveBeenCalledTimes(2);
+    });
+    expect(fetchStockBatchesSpy).toHaveBeenLastCalledWith(['denom-wh-1']);
+    expect(store.munitionIntroduction().loteOptions).toEqual(
+      expect.arrayContaining([
+        { denominacionId: 'denom-wh-1', value: 'LOT-WH-1', label: 'LOT-WH-1' },
+        { denominacionId: 'denom-wh-1', value: 'LOT-WH-1-2', label: 'LOT-WH-1-2' },
+      ]),
+    );
+
+    identTab?.identFormModel.update((m) => ({ ...m, denominacion: 'denom-wh-2' }));
+    identTab?.onDenominacionChange('denom-wh-2');
+    await vi.waitFor(() => {
+      expect(fetchStockBatchesSpy).toHaveBeenCalledTimes(3);
+    });
+    expect(fetchStockBatchesSpy).toHaveBeenLastCalledWith(['denom-wh-2']);
   });
 
   it('loads and filters the global warehouse denomination catalog when component has no planning mapping', async () => {

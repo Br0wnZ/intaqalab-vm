@@ -6,12 +6,13 @@
       "HEADER": "Document type management",
       "NEW_DOCUMENT_TYPE": "New document type",
       "NO_RESULTS": "No documents found.",
+      "PAGINATION_ARIA": "Select document page",
       "SEARCH_PLACEHOLDER": "Search by document name",
       "SYNC": "Loading...",
       "TABLE": {
         "ACTIONS": "Actions",
         "CATEGORY": "Category",
-        "NAME": "Nombre tipo documento",
+        "NAME": "Document type name",
         "OBSERVATIONS": "Notes",
         "STATUS": "Status"
       }
@@ -34,6 +35,7 @@
     "YEAR_SEARCH_PLACEHOLDER": "Select year"
   },
   "BREADCRUMB": {
+    "ARIA_LABEL": "Breadcrumb navigation",
     "CALENDAR": "Calendar",
     "CALENDAR_TRIALS": "Trials calendar",
     "CATALOG": "Catalog",
@@ -42,6 +44,7 @@
     "CATALOG_FUZE_TYPE": "Fuze type",
     "CATALOG_LOADING_ZONE": "Loading areas",
     "CATALOG_MATERIAL": "Material",
+    "CATALOG_MEASUREMENTS_AND_RECORDS": "Measurements and records",
     "CATALOG_STANAG": "STANAG criteria",
     "CATALOG_TARGET_TYPE": "Target type",
     "CATALOG_TRIAL_TYPE": "Trial type",
@@ -50,10 +53,10 @@
     "EXECUTION": "Execution",
     "PLANNING": "Trial planning",
     "PLANNING_DETAIL": "Planning details",
+    "PLANNING_TRIAL": "Planning",
     "TRIALS": "Trial management",
     "TRIAL_DOCUMENT": "Documentation",
     "TRIAL_LIST": "Trial list",
-    "PLANNING_TRIAL": "Planning",
     "TRIAL_NEW": "New trial",
     "TRIAL_VIEW": "Trial details",
     "WAREHOUSE": "Warehouse management",
@@ -84,6 +87,7 @@
       "DAY": "Daily",
       "LINE": "Line",
       "MONTH": "Monthly",
+      "NAVIGATION_ARIA": "Calendar navigation",
       "NEXT": ">",
       "PREVIOUS": "<",
       "SHOW_WEEKENDS": "Mostrar no laborables",
@@ -109,19 +113,26 @@
   },
   "COMMONS": {
     "ACCEPT": "Accept",
+    "ACTIONS": "Actions",
+    "ADD": "Add",
     "CANCEL": "Cancel",
     "CONFIRM": "Confirm",
     "CREATE": "Create",
+    "DELETE": "Delete",
     "DELETE_DATA": "Clear data",
+    "DRAG_TO_REORDER": "Drag to reorder",
     "EDIT": "Edit",
     "INVALID_DATE_FORMAT": "Invalid date format",
     "LOADING": "Loading...",
+    "NO_OBSERVATIONS": "No observations",
     "NO_RESULTS": "No results found",
+    "OBSERVATIONS": "Observations",
     "OPTIONAL": "Optional",
     "REGISTER": "Register",
     "REQUIRED_FIELD": "Required value",
     "RETURN": "Back",
     "SAVE": "Save",
+    "SAVING_CHANGES": "Saving changes",
     "SEARCH": "Look for"
   },
   "CONFIRM_DELETE_DIALOG": {
@@ -141,14 +152,14 @@
       },
       "FILTERS": {
         "TYPE": {
-          "LABEL": "Guy",
-          "PLACEHOLDER": "Guy"
+          "LABEL": "Type",
+          "PLACEHOLDER": "Type"
         }
       },
       "LABELS": {
         "ACCESS_COUNT": "Access",
         "TITLE": "Document name",
-        "TYPE": "Guy"
+        "TYPE": "Type"
       },
       "TYPES": {
         "APPLICATION": "Application",
@@ -198,12 +209,12 @@
       },
       "FILTERS": {
         "VALUE": {
-          "LABEL": "Worth",
-          "PLACEHOLDER": "Write value here"
+          "LABEL": "Value",
+          "PLACEHOLDER": "Enter value here"
         }
       },
       "LABELS": {
-        "VALUE": "Worth"
+        "VALUE": "Value"
       }
     },
     "LIST_LABELS": {
@@ -227,8 +238,8 @@
           "PLACEHOLDER": "Instrument"
         },
         "MEASURE": {
-          "LABEL": "Extent",
-          "PLACEHOLDER": "Extent"
+          "LABEL": "Measurement",
+          "PLACEHOLDER": "Measurement"
         },
         "SERIE": {
           "LABEL": "Series",
@@ -239,16 +250,16 @@
           "PLACEHOLDER": "Shot"
         },
         "VALUE": {
-          "LABEL": "Worth",
-          "PLACEHOLDER": "Worth"
+          "LABEL": "Value",
+          "PLACEHOLDER": "Value"
         }
       },
       "LABELS": {
         "INSTRUMENT": "Instrument",
-        "MEASURE": "Extent",
+        "MEASURE": "Measurement",
         "SERIE": "Series",
         "SHOOT": "Shot",
-        "VALUE": "Worth"
+        "VALUE": "Value"
       }
     },
     "SERIES_AND_SHOOTS": {
@@ -302,17 +313,6 @@
     "UNAUTHORIZED": "Your session has expired or you don't have permissions."
   },
   "MASTER_DATA": {
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Failed to load data",
-      "LOAD_FAILED_DETAIL": "The required information could not be retrieved. Please try again later."
-    },
-    "CREATE_EDIT_DIALOG": {
-      "TITLE_CREATE": "Create record",
-      "TITLE_CREATE1": "Name",
-      "TITLE_CREATE2": "English name",
-      "TITLE_CREATE3": "Description",
-      "TITLE_EDIT": "Edit record"
-    },
     "DIALOGS": {
       "DELETE": {
         "BUTTONS": {
@@ -349,7 +349,6 @@
       }
     },
     "DIMENSION": {
-      "BUTTON_NEW": "New dimension type",
       "DIALOGS": {
         "CREATE": {
           "BUTTONS": {
@@ -379,10 +378,6 @@
           "TITLE": "Create dimension"
         },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this dimension? <br><b>This action cannot be undone.</b>",
           "TITLE": "Delete dimension"
         },
@@ -414,13 +409,7 @@
           "TITLE": "Edit dimension"
         },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this dimension?",
-          "TEXT_ONE": "Do you want to enable/disable this dimension?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "TITLE": "Enable / Disable dimension"
         },
         "UPSERT": {
@@ -451,79 +440,17 @@
       "TITLE_EDIT": "Edit record"
     },
     "DOCUMENT_TYPE": {
-      "BUTTON_NEW": "New document type",
       "DIALOGS": {
-        "CREATE": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the document type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the document type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Document type name (English)",
-              "PLACEHOLDER": "Enter the document type name in English"
-            },
-            "ES": {
-              "LABEL": "Document type name",
-              "PLACEHOLDER": "Enter the document type name here"
-            }
-          },
-          "TITLE": "Create document type"
-        },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this document type? <br><b>This action cannot be undone.</b>",
-          "TITLE": "Eliminar tipo de documento"
-        },
-        "EDIT": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the document type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the document type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Document type name (English)",
-              "PLACEHOLDER": "Enter the document type name in English"
-            },
-            "ES": {
-              "LABEL": "Document type name",
-              "PLACEHOLDER": "Enter the document type name here"
-            }
-          },
-          "TITLE": "Edit document type"
+          "TITLE": "Delete document type"
         },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this type of document?",
-          "TEXT_ONE": "Do you want to enable/disable this document type?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
-          "TITLE": "Activar / Desactivar tipo de documento"
+          "TITLE": "Activate / Deactivate document type"
+        },
+        "UPSERT": {
+          "DOCUMENT_TYPE": "Document type"
         }
       },
       "LIST": {
@@ -535,7 +462,6 @@
             "SPECIFIC": "Particular"
           }
         },
-        "CLIENT_TYPE": "Category",
         "DESCRIPTION": "Notes",
         "NAME": "Document type name",
         "STATUS": "Status",
@@ -543,80 +469,19 @@
       },
       "TITLE": "Document type management"
     },
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "The required information could not be retrieved. Please try again later.",
+      "LOAD_FAILED_TITLE": "Failed to load data"
+    },
     "FUZE_TYPE": {
-      "BUTTON_NEW": "New fuze type",
       "DIALOGS": {
-        "CREATE": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the target type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the target type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Fuze operating mode name (English)",
-              "PLACEHOLDER": "Enter the fuze operating mode name in English"
-            },
-            "ES": {
-              "LABEL": "Fuze operating mode name",
-              "PLACEHOLDER": "Enter the fuze operating mode name here"
-            }
-          },
-          "TITLE": "Create fuze operating mode"
-        },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this fuze type? <br><b>This action cannot be undone.</b>",
-          "TITLE": "Eliminar tipo de espoleta"
-        },
-        "EDIT": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the target type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the target type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Fuze operating mode name (English)",
-              "PLACEHOLDER": "Enter the fuze operating mode name in English"
-            },
-            "ES": {
-              "LABEL": "Fuze operating mode name",
-              "PLACEHOLDER": "Enter the fuze operating mode name here"
-            }
-          },
-          "TITLE": "Edit fuze operating mode"
+          "TITLE": "Delete fuze type"
         },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this type of wishbone?",
-          "TEXT_ONE": "Do you want to enable/disable this fuze type?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
-          "TITLE": "Activar / Desactivar tipo de espoleta"
+          "TITLE": "Activate / Deactivate fuze type"
         }
       },
       "LIST": {
@@ -670,78 +535,13 @@
       "TITLE": "Loading zone management"
     },
     "MATERIAL": {
-      "BUTTON_NEW": "New material type",
       "DIALOGS": {
-        "CREATE": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the material description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the material description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Material name (English)",
-              "PLACEHOLDER": "Enter the material name in English"
-            },
-            "ES": {
-              "LABEL": "Material name",
-              "PLACEHOLDER": "Enter the material name here"
-            }
-          },
-          "TITLE": "Create material"
-        },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this material? <br><b>This action cannot be undone.</b>",
           "TITLE": "Eliminar material"
         },
-        "EDIT": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the material description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the material description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Material name (English)",
-              "PLACEHOLDER": "Enter the material name in English"
-            },
-            "ES": {
-              "LABEL": "Material name",
-              "PLACEHOLDER": "Enter the material name here"
-            }
-          },
-          "TITLE": "Edit material"
-        },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this material?",
-          "TEXT_ONE": "Do you want to enable/disable this material?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
           "TITLE": "Activar / Desactivar material"
         }
       },
@@ -756,15 +556,150 @@
     },
     "MEASURES": {
       "DIALOGS": {
+        "DELETE": {
+          "DESCRIPTION": "Are you sure you want to delete the selected measurement?",
+          "TITLE": "Delete measurement"
+        },
+        "SWITCH_STATUS": {
+          "DESCRIPTION": "Are you sure you want to change the status of the selected measurement?",
+          "TITLE": "Change measurement status"
+        },
         "UPSERT": {
+          "ACCREDITATION": "Accreditation",
+          "EQUIPMENT_TYPES": {
+            "LABEL": "Equipment",
+            "PLACEHOLDER": "Select equipment"
+          },
+          "GRUBBS": "GRUBBS",
+          "MAGNITUDE_CODE": {
+            "LABEL": "Magnitude code",
+            "PLACEHOLDER": "Enter magnitude code"
+          },
+          "MAGNITUDE_EN": {
+            "LABEL": "Magnitude name in English",
+            "PLACEHOLDER": "Enter magnitude name in English"
+          },
+          "MAGNITUDE_ES": {
+            "LABEL": "Magnitude name in Spanish",
+            "PLACEHOLDER": "Enter magnitude name in Spanish"
+          },
+          "MAX_VALUE": {
+            "LABEL": "Maximum value",
+            "PLACEHOLDER": "Enter maximum value"
+          },
           "MEASUREMENTS": {
             "LABEL": "Measurement",
             "PLACEHOLDER": "Select one or more measurements"
+          },
+          "MEASUREMENT_AREA_CODE": {
+            "LABEL": "Measurement area",
+            "PLACEHOLDER": "Enter measurement area code"
+          },
+          "MEASURE_UNIT": {
+            "LABEL": "Unit of measurement",
+            "PLACEHOLDER": "Select unit of measurement"
+          },
+          "MIN_VALUE": {
+            "LABEL": "Minimum value",
+            "PLACEHOLDER": "Enter minimum value"
+          },
+          "PROCEDURE_EN": {
+            "LABEL": "Procedure name in English",
+            "PLACEHOLDER": "Enter procedure name in English"
+          },
+          "PROCEDURE_ES": {
+            "LABEL": "Procedure name in Spanish",
+            "PLACEHOLDER": "Enter procedure name in Spanish"
+          },
+          "QUALIFICATION_TYPE": {
+            "PLACEHOLDER": "Select qualification type",
+            "TITLE": "Qualification type",
+            "VALUES": {
+              "QUALITATIVE": "Qualitative",
+              "QUANTITATIVE": "Quantitative"
+            }
+          },
+          "UNCERTAINTY": {
+            "LABEL": "Uncertainty",
+            "PLACEHOLDER": "Enter uncertainty value"
+          },
+          "UNIT": {
+            "LABEL": "Unit",
+            "PLACEHOLDER": "Select unit"
+          },
+          "VALUES": {
+            "ACTIVE": "Active",
+            "CODE": {
+              "LABEL": "Code",
+              "PLACEHOLDER": "Automatically generated based on English name"
+            },
+            "NAME_EN": {
+              "LABEL": "Value name in English",
+              "PLACEHOLDER": "Enter value name in English"
+            },
+            "NAME_ES": {
+              "LABEL": "Value name in Spanish",
+              "PLACEHOLDER": "Enter value name in Spanish"
+            },
+            "SUBTITLE": "Value {{index}}",
+            "TITLE": "Values"
           }
         }
       },
       "LIST": {
-        "MEASUREMENTS": "Measurement"
+        "ACREDITATION": "Accreditation",
+        "ACTIONS": "Actions",
+        "EQUIPMENT_TYPES": {
+          "TITLE": "Equipment",
+          "VALUES": {
+            "AMPLIFIER": "Amplifier",
+            "ANTENNA": "Antenna",
+            "BALANCE": "Scale",
+            "CHRONOMETER": "Stopwatch",
+            "CLIMATIC_CHAMBER": "Climatic chamber",
+            "CONVENTIONAL_CAMERA": "Conventional camera",
+            "CRUSHER": "Crusher",
+            "DOPPLER_RADAR": "Doppler radar",
+            "HIGH_SPEED_CAMERA": "High-speed camera",
+            "IPG": "IPG",
+            "PIEZOELECTRIC_SENSOR": "Piezoelectric sensor",
+            "PRESSURE_GAUGE": "Pressure gauge",
+            "PROBE": "Probe",
+            "RECORDER": "Recorder",
+            "SOUND_LEVEL_METER": "Sound level meter",
+            "TRACE_RULER": "Trace ruler",
+            "TRAJECTOGRAPHY_RADAR": "Trajectography radar"
+          }
+        },
+        "GRUBBS": "GRUBBS",
+        "MAGNITUDE_LABEL": "Magnitude",
+        "MAX_VALUE": "Maximum value",
+        "MEASUREMENTS": "Measurement",
+        "MEASUREMENT_AREA_CODE": "Measurement area",
+        "MEASURE_UNIT": "Unit of measurement",
+        "MIN_VALUE": "Minimum value",
+        "PROCEDURE_LABEL": "Procedure",
+        "QUALIFICATION_TYPE": {
+          "TITLE": "Qualification type",
+          "VALUES": {
+            "QUALITATIVE": "Qualitative",
+            "QUANTITATIVE": "Quantitative"
+          }
+        },
+        "UNIT": {
+          "TITLE": "Unit",
+          "VALUES": {
+            "ARMAMENT": "Armament",
+            "BALLISTICS": "Ballistics",
+            "MUNITIONS": "Munitions",
+            "TOPOGRAPHY": "Topography"
+          }
+        },
+        "VALUES": "Values"
+      },
+      "TITLE": "Measurements and records management",
+      "VALIDATION": {
+        "BOTH_FIELDS": "Both fields must be filled"
       }
     },
     "STANAG": {
@@ -780,7 +715,12 @@
         "UPSERT": {
           "CALC_TYPE": {
             "LABEL": "Calculation type",
-            "PLACEHOLDER": "Select the type of calculation"
+            "PLACEHOLDER": "Select the type of calculation",
+            "VALUE": {
+              "CONSECUTIVE_LAYERS": "Consecutive layers",
+              "LAYER_DIFFERENCE": "Difference between layers",
+              "SINGLE_VALUE": "Single value"
+            }
           },
           "DESCRIPTION": "Description",
           "END_LAYER": {
@@ -789,7 +729,14 @@
           },
           "INV_LAYERS": {
             "LABEL": "Layer involved",
-            "PLACEHOLDER": "Select the layer involved"
+            "PLACEHOLDER": "Select the layer involved",
+            "VALUE": {
+              "APPROXIMATE_HEIGHT": "Approximate height",
+              "BETWEEN_TWO_HEIGHTS": "Between two heights",
+              "CONSECUTIVE_LAYERS": "Consecutive layers",
+              "MAX_WIND_LEVEL": "Maximum wind level",
+              "SURFACE": "Surface"
+            }
           },
           "MEASURE_UNIT": {
             "LABEL": "Unit",
@@ -805,7 +752,14 @@
           },
           "VARIABLE": {
             "LABEL": "Variable",
-            "PLACEHOLDER": "Select variable"
+            "PLACEHOLDER": "Select variable",
+            "VALUE": {
+              "DENSITY": "Density",
+              "PRESSURE": "Pressure",
+              "TEMPERATURE": "Temperature",
+              "WIND_DIRECTION": "Wind direction",
+              "WIND_SPEED": "Wind speed"
+            }
           }
         }
       },
@@ -828,79 +782,14 @@
       "INACTIVE": "Inactive"
     },
     "TARGET_TYPE": {
-      "BUTTON_NEW": "New target type",
       "DIALOGS": {
-        "CREATE": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the target type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the target type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Target type name (English)",
-              "PLACEHOLDER": "Enter the target type name in English"
-            },
-            "ES": {
-              "LABEL": "Target type name",
-              "PLACEHOLDER": "Enter the target type name here"
-            }
-          },
-          "TITLE": "Create target type"
-        },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this target type? <br><b>This action cannot be undone.</b>",
-          "TITLE": "Eliminar tipo de blanco"
-        },
-        "EDIT": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the target type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the target type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Target type name (English)",
-              "PLACEHOLDER": "Enter the target type name in English"
-            },
-            "ES": {
-              "LABEL": "Target type name",
-              "PLACEHOLDER": "Enter the target type name here"
-            }
-          },
-          "TITLE": "Edit target type"
+          "TITLE": "Delete target type"
         },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this type of target?",
-          "TEXT_ONE": "Do you want to enable/disable this target type?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
-          "TITLE": "Activar / Desactivar tipo de blanco"
+          "TITLE": "Activate / Deactivate target type"
         }
       },
       "LIST": {
@@ -913,79 +802,14 @@
       "TITLE": "Target type management"
     },
     "TRIAL_TYPE": {
-      "BUTTON_NEW": "New trial type",
       "DIALOGS": {
-        "CREATE": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Create"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the trial type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the trial type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Trial type name (English)",
-              "PLACEHOLDER": "Enter the trial type name in English"
-            },
-            "ES": {
-              "LABEL": "Trial type name",
-              "PLACEHOLDER": "Enter the trial type name here"
-            }
-          },
-          "TITLE": "Create trial type"
-        },
         "DELETE": {
-          "BUTTONS": {
-            "CANCEL": "Undo",
-            "OK": "Delete"
-          },
           "DESCRIPTION": "Are you sure you want to delete this trial type? <br><b>This action cannot be undone.</b>",
-          "TITLE": "Eliminar tipo de prueba"
-        },
-        "EDIT": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Add"
-          },
-          "DESCRIPTION": {
-            "EN": {
-              "LABEL": "Notes in English (Optional)",
-              "PLACEHOLDER": "Write the trial type description in English here"
-            },
-            "ES": {
-              "LABEL": "Notes (Optional)",
-              "PLACEHOLDER": "Write the trial type description here"
-            }
-          },
-          "INPUT": {
-            "EN": {
-              "LABEL": "Trial type name (English)",
-              "PLACEHOLDER": "Enter the trial type name in English"
-            },
-            "ES": {
-              "LABEL": "Trial type name",
-              "PLACEHOLDER": "Enter the trial type name here"
-            }
-          },
-          "TITLE": "Edit trial type"
+          "TITLE": "Delete trial type"
         },
         "SWITCH_STATUS": {
-          "BUTTONS": {
-            "CANCEL": "Cancel",
-            "OK": "Confirm"
-          },
           "DESCRIPTION": "Do you want to activate/deactivate this type of test?",
-          "TEXT_ONE": "Do you want to enable/disable this trial type?",
-          "TEXT_TWO": "<b>You can change its status again</b> at any time. Note that <b>if you deactivate it, it will not be available.</b>",
-          "TITLE": "Activar / Desactivar tipo de prueba"
+          "TITLE": "Activate / Deactivate trial type"
         }
       },
       "LIST": {
@@ -1007,6 +831,7 @@
         "FUZE_TYPE": "Fuze type",
         "LOADING_ZONE": "Loading Zone",
         "MATERIAL": "Material",
+        "MEASUREMENTS_AND_RECORDS": "Measurements and records",
         "STANAG": "STANAG criteria",
         "TARGET_TYPE": "Target type",
         "TRIAL_TYPE": "Trial type"
@@ -1018,6 +843,7 @@
     "GESTION_TRIALS": "Trial management",
     "GESTION_TRIALS_LIST": "Fire Trials",
     "GESTION_TRIALS_NEW": "New Fire Trial",
+    "PLANNING": "Planning",
     "WHAREHOUSE": {
       "OPTIONS": {
         "DENOMINATIONS": "Denomination management",
@@ -1077,7 +903,7 @@
     "NO_RESULTS": "No results found",
     "REMOVE_ARIA": "Remove specimen",
     "SAVE": "Save",
-    "SELECTED_HEADER_LOT_SERIAL": "Lote / N° serie",
+    "SELECTED_HEADER_LOT_SERIAL": "Batch / Serial No.",
     "SELECTED_HEADER_SPECIMEN": "Specimen",
     "SELECTED_TITLE": "Selected specimen",
     "SERIAL_NUMBER_LABEL": "Serial No.",
@@ -1094,8 +920,8 @@
     "TYPE_WEAPON": "Weapon"
   },
   "TAPS_TOP": {
-    "CALENDAR_TRIALS": "Calendario de pruebas de fuego",
-    "TRIAL": "Ficha de prueba",
+    "CALENDAR_TRIALS": "Firing trial calendar",
+    "TRIAL": "Trial details",
     "TRIAL_DOCUMENT": "Document",
     "TRIAL_EXECUTION": "Execution",
     "TRIAL_GENERAL_INFO": "General information",
@@ -1113,9 +939,8 @@
   "TRIALS_LIST": {
     "ERROR": "Error loading trials",
     "EXPORT_EXCEL_BUTTON": "Export Excel",
-    "PLANNING_TITLE": "Fire Trial Planning",
     "FILTERS": {
-      "CLEAN_FILTERS": "Limpiar filtros",
+      "CLEAN_FILTERS": "Clear filters",
       "CLIENT": "Client",
       "CLIENT_PLACEHOLDER": "Select client",
       "DATE_FROM_PLACEHOLDER": "From",
@@ -1129,12 +954,13 @@
       "SCHEDULED_DATE_RANGE": "Scheduled date",
       "STATUS": "Status",
       "STATUS_PLACEHOLDER": "Select status",
-      "TRIAL_NUMBER": "Nº de prueba",
+      "TRIAL_NUMBER": "Trial No.",
       "TRIAL_NUMBER_PLACEHOLDER": "Select trial No.",
       "YEAR": "Year",
       "YEAR_ALL": "every year",
       "YEAR_PLACEHOLDER": "Select year"
     },
+    "PLANNING_TITLE": "Fire Trial Planning",
     "TABLE": {
       "ACTIONS": "Actions",
       "ASSIGNED_USER": "Assigned user",
@@ -1142,11 +968,11 @@
       "DESCRIPTION": "Description",
       "OBSERVATIONS": "Observations",
       "OTHER_DATA": "Other data",
-      "REQUESTED_DATE": "Fecha solicitada por el cliente",
+      "REQUESTED_DATE": "Client requested date",
       "SCHEDULED_DATE": "Scheduled date(s): {{date}}",
       "SCHEDULED_DATES": "Scheduled dates",
       "STATUS": "Status",
-      "TRIAL_NUMBER": "Nº de prueba",
+      "TRIAL_NUMBER": "Trial No.",
       "TYPE": "Trial type"
     }
   },
@@ -1187,8 +1013,8 @@
     "DESCRIPTION_PLACEHOLDER": "Write the trial description here",
     "DOCUMENTS_LOAD_ERROR": "Failed to load the documentation section.",
     "ERRORS": {
-      "LOAD_FAILED_TITLE": "Error loading trial form",
-      "LOAD_FAILED_DETAIL": "Failed to load trial form data. Please try again later."
+      "LOAD_FAILED_DETAIL": "Failed to load trial form data. Please try again later.",
+      "LOAD_FAILED_TITLE": "Error loading trial form"
     },
     "HEADING_PAGE": "Trial details",
     "LINKED_TRIAL": "Linked trial",
@@ -1229,11 +1055,11 @@
       "ACTIONS": "Actions",
       "ACTIVE": "In force",
       "ASSOCIATED_TRIALS": "Associate with other trials",
-      "CATEGORY": "Category",
       "CATEGORIES": {
         "GENERAL": "General",
         "SPECIFIC": "Specific"
       },
+      "CATEGORY": "Category",
       "CLOSE_BUTTON": "Close",
       "DATE_UPLOADED": "Upload date",
       "DELETE": "Delete",
@@ -1269,6 +1095,10 @@
       "VERSION": "Version",
       "VERSIONS_MAT_LABEL": "Revisions and versions",
       "VINCULATED_TRIALS": "Linked trials"
+    },
+    "DOC_VIEWER": {
+      "LOADING": "Loading document...",
+      "NO_DOCUMENT_OR_UNSUPPORTED": "No document selected or unsupported format (must be PDF)"
     },
     "DOWNLOAD_REQUIRED_DIALOG": {
       "ACCEPT": "Accept",
@@ -1374,6 +1204,15 @@
     },
     "CLOSE_WIDGET_PANEL": "Close widget panel",
     "DIALOGS": {
+      "CANCEL_EXECUTION": {
+        "CONFIRM_BTN": "Confirm cancellation",
+        "REASON_LABEL": "Reason for cancellation",
+        "REASON_PLACEHOLDER": "Enter the reason for cancellation",
+        "TEXT_PREFIX": "You are about to permanently cancel the",
+        "TITLE": "Cancel fire trial",
+        "TRIAL_NAME_PREFIX": "trial:",
+        "WARNING": "This action will close the trial due to an unrecoverable incident and cannot be resumed."
+      },
       "EQUIPMENT_SELECTOR": {
         "ADD_EQUIPMENT": "Add equipment",
         "BACK": "Back",
@@ -1384,8 +1223,8 @@
         "DELETE": "Delete",
         "EQUIPMENT_HEADING": "Equipment",
         "ERRORS": {
-          "LOAD_FAILED_TITLE": "Error loading equipment selection",
-          "LOAD_FAILED_DETAIL": "Could not retrieve trial equipment information. Please try again later."
+          "LOAD_FAILED_DETAIL": "Could not retrieve trial equipment information. Please try again later.",
+          "LOAD_FAILED_TITLE": "Error loading equipment selection"
         },
         "FIELDS": {
           "AMPLIFICADOR": "Amplifier",
@@ -1410,8 +1249,11 @@
           "SENSOR_PIEZOELECTRICO": "Piezoelectric Sensor",
           "SERIES": "Series"
         },
+        "INCOMPLETE_ASSIGNMENTS": "Complete equipment, series and shots in each row. Check the channel and magnitude where applicable.",
+        "NO_PLANNED_MEASURES": "No planned measurements are available for your unit.",
         "SAVE": "Save",
         "SELECTION_LIMIT": "Selection ({{max}} max)",
+        "SELECT_ALL_SERIES": "Select all series",
         "SELECT_TAG": "Select measurement/equipment",
         "SERIES_PLACEHOLDER": "Select a series",
         "SHOTS_PLACEHOLDER": "All shots in the series",
@@ -1428,7 +1270,19 @@
           "VIDEO_AV": "AV Video",
           "VIDEO_C": "C Video"
         },
-        "TITLE": "Equipment"
+        "TAG_SELECTION_ARIA": "Tag selection",
+        "TITLE": "Equipment",
+        "UNSUPPORTED_SELECTION": "This selection requires support in the execution API."
+      },
+      "INTERRUPT_EXECUTION": {
+        "CONFIRM_BTN": "Interrupt trial",
+        "DESCRIPTION": "You are about to temporarily interrupt the execution, changing status to Interrupted.",
+        "REASON_LABEL": "Reason for interruption",
+        "REASON_PLACEHOLDER": "Enter the reason for interruption",
+        "START_SECURITY_COUNT_BTN": "Start safety countdown",
+        "TEXT_PREFIX": "You are about to interrupt the",
+        "TITLE": "Interrupt fire trial",
+        "TRIAL_NAME_PREFIX": "trial:"
       },
       "PAUSE_EXECUTION": {
         "CANCEL": "Cancel",
@@ -1448,26 +1302,24 @@
     "EMPTY_PANEL_DESC_2": "to add modules",
     "EMPTY_PANEL_DESC_WIDGETS_BTN": "'Widgets'",
     "EMPTY_PANEL_TITLE": "Your panel is empty",
+    "ERRORS": {
+      "LOAD_FAILED_DETAIL": "Execution information could not be retrieved. Please try again later.",
+      "LOAD_FAILED_TITLE": "Error loading execution"
+    },
     "FREE_SPACE_DESC_1": "Click",
     "FREE_SPACE_DESC_2": "to add more modules",
     "FREE_SPACE_DESC_WIDGETS_BTN": "'Widgets'",
     "FREE_SPACE_TITLE": "You have space on your panel",
-    "WIDGET_NO_SPACE_MESSAGE": "Free up some space or remove another widget before trying again.",
-    "WIDGET_NO_SPACE_TITLE": "This widget does not fit on the panel",
-    "ERRORS": {
-      "LOAD_FAILED_TITLE": "Error loading execution",
-      "LOAD_FAILED_DETAIL": "Execution information could not be retrieved. Please try again later."
-    },
     "HISTORY": {
+      "EXECUTION_DATE": "Execution date",
       "SERIES": "Series",
       "SHOT": "Shot",
-      "STATUS": "Status",
-      "EXECUTION_DATE": "Execution date"
+      "STATUS": "Status"
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No widgets found",
-    "SEARCH_WIDGET_PLACEHOLDER": "Search widget...",
     "PROGRESS": "% test progress",
+    "SEARCH_WIDGET_PLACEHOLDER": "Search widget...",
     "SHOT_HISTORY_DESC": "Latest run records",
     "SHOT_HISTORY_TITLE": "Shooting History",
     "TITLE": "Execution",
@@ -1500,16 +1352,13 @@
         "CURRENT_SHOT_BTN": "Current shot",
         "DESCRIPTION": "Weapon, series, tube, attacked equipment and recoil equipment",
         "DISPARO_PLACEHOLDER": "Shot",
-        "INSTRUMENTED_LABEL": "Instrumented",
-        "INSTRUMENTED_YES": "Yes",
-        "INSTRUMENTED_NO": "No",
-        "OBSERVATIONS_LABEL": "Observations",
-        "OBSERVATIONS_PLACEHOLDER": "Observations",
-        "USEFUL_LIFE_LABEL": "% useful life",
         "EQUIPO_ATACADO_LABEL": "Team Attacked",
         "EQUIPO_ATACADO_PLACEHOLDER": "Equipment",
         "EQUIPO_RETROCESO_LABEL": "Throwback Team",
         "EQUIPO_RETROCESO_PLACEHOLDER": "Equipment",
+        "INSTRUMENTED_LABEL": "Instrumented",
+        "INSTRUMENTED_NO": "No",
+        "INSTRUMENTED_YES": "Yes",
         "MASS_CONFIG_APPLY_BTN": "Apply",
         "MASS_CONFIG_BTN": "Apply bulk configuration",
         "MASS_CONFIG_CANCEL_BTN": "Cancel",
@@ -1521,10 +1370,13 @@
         "NÑ_SERIE_ARMA_PLACEHOLDER": "Serial number",
         "NÑ_SERIE_TUBO_LABEL": "Tube serial number",
         "NÑ_SERIE_TUBO_PLACEHOLDER": "Serial number",
-        "SERIE_PLACEHOLDER": "Operation",
+        "OBSERVATIONS_LABEL": "Observations",
+        "OBSERVATIONS_PLACEHOLDER": "Observations",
+        "SERIE_PLACEHOLDER": "Series",
         "TITLE": "Weapon data introduction",
         "TUBO_LABEL": "Tube",
-        "TUBO_PLACEHOLDER": "Tube"
+        "TUBO_PLACEHOLDER": "Tube",
+        "USEFUL_LIFE_LABEL": "% useful life"
       },
       "COMMON": {
         "PENDING_CHANGES": "Changes pending saving"
@@ -1607,8 +1459,8 @@
         "TITLE": "Tarado Information"
       },
       "JLT_MAO": {
-        "ALTURA_EXPLOSION_LABEL": "explosion height",
-        "ALTURA_EXPLOSION_PLACEHOLDER": "XXX",
+        "ALTURA_EXPLOSION_LABEL": "Operating height",
+        "ALTURA_EXPLOSION_PLACEHOLDER": "Operating height",
         "ALTURA_FUNCIONAMIENTO_LABEL": "Operating height",
         "ALTURA_FUNCIONAMIENTO_PLACEHOLDER": "Operating height",
         "ANGULO_TIRO_LABEL": "Shooting angle",
@@ -1621,8 +1473,8 @@
         "DIFERENCIA_ANGULAR_PLACEHOLDER": "Difference",
         "DISPARO_LABEL": "Shot",
         "DISPARO_PLACEHOLDER": "Shot",
-        "DISTANCIA_EXPLOSION_LABEL": "Explosion distance",
-        "DISTANCIA_EXPLOSION_PLACEHOLDER": "XXX",
+        "DISTANCIA_EXPLOSION_LABEL": "Operating distance",
+        "DISTANCIA_EXPLOSION_PLACEHOLDER": "Operating distance",
         "DISTANCIA_FUNCIONAMIENTO_LABEL": "Operating distance",
         "DISTANCIA_FUNCIONAMIENTO_PLACEHOLDER": "Operating distance",
         "DISTANCIA_PIQUE_LABEL": "Predicted dive distance",
@@ -1636,9 +1488,9 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
         "MASS_CONFIG_TITLE": "Extend settings",
         "PIQUETA_LABEL": "Pickaxe",
-        "PIQUETA_PLACEHOLDER": "XXX",
+        "PIQUETA_PLACEHOLDER": "Pickaxe",
         "SERIE_LABEL": "Series",
-        "SERIE_PLACEHOLDER": "Operation",
+        "SERIE_PLACEHOLDER": "Series",
         "TIEMPO_VUELO_LABEL": "Theoretical flight time",
         "TIEMPO_VUELO_PLACEHOLDER": "Theoretical flight time",
         "TITLE": "Introduce. JLT MAO data",
@@ -1666,7 +1518,7 @@
         "OPERADOR_PIEZA_PLACEHOLDER": "Writes...",
         "RETROCESO_LABEL": "Recoil",
         "RETROCESO_PLACEHOLDER": "0.00",
-        "SERIE_PLACEHOLDER": "Operation",
+        "SERIE_PLACEHOLDER": "Series",
         "TITLE": "JLT data entry"
       },
       "MANOMETER_INTRODUCTION": {
@@ -1703,7 +1555,7 @@
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
         "MASS_CONFIG_TITLE": "Extend settings",
         "OBSERVADOR_LABEL": "Observer",
-        "OBSERVADOR_PLACEHOLDER": "XXX",
+        "OBSERVADOR_PLACEHOLDER": "Observer",
         "PIEZA_GROUP_LABEL": "Piece",
         "SERIE_LABEL": "Series",
         "SERIE_PLACEHOLDER": "Operation",
@@ -1777,6 +1629,7 @@
         "TITLE": "Entering ammunition data"
       },
       "OVERPRESSURE_CHART": {
+        "CHART_ARIA": "Overpressure Chart",
         "DESCRIPTION": "Overpressure graph: pressure line, deviation bands and reference lines",
         "LEGEND_DESV_MAX": "Dev. maximum",
         "LEGEND_DESV_MIN": "Dev. minimum",
@@ -1784,9 +1637,11 @@
         "LEGEND_PRES_MIN": "Minimum pressure",
         "LEGEND_RECTA": "straight pressure",
         "LEGEND_SEGURIDAD": "Security Pres.",
+        "PRESSURE_LABEL": "Pressure",
         "SERIE_LABEL": "Series",
         "SERIE_PLACEHOLDER": "All",
-        "TITLE": "Overpressure Graph"
+        "TITLE": "Overpressure Graph",
+        "WEIGHT_LABEL": "Weight"
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Test pressure management: maximum, minimum, reference and safety pressure",
@@ -1819,7 +1674,9 @@
         "CURRENT_SHOT_BTN": "Current shot",
         "DESCRIPTION": "Piezoelectric sensors pressure",
         "DISPARO_PLACEHOLDER": "Shot",
-        "INPUT_PLACEHOLDER_XXX": "XXX",
+        "EQUIPOS_LABEL": "Sensor / Recorder / Amplifier",
+        "EQUIPOS_PLACEHOLDER": "Select sensor, recorder and amplifier",
+        "INPUT_PLACEHOLDER_XXX": "Shot",
         "OBSERVACIONES_LABEL": "Observations",
         "OBSERVACIONES_PLACEHOLDER": "Enter your observations",
         "PRESION_CIERRE_LABEL": "Breech pressure",
@@ -1828,8 +1685,8 @@
         "PRESION_DIF_POSITIVA_LABEL": "Positive Differential Pressure",
         "PRESION_INTERMEDIO_LABEL": "Intermediate pressure",
         "PRESION_MAXIMA_LABEL": "Maximum pressure",
-        "PRESION_MAXIMA_PLACEHOLDER": "XXX",
-        "PRESION_PLACEHOLDER": "XXX",
+        "PRESION_MAXIMA_PLACEHOLDER": "Maximum pressure",
+        "PRESION_PLACEHOLDER": "Pressure",
         "REGISTRADOR_LABEL": "Recorder",
         "REGISTRADOR_PLACEHOLDER": "Equipment",
         "SERIE_PLACEHOLDER": "Series",
@@ -1840,9 +1697,9 @@
         "TAB_OTRO": "P. Otro",
         "TAB_TIEMPOS": "Tiempos",
         "TIEMPO_ACCION_LABEL": "Action Time",
-        "TIEMPO_ACCION_PLACEHOLDER": "XXX",
+        "TIEMPO_ACCION_PLACEHOLDER": "Action time",
         "TIEMPO_RETARDO_LABEL": "Delay Time",
-        "TIEMPO_RETARDO_PLACEHOLDER": "XXX",
+        "TIEMPO_RETARDO_PLACEHOLDER": "Delay time",
         "TITLE": "Piezoelectric sensors pressure"
       },
       "RADAR_METCMQ": {
@@ -1920,6 +1777,8 @@
         "DESCRIPTION": "Shot number, velocity and observations",
         "NUMBER": "Shot number",
         "OBSERVATIONS": "Observations",
+        "SHOT_NUMBER_PLACEHOLDER": "Ex: 001",
+        "SPEED_PLACEHOLDER": "Ex: 850",
         "TITLE": "Shot data",
         "VELOCITY": "Velocity"
       },
@@ -1932,9 +1791,11 @@
         "STATUS_FAIL": "Does not comply",
         "STATUS_PASS": "Compliant",
         "STATUS_UNKNOWN": "Unverified",
-        "TITLE": "STANAG criteria"
+        "TITLE": "STANAG criteria",
+        "UPDATE_CRITERIA_ARIA": "Update criteria"
       },
       "TARADO_PRESION": {
+        "CHART_ARIA": "Calibration Pressure Chart",
         "DESCRIPTION": "Linear regression Mean pressure (MPa) vs Wc/g to determine the powder charge weight",
         "DISPARO_LABEL": "Shot",
         "DISPARO_PLACEHOLDER": "all shots",
@@ -1950,6 +1811,7 @@
         "WC_LABEL": "Wc/g"
       },
       "TARADO_VELOCIDAD": {
+        "CHART_ARIA": "Calibration Velocity Chart",
         "CONFIG_BTN": "Configuration",
         "CONFIG_LABEL": "Select settings",
         "CONFIG_PLACEHOLDER": "Configuration",
@@ -1973,16 +1835,16 @@
       },
       "TARGET_DATA": {
         "BLANCO_LABEL": "White",
-        "BLANCO_PLACEHOLDER": "XXXX",
+        "BLANCO_PLACEHOLDER": "Target",
         "DESCRIPTION": "Target, material, dimensions, thickness, distance and inclination from planning",
         "DIMENSIONES_LABEL": "Dimensions",
-        "DIMENSIONES_PLACEHOLDER": "XXXX",
+        "DIMENSIONES_PLACEHOLDER": "Dimensions",
         "DISPARO_PLACEHOLDER": "Shot",
         "DISTANCIA_LABEL": "Distance",
         "ESPESOR_LABEL": "Thickness",
         "INCLINACION_LABEL": "Inclination",
         "MATERIAL_LABEL": "Material",
-        "MATERIAL_PLACEHOLDER": "XXXX",
+        "MATERIAL_PLACEHOLDER": "Material",
         "SERIE_PLACEHOLDER": "Series",
         "TITLE": "Target Data"
       },
@@ -2039,6 +1901,7 @@
         "TITLE": "Trajectory data entry"
       },
       "UNIFORMIDAD": {
+        "CHART_ARIA": "Uniformity Chart",
         "CONFIG_LABEL": "Tare Conf.",
         "CONFIG_PLACEHOLDER": "Select settings",
         "DESCRIPTION": "Graphic representation of the uniformity of corrected speeds with respect to the selected calibration configuration",
@@ -2094,37 +1957,37 @@
         "TITLE": "Video camera orientation"
       },
       "VIDEO_DATA_INTRODUCTION": {
+        "CAMARA_LABEL": "Camera",
+        "CAMARA_PLACEHOLDER": "Select camera",
+        "CANAL_LABEL": "Channel",
+        "CANAL_PLACEHOLDER": "Select channel",
         "CURRENT_SHOT_BTN": "Current shot",
         "DESCRIPTION": "Camera, recorder, channel, magnitude, observed result and observations",
         "DISPARO_ACTUAL_LABEL": "Current shot",
         "DISPARO_LABEL": "Shot",
         "DISPARO_PLACEHOLDER": "Shot",
+        "ESTADO_DISPARO_LABEL": "Shot status",
+        "GRABADOR_LABEL": "Recorder",
+        "GRABADOR_PLACEHOLDER": "Select recorder",
+        "INPUT_DATA_SECTION": "INPUT DATA",
+        "MAGNITUD_HINT": "(will be selected from planned magnitudes)",
         "MAGNITUD_LABEL": "Magnitude",
         "MAGNITUD_PLACEHOLDER": "Select magnitude",
-        "MAGNITUD_HINT": "(will be selected from planned magnitudes)",
-        "RESULTADO_OBSERVADO_LABEL": "Observed result",
-        "RESULTADO_OBSERVADO_PLACEHOLDER": "Write observed result",
         "OBSERVACIONES_LABEL": "Observations",
         "OBSERVACIONES_PLACEHOLDER": "Write your observations",
+        "RESULTADO_OBSERVADO_LABEL": "Observed result",
+        "RESULTADO_OBSERVADO_PLACEHOLDER": "Write observed result",
         "SERIE_LABEL": "Series",
         "SERIE_PLACEHOLDER": "Series",
-        "TIPO_VIDEO_LABEL": "Video type",
-        "TIPO_VIDEO_PLACEHOLDER": "Select video type",
+        "STATUS_EXECUTED": "Executed",
+        "STATUS_IN_PROGRESS": "In progress",
+        "STATUS_PENDING": "Pending",
         "TIPO_VIDEO_AV": "Video AV (high speed)",
         "TIPO_VIDEO_AV_SHORT": "Video AV",
         "TIPO_VIDEO_C": "Video C (conventional)",
         "TIPO_VIDEO_C_SHORT": "Video C",
-        "INPUT_DATA_SECTION": "INPUT DATA",
-        "CAMARA_LABEL": "Camera",
-        "CAMARA_PLACEHOLDER": "Select camera",
-        "GRABADOR_LABEL": "Recorder",
-        "GRABADOR_PLACEHOLDER": "Select recorder",
-        "CANAL_LABEL": "Channel",
-        "CANAL_PLACEHOLDER": "Select channel",
-        "ESTADO_DISPARO_LABEL": "Shot status",
-        "STATUS_IN_PROGRESS": "In progress",
-        "STATUS_PENDING": "Pending",
-        "STATUS_EXECUTED": "Executed",
+        "TIPO_VIDEO_LABEL": "Video type",
+        "TIPO_VIDEO_PLACEHOLDER": "Select video type",
         "TITLE": "Video data introduction"
       },
       "VIGILANCIA": {
@@ -2156,14 +2019,16 @@
       }
     },
     "WIDGETS_BTN": "Widgets",
-    "WIDGET_LIBRARY_TITLE": "Widget Library"
+    "WIDGET_LIBRARY_TITLE": "Widget Library",
+    "WIDGET_NO_SPACE_MESSAGE": "Free up some space or remove another widget before trying again.",
+    "WIDGET_NO_SPACE_TITLE": "This widget does not fit on the panel"
   },
   "TRIAL_PLANNING": {
     "ACCESS_DENIED": "You do not have access to this trial",
     "ARMAMENT": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading armament",
-        "LOAD_FAILED_DETAIL": "Failed to load trial armament information. Please try again later."
+        "LOAD_FAILED_DETAIL": "Failed to load trial armament information. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading armament"
       },
       "FOOTER": {
         "SAVE_DRAFT": "Save draft"
@@ -2187,6 +2052,7 @@
         "OBSERVATIONS": "Observations",
         "OBSERVATIONS_PLACEHOLDER": "Write notes here...",
         "REMOVE_ARIA_LABEL": "Delete",
+        "SELECTED_ITEMS_ARIA": "Selected items",
         "SERIES_LABEL": "Series",
         "SERIES_PLACEHOLDER": "Select series",
         "TITLE": "Bulk shot configuration",
@@ -2254,21 +2120,23 @@
       "ADDITIONAL_INFO_LABEL": "Additional client information",
       "ADDITIONAL_INFO_PLACEHOLDER": "Write the additional information here",
       "CANCEL": "Cancel",
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading general data",
-        "LOAD_FAILED_DETAIL": "Failed to load trial planning information. Please try again later."
-      },
       "DATE_PARAMS_CONTROL": "Date control parameters",
       "DAYS_SIGN_REPORT_LABEL": "Days to sign the report",
       "DAYS_SIGN_REPORT_PLACEHOLDER": "Enter the days to sign the report",
       "END_PERCENTAGE_LABEL": "Percentage for trial end",
       "END_PERCENTAGE_PLACEHOLDER": "Enter the percentage for trial end",
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Failed to load trial planning information. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading general data"
+      },
       "EXECUTION_DATE_LABEL": "Scheduled execution date",
       "EXECUTION_DATE_PLACEHOLDER": "Select scheduled execution date",
+      "HYPOCHELOMETRIC_REVIEW_AFTER_LABEL": "After trial",
+      "HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL": "Before trial",
+      "HYPOCHELOMETRIC_REVIEW_LABEL": "Hypochelometric review",
       "LIMIT_DATE_LABEL": "Execution deadline",
       "LIMIT_DATE_PLACEHOLDER": "Select the execution deadline",
       "MANAGE_SPECIMEN_BUTTON": "Manage specimen",
-      "SPECIMEN_TOOLTIP": "Selected specimens",
       "MAX_DATE_REPORT_LABEL": "Maximum days to issue report",
       "MAX_DATE_REPORT_PLACEHOLDER": "Enter the maximum days to issue the report",
       "MODIFY_PLANNING": "Modify planning",
@@ -2283,6 +2151,7 @@
       "SPECIMEN_LABEL": "Specimen",
       "SPECIMEN_PLACEHOLDER": "Select specimen",
       "SPECIMEN_REQUIRED": "Specimen is required",
+      "SPECIMEN_TOOLTIP": "Selected specimens",
       "TAB_TITLE": "General",
       "TRIAL_GOAL_LABEL": "Trial objective",
       "TRIAL_GOAL_PLACEHOLDER": "Write the trial objective",
@@ -2292,22 +2161,26 @@
       "VALIDATE": "Validate",
       "VALIDATION_ERRORS_TITLE": "Reasons why it can't be validated"
     },
+    "LOADING": "Loading planning...",
     "MEASURES": {
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading measures and records",
-        "LOAD_FAILED_DETAIL": "Failed to load trial measures and records. Please try again later."
+        "LOAD_FAILED_DETAIL": "Failed to load trial measures and records. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading measures and records"
       },
       "FOOTER": {
+        "CANCEL_BUTTON": "Cancel",
         "SAVE_DRAFT": "Save draft",
-        "SAVING_DRAFT": "Saving...",
-        "CANCEL_BUTTON": "Cancel"
-      }
+        "SAVING_DRAFT": "Saving..."
+      },
+      "LIMIT_CARD": {
+        "DEVIATION": "Deviation",
+        "ENTER_VALUE": "Enter value",
+        "MAX_LIMIT": "Maximum limit",
+        "MIN_LIMIT": "Minimum limit"
+      },
+      "TITLE": "Measurements"
     },
     "MUNITIONS": {
-      "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading munition configurations",
-        "LOAD_FAILED_DETAIL": "Failed to load trial munition configurations. Please try again later."
-      },
       "COMPONENT_DETAIL_FORM": {
         "ADD_POWDER_BUTTON": "Add powder",
         "CONDITIONING_CHECKBOX": "Conditioning",
@@ -2376,6 +2249,10 @@
           "MUNITION_TYPE_REQUIRED": "Munition type is required"
         }
       },
+      "ERRORS": {
+        "LOAD_FAILED_DETAIL": "Failed to load trial munition configurations. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading munition configurations"
+      },
       "HEADER": {
         "CANCEL_BUTTON": "Cancel",
         "EMPTY_STATE": "No series configured.",
@@ -2425,10 +2302,14 @@
     "RATING_CRITERIA": {
       "COLUMNS": {
         "PROPERTY": "Property",
-        "USEFUL_1_MAX": "Useful-1 max",
-        "USEFUL_1_MIN": "Useful-1 min",
-        "USELESS_MAX": "Useless max",
-        "USELESS_MIN": "Useless min"
+        "USEFUL_1": "Useful-1",
+        "USELESS": "Useless"
+      },
+      "INFO_TOOLTIP": {
+        "RULE_1": "A value is classified as Useful-1 if it falls within the Useful-1 range.",
+        "RULE_2": "A value is classified as Useless if it falls outside the Useless range.",
+        "RULE_3": "Any value that is within the Useless range but outside the Useful-1 range is classified as Useful-2.",
+        "TITLE": "Rating Criteria"
       },
       "PRESSURE_LABEL": "Pressure",
       "PROPERTIES": {
@@ -2448,15 +2329,14 @@
       "ADD_SHOT_BUTTON": "Add shot",
       "CREATE_SERIE_BUTTON": "Create series",
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading series and shots",
-        "LOAD_FAILED_DETAIL": "Failed to load trial series and shots. Please try again later."
+        "LOAD_FAILED_DETAIL": "Failed to load trial series and shots. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading series and shots"
       },
       "NEW_SERIE_BUTTON": "New series",
       "NOT_SHOTS_IN_SERIE": "There are no shots in the series",
       "NO_SERIES_RESULTS": "No series found.",
       "NO_SHOTS_RESULTS": "No shots found.",
       "SERIES_SHOTS": "Series shots",
-      "SINGLE_SHOT_DELETE_TOOLTIP": "To delete the only shot in the series, you must delete the whole series.",
       "SERIES_TABLE": {
         "ACTIONS": "Actions",
         "EXECUTION_ORDER": "Execution order",
@@ -2470,18 +2350,20 @@
         "OBSERVATIONS_PLACEHOLDER": "Notes",
         "SHOT_NUMBER": "Shot No."
       },
+      "SINGLE_SHOT_DELETE_TOOLTIP": "To delete the only shot in the series, you must delete the whole series.",
       "TAB_TITLE": "Series and shots",
       "TITLE": "Trial series"
     },
     "SHOOTING_CONDITIONS_SECTION": {
       "ACTIONS": {
         "CANCEL": "Cancel",
+        "MASSIVE_CONFIG_BUTTON": "Apply massive configuration",
         "SAVE": "Save draft"
       },
       "EMPTY_STATE": "There are no shots in this series",
       "ERRORS": {
-        "LOAD_FAILED_TITLE": "Error loading shooting conditions",
-        "LOAD_FAILED_DETAIL": "Failed to load shooting conditions. Please try again later."
+        "LOAD_FAILED_DETAIL": "Failed to load shooting conditions. Please try again later.",
+        "LOAD_FAILED_TITLE": "Error loading shooting conditions"
       },
       "MASSIVE_CONFIG_DIALOG": {
         "ANGLE_LABEL": "Firing angle",
@@ -2554,7 +2436,9 @@
     }
   },
   "TRIAL_SCHEDULER": {
+    "DATA_LABEL": "Data:",
     "LEGEND": {
+      "ARIA_LABEL": "Chart legend",
       "BUSY": "Day with trials",
       "LABEL_COFIRM": "Unschedule",
       "NO_NOTAM": "No NOTAM",
@@ -2565,10 +2449,11 @@
     "SCHEDULE_TRIAL_INLINE_LABEL": "Scheduled date",
     "SCHEDULE_TRIAL_TITLE": "Trial scheduling",
     "SELECT_DAYS": "Select the days to run the trial",
+    "TRIAL_NUMBER": "Trial number",
     "UNPROGAM": {
       "DESCRIPTION": "You are about to unschedule trial {{id}} on {{day}}",
       "LABEL_COFIRM": "Unschedule",
-      "TITLE": "Desprogramar prueba"
+      "TITLE": "Unschedule trial"
     }
   },
   "TRIAL_TABLE_SELECTOR_MODAL": {
@@ -2578,12 +2463,12 @@
     "TITLE": "Trial scheduling"
   },
   "UI": {
-    "SKELETON": {
-      "LOADING": "Loading..."
-    },
     "SAVE_BUTTON": {
       "LABEL": "Save",
       "SAVING_TOOLTIP": "Saving changes..."
+    },
+    "SKELETON": {
+      "LOADING": "Loading..."
     }
   },
   "UTILS_TRIALS": {
@@ -2618,12 +2503,6 @@
     "INVALID_DATE": "Please enter a valid date"
   },
   "WHAREHOUSE_MANAGMENT": {
-    "DIALOGS": {
-      "SWITCH_STATUS": {
-        "CONTENT_HTML": "Do you want to confirm the record status change?",
-        "TITLE": "Change status"
-      }
-    },
     "CERTIFICATES": {
       "ACTIONS": "Actions",
       "ACTION_DELETE_HTML": "You are deleting an associated certificate",
@@ -2685,7 +2564,7 @@
         "ONU_PLACEHOLDER": "UN code",
         "OPTION_MUNITION": "Ammunition",
         "OPTION_MUNITION_COMPONENT": "Ammunition component",
-        "RISK_GROUP_LABEL": "Grupo de riesgo (opcional)",
+        "RISK_GROUP_LABEL": "Risk group (optional)",
         "RISK_GROUP_PLACEHOLDER": "Select a value",
         "TITLE_CREATE": "Create denomination",
         "TITLE_EDIT": "Edit denomination"
@@ -2698,6 +2577,12 @@
       "QUANTITY_ERROR": "Quantity must be at least one",
       "STATUS": "Status",
       "TITLE": "Ammunition denomination"
+    },
+    "DIALOGS": {
+      "SWITCH_STATUS": {
+        "CONTENT_HTML": "Do you want to confirm the record status change?",
+        "TITLE": "Change status"
+      }
     },
     "DIALOG_EDIT_COMPONENT": {
       "ADD": "Add component",
@@ -2900,6 +2785,7 @@
       "STATUS": "Status",
       "STATUS_AVAILABLE": "Available",
       "STATUS_RETIRE": "Retired",
+      "STATUS_RETIRED": "Retired",
       "TOTAL_NEQ": "Total NEQ"
     },
     "SEARH_LIST_PLACEHOLDER": "Enter search text",
@@ -2958,6 +2844,8 @@
     "VALIDATIONS": {
       "CELL_GREATER_THAN_MUNITIONDUMP": "Maximum NEQ per cell cannot be higher than maximum NEQ per magazine",
       "DATE_TIME_INTERVAL_WRONG": "Poorly defined time interval",
+      "EQUAL_LAYERS": "Start layer and end layer must have the same value",
+      "GREATER_END_LAYER": "Start layer must be lower than end layer",
       "GREATER_THAN_ZERO": "Enter value greater than zero",
       "MAX_GREATER_THAN_ZERO": "Enter maximum value greater than zero",
       "MIN_GREATER_THAN_ZERO": "Enter minimum value greater than zero",

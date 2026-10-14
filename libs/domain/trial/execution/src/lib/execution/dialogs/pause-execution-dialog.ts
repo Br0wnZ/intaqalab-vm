@@ -38,11 +38,20 @@ export type PauseExecutionDialogResult = { action: 'pause' } | { action: 'back' 
 
     <!-- Actions -->
     <mat-dialog-actions class="flex gap-2 !px-0 justify-end">
-      <button mat-stroked-button aria-label="Cancelar pausa" [mat-dialog-close]="{ action: 'back' }">
+      <button
+        mat-stroked-button
+        [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.PAUSE_EXECUTION.CANCEL' | translate"
+        [mat-dialog-close]="{ action: 'back' }"
+      >
         {{ 'TRIAL_EXECUTION.DIALOGS.PAUSE_EXECUTION.CANCEL' | translate }}
       </button>
 
-      <button mat-flat-button color="primary" aria-label="Pausar prueba" (click)="pause()">
+      <button
+        mat-flat-button
+        color="primary"
+        [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.PAUSE_EXECUTION.CONFIRM' | translate"
+        (click)="pause()"
+      >
         {{ 'TRIAL_EXECUTION.DIALOGS.PAUSE_EXECUTION.CONFIRM' | translate }}
       </button>
     </mat-dialog-actions>

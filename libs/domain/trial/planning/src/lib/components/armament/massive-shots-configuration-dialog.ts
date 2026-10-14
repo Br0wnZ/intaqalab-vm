@@ -59,7 +59,9 @@ import { SpecimenType } from '../../utils-models/specimen.model';
         </div>
 
         @if (selectedChips().length > 0) {
-          <mat-chip-set aria-label="Selected items">
+          <mat-chip-set
+            [attr.aria-label]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SELECTED_ITEMS_ARIA' | translate"
+          >
             @for (chip of selectedChips(); track chip.value) {
               <mat-chip [removable]="true" (removed)="removeChip(chip.value)">
                 <span>

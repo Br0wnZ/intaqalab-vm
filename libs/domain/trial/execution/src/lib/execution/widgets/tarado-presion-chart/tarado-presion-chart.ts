@@ -75,7 +75,12 @@ interface TaradoPresionForm {
 
       <!-- Chart: full width -->
       <div intaReadonlyContent class="flex-1 relative min-h-40 w-full">
-        <canvas uiChart aria-label="Tarado Presión Chart" role="img" [config]="chartConfig()"></canvas>
+        <canvas
+          uiChart
+          role="img"
+          [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.CHART_ARIA' | translate"
+          [config]="chartConfig()"
+        ></canvas>
       </div>
 
       <!-- Footer: legend (left) + stats (right) -->

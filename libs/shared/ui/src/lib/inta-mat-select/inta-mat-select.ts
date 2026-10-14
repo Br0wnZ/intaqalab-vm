@@ -5,10 +5,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import type { MatSelectChange } from '@angular/material/select';
 import { MatSelectModule } from '@angular/material/select';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'ui-inta-signal-select',
-  imports: [MatFormFieldModule, MatIconModule, MatSelectModule],
+  imports: [MatFormFieldModule, MatIconModule, MatSelectModule, TranslatePipe],
   template: `
     <div>
       @if (floatLabel() !== 'always') {
@@ -48,8 +49,8 @@ import { MatSelectModule } from '@angular/material/select';
             >
               <mat-icon class="search-icon">search</mat-icon>
               <input
-                placeholder="Buscar"
                 class="search-input"
+                [placeholder]="'COMMONS.SEARCH' | translate"
                 [value]="searchTermValue"
                 (input)="onSearchInput($event.target.value)"
                 (click)="$event.stopPropagation()"
@@ -63,7 +64,7 @@ import { MatSelectModule } from '@angular/material/select';
             </mat-option>
           }
           @if (filteredOptions().length === 0) {
-            <div class="no-results">No se encontraron resultados</div>
+            <div class="no-results">{{ 'COMMONS.NO_RESULTS' | translate }}</div>
           }
         </mat-select>
 

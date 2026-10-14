@@ -96,7 +96,7 @@ describe('SpecimensManagmentDialog', () => {
       }));
       fixture.detectChanges();
 
-      expect(screen.getByRole('button', { name: /Añadir/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /COMMONS\.ADD|Añadir/i })).toBeInTheDocument();
     });
   });
 

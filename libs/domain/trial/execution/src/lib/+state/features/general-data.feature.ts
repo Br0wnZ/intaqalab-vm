@@ -125,17 +125,7 @@ export function withGeneralData() {
       finishingExecutionStatus: computed(() => executionService.finishResource.status()),
 
       // Execution Planning
-      planning: computed(() => safeResourceValue(executionService.planningResource)),
-
-      isLoadingPlanning: computed(() => executionService.planningResource.isLoading()),
-
-      planningError: computed(() => executionService.planningResource.error()),
-
       isUpdatingPlanning: computed(() => executionService.updatePlanningResource.isLoading()),
-
-      planningState: computed(() => safeResourceValue(executionService.planningStateResource)),
-
-      isLoadingPlanningState: computed(() => executionService.planningStateResource.isLoading()),
 
       isApprovingPlanning: computed(() => executionService.approvePlanningResource.isLoading()),
 
@@ -166,9 +156,6 @@ export function withGeneralData() {
         patchState(store, { fireTrialId, fireTrial });
         this.loadExecutionState(fireTrialId);
         this.loadExecutionProgress(fireTrialId);
-        this.loadSecurityCountdown(fireTrialId);
-        this.loadPlanning(fireTrialId);
-        this.loadPlanningState(fireTrialId);
         executionService.getProfilesReadiness(fireTrialId);
         this.loadPlanningSeries(fireTrialId);
         this.loadPlanningConditions(fireTrialId);
@@ -180,9 +167,6 @@ export function withGeneralData() {
           trialsService.loadById(fireTrialId);
           this.loadExecutionState(fireTrialId);
           this.loadExecutionProgress(fireTrialId);
-          this.loadSecurityCountdown(fireTrialId);
-          this.loadPlanning(fireTrialId);
-          this.loadPlanningState(fireTrialId);
           executionService.getProfilesReadiness(fireTrialId);
           this.loadPlanningSeries(fireTrialId);
           this.loadPlanningConditions(fireTrialId);
@@ -241,16 +225,8 @@ export function withGeneralData() {
         executionService.finishExecution(fireTrialId);
       },
 
-      loadPlanning(fireTrialId: string): void {
-        executionService.getExecutionPlanning(fireTrialId);
-      },
-
       updatePlanning(fireTrialId: string, body: Parameters<typeof executionService.updateExecutionPlanning>[1]): void {
         executionService.updateExecutionPlanning(fireTrialId, body);
-      },
-
-      loadPlanningState(fireTrialId: string): void {
-        executionService.getExecutionPlanningState(fireTrialId);
       },
 
       approvePlanning(
@@ -387,9 +363,6 @@ export function withGeneralData() {
           trialsService.loadById(fireTrialId);
           store.loadExecutionState(fireTrialId);
           store.loadExecutionProgress(fireTrialId);
-          store.loadSecurityCountdown(fireTrialId);
-          store.loadPlanning(fireTrialId);
-          store.loadPlanningState(fireTrialId);
           executionService.getProfilesReadiness(fireTrialId);
           store.loadPlanningSeries(fireTrialId);
           store.loadPlanningConditions(fireTrialId);

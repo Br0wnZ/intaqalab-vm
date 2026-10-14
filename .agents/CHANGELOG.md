@@ -37,3 +37,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [execution-domain-expert - 1.0.3] - 2026-10-06
 
 - Require hidden resize handles on execution observation textareas
+
+## [execution-domain-expert - 1.0.4] - 2026-10-09
+
+- Document equipment selector architecture and widget consumption
+
+## [widget-service-integration - 1.0.1] - 2026-10-09
+
+- Add Calibry equipment consumption guide for execution widgets

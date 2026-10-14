@@ -1,4 +1,4 @@
-import { httpResource } from '@angular/common/http';
+import { HttpParams, httpResource } from '@angular/common/http';
 import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -7,40 +7,42 @@ import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, Speed
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-    EquipmentMeasurementGroup,
-    EquipmentSelectionItem,
-    EquipmentSelectionList,
-    EquipmentTypeEnum,
-    JltMaoBulkConfigurationRequest,
-    JltMaoBulkConfigurationResponse,
-    MaoTopographyBulkConfigurationRequest,
-    MaoTopographyBulkConfigurationResponse,
-    PropellantChargeParametersResponse,
-    ShotAcousticLevelRequest,
-    ShotAcousticLevelResponse,
-    ShotCameraOrientationResponse,
-    ShotDifferentialPressureData,
-    ShotJltMaoRequest,
-    ShotJltMaoResponse,
-    ShotManometerPressuresRequest,
-    ShotManometerPressuresResponse,
-    ShotMaoTopographyRequest,
-    ShotMaoTopographyResponse,
-    ShotMunitionRequest,
-    ShotMunitionResponse,
-    ShotPiezoPressureItem,
-    ShotPressuresRequest,
-    ShotPressuresResponse,
-    ShotTimesData,
-    ShotTopographyRequest,
-    ShotTopographyResponse,
-    ShotTrajectographyRequest,
-    ShotTrajectographyResponse,
-    ShotVideoDataRequest,
-    ShotVideoDataResponse,
-    WidgetPreferenceId,
+  EquipmentMeasurementGroup,
+  EquipmentSelectionItem,
+  EquipmentSelectionList,
+  EquipmentTypeEnum,
+  JltMaoBulkConfigurationRequest,
+  JltMaoBulkConfigurationResponse,
+  MaoTopographyBulkConfigurationRequest,
+  MaoTopographyBulkConfigurationResponse,
+  PropellantChargeParametersResponse,
+  ShotAcousticLevelRequest,
+  ShotAcousticLevelResponse,
+  ShotCameraOrientationResponse,
+  ShotDifferentialPressureData,
+  ShotJltMaoRequest,
+  ShotJltMaoResponse,
+  ShotManometerPressuresRequest,
+  ShotManometerPressuresResponse,
+  ShotMaoTopographyRequest,
+  ShotMaoTopographyResponse,
+  ShotMunitionRequest,
+  ShotMunitionResponse,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
+  ShotTopographyRequest,
+  ShotTopographyResponse,
+  ShotTrajectographyRequest,
+  ShotTrajectographyResponse,
+  ShotVideoDataRequest,
+  ShotVideoDataResponse,
+  TrajectographyRadarOrientationResponse,
+  WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
+import { EquipmentCatalogService } from './equipment-catalog.service';
 import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -75,6 +77,11 @@ export interface PlanningDenominationOption {
   componentTypeId: string;
   batch?: string | null;
   clientNumber?: string | null;
+}
+
+export interface WarehouseStockBatch {
+  denominationId: string;
+  batch: string;
 }
 
 export interface PlanningComponentData {
@@ -226,12 +233,6 @@ export interface PlanningRequest {
   dateControl?: DateControlParameters;
 }
 
-export interface PlanningStateResponse {
-  version: number;
-  isApprovedByClient: boolean;
-  updatedAt: string;
-}
-
 export interface PlanningApprovalRequest {
   approved: boolean;
   comments?: string | null;
@@ -348,9 +349,7 @@ interface ShotJltMaoParams {
 
 interface ShotCameraOrientationParams {
   fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-  cameraId: string;
+  cameraId: number;
 }
 
 interface ShotJltMaoUpdateParams extends ShotJltMaoParams {
@@ -419,12 +418,12 @@ interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
 
 export type ShotPressuresData = ShotPiezoPressureItem;
 export type {
-    PropellantChargeParametersResponse,
-    ShotDifferentialPressureData,
-    ShotPiezoPressureItem,
-    ShotPressuresRequest,
-    ShotPressuresResponse,
-    ShotTimesData
+  PropellantChargeParametersResponse,
+  ShotDifferentialPressureData,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
 };
 
 export interface ArmamentEquipmentItem {
@@ -631,10 +630,6 @@ interface SeriesReadinessOneParams {
   body: SeriesReadinessRequest;
 }
 
-interface EquipmentByCategoryParams {
-  categoryId: string;
-}
-
 interface LoadEquipmentByTypeParams {
   itemType: 'WEAPON' | 'TUBE';
 }
@@ -646,6 +641,7 @@ interface LoadEquipmentByTypeParams {
 })
 export class ExecutionService {
   readonly #lifecycleService = inject(FireTrialLifecycleService);
+  readonly #equipmentCatalogService = inject(EquipmentCatalogService);
   readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
@@ -658,6 +654,7 @@ export class ExecutionService {
     active: boolean;
     munitionTypeId?: string;
   } | null>(null);
+  readonly #availableStockParams = signal<string[] | null>(null);
 
   readonly #planningMunitionsResource = httpResource<unknown>(() => {
     const params = this.#planningMunitionsParams();
@@ -691,6 +688,38 @@ export class ExecutionService {
       method: 'GET',
     };
   });
+
+  readonly #availableStockResource = httpResource<unknown>(() => {
+    const denominationIds = this.#availableStockParams();
+    if (!denominationIds?.length) return undefined;
+
+    let params = new HttpParams().set('page', 1).set('pageSize', 200).set('sort', 'createdAt;desc');
+    denominationIds.forEach((denominationId) => {
+      params = params.append('denominationIds', denominationId);
+    });
+
+    return {
+      url: `${this.#warehouseUrl}/stock`,
+      params,
+      method: 'GET',
+    };
+  });
+
+  async fetchAvailableStockBatches(denominationIds: string[]): Promise<WarehouseStockBatch[]> {
+    const uniqueDenominationIds = [...new Set(denominationIds.filter(Boolean))];
+    if (uniqueDenominationIds.length === 0) return [];
+
+    this.#availableStockParams.set(uniqueDenominationIds);
+    await this.#awaitResource(this.#availableStockResource);
+    return this.#catalogItems(this.#availableStockResource.value()).flatMap((item) => {
+      const denomination = item['denomination'];
+      const batch = item['batch'];
+      if (!isRecord(denomination) || typeof denomination['id'] !== 'string' || typeof batch !== 'string' || !batch) {
+        return [];
+      }
+      return [{ denominationId: denomination['id'], batch }];
+    });
+  }
 
   async fetchWarehouseDenominations(munitionTypeId?: string): Promise<PlanningDenominationOption[]> {
     this.#warehouseDenominationsParams.set({
@@ -1064,6 +1093,26 @@ export class ExecutionService {
     this.#getPlanningConditionsParams.set({ fireTrialId });
   }
 
+  // ── RADAR TRAYECTOGRAPHY ORIENTATION (Widget 7) ─────────────────────────
+
+  readonly #getRadarTrayectographyOrientationParams = signal<{
+    fireTrialId: FireTrial['id'];
+    radarId: string | null;
+  } | null>(null);
+
+  readonly radarTrayectographyOrientationResource = httpResource<TrajectographyRadarOrientationResponse>(() => {
+    const params = this.#getRadarTrayectographyOrientationParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography-radar/orientation`,
+      method: 'GET',
+    };
+  });
+
+  getRadarTrayectographyOrientation(fireTrialId: FireTrial['id'], radarId: string | null): void {
+    this.#getRadarTrayectographyOrientationParams.set({ fireTrialId, radarId });
+  }
+
   // ── PLANNING PROPELLING CHARGE PARAMETERS (Widget 9) ──────────────────────
 
   readonly #getPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
@@ -1259,23 +1308,6 @@ export class ExecutionService {
     this.#lifecycleService.finishFireTrial(fireTrialId);
   }
 
-  // ── EXECUTION PLANNING: GET ─────────────────────────────────────────────
-
-  readonly #getPlanningParams = signal<ExecutionParams | null>(null);
-
-  readonly planningResource = httpResource<PlanningResponse>(() => {
-    const params = this.#getPlanningParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/planning`,
-      method: 'GET',
-    };
-  });
-
-  getExecutionPlanning(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningParams.set({ fireTrialId });
-  }
-
   // ── EXECUTION PLANNING: UPDATE ──────────────────────────────────────────
 
   readonly #updatePlanningParams = signal<ExecutionPlanningParams | null>(null);
@@ -1292,23 +1324,6 @@ export class ExecutionService {
 
   updateExecutionPlanning(fireTrialId: FireTrial['id'], body: PlanningRequest): void {
     this.#updatePlanningParams.set({ fireTrialId, body });
-  }
-
-  // ── EXECUTION PLANNING: STATE ───────────────────────────────────────────
-
-  readonly #getPlanningStateParams = signal<ExecutionParams | null>(null);
-
-  readonly planningStateResource = httpResource<PlanningStateResponse>(() => {
-    const params = this.#getPlanningStateParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/planning/state`,
-      method: 'GET',
-    };
-  });
-
-  getExecutionPlanningState(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningStateParams.set({ fireTrialId });
   }
 
   // ── EXECUTION PLANNING: APPROVE ─────────────────────────────────────────
@@ -1551,45 +1566,14 @@ export class ExecutionService {
 
   // ── EQUIPMENT ITEMS BY CATEGORY ──────────────────────────────────────────
 
-  readonly #loadByCategoryParams = signal<EquipmentByCategoryParams | null>(null);
-
-  readonly #loadByCategoryResource = httpResource<{
-    totalElements: number;
-    items: Array<{
-      id: number | null;
-      denominationName: string | null;
-      tag: string | null;
-    }>;
-  }>(() => {
-    const p = this.#loadByCategoryParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#planningUrl}/equipment/items`,
-      method: 'GET',
-      params: { categoryId: p.categoryId },
-    };
-  });
-
   /**
-   * Carga items de equipo para múltiples categorías de forma secuencial desde /equipment/items?categoryId=X.
+   * Carga items de equipo para múltiples categorías de Calibry a través de EquipmentCatalogService.
    * Devuelve un map categoryId → opciones de select { id: equipmentItemId, label }.
    */
-  async loadEquipmentItemsByCategories(
-    categories: EquipmentTypeEnum[],
+  loadEquipmentItemsByCategories(
+    categories: readonly EquipmentTypeEnum[],
   ): Promise<Record<string, Array<{ id: string; label: string }>>> {
-    const results: Array<readonly [string, Array<{ id: string; label: string }>]> = [];
-    for (const cat of categories) {
-      this.#loadByCategoryParams.set({ categoryId: cat });
-      const response = await this.#awaitResourceValue(this.#loadByCategoryResource);
-      results.push([
-        cat,
-        response.items.map((item) => ({
-          id: String(item.id),
-          label: `${item.denominationName ?? ''} / ${item.tag ?? ''}`.trim(),
-        })),
-      ] as const);
-    }
-    return Object.fromEntries(results);
+    return this.#equipmentCatalogService.loadEquipmentItemsByCategories(categories);
   }
 
   // ── EQUIPMENT SELECTOR: PUT ─────────────────────────────────────────────
@@ -2115,13 +2099,13 @@ export class ExecutionService {
     const params = this.#getShotCameraOrientationParams();
     if (!params) return undefined;
     return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/series/${params.seriesId}/shots/${params.shotId}/cameras/${params.cameraId}/orientation`,
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/cameras/${params.cameraId}/orientation`,
       method: 'GET',
     };
   });
 
-  getShotCameraOrientation(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, cameraId: string): void {
-    this.#getShotCameraOrientationParams.set({ fireTrialId, seriesId, shotId, cameraId });
+  getShotCameraOrientation(fireTrialId: FireTrial['id'], cameraId: number): void {
+    this.#getShotCameraOrientationParams.set({ fireTrialId, cameraId });
   }
 
   // ── SHOT MAO TOPOGRAPHY: GET ────────────────────────────────

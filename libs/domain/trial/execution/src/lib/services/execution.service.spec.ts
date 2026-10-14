@@ -8,34 +8,35 @@ import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-    EquipmentTypeEnum,
-    type JltMaoBulkConfigurationRequest,
-    type JltMaoBulkConfigurationResponse,
-    type MaoTopographyBulkConfigurationRequest,
-    type MaoTopographyBulkConfigurationResponse,
-    type ShotManometerPressuresRequest,
-    type ShotManometerPressuresResponse,
-    type ShotMunitionRequest,
-    type ShotMunitionResponse,
-    type ShotVideoDataRequest,
-    type ShotVideoDataResponse,
-    WidgetId,
+  EquipmentTypeEnum,
+  type JltMaoBulkConfigurationRequest,
+  type JltMaoBulkConfigurationResponse,
+  type MaoTopographyBulkConfigurationRequest,
+  type MaoTopographyBulkConfigurationResponse,
+  type ShotCameraOrientationResponse,
+  type ShotManometerPressuresRequest,
+  type ShotManometerPressuresResponse,
+  type ShotMunitionRequest,
+  type ShotMunitionResponse,
+  type ShotVideoDataRequest,
+  type ShotVideoDataResponse,
+  type TrajectographyRadarOrientationResponse,
+  WidgetId,
 } from '../execution/models';
 import {
-    type ArmamentBulkConfigurationRequest,
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
-    type PlanningConditionsResponse,
-    type PlanningResponse,
-    type PlanningSeriesItem,
-    type PlanningStateResponse,
-    type ProfilesReadinessResponse,
-    type PropellantChargeParametersResponse,
-    type SecurityCountdownResponse,
-    type ShotArmamentResponse,
-    type ShotPressuresResponse,
-    type ShotVelocitiesResponse,
+  type ArmamentBulkConfigurationRequest,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
+  type PlanningConditionsResponse,
+  type PlanningResponse,
+  type PlanningSeriesItem,
+  type ProfilesReadinessResponse,
+  type PropellantChargeParametersResponse,
+  type SecurityCountdownResponse,
+  type ShotArmamentResponse,
+  type ShotPressuresResponse,
+  type ShotVelocitiesResponse,
 } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
@@ -77,6 +78,48 @@ describe('ExecutionService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('should GET camera orientation by center, trial, and camera', async () => {
+    const response: ShotCameraOrientationResponse = {
+      cameraId: 21051,
+      sameForAllSeries: true,
+      series: [
+        {
+          seriesId: '10000000-0000-4000-8000-000000000001',
+          sameForAllShots: true,
+          shots: [
+            {
+              shotId: '20000000-0000-4000-8000-000000000001',
+              orientationData: {
+                plannedImpactDistance: 1200,
+                plannedImpactDistanceUnit: DistanceUnitEnum.M,
+                functioningHeight: 20,
+                functioningHeightUnit: DistanceUnitEnum.M,
+                functioningDistance: 1150,
+                functioningDistanceUnit: DistanceUnitEnum.M,
+                cameraAngularDifference: 1.25,
+                cameraAngularDifferenceUnit: AngleUnitEnum.DEGREES,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    service.getShotCameraOrientation(DEMO_TRIAL_ID, 21051);
+    TestBed.tick();
+
+    const req = httpMock.expectOne(
+      'http://localhost:3000/api/execution/fire-trials/trial-456/execution/cameras/21051/orientation',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(response);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.shotCameraOrientationResource.value()).toEqual(response);
+    });
+  });
+
   it('should GET planning series when getPlanningSeries() is called', async () => {
     const mockSeries: PlanningSeriesItem[] = [
       {
@@ -99,6 +142,29 @@ describe('ExecutionService', () => {
       TestBed.tick();
       expect(service.planningSeriesResource.value()).toEqual(mockSeries);
     });
+  });
+
+  it('should GET radar orientation again when selected radar changes', async () => {
+    const response: TrajectographyRadarOrientationResponse = { sameForAllSeries: false, series: [] };
+
+    service.getRadarTrayectographyOrientation(DEMO_TRIAL_ID, 'radar-01');
+    TestBed.tick();
+
+    const firstRequest = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography-radar/orientation`);
+    expect(firstRequest.request.method).toBe('GET');
+    firstRequest.flush(response);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.radarTrayectographyOrientationResource.value()).toEqual(response);
+    });
+
+    service.getRadarTrayectographyOrientation(DEMO_TRIAL_ID, 'radar-02');
+    TestBed.tick();
+
+    const secondRequest = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography-radar/orientation`);
+    expect(secondRequest.request.method).toBe('GET');
+    secondRequest.flush(response);
   });
 
   it('should GET planning conditions when getPlanningConditions() is called', async () => {
@@ -336,26 +402,13 @@ describe('ExecutionService', () => {
     });
   });
 
-  it('should GET and PUT planning options', async () => {
+  it('should PUT planning options', async () => {
     const mockPlanning: PlanningResponse = {
       goal: 'Testing api alignment',
       specimens: [{ specimenId: 'spec-1' }],
       planningUser: { id: 'user-1', name: 'Planning User' },
       executionDate: '2026-03-03',
     };
-
-    // GET Planning
-    service.getExecutionPlanning(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/planning`);
-    expect(getReq.request.method).toBe('GET');
-    getReq.flush(mockPlanning);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.planningResource.value()).toEqual(mockPlanning);
-    });
 
     // PUT Planning
     const reqBody = {
@@ -378,27 +431,7 @@ describe('ExecutionService', () => {
     });
   });
 
-  it('should GET and POST planning state and approve', async () => {
-    const mockState: PlanningStateResponse = {
-      version: 1,
-      isApprovedByClient: false,
-      updatedAt: '2026-03-03T11:00:00Z',
-    };
-
-    // GET state
-    service.getExecutionPlanningState(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const getReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/planning/state`);
-    expect(getReq.request.method).toBe('GET');
-    getReq.flush(mockState);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.planningStateResource.value()).toEqual(mockState);
-    });
-
-    // POST approve
+  it('should POST planning approval', () => {
     const approveBody = { approved: true, comments: 'Good to go' };
     service.approveExecutionPlanning(DEMO_TRIAL_ID, approveBody);
     TestBed.tick();
@@ -659,26 +692,21 @@ describe('ExecutionService', () => {
     const radarReq = httpMock.expectOne(
       (r) => r.url.includes('/equipment/items') && r.params.get('categoryId') === EquipmentTypeEnum.DOPPLER_RADAR,
     );
-    radarReq.flush({
-      totalElements: 1,
-      items: [{ id: 101, denominationName: 'Doppler R1', tag: 'RAD-01' }],
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
-
     const antennaReq = httpMock.expectOne(
       (r) => r.url.includes('/equipment/items') && r.params.get('categoryId') === EquipmentTypeEnum.ANTENNA,
     );
+
+    radarReq.flush({
+      totalElements: 2,
+      items: [
+        { id: 101, denominationName: 'Doppler R1', tag: 'RAD-01' },
+        { id: null, denominationName: 'Unavailable', tag: null },
+      ],
+    });
     antennaReq.flush({
       totalElements: 1,
       items: [{ id: 201, denominationName: 'Antenna Horn', tag: 'ANT-01' }],
     });
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    TestBed.tick();
 
     const categoryMap = await loadCategoriesPromise;
     expect(categoryMap[EquipmentTypeEnum.DOPPLER_RADAR]).toEqual([{ id: '101', label: 'Doppler R1 / RAD-01' }]);
@@ -1317,6 +1345,37 @@ describe('ExecutionService', () => {
       batch: null,
       clientNumber: null,
     });
+  });
+
+  it('fetches denomination stock batches sorted by newest stock item without status filter', async () => {
+    const promise = service.fetchAvailableStockBatches(['den-01', 'den-02', 'den-01']);
+    TestBed.tick();
+
+    const request = httpMock.expectOne((req) => req.url === `${WAREHOUSE_BASE_URL}/stock`);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.params.has('status')).toBe(false);
+    expect(request.request.params.get('page')).toBe('1');
+    expect(request.request.params.get('pageSize')).toBe('200');
+    expect(request.request.params.get('sort')).toBe('createdAt;desc');
+    expect(request.request.params.getAll('denominationIds')).toEqual(['den-01', 'den-02']);
+    request.flush({
+      items: [
+        { denomination: { id: 'den-01' }, batch: 'LOT-01' },
+        { denomination: { id: 'den-02' }, batch: 'LOT-02' },
+        { denomination: { id: 'den-03' }, batch: null },
+      ],
+    });
+    TestBed.tick();
+
+    await expect(promise).resolves.toEqual([
+      { denominationId: 'den-01', batch: 'LOT-01' },
+      { denominationId: 'den-02', batch: 'LOT-02' },
+    ]);
+  });
+
+  it('does not request stock batches without denomination ids', async () => {
+    await expect(service.fetchAvailableStockBatches([])).resolves.toEqual([]);
+    httpMock.expectNone(`${WAREHOUSE_BASE_URL}/stock`);
   });
 
   it('fetchWarehouseDenominations queries warehouse denominations filtered by munitionTypeId', async () => {

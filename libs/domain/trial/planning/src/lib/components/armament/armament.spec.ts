@@ -304,7 +304,7 @@ describe('Armament', () => {
         close: vi.fn(),
       } as unknown as MatDialogRef<UpdateArmamentDialog, undefined>);
 
-      const editButtons = screen.getAllByLabelText(/Editar/i);
+      const editButtons = screen.getAllByLabelText(/COMMONS\.EDIT|Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
 
       await user.click(editButtons[0]);
@@ -331,7 +331,7 @@ describe('Armament', () => {
         close: vi.fn(),
       } as unknown as MatDialogRef<UpdateArmamentDialog, UpdateArmamentDialogResult>);
 
-      const editButtons = screen.getAllByLabelText(/Editar/i);
+      const editButtons = screen.getAllByLabelText(/COMMONS\.EDIT|Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
 
       await user.click(editButtons[0]);

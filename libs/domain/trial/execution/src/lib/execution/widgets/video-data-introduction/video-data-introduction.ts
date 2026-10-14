@@ -352,7 +352,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.selectorModel().serie)?.shots ?? [];
     return shots.map((shot, index) => ({
       value: shot.id,
-      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
+      label: `Disparo ${shot.globalNumber ?? index + 1}`,
     }));
   });
 

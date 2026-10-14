@@ -47,7 +47,7 @@ interface OverpressureChartForm {
             </h3>
           </div>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1 !w-28">
-            <mat-label>Peso</mat-label>
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.WEIGHT_LABEL' | translate }}</mat-label>
             <mat-select [formField]="chartForm.selectedWeightUnit">
               @for (opt of weightUnitOptions; track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -55,7 +55,7 @@ interface OverpressureChartForm {
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mt-1 !w-28">
-            <mat-label>Presión</mat-label>
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.PRESSURE_LABEL' | translate }}</mat-label>
             <mat-select [formField]="chartForm.selectedPressureUnit">
               @for (opt of pressureUnitOptions; track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -84,9 +84,9 @@ interface OverpressureChartForm {
         <div class="flex-[2_1_0%] min-w-[280px] relative h-full min-h-0">
           <canvas
             uiChart
-            aria-label="Gráfica Sobrepresión"
             role="img"
             class="absolute inset-0 w-full h-full"
+            [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.CHART_ARIA' | translate"
             [config]="chartConfig()"
           ></canvas>
         </div>

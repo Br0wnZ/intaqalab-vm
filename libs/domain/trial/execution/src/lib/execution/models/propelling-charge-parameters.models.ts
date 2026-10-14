@@ -8,14 +8,14 @@ export interface PropellantChargeParametersSeries {
   seriesId: string;
   seriesNumber: number;
   seriesName: string;
-  loadingZone: string | null;
-  nominalSpeed: number | null;
+  loadingZone?: string | null;
+  nominalSpeed?: number | null;
   nominalSpeedUnit?: SpeedUnitEnum | null;
-  maximumSpeedDeviation: number | null;
+  maximumSpeedDeviation?: number | null;
   maximumSpeedDeviationUnit?: SpeedUnitEnum | null;
-  powderWeight: number | null;
+  powderWeight?: number | null;
   powderWeightUnit?: WeightUnitEnum | null;
-  observations: string | null;
+  observations?: string | null;
 }
 
 /**

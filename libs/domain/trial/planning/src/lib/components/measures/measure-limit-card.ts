@@ -3,12 +3,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { MeasureSelectionData } from '../../utils-models/measure-serie.model';
 
 @Component({
   selector: 'inta-measure-limit-card',
-  imports: [MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
+  imports: [MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, TranslatePipe],
   template: `
     @if (isQuantitative() && measure().expanded) {
       <!-- Expanded State with Purple Accent -->
@@ -37,33 +38,33 @@ import type { MeasureSelectionData } from '../../utils-models/measure-serie.mode
 
         <div class="grid grid-cols-3 gap-4 px-4 pb-4 pt-1">
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>Límite máximo</mat-label>
+            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT' | translate }}</mat-label>
             <input
-              placeholder="Ingrese valor"
               matInput
               type="number"
+              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
               [value]="measure().maxLimit ?? ''"
               [disabled]="readonly()"
               (input)="onInputChange('maxLimit', $event)"
             />
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>Límite mínimo</mat-label>
+            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT' | translate }}</mat-label>
             <input
-              placeholder="Ingrese valor"
               matInput
               type="number"
+              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
               [value]="measure().minLimit ?? ''"
               [disabled]="readonly()"
               (input)="onInputChange('minLimit', $event)"
             />
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>Desviación</mat-label>
+            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.DEVIATION' | translate }}</mat-label>
             <input
-              placeholder="Ingrese valor"
               matInput
               type="number"
+              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
               [value]="measure().deviation ?? ''"
               [disabled]="readonly()"
               (input)="onInputChange('deviation', $event)"

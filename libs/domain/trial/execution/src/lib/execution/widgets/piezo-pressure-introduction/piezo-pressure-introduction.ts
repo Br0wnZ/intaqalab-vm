@@ -40,11 +40,14 @@ import {
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
 } from '../utils/selection-options';
+import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
 import {
+  buildPiezoEquipmentCombinedValue,
   buildShotPressuresRequest,
   extractPressuresResponse,
   mapPlanningSeriesToOptions,
   mapShotsToDisparoOptions,
+  matchesEquipmentId,
   normalizeDifferentialPressure,
   normalizePiezoPressures,
   normalizeTimesData,
@@ -151,9 +154,7 @@ interface SelectorFormModel {
           position="CLOSING"
           [class.hidden]="activeTab() !== 'cierre'"
           [model]="cierreItem()"
-          [captadorOptions]="captadorOptions()"
-          [registradorOptions]="registradorOptions()"
-          [amplificadorOptions]="amplificadorOptions()"
+          [equipmentOptions]="piezoEquipmentOptions()"
           [pressureUnitOptions]="pressureUnitOptions"
           (modelChange)="onSensorModelChange('CLOSING', $event)"
         />
@@ -163,9 +164,7 @@ interface SelectorFormModel {
           position="HALF"
           [class.hidden]="activeTab() !== 'intermedio'"
           [model]="intermedioItem()"
-          [captadorOptions]="captadorOptions()"
-          [registradorOptions]="registradorOptions()"
-          [amplificadorOptions]="amplificadorOptions()"
+          [equipmentOptions]="piezoEquipmentOptions()"
           [pressureUnitOptions]="pressureUnitOptions"
           (modelChange)="onSensorModelChange('HALF', $event)"
         />
@@ -175,9 +174,7 @@ interface SelectorFormModel {
           position="SHELL"
           [class.hidden]="activeTab() !== 'culote'"
           [model]="culoteItem()"
-          [captadorOptions]="captadorOptions()"
-          [registradorOptions]="registradorOptions()"
-          [amplificadorOptions]="amplificadorOptions()"
+          [equipmentOptions]="piezoEquipmentOptions()"
           [pressureUnitOptions]="pressureUnitOptions"
           (modelChange)="onSensorModelChange('SHELL', $event)"
         />
@@ -187,9 +184,7 @@ interface SelectorFormModel {
           position="OTHER"
           [class.hidden]="activeTab() !== 'otro'"
           [model]="otroItem()"
-          [captadorOptions]="captadorOptions()"
-          [registradorOptions]="registradorOptions()"
-          [amplificadorOptions]="amplificadorOptions()"
+          [equipmentOptions]="piezoEquipmentOptions()"
           [pressureUnitOptions]="pressureUnitOptions"
           (modelChange)="onSensorModelChange('OTHER', $event)"
         />
@@ -251,6 +246,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   );
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
+  readonly #initialPiezoPressureEquipments = injectInitialPiezoPressureEquipments();
 
   // ── Modelos locales editables ───────────────────────────────────────────────
   protected readonly piezoPressures = signal<ShotPiezoPressureItem[]>(
@@ -304,30 +300,66 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   });
 
   // ── Options: Equipos desde API (con fallback a store) ────────────────────────
-  protected readonly captadorOptions = computed(() => {
-    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PIEZOELECTRIC_SENSOR];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.piezoPressureIntroduction().captadorOptions;
-  });
+  /**
+   * Opciones combinadas Captador / Registrador / Amplificador:
+   * Producto cartesiano de los items cargados desde la API y seleccionados en el selector de equipos
+   * para la serie y disparo activos.
+   * Formato de valor: "captadorId|registradorId|amplificadorId"
+   */
+  protected readonly piezoEquipmentOptions = computed(() => {
+    const { serie, disparo } = this.selectorFormModel();
+    if (!serie || !disparo) return [];
 
-  protected readonly amplificadorOptions = computed(() => {
-    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.AMPLIFIER];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.piezoPressureIntroduction().amplificadorOptions;
-  });
+    const selections = this.#initialPiezoPressureEquipments().filter(
+      (selection) => selection.seriesIds?.includes(serie) && selection.shotIds?.includes(disparo),
+    );
+    const captadorIds = new Set(
+      selections
+        .filter((selection) => selection.categoryId === EquipmentTypeEnum.PIEZOELECTRIC_SENSOR)
+        .map((selection) => String(selection.equipmentItemId)),
+    );
+    const registradorIds = new Set(
+      selections
+        .filter(
+          (selection) =>
+            selection.categoryId === EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM ||
+            selection.categoryId === EquipmentTypeEnum.RECORDER,
+        )
+        .map((selection) => String(selection.equipmentItemId)),
+    );
+    const amplificadorIds = new Set(
+      selections
+        .filter((selection) => selection.categoryId === EquipmentTypeEnum.AMPLIFIER)
+        .map((selection) => String(selection.equipmentItemId)),
+    );
 
-  protected readonly registradorOptions = computed(() => {
-    const apiItems =
+    const captadores = (this.#itemsByCategory()[EquipmentTypeEnum.PIEZOELECTRIC_SENSOR] ?? []).filter((item) =>
+      matchesEquipmentId(captadorIds, item.id),
+    );
+    const registradores = (
       this.#itemsByCategory()[EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM] ??
-      this.#itemsByCategory()[EquipmentTypeEnum.RECORDER];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
+      this.#itemsByCategory()[EquipmentTypeEnum.RECORDER] ??
+      []
+    ).filter((item) => matchesEquipmentId(registradorIds, item.id));
+    const amplificadores = (this.#itemsByCategory()[EquipmentTypeEnum.AMPLIFIER] ?? []).filter((item) =>
+      matchesEquipmentId(amplificadorIds, item.id),
+    );
+
+    const result: Array<{ value: string; label: string }> = [];
+    for (const captador of captadores) {
+      for (const registrador of registradores) {
+        for (const amplificador of amplificadores) {
+          const combined = buildPiezoEquipmentCombinedValue(captador.id, registrador.id, amplificador.id);
+          if (combined) {
+            result.push({
+              value: combined,
+              label: `${captador.label} / ${registrador.label} / ${amplificador.label}`,
+            });
+          }
+        }
+      }
     }
-    return this.#store.piezoPressureIntroduction().registradorOptions;
+    return result;
   });
 
   // ── Estado del disparo ──────────────────────────────────────────────────────

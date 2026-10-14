@@ -1,11 +1,13 @@
 import '@analogjs/vitest-angular/setup-zone';
 import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
 import '@angular/compiler';
-import { getTestBed } from '@angular/core/testing';
+import { TestBed, getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import '@testing-library/jest-dom';
 import '@intaqalab/utils/testing/pdf-mock';
+import { provideTranslateService } from '@ngx-translate/core';
+import '@testing-library/jest-dom';
+import { beforeEach } from 'vitest';
 
 // Initialize DOM adapter BEFORE TestBed - critical for direct Vitest runs
 BrowserDomAdapter.makeCurrent();
@@ -16,3 +18,9 @@ if (!__global.__ANGULAR_TESTBED_INITIALIZED__) {
   getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
   __global.__ANGULAR_TESTBED_INITIALIZED__ = true;
 }
+
+beforeEach(() => {
+  TestBed.configureTestingModule({
+    providers: [provideTranslateService()],
+  });
+});

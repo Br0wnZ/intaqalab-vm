@@ -3,6 +3,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -21,19 +22,32 @@ describe('InterruptExecutionDialog', () => {
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: mockData },
       ],
+      imports: [TranslateModule.forRoot()],
     });
     loader = TestbedHarnessEnvironment.loader(view.fixture);
     return view;
   };
 
-  const getInterruptBtn = () => loader.getHarness(MatButtonHarness.with({ text: /^Interrumpir prueba$/ }));
-  const getCountDownBtn = () => loader.getHarness(MatButtonHarness.with({ text: /^Iniciar cuenta de seguridad$/ }));
-  const getVolverBtn = () => loader.getHarness(MatButtonHarness.with({ text: /^Volver$/ }));
+  const getInterruptBtn = () =>
+    loader.getHarness(
+      MatButtonHarness.with({ text: /TRIAL_EXECUTION\.DIALOGS\.INTERRUPT_EXECUTION\.CONFIRM_BTN|Interrumpir prueba/i }),
+    );
+  const getCountDownBtn = () =>
+    loader.getHarness(
+      MatButtonHarness.with({
+        text: /TRIAL_EXECUTION\.DIALOGS\.INTERRUPT_EXECUTION\.START_SECURITY_COUNT_BTN|Iniciar cuenta de seguridad/i,
+      }),
+    );
+  const getVolverBtn = () => loader.getHarness(MatButtonHarness.with({ text: /COMMONS\.RETURN|Volver/i }));
   const getReasonInput = () => loader.getHarness(MatInputHarness);
 
   it('renders the dialog title', async () => {
     await setup();
-    expect(screen.getByRole('heading', { name: /Interrumpir prueba de fuego/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: /TRIAL_EXECUTION\.DIALOGS\.INTERRUPT_EXECUTION\.TITLE|Interrumpir prueba de fuego/i,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('shows the trial name inside the dialog content', async () => {

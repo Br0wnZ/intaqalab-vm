@@ -121,7 +121,9 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
             }
           </div>
           @if (!readonly()) {
-            <button mat-flat-button (click)="openMassiveConfigurationDialog()">Aplicar configuración masiva</button>
+            <button mat-flat-button (click)="openMassiveConfigurationDialog()">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.MASSIVE_CONFIG_BUTTON' | translate }}
+            </button>
           }
         </div>
         <mat-accordion multi class="flex flex-col gap-6">

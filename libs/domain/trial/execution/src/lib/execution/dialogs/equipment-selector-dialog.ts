@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,46 +8,30 @@ import { MatInputModule } from '@angular/material/input';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import type { Role } from '@intaqalab/core';
-import { injectCurrentUserRole } from '@intaqalab/core';
 import { ErrorState, SaveButton, Skeleton } from '@intaqalab/ui';
 import { RangePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { EquipmentPlanningService } from '../../services/equipment-planning.service';
 import { ExecutionService } from '../../services/execution.service';
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
 import type {
   EquipmentItemSelection,
-  EquipmentMagnitudeSelectionGroup,
   EquipmentSelectorDialogData,
   EquipmentSelectorDialogResult,
-  EquipmentTypeEnum,
-  TagConfig,
-  TagRow,
-  TagTableState,
+  EquipmentTypeEnum
 } from '../models';
-import { isEquipmentTypeEnum } from '../models';
-import {
-  ADMIN_ROLES,
-  INIT_STATE,
-  MAGNITUDE_OPTIONS,
-  SELECT_ALL_SERIES_VALUE,
-  TAG_CONFIGS,
-  apiToDialogFormat,
-  dialogStatesToApiFormat,
-  hydrateFromInitialEquipments,
-} from './equipment-selector-dialog.mapper';
+import { EquipmentMagnitudeTagEnum } from '../models';
+import { SELECT_ALL_SERIES_VALUE } from './equipment-selector-dialog.mapper';
+import { EquipmentSelectorStore } from './equipment-selector.store';
 
 export type { EquipmentSelectorDialogData, EquipmentSelectorDialogResult } from '../models';
 
-// ── Public Types ───────────────────────────────────────────────────────────────
-
 export type EquipmentItemSelectionEntry = EquipmentItemSelection;
-
-// ── Component ──────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'inta-equipment-selector-dialog',
+  providers: [EquipmentPlanningService, EquipmentSelectorStore],
   imports: [
     MatDialogModule,
     MatButtonModule,
@@ -128,7 +112,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
       <mat-dialog-content intaReadonlyContent class="flex flex-col gap-4 !px-5">
         <!-- Tag chips (role-filtered) -->
         <div class="flex flex-col gap-2">
-          <mat-chip-set aria-label="Tag selection">
+          <mat-chip-set [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.TAG_SELECTION_ARIA' | translate">
             @for (tag of visibleTags(); track tag.id) {
               <mat-chip-option
                 class="cursor-pointer"
@@ -187,6 +171,11 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                         <mat-label>{{ field.label }}</mat-label>
                         @if (field.type === 'select') {
                           <mat-select
+                            [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-' + field.key"
+                            [disabled]="
+                              field.sourceCategoryId === 'municion' ||
+                              (field.sourceCategoryId === 'magnitud' && selectedTagId() !== lengthTagId)
+                            "
                             [value]="getFieldValue(row.rowId, field.key)"
                             (selectionChange)="setFieldValue(row.rowId, field.key, $event.value)"
                           >
@@ -194,11 +183,21 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                               <mat-option [value]="opt.id">{{ opt.label }}</mat-option>
                             }
                           </mat-select>
+                          <!-- @if (
+                            field.sourceCategoryId === 'municion' ||
+                            (field.sourceCategoryId === 'magnitud' && selectedTagId() !== lengthTagId)
+                          ) {
+                            <mat-hint>
+                              {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.UNSUPPORTED_SELECTION' | translate }}
+                            </mat-hint>
+                          } -->
                         } @else {
                           <input
                             matInput
                             type="number"
                             min="1"
+                            step="1"
+                            [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-' + field.key"
                             [attr.max]="field.maxValue"
                             [value]="getFieldValue(row.rowId, field.key)"
                             (change)="setFieldValue(row.rowId, field.key, $event.target.value)"
@@ -214,11 +213,14 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                       </mat-label>
                       <mat-select
                         multiple
+                        [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-series'"
                         [value]="row.series"
                         (selectionChange)="handleSeriesSelection(row.rowId, $event.value)"
                       >
-                        <mat-option [value]="selectAllSeriesValue">Seleccionar todas las series</mat-option>
-                        @for (opt of data.serieOptions; track opt.value) {
+                        <mat-option [value]="selectAllSeriesValue">
+                          {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SELECT_ALL_SERIES' | translate }}
+                        </mat-option>
+                        @for (opt of activeSeriesOptions(); track opt.value) {
                           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                         }
                       </mat-select>
@@ -231,10 +233,11 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                       </mat-label>
                       <mat-select
                         multiple
+                        [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-shots'"
                         [value]="row.disparos"
                         (selectionChange)="setRowDisparos(row.rowId, $event.value)"
                       >
-                        @for (opt of data.disparoOptions; track opt.value) {
+                        @for (opt of getShotOptions(row.series); track opt.value) {
                           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                         }
                       </mat-select>
@@ -264,8 +267,18 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
               ></mat-paginator>
             }
           </div>
+        } @else {
+          <p role="status" class="!m-0 py-6 text-center text-sm text-gray-600">
+            {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.NO_PLANNED_MEASURES' | translate }}
+          </p>
         }
       </mat-dialog-content>
+
+      @if (isDirty() && !canSave()) {
+        <p role="alert" class="!m-0 px-5 pt-2 text-sm text-client-error">
+          {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.INCOMPLETE_ASSIGNMENTS' | translate }}
+        </p>
+      }
 
       <!-- Actions -->
       <mat-dialog-actions class="flex gap-2 !px-0 justify-end !pt-4">
@@ -275,7 +288,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
         <ui-save-button
           label="TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SAVE"
           [isSaving]="isSaving()"
-          [isDisabled]="!isDirty()"
+          [isDisabled]="!canSave()"
           (save)="save()"
         />
       </mat-dialog-actions>
@@ -286,257 +299,81 @@ export class EquipmentSelectorDialog {
   readonly #dialogRef = inject<MatDialogRef<EquipmentSelectorDialog, EquipmentSelectorDialogResult>>(MatDialogRef);
   readonly data = inject<EquipmentSelectorDialogData>(MAT_DIALOG_DATA);
   readonly #executionService = inject(ExecutionService);
-  readonly #userRoles = injectCurrentUserRole();
+  readonly #store = inject(EquipmentSelectorStore);
+
   readonly selectAllSeriesValue = SELECT_ALL_SERIES_VALUE;
+  readonly lengthTagId = EquipmentMagnitudeTagEnum.LONGITUD;
 
   // ── View State Signals ────────────────────────────────────────────────────────
-
-  readonly isLoading = computed(() => this.#executionService.equipmentSelectorResource.isLoading());
+  readonly isLoading = computed(() => this.#store.isLoading());
   readonly isSaving = computed(() => this.#executionService.updateEquipmentSelectorResource.isLoading());
-  readonly error = computed(() => {
-    const res = this.#executionService.equipmentSelectorResource;
-    const status = res.status();
-    if (status === 'error') {
-      const err = res.error?.();
-      if (!err) return false;
-      const httpErr = err as { status?: number };
-      if (httpErr.status === 404) return false;
-      return true;
-    }
-    return false;
-  });
+  readonly error = computed(() => this.#store.error());
 
-  // ── State: initial & current equipment selection state ────────────────────────
+  readonly visibleTags = computed(() => this.#store.visibleTags());
+  readonly enabledTagIds = computed(() => this.#store.enabledTagIds());
+  readonly selectedTagId = computed(() => this.#store.selectedTagId());
+  readonly activeSeriesOptions = computed(() => this.#store.activeSeriesOptions());
+  readonly activeTagFields = computed(() => this.#store.activeTagFields());
+  readonly activeTagRows = computed(() => this.#store.activeTagRows());
+  readonly paginatedRows = computed(() => this.#store.paginatedRows());
+  readonly isDirty = computed(() => this.#store.isDirty());
+  readonly canSave = computed(() => this.#store.canSave());
 
-  readonly #initialEquipmentsJson = signal<string>('[]');
-  readonly #selectedTagId = signal<string>('');
-  readonly #tagStates = signal<Record<string, TagTableState>>({});
-  readonly #isInitialized = signal(false);
-  readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
-
-  readonly currentEquipments = computed<EquipmentMagnitudeSelectionGroup[]>(() => {
-    return dialogStatesToApiFormat(this.#tagStates());
-  });
-
-  readonly isDirty = computed(() => {
-    if (!this.#isInitialized()) return false;
-    return JSON.stringify(this.currentEquipments()) !== this.#initialEquipmentsJson();
-  });
-
-  // ── State: one entry per tag, lazily initialized ───────────────────────────
-
-  constructor() {
-    // Trigger GET for current equipment selection
-    this.#executionService.getEquipmentSelector(this.data.fireTrialId);
-
-    // Load items from API for all measurement equipment categories needed by visible tags
-    this.#executionService
-      .loadEquipmentItemsByCategories(this.#collectNeededCategories())
-      .then((result) => this.#itemsByCategory.set(result));
-
-    // Wait for GET to settle — only hydrate on success (not 404/error)
-    effect(
-      () => {
-        if (this.#isInitialized()) return;
-
-        const status = this.#executionService.equipmentSelectorResource.status();
-        if (status !== 'resolved' && status !== 'error') return;
-
-        if (status === 'resolved') {
-          const apiData = this.#executionService.equipmentSelectorResource.value();
-          if (apiData?.length) {
-            this.#hydrateFromInitialEquipments(apiToDialogFormat(apiData));
-          }
-        }
-
-        if (!this.#selectedTagId()) {
-          const firstVisible = this.visibleTags()[0]?.id;
-          if (firstVisible) this.selectTag(firstVisible);
-        }
-
-        this.#initialEquipmentsJson.set(JSON.stringify(this.currentEquipments()));
-        this.#isInitialized.set(true);
-      },
-      { allowSignalWrites: true },
-    );
-  }
-
-  // ── Computed ─────────────────────────────────────────────────────────────────
-
-  readonly visibleTags = computed(() => {
-    const roles = this.#userRoles();
-    const isAdmin = roles.some((r: Role) => ADMIN_ROLES.includes(r));
-    if (isAdmin) return TAG_CONFIGS;
-    return TAG_CONFIGS.filter((t: TagConfig) => t.allowedRoles.some((r: Role) => roles.includes(r)));
-  });
-
-  readonly selectedTagId = this.#selectedTagId.asReadonly();
-
-  readonly activeTagFields = computed(() => {
-    const tag = TAG_CONFIGS.find((t) => t.id === this.#selectedTagId());
-    return tag?.fields ?? [];
-  });
-
-  /** grid-template-columns: one per field + series + disparos + delete (50px) */
   readonly gridCols = computed(() => {
     const numFields = this.activeTagFields().length;
     return `repeat(${numFields + 2}, 1fr) 50px`;
   });
 
-  readonly activeTagRows = computed(() => {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return [] as TagRow[];
-    return this.#tagStates()[tagId]?.rows ?? [];
-  });
-
-  readonly paginatedRows = computed(() => {
-    const rows = this.activeTagRows();
-    const pi = this.#tagStates()[this.#selectedTagId()]?.pageIndex ?? 0;
-    return rows.slice(pi * 5, (pi + 1) * 5);
-  });
-
-  // ── Helpers ───────────────────────────────────────────────────────────────────
-
-  #updateTag(tagId: string, updater: (s: TagTableState) => TagTableState): void {
-    this.#tagStates.update((states: Record<string, TagTableState>) => ({
-      ...states,
-      [tagId]: updater(states[tagId] ?? INIT_STATE()),
-    }));
+  constructor() {
+    this.#store.init(this.data);
   }
-
-  // ── Methods ──────────────────────────────────────────────────────────────────
 
   getItemsByCategory(categoryId: EquipmentTypeEnum | string | ''): Array<{ id: string; label: string }> {
-    if (!categoryId) return [];
-    if (categoryId === 'magnitud') return MAGNITUDE_OPTIONS;
-    return this.#itemsByCategory()[categoryId] ?? [];
+    return this.#store.getItemsByCategory(categoryId);
   }
 
-  #collectNeededCategories(): EquipmentTypeEnum[] {
-    const seen = new Set<EquipmentTypeEnum>();
-    for (const tag of TAG_CONFIGS) {
-      for (const field of tag.fields) {
-        if (field.type === 'select' && isEquipmentTypeEnum(field.sourceCategoryId as string)) {
-          seen.add(field.sourceCategoryId as EquipmentTypeEnum);
-        }
-      }
-    }
-    return [...seen];
+  getShotOptions(series: readonly string[]): EquipmentSelectorDialogData['disparoOptions'] {
+    return this.#store.getShotOptions(series);
   }
 
-  #getAllSeriesValues(): string[] {
-    return this.data.serieOptions.map((serie) => serie.value);
+  handleSeriesSelection(rowId: string, selectedValues: readonly string[]): void {
+    this.#store.handleSeriesSelection(rowId, selectedValues);
   }
 
-  #getDisparosBySeries(series: string[]): string[] {
-    if (!series.length) return [];
-
-    if (!this.data.serieDisparoMap) {
-      return this.data.disparoOptions.map((disparo) => disparo.value);
-    }
-
-    const disparos = series.flatMap((serie) => this.data.serieDisparoMap?.[serie] ?? []);
-    return [...new Set(disparos)];
-  }
-
-  #hydrateFromInitialEquipments(initialEquipments?: EquipmentMagnitudeSelectionGroup[]): void {
-    if (!initialEquipments?.length) {
-      const firstVisible = this.visibleTags()[0]?.id;
-      if (firstVisible) this.selectTag(firstVisible);
-      return;
-    }
-
-    const states = hydrateFromInitialEquipments(initialEquipments);
-
-    if (Object.keys(states).length) {
-      this.#tagStates.set(states);
-      this.#selectedTagId.set(Object.keys(states)[0] ?? this.visibleTags()[0]?.id ?? '');
-      return;
-    }
-
-    const firstVisible = this.visibleTags()[0]?.id;
-    if (firstVisible) this.selectTag(firstVisible);
-  }
-
-  handleSeriesSelection(rowId: string, selectedValues: string[]): void {
-    const series = selectedValues.includes(this.selectAllSeriesValue) ? this.#getAllSeriesValues() : selectedValues;
-    const disparos = this.#getDisparosBySeries(series);
-
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-
-    this.#updateTag(tagId, (s: TagTableState) => ({
-      ...s,
-      rows: s.rows.map((r: TagRow) => (r.rowId === rowId ? { ...r, series, disparos } : r)),
-    }));
-  }
-
-  /** Selects a tag. Preserves existing state; initializes with 1 empty row if first time. */
   selectTag(tagId: string): void {
-    this.#selectedTagId.set(tagId);
-    // Ensure state exists for this tag without resetting existing data
-    this.#tagStates.update((states: Record<string, TagTableState>) => {
-      if (states[tagId]) return states;
-      return { ...states, [tagId]: INIT_STATE() };
-    });
+    this.#store.selectTag(tagId);
   }
 
   addRow(): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => {
-      const rowId = `row-${s.nextId}`;
-      return { ...s, rows: [...s.rows, { rowId, fieldValues: {}, series: [], disparos: [] }], nextId: s.nextId + 1 };
-    });
+    this.#store.addRow();
   }
 
   removeRow(rowId: string): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => ({ ...s, rows: s.rows.filter((r: TagRow) => r.rowId !== rowId) }));
+    this.#store.removeRow(rowId);
   }
 
   getFieldValue(rowId: string, fieldKey: string): string {
-    return this.activeTagRows().find((r: TagRow) => r.rowId === rowId)?.fieldValues[fieldKey] ?? '';
+    return this.activeTagRows().find((r) => r.rowId === rowId)?.fieldValues[fieldKey] ?? '';
   }
 
   setFieldValue(rowId: string, fieldKey: string, value: string): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => ({
-      ...s,
-      rows: s.rows.map((r: TagRow) =>
-        r.rowId === rowId ? { ...r, fieldValues: { ...r.fieldValues, [fieldKey]: value } } : r,
-      ),
-    }));
+    this.#store.setFieldValue(rowId, fieldKey, value);
   }
 
   setRowSeries(rowId: string, series: string[]): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => ({
-      ...s,
-      rows: s.rows.map((r: TagRow) => (r.rowId === rowId ? { ...r, series } : r)),
-    }));
+    this.#store.setRowSeries(rowId, series);
   }
 
   setRowDisparos(rowId: string, disparos: string[]): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => ({
-      ...s,
-      rows: s.rows.map((r: TagRow) => (r.rowId === rowId ? { ...r, disparos } : r)),
-    }));
+    this.#store.setRowDisparos(rowId, disparos);
   }
 
   onPageChange(event: PageEvent): void {
-    const tagId = this.#selectedTagId();
-    if (!tagId) return;
-    this.#updateTag(tagId, (s: TagTableState) => ({ ...s, pageIndex: event.pageIndex }));
+    this.#store.setPageIndex(event.pageIndex);
   }
 
-  /** Collects entries from ALL tags and closes the dialog. The store handles the API call. */
   save(): void {
-    this.#dialogRef.close({ action: 'save', equipments: this.currentEquipments() });
+    if (!this.canSave()) return;
+    this.#dialogRef.close({ action: 'save', equipments: this.#store.currentEquipments() });
   }
 }

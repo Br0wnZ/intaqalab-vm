@@ -1,0 +1,109 @@
+{
+  "sameForAllSeries": false,
+  "series": [
+    {
+      "seriesId": "10000000-0000-4000-8000-000000000001",
+      "sameForAllShots": true,
+      "shots": [
+        {
+          "shotId": "20000000-0000-4000-8000-000000000001",
+          "orientationData": {
+            "pieceX": 125.4,
+            "pieceXUnit": "M",
+            "pieceY": 87.2,
+            "pieceYUnit": "M",
+            "pieceZ": 1.5,
+            "pieceZUnit": "M",
+            "plannedImpactDistance": 1200,
+            "plannedImpactDistanceUnit": "M",
+            "theoreticalInitialVelocity": 780.5,
+            "theoreticalInitialVelocityUnit": "M_S",
+            "theoreticalFlightTime": 3.2,
+            "theoreticalFlightTimeUnit": "S",
+            "fuseGraduation": 8,
+            "fuseGraduationUnit": "S",
+            "shootingAngle": 15,
+            "shootingAngleUnit": "DEGREES",
+            "nominalProjectileWeight": 16,
+            "nominalProjectileWeightUnit": "KG"
+          }
+        },
+        {
+          "shotId": "20000000-0000-4000-8000-000000000002",
+          "orientationData": {
+            "pieceX": 125.4,
+            "pieceXUnit": "M",
+            "pieceY": 87.2,
+            "pieceYUnit": "M",
+            "pieceZ": 1.5,
+            "pieceZUnit": "M",
+            "plannedImpactDistance": 1200,
+            "plannedImpactDistanceUnit": "M",
+            "theoreticalInitialVelocity": 780.5,
+            "theoreticalInitialVelocityUnit": "M_S",
+            "theoreticalFlightTime": 3.2,
+            "theoreticalFlightTimeUnit": "S",
+            "fuseGraduation": 8,
+            "fuseGraduationUnit": "S",
+            "shootingAngle": 15,
+            "shootingAngleUnit": "DEGREES",
+            "nominalProjectileWeight": 16,
+            "nominalProjectileWeightUnit": "KG"
+          }
+        }
+      ]
+    },
+    {
+      "seriesId": "10000000-0000-4000-8000-000000000002",
+      "sameForAllShots": false,
+      "shots": [
+        {
+          "shotId": "20000000-0000-4000-8000-000000000003",
+          "orientationData": {
+            "pieceX": 128,
+            "pieceXUnit": "M",
+            "pieceY": 90,
+            "pieceYUnit": "M",
+            "pieceZ": 1.7,
+            "pieceZUnit": "M",
+            "plannedImpactDistance": 1250,
+            "plannedImpactDistanceUnit": "M",
+            "theoreticalInitialVelocity": 785,
+            "theoreticalInitialVelocityUnit": "M_S",
+            "theoreticalFlightTime": 3.4,
+            "theoreticalFlightTimeUnit": "S",
+            "fuseGraduation": 8.2,
+            "fuseGraduationUnit": "S",
+            "shootingAngle": 16,
+            "shootingAngleUnit": "DEGREES",
+            "nominalProjectileWeight": 16,
+            "nominalProjectileWeightUnit": "KG"
+          }
+        },
+        {
+          "shotId": "20000000-0000-4000-8000-000000000004",
+          "orientationData": {
+            "pieceX": 129,
+            "pieceXUnit": "M",
+            "pieceY": 91,
+            "pieceYUnit": "M",
+            "pieceZ": 1.7,
+            "pieceZUnit": "M",
+            "plannedImpactDistance": 1260,
+            "plannedImpactDistanceUnit": "M",
+            "theoreticalInitialVelocity": 786,
+            "theoreticalInitialVelocityUnit": "M_S",
+            "theoreticalFlightTime": 3.5,
+            "theoreticalFlightTimeUnit": "S",
+            "fuseGraduation": 8.3,
+            "fuseGraduationUnit": "S",
+            "shootingAngle": 16.2,
+            "shootingAngleUnit": "DEGREES",
+            "nominalProjectileWeight": 16,
+            "nominalProjectileWeightUnit": "KG"
+          }
+        }
+      ]
+    }
+  ]
+}

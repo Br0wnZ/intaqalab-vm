@@ -34,7 +34,7 @@ export interface MeasureCatalogItem {
   magnitudeLabel: string;
   procedureLabel: string;
   active: boolean;
-  favorite: boolean;
+  isFavorite: boolean;
 }
 
 interface MeasureSeed {
@@ -212,7 +212,7 @@ export const MEASURES_CATALOG: MeasureCatalogItem[] = MEASURE_SEEDS.map((seed, i
     magnitudeLabel: seed.name,
     procedureLabel,
     active: index !== MEASURE_SEEDS.length - 1,
-    favorite: index % 4 === 0,
+    isFavorite: index % 4 === 0,
   };
 });
 

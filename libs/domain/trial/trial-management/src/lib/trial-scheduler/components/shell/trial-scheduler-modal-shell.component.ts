@@ -59,7 +59,7 @@ import { Subject, distinctUntilChanged, of, switchMap, takeUntil } from 'rxjs';
       <div class="w-full max-w-md flex flex-col justify-center items-center">
         <div class="my-4 text-center">
           <h3 class="text-lg font-normal">{{ 'TRIAL_SCHEDULER.SELECT_DAYS' | translate }}</h3>
-          <p class="text-md font-bold">Número de prueba {{ data.trial.trialNumber }}</p>
+          <p class="text-md font-bold">{{ 'TRIAL_SCHEDULER.TRIAL_NUMBER' | translate }} {{ data.trial.trialNumber }}</p>
         </div>
         <mat-form-field appearance="outline" class="self-end">
           <mat-select [(value)]="selectedLineOfShot" (selectionChange)="lineChangeHandler($event.value)">
@@ -83,7 +83,7 @@ import { Subject, distinctUntilChanged, of, switchMap, takeUntil } from 'rxjs';
           </div>
         </div>
         <div class="selected-dates hidden">
-          <h3>Datos:</h3>
+          <h3>{{ 'TRIAL_SCHEDULER.DATA_LABEL' | translate }}</h3>
           <ul>
             @for (msg of selectedDatesFriendly(); track msg) {
               <li>{{ msg }}</li>

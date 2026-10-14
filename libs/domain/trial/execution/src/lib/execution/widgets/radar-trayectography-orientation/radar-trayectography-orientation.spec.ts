@@ -1,13 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, waitFor, within } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
+import type { TrajectographyRadarOrientationResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { RadarTrayectographyOrientation } from './radar-trayectography-orientation';
 
@@ -37,7 +39,45 @@ describe('RadarTrayectographyOrientation', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+
+  it('hides series and shot selectors when response flags indicate shared values', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const http = TestBed.inject(HttpTestingController);
+    service.getRadarTrayectographyOrientation('trial-1', null);
+    TestBed.tick();
+
+    const request = http.expectOne((req) => req.url.endsWith('/execution/trajectography-radar/orientation'));
+    const response = createOrientationResponse(true, true);
+    request.flush(response);
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.radarTrayectographyOrientationResource.value()).toEqual(response);
+    });
+    fixture.detectChanges();
+
+    expect(within(screen.getByTestId('radar-filters')).getAllByRole('combobox')).toHaveLength(1);
+  });
+
+  it('shows series and shot selectors when response flags indicate different values', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const http = TestBed.inject(HttpTestingController);
+    service.getRadarTrayectographyOrientation('trial-1', null);
+    TestBed.tick();
+
+    const request = http.expectOne((req) => req.url.endsWith('/execution/trajectography-radar/orientation'));
+    const response = createOrientationResponse(false, false);
+    request.flush(response);
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.radarTrayectographyOrientationResource.value()).toEqual(response);
+    });
+    fixture.detectChanges();
+
+    expect(within(screen.getByTestId('radar-filters')).getAllByRole('combobox')).toHaveLength(3);
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -108,3 +148,48 @@ describe('RadarTrayectographyOrientation', () => {
     expect(store.radarTrayectographyOrientation().alcancePrevistoPique).toBe(5000);
   });
 });
+
+function createOrientationResponse(
+  sameForAllSeries: boolean,
+  sameForAllShots: boolean,
+): TrajectographyRadarOrientationResponse {
+  const orientationData = {
+    pieceX: 10,
+    pieceXUnit: 'M',
+    pieceY: 20,
+    pieceYUnit: 'M',
+    pieceZ: 1,
+    pieceZUnit: 'M',
+    plannedImpactDistance: 1000,
+    plannedImpactDistanceUnit: 'M',
+    theoreticalInitialVelocity: 780,
+    theoreticalInitialVelocityUnit: 'M_S',
+    theoreticalFlightTime: 3,
+    theoreticalFlightTimeUnit: 'S',
+    fuseGraduation: 8,
+    fuseGraduationUnit: 'S',
+    shootingAngle: 15,
+    shootingAngleUnit: 'DEGREES',
+    nominalProjectileWeight: 16,
+    nominalProjectileWeightUnit: 'KG',
+  };
+
+  return {
+    sameForAllSeries,
+    series: [
+      {
+        seriesId: 'series-1',
+        sameForAllShots,
+        shots: [
+          { shotId: 'shot-1', orientationData },
+          { shotId: 'shot-2', orientationData: { ...orientationData, pieceX: 11 } },
+        ],
+      },
+      {
+        seriesId: 'series-2',
+        sameForAllShots: true,
+        shots: [{ shotId: 'shot-3', orientationData }],
+      },
+    ],
+  };
+}

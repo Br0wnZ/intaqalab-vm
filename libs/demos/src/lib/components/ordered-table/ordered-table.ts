@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { IntaIconComponent } from '@intaqalab/ui';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface Disparo {
   id: number;
@@ -30,6 +31,7 @@ interface Serie {
     MatExpansionModule,
     FormsModule,
     IntaIconComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-auto">
@@ -113,8 +115,8 @@ interface Serie {
                   <div class="flex justify-end gap-1">
                     <button
                       mat-icon-button
-                      aria-label="Editar"
                       class="!w-8 !h-8"
+                      [attr.aria-label]="'COMMONS.EDIT' | translate"
                       [class.!text-purple-500]="openSerieId() === serie.id"
                       [class.!text-gray-500]="openSerieId() !== serie.id"
                       [class.hover:!text-purple-600]="openSerieId() === serie.id"
@@ -125,8 +127,8 @@ interface Serie {
 
                     <button
                       mat-icon-button
-                      aria-label="Eliminar"
                       class="!w-8 !h-8"
+                      [attr.aria-label]="'COMMONS.DELETE' | translate"
                       [class.!text-purple-500]="openSerieId() === serie.id"
                       [class.!text-gray-500]="openSerieId() !== serie.id"
                       [class.hover:!text-red-600]="true"
@@ -220,9 +222,9 @@ interface Serie {
 
                         <div class="flex-1">
                           <input
-                            placeholder="Escribe aquí tus observaciones"
                             type="text"
                             class="w-2/3 px-3 py-1 text-sm bg-transparent border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            [placeholder]="'COMMONS.OBSERVATIONS' | translate"
                             [class.border-purple-300]="openSerieId() === serie.id"
                             [class.text-purple-900]="openSerieId() === serie.id"
                             [class.placeholder-purple-300]="openSerieId() === serie.id"
@@ -235,8 +237,8 @@ interface Serie {
                         <div class="flex items-center justify-end gap-2">
                           <button
                             mat-icon-button
-                            title="Eliminar"
                             class="!w-8 !h-8 !flex !items-center !justify-center hover:!text-red-600"
+                            [attr.title]="'COMMONS.DELETE' | translate"
                             [class.!text-purple-400]="openSerieId() === serie.id"
                             [class.!text-gray-400]="openSerieId() !== serie.id"
                             (click)="deleteDisparo(serie.id, disparo.id)"

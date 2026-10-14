@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-10-09
 description: >
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
@@ -1256,3 +1256,50 @@ ExecutionService.update<Resource>(fireTrialId, seriesId, shotId, payload)
 identTab.save() + pesosTab.save() + acondTab.save()
   → syncSnapshot() en cada tab → isDirty() === false
 ```
+
+---
+
+## ⚙️ Consumo de Equipos Asignados (Calibry / Selector de Equipos)
+
+Muchos widgets del panel de ejecución (p. ej. `MunitionIntroduction`, `PiezoPressureIntroduction`, `VelocityIntroduction`, etc.) necesitan ofrecer en sus desplegables únicamente los equipos de medida que han sido previamente asignados en el selector de equipos de la prueba (funcional 4.3).
+
+### Cómo consumir equipos asignados desde un Widget:
+
+1. **Inyectar `ExecutionStore`:**
+
+   ```typescript
+   readonly #store = inject(ExecutionStore);
+   ```
+
+2. **Acceder a las selecciones de equipos en el store:**
+   - `this.#store.equipmentSelector().selections`: Array plano de todas las asignaciones confirmadas con:
+     - `itemId`: ID del equipo (denominación/inventario Calibry).
+     - `categoryId`: Categoría de equipo (`EquipmentTypeEnum`).
+     - `series`: IDs de series a las que aplica.
+     - `disparos`: IDs de disparos a los que aplica.
+     - `magnitude`: Magnitud asociada (si aplica, ej. en longitud).
+     - `channel`: Canal asignado (1-32, si aplica).
+   - `this.#store.equipmentSelector().equipments`: Array agrupado por tag (`EquipmentMagnitudeSelectionGroup[]`).
+
+3. **Derivar opciones reactivas para la serie y disparo actualmente seleccionados:**
+
+   ```typescript
+   readonly activeChamberOptions = computed(() => {
+     const activeSerieId = this.#store.activeSerieId();
+     const activeShotId = this.#store.activeShotId();
+     if (!activeSerieId || !activeShotId) return [];
+
+     return this.#store
+       .equipmentSelector()
+       .selections
+       .filter(
+         (sel) =>
+           sel.categoryId === EquipmentTypeEnum.CLIMATIC_CHAMBER &&
+           sel.series.includes(activeSerieId) &&
+           sel.disparos.includes(activeShotId),
+       )
+       .map((sel) => ({ value: sel.itemId, label: sel.itemId }));
+   });
+   ```
+
+4. **Sincronización:** Cuando el usuario guarda cambios en el modal "Selector equipos" (`PUT /equipment-selection`), `ExecutionStore` actualiza sus signals reactivos automáticamente, refrescando al instante las opciones disponibles en todos los widgets montados en el grid.

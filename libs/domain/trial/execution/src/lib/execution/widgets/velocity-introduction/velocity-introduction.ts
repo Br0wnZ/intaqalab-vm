@@ -32,6 +32,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
+import { injectInitialVelocityEquipments } from './inject-initial-velocity-equipments';
 import {
   type InputFieldValue,
   buildRadarAntenaCombinedValue,
@@ -240,6 +241,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
+  readonly #initialVelocityEquipments = injectInitialVelocityEquipments();
 
   constructor() {
     super();
@@ -310,8 +312,28 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
    * Formato de valor: "radarId|antennaId"
    */
   protected readonly radarAntenaOptions = computed(() => {
-    const radares = this.#itemsByCategory()[EquipmentTypeEnum.DOPPLER_RADAR] ?? [];
-    const antenas = this.#itemsByCategory()[EquipmentTypeEnum.ANTENNA] ?? [];
+    const { serie, disparo } = this.selectorFormModel();
+    if (!serie || !disparo) return [];
+
+    const selections = this.#initialVelocityEquipments().filter(
+      (selection) => selection.seriesIds?.includes(serie) && selection.shotIds?.includes(disparo),
+    );
+    const radarIds = new Set(
+      selections
+        .filter((selection) => selection.categoryId === EquipmentTypeEnum.DOPPLER_RADAR)
+        .map((selection) => String(selection.equipmentItemId)),
+    );
+    const antennaIds = new Set(
+      selections
+        .filter((selection) => selection.categoryId === EquipmentTypeEnum.ANTENNA)
+        .map((selection) => String(selection.equipmentItemId)),
+    );
+    const radares = (this.#itemsByCategory()[EquipmentTypeEnum.DOPPLER_RADAR] ?? []).filter((item) =>
+      radarIds.has(item.id),
+    );
+    const antenas = (this.#itemsByCategory()[EquipmentTypeEnum.ANTENNA] ?? []).filter((item) =>
+      antennaIds.has(item.id),
+    );
     const result: Array<{ value: string; label: string }> = [];
     for (const radar of radares) {
       for (const antena of antenas) {

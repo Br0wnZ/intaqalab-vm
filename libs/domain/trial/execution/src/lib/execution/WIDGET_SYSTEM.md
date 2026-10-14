@@ -369,3 +369,105 @@ Cuando un widget debe ser **autónomo** (gestionar su propia carga inicial sin r
    - `BaseFormWidgetComponent` registra el widget en `ngOnInit()` y lo desregistra en `ngOnDestroy()`.
 3. **Guard en efectos de sincronización**:
    - Antes de lanzar refrescos dependientes de `updatedAt`, comprobar `!untracked(() => store.isWidgetAutonomous(WidgetId.<ID>))`.
+
+---
+
+## ⚙️ Asignación de Equipos y Consumo en Widgets (Selector de Equipos)
+
+### 🎯 Visión General (Funcional 4.3)
+
+El módulo de **Asignación de Equipos** permite vincular los equipos de medida de Calibry requeridos por la planificación a las series y disparos del ensayo. Los equipos asignados alimentan directamente los desplegables y campos de selección de los widgets durante la ejecución.
+
+### 📐 Arquitectura de Dos Capas
+
+1. **Capa Diálogo (`EquipmentSelectorDialog` + `EquipmentSelectorStore`):**
+   - Store local de ciclo de vida efímero que gestiona la edición tabular por familias (tags).
+   - Inyecta `EquipmentPlanningService` para resolver medidas planificadas (`GET /measures`) y catálogo.
+   - **Regla de visibilidad dinámica:** Sólo se muestran las etiquetas (tags) que cumplen simultáneamente dos criterios:
+     - Autorizadas según el rol de la unidad técnica del usuario (`resolveVisibleEquipmentTags`).
+     - Planificadas activamente para el ensayo (`enabledTagIds`).
+     - **Las etiquetas no planificadas o no autorizadas no se muestran en pantalla** (cero chips deshabilitados).
+   - Emite `{ action: 'save', equipments: EquipmentMagnitudeSelectionGroup[] }` al confirmar.
+
+2. **Capa Global (`ExecutionStore` + `withEquipmentSelector`):**
+   - Mantiene el estado persistido de asignaciones de equipos a nivel de ensayo.
+   - Orquesta la mutación vía `PUT /equipment-selection` y sincroniza reactivamente vía `GET /equipment-selection`.
+
+### 🔄 Flujo de Persistencia y Sincronización (PUT / GET)
+
+```mermaid
+sequenceDiagram
+    participant User as Usuario / UI
+    participant Dialog as EquipmentSelectorDialog
+    participant Facade as ExecutionPageFacadeService
+    participant Store as ExecutionStore (withEquipmentSelector)
+    participant API as ExecutionService (HTTP Backend)
+    participant Widgets as Execution Widgets
+
+    User->>Dialog: Confirma asignación ("Guardar")
+    Dialog-->>Facade: close({ action: 'save', equipments })
+    Facade->>Store: updateEquipmentSelections(equipments)
+    Store->>API: updateEquipmentSelector(trialId, apiPayload) [PUT]
+    Store->>Store: patchState(equipments, selections locales inmediatas)
+    API-->>Store: updateEquipmentSelectorResource status === 'resolved'
+    Note over Store: effect detecta PUT exitoso y lanza GET
+    Store->>API: getEquipmentSelector(trialId) [GET]
+    API-->>Store: equipmentSelectorRemote.value() actualizado
+    Store->>Store: patchState(equipments, selections sincronizadas)
+    Store-->>Widgets: Signals reactivos actualizan campos y selects automáticamente
+```
+
+### 🧩 Consumo en Widgets (`libs/domain/trial/execution/src/lib/execution/widgets`)
+
+Los widgets inyectan `ExecutionStore` para acceder de forma reactiva a las asignaciones de equipos:
+
+```typescript
+import { Component, computed, inject } from '@angular/core';
+
+import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentTypeEnum } from '../../models/equipment.models';
+
+@Component({
+  selector: 'inta-my-execution-widget',
+  template: `
+    @for (equipo of activeShotEquipments(); track equipo.itemId) {
+      <span>{{ equipo.itemId }}</span>
+    }
+  `,
+})
+export class MyExecutionWidget {
+  readonly #store = inject(ExecutionStore);
+
+  // 1. Asignaciones aplanadas completas
+  readonly allSelections = computed(() => this.#store.equipmentSelector().selections);
+
+  // 2. Asignaciones agrupadas por tag
+  readonly groupedEquipments = computed(() => this.#store.equipmentSelector().equipments);
+
+  // 3. Filtrar equipos asignados para la serie y disparo actualmente activos
+  readonly activeShotEquipments = computed(() => {
+    const activeSerieId = this.#store.activeSerieId();
+    const activeShotId = this.#store.activeShotId();
+    if (!activeSerieId || !activeShotId) return [];
+
+    return this.allSelections().filter(
+      (sel) => sel.series.includes(activeSerieId) && sel.disparos.includes(activeShotId),
+    );
+  });
+
+  // 4. Filtrar por categoría de instrumento (ej. Cámaras climáticas, Sensores, etc.)
+  readonly climaticChambers = computed(() =>
+    this.allSelections().filter((sel) => sel.categoryId === EquipmentTypeEnum.CLIMATIC_CHAMBER),
+  );
+}
+```
+
+### 📚 Señales expuestas por `ExecutionStore` (`withEquipmentSelector`)
+
+| Señal                            | Tipo                                     | Descripción                                                                                              |
+| :------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| `equipmentSelector().equipments` | `EquipmentMagnitudeSelectionGroup[]`     | Asignaciones agrupadas por familia de magnitud (`id: EquipmentMagnitudeTagEnum`).                        |
+| `equipmentSelector().selections` | `EquipmentItemSelection[]`               | Lista aplanada de asignaciones con `itemId`, `categoryId`, `series`, `disparos`, `magnitude`, `channel`. |
+| `equipmentSelectorRemote()`      | `EquipmentSelectionApiList \| undefined` | Datos crudos del backend provenientes de `equipmentSelectorResource` (`httpResource`).                   |
+| `isLoadingEquipmentSelector()`   | `boolean`                                | Indica si el GET de asignaciones de equipos está en progreso.                                            |
+| `isUpdatingEquipmentSelector()`  | `boolean`                                | Indica si el PUT de asignaciones de equipos está en progreso.                                            |
