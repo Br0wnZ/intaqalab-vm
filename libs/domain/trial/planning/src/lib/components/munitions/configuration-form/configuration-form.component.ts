@@ -14,7 +14,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
@@ -575,6 +575,7 @@ export class ConfigurationFormComponent {
       return undefined;
     });
     min(f.maxAllowedErrors, 0);
+    max(f.maxAllowedErrors, 99);
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return undefined;

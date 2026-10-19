@@ -14,7 +14,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, max, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -279,6 +279,7 @@ export class CargaDetailFormComponent {
     disabled(f.batch, () => this.readonly());
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
+    max(f.maxAllowedErrors, 99);
     disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();

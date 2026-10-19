@@ -1,5 +1,8 @@
-import type { FireTrial } from '@intaqalab/models';
-import type { AngleUnitEnum, DistanceUnitEnum, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
+import type { AngleUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
+
+export const MAX_DISTANCE_VALUE = 10_000;
+export const MAX_ANGULAR_VALUE = 6_400;
+export const MAX_WEIGHT_VALUE = 10_000;
 
 /**
  * Unidades que devuelve el backend para cada campo numérico del disparo.

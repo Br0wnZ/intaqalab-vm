@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -16,6 +16,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { Serie, ShootingConditionsUnits, UpdateShot } from '../../../models/shooting-conditions.model';
+import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 
 interface BulkConfig {
@@ -155,7 +156,7 @@ interface DialogData {
             [value]="configModel().orientation"
             (valueChange)="onFieldChange('orientation', $event)"
           >
-            <input id="bulk-orient" inputSelectInput libNoLeadingZeros />
+            <input id="bulk-orient" inputSelectInput libNoNegativeValues libNoLeadingZeros />
           </ui-input-select>
         </div>
 
@@ -171,7 +172,7 @@ interface DialogData {
             [value]="configModel().elevation"
             (valueChange)="onFieldChange('elevation', $event)"
           >
-            <input id="bulk-elev" inputSelectInput libNoLeadingZeros />
+            <input id="bulk-elev" inputSelectInput libNoNegativeValues libNoLeadingZeros />
           </ui-input-select>
         </div>
 
@@ -187,7 +188,7 @@ interface DialogData {
             [value]="configModel().angle"
             (valueChange)="onFieldChange('angle', $event)"
           >
-            <input id="bulk-angle" inputSelectInput libNoLeadingZeros libLocalDecimal />
+            <input id="bulk-angle" inputSelectInput libNoNegativeValues libNoLeadingZeros libLocalDecimal />
           </ui-input-select>
         </div>
 
@@ -410,7 +411,7 @@ interface DialogData {
               [value]="configModel().targetInclination"
               (valueChange)="onFieldChange('targetInclination', $event)"
             >
-              <input id="bulk-inclination" inputSelectInput libNoLeadingZeros />
+              <input id="bulk-inclination" inputSelectInput libNoNegativeValues libNoLeadingZeros />
             </ui-input-select>
           </div>
         }
@@ -475,6 +476,21 @@ export class MassiveConfigurationDialog {
   });
 
   readonly bulkForm = form(this.configModel, (f) => {
+    min(f.orientation.value, 0);
+    max(f.orientation.value, MAX_ANGULAR_VALUE);
+    min(f.elevation.value, 0);
+    max(f.elevation.value, MAX_ANGULAR_VALUE);
+    min(f.angle.value, 0);
+    max(f.angle.value, MAX_ANGULAR_VALUE);
+    min(f.targetInclination.value, 0);
+    max(f.targetInclination.value, MAX_ANGULAR_VALUE);
+    max(f.distance.value, MAX_DISTANCE_VALUE);
+    max(f.range.value, MAX_DISTANCE_VALUE);
+    max(f.functioningHeight.value, MAX_DISTANCE_VALUE);
+    max(f.powderWeight.value, MAX_WEIGHT_VALUE);
+    max(f.projectileWeight.value, MAX_WEIGHT_VALUE);
+    max(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
+
     validate(f.series, ({ value }) => {
       const selected = value();
       return !selected || selected.length === 0

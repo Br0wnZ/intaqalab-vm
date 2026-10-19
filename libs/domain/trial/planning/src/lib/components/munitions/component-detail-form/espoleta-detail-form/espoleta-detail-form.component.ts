@@ -13,7 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, max, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -65,8 +65,8 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
-            clearable
             id="espoleta-denomination"
+            clearable
             data-testid="denomination-select"
             [value]="denominationId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.MODEL' | translate"
@@ -151,8 +151,8 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
         </label>
         <mat-form-field appearance="outline" class="w-full">
           <mat-select
-            clearable
             id="espoleta-fuze-mode"
+            clearable
             [value]="fuseWorkingModeId()"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FUZE_MODE' | translate"
             [disabled]="readonly()"
@@ -255,14 +255,12 @@ export class EspoletaDetailFormComponent {
   readonly denominations = computed<MasterDataI18nItem[]>(() => {
     const response = this.#denominationsResource.value();
     return (
-      response?.items.map(
-        (item: WarehouseDenominationItem): MasterDataI18nItem => ({
-          id: item.id,
-          name: { es: item.name, en: item.name },
-          label: item.name,
-          active: item.active,
-        }),
-      ) ?? []
+      response?.items.map((item: WarehouseDenominationItem): MasterDataI18nItem => ({
+        id: item.id,
+        name: { es: item.name, en: item.name },
+        label: item.name,
+        active: item.active,
+      })) ?? []
     );
   });
 
@@ -297,6 +295,7 @@ export class EspoletaDetailFormComponent {
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.fuseMeasurement, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
+    max(f.maxAllowedErrors, 99);
     disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();

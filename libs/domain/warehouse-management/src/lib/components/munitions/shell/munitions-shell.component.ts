@@ -186,7 +186,7 @@ export class MunitionsShellComponent {
         TrialStatus.INTERRUPTED,
         TrialStatus.STARTED,
       ],
-      sort: ['trialNumber;asc'],
+      sort: ['trialNumber;desc'],
     });
   }
 

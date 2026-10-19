@@ -12,7 +12,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, max, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -294,14 +294,12 @@ export class ComponentDetailFormComponent {
 
     return response.items
       .filter((item: WarehouseDenominationItem) => item.munitionType?.id === typeId)
-      .map(
-        (item: WarehouseDenominationItem): MasterDataI18nItem => ({
-          id: item.id,
-          name: { es: item.name, en: item.name },
-          label: item.name,
-          active: item.active,
-        }),
-      );
+      .map((item: WarehouseDenominationItem): MasterDataI18nItem => ({
+        id: item.id,
+        name: { es: item.name, en: item.name },
+        label: item.name,
+        active: item.active,
+      }));
   });
 
   readonly formModel = linkedSignal(() => this.detail());
@@ -355,6 +353,7 @@ export class ComponentDetailFormComponent {
     required(f.denomination);
     disabled(f.batch, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
+    max(f.maxAllowedErrors, 99);
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {

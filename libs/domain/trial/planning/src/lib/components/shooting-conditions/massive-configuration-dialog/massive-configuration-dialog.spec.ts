@@ -8,6 +8,7 @@ import { createMockResource } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
+import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
 import { MassiveConfigurationDialog } from './massive-configuration-dialog';
 
@@ -141,6 +142,96 @@ describe('MassiveConfigurationDialog', () => {
       MatButtonHarness.with({ text: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' }),
     );
     expect(await applyBtn.isDisabled()).toBe(true);
+  });
+
+  it('should enforce the angular maximum', async () => {
+    const { view } = await renderDialog();
+    const component = view.fixture.componentInstance;
+    const setOrientation = (value: string) => {
+      component.configModel.update((config) => ({
+        ...config,
+        series: ['serie-1'],
+        impactZone: 'zone-1',
+        orientation: { ...config.orientation, value },
+      }));
+    };
+
+    setOrientation(String(MAX_ANGULAR_VALUE));
+    expect(component.bulkForm().invalid()).toBe(false);
+
+    setOrientation('-1');
+    expect(component.bulkForm().invalid()).toBe(true);
+
+    setOrientation(String(MAX_ANGULAR_VALUE + 1));
+    expect(component.bulkForm().invalid()).toBe(true);
+  });
+
+  it('should enforce the maximum for distance fields', async () => {
+    const { view } = await renderDialog();
+    const component = view.fixture.componentInstance;
+    const distanceFields = ['distance', 'range', 'functioningHeight'] as const;
+
+    for (const field of distanceFields) {
+      component.configModel.update((config) => ({
+        ...config,
+        series: ['serie-1'],
+        impactZone: 'zone-1',
+        distance: { ...config.distance, value: String(MAX_DISTANCE_VALUE) },
+        range: { ...config.range, value: String(MAX_DISTANCE_VALUE) },
+        functioningHeight: { ...config.functioningHeight, value: String(MAX_DISTANCE_VALUE) },
+        [field]: { ...config[field], value: String(MAX_DISTANCE_VALUE) },
+      }));
+      expect(component.bulkForm().invalid()).toBe(false);
+
+      component.configModel.update((config) => ({
+        ...config,
+        [field]: { ...config[field], value: String(MAX_DISTANCE_VALUE + 1) },
+      }));
+      expect(component.bulkForm().invalid()).toBe(true);
+    }
+  });
+
+  it('should enforce the distance maximum for nominal speed', async () => {
+    const { view } = await renderDialog();
+    const component = view.fixture.componentInstance;
+    const setNominalSpeed = (value: string) => {
+      component.configModel.update((config) => ({
+        ...config,
+        series: ['serie-1'],
+        impactZone: 'zone-1',
+        nominalSpeed: { ...config.nominalSpeed, value },
+      }));
+    };
+
+    setNominalSpeed(String(MAX_DISTANCE_VALUE));
+    expect(component.bulkForm().invalid()).toBe(false);
+
+    setNominalSpeed(String(MAX_DISTANCE_VALUE + 1));
+    expect(component.bulkForm().invalid()).toBe(true);
+  });
+
+  it('should enforce the maximum for weight fields', async () => {
+    const { view } = await renderDialog();
+    const component = view.fixture.componentInstance;
+    const weightFields = ['powderWeight', 'projectileWeight'] as const;
+
+    for (const field of weightFields) {
+      component.configModel.update((config) => ({
+        ...config,
+        series: ['serie-1'],
+        impactZone: 'zone-1',
+        powderWeight: { ...config.powderWeight, value: String(MAX_WEIGHT_VALUE) },
+        projectileWeight: { ...config.projectileWeight, value: String(MAX_WEIGHT_VALUE) },
+        [field]: { ...config[field], value: String(MAX_WEIGHT_VALUE) },
+      }));
+      expect(component.bulkForm().invalid()).toBe(false);
+
+      component.configModel.update((config) => ({
+        ...config,
+        [field]: { ...config[field], value: String(MAX_WEIGHT_VALUE + 1) },
+      }));
+      expect(component.bulkForm().invalid()).toBe(true);
+    }
   });
 
   /* it('should enable apply button when series are selected and call service on apply', async () => {

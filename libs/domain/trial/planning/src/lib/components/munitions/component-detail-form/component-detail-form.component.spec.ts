@@ -413,6 +413,18 @@ describe('ComponentDetailFormComponent', () => {
       expect(component.detailForm().value().denomination).toBeDefined();
     });
 
+    it('should reject maxAllowedErrors values above 99', async () => {
+      const renderResult = await render(ComponentDetailFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        componentInputs: { detail: { ...defaultDetail, maxAllowedErrors: 100 } },
+      });
+
+      const component = renderResult.fixture.componentInstance;
+
+      expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
+    });
+
     it('should be valid when denomination is completed', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = userEvent.setup();

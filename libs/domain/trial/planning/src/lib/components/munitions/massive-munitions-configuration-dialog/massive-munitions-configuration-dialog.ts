@@ -199,6 +199,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                   matInput
                   type="number"
                   min="0"
+                  max="99"
                   libNoLeadingZeros
                   libNoNegativeValues
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_PLACEHOLDER' | translate"
@@ -514,6 +515,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               matInput
                               type="number"
                               min="0"
+                              max="99"
                               libNoLeadingZeros
                               libNoNegativeValues
                               [placeholder]="
@@ -1048,6 +1050,10 @@ export class MassiveMunitionsConfigurationDialog {
   #validateForm(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
+    if (this.formData.maxAllowedErrors > 99) {
+      errors.push('El número máximo de fallos no puede ser superior a 99');
+    }
+
     if (!this.hasValidComponents()) {
       if (!this.formData.denomination) {
         errors.push(
@@ -1104,6 +1110,10 @@ export class MassiveMunitionsConfigurationDialog {
           .replace(/[\u0300-\u036f]/g, '');
         const isPowder = normType === 'polvora' || normType.startsWith('polvora-') || normType.startsWith('polvora');
         const componentData = this.formData.componentsData[component];
+
+        if (componentData && componentData.maxAllowedErrors > 99) {
+          errors.push(`El número máximo de fallos de ${this.getComponentLabel(component)} no puede ser superior a 99`);
+        }
 
         if (!isPowder && !componentData?.denomination?.id) {
           errors.push(

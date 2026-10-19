@@ -84,6 +84,13 @@ describe('CargaDetailFormComponent', () => {
     expect(await selects[1].isDisabled()).toBe(true);
   });
 
+  it('should reject maxAllowedErrors values above 99', async () => {
+    const { component } = await renderForm();
+    component.formModel.update((current) => ({ ...current, maxAllowedErrors: 100 }));
+
+    expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
+  });
+
   it('should render one option for each zone filtered by selected denomination', async () => {
     const { component, fixture, loader, documentLoader } = await renderForm();
     component.formModel.update((current) => ({

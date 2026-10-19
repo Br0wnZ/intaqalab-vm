@@ -1,7 +1,7 @@
 import type { OnInit } from '@angular/core';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FormField, applyEach, disabled, form, min, required } from '@angular/forms/signals';
+import { FormField, applyEach, disabled, form, max, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -34,6 +34,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import type { Serie, Shot } from '../../models/shooting-conditions.model';
+import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../services/shooting-conditions.service';
 import { MassiveConfigurationDialog } from './massive-configuration-dialog/massive-configuration-dialog';
 import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.mapper';
@@ -884,11 +885,21 @@ export class ShootingConditionsComponent implements OnInit {
         disabled(shotPath.nominalSpeed, () => this.readonly());
 
         min(shotPath.orientation, 0);
+        max(shotPath.orientation, MAX_ANGULAR_VALUE);
+        max(shotPath.elevation, MAX_ANGULAR_VALUE);
         min(shotPath.angle, 0);
+        max(shotPath.angle, MAX_ANGULAR_VALUE);
+        max(shotPath.targetInclination, MAX_ANGULAR_VALUE);
+        max(shotPath.distance, MAX_DISTANCE_VALUE);
+        max(shotPath.range, MAX_DISTANCE_VALUE);
+        max(shotPath.functioningHeight, MAX_DISTANCE_VALUE);
+        max(shotPath.powderWeight, MAX_WEIGHT_VALUE);
+        max(shotPath.projectileWeight, MAX_WEIGHT_VALUE);
         min(shotPath.range, 0);
         min(shotPath.functioningHeight, 0);
         min(shotPath.projectileWeight, 0);
         min(shotPath.nominalSpeed, 0);
+        max(shotPath.nominalSpeed, MAX_DISTANCE_VALUE);
       });
     });
   });

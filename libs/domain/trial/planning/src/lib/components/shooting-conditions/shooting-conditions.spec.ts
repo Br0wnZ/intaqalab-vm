@@ -12,6 +12,7 @@ import { render, screen, waitFor } from '@testing-library/angular';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import type { Shot } from '../../models/shooting-conditions.model';
+import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../services/shooting-conditions.service';
 import { ShootingConditionsComponent } from './shooting-conditions';
 
@@ -155,12 +156,12 @@ describe('ShootingConditionsComponent', () => {
       });
     });
 
-    it('should enable buttons after changing form values', async () => {
+    it('should enable buttons when changed data remains valid above 1000 range units', async () => {
       await waitFor(() => expect(component.getFormValues()).toHaveLength(2));
 
       component.seriesSignal.update((series) => {
         const updatedSeries = structuredClone(series);
-        updatedSeries[0].shots[0].distance += 1;
+        updatedSeries[0].shots[0].range = 1001;
         return updatedSeries;
       });
       fixture.detectChanges();
@@ -171,6 +172,45 @@ describe('ShootingConditionsComponent', () => {
           .closest('button');
         expect(saveButton).toBeEnabled();
       });
+    });
+
+    it('should disable buttons when an angular value exceeds its maximum', () => {
+      component.seriesSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].orientation = MAX_ANGULAR_VALUE + 1;
+        return updatedSeries;
+      });
+      fixture.detectChanges();
+
+      expect(component.hasToBeDisabled()).toBe(true);
+    });
+
+    it('should disable save when a distance or nominal speed value exceeds its maximum', () => {
+      for (const field of ['distance', 'range', 'functioningHeight', 'nominalSpeed'] as const) {
+        component.seriesSignal.update((series) => {
+          const updatedSeries = structuredClone(series);
+          updatedSeries[0].shots[0][field] = MAX_DISTANCE_VALUE + 1;
+          return updatedSeries;
+        });
+        fixture.detectChanges();
+
+        expect(component.hasToBeDisabled()).toBe(true);
+        component.resetForm();
+      }
+    });
+
+    it('should disable save when a weight value exceeds its maximum', () => {
+      for (const field of ['powderWeight', 'projectileWeight'] as const) {
+        component.seriesSignal.update((series) => {
+          const updatedSeries = structuredClone(series);
+          updatedSeries[0].shots[0][field] = MAX_WEIGHT_VALUE + 1;
+          return updatedSeries;
+        });
+        fixture.detectChanges();
+
+        expect(component.hasToBeDisabled()).toBe(true);
+        component.resetForm();
+      }
     });
 
     it('should disable buttons when updating', async () => {

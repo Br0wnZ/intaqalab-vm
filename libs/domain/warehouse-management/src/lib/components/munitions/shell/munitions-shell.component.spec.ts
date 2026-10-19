@@ -133,7 +133,7 @@ describe('MunitionsShellComponent', () => {
     expect(trialsDataService.search).toHaveBeenCalledExactlyOnceWith({
       clientId: 'client-1',
       status: ['PLANNED', 'UNDER_REVIEW', 'IN_PROGRESS', 'INTERRUPTED', 'STARTED'],
-      sort: ['trialNumber;asc'],
+      sort: ['trialNumber;desc'],
     });
   });
 

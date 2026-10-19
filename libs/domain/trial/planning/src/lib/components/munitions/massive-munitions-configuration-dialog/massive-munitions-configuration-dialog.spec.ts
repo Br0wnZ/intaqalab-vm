@@ -449,6 +449,22 @@ describe('MassiveMunitionsConfigurationDialog', () => {
     alertSpy.mockRestore();
   });
 
+  it('should not apply when maxAllowedErrors exceeds 99', async () => {
+    const user = userEvent.setup();
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    mockMunitionsStore.updateMunitions.mockClear();
+    const { fixture } = await renderDialog();
+    fixture.componentInstance.formData.maxAllowedErrors = 100;
+
+    await user.click(
+      screen.getByRole('button', { name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i }),
+    );
+
+    expect(alertSpy).toHaveBeenCalled();
+    expect(mockMunitionsStore.updateMunitions).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
   it('should allow applying when components have denomination without requiring top-level denomination or component lot', async () => {
     const user = userEvent.setup();
     const dialogRefMock = createFullMockDialogRef();
