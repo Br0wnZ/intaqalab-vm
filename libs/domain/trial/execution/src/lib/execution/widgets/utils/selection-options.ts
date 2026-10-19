@@ -51,6 +51,39 @@ export function mapShotOptionsToPlanningNumbers(
   });
 }
 
+/**
+ * Construye las opciones de disparo para el selector combinando
+ * datos de progreso de ejecución y planificación.
+ *
+ * Lógica centralizada para todos los widgets de ejecución:
+ * 1. Si hay progressShots → usa globalNumber de planningShots vía lookup
+ * 2. Si solo hay planningShots → usa directamente (ya traen globalNumber)
+ * 3. Fallback → opciones almacenadas con renumeración desde planificación
+ */
+export function buildDisparoOptions(params: {
+  selectedSerie: string | null;
+  executionProgress:
+    | { series: Array<{ seriesId: string; shots: Array<{ shotId: string; status?: string | null }> }> }
+    | null
+    | undefined;
+  planningSeries: Array<{ id: string; shots?: Array<{ id: string; globalNumber?: number | null }> }> | null | undefined;
+  storedOptions?: Array<{ value: string; label: string }>;
+}): Array<{ value: string; label: string }> {
+  const { selectedSerie, executionProgress, planningSeries, storedOptions = [] } = params;
+  const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
+  const progressShots = selectedSerie
+    ? executionProgress?.series.find((serie) => serie.seriesId === selectedSerie)?.shots
+    : undefined;
+
+  if (progressShots?.length) {
+    return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
+  }
+  if (planningShots?.length) {
+    return mapShotsToDisparoOptions(planningShots, storedOptions);
+  }
+  return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
+}
+
 export type SelectedShotState = 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
 
 export function mapSelectedShotStatusLabel(status: string | null | undefined): string {

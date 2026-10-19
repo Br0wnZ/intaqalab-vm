@@ -43,7 +43,6 @@ import { WidgetId } from '@intaqalab/domain-trial-execution';
 
 // En el grid switch:
 @switch (widget.type) {
-  @case (WidgetId.SHOT) { <inta-shot-widget /> }
   @case (WidgetId.JLT_MAO) { <inta-jlt-mao /> }
   @case (WidgetId.EXECUTION_PREP_TECH) {
     <inta-execution-prep-tech-widget [techProfile]="widget.techProfile" />
@@ -92,10 +91,10 @@ Todos los widgets están registrados en `WIDGET_REGISTRY`:
 
 ```typescript
 export const WIDGET_REGISTRY: Record<WidgetId, WidgetConfig> = {
-  [WidgetId.SHOT]: {
-    id: WidgetId.SHOT,
-    titleKey: 'TRIAL_EXECUTION.WIDGETS.SHOT.TITLE',
-    descriptionKey: 'TRIAL_EXECUTION.WIDGETS.SHOT.DESCRIPTION',
+  [WidgetId.EXECUTION_PREP_JLT]: {
+    id: WidgetId.EXECUTION_PREP_JLT,
+    titleKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.TITLE',
+    descriptionKey: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.DESCRIPTION',
     defaultWidth: 1,
     hasForm: true,
   },
@@ -108,8 +107,8 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetConfig> = {
 ```typescript
 import { getWidgetConfig } from '@intaqalab/domain-trial-execution';
 
-const config = getWidgetConfig(WidgetId.SHOT);
-console.log(config.titleKey); // "TRIAL_EXECUTION.WIDGETS.SHOT.TITLE"
+const config = getWidgetConfig(WidgetId.EXECUTION_PREP_JLT);
+console.log(config.titleKey); // "TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.TITLE"
 ```
 
 ---
@@ -143,7 +142,7 @@ PUT    /{centerId}/fire-trials/{fireTrialId}/execution/preferences/users/{userna
 {
   "widgets": [
     {
-      "widgetId": "shot",
+      "widgetId": "jlt-mao",
       "position": { "row": 1, "col": 1 },
       "width": 1,
       "height": 1

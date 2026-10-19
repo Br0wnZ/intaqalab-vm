@@ -17,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { AngleUnitEnum } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -336,6 +337,21 @@ export class JltMao extends BaseFormWidgetComponent {
   });
 
   protected readonly plannedOlt = computed(() => this.#store.jltMaoPlannedOlt());
+  protected readonly plannedShootingAngle = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    const shot = conditions?.series
+      .find((item) => item.seriesId === serie)
+      ?.shots.find((item) => item.shotId === disparo);
+    if (shot?.shootingAngle === undefined || shot.shootingAngle === null) return null;
+
+    const unit =
+      shot.shootingAngleUnit ??
+      conditions?.units?.shootingAngle ??
+      conditions?.units?.orientation ??
+      AngleUnitEnum.MILS;
+    return unit === AngleUnitEnum.DEGREES ? shot.shootingAngle * (6400 / 360) : shot.shootingAngle;
+  });
   protected readonly hasManualOlt = computed(() => this.#parseNum(this.oltField()) !== null);
   protected readonly oltReadOnly = computed(
     () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.formModel().piqueta !== null,
@@ -490,9 +506,19 @@ export class JltMao extends BaseFormWidgetComponent {
     });
 
     effect(() => {
+      const plannedShootingAngle = this.plannedShootingAngle();
+      if (plannedShootingAngle === null || this.#parseNum(this.anguloTiroField()) !== null) return;
+      untracked(() => {
+        this.anguloTiroField.set(this.#numToField(plannedShootingAngle, 'oo'));
+        this.#store.updateJltMao({ anguloTiro: plannedShootingAngle });
+        this.#syncSnapshot();
+      });
+    });
+
+    effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -568,7 +594,18 @@ export class JltMao extends BaseFormWidgetComponent {
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
-      this.#applyRemoteShotData(response);
+      let plannedFuseGraduation = response?.jltMaoData?.fuseGraduation ?? null;
+      if (plannedFuseGraduation === null) {
+        try {
+          plannedFuseGraduation = await this.#executionService.fetchPlanningFuseGraduation(fireTrialId, serie, disparo);
+        } catch {
+          plannedFuseGraduation = null;
+        }
+      }
+      if (!ticket.isFresh(selectionKey)) {
+        return;
+      }
+      this.#applyRemoteShotData(response, plannedFuseGraduation);
     } catch {
       if (!ticket.isFresh(selectionKey)) {
         return;
@@ -576,9 +613,18 @@ export class JltMao extends BaseFormWidgetComponent {
     }
   }
 
-  #applyRemoteShotData(response: ShotJltMaoResponse): void {
+  #applyRemoteShotData(response: ShotJltMaoResponse, plannedFuseGraduation: number | null): void {
     const data = response?.jltMaoData;
-    if (!data) return;
+    const plannedShootingAngle = this.plannedShootingAngle();
+    const shootingAngle = data?.shootingAngle ?? plannedShootingAngle;
+    const fuseGraduation = data?.fuseGraduation ?? plannedFuseGraduation;
+    if (!data) {
+      this.#store.updateJltMao({ anguloTiro: shootingAngle, graduacionEspoleta: fuseGraduation });
+      this.anguloTiroField.set(this.#numToField(shootingAngle, 'oo'));
+      this.graduacionEspoletaField.set(this.#numToField(fuseGraduation, 's'));
+      this.#syncSnapshot();
+      return;
+    }
 
     const remoteOlt = data.lineOfFireOrientation ?? null;
     const remotePiqueta = remoteOlt === null ? (data.stakeId ?? null) : null;
@@ -592,8 +638,8 @@ export class JltMao extends BaseFormWidgetComponent {
       derivaTabular: data.tabularDrift ?? null,
       tiempoVueloTeorico: data.theoreticalFlightTime ?? null,
       diferenciaAngular: data.angularDifference ?? null,
-      anguloTiro: data.shootingAngle ?? null,
-      graduacionEspoleta: data.fuseGraduation ?? null,
+      anguloTiro: shootingAngle,
+      graduacionEspoleta: fuseGraduation,
       alturaFuncionamiento: data.functioningHeight ?? null,
       distanciaFuncionamiento: data.functioningDistance ?? null,
     });
@@ -610,8 +656,8 @@ export class JltMao extends BaseFormWidgetComponent {
       this.tiempoVueloField.set(this.#numToField(data.theoreticalFlightTime, 's'));
     if (data.angularDifference !== undefined)
       this.diferenciaAngularField.set(this.#numToField(data.angularDifference, 'oo'));
-    if (data.shootingAngle !== undefined) this.anguloTiroField.set(this.#numToField(data.shootingAngle, 'oo'));
-    if (data.fuseGraduation !== undefined) this.graduacionEspoletaField.set(this.#numToField(data.fuseGraduation, 's'));
+    this.anguloTiroField.set(this.#numToField(shootingAngle, 'oo'));
+    this.graduacionEspoletaField.set(this.#numToField(fuseGraduation, 's'));
     if (data.functioningHeight !== undefined)
       this.alturaFuncionamientoField.set(this.#numToField(data.functioningHeight, 'm'));
     if (data.functioningDistance !== undefined)
@@ -736,6 +782,14 @@ export class JltMao extends BaseFormWidgetComponent {
         maxWidth: '800px',
         data: {
           serieOptions: this.serieOptions(),
+          planningConditionsReady: Boolean(this.#store.planningConditions()),
+          seriesOrientations: this.#getSeriesOrientations(),
+          piquetaOptions: this.#store.jltMao().piquetaOptions,
+          piecePosition: {
+            x: this.#store.maoTopography().xPieza,
+            y: this.#store.maoTopography().yPieza,
+          },
+          currentPiqueta: this.formModel().piqueta,
           current,
         },
       },
@@ -761,14 +815,68 @@ export class JltMao extends BaseFormWidgetComponent {
     if (selectedShotGroups.some((shotIds) => shotIds.length === 0)) return;
 
     const assignedShotIds = [...new Set(selectedShotGroups.flat())];
-    const request = mapJltMaoMassConfigToRequest(result, current, assignedShotIds);
-    if (!request) return;
+    const manualSeriesIds = result.orientation?.seriesIds ?? [];
+    const manualShotIds = selectedSeries.flatMap((seriesId, index) =>
+      manualSeriesIds.includes(seriesId) ? (selectedShotGroups[index] ?? []) : [],
+    );
+    const manualShotIdSet = new Set(manualShotIds);
+    const shotGroups = [
+      {
+        shotIds: assignedShotIds.filter((shotId) => !manualShotIdSet.has(shotId)),
+        orientation: undefined,
+      },
+      {
+        shotIds: assignedShotIds.filter((shotId) => manualShotIdSet.has(shotId)),
+        orientation: result.orientation,
+      },
+    ];
+    const updatedShotIds: string[] = [];
+    for (const group of shotGroups) {
+      if (group.shotIds.length === 0) continue;
+      const values = {
+        ...result,
+        diferenciaAngular: group.orientation ? result.diferenciaAngular : undefined,
+      };
+      const request = mapJltMaoMassConfigToRequest(
+        values,
+        current,
+        group.shotIds,
+        group.orientation?.lineOfFireOrientation,
+      );
+      if (!request) continue;
+      const response = await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
+      updatedShotIds.push(...response.updatedShotIds);
+    }
 
-    const response = await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
     const { serie, disparo } = this.formModel();
-    if (serie && disparo && selectedSeries.includes(serie) && response.updatedShotIds.includes(disparo)) {
+    if (serie && disparo && selectedSeries.includes(serie) && updatedShotIds.includes(disparo)) {
       await this.#loadSelectedShotData();
     }
+  }
+
+  #getSeriesOrientations(): { seriesId: string; orientations: (number | null)[] }[] {
+    const planningSeries = this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+    const conditions = this.#store.planningConditions();
+
+    return this.serieOptions().map(({ value: seriesId }) => {
+      const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+      const executedShots = executionSeries.find((series) => series.seriesId === seriesId)?.shots;
+      const shotIds = plannedShots?.length
+        ? plannedShots.map((shot) => shot.id)
+        : (executedShots?.map((shot) => shot.shotId) ?? []);
+      const conditionSeries = conditions?.series.find((series) => series.seriesId === seriesId);
+
+      return {
+        seriesId,
+        orientations: shotIds.map((shotId) => {
+          const shot = conditionSeries?.shots.find((conditionShot) => conditionShot.shotId === shotId);
+          if (shot?.orientation === undefined || shot.orientation === null) return null;
+          const unit = shot.orientationUnit ?? conditions?.units?.orientation ?? AngleUnitEnum.MILS;
+          return unit === AngleUnitEnum.DEGREES ? shot.orientation * (6400 / 360) : shot.orientation;
+        }),
+      };
+    });
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

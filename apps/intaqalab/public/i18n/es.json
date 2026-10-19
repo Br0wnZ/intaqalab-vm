@@ -1484,6 +1484,10 @@
         "MASS_CONFIG_APPLY_BTN": "Aplicar",
         "MASS_CONFIG_BTN": "Aplicar configuración masiva",
         "MASS_CONFIG_CANCEL_BTN": "Cancelar",
+        "MASS_CONFIG_ORIENTATION_CONFLICT": "La configuración masiva no se puede realizar porque la orientación planificada varía entre disparos de una serie.",
+        "MASS_CONFIG_OLT_LABEL": "OLT calculada",
+        "MASS_CONFIG_OLT_REQUIRED": "Selecciona una piqueta e informa la diferencia angular para calcular la OLT.",
+        "MASS_CONFIG_ORIENTATION_UNAVAILABLE": "No se puede aplicar la configuración masiva hasta que estén disponibles las orientaciones de planificación.",
         "MASS_CONFIG_SERIES_LABEL": "Series",
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Selecciona las series",
         "MASS_CONFIG_TITLE": "Extender configuración",
@@ -1527,6 +1531,7 @@
         "CURRENT_SHOT_BTN": "Disparo actual",
         "DESCRIPTION": "Introducción de datos de presión con manómetros y crusher",
         "DISPARO_PLACEHOLDER": "Disparo",
+        "EQUIPMENT_LABEL": "Equipos",
         "EQUIPO_PLACEHOLDER": "Equipo",
         "H1_LABEL": "H1",
         "H2_LABEL": "H2",
@@ -1588,6 +1593,7 @@
         "DIALOG": {
           "APPLY_BTN": "Aplicar",
           "CANCEL_BTN": "Cancelar",
+          "DATE_PLACEHOLDER": "Selecciona la fecha",
           "SERIES_LABEL": "Series",
           "SERIES_PLACEHOLDER": "Selecciona las series",
           "TITLE": "Extender configuración"
@@ -1772,15 +1778,6 @@
         "TAB_ALTA_VELOCIDAD": "Alta velocidad",
         "TAB_CONVENCIONAL": "Convencional",
         "TITLE": "Seguridad"
-      },
-      "SHOT": {
-        "DESCRIPTION": "Número de disparo, velocidad y observaciones",
-        "NUMBER": "Número de disparo",
-        "OBSERVATIONS": "Observaciones",
-        "SHOT_NUMBER_PLACEHOLDER": "Ej: 001",
-        "SPEED_PLACEHOLDER": "Ej: 850",
-        "TITLE": "Datos de disparo",
-        "VELOCITY": "Velocidad"
       },
       "STANAG_CRITERIOS": {
         "ACTUALIZAR_BTN": "Actualizar",
@@ -2177,10 +2174,12 @@
       "LIMIT_CARD": {
         "DEVIATION": "Desviación",
         "ENTER_VALUE": "Ingrese valor",
+        "INVALID_RANGE": "El límite mínimo debe ser menor que el máximo",
         "MAX_LIMIT": "Límite máximo",
         "MIN_LIMIT": "Límite mínimo"
       },
-      "TITLE": "Medidas"
+      "TITLE": "Medidas",
+      "SERIE_CONFIG": "Configurar por serie"
     },
     "MUNITIONS": {
       "COMPONENT_DETAIL_FORM": {

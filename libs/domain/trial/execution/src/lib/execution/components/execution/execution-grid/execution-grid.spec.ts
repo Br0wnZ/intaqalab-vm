@@ -14,6 +14,8 @@ import { WidgetId } from '../../../models/widget-id.enum';
 import { WidgetStateService } from '../../../services/widget-state.service';
 import { ExecutionGridComponent } from './execution-grid';
 
+const TEST_WIDGET_ID = 'test-widget-type' as unknown as WidgetId;
+
 describe('ExecutionGridComponent', () => {
   let placedWidgetsSignal = signal<PlacedWidget[]>([]);
   let mockWidgetStateService: {
@@ -92,7 +94,7 @@ describe('ExecutionGridComponent', () => {
     it('does not display remove buttons or dimensions badges when editMode is false', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -109,7 +111,7 @@ describe('ExecutionGridComponent', () => {
     it('hides free space placeholders and shows edit mode controls', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 2,
         height: 1,
@@ -126,7 +128,7 @@ describe('ExecutionGridComponent', () => {
       const onWidgetRemoved = vi.fn();
       const sampleWidget: PlacedWidget = {
         id: 'widget-to-delete',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -147,11 +149,11 @@ describe('ExecutionGridComponent', () => {
   });
 
   describe('Widget Template Rendering', () => {
-    it('renders known widget components correctly', async () => {
+    it('renders a registered widget component correctly', async () => {
       const widgets: PlacedWidget[] = [
         {
           id: 'w-shot',
-          type: WidgetId.SHOT,
+          type: WidgetId.EXECUTION_PREP_JLT,
           position: { row: 1, col: 1 },
           width: 1,
           height: 1,
@@ -159,7 +161,7 @@ describe('ExecutionGridComponent', () => {
       ];
 
       await setup({ widgets });
-      expect(screen.getByRole('heading', { name: 'TRIAL_EXECUTION.WIDGETS.SHOT.TITLE' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.TITLE' })).toBeInTheDocument();
     });
 
     it('renders fallback template for unknown widget types', async () => {
@@ -180,7 +182,7 @@ describe('ExecutionGridComponent', () => {
     it('prevents dragstart when not in editMode', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -207,7 +209,7 @@ describe('ExecutionGridComponent', () => {
     it('sets dragging widget state and dataTransfer on dragstart when in editMode', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -236,7 +238,7 @@ describe('ExecutionGridComponent', () => {
     it('resets dragging state and clears classes on dragend', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -294,7 +296,7 @@ describe('ExecutionGridComponent', () => {
     it('moves widget to target position on cell drop when widget is dragging', async () => {
       const sampleWidget: PlacedWidget = {
         id: 'widget-drag-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 1,
         height: 1,
@@ -341,12 +343,10 @@ describe('ExecutionGridComponent', () => {
   });
 
   describe('Grid Helper Methods and Free Blocks Computation', () => {
-
-
     it('computes free blocks when grid is partially occupied', async () => {
       const fullRowWidget: PlacedWidget = {
         id: 'w-row1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 3,
         height: 1,
@@ -363,14 +363,14 @@ describe('ExecutionGridComponent', () => {
     it('computes zero free blocks when grid is fully occupied', async () => {
       const fullGridWidget: PlacedWidget = {
         id: 'w-full-1',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 1, col: 1 },
         width: 3,
         height: 2,
       };
       const fullRow3Widget: PlacedWidget = {
         id: 'w-full-2',
-        type: WidgetId.SHOT,
+        type: TEST_WIDGET_ID,
         position: { row: 3, col: 1 },
         width: 3,
         height: 1,

@@ -9,7 +9,7 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
-import { applyEach, form } from '@angular/forms/signals';
+import { applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -121,7 +121,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
             [disabled]="readonly()"
             (change)="toggleConfigBySerie()"
           >
-            Configurar por serie
+            {{ 'TRIAL_PLANNING.MEASURES.SERIE_CONFIG' | translate }}
           </mat-checkbox>
         </div>
 
@@ -133,6 +133,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
                 [isOpen]="isCategoryOpen(cat.key)"
                 [options]="magnitudesOptions()[cat.key]"
                 [selectedValues]="seriesSignal()[0][cat.key]"
+                [measureFields]="seriesForm[0][cat.key]"
                 [readonly]="readonly()"
                 [measuresCatalog]="measuresCatalog()"
                 (toggleOpen)="toggleCategory(cat.key)"
@@ -149,7 +150,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
         <!-- Series Expansion Panels (Configuración por serie) -->
         @if (seriesConfiguration()) {
           <mat-accordion class="flex gap-6 flex-col" [multi]="true">
-            @for (serie of seriesSignal(); track serie.id) {
+            @for (serie of seriesSignal(); track serie.id; let serieIndex = $index) {
               <mat-expansion-panel
                 class="!shadow-sm !border !border-slate-200 !rounded-xl overflow-hidden !m-0 !bg-gray-200"
                 [expanded]="serie.expanded"
@@ -167,6 +168,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
                       [isOpen]="isCategoryOpen(cat.key, serie.id)"
                       [options]="magnitudesOptions()[cat.key]"
                       [selectedValues]="serie[cat.key]"
+                      [measureFields]="seriesForm[serieIndex][cat.key]"
                       [readonly]="readonly()"
                       [measuresCatalog]="measuresCatalog()"
                       (toggleOpen)="toggleCategory(cat.key, serie.id)"
@@ -359,8 +361,37 @@ export class Measures {
   }
 
   seriesForm = form(this.seriesSignal, (formPath) => {
-    applyEach(formPath, () => {
-      // Form validations
+    disabled(formPath, () => this.readonly());
+
+    applyEach(formPath, (seriePath) => {
+      this.categories.forEach(({ key }) => {
+        applyEach(seriePath[key], (measurePath) => {
+          required(measurePath.minLimit, {
+            message: 'COMMONS.REQUIRED_FIELD',
+            when: ({ valueOf }) => this.isQuantitative(valueOf(measurePath.id)),
+          });
+          required(measurePath.maxLimit, {
+            message: 'COMMONS.REQUIRED_FIELD',
+            when: ({ valueOf }) => this.isQuantitative(valueOf(measurePath.id)),
+          });
+          validate(measurePath.minLimit, ({ value, valueOf }) =>
+            this.#isInvalidLimitValues(valueOf(measurePath.id), value(), valueOf(measurePath.maxLimit))
+              ? {
+                  kind: 'invalidLimitRange',
+                  message: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE',
+                }
+              : undefined,
+          );
+          validate(measurePath.maxLimit, ({ value, valueOf }) =>
+            this.#isInvalidLimitValues(valueOf(measurePath.id), valueOf(measurePath.minLimit), value())
+              ? {
+                  kind: 'invalidLimitRange',
+                  message: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE',
+                }
+              : undefined,
+          );
+        });
+      });
     });
   });
 
@@ -382,6 +413,17 @@ export class Measures {
   isQuantitative(measureId: string): boolean {
     const catalogItem = this.#measuresStore.measuresCatalog().find((item) => item.id === measureId);
     return catalogItem?.qualificationType === 'QUANTITATIVE';
+  }
+
+  #isInvalidLimitValues(measureId: string, minLimit: unknown, maxLimit: unknown): boolean {
+    return (
+      this.isQuantitative(measureId) &&
+      typeof minLimit === 'number' &&
+      Number.isFinite(minLimit) &&
+      typeof maxLimit === 'number' &&
+      Number.isFinite(maxLimit) &&
+      minLimit >= maxLimit
+    );
   }
 
   toggleMeasureExpanded(

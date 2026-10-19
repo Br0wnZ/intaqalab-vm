@@ -1,0 +1,32 @@
+{
+  "points": [
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+      "powderWeight": 41.2,
+      "powderWeightUnit": "G",
+      "velocity": 848.3,
+      "velocityUnit": "M_S"
+    },
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+      "powderWeight": 42.1,
+      "powderWeightUnit": "G",
+      "velocity": 852.4,
+      "velocityUnit": "M_S"
+    },
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa3",
+      "powderWeight": 43.0,
+      "powderWeightUnit": "G",
+      "velocity": 856.5,
+      "velocityUnit": "M_S"
+    }
+  ],
+  "regression": {
+    "slope": 4.56,
+    "intercept": 660.6,
+    "rSquared": 1
+  },
+  "powderWeightAtNominalSpeed": 41.6,
+  "adjustedPowderWeight": 42
+}

@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
+import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -16,6 +17,11 @@ type InputFieldValue = JltMaoMassConfigInputField;
 
 export interface JltMaoMassConfigDialogData {
   serieOptions: { value: string; label: string }[];
+  planningConditionsReady: boolean;
+  seriesOrientations: { seriesId: string; orientations: (number | null)[] }[];
+  piquetaOptions: { value: string; label: string; x: number; y: number }[];
+  piecePosition: { x: number | null; y: number | null };
+  currentPiqueta: string | null;
   current: JltMaoMassConfigFields;
 }
 
@@ -31,11 +37,18 @@ export interface JltMaoMassConfigDialogResult {
   graduacionEspoleta?: InputFieldValue;
   alturaFuncionamiento?: InputFieldValue;
   distanciaFuncionamiento?: InputFieldValue;
+  orientation?: {
+    seriesIds: string[];
+    lineOfFireOrientation: number;
+  };
 }
 
 interface MassConfigForm {
   series: string[];
+  piqueta: string | null;
 }
+
+type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavailable';
 
 @Component({
   selector: 'inta-jlt-mao-mass-config-dialog',
@@ -50,6 +63,8 @@ interface MassConfigForm {
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    InputSelectInput,
+    LocaleDecimalInputDirective,
   ],
   template: `
     <!-- Header -->
@@ -77,6 +92,55 @@ interface MassConfigForm {
           </mat-select>
         </mat-form-field>
       </div>
+
+      @if (selectedSeriesStatuses().length > 0) {
+        @if (hasInconsistentOrientation()) {
+          <p role="alert" class="mb-3 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_CONFLICT' | translate }}
+          </p>
+        } @else if (!planningConditionsReady()) {
+          <p role="alert" class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_UNAVAILABLE' | translate }}
+          </p>
+        } @else {
+          <div class="mb-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
+              <mat-select
+                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
+                [formField]="massForm.piqueta"
+              >
+                @for (option of data.piquetaOptions; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <ui-input-select
+              [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
+              [opciones]="ooOptions"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
+              [value]="diferenciaAngularField()"
+              [readOnly]="!needsManualOrientation()"
+              [variant]="needsManualOrientation() ? 'default' : 'computed'"
+              (valueChange)="diferenciaAngularField.set($event)"
+            >
+              <input inputSelectInput libLocalDecimal [decimals]="2" />
+            </ui-input-select>
+          </div>
+          @if (needsManualOrientation() && calculatedOlt() === null) {
+            <p role="status" class="mb-3 text-sm text-gray-600">
+              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_REQUIRED' | translate }}
+            </p>
+          }
+          @if (calculatedOlt() !== null) {
+            <p class="mb-3 text-sm font-medium text-gray-700">
+              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_LABEL' | translate }}:
+              {{ calculatedOlt()?.toFixed(3) }} ºº
+            </p>
+          }
+        }
+      }
 
       <!-- 2-column grid: numeric fields -->
       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -189,26 +253,64 @@ export class JltMaoMassConfigDialog {
   // ── Form (series multi-select + piqueta selector) ─────────────────────────
   protected readonly formModel = signal<MassConfigForm>({
     series: [],
+    piqueta: this.data.currentPiqueta,
   });
-  protected readonly massForm = form(this.formModel);
+  protected readonly massForm = form(this.formModel, (path) => {
+    disabled(path.piqueta, () => !this.needsManualOrientation());
+  });
+
+  protected readonly selectedSeriesStatuses = computed(() =>
+    this.formModel().series.map((seriesId) => ({
+      seriesId,
+      status: this.#getSeriesOrientationStatus(seriesId),
+    })),
+  );
+  protected readonly planningConditionsReady = computed(() => this.data.planningConditionsReady);
+  protected readonly hasInconsistentOrientation = computed(() =>
+    this.selectedSeriesStatuses().some(({ status }) => status === 'inconsistent'),
+  );
+  protected readonly hasUnavailableOrientationData = computed(() =>
+    this.selectedSeriesStatuses().some(({ status }) => status === 'unavailable'),
+  );
+  protected readonly needsManualOrientation = computed(() =>
+    this.selectedSeriesStatuses().some(({ status }) => status === 'missing'),
+  );
+  protected readonly manualOrientationSeriesIds = computed(() =>
+    this.selectedSeriesStatuses()
+      .filter(({ status }) => status === 'missing')
+      .map(({ seriesId }) => seriesId),
+  );
+  protected readonly calculatedOlt = computed(() => {
+    if (!this.needsManualOrientation()) return null;
+    const piqueta = this.data.piquetaOptions.find((option) => option.value === this.formModel().piqueta);
+    const { x, y } = this.data.piecePosition;
+    const angularDifference = this.#parseNumber(this.diferenciaAngularField());
+    if (!piqueta || x === null || y === null || angularDifference === null) return null;
+    const bearing = Math.atan2(piqueta.y - y, piqueta.x - x) * (3200 / Math.PI);
+    return angularDifference + bearing;
+  });
 
   protected readonly canApply = computed(() => {
+    if (this.hasInconsistentOrientation() || this.hasUnavailableOrientationData()) return false;
+    const hasCalculatedOrientation = this.needsManualOrientation() && this.calculatedOlt() !== null;
+    if (this.needsManualOrientation() && !hasCalculatedOrientation) return false;
     return (
       this.formModel().series.length > 0 &&
-      canApplyJltMaoMassConfig(
-        {
-          velocidadInicial: this.velocidadInicialField(),
-          distanciaPique: this.distanciaPiqueField(),
-          derivaTabular: this.derivaTabularField(),
-          tiempoVuelo: this.tiempoVueloField(),
-          diferenciaAngular: this.diferenciaAngularField(),
-          anguloTiro: this.anguloTiroField(),
-          graduacionEspoleta: this.graduacionEspoletaField(),
-          alturaFuncionamiento: this.alturaFuncionamientoField(),
-          distanciaFuncionamiento: this.distanciaFuncionamientoField(),
-        },
-        this.data.current,
-      )
+      (hasCalculatedOrientation ||
+        canApplyJltMaoMassConfig(
+          {
+            velocidadInicial: this.velocidadInicialField(),
+            distanciaPique: this.distanciaPiqueField(),
+            derivaTabular: this.derivaTabularField(),
+            tiempoVuelo: this.tiempoVueloField(),
+            diferenciaAngular: this.diferenciaAngularField(),
+            anguloTiro: this.anguloTiroField(),
+            graduacionEspoleta: this.graduacionEspoletaField(),
+            alturaFuncionamiento: this.alturaFuncionamientoField(),
+            distanciaFuncionamiento: this.distanciaFuncionamientoField(),
+          },
+          this.data.current,
+        ))
     );
   });
 
@@ -226,6 +328,7 @@ export class JltMaoMassConfigDialog {
   apply(): void {
     if (!this.canApply()) return;
     const { series } = this.formModel();
+    const lineOfFireOrientation = this.calculatedOlt();
     this.#dialogRef.close({
       action: 'apply',
       series,
@@ -238,10 +341,36 @@ export class JltMaoMassConfigDialog {
       graduacionEspoleta: this.graduacionEspoletaField(),
       alturaFuncionamiento: this.alturaFuncionamientoField(),
       distanciaFuncionamiento: this.distanciaFuncionamientoField(),
+      ...(this.needsManualOrientation() && lineOfFireOrientation !== null
+        ? {
+            orientation: {
+              seriesIds: this.manualOrientationSeriesIds(),
+              lineOfFireOrientation,
+            },
+          }
+        : {}),
     });
   }
 
   cancel(): void {
     this.#dialogRef.close({ action: 'cancel' });
+  }
+
+  #getSeriesOrientationStatus(seriesId: string): SeriesOrientationStatus {
+    if (!this.data.planningConditionsReady) return 'unavailable';
+    const orientations =
+      this.data.seriesOrientations.find((series) => series.seriesId === seriesId)?.orientations ?? [];
+    if (orientations.length === 0 || orientations.every((orientation) => orientation === null)) return 'missing';
+    const plannedOrientation = orientations[0];
+    if (plannedOrientation === null || orientations.some((orientation) => orientation !== plannedOrientation)) {
+      return 'inconsistent';
+    }
+    return 'planned';
+  }
+
+  #parseNumber(field: InputFieldValue): number | null {
+    if (!field?.value) return null;
+    const parsed = Number(field.value.replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : null;
   }
 }

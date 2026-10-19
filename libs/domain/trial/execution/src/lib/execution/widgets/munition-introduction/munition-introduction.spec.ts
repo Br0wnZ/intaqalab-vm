@@ -182,6 +182,24 @@ describe('MunitionIntroduction', () => {
     expect(fixture.componentInstance['activeTab']()).toBe('identificacion');
   });
 
+  it('shows massive configuration button only on acondicionamiento tab', async () => {
+    const { fixture } = await renderWidget();
+    const hasMassiveConfigButton = () =>
+      Array.from(fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button')).some((button) =>
+        button.textContent?.includes('MASSIVE_CONFIG_BTN'),
+      );
+
+    expect(hasMassiveConfigButton()).toBe(false);
+
+    fixture.componentInstance['activeTab'].set('acondicionamiento');
+    fixture.detectChanges();
+    expect(hasMassiveConfigButton()).toBe(true);
+
+    fixture.componentInstance['activeTab'].set('pesos');
+    fixture.detectChanges();
+    expect(hasMassiveConfigButton()).toBe(false);
+  });
+
   it('updates displayed status when selected shot changes', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);

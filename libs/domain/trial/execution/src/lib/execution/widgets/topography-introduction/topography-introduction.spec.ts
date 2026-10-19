@@ -6,10 +6,12 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
-import { describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { TopographyIntroductionWidget } from './topography-introduction';
 
@@ -20,6 +22,8 @@ const mockWidgetStateService = {
 };
 
 describe('TopographyIntroductionWidget', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   const renderWidget = (widgetId = 'test-widget') =>
     render(TopographyIntroductionWidget, {
       inputs: { widgetId },
@@ -39,10 +43,75 @@ describe('TopographyIntroductionWidget', () => {
     expect(document.querySelector('h3')).toBeTruthy();
   });
 
+  it('only offers chronometers returned by equipment selection and removes duplicates', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+      [EquipmentTypeEnum.CHRONOMETER]: [
+        { id: '101', label: 'Assigned chronometer' },
+        { id: '102', label: 'Unassigned chronometer' },
+      ],
+    });
+    const { fixture } = await renderWidget();
+    TestBed.inject(ExecutionService).equipmentSelectorResource.set([
+      {
+        measurementGroup: 'TIME',
+        selections: [
+          { categoryId: EquipmentTypeEnum.CHRONOMETER, equipmentItemId: 101 },
+          { categoryId: EquipmentTypeEnum.CHRONOMETER, equipmentItemId: 101 },
+          { categoryId: EquipmentTypeEnum.BALANCE, equipmentItemId: 103 },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['equipoOptions']()).toEqual([{ value: '101', label: 'Assigned chronometer' }]);
+  });
+
+  it('does not offer catalog or stored equipment when equipment selection is empty', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+      [EquipmentTypeEnum.CHRONOMETER]: [{ id: '101', label: 'Catalog chronometer' }],
+    });
+    const { fixture } = await renderWidget();
+    TestBed.inject(ExecutionStore).updateTopographyIntroduction({
+      equipoOptions: [{ value: 'legacy', label: 'Stored chronometer' }],
+    });
+    TestBed.inject(ExecutionService).equipmentSelectorResource.set([]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['equipoOptions']()).toEqual([]);
+  });
+
+  it('offers no equipment when selection contains no chronometers', async () => {
+    const { fixture } = await renderWidget();
+    TestBed.inject(ExecutionService).equipmentSelectorResource.set([
+      {
+        measurementGroup: 'WEIGHT',
+        selections: [{ categoryId: EquipmentTypeEnum.BALANCE, equipmentItemId: 103 }],
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance['equipoOptions']()).toEqual([]);
+  });
+
   it('formState starts clean (not dirty)', async () => {
     const { fixture } = await renderWidget();
     expect(fixture.componentInstance.formState().dirty).toBe(false);
     expect(fixture.componentInstance.formState().widgetId).toBe('test-widget');
+  });
+
+  it('allows typing a flight time and keeps its value after blur', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderWidget();
+    const flightTime = screen.getByRole('textbox', {
+      name: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TIEMPO_VUELO_LABEL',
+    });
+
+    await user.clear(flightTime);
+    await user.type(flightTime, '12');
+    await user.tab();
+
+    expect(flightTime).toHaveValue('12');
+    expect(fixture.componentInstance['tiempoVueloField']()).toEqual({ value: '12', unit: 's' });
   });
 
   it('saveForm persists data to the store', async () => {

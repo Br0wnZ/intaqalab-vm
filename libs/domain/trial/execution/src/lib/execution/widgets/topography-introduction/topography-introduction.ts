@@ -204,8 +204,21 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly equipoOptions = computed(() => {
-    const chronometerOptions = this.#chronometerOptions();
-    return chronometerOptions.length ? chronometerOptions : this.#store.topographyIntroduction().equipoOptions;
+    const labels = new Map(this.#chronometerOptions().map((option) => [option.value, option.label]));
+    const selections = this.#store.equipmentSelectorRemote() ?? [];
+    const options = new Map<string, { value: string; label: string }>();
+
+    for (const group of selections) {
+      for (const selection of group.selections) {
+        if (selection.categoryId !== EquipmentTypeEnum.CHRONOMETER) continue;
+        const id = selection.equipmentItemId ?? selection.equipmentDenominationId;
+        if (id === undefined || id === null) continue;
+        const value = String(id);
+        options.set(value, { value, label: labels.get(value) ?? value });
+      }
+    }
+
+    return [...options.values()];
   });
   protected readonly serieOptions = computed(() =>
     mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.topographyIntroduction().serieOptions),

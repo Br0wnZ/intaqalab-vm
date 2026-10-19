@@ -8,6 +8,43 @@ import type {
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
+export interface ManometerEquipmentSelection {
+  manometro: string;
+  crusher: string;
+  micrometroPalpador: string;
+}
+
+export const buildManometerEquipmentValue = (equipment: ManometerEquipmentSelection): string =>
+  JSON.stringify([equipment.manometro, equipment.crusher, equipment.micrometroPalpador]);
+
+export const mapManometerEquipmentValueToSelection = (value: string): ManometerEquipmentSelection | null => {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed) || parsed.length !== 3 || !parsed.every((id) => typeof id === 'string')) {
+      return null;
+    }
+
+    const [manometro, crusher, micrometroPalpador] = parsed;
+    return { manometro, crusher, micrometroPalpador };
+  } catch {
+    return null;
+  }
+};
+
+export const mapManometerStateToEquipmentValue = (equipment: {
+  manometro: string | null;
+  crusher: string | null;
+  micrometroPalpador: string | null;
+}): string | null => {
+  if (!equipment.manometro || !equipment.crusher || !equipment.micrometroPalpador) return null;
+
+  return buildManometerEquipmentValue({
+    manometro: equipment.manometro,
+    crusher: equipment.crusher,
+    micrometroPalpador: equipment.micrometroPalpador,
+  });
+};
+
 /**
  * Mapea las series de planificación a opciones para el selector.
  */
@@ -30,11 +67,13 @@ export const mapPlanningSeriesToOptions = (
 export const mapShotsToDisparoOptions = (
   shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
   fallbackOptions: Array<{ value: string; label: string }> = [],
+  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
 ): Array<{ value: string; label: string }> => {
   if (shots?.length) {
+    const planningNumbersByShotId = new Map(planningShots.map((shot) => [shot.id, shot.globalNumber]));
     return shots.map((shot, index) => ({
       value: shot.shotId ?? shot.id ?? `shot-${index + 1}`,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
+      label: `Disparo ${planningNumbersByShotId.get(shot.shotId ?? shot.id ?? '') ?? shot.globalNumber ?? index + 1}`,
     }));
   }
   return fallbackOptions;

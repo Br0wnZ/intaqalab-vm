@@ -1,6 +1,15 @@
 import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -123,28 +132,30 @@ interface UniformidadForm {
         </div>
 
         <!-- Stats: Pendiente | Wc/g / Ordenada | Desviación -->
-        @if (selectedConfigData()) {
+        @if (selectedConfigData(); as configData) {
           <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.PENDIENTE_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ selectedConfigData()!.pendiente | number: '1.5-5' }}
+                {{ configData.pendiente !== null ? (configData.pendiente | number: '1.5-5') : '—' }}
               </p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ selectedConfigData()!.wcTarado | number: '1.0-0' }} g</p>
+              <p class="text-xs font-regular text-gray-500">
+                {{ configData.wcTarado !== null ? (configData.wcTarado | number: '1.0-0') + ' g' : '—' }}
+              </p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.ORDENADA_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ ordenada() !== null ? (ordenada()! | number: '1.5-5') : '—' }}
+                {{ ordenada() !== null ? (ordenada() | number: '1.5-5') : '—' }}
               </p>
             </div>
             <div>
@@ -152,7 +163,7 @@ interface UniformidadForm {
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESVIACION_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ desviacion() !== null ? (desviacion()! | number: '1.2-2') + ' m/s' : '—' }}
+                {{ desviacion() !== null ? (desviacion() | number: '1.2-2') + ' m/s' : '—' }}
               </p>
             </div>
           </div>
@@ -168,63 +179,108 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #loadedFireTrialId = signal<string | null>(null);
+  readonly #lastCalculationKey = signal<string | null>(null);
+
+  constructor() {
+    super();
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      if (!fireTrialId) return;
+
+      if (this.#loadedFireTrialId() !== fireTrialId) {
+        this.#loadedFireTrialId.set(fireTrialId);
+        this.#store.loadUniformidadChart(fireTrialId);
+        return;
+      }
+
+      const planningSeries = this.#store.planningSeries();
+      const chart = this.#store.uniformidadChartView();
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
+      const current = this.formModel();
+      if (!planningSeries || chart.configOptions.length === 0) return;
+
+      const activeSerie = planningSeries.find((serie) => serie.id === activeSerieId);
+      const activeShot = activeSerie?.shots?.find((shot) => shot.id === activeShotId);
+      const selectedConfig = current.selectedConfig ?? chart.configOptions[0]?.id ?? null;
+      const selectedSerieFromShot = current.selectedDisparo?.length
+        ? planningSeries.find((serie) =>
+            (serie.shots ?? []).some(
+              (shot, index) =>
+                (current.selectedDisparo?.includes(shot.id) ?? false) ||
+                (current.selectedDisparo?.includes(String(shot.globalNumber ?? index + 1)) ?? false),
+            ),
+          )?.id
+        : null;
+      const selectedSerie = current.selectedSerie ?? selectedSerieFromShot ?? activeSerieId ?? null;
+      const selectedDisparo = current.selectedDisparo ?? (activeShot ? [activeShot.id] : null);
+
+      if (
+        current.selectedConfig !== selectedConfig ||
+        current.selectedSerie !== selectedSerie ||
+        current.selectedDisparo !== selectedDisparo
+      ) {
+        this.formModel.set({ selectedConfig, selectedSerie, selectedDisparo });
+      }
+
+      if (!selectedDisparo?.length || !selectedConfig) {
+        this.#lastCalculationKey.set(null);
+        this.#store.clearUniformidadChartCalculation();
+        return;
+      }
+      const calculationKey = JSON.stringify([fireTrialId, selectedConfig, selectedSerie, [...selectedDisparo].sort()]);
+      if (calculationKey === this.#lastCalculationKey()) return;
+
+      this.#store.updateUniformidadChart({ selectedConfig, selectedSerie, selectedDisparo });
+      this.#lastCalculationKey.set(calculationKey);
+      this.#store.calculateUniformidadChart(fireTrialId);
+    });
+  }
 
   // Data from store (read-only)
-  protected readonly configOptions = computed(() => this.#store.uniformidadChart().configOptions);
-  protected readonly serieOptions = computed(() => this.#store.uniformidadChart().serieOptions);
+  protected readonly configOptions = computed(() => this.#store.uniformidadChartView().configOptions);
+  protected readonly serieOptions = computed(() => this.#store.uniformidadChartView().serieOptions);
   protected readonly disparoOptions = computed(() =>
     mapShotOptionsToPlanningNumbers(
-      this.#store.uniformidadChart().disparoOptions,
+      this.#store.uniformidadChartView().disparoOptions,
       this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
     ),
   );
 
   protected readonly selectedConfigData = computed(() => {
-    const state = this.#store.uniformidadChart();
+    const state = this.#store.uniformidadChartView();
     return state.configOptions.find((c) => c.id === state.selectedConfig) ?? null;
   });
 
   protected readonly filteredPoints = computed(() => {
-    const state = this.#store.uniformidadChart();
+    const state = this.#store.uniformidadChartView();
     let pts = state.dataPoints;
     if (state.selectedSerie) pts = pts.filter((p) => p.serie === state.selectedSerie);
     if (state.selectedDisparo?.length) {
-      pts = pts.filter((p) => state.selectedDisparo!.includes(String(p.disparo)));
+      pts = pts.filter((p) => state.selectedDisparo?.includes(p.shotId) ?? false);
     }
     return pts;
   });
 
   protected readonly velocidadMedia = computed((): number | null => {
-    const pts = this.filteredPoints();
-    if (!pts.length) return null;
-    return pts.reduce((sum, p) => sum + p.v0c, 0) / pts.length;
+    return this.#store.uniformidadChartView().response?.meanVelocity ?? null;
   });
 
   protected readonly velocidadMin = computed((): number | null => {
-    const pts = this.filteredPoints();
-    if (!pts.length) return null;
-    return Math.min(...pts.map((p) => p.v0c));
+    return this.#store.uniformidadChartView().response?.minimumVelocity ?? null;
   });
 
   protected readonly velocidadMax = computed((): number | null => {
-    const pts = this.filteredPoints();
-    if (!pts.length) return null;
-    return Math.max(...pts.map((p) => p.v0c));
+    return this.#store.uniformidadChartView().response?.maximumVelocity ?? null;
   });
 
   protected readonly desviacion = computed((): number | null => {
-    const pts = this.filteredPoints();
-    if (pts.length < 2) return null;
-    const media = pts.reduce((sum, p) => sum + p.v0c, 0) / pts.length;
-    const variance = pts.reduce((sum, p) => sum + Math.pow(p.v0c - media, 2), 0) / (pts.length - 1);
-    return Math.sqrt(variance);
+    return this.#store.uniformidadChartView().response?.standardDeviation ?? null;
   });
 
   protected readonly ordenada = computed((): number | null => {
-    const config = this.selectedConfigData();
-    const media = this.velocidadMedia();
-    if (!config || media === null) return null;
-    return media - config.pendiente * config.wcTarado;
+    return this.#store.uniformidadChartView().response?.intercept ?? null;
   });
 
   // Signal Form

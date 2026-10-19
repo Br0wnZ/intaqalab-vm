@@ -50,11 +50,14 @@ export class EquipmentCatalogService {
       })
       .pipe(
         map((response) =>
-          (response.items ?? []).flatMap((item) =>
-            item.id === null || item.id === undefined
-              ? []
-              : [{ id: String(item.id), label: `${item.denominationName ?? ''} / ${item.tag ?? ''}`.trim() }],
-          ),
+          (response.items ?? []).flatMap((item) => {
+            const label = [item.denominationName, item.tag]
+              .map((value) => value?.trim() ?? '')
+              .filter((value) => value.length > 0)
+              .join(' / ');
+
+            return item.id === null || item.id === undefined || !label ? [] : [{ id: String(item.id), label }];
+          }),
         ),
         tap((items) => {
           this.#cache.set(category, items);

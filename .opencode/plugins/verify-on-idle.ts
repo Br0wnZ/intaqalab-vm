@@ -1,48 +1,59 @@
-import { Plugin } from '@opencode-ai/plugin';
-import { spawnSync } from 'node:child_process';
+import type { Plugin } from '@opencode-ai/plugin';
+import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const verifyScript = resolve(__dirname, '../../tools/verify/verify.mjs');
 const repoRoot = resolve(__dirname, '../..');
-const isWin = process.platform === 'win32';
+const nodeBin = process.platform === 'win32' ? 'node.exe' : 'node';
 
-let isBusy = false;
+export const VerifyOnIdle: Plugin = async ({ client }) => {
+  let active = false;
+  let running = false;
 
-function runVerify() {
-  console.log('[verify-on-idle] Petición finalizada — ejecutando verificación...');
+  const log = async (level: 'info' | 'error', message: string) => {
+    try {
+      await client.app.log({ body: { service: 'verify-on-idle', level, message } });
+    } catch {
+      // logging must never break the session
+    }
+  };
 
-  const nodeBin = isWin ? 'node.exe' : 'node';
-  const result = spawnSync(nodeBin, [verifyScript], {
-    cwd: repoRoot,
-    stdio: 'inherit',
-    shell: false,
-  });
+  const runVerify = () => {
+    if (running) return;
+    running = true;
+    void log('info', 'Session idle — running verification');
+    const child = spawn(nodeBin, [verifyScript], { cwd: repoRoot, stdio: 'inherit' });
+    child.on('exit', (code) => {
+      running = false;
+      if (code !== 0) void log('error', `Verification failed (exit ${code ?? 'unknown'})`);
+    });
+  };
 
-  if (result.status !== 0) {
-    console.error(`[verify-on-idle] Verificación falló (exit ${result.status ?? 'unknown'})`);
-  } else {
-    console.log('[verify-on-idle] Verificación exitosa ✓');
-  }
-}
+  const onIdle = () => {
+    if (!active) return;
+    active = false;
+    runVerify();
+  };
 
-export const VerifyOnIdle: Plugin = async () => {
   return {
     event: async ({ event }) => {
-      const type = event.type;
-      const statusType = (event as any).properties?.status?.type;
-
-      if (type === 'session.status' && statusType === 'busy') {
-        isBusy = true;
-      } else if (type === 'message.updated' || type === 'message.part.updated') {
-        isBusy = true;
-      } else if ((type === 'session.idle' || statusType === 'idle') && isBusy) {
-        isBusy = false;
-        runVerify();
+      switch (event.type) {
+        case 'message.updated':
+        case 'message.part.updated':
+          active = true;
+          break;
+        case 'session.status':
+          if (event.properties.status.type === 'idle') onIdle();
+          else active = true;
+          break;
+        case 'session.idle':
+          onIdle();
+          break;
+        default:
+          break;
       }
     },
   };
 };
-
-export default VerifyOnIdle;

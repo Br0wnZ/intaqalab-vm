@@ -93,6 +93,7 @@ function mockMunitionsStockService() {
 
 async function setup() {
   const user = userEvent.setup();
+  const trialsDataService = mockTrialsDataService();
   const view = await render(MunitionsShellComponent, {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
@@ -102,14 +103,14 @@ async function setup() {
       { provide: DenominationsStore, useValue: makeDenominationsStore() },
       { provide: MunitionsStockService, useValue: mockMunitionsStockService() },
       { provide: ClientsDataService, useValue: mockClientsDataService() },
-      { provide: TrialsDataService, useValue: mockTrialsDataService() },
+      { provide: TrialsDataService, useValue: trialsDataService },
       { provide: UiDialogService, useValue: { confirm: vi.fn(), input: vi.fn() } },
       { provide: Router, useValue: { navigateByUrl: vi.fn() } },
     ],
   });
 
   view.fixture.detectChanges();
-  return { user, fixture: view.fixture };
+  return { user, fixture: view.fixture, trialsDataService };
 }
 
 // // Tests
@@ -122,6 +123,18 @@ describe('MunitionsShellComponent', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('should search trials by selected client with descending trial number sort', async () => {
+    const { fixture, trialsDataService } = await setup();
+
+    fixture.componentInstance.onClientChange('client-1');
+
+    expect(trialsDataService.search).toHaveBeenCalledExactlyOnceWith({
+      clientId: 'client-1',
+      status: ['PLANNED', 'UNDER_REVIEW', 'IN_PROGRESS', 'INTERRUPTED', 'STARTED'],
+      sort: ['trialNumber;asc'],
+    });
   });
 
   it('should show the identification form when MUNITION category is selected', async () => {

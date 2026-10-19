@@ -1,7 +1,12 @@
 import { inject } from '@angular/core';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../execution/models';
+import {
+  EquipmentTypeEnum,
+  type MunitionConditioningBulkConfigurationRequest,
+  type MunitionConditioningBulkConfigurationResponse,
+  type ShotMunitionResponse,
+} from '../../execution/models';
 import { mapRemoteToMunitionState } from '../../execution/widgets/munition-introduction/munition-introduction.mapper';
 import {
   ExecutionService,
@@ -121,6 +126,7 @@ export function withMunitionIntroduction() {
     withState({
       munitionBalanceItems: null as Array<{ id: string; label: string }> | null,
       isLoadingMunitionBalanceItems: false,
+      isApplyingMunitionConditioningBulkConfiguration: false,
     }),
     withMethods((store, executionService = inject(ExecutionService)) => ({
       async loadMunitionBalanceItems(): Promise<void> {
@@ -133,6 +139,17 @@ export function withMunitionIntroduction() {
           patchState(store, { munitionBalanceItems: [] });
         } finally {
           patchState(store, { isLoadingMunitionBalanceItems: false });
+        }
+      },
+      async applyMunitionConditioningBulkConfiguration(
+        fireTrialId: string,
+        request: MunitionConditioningBulkConfigurationRequest,
+      ): Promise<MunitionConditioningBulkConfigurationResponse> {
+        patchState(store, { isApplyingMunitionConditioningBulkConfiguration: true });
+        try {
+          return await executionService.applyMunitionConditioningBulkConfiguration(fireTrialId, request);
+        } finally {
+          patchState(store, { isApplyingMunitionConditioningBulkConfiguration: false });
         }
       },
 

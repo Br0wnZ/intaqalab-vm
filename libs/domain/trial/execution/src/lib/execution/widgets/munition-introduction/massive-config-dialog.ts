@@ -1,45 +1,63 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type {
+  MunitionConditioningBulkConfigurationRequest,
+  MunitionConditioningBulkConfigurationResponse,
+} from '../../models';
+import { injectClimaticChamberEquipments } from './inject-climatic-chamber-equipments';
+import { resolveCamaraId } from './munition-introduction.mapper';
 
 export interface MassiveConfigDialogData {
-  camaraLabel: string;
+  fireTrialId: string;
+  assignedShotIdsBySeries: Record<string, string[]>;
+  camaraLabel?: string;
+  climaticChamberId?: number | null;
   componente: string | null;
-  temperaturaCorregida: number | null;
-  fechaHoraEntrada: string | null;
-  fechaHoraSalida: string | null;
+  temperaturaCorregida?: number | null;
+  fechaHoraEntrada: string | Date | null;
+  fechaHoraSalida?: string | Date | null;
   serieOptions: { value: string; label: string }[];
-  componenteOptions: { value: string; label: string; category: string }[];
+  componenteOptions?: { value: string; label: string; category?: string }[];
+  initialSeries?: string[];
 }
 
-export interface MassiveConfigDialogResult {
-  series: string[];
-  componente: string | null;
-  fechaHoraEntrada: string | null;
-  fechaHoraSalida: string | null;
-}
+export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationResponse;
 
 @Component({
   selector: 'inta-massive-config-dialog',
   imports: [
     MatDialogModule,
     MatButtonModule,
+    MatDatepickerModule,
     MatFormFieldModule,
     ReadonlyContentDirective,
-    MatIconModule,
     MatInputModule,
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    SaveButton,
   ],
+  providers: [provideNativeDateAdapter()],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>
@@ -57,6 +75,7 @@ export interface MassiveConfigDialogResult {
           </mat-label>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-select
+              id="munition-mass-series"
               multiple
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_PLACEHOLDER' | translate"
               [value]="selectedSeries()"
@@ -69,69 +88,41 @@ export interface MassiveConfigDialogResult {
           </mat-form-field>
         </div>
 
-        <!-- Componente + Equipo -->
+        <!-- Componente + Fecha y hora entrada -->
         <div class="grid grid-cols-2 gap-3">
           <!-- Componente (editable) -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
             <mat-select
+              id="munition-mass-component"
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_PLACEHOLDER' | translate"
               [value]="selectedComponente()"
               (valueChange)="selectedComponente.set($event)"
             >
-              @for (opt of data.componenteOptions; track opt.value) {
+              @for (opt of componenteOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
 
-          <!-- Equipo (read-only display) -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.EQUIPO_LABEL' | translate }}</mat-label>
-            <input matInput readonly [value]="data.camaraLabel" />
-            <ui-inta-icon matSuffix name="settings" color="var(--inta-button)" size="xl" class="mr-2" />
-          </mat-form-field>
-        </div>
-
-        <!-- Temperatura programada + Fecha y hora entrada -->
-        <div class="grid grid-cols-2 gap-3">
-          <!-- Temperatura programada (read-only con mat-form-field) -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>
-              {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TEMPERATURA_PROGRAMADA_LABEL' | translate }}
-            </mat-label>
-            <input matInput readonly [value]="data.temperaturaCorregida ?? ''" />
-            <span matSuffix class="text-sm font-medium text-slate-600 pr-1">°C</span>
-          </mat-form-field>
-
-          <!-- Fecha y hora entrada (input readonly + ▶) -->
+          <!-- Fecha y hora entrada -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>
               {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}
             </mat-label>
-            <input matInput readonly class="cursor-pointer" [value]="fechaHoraEntrada() ?? ''" />
-            <button
-              mat-icon-button
-              matSuffix
-              type="button"
-              style="color: var(--inta-button)"
-              (click)="captureEntrada()"
-            >
-              <mat-icon>play_circle_outline</mat-icon>
-            </button>
-          </mat-form-field>
-        </div>
-
-        <!-- Fecha y hora salida -->
-        <div class="grid grid-cols-2 gap-3">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>
-              {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}
-            </mat-label>
-            <input matInput readonly class="cursor-pointer" [value]="fechaHoraSalida() ?? ''" />
-            <button mat-icon-button matSuffix type="button" style="color: var(--inta-button)" (click)="captureSalida()">
-              <mat-icon>stop_circle</mat-icon>
-            </button>
+            <input
+              id="munition-mass-entry-date"
+              matInput
+              [matDatepicker]="entryPicker"
+              [value]="fechaHoraEntrada()"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.DATE_PLACEHOLDER' | translate"
+              (dateChange)="updateFechaHoraEntrada($event.value)"
+              (input)="updateFechaHoraEntrada($event)"
+              (click)="entryPicker.open()"
+              #entryDateInput
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="entryPicker" />
+            <mat-datepicker (closed)="entryDateInput.blur()" #entryPicker />
           </mat-form-field>
         </div>
       </div>
@@ -139,16 +130,13 @@ export interface MassiveConfigDialogResult {
 
     <!-- Actions -->
     <mat-dialog-actions class="!px-0 flex justify-center gap-3 !pt-4">
-      <button
-        mat-flat-button
-        color="primary"
-        class="!rounded-xl !px-8"
-        [disabled]="selectedSeries().length === 0"
-        (click)="apply()"
-      >
-        {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.APPLY_BTN' | translate }}
-      </button>
-      <button mat-stroked-button class="!rounded-xl !px-8" [mat-dialog-close]="null">
+      <ui-save-button
+        label="TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.APPLY_BTN"
+        [isSaving]="isSaving()"
+        [isDisabled]="selectedSeries().length === 0 || !selectedComponente()"
+        (save)="apply()"
+      />
+      <button mat-stroked-button class="!rounded-xl !px-8" [disabled]="isSaving()" (click)="cancel()">
         {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.CANCEL_BTN' | translate }}
       </button>
     </mat-dialog-actions>
@@ -159,26 +147,97 @@ export interface MassiveConfigDialogResult {
 export class MassiveConfigDialog {
   readonly #dialogRef = inject<MatDialogRef<MassiveConfigDialog, MassiveConfigDialogResult>>(MatDialogRef);
   readonly data = inject<MassiveConfigDialogData>(MAT_DIALOG_DATA);
+  readonly #executionService = inject(ExecutionService);
+  readonly #store = inject(ExecutionStore, { optional: true });
+  readonly #isSavingInternal = signal(false);
+  readonly #climaticChambers = injectClimaticChamberEquipments(() => this.selectedSeries());
 
-  protected readonly selectedSeries = signal<string[]>([]);
-  protected readonly selectedComponente = signal<string | null>(this.data.componente);
-  protected readonly fechaHoraEntrada = signal<string | null>(this.data.fechaHoraEntrada);
-  protected readonly fechaHoraSalida = signal<string | null>(this.data.fechaHoraSalida);
+  protected readonly isSaving = computed(
+    () =>
+      this.#isSavingInternal() || this.#executionService.applyMunitionConditioningBulkConfigurationResource.isLoading(),
+  );
+  protected readonly selectedSeries = signal<string[]>(this.data.initialSeries ?? []);
+  protected readonly componenteOptions = computed(() => {
+    const chamberOptions = this.#climaticChambers.options();
+    return chamberOptions.length > 0 ? chamberOptions : (this.data.componenteOptions ?? []);
+  });
+  protected readonly selectedComponente = linkedSignal<string | null>(() => {
+    const options = this.componenteOptions();
+    const initialId =
+      (this.data.climaticChamberId ? String(this.data.climaticChamberId) : null) ?? this.data.componente;
+    if (initialId && options.some((opt) => opt.value === initialId)) {
+      return initialId;
+    }
+    return options[0]?.value ?? null;
+  });
+  protected readonly fechaHoraEntrada = signal<Date | null>(this.#parseDate(this.data.fechaHoraEntrada));
 
-  captureEntrada(): void {
-    this.fechaHoraEntrada.set(new Date().toLocaleString('es-ES'));
+  updateFechaHoraEntrada(value: Date | string | Event | null): void {
+    if (value instanceof Event) {
+      const target = value.target as HTMLInputElement | null;
+      this.fechaHoraEntrada.set(this.#parseDate(target?.value));
+      return;
+    }
+    this.fechaHoraEntrada.set(this.#parseDate(value));
   }
 
-  captureSalida(): void {
-    this.fechaHoraSalida.set(new Date().toLocaleString('es-ES'));
+  async apply(): Promise<void> {
+    const componentId = this.selectedComponente();
+    const assignedShotIds = [
+      ...new Set(this.selectedSeries().flatMap((seriesId) => this.data.assignedShotIdsBySeries[seriesId] ?? [])),
+    ];
+    if (!componentId || assignedShotIds.length === 0) return;
+
+    const request: MunitionConditioningBulkConfigurationRequest = {
+      assignedShotIds,
+      components: [
+        {
+          componentId,
+          conditioningData: {
+            climaticChamberId: resolveCamaraId(componentId) ?? this.data.climaticChamberId ?? null,
+            chamberEntryDateTime: this.#toApiDateTime(this.fechaHoraEntrada()),
+            chamberExitDateTime: null,
+          },
+        },
+      ],
+    };
+
+    this.#isSavingInternal.set(true);
+    try {
+      const response = this.#store
+        ? await this.#store.applyMunitionConditioningBulkConfiguration(this.data.fireTrialId, request)
+        : await this.#executionService.applyMunitionConditioningBulkConfiguration(this.data.fireTrialId, request);
+
+      if (this.#executionService.applyMunitionConditioningBulkConfigurationResource.status() === 'resolved') {
+        this.#dialogRef.close(response);
+      }
+    } catch (error) {
+      console.error('Error applying bulk munition conditioning:', error);
+    } finally {
+      this.#isSavingInternal.set(false);
+    }
   }
 
-  apply(): void {
-    this.#dialogRef.close({
-      series: this.selectedSeries(),
-      componente: this.selectedComponente(),
-      fechaHoraEntrada: this.fechaHoraEntrada(),
-      fechaHoraSalida: this.fechaHoraSalida(),
-    });
+  cancel(): void {
+    if (!this.isSaving()) this.#dialogRef.close(undefined);
+  }
+
+  #parseDate(value: string | Date | null | undefined): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+    const trimmed = value.trim();
+    const ddmmyyyyMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(trimmed);
+    if (ddmmyyyyMatch) {
+      const [, day, month, year] = ddmmyyyyMatch;
+      const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  #toApiDateTime(value: Date | string | null): string | null {
+    const parsed = this.#parseDate(value);
+    return parsed ? parsed.toISOString() : null;
   }
 }

@@ -399,6 +399,7 @@ export interface EquipmentSelectorState {
 
 /** Punto de datos de Tarado (X=Wc/g, Y=V0c) ordenados por Disparo */
 export interface TaradoVelocidadDataPoint {
+  shotId?: string;
   wc: number;
   v0c: number;
   serie: string;
@@ -410,8 +411,8 @@ export interface TaradoVelocidadRegression {
   pendiente: number;
   ordenada: number;
   correlacion: number;
-  wcTarado: number;
-  pesoTarado: number;
+  wcTarado: number | null;
+  pesoTarado: number | null;
 }
 
 /** Punto de datos del Tarado de Presión (X=Wc/g, Y=Presión media MPa) */
@@ -722,9 +723,17 @@ export interface UniformidadTaradoConfig {
   /** Velocidad nominal en m/s */
   velocidadNominal: number;
   /** Pendiente de la recta de tarado (m/s per g) */
-  pendiente: number;
+  pendiente: number | null;
   /** Wc/g tarado (g) — punto de trabajo calculado por regresión */
-  wcTarado: number;
+  wcTarado: number | null;
+}
+
+export interface UniformidadDataPoint {
+  shotId: string;
+  wc: number | null;
+  v0c: number;
+  serie: string;
+  disparo: number;
 }
 
 /** Estado del widget Gráfica Uniformidad */
@@ -732,8 +741,8 @@ export interface UniformidadChartState {
   selectedConfig: string | null;
   selectedSerie: string | null;
   selectedDisparo: string[] | null;
-  /** Puntos de datos (V0c) por disparo y serie; comparte estructura con TaradoVelocidadDataPoint */
-  dataPoints: TaradoVelocidadDataPoint[];
+  /** Puntos devueltos por el cálculo de uniformidad. */
+  dataPoints: UniformidadDataPoint[];
   configOptions: UniformidadTaradoConfig[];
   serieOptions: { value: string; label: string }[];
   disparoOptions: { value: string; label: string }[];

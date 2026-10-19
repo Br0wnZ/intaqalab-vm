@@ -1,0 +1,27 @@
+{
+  "points": [
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+      "powderWeight": 41.2,
+      "velocity": 848.3
+    },
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+      "powderWeight": 42.1,
+      "velocity": 852.4
+    },
+    {
+      "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa3",
+      "powderWeight": 43.0,
+      "velocity": 856.5
+    }
+  ],
+  "meanVelocity": 852.4,
+  "minimumVelocity": 848.3,
+  "maximumVelocity": 856.5,
+  "standardDeviation": 4.1,
+  "slope": 4.56,
+  "intercept": 660.6,
+  "adjustedPowderWeight": 42,
+  "powderWeightAtNominalSpeed": 41.6
+}

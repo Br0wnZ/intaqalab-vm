@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildDisparoOptions,
   mapPlanningSeriesToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
@@ -96,6 +97,92 @@ describe('selection-options', () => {
         { value: 'shot-b', label: 'Disparo 4' },
         { value: 'shot-unknown', label: 'Custom shot' },
       ]);
+    });
+  });
+
+  describe('buildDisparoOptions', () => {
+    const planningSeries = [
+      {
+        id: 'serie-1',
+        shots: [
+          { id: 'shot-a', globalNumber: 1 },
+          { id: 'shot-b', globalNumber: 2 },
+          { id: 'shot-c', globalNumber: 3 },
+        ],
+      },
+      {
+        id: 'serie-2',
+        shots: [
+          { id: 'shot-d', globalNumber: 4 },
+          { id: 'shot-e', globalNumber: 5 },
+        ],
+      },
+    ];
+
+    it('uses globalNumber from planningShots when progressShots exist', () => {
+      const executionProgress = {
+        series: [
+          {
+            seriesId: 'serie-2',
+            shots: [
+              { shotId: 'shot-d', status: 'FIRED' as const },
+              { shotId: 'shot-e', status: 'PENDING' as const },
+            ],
+          },
+        ],
+      };
+
+      const result = buildDisparoOptions({
+        selectedSerie: 'serie-2',
+        executionProgress,
+        planningSeries,
+      });
+
+      expect(result).toEqual([
+        { value: 'shot-d', label: 'Disparo 4' },
+        { value: 'shot-e', label: 'Disparo 5' },
+      ]);
+    });
+
+    it('uses planningShots directly when no progressShots', () => {
+      const result = buildDisparoOptions({
+        selectedSerie: 'serie-1',
+        executionProgress: { series: [] },
+        planningSeries,
+      });
+
+      expect(result).toEqual([
+        { value: 'shot-a', label: 'Disparo 1' },
+        { value: 'shot-b', label: 'Disparo 2' },
+        { value: 'shot-c', label: 'Disparo 3' },
+      ]);
+    });
+
+    it('falls back to storedOptions with planning renumbering', () => {
+      const result = buildDisparoOptions({
+        selectedSerie: null,
+        executionProgress: null,
+        planningSeries,
+        storedOptions: [
+          { value: 'shot-d', label: 'Disparo 1' },
+          { value: 'shot-a', label: 'Disparo 2' },
+        ],
+      });
+
+      expect(result).toEqual([
+        { value: 'shot-d', label: 'Disparo 4' },
+        { value: 'shot-a', label: 'Disparo 1' },
+      ]);
+    });
+
+    it('returns empty array when no data available', () => {
+      const result = buildDisparoOptions({
+        selectedSerie: null,
+        executionProgress: null,
+        planningSeries: null,
+      });
+
+      expect(result).toEqual([]);
     });
   });
 

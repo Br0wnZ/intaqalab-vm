@@ -20,6 +20,7 @@ export type {
 
 // Equipment models
 export * from './equipment.models';
+export * from './armament-equipment.models';
 
 // Shot munition models (Widget 20)
 export * from './shot-munition.models';
@@ -35,6 +36,7 @@ export * from './shot-trajectography.models';
 export * from './shot-video-data.models';
 
 // Propelling charge parameters models (Widget 9)
+export * from './propellant-charge-adjustment.models';
 export * from './propelling-charge-parameters.models';
 
 // Shot piezo pressures models (Widget 5)

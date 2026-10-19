@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -9,11 +10,12 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
+import { ExecutionService } from '../../../../services/execution.service';
 import { EquipmentTypeEnum } from '../../../models';
 import { MunitionPesosTabComponent } from './pesos-tab.component';
 
 describe('MunitionPesosTabComponent', () => {
-  const runSetup = async () => {
+  const runSetup = async (customProviders: Provider[] = []) => {
     const view = await render(MunitionPesosTabComponent, {
       imports: [TranslateModule.forRoot()],
       providers: [
@@ -22,6 +24,7 @@ describe('MunitionPesosTabComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         ExecutionStore,
+        ...customProviders,
       ],
     });
 
@@ -303,5 +306,62 @@ describe('MunitionPesosTabComponent', () => {
     expect(componentInstance.weightField()?.value).toBe('520');
     expect(componentInstance.observationsField()).toBe('Pesada de espoleta');
     expect(componentInstance.isDirty()).toBe(false);
+  });
+
+  it('uses balance options from injectBalanceEquipments filtered by series and shot', async () => {
+    const { view, store } = await runSetup();
+    const executionService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    executionService.getEquipmentSelector('trial-1');
+    TestBed.tick();
+
+    const eqReq = httpMock.expectOne((req) => req.url.includes('/execution/equipment-selection'));
+    eqReq.flush([
+      {
+        measurementGroup: 'WEIGHT',
+        selections: [
+          {
+            equipmentItemId: 21031,
+            categoryId: EquipmentTypeEnum.BALANCE,
+            seriesIds: ['serie-1'],
+            shotIds: ['disparo-1'],
+          },
+          {
+            equipmentItemId: 21032,
+            categoryId: EquipmentTypeEnum.BALANCE,
+            seriesIds: ['serie-1'],
+            shotIds: ['disparo-2'],
+          },
+        ],
+      },
+    ]);
+
+    const catalogReq = httpMock.expectOne(
+      (req) => req.url.includes('/equipment/items') && req.params.get('categoryId') === EquipmentTypeEnum.BALANCE,
+    );
+    catalogReq.flush({
+      totalElements: 2,
+      items: [
+        { id: 21031, denominationName: 'Balanza 500g', tag: 'BAL-01' },
+        { id: 21032, denominationName: 'Balanza 2kg', tag: 'BAL-02' },
+      ],
+    });
+
+    store.setOptimisticActiveShot('serie-1', 'disparo-1');
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(view.fixture.componentInstance.balanceOptions().map((b) => b.value)).toEqual(['bal-01']);
+    });
+
+    store.setOptimisticActiveShot('serie-1', 'disparo-2');
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(view.fixture.componentInstance.balanceOptions().map((b) => b.value)).toEqual(['bal-02']);
+    });
   });
 });

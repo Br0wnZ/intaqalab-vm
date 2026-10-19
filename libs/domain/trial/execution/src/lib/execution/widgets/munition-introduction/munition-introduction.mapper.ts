@@ -94,7 +94,7 @@ function resolveCamaraValue(climaticChamberId: number | string | null | undefine
   return String(climaticChamberId);
 }
 
-function resolveCamaraId(camaraKey: string | null | undefined): number | null {
+export function resolveCamaraId(camaraKey: string | null | undefined): number | null {
   if (!camaraKey) return null;
   if (camaraKey === 'camara-01') return 21045;
   if (camaraKey === 'camara-02') return 21046;

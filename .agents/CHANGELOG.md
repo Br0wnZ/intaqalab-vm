@@ -45,3 +45,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [widget-service-integration - 1.0.1] - 2026-10-09
 
 - Add Calibry equipment consumption guide for execution widgets
+
+## [execution-domain-expert - 1.0.5] - 2026-10-15
+
+- Require buildDisparoOptions and prevent shot selector reset to first option
+
+## [widget-service-integration - 1.0.2] - 2026-10-15
+
+- Use buildDisparoOptions in execution widget templates

@@ -22,7 +22,6 @@ import { RadarMetcmq } from '../widgets/radar-metcmq/radar-metcmq';
 import { RadarTrayectographyOrientation } from '../widgets/radar-trayectography-orientation/radar-trayectography-orientation';
 import { SeguimientoWidget } from '../widgets/seguimiento/seguimiento';
 import { SeguridadWidget } from '../widgets/seguridad/seguridad';
-import { ShotWidgetComponent } from '../widgets/shot-widget/shot-widget';
 import { StanagCriteriosWidget } from '../widgets/stanag-criterios/stanag-criterios';
 import { TaradoPresionChartWidget } from '../widgets/tarado-presion-chart/tarado-presion-chart';
 import { TaradoVelocidadChartWidget } from '../widgets/tarado-velocidad-chart/tarado-velocidad-chart';
@@ -36,16 +35,6 @@ import { VideoDataIntroduction } from '../widgets/video-data-introduction/video-
 import { VigilanciaWidget } from '../widgets/vigilancia/vigilancia';
 
 export const injectWidgets = (): Widget[] => [
-  {
-    id: 'disparo',
-    widgetId: WidgetId.SHOT,
-    widgetComponent: ShotWidgetComponent,
-    title: 'Disparo',
-    description: 'Introducción de datos del disparo seleccionado',
-    category: 'Genéricos',
-    badge: 'L',
-    defaultWidth: 3,
-  },
   // 🛡️ Preparación ejecución – Unidades técnicas (6 perfiles)
   {
     id: 'prep-tech-velocidades',

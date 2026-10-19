@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input, output } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { FormField } from '@angular/forms/signals';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -6,9 +6,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import type { MatSelectChange } from '@angular/material/select';
-import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
-import { TrialStatus } from '@intaqalab/models';
+import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
 
@@ -42,7 +40,7 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
           [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_LABEL' | translate"
           [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CLIENT_PLACEHOLDER' | translate"
           [options]="clientsService.clients()"
-          (selectionChange)="onClientChangeHandler($event)"
+          (selectionChange)="clientChange.emit($event.value)"
         />
         @if (form().generalData.clientId().errors().length) {
           <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
@@ -83,6 +81,7 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
         <ui-inta-signal-select
           appearance="outline"
           [id]="'trial-status'"
+          [searchable]="true"
           [valueKey]="'id'"
           [labelKey]="'label'"
           [formField]="form().generalData.plannedFireTrialId"
@@ -118,12 +117,8 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
 })
 export class MunitionGeneralDataComponent {
   protected readonly clientsService = inject(ClientsDataService);
-  readonly #trialsDataService = inject(TrialsDataService);
 
   readonly form = input.required<FieldTree<MunitionStockFormModel>>();
   readonly associatedTrials = input.required<{ id: string; label: string }[]>();
-
-  onClientChangeHandler(data: MatSelectChange) {
-    this.#trialsDataService.search({ clientId: data.value, status: [TrialStatus.PLANNED, TrialStatus.UNDER_REVIEW] });
-  }
+  readonly clientChange = output<string>();
 }

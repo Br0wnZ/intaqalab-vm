@@ -10,6 +10,7 @@ import { deepEqual } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroWeightState } from '../../../../+state/execution.store';
+import { injectBalanceEquipments } from '../inject-balance-equipments';
 import type { InputFieldValue } from '../munition-introduction';
 import { resolveBalanceKey } from '../munition-introduction.mapper';
 
@@ -283,24 +284,50 @@ export class MunitionPesosTabComponent {
 
   readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
 
+  readonly #balances = injectBalanceEquipments(
+    () => {
+      const serie = this.#store.munitionIntroduction().serie ?? this.#store.activeSerieId();
+      return serie ? [serie] : [];
+    },
+    () => {
+      const disparo = this.#store.munitionIntroduction().disparo ?? this.#store.activeShotId();
+      return disparo ? [disparo] : [];
+    },
+  );
+
   /**
    * Balanzas disponibles para el componente activo.
-   * Filtra según los datos recibidos del backend en remoteMunitionResponse para este componente.
+   * Prioriza las opciones que vienen del selector de equipos (equipment-selection)
+   * filtradas por serie y disparo.
    */
   readonly balanceOptions = computed(() => {
-    const equipmentItems = this.#store.munitionBalanceItems() ?? [];
+    const injectedOptions = this.#balances.options();
     const remote = this.#store.munitionIntroduction().remoteMunitionResponse;
     const selectedComponentId =
       this.weightFormModel().componente ?? this.#store.munitionIntroduction().selectedComponentId;
 
     const comp = remote?.munitionData?.find((c) => c.componentId === selectedComponentId);
-    const componentBalanceIds = new Set<string>();
     const weightUnitByBalanceId = new Map<string, string>();
     for (const entry of comp?.weightData ?? []) {
       if (entry.balanceId === null || entry.balanceId === undefined) continue;
       const balanceId = resolveBalanceKey(entry.balanceId) ?? String(entry.balanceId);
-      componentBalanceIds.add(balanceId);
       if (entry.weightUnit) weightUnitByBalanceId.set(balanceId, entry.weightUnit.toLowerCase());
+    }
+
+    if (injectedOptions.length > 0) {
+      return injectedOptions.map((opt) => ({
+        value: opt.value,
+        label: opt.label,
+        unit: opt.unit ?? weightUnitByBalanceId.get(opt.value) ?? 'g',
+      }));
+    }
+
+    const equipmentItems = this.#store.munitionBalanceItems() ?? [];
+    const componentBalanceIds = new Set<string>();
+    for (const entry of comp?.weightData ?? []) {
+      if (entry.balanceId === null || entry.balanceId === undefined) continue;
+      const balanceId = resolveBalanceKey(entry.balanceId) ?? String(entry.balanceId);
+      componentBalanceIds.add(balanceId);
     }
 
     for (const [key, weight] of Object.entries(this.#store.munitionIntroduction().weightDataByBalance)) {

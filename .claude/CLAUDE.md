@@ -10,7 +10,7 @@
 
 ## Codebase Intelligence for intaqalab-vm (Repowise)
 
-Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-10-02 (commit eb27896). Confidence: 99%.Scope: standard index · model content · full Git. Missing or unavailable evidence is not a negative finding. Machine-readable scope: `{"analysis": {"skipped": [], "unavailable": []}, "content_provenance": "model", "file_pages": {"configured_cap": null, "effective_cap": null, "eligible": null, "generated": null, "omitted": null}, "git_commit_cap": null, "git_history_coverage": null, "git_tier": "full", "provider": {"embedder": "gemini", "model": "gemini-3.5-flash-lite", "model_cost_possible": null, "name": "gemini", "reused": null}, "run_mode": "standard", "search": {"full_text": "unknown", "next_command": null, "semantic": "unknown"}, "upgrade": {"completed_stages": [], "next_stage": null, "retryable": null, "status": "unknown"}, "version": 1}`
+Indexed by [Repowise](https://repowise.dev). Last indexed: 2026-10-16 (commit 1c41970). Confidence: 99%.Scope: standard index · model content · full Git. Missing or unavailable evidence is not a negative finding. Machine-readable scope: `{"analysis": {"skipped": [], "unavailable": []}, "content_provenance": "model", "file_pages": {"configured_cap": null, "effective_cap": null, "eligible": null, "generated": null, "omitted": null}, "git_commit_cap": null, "git_history_coverage": null, "git_tier": "full", "provider": {"embedder": "gemini", "model": "gemini-3.5-flash-lite", "model_cost_possible": null, "name": "gemini", "reused": null}, "run_mode": "standard", "search": {"full_text": "unknown", "next_command": null, "semantic": "unknown"}, "upgrade": {"completed_stages": [], "next_stage": null, "retryable": null, "status": "unknown"}, "version": 1}`
 
 ### How to work in this repo
 
@@ -60,23 +60,23 @@ intaqalab-vm is a comprehensive enterprise application platform: it ingests doma
 
 ### Files that need care (bug-fix history first, then churn — check `get_risk` before editing)
 
-- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 4 weeks ago; 8 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 4 weeks ago; 8 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 4 weeks ago; 9 commits/90d
-- `libs/domain/trial/execution/src/lib/execution/widgets/jlt-shot-data/jlt-shot-data.ts` — 1 bug fix, last fix 4 weeks ago; 5 commits/90d
-- `libs/domain/trial/planning/src/lib/components/armament/armament.spec.ts` — 1 bug fix, last fix 4 weeks ago; 9 commits/90d
+- `libs/domain/trial/planning/src/lib/components/shooting-conditions/shooting-conditions.ts` — 1 bug fix, last fix 6 weeks ago; 9 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/massive-shots-configuration-dialog.ts` — 1 bug fix, last fix 6 weeks ago; 9 commits/90d
+- `libs/domain/trial/planning/src/lib/components/armament/armament-row.ts` — 1 bug fix, last fix 6 weeks ago; 10 commits/90d
+- `libs/domain/trial/execution/src/lib/execution/widgets/jlt-shot-data/jlt-shot-data.ts` — 1 bug fix, last fix 6 weeks ago; 6 commits/90d
+- `libs/domain/trial/execution/src/lib/execution/services/execution-page-facade.service.ts` — 1 bug fix, last fix 6 weeks ago; 7 commits/90d
 
 ### Code health
 
-Three co-equal signals: code health 8.17/10 avg (Good), hotspot health 6.23/10 (stable), worst `libs/domain/trial/execution/src/lib/services/execution.service.ts` at 1.9/10 · maintainability 8.57/10 · performance risk 18 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
+Three co-equal signals: code health 8.03/10 avg (Good), hotspot health 6.07/10 (stable), worst `libs/domain/trial/execution/src/lib/services/execution.service.ts` at 1.9/10 · maintainability 8.49/10 · performance risk 19 open static I/O-in-loop / N+1 findings. Detail: `get_health()`.
 
 Critical files:
 
-- `libs/domain/trial/trial-management/src/lib/components/view-shell/feature-trial-view-shell.component.ts` — change entropy — impact −2.8
+- `libs/domain/trial/execution/src/lib/services/execution.service.spec.ts` — change entropy — impact −3.0
+- `libs/domain/master-data/src/lib/components/dialogs/upsert/measures/measures-dialog.component.spec.ts` — change entropy — impact −3.0
 - `libs/domain/trial/planning/src/lib/components/munitions/massive-munitions-configuration-dialog/massive-munitions-configuration-dialog.ts` — change entropy — impact −2.8
+- `libs/domain/master-data/src/lib/components/dialogs/upsert/measures/measures-dialog.component.ts` — change entropy — impact −2.8
 - `apps/intaqalab/src/app/components/menu-left/menu-left.config.ts` — change entropy — impact −2.8
-- `libs/domain/trial/execution/src/lib/services/execution.service.spec.ts` — change entropy — impact −2.7
-- `libs/domain/trial/planning/src/lib/components/munitions/component-detail-form/component-detail-form.component.ts` — change entropy — impact −2.4
 
 ### Commands
 

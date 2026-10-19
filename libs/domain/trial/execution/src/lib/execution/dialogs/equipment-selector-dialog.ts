@@ -19,7 +19,7 @@ import type {
   EquipmentItemSelection,
   EquipmentSelectorDialogData,
   EquipmentSelectorDialogResult,
-  EquipmentTypeEnum
+  EquipmentTypeEnum,
 } from '../models';
 import { EquipmentMagnitudeTagEnum } from '../models';
 import { SELECT_ALL_SERIES_VALUE } from './equipment-selector-dialog.mapper';

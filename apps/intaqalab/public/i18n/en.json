@@ -1484,6 +1484,10 @@
         "MASS_CONFIG_APPLY_BTN": "Apply",
         "MASS_CONFIG_BTN": "Apply bulk configuration",
         "MASS_CONFIG_CANCEL_BTN": "Cancel",
+        "MASS_CONFIG_ORIENTATION_CONFLICT": "Bulk configuration cannot be applied because planned orientation differs between shots in a series.",
+        "MASS_CONFIG_OLT_LABEL": "Calculated OLT",
+        "MASS_CONFIG_OLT_REQUIRED": "Select a pickaxe and enter the angular difference to calculate OLT.",
+        "MASS_CONFIG_ORIENTATION_UNAVAILABLE": "Bulk configuration cannot be applied until planning orientations are available.",
         "MASS_CONFIG_SERIES_LABEL": "series",
         "MASS_CONFIG_SERIES_PLACEHOLDER": "Select the series",
         "MASS_CONFIG_TITLE": "Extend settings",
@@ -1527,6 +1531,7 @@
         "CURRENT_SHOT_BTN": "Current shot",
         "DESCRIPTION": "Entering pressure data with pressure gauges and crusher",
         "DISPARO_PLACEHOLDER": "Shot",
+        "EQUIPMENT_LABEL": "Equipment",
         "EQUIPO_PLACEHOLDER": "Equipment",
         "H1_LABEL": "H1",
         "H2_LABEL": "H2",
@@ -1588,6 +1593,7 @@
         "DIALOG": {
           "APPLY_BTN": "Apply",
           "CANCEL_BTN": "Cancel",
+          "DATE_PLACEHOLDER": "Select date",
           "SERIES_LABEL": "series",
           "SERIES_PLACEHOLDER": "Select the series",
           "TITLE": "Extend settings"
@@ -1772,15 +1778,6 @@
         "TAB_ALTA_VELOCIDAD": "High Speed",
         "TAB_CONVENCIONAL": "Conventional",
         "TITLE": "Security"
-      },
-      "SHOT": {
-        "DESCRIPTION": "Shot number, velocity and observations",
-        "NUMBER": "Shot number",
-        "OBSERVATIONS": "Observations",
-        "SHOT_NUMBER_PLACEHOLDER": "Ex: 001",
-        "SPEED_PLACEHOLDER": "Ex: 850",
-        "TITLE": "Shot data",
-        "VELOCITY": "Velocity"
       },
       "STANAG_CRITERIOS": {
         "ACTUALIZAR_BTN": "Update",
@@ -2177,10 +2174,12 @@
       "LIMIT_CARD": {
         "DEVIATION": "Deviation",
         "ENTER_VALUE": "Enter value",
+        "INVALID_RANGE": "Minimum limit must be less than maximum limit",
         "MAX_LIMIT": "Maximum limit",
         "MIN_LIMIT": "Minimum limit"
       },
-      "TITLE": "Measurements"
+      "TITLE": "Measurements",
+      "SERIE_CONFIG": "Configure by series"
     },
     "MUNITIONS": {
       "COMPONENT_DETAIL_FORM": {

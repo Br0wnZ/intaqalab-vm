@@ -127,12 +127,12 @@ describe('ExecutionStore (composición de features)', () => {
 
   it('registers and unregisters autonomous widgets excluded from updatedAt refreshes', () => {
     expect(store.isWidgetAutonomous(WidgetId.SEGUIMIENTO)).toBe(true);
-    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(false);
+    expect(store.isWidgetAutonomous(WidgetId.EXECUTION_PREP_JLT)).toBe(false);
 
-    store.registerAutonomousWidget(WidgetId.SHOT);
-    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(true);
+    store.registerAutonomousWidget(WidgetId.EXECUTION_PREP_JLT);
+    expect(store.isWidgetAutonomous(WidgetId.EXECUTION_PREP_JLT)).toBe(true);
 
-    store.unregisterAutonomousWidget(WidgetId.SHOT);
-    expect(store.isWidgetAutonomous(WidgetId.SHOT)).toBe(false);
+    store.unregisterAutonomousWidget(WidgetId.EXECUTION_PREP_JLT);
+    expect(store.isWidgetAutonomous(WidgetId.EXECUTION_PREP_JLT)).toBe(false);
   });
 });

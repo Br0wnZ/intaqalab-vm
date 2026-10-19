@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { form } from '@angular/forms/signals';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { fireEvent, render, screen } from '@testing-library/angular';
@@ -6,11 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MasterDataMeasureItem, SelectOption } from '../../utils-models/catalog.model';
-import type {
-  MeasureCategoryDef,
-  MeasureCategoryType,
-  MeasureSelectionData,
-} from '../../utils-models/measure-serie.model';
+import type { MeasureCategoryDef, MeasureSelectionData } from '../../utils-models/measure-serie.model';
 import { MeasureCategoryCard } from './measure-category-card';
 
 @Component({
@@ -20,6 +17,7 @@ import { MeasureCategoryCard } from './measure-category-card';
       [isOpen]="isOpen()"
       [options]="options()"
       [selectedValues]="selectedValues()"
+      [measureFields]="measureFields"
       [readonly]="readonly()"
       [measuresCatalog]="measuresCatalog()"
       (toggleOpen)="onToggleOpen()"
@@ -44,6 +42,7 @@ class TestHostComponent {
     { id: 'meas-2', name: 'Azimut', active: true, favorite: true },
   ]);
   readonly selectedValues = signal<MeasureSelectionData[]>([]);
+  readonly measureFields = form(this.selectedValues);
   readonly readonly = signal<boolean>(false);
   readonly measuresCatalog = signal<MasterDataMeasureItem[]>([
     { id: 'meas-1', qualificationType: 'QUANTITATIVE' } as MasterDataMeasureItem,
@@ -82,7 +81,14 @@ describe('MeasureCategoryCard', () => {
       host.options.set(initialState.options);
     }
     if (initialState?.selectedValues) {
-      host.selectedValues.set(initialState.selectedValues);
+      host.selectedValues.set(
+        initialState.selectedValues.map((measure) => ({
+          ...measure,
+          minLimit: measure.minLimit ?? null,
+          maxLimit: measure.maxLimit ?? null,
+          deviation: measure.deviation ?? null,
+        })),
+      );
     }
     if (initialState?.readonly !== undefined) {
       host.readonly.set(initialState.readonly);
@@ -132,7 +138,7 @@ describe('MeasureCategoryCard', () => {
     it('should not render multi-select or limit cards when isOpen is false', async () => {
       await runSetup({
         isOpen: false,
-        selectedValues: [{ id: 'meas-1', expanded: false }],
+        selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
       expect(screen.queryByText('Selecciona magnitudes y/o registros')).not.toBeInTheDocument();
       expect(screen.queryByText('Inclinación')).not.toBeInTheDocument();
@@ -168,12 +174,36 @@ describe('MeasureCategoryCard', () => {
       await runSetup({
         isOpen: true,
         selectedValues: [
-          { id: 'meas-1', expanded: false },
-          { id: 'meas-2', expanded: false },
+          { id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false },
+          { id: 'meas-2', minLimit: null, maxLimit: null, deviation: null, expanded: false },
         ],
       });
       expect(screen.getByText('Inclinación')).toBeInTheDocument();
       expect(screen.getByText('Azimut')).toBeInTheDocument();
+    });
+
+    it('should bind each selected measure to its matching form fields', async () => {
+      await runSetup({
+        isOpen: true,
+        selectedValues: [
+          { id: 'meas-1', minLimit: 10, maxLimit: 20, deviation: 1, expanded: true },
+          { id: 'meas-2', minLimit: 30, maxLimit: 40, deviation: 2, expanded: true },
+        ],
+        measuresCatalog: [
+          { id: 'meas-1', qualificationType: 'QUANTITATIVE' } as MasterDataMeasureItem,
+          { id: 'meas-2', qualificationType: 'QUANTITATIVE' } as MasterDataMeasureItem,
+        ],
+      });
+
+      const minInputs = screen.getAllByLabelText(
+        /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i,
+      ) as HTMLInputElement[];
+      const maxInputs = screen.getAllByLabelText(
+        /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i,
+      ) as HTMLInputElement[];
+
+      expect(minInputs.map((input) => input.value)).toEqual(['10', '30']);
+      expect(maxInputs.map((input) => input.value)).toEqual(['20', '40']);
     });
   });
 
@@ -181,7 +211,7 @@ describe('MeasureCategoryCard', () => {
     it('should emit removeMeasure with measureId when a limit card emits remove', async () => {
       const { user, host } = await runSetup({
         isOpen: true,
-        selectedValues: [{ id: 'meas-1', expanded: false }],
+        selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
       const deleteBtn = screen.getByText('delete').closest('button');
       expect(deleteBtn).not.toBeNull();
@@ -194,7 +224,7 @@ describe('MeasureCategoryCard', () => {
     it('should emit toggleMeasureExpanded with measureId when a limit card toggles expansion', async () => {
       const { user, host } = await runSetup({
         isOpen: true,
-        selectedValues: [{ id: 'meas-1', expanded: false }],
+        selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
       const toggleBtn = screen.getByText('expand_more').closest('button');
       expect(toggleBtn).not.toBeNull();
@@ -207,7 +237,7 @@ describe('MeasureCategoryCard', () => {
     it('should not emit toggleMeasureExpanded for qualitative measure', async () => {
       const { host, card } = await runSetup({
         isOpen: true,
-        selectedValues: [{ id: 'meas-2', expanded: false }],
+        selectedValues: [{ id: 'meas-2', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
       expect(screen.queryByText('expand_more')).not.toBeInTheDocument();
       card.onToggleMeasureExpanded('meas-2');
@@ -217,7 +247,7 @@ describe('MeasureCategoryCard', () => {
     it('should emit updateLimit when limitChange is triggered', async () => {
       const { host, card } = await runSetup({
         isOpen: true,
-        selectedValues: [{ id: 'meas-1', expanded: true }],
+        selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: true }],
       });
       card.onLimitChange('meas-1', { field: 'maxLimit', value: 100 });
       expect(host.onUpdateLimit).toHaveBeenCalledWith({
@@ -231,7 +261,7 @@ describe('MeasureCategoryCard', () => {
       const { host, card } = await runSetup({
         isOpen: true,
         readonly: true,
-        selectedValues: [{ id: 'meas-1', expanded: true }],
+        selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: true }],
       });
       card.onLimitChange('meas-1', { field: 'maxLimit', value: 100 });
       expect(host.onUpdateLimit).not.toHaveBeenCalled();

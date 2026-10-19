@@ -98,3 +98,19 @@ export interface ShotMunitionRequest {
 export interface ShotMunitionResponse {
   munitionData: ShotMunitionComponentResponse[];
 }
+export interface MunitionConditioningBulkConfigurationItem {
+  componentId: string;
+  conditioningData: Partial<
+    Pick<
+      ShotMunitionConditioningData,
+      'climaticChamberId' | 'chamberEntryDateTime' | 'chamberExitDateTime' | 'observations'
+    >
+  >;
+}
+export interface MunitionConditioningBulkConfigurationRequest {
+  assignedShotIds: string[];
+  components: MunitionConditioningBulkConfigurationItem[];
+}
+export interface MunitionConditioningBulkConfigurationResponse {
+  updatedShotIds: string[];
+}

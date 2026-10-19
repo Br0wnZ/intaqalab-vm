@@ -8,6 +8,7 @@ import {
   applyArmamentBulkConfiguration,
   applyJltMaoBulkConfiguration,
   applyMaoTopographyBulkConfiguration,
+  applyMunitionConditioningBulkConfiguration,
   approvePlanning,
   bumpPlanningVersion,
   getCountdownState,
@@ -74,6 +75,97 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/progress', (r
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/shot-measurements', (_req, res) => {
   const measurements = getFixture('fixtures/execution', 'execution-shot-measurements-fixture.json');
   res.status(200).json(measurements);
+});
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/propellant-charge-adjustment', (_req, res) => {
+  const adjustment = getFixture<{
+    points: Array<{
+      shotId: string;
+      powderWeight: number;
+      powderWeightUnit: string;
+      velocity: number;
+      velocityUnit: string;
+    }>;
+    regression?: { slope: number; intercept: number; rSquared?: number | null } | null;
+    powderWeightAtNominalSpeed?: number | null;
+    adjustedPowderWeight?: number | null;
+  }>('fixtures/execution', 'execution-propellant-charge-adjustment-fixture.json');
+  const rawShotIds = _req.query['shotIds'];
+  const shotIds =
+    typeof rawShotIds === 'string'
+      ? [rawShotIds]
+      : Array.isArray(rawShotIds)
+        ? rawShotIds.filter((shotId): shotId is string => typeof shotId === 'string')
+        : [];
+  const points = shotIds.flatMap((shotId, index) => {
+    const sourcePoint = adjustment.points[index % adjustment.points.length];
+    return sourcePoint ? [{ ...sourcePoint, shotId }] : [];
+  });
+  res.status(200).json({ ...adjustment, points });
+});
+
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/propellant-charge-adjustment/configurations',
+  (_req, res) => {
+    const configurations = getFixture(
+      'fixtures/execution',
+      'execution-propellant-charge-adjustment-configurations-fixture.json',
+    );
+    res.status(200).json(configurations);
+  },
+);
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/velocity-uniformity', (req, res) => {
+  const configurationId = req.query['configurationId'];
+  const rawShotIds = req.query['shotIds'];
+  const shotIds =
+    typeof rawShotIds === 'string'
+      ? [rawShotIds]
+      : Array.isArray(rawShotIds)
+        ? rawShotIds.filter((shotId): shotId is string => typeof shotId === 'string')
+        : [];
+
+  if (typeof configurationId !== 'string' || shotIds.length === 0) {
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: "Los parámetros 'configurationId' y 'shotIds' son obligatorios",
+    });
+    return;
+  }
+
+  const configurations = getFixture<
+    Array<{ configurationId: string; nominalSpeed: number; nominalSpeedUnit?: string }>
+  >('fixtures/execution', 'execution-propellant-charge-adjustment-configurations-fixture.json');
+  const configuration = configurations.find((item) => item.configurationId === configurationId);
+  if (!configuration) {
+    res.status(404).json({ title: 'Not Found', status: 404, detail: 'Tarado configuration not found' });
+    return;
+  }
+
+  const fixture = getFixture<{
+    points: Array<{ shotId: string; powderWeight: number; velocity: number }>;
+    slope: number | null;
+    intercept: number | null;
+    adjustedPowderWeight: number | null;
+    powderWeightAtNominalSpeed: number | null;
+    meanVelocity: number;
+    minimumVelocity: number;
+    maximumVelocity: number;
+    standardDeviation: number;
+  }>('fixtures/execution', 'execution-velocity-uniformity-fixture.json');
+  const points = shotIds.flatMap((shotId, index) => {
+    const sourcePoint = fixture.points[index % fixture.points.length];
+    return sourcePoint ? [{ ...sourcePoint, shotId }] : [];
+  });
+
+  res.status(200).json({
+    ...fixture,
+    points,
+    nominalSpeed: configuration.nominalSpeed,
+    velocityUnit: configuration.nominalSpeedUnit ?? 'M_S',
+    powderWeightUnit: 'G',
+  });
 });
 
 // Obtener estado actual de la cuenta atrás
@@ -533,7 +625,12 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/armament/bul
   try {
     applyArmamentBulkConfiguration(fireTrialId, body);
     res.status(200).json({ message: 'Configuración de armamento aplicada correctamente.' });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SERIES_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Series not found' });
+      return;
+    }
+
     res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Error applying bulk armament configuration' });
   }
 });
@@ -587,6 +684,26 @@ executionRouter.put(
     }
   },
 );
+
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/munitions/bulk-configuration', (req, res) => {
+  const { fireTrialId } = req.params as { fireTrialId: string };
+
+  try {
+    const updated = applyMunitionConditioningBulkConfiguration(fireTrialId, req.body);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'SHOT_NOT_FOUND') {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+
+    res.status(400).json({
+      title: 'Bad Request',
+      status: 400,
+      detail: 'Invalid bulk munition conditioning configuration',
+    });
+  }
+});
 
 // ==========================================
 // DATA ENTRY - WIDGET 21 MANOMETER PRESSURES

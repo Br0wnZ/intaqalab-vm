@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
+import { FormField } from '@angular/forms/signals';
+import type { FieldTree } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +11,7 @@ import type { MeasureSelectionData } from '../../utils-models/measure-serie.mode
 
 @Component({
   selector: 'inta-measure-limit-card',
-  imports: [MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, TranslatePipe],
+  imports: [FormField, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, TranslatePipe],
   template: `
     @if (isQuantitative() && measure().expanded) {
       <!-- Expanded State with Purple Accent -->
@@ -37,28 +39,56 @@ import type { MeasureSelectionData } from '../../utils-models/measure-serie.mode
         </div>
 
         <div class="grid grid-cols-3 gap-4 px-4 pb-4 pt-1">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT' | translate }}</mat-label>
-            <input
-              matInput
-              type="number"
-              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
-              [value]="measure().maxLimit ?? ''"
-              [disabled]="readonly()"
-              (input)="onInputChange('maxLimit', $event)"
-            />
-          </mat-form-field>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT' | translate }}</mat-label>
-            <input
-              matInput
-              type="number"
-              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
-              [value]="measure().minLimit ?? ''"
-              [disabled]="readonly()"
-              (input)="onInputChange('minLimit', $event)"
-            />
-          </mat-form-field>
+          <div class="min-w-0">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT' | translate }}</mat-label>
+              <input
+                matInput
+                type="number"
+                [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
+                [formField]="measureForm().minLimit"
+                [attr.aria-describedby]="
+                  measureForm().minLimit().touched() && measureForm().minLimit().errors().length > 0
+                    ? minLimitInput.id + '-error'
+                    : null
+                "
+                (input)="onInputChange('minLimit', $event)"
+                #minLimitInput="matInput"
+              />
+            </mat-form-field>
+            @if (measureForm().minLimit().touched() && measureForm().minLimit().errors(); as errors) {
+              @for (error of errors; track error.kind) {
+                <mat-error class="mt-1" [id]="minLimitInput.id + '-error'">
+                  {{ error.message | translate }}
+                </mat-error>
+              }
+            }
+          </div>
+          <div class="min-w-0">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT' | translate }}</mat-label>
+              <input
+                matInput
+                type="number"
+                [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
+                [formField]="measureForm().maxLimit"
+                [attr.aria-describedby]="
+                  measureForm().maxLimit().touched() && measureForm().maxLimit().errors().length > 0
+                    ? maxLimitInput.id + '-error'
+                    : null
+                "
+                (input)="onInputChange('maxLimit', $event)"
+                #maxLimitInput="matInput"
+              />
+            </mat-form-field>
+            @if (measureForm().maxLimit().touched() && measureForm().maxLimit().errors(); as errors) {
+              @for (error of errors; track error.kind) {
+                <mat-error class="mt-1" [id]="maxLimitInput.id + '-error'">
+                  {{ error.message | translate }}
+                </mat-error>
+              }
+            }
+          </div>
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.DEVIATION' | translate }}</mat-label>
             <input
@@ -121,6 +151,7 @@ import type { MeasureSelectionData } from '../../utils-models/measure-serie.mode
 export class MeasureLimitCard {
   readonly measure = input.required<MeasureSelectionData>();
   readonly measureName = input.required<string>();
+  readonly measureForm = input.required<FieldTree<MeasureSelectionData>>();
   readonly isQuantitative = input<boolean>(false);
   readonly readonly = input<boolean>(false);
 

@@ -4,9 +4,6 @@
  * al usar la referencia en todo el código
  */
 export enum WidgetId {
-  // Datos del disparo
-  SHOT = 'shot',
-
   // Preparación de ejecución
   EXECUTION_PREP_TECH = 'execution-prep-tech',
   EXECUTION_PREP_JLT = 'execution-prep-jlt',

@@ -35,21 +35,31 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
+  buildDisparoOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
 } from '../utils/selection-options';
+import { injectManometerEquipments } from './inject-manometer-equipments';
 import type { InputFieldValue } from './manometer-introduction.mapper';
 import {
+  buildManometerEquipmentValue,
   buildShotManometerPressureData,
   buildShotManometerPressuresRequest,
   extractManometerPressuresData,
+  mapManometerEquipmentValueToSelection,
+  mapManometerStateToEquipmentValue,
   mapPlanningSeriesToOptions,
   mapRemoteToManometerState,
-  mapShotsToDisparoOptions,
   numToField,
   parseNum,
 } from './manometer-introduction.mapper';
+
+const MANOMETER_EQUIPMENT_CATEGORIES = [
+  EquipmentTypeEnum.PRESSURE_GAUGE,
+  EquipmentTypeEnum.CRUSHER,
+  EquipmentTypeEnum.PROBE,
+] as const;
 
 export type { InputFieldValue };
 
@@ -105,7 +115,6 @@ export interface DataFormModel {
             }
           </mat-select>
         </mat-form-field>
-
         <!-- Disparo -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-30">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.DISPARO_PLACEHOLDER' | translate }}</mat-label>
@@ -142,44 +151,22 @@ export interface DataFormModel {
         <div class="flex-1 flex justify-evenly flex-col gap-4">
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
           <div class="grid grid-cols-2 lg:grid-cols-6 gap-2">
-            <!-- Manómetro -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MANOMETRO_LABEL' | translate }}</mat-label>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full col-span-2 lg:col-span-3">
+              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPMENT_LABEL' | translate }}</mat-label>
               <mat-select
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
-                [formField]="dataForm.manometro"
-                (selectionChange)="onManometroSelected($event.value)"
+                [value]="selectedEquipmentValue()"
+                (selectionChange)="onEquipmentSelectionChanged($event.value)"
               >
-                @for (opt of manometroOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <!-- Crusher -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.CRUSHER_LABEL' | translate }}</mat-label>
-              <mat-select
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
-                [formField]="dataForm.crusher"
-                (selectionChange)="onEquipmentSelected('crusher', $event.value)"
-              >
-                @for (opt of crusherOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <!-- Micrómetro palpador -->
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MICROMETRO_LABEL' | translate }}</mat-label>
-              <mat-select
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.EQUIPO_PLACEHOLDER' | translate"
-                [formField]="dataForm.micrometroPalpador"
-                (selectionChange)="onEquipmentSelected('micrometroPalpador', $event.value)"
-              >
-                @for (opt of micrometroPalpadorOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                @for (opt of equipmentOptions(); track opt.value) {
+                  <mat-option [value]="opt.value">
+                    {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MANOMETRO_LABEL' | translate }}:
+                    {{ opt.manometroLabel }} /
+                    {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.CRUSHER_LABEL' | translate }}:
+                    {{ opt.crusherLabel }} /
+                    {{ 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.MICROMETRO_LABEL' | translate }}:
+                    {{ opt.micrometroPalpadorLabel }}
+                  </mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -363,56 +350,70 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   );
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
-  readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
+  readonly #manometerEquipments = injectManometerEquipments();
 
   // ── Options from store & API ───────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
     mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.manometerIntroduction().serieOptions),
   );
 
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots.map((shot) => ({
-          ...shot,
-          globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#store.planningSeries(),
+      storedOptions: this.#store.manometerIntroduction().disparoOptions,
+    }),
+  );
+
+  protected readonly equipmentOptions = computed(() => {
+    const { serie, disparo } = this.selectorFormModel();
+    if (!serie || !disparo) return [];
+
+    const itemsByCategory = this.#manometerEquipments.itemsByCategory();
+    const assignedIdsByCategory = new Map<EquipmentTypeEnum, Set<string>>(
+      MANOMETER_EQUIPMENT_CATEGORIES.map((category) => [category, new Set<string>()]),
+    );
+
+    for (const selection of this.#manometerEquipments.selections()) {
+      if (
+        !MANOMETER_EQUIPMENT_CATEGORIES.some((category) => category === selection.categoryId) ||
+        !selection.seriesIds?.includes(serie) ||
+        !selection.shotIds?.includes(disparo)
+      ) {
+        continue;
+      }
+
+      assignedIdsByCategory.get(selection.categoryId)?.add(String(selection.equipmentItemId));
+    }
+
+    const itemsForCategory = (category: EquipmentTypeEnum) => {
+      const assignedIds = assignedIdsByCategory.get(category);
+      return (itemsByCategory[category] ?? []).filter((item) => assignedIds?.has(item.id));
+    };
+    const manometros = itemsForCategory(EquipmentTypeEnum.PRESSURE_GAUGE);
+    const crushers = itemsForCategory(EquipmentTypeEnum.CRUSHER);
+    const micrometros = itemsForCategory(EquipmentTypeEnum.PROBE);
+
+    return manometros.flatMap((manometro) =>
+      crushers.flatMap((crusher) =>
+        micrometros.map((micrometroPalpador) => ({
+          value: buildManometerEquipmentValue({
+            manometro: manometro.id,
+            crusher: crusher.id,
+            micrometroPalpador: micrometroPalpador.id,
+          }),
+          manometroLabel: manometro.label,
+          crusherLabel: crusher.label,
+          micrometroPalpadorLabel: micrometroPalpador.label,
         })),
-        this.#store.manometerIntroduction().disparoOptions,
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.manometerIntroduction().disparoOptions);
-    }
-    return this.#store.manometerIntroduction().disparoOptions;
+      ),
+    );
   });
 
-  protected readonly manometroOptions = computed(() => {
-    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PRESSURE_GAUGE];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.manometerIntroduction().manometroOptions;
-  });
-
-  protected readonly crusherOptions = computed(() => {
-    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.CRUSHER];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.manometerIntroduction().crusherOptions;
-  });
-
-  protected readonly micrometroPalpadorOptions = computed(() => {
-    const apiItems = this.#itemsByCategory()[EquipmentTypeEnum.PROBE];
-    if (apiItems?.length) {
-      return apiItems.map((item) => ({ value: item.id, label: item.label }));
-    }
-    return this.#store.manometerIntroduction().micrometroPalpadorOptions;
+  protected readonly selectedEquipmentValue = computed(() => {
+    const value = mapManometerStateToEquipmentValue(this.dataFormModel());
+    return this.equipmentOptions().some((option) => option.value === value) ? value : null;
   });
 
   // ── Read-only outputs ──────────────────────────────────────────────────────
@@ -513,20 +514,11 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   constructor() {
     super();
 
-    // Cargar catálogo de equipos de manómetros
-    this.#executionService
-      ?.loadEquipmentItemsByCategories?.([
-        EquipmentTypeEnum.PRESSURE_GAUGE,
-        EquipmentTypeEnum.CRUSHER,
-        EquipmentTypeEnum.PROBE,
-      ])
-      ?.then((result) => this.#itemsByCategory.set(result));
-
     // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -568,24 +560,20 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     void this.#loadSelectedShotData();
   }
 
-  onManometroSelected(manometro: string | null): void {
-    const previousManometro = this.#store.manometerIntroduction().manometro;
-    if (previousManometro !== manometro) {
+  onEquipmentSelectionChanged(value: string): void {
+    const selection = mapManometerEquipmentValueToSelection(value);
+    if (!selection) return;
+
+    const previousManometro = this.dataFormModel().manometro;
+    if (previousManometro !== selection.manometro) {
       this.#syncCurrentDraftToStore(previousManometro);
+      const selectedData = this.#store
+        .manometerIntroduction()
+        .manometerPressures.find((entry) => entry.pressureGaugeId === selection.manometro);
+      this.#applyDataToForm(selectedData, selection.manometro);
     }
 
-    const selectedData = this.#store
-      .manometerIntroduction()
-      .manometerPressures.find((entry) => entry.pressureGaugeId === manometro);
-
-    this.#applyDataToForm(selectedData, manometro);
-    if (!selectedData && manometro) {
-      this.#syncCurrentDraftToStore(manometro);
-    }
-  }
-
-  onEquipmentSelected(field: 'crusher' | 'micrometroPalpador', value: string | null): void {
-    this.dataFormModel.update((current) => ({ ...current, [field]: value }));
+    this.dataFormModel.set(selection);
     this.#syncCurrentDraftToStore();
   }
 

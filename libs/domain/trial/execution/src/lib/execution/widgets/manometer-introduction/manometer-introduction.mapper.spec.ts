@@ -43,6 +43,10 @@ describe('manometer-introduction.mapper', () => {
     expect(mapShotsToDisparoOptions(null, [{ value: 'fb', label: 'Fallback' }])).toEqual([
       { value: 'fb', label: 'Fallback' },
     ]);
+
+    expect(
+      mapShotsToDisparoOptions([{ shotId: 'shot-1', globalNumber: 1 }], [], [{ id: 'shot-1', globalNumber: 12 }]),
+    ).toEqual([{ value: 'shot-1', label: 'Disparo 12' }]);
   });
 
   it('mapDistanceUnitToUi and mapDistanceUnitToApi convert units correctly', () => {

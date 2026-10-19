@@ -13,6 +13,10 @@ import {
   type JltMaoBulkConfigurationResponse,
   type MaoTopographyBulkConfigurationRequest,
   type MaoTopographyBulkConfigurationResponse,
+  type MunitionConditioningBulkConfigurationRequest,
+  type MunitionConditioningBulkConfigurationResponse,
+  type PropellantChargeAdjustmentConfiguration,
+  type PropellantChargeAdjustmentResponse,
   type ShotCameraOrientationResponse,
   type ShotManometerPressuresRequest,
   type ShotManometerPressuresResponse,
@@ -21,6 +25,7 @@ import {
   type ShotVideoDataRequest,
   type ShotVideoDataResponse,
   type TrajectographyRadarOrientationResponse,
+  type VelocityUniformityResponse,
   WidgetId,
 } from '../execution/models';
 import {
@@ -76,6 +81,108 @@ describe('ExecutionService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should GET propellant charge adjustment with repeated shotIds query parameters', async () => {
+    const response: PropellantChargeAdjustmentResponse = {
+      points: [
+        {
+          shotId: 'shot-1',
+          powderWeight: 41.2,
+          powderWeightUnit: 'G',
+          velocity: 848.3,
+          velocityUnit: SpeedUnitEnum.M_S,
+        },
+      ],
+      regression: { slope: 4.56, intercept: 660.6, rSquared: 1 },
+      powderWeightAtNominalSpeed: 41.6,
+      adjustedPowderWeight: 42,
+    };
+
+    service.getPropellantChargeAdjustment(DEMO_TRIAL_ID, {
+      shotIds: ['shot-1', 'shot-2'],
+      nominalSpeed: 850,
+      nominalSpeedUnit: SpeedUnitEnum.M_S,
+    });
+    TestBed.tick();
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.url === `${EXECUTION_BASE_URL}/propellant-charge-adjustment` &&
+        request.params.getAll('shotIds')?.join(',') === 'shot-1,shot-2' &&
+        request.params.get('nominalSpeed') === '850',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(response);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.propellantChargeAdjustmentResource.value()).toEqual(response);
+    });
+  });
+
+  it('should GET saved propellant charge adjustment configurations', async () => {
+    const response: PropellantChargeAdjustmentConfiguration[] = [
+      {
+        configurationId: 'configuration-1',
+        name: 'Initial adjustment',
+        shotIds: ['shot-1', 'shot-2'],
+        nominalSpeed: 850,
+        nominalSpeedUnit: SpeedUnitEnum.M_S,
+      },
+    ];
+
+    service.listPropellantChargeAdjustmentConfigurations(DEMO_TRIAL_ID);
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${EXECUTION_BASE_URL}/propellant-charge-adjustment/configurations`);
+    expect(req.request.method).toBe('GET');
+    req.flush(response);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.propellantChargeAdjustmentConfigurationsResource.value()).toEqual(response);
+    });
+  });
+
+  it('should GET velocity uniformity with selected configuration and repeated shot IDs', async () => {
+    const response: VelocityUniformityResponse = {
+      points: [
+        { shotId: 'shot-1', powderWeight: 42, velocity: 848 },
+        { shotId: 'shot-2', powderWeight: null, velocity: 850 },
+      ],
+      nominalSpeed: 850,
+      velocityUnit: SpeedUnitEnum.M_S,
+      meanVelocity: 849,
+      minimumVelocity: 848,
+      maximumVelocity: 850,
+      standardDeviation: 1.4142135623730951,
+      slope: 4,
+      intercept: 681,
+      adjustedPowderWeight: 42,
+      powderWeightAtNominalSpeed: 42.25,
+      powderWeightUnit: 'G',
+    };
+
+    service.getVelocityUniformity(DEMO_TRIAL_ID, {
+      configurationId: 'configuration-1',
+      shotIds: ['shot-1', 'shot-2'],
+    });
+    TestBed.tick();
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.url === `${EXECUTION_BASE_URL}/velocity-uniformity` &&
+        request.params.get('configurationId') === 'configuration-1' &&
+        request.params.getAll('shotIds')?.join(',') === 'shot-1,shot-2',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(response);
+
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.velocityUniformityResource.value()).toEqual(response);
+    });
   });
 
   it('should GET camera orientation by center, trial, and camera', async () => {
@@ -189,6 +296,33 @@ describe('ExecutionService', () => {
       TestBed.tick();
       expect(service.planningConditionsResource.value()).toEqual(mockConditions);
     });
+  });
+
+  it('fetches planned fuse graduation assigned to the selected shot', async () => {
+    const promise = service.fetchPlanningFuseGraduation(DEMO_TRIAL_ID, 'series-1', 'shot-2');
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      series: [
+        {
+          seriesId: 'series-1',
+          configurations: [
+            {
+              assignedShotIds: ['shot-1'],
+              components: [{ fuseMeasurement: 3.5 }],
+            },
+            {
+              assignedShotIds: ['shot-2'],
+              components: [{ fuseMeasurement: 7.25 }],
+            },
+          ],
+        },
+      ],
+    });
+
+    await expect(promise).resolves.toBe(7.25);
   });
 
   it('should GET propelling charge parameters when getPropellingChargeParameters() is called', async () => {
@@ -444,7 +578,7 @@ describe('ExecutionService', () => {
   });
 
   it('should GET and PUT widget preferences for roles and users', async () => {
-    const mockPrefs = { widgetsLayout: [WidgetId.SHOT, WidgetId.EXECUTION_PREP_TECH] };
+    const mockPrefs = { widgetsLayout: [WidgetId.EXECUTION_PREP_JLT, WidgetId.EXECUTION_PREP_TECH] };
 
     // GET by role
     service.getPreferencesByRole(DEMO_TRIAL_ID, 'HEAD_BALLISTICS_UNIT');
@@ -461,7 +595,7 @@ describe('ExecutionService', () => {
 
     // PUT by role
     service.updatePreferencesByRole(DEMO_TRIAL_ID, 'HEAD_BALLISTICS_UNIT', [
-      WidgetId.SHOT,
+      WidgetId.EXECUTION_PREP_JLT,
       WidgetId.EXECUTION_PREP_TECH,
     ]);
     TestBed.tick();
@@ -490,18 +624,18 @@ describe('ExecutionService', () => {
     });
 
     // PUT by user
-    service.updatePreferencesByUser(DEMO_TRIAL_ID, 'john_doe', [WidgetId.SHOT, 'prep-tech-video']);
+    service.updatePreferencesByUser(DEMO_TRIAL_ID, 'john_doe', [WidgetId.EXECUTION_PREP_JLT, 'prep-tech-video']);
     TestBed.tick();
 
     const putUserReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/preferences/users/john_doe`);
     expect(putUserReq.request.method).toBe('PUT');
-    expect(putUserReq.request.body).toEqual({ widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'] });
-    putUserReq.flush({ widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'] });
+    expect(putUserReq.request.body).toEqual({ widgetsLayout: [WidgetId.EXECUTION_PREP_JLT, 'prep-tech-video'] });
+    putUserReq.flush({ widgetsLayout: [WidgetId.EXECUTION_PREP_JLT, 'prep-tech-video'] });
 
     await waitFor(() => {
       TestBed.tick();
       expect(service.updatePreferencesByUserResource.value()).toEqual({
-        widgetsLayout: [WidgetId.SHOT, 'prep-tech-video'],
+        widgetsLayout: [WidgetId.EXECUTION_PREP_JLT, 'prep-tech-video'],
       });
     });
   });
@@ -993,6 +1127,22 @@ describe('ExecutionService', () => {
     });
   });
 
+  it('loads weapon denominations using the requested item type', async () => {
+    const denominationsPromise = service.loadArmamentWeaponDenominations();
+    TestBed.tick();
+
+    const request = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/denominations?itemType=WEAPON`);
+    expect(request.request.method).toBe('GET');
+    const denominations = [
+      { id: 10, name: 'Cañón 120mm L44', itemType: 'WEAPON' as const, familyId: 10, active: true },
+      { id: 11, name: 'Obús 105/37 mm', itemType: 'WEAPON' as const, familyId: 12, active: true },
+    ];
+    request.flush({ totalElements: denominations.length, items: denominations });
+    TestBed.tick();
+
+    await expect(denominationsPromise).resolves.toEqual(denominations);
+  });
+
   it('handles bulk armament configuration via HTTP resource and Promise', async () => {
     const bulkPayload: ArmamentBulkConfigurationRequest = {
       assignedSeriesIds: ['s-1', 's-2'],
@@ -1001,7 +1151,6 @@ describe('ExecutionService', () => {
       observations: 'Bulk configuration applied',
     };
 
-    // applyArmamentBulkConfiguration (httpResource)
     service.applyArmamentBulkConfiguration(DEMO_TRIAL_ID, bulkPayload);
     TestBed.tick();
 
@@ -1009,23 +1158,12 @@ describe('ExecutionService', () => {
     expect(bulkResourceReq.request.method).toBe('POST');
     expect(bulkResourceReq.request.body).toEqual(bulkPayload);
     bulkResourceReq.flush(null);
+    TestBed.tick();
 
     await waitFor(() => {
       TestBed.tick();
       expect(service.applyArmamentBulkConfigurationResource.hasValue()).toBe(true);
     });
-
-    // bulkConfigureArmament (Promise)
-    const directPromise = service.bulkConfigureArmament(DEMO_TRIAL_ID, bulkPayload);
-    TestBed.tick();
-
-    const bulkDirectReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/armament/bulk-configuration`);
-    expect(bulkDirectReq.request.method).toBe('POST');
-    expect(bulkDirectReq.request.body).toEqual(bulkPayload);
-    bulkDirectReq.flush(null);
-    TestBed.tick();
-
-    await expect(directPromise).resolves.toBeUndefined();
   });
 
   it('posts bulk JLT MAO configuration and returns updated shot IDs', async () => {
@@ -1161,6 +1299,34 @@ describe('ExecutionService', () => {
 
     const updateResult = await updatePromise;
     expect(updateResult).toEqual(mockMunitionResponse);
+  });
+
+  it('posts bulk munition conditioning and returns updated shot IDs', async () => {
+    const body: MunitionConditioningBulkConfigurationRequest = {
+      assignedShotIds: ['shot-1', 'shot-2'],
+      components: [
+        {
+          componentId: 'component-1',
+          conditioningData: {
+            climaticChamberId: 21045,
+            chamberEntryDateTime: '2026-08-21T08:00:00Z',
+            chamberExitDateTime: '2026-08-21T10:30:00Z',
+          },
+        },
+      ],
+    };
+    const response: MunitionConditioningBulkConfigurationResponse = { updatedShotIds: body.assignedShotIds };
+
+    const resultPromise = service.applyMunitionConditioningBulkConfiguration(DEMO_TRIAL_ID, body);
+    TestBed.tick();
+
+    const request = httpMock.expectOne(`${EXECUTION_BASE_URL}/munitions/bulk-configuration`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(body);
+    request.flush(response);
+    TestBed.tick();
+
+    await expect(resultPromise).resolves.toEqual(response);
   });
 
   it('fetches planning munition options and resolves component labels and options per series', async () => {

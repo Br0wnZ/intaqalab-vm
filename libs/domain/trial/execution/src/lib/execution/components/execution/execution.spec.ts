@@ -326,9 +326,9 @@ describe('Execution', () => {
     const { view, toastrService } = await setup();
     const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
 
-    widgetStateService.addWidget(WidgetId.SHOT, 3);
-    widgetStateService.addWidget(WidgetId.SHOT, 3);
-    widgetStateService.addWidget(WidgetId.SHOT, 3);
+    widgetStateService.addWidget(WidgetId.EXECUTION_PREP_JLT, 3);
+    widgetStateService.addWidget(WidgetId.EXECUTION_PREP_JLT, 3);
+    widgetStateService.addWidget(WidgetId.EXECUTION_PREP_JLT, 3);
     view.fixture.componentInstance.isWidgetsPanelOpen.set(true);
 
     view.fixture.componentInstance.addWidget('prep-tech-video');
@@ -495,7 +495,7 @@ describe('Execution', () => {
 
   describe('User Preferences Layout', () => {
     it('loads preferences on init and paints widgets using WidgetId enum', async () => {
-      const executionService = createMockExecutionService({ widgetsLayout: [WidgetId.SHOT] });
+      const executionService = createMockExecutionService({ widgetsLayout: [WidgetId.EXECUTION_PREP_JLT] });
       const { view } = await setup({
         fireTrialId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         executionService,
@@ -510,7 +510,7 @@ describe('Execution', () => {
       );
 
       expect(widgetStateService.placedWidgets().length).toBe(1);
-      expect(widgetStateService.placedWidgets()[0].type).toBe(WidgetId.SHOT);
+      expect(widgetStateService.placedWidgets()[0].type).toBe(WidgetId.EXECUTION_PREP_JLT);
     });
 
     it('restores the technical preparation profile from its preference ID', async () => {
@@ -532,7 +532,7 @@ describe('Execution', () => {
     });
 
     it('saves preferences on destroy using WidgetId enum', async () => {
-      const executionService = createMockExecutionService({ widgetsLayout: [WidgetId.SHOT] });
+      const executionService = createMockExecutionService({ widgetsLayout: [WidgetId.EXECUTION_PREP_JLT] });
       const { view } = await setup({
         fireTrialId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         executionService,
@@ -541,14 +541,14 @@ describe('Execution', () => {
       const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
       view.fixture.detectChanges();
 
-      expect(widgetStateService.placedWidgets().map((widget) => widget.type)).toEqual([WidgetId.SHOT]);
+      expect(widgetStateService.placedWidgets().map((widget) => widget.type)).toEqual([WidgetId.EXECUTION_PREP_JLT]);
 
       view.fixture.destroy();
 
       expect(executionService.updatePreferencesByUser).toHaveBeenCalledWith(
         '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         'test_user',
-        [WidgetId.SHOT],
+        [WidgetId.EXECUTION_PREP_JLT],
       );
     });
 

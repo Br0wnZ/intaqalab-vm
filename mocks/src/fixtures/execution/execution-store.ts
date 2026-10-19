@@ -807,8 +807,21 @@ export function setShotArmament(
 }
 
 export function applyArmamentBulkConfiguration(fireTrialId: string, payload: ArmamentBulkConfigurationRequest): void {
+  if (
+    payload.assignedSeriesIds.length === 0 ||
+    new Set(payload.assignedSeriesIds).size !== payload.assignedSeriesIds.length ||
+    (payload.weaponId === undefined && payload.tubeId === undefined && payload.observations === undefined)
+  ) {
+    throw new Error('INVALID_ARMAMENT_BULK_CONFIGURATION');
+  }
+
   const progress = getExecutionProgressFixture();
   const state = getOrCreateArmamentMap(fireTrialId);
+  const assignedSeries = payload.assignedSeriesIds.map((seriesId) => {
+    const series = progress.series.find((item) => item.seriesId === seriesId);
+    if (!series) throw new Error('SERIES_NOT_FOUND');
+    return series;
+  });
 
   const weapon: ArmamentEquipmentItem | null = payload.weaponId
     ? {
@@ -832,13 +845,15 @@ export function applyArmamentBulkConfiguration(fireTrialId: string, payload: Arm
       }
     : null;
 
-  for (const series of progress.series) {
-    if (payload.assignedSeriesIds.includes(series.seriesId)) {
-      for (const shot of series.shots) {
-        if (shot.status !== 'FIRED') {
-          const key = `${series.seriesId}|${shot.shotId}`;
-          const current = state.get(key) ?? defaultArmamentState();
-          const updated: ShotArmamentResponse = {
+  const updates: Array<{ key: string; value: ShotArmamentResponse }> = [];
+  for (const series of assignedSeries) {
+    for (const shot of series.shots) {
+      if (shot.status !== 'FIRED') {
+        const key = `${series.seriesId}|${shot.shotId}`;
+        const current = state.get(key) ?? defaultArmamentState();
+        updates.push({
+          key,
+          value: {
             armamentData: {
               weapon: payload.weaponId !== undefined ? weapon : (current.armamentData?.weapon ?? null),
               tube: payload.tubeId !== undefined ? tube : (current.armamentData?.tube ?? null),
@@ -847,12 +862,13 @@ export function applyArmamentBulkConfiguration(fireTrialId: string, payload: Arm
                   ? payload.observations
                   : (current.armamentData?.observations ?? null),
             },
-          };
-          state.set(key, updated);
-        }
+          },
+        });
       }
     }
   }
+
+  for (const update of updates) state.set(update.key, update.value);
 }
 
 // ── SHOT MUNITION tipos y store (Widget 20) ────────────────────────────────
@@ -909,6 +925,23 @@ export interface ShotMunitionRequest {
   components: ShotMunitionComponent[];
 }
 
+export interface MunitionConditioningBulkConfigurationRequest {
+  assignedShotIds: string[];
+  components: Array<{
+    componentId: string;
+    conditioningData: Partial<
+      Pick<
+        ShotMunitionConditioningData,
+        'climaticChamberId' | 'chamberEntryDateTime' | 'chamberExitDateTime' | 'observations'
+      >
+    >;
+  }>;
+}
+
+export interface MunitionConditioningBulkConfigurationResponse {
+  updatedShotIds: string[];
+}
+
 function defaultMunitionState(): ShotMunitionResponse {
   return getFixture<ShotMunitionResponse>('fixtures/execution', 'execution-munition-fixture.json');
 }
@@ -933,6 +966,19 @@ export function getShotMunition(fireTrialId: string, seriesId: string, shotId: s
 
   if (!current) {
     const initial = cloneMunitionState(defaultMunitionState());
+    if (shotId === 'disparo-2' || shotId === '3fa85f64-5717-4562-b3fc-2c963f66bfa2') {
+      for (const comp of initial.munitionData) {
+        if (comp.weightData) {
+          comp.weightData = comp.weightData.filter((w) => w.balanceId === 21032);
+        }
+      }
+    } else if (shotId === 'disparo-3' || shotId === '3fa85f64-5717-4562-b3fc-2c963f66bfa3') {
+      for (const comp of initial.munitionData) {
+        if (comp.weightData) {
+          comp.weightData = comp.weightData.filter((w) => w.balanceId === 21031);
+        }
+      }
+    }
     state.set(key, initial);
     return cloneMunitionState(initial);
   }
@@ -983,6 +1029,79 @@ export function setShotMunition(
 
   state.set(key, updated);
   return cloneMunitionState(updated);
+}
+
+export function applyMunitionConditioningBulkConfiguration(
+  fireTrialId: string,
+  payload: MunitionConditioningBulkConfigurationRequest,
+): MunitionConditioningBulkConfigurationResponse {
+  if (
+    payload.assignedShotIds.length === 0 ||
+    new Set(payload.assignedShotIds).size !== payload.assignedShotIds.length ||
+    payload.components.length === 0 ||
+    new Set(payload.components.map(({ componentId }) => componentId)).size !== payload.components.length ||
+    payload.components.some(({ conditioningData }) => Object.keys(conditioningData).length === 0)
+  ) {
+    throw new Error('INVALID_MUNITION_BULK_CONFIGURATION');
+  }
+
+  const progress = getExecutionProgressFixture();
+  const state = getOrCreateMunitionMap(fireTrialId);
+  const updates: Array<{ key: string; value: ShotMunitionResponse }> = [];
+
+  for (const shotId of payload.assignedShotIds) {
+    const series = progress.series.find((item) => item.shots.some((shot) => shot.shotId === shotId));
+    if (!series) throw new Error('SHOT_NOT_FOUND');
+
+    const key = `${series.seriesId}|${shotId}`;
+    const current = state.get(key) ?? cloneMunitionState(defaultMunitionState());
+    const munitionData = current.munitionData.map((component) => {
+      const configuration =
+        payload.components.find((item) => item.componentId === component.componentId) ??
+        (payload.components.length === 1 ? payload.components[0] : undefined);
+      if (!configuration) return component;
+
+      const conditioningData = { ...(component.conditioningData ?? {}), ...configuration.conditioningData };
+      if (
+        'chamberEntryDateTime' in configuration.conditioningData ||
+        'chamberExitDateTime' in configuration.conditioningData
+      ) {
+        const entry = conditioningData.chamberEntryDateTime;
+        const exit = conditioningData.chamberExitDateTime;
+        if (entry && exit) {
+          const durationSeconds = Math.floor((Date.parse(exit) - Date.parse(entry)) / 1000);
+          if (!Number.isFinite(durationSeconds) || durationSeconds < 0) {
+            throw new Error('INVALID_MUNITION_BULK_CONFIGURATION');
+          }
+          const hours = Math.floor(durationSeconds / 3600);
+          const minutes = Math.floor((durationSeconds % 3600) / 60);
+          const seconds = durationSeconds % 60;
+          conditioningData.chamberTime = [hours, minutes, seconds]
+            .map((part) => String(part).padStart(2, '0'))
+            .join(':');
+        } else {
+          conditioningData.chamberTime = null;
+        }
+      }
+
+      return { ...component, conditioningData };
+    });
+
+    if (
+      payload.components.length > 1 &&
+      payload.components.some(
+        ({ componentId }) => !current.munitionData.some((item) => item.componentId === componentId),
+      )
+    ) {
+      throw new Error('INVALID_MUNITION_BULK_CONFIGURATION');
+    }
+
+    updates.push({ key, value: { munitionData } });
+  }
+
+  for (const update of updates) state.set(update.key, update.value);
+
+  return { updatedShotIds: [...payload.assignedShotIds] };
 }
 
 // ── SHOT MANOMETER PRESSURES tipos y store (Widget 21) ───────────────────────

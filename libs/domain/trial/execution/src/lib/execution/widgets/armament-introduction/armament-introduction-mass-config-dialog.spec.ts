@@ -1,7 +1,8 @@
 import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
@@ -9,7 +10,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { ActivatedRoute } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -17,10 +18,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExecutionService } from '../../../services/execution.service';
 import {
   ArmamentIntroductionMassConfigDialog,
-  type ArmamentIntroductionMassConfigDialogData
+  type ArmamentIntroductionMassConfigDialogData,
 } from './armament-introduction-mass-config-dialog';
 
 const mockData: ArmamentIntroductionMassConfigDialogData = {
+  fireTrialId: 'trial-123',
   serieOptions: [
     { value: 'serie-1', label: 'Funcionamiento I' },
     { value: 'serie-2', label: 'Funcionamiento II' },
@@ -30,16 +32,44 @@ const mockData: ArmamentIntroductionMassConfigDialogData = {
     { value: '21018', label: 'Arma 02' },
   ],
   weaponItems: [
-    { id: 21017, tag: 'ARM-17', serialNumber: 'SN-A-17', denominationId: 1, denominationName: 'Arma 01', modelName: 'A1' },
-    { id: 21018, tag: 'ARM-18', serialNumber: 'SN-A-18', denominationId: 2, denominationName: 'Arma 02', modelName: 'A2' },
+    {
+      id: 21017,
+      tag: 'ARM-17',
+      serialNumber: 'SN-A-17',
+      denominationId: 1,
+      denominationName: 'Arma 01',
+      modelName: 'A1',
+    },
+    {
+      id: 21018,
+      tag: 'ARM-18',
+      serialNumber: 'SN-A-18',
+      denominationId: 2,
+      denominationName: 'Arma 02',
+      modelName: 'A2',
+    },
   ],
   tuboOptions: [
     { value: '21099', label: 'Tubo 01' },
     { value: '21100', label: 'Tubo 02' },
   ],
   tubeItems: [
-    { id: 21099, tag: 'TUB-99', serialNumber: 'SN-T-99', denominationId: 5, denominationName: 'Tubo 01', modelName: 'T1' },
-    { id: 21100, tag: 'TUB-100', serialNumber: 'SN-T-100', denominationId: 6, denominationName: 'Tubo 02', modelName: 'T2' },
+    {
+      id: 21099,
+      tag: 'TUB-99',
+      serialNumber: 'SN-T-99',
+      denominationId: 5,
+      denominationName: 'Tubo 01',
+      modelName: 'T1',
+    },
+    {
+      id: 21100,
+      tag: 'TUB-100',
+      serialNumber: 'SN-T-100',
+      denominationId: 6,
+      denominationName: 'Tubo 02',
+      modelName: 'T2',
+    },
   ],
   current: {
     arma: null,
@@ -196,11 +226,8 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     expect(closeMock).toHaveBeenCalledWith(undefined);
   });
 
-  it('calls executionService.bulkConfigureArmament and closes with full configuration when Apply is clicked', async () => {
+  it('posts bulk armament configuration and closes when the request resolves', async () => {
     const { view } = await runSetup();
-    const executionService = view.fixture.debugElement.injector.get(ExecutionService);
-    const bulkSpy = vi.spyOn(executionService, 'bulkConfigureArmament').mockResolvedValue(undefined);
-
     view.fixture.componentInstance.formModel.set({
       series: ['serie-1', 'serie-2'],
       arma: '21017',
@@ -209,24 +236,34 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     });
     view.fixture.detectChanges();
 
-    const applyBtn = await getButtonByIndex(0);
-    expect(await applyBtn.isDisabled()).toBe(false);
-    await applyBtn.click();
+    fireEvent.click(screen.getByRole('button', { name: /MASS_CONFIG_APPLY_BTN/i }));
 
+    const httpMock = view.fixture.debugElement.injector.get(HttpTestingController);
+    const request = httpMock.expectOne((req) =>
+      req.url.endsWith('/fire-trials/trial-123/execution/armament/bulk-configuration'),
+    );
+    expect(closeMock).not.toHaveBeenCalled();
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      assignedSeriesIds: ['serie-1', 'serie-2'],
+      weaponId: 21017,
+      tubeId: 21099,
+      observations: 'Sin incidencias.',
+    });
+    request.flush({});
+    TestBed.tick();
+    view.fixture.detectChanges();
     await vi.waitFor(() => {
-      expect(bulkSpy).toHaveBeenCalledWith('trial-123', {
-        assignedSeriesIds: ['serie-1', 'serie-2'],
-        weaponId: 21017,
-        tubeId: 21099,
-        observations: 'Sin incidencias.',
-      });
+      expect(
+        view.fixture.debugElement.injector.get(ExecutionService).applyArmamentBulkConfigurationResource.status(),
+      ).toBe('resolved');
+    });
 
-      expect(closeMock).toHaveBeenCalledWith({
-        assignedSeriesIds: ['serie-1', 'serie-2'],
-        weaponId: 21017,
-        tubeId: 21099,
-        observations: 'Sin incidencias.',
-      });
+    expect(closeMock).toHaveBeenCalledWith({
+      assignedSeriesIds: ['serie-1', 'serie-2'],
+      weaponId: 21017,
+      tubeId: 21099,
+      observations: 'Sin incidencias.',
     });
   });
 
@@ -236,5 +273,66 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     expect(seriesSelect).toBeTruthy();
     expect(await seriesSelect.isMultiple()).toBe(true);
   });
-}, 60000);
 
+  it('correctly resolves numeric IDs when weapon and tube values are string UUIDs', async () => {
+    const customData: ArmamentIntroductionMassConfigDialogData = {
+      ...mockData,
+      weaponItems: [
+        {
+          id: 21017,
+          tag: 'ARM-101',
+          serialNumber: 'SN-01',
+          denominationId: 1,
+          denominationName: 'Arma 01',
+          modelName: 'A1',
+        },
+      ],
+      tubeItems: [
+        {
+          id: 21099,
+          tag: 'TUB-201',
+          serialNumber: 'SN-T1',
+          denominationId: 5,
+          denominationName: 'Tubo 01',
+          modelName: 'T1',
+        },
+      ],
+      armaOptions: [{ value: '1', label: 'Arma 01' }],
+      tuboOptions: [{ value: '5', label: 'Tubo 01' }],
+    };
+
+    const { view } = await runSetup(customData);
+    view.fixture.componentInstance.formModel.set({
+      series: ['serie-1'],
+      arma: '1',
+      tubo: '5',
+      observations: '',
+    });
+    view.fixture.detectChanges();
+
+    fireEvent.click(screen.getByRole('button', { name: /MASS_CONFIG_APPLY_BTN/i }));
+
+    const httpMock = view.fixture.debugElement.injector.get(HttpTestingController);
+    const request = httpMock.expectOne((req) =>
+      req.url.endsWith('/fire-trials/trial-123/execution/armament/bulk-configuration'),
+    );
+    expect(request.request.body).toEqual({
+      assignedSeriesIds: ['serie-1'],
+      weaponId: 21017,
+      tubeId: 21099,
+      observations: null,
+    });
+    request.flush({});
+    TestBed.tick();
+    view.fixture.detectChanges();
+
+    await vi.waitFor(() => {
+      expect(closeMock).toHaveBeenCalledWith({
+        assignedSeriesIds: ['serie-1'],
+        weaponId: 21017,
+        tubeId: 21099,
+        observations: '',
+      });
+    });
+  });
+}, 60000);

@@ -107,16 +107,8 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
     '3fa85f64-5717-4562-b3fc-2c963f66bfa2',
   ];
 
-  const allSeriesIds = [
-    ...commonSeriesIds,
-    'funcionamiento-2',
-    '3fa85f64-5717-4562-b3fc-2c963f66afa2',
-  ];
-  const allShotIds = [
-    ...commonShotIds,
-    'disparo-3',
-    '3fa85f64-5717-4562-b3fc-2c963f66bfa3',
-  ];
+  const allSeriesIds = [...commonSeriesIds, 'funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'];
+  const allShotIds = [...commonShotIds, 'disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'];
 
   return [
     {
@@ -269,6 +261,56 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           magnitude: 'ATTACK',
           seriesIds: [...allSeriesIds],
           shotIds: [...allShotIds],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO,
+      selections: [
+        {
+          equipmentItemId: 21045,
+          equipmentDenominationId: 21045,
+          categoryId: EquipmentTypeEnum.CLIMATIC_CHAMBER,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 21046,
+          equipmentDenominationId: 21046,
+          categoryId: EquipmentTypeEnum.CLIMATIC_CHAMBER,
+          seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
+          shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.PESOS,
+      selections: [
+        {
+          equipmentItemId: 21031,
+          equipmentDenominationId: 21031,
+          categoryId: EquipmentTypeEnum.BALANCE,
+          seriesIds: ['funcionamiento-1', '3fa85f64-5717-4562-b3fc-2c963f66afa1'],
+          shotIds: ['disparo-1', '3fa85f64-5717-4562-b3fc-2c963f66bfa1'],
+        },
+        {
+          equipmentItemId: 21032,
+          equipmentDenominationId: 21032,
+          categoryId: EquipmentTypeEnum.BALANCE,
+          seriesIds: ['funcionamiento-1', '3fa85f64-5717-4562-b3fc-2c963f66afa1'],
+          shotIds: [
+            'disparo-1',
+            'disparo-2',
+            '3fa85f64-5717-4562-b3fc-2c963f66bfa1',
+            '3fa85f64-5717-4562-b3fc-2c963f66bfa2',
+          ],
+        },
+        {
+          equipmentItemId: 21031,
+          equipmentDenominationId: 21031,
+          categoryId: EquipmentTypeEnum.BALANCE,
+          seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
+          shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
         },
       ],
     },

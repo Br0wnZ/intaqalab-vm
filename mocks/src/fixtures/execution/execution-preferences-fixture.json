@@ -1,3 +1,3 @@
 {
-  "widgetsLayout": ["shot", "execution-prep-tech", "execution-prep-jlt", "jlt-mao", "mao-topography"]
+  "widgetsLayout": ["execution-prep-tech", "execution-prep-jlt", "jlt-mao", "mao-topography"]
 }

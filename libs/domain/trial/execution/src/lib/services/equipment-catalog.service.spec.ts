@@ -97,4 +97,19 @@ describe('EquipmentCatalogService', () => {
     http.expectNone((r) => r.url.includes('/equipment/items'));
     expect(result).toEqual({});
   });
+
+  it('omits equipment items without a display label', async () => {
+    const promise = service.loadCategoryItems(EquipmentTypeEnum.AMPLIFIER);
+    http
+      .expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.AMPLIFIER)
+      .flush({
+        totalElements: 2,
+        items: [
+          { id: 301, denominationName: null, tag: null },
+          { id: 302, denominationName: '  ', tag: '' },
+        ],
+      });
+
+    await expect(promise).resolves.toEqual([]);
+  });
 });

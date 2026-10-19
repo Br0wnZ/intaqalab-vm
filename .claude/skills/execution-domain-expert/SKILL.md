@@ -1,8 +1,8 @@
 ---
 name: execution-domain-expert
-version: 1.0.4
-last-updated: 2026-10-09
-description: >
+version: 1.0.5
+last-updated: 2026-10-15
+description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
 # 🎯 Execution Domain Expert
@@ -118,9 +118,11 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 
 ## 🔢 Shot Selector Numbering
 
-- Shot selectors MUST display each shot using its planning `globalNumber` when available: `Disparo ${shot.globalNumber ?? index + 1}`.
-- When execution progress does not include `globalNumber`, enrich progress shots with the matching planning shot before mapping selector options. Match by shot ID, never by array position.
-- Keep `index + 1` only as a fallback for legacy or incomplete data where `globalNumber` is `null` or `undefined`.
+- Every execution widget with a shot selector MUST build its options with `buildDisparoOptions` from `libs/domain/trial/execution/src/lib/execution/widgets/utils/selection-options.ts` inside a `computed`.
+- Pass the current `selectorFormModel().serie` as `selectedSerie`, plus the store's `executionProgress()`, `planningSeries()`, and that widget's stored `disparoOptions` as `storedOptions`.
+- The utility scopes progress and planning shots to `selectedSerie`, prefers progress shot IDs while resolving labels from planning `globalNumber` by matching shot ID, falls back to that selected series' planning shots, then to stored options. Do not duplicate this branching or use a whole-trial flat list to build per-series selector options.
+- `index + 1` is only a fallback for legacy or incomplete shot data with no `globalNumber`.
+- Do not default a missing active shot to `disparoOptions()[0]` in an effect. Since options react to selected series, that fallback can keep resetting selection to the first shot. Initialize from real `activeSerieId` and `activeShotId` only; add any product default explicitly in a separate initialization path.
 
 ## 🏷️ Selected Shot Status
 

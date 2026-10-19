@@ -17,15 +17,6 @@ export interface WidgetConfig {
 }
 
 export const WIDGET_REGISTRY: Record<WidgetId, WidgetConfig> = {
-  // Datos del disparo
-  [WidgetId.SHOT]: {
-    id: WidgetId.SHOT,
-    titleKey: 'TRIAL_EXECUTION.WIDGETS.SHOT.TITLE',
-    descriptionKey: 'TRIAL_EXECUTION.WIDGETS.SHOT.DESCRIPTION',
-    defaultWidth: 1,
-    hasForm: true,
-  },
-
   // Preparación de ejecución
   [WidgetId.EXECUTION_PREP_TECH]: {
     id: WidgetId.EXECUTION_PREP_TECH,

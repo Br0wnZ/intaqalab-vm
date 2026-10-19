@@ -63,11 +63,11 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.0.4",
-      "lastUpdated": "2026-10-09",
-      "checksum": "320e4e0970884c3d",
+      "version": "1.0.5",
+      "lastUpdated": "2026-10-15",
+      "checksum": "655f087ff36515a7",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
-      "description": ">"
+      "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
     "i18n-expert": {
       "version": "1.0.0",
@@ -175,11 +175,11 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-10-09",
-      "checksum": "87b98a25bc1d475c",
+      "version": "1.0.2",
+      "lastUpdated": "2026-10-15",
+      "checksum": "07652fea18cbf34e",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
-      "description": ">"
+      "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     }
   }
 }

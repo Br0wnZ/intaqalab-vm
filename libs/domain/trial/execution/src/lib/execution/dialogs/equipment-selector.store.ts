@@ -42,6 +42,7 @@ export interface EquipmentSelectorState {
   tagStates: Record<string, TagTableState>;
   initialEquipmentsJson: string;
   itemsByCategory: Record<string, Array<{ id: string; label: string }>>;
+  loadedCategories: Record<string, boolean>;
   itemsLoading: boolean;
   itemsError: boolean;
   isInitialized: boolean;
@@ -56,6 +57,7 @@ const initialState: EquipmentSelectorState = {
   tagStates: {},
   initialEquipmentsJson: '[]',
   itemsByCategory: {},
+  loadedCategories: {},
   itemsLoading: false,
   itemsError: false,
   isInitialized: false,
@@ -173,7 +175,7 @@ export const EquipmentSelectorStore = signalStore(
       };
     },
   ),
-  withMethods((store) => {
+  withMethods((store, executionService = inject(ExecutionService)) => {
     function updateTag(tagId: string, updater: (s: TagTableState) => TagTableState): void {
       patchState(store, (state) => ({
         tagStates: {
@@ -193,6 +195,45 @@ export const EquipmentSelectorStore = signalStore(
       return [...new Set(disparos)];
     }
 
+    function loadTagItems(tagId: string, isInitial = false): void {
+      const tag = TAG_CONFIGS.find((config) => config.id === tagId);
+      if (!tag) {
+        if (isInitial) patchState(store, { isInitialized: true });
+        return;
+      }
+
+      const loaded = store.loadedCategories();
+      const missing = resolveRequiredEquipmentCategories([tag]).filter((category) => !loaded[category]);
+
+      if (!missing.length) {
+        if (isInitial) patchState(store, { isInitialized: true });
+        return;
+      }
+
+      if (isInitial) patchState(store, { itemsLoading: true });
+
+      untracked(() => {
+        executionService
+          .loadEquipmentItemsByCategories(missing)
+          .then((items) => {
+            patchState(store, (state) => ({
+              itemsByCategory: { ...state.itemsByCategory, ...items },
+              loadedCategories: missing.reduce<Record<string, boolean>>(
+                (acc, category) => ({ ...acc, [category]: true }),
+                state.loadedCategories,
+              ),
+              isInitialized: true,
+              itemsLoading: false,
+              itemsError: false,
+            }));
+          })
+          .catch((err: unknown) => {
+            console.error('[EquipmentSelectorStore] Error cargando equipos por categoría', err);
+            patchState(store, { itemsLoading: false, itemsError: true });
+          });
+      });
+    }
+
     return {
       init(data: EquipmentSelectorDialogData): void {
         patchState(store, {
@@ -200,6 +241,8 @@ export const EquipmentSelectorStore = signalStore(
           serieOptions: data.serieOptions,
           disparoOptions: data.disparoOptions,
           serieDisparoMap: data.serieDisparoMap ?? {},
+          itemsByCategory: {},
+          loadedCategories: {},
           itemsLoading: false,
           itemsError: false,
           isInitialized: false,
@@ -214,7 +257,14 @@ export const EquipmentSelectorStore = signalStore(
           selectedTagId: tagId,
           tagStates: state.tagStates[tagId] ? state.tagStates : { ...state.tagStates, [tagId]: INIT_STATE() },
         }));
+        loadTagItems(tagId);
       },
+
+      /**
+       * Carga perezosamente los equipos de las categorías requeridas por la tag indicada.
+       * Solo solicita las categorías aún no cargadas, fusionando el resultado en `itemsByCategory`.
+       */
+      loadTagItems,
 
       addRow(): void {
         const tagId = store.selectedTagId();
@@ -347,34 +397,13 @@ export const EquipmentSelectorStore = signalStore(
           initialStates[selectedTagId] = INIT_STATE();
         }
 
-        const neededCategories = resolveRequiredEquipmentCategories(store.enabledVisibleTags());
-
         patchState(store, {
           tagStates: initialStates,
           selectedTagId,
-          itemsLoading: true,
+          initialEquipmentsJson: JSON.stringify(dialogStatesToApiFormat(initialStates)),
         });
 
-        untracked(() => {
-          executionService
-            .loadEquipmentItemsByCategories(neededCategories)
-            .then((items) => {
-              patchState(store, {
-                itemsByCategory: items,
-                initialEquipmentsJson: JSON.stringify(dialogStatesToApiFormat(store.tagStates())),
-                isInitialized: true,
-                itemsLoading: false,
-                itemsError: false,
-              });
-            })
-            .catch((err: unknown) => {
-              console.error('[EquipmentSelectorStore] Error cargando equipos por categoría', err);
-              patchState(store, {
-                itemsLoading: false,
-                itemsError: true,
-              });
-            });
-        });
+        untracked(() => store.loadTagItems(selectedTagId, true));
       });
     },
   }),

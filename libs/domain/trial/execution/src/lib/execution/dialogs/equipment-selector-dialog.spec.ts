@@ -287,6 +287,31 @@ describe('EquipmentSelectorDialog', () => {
     expect(mockService.loadEquipmentItemsByCategories).toHaveBeenCalledWith([EquipmentTypeEnum.CHRONOMETER]);
   });
 
+  it('loads equipment lazily for the selected tag only', async () => {
+    const mockService = createMockExecutionService();
+    const { component, fixture } = await setup(
+      mockData,
+      [Role.INTAQALAB_ADMIN],
+      createMockPlanningService(),
+      mockService,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(mockService.loadEquipmentItemsByCategories).toHaveBeenCalledWith([
+        EquipmentTypeEnum.DOPPLER_RADAR,
+        EquipmentTypeEnum.ANTENNA,
+      ]);
+    });
+
+    component.selectTag(EquipmentMagnitudeTagEnum.TIEMPO);
+
+    await vi.waitFor(() => {
+      expect(mockService.loadEquipmentItemsByCategories).toHaveBeenCalledWith([EquipmentTypeEnum.CHRONOMETER]);
+    });
+    expect(mockService.loadEquipmentItemsByCategories).toHaveBeenCalledTimes(2);
+  });
+
   it('selectTag switches tag and initializes its state', async () => {
     const { component } = await setup();
     component.selectTag(EquipmentMagnitudeTagEnum.TIEMPO);

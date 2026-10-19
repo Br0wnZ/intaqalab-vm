@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
+import type { FieldTree } from '@angular/forms/signals';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { MasterDataMeasureItem, SelectOption } from '../../utils-models/catalog.model';
@@ -126,10 +127,11 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
             (toggleFavorite)="toggleFavorite.emit($event)"
           />
 
-          @for (measure of selectedValues(); track measure.id) {
+          @for (measure of selectedValues(); track measure.id; let measureIndex = $index) {
             <inta-measure-limit-card
               [measure]="measure"
               [measureName]="getMeasureName(measure.id)"
+              [measureForm]="measureFields()[measureIndex]"
               [isQuantitative]="isQuantitative(measure.id)"
               [readonly]="readonly()"
               (remove)="removeMeasure.emit(measure.id)"
@@ -150,6 +152,7 @@ export class MeasureCategoryCard {
   readonly isOpen = input<boolean>(false);
   readonly options = input<SelectOption[]>([]);
   readonly selectedValues = input<MeasureSelectionData[]>([]);
+  readonly measureFields = input.required<FieldTree<MeasureSelectionData[]>>();
   readonly readonly = input<boolean>(false);
   readonly measuresCatalog = input<MasterDataMeasureItem[]>([]);
 

@@ -54,6 +54,7 @@ interface CameraSelectionForm {
                 id="camera-select"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.CAMERA_PLACEHOLDER' | translate"
                 [formField]="selectorForm.camera"
+                (selectionChange)="onCameraChange($event.value)"
               >
                 @for (opt of cameraOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -73,6 +74,7 @@ interface CameraSelectionForm {
                   id="serie-select"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.SERIE_PLACEHOLDER' | translate"
                   [formField]="selectorForm.serie"
+                  (selectionChange)="onSerieChange($event.value)"
                 >
                   @for (opt of serieOptions(); track opt.value) {
                     <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -93,6 +95,7 @@ interface CameraSelectionForm {
                   id="disparo-select"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_CAMERA_ORIENTATION.DISPARO_PLACEHOLDER' | translate"
                   [formField]="selectorForm.disparo"
+                  (selectionChange)="onDisparoChange($event.value)"
                 >
                   @for (opt of disparoOptions(); track opt.value) {
                     <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -250,41 +253,53 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   constructor() {
     super();
-    let lastRequestedSelection: string | null = null;
-    let lastRequestedCamera: string | null = null;
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const camera = this.selectorModel().camera ?? this.cameraOptions()[0]?.value;
-      if (!fireTrialId || !camera) return;
-      const cameraId = Number(camera);
-      if (!Number.isInteger(cameraId)) return;
-
+      const defaultCamera = this.cameraOptions()[0]?.value;
       untracked(() => {
         const current = this.selectorModel();
+        const camera = current.camera ?? defaultCamera;
+        if (!fireTrialId || !camera) return;
+        const cameraId = Number(camera);
+        if (!Number.isInteger(cameraId)) return;
+
         if (current.camera !== camera) {
           this.selectorModel.set({ ...current, camera });
         }
-        if (lastRequestedCamera !== null && lastRequestedCamera !== camera) {
-          this.selectorModel.set({ ...this.selectorModel(), serie: null, disparo: null });
-        }
+        this.#store.loadVideoCameraOrientation(fireTrialId, cameraId);
       });
-      lastRequestedCamera = camera;
-
-      const selectionKey = `${fireTrialId}:${cameraId}`;
-      if (selectionKey === lastRequestedSelection) return;
-      lastRequestedSelection = selectionKey;
-      this.#store.loadVideoCameraOrientation(fireTrialId, cameraId);
     });
 
+    let hasSyncedExecutionSelection = false;
     effect(() => {
       const serie = this.#store.activeSerieId();
       const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
+      const fireTrialId = this.#store.fireTrialId();
       untracked(() => {
-        const current = this.selectorModel();
-        if (current.serie !== serie || current.disparo !== disparo) {
-          this.selectorModel.set({ ...current, serie, disparo });
+        const selection = this.selectorModel();
+        const { camera } = selection;
+        const serieChanged = Boolean(serie) && serie !== selection.serie;
+        const disparoChanged = Boolean(disparo) && disparo !== selection.disparo;
+        if ((serie && selection.serie !== serie) || (disparo && selection.disparo !== disparo)) {
+          this.selectorModel.set({
+            ...selection,
+            ...(serie ? { serie } : {}),
+            ...(disparo ? { disparo } : {}),
+          });
         }
+
+        if (
+          hasSyncedExecutionSelection &&
+          ((serieChanged && this.#hasSeriesSelector()) || (disparoChanged && this.#hasShotSelector())) &&
+          fireTrialId &&
+          camera
+        ) {
+          const cameraId = Number(camera);
+          if (Number.isInteger(cameraId)) {
+            this.#store.loadVideoCameraOrientation(fireTrialId, cameraId);
+          }
+        }
+        hasSyncedExecutionSelection = true;
       });
     });
 
@@ -309,6 +324,45 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
         }
       });
     });
+  }
+
+  protected onCameraChange(camera: string | null): void {
+    this.selectorModel.update((current) => ({ ...current, camera }));
+    this.#loadOrientationForSelectorChange();
+  }
+
+  protected onSerieChange(serie: string | null): void {
+    this.selectorModel.update((current) => ({ ...current, serie }));
+    this.#loadOrientationForSelectorChange();
+  }
+
+  protected onDisparoChange(disparo: string | null): void {
+    this.selectorModel.update((current) => ({ ...current, disparo }));
+    this.#loadOrientationForSelectorChange();
+  }
+
+  #loadOrientationForSelectorChange(): void {
+    const fireTrialId = this.#store.fireTrialId();
+    const camera = this.selectorModel().camera;
+    if (!fireTrialId || !camera) return;
+
+    const cameraId = Number(camera);
+    if (Number.isInteger(cameraId)) {
+      this.#store.loadVideoCameraOrientation(fireTrialId, cameraId);
+    }
+  }
+
+  #hasSeriesSelector(): boolean {
+    const response = this.#store.videoCameraOrientationResponse();
+    return Boolean(response && !response.sameForAllSeries && response.series.length > 0);
+  }
+
+  #hasShotSelector(): boolean {
+    const response = this.#store.videoCameraOrientationResponse();
+    if (!response) return false;
+    if (response.sameForAllSeries) return false;
+    const selectedSeries = response.series.find((serie) => serie.seriesId === this.selectorModel().serie);
+    return Boolean(selectedSeries && !selectedSeries.sameForAllShots && selectedSeries.shots.length > 0);
   }
 
   // ── FormWidget implementation ─────────────────────────────────────────────

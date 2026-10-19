@@ -286,9 +286,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
     const cameraSelections = selections.filter((s) => s.categoryId === cameraCategory);
     const recorderSelections = selections.filter(
-      (s) =>
-        s.categoryId === EquipmentTypeEnum.RECORDER ||
-        s.categoryId === EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
+      (s) => s.categoryId === EquipmentTypeEnum.RECORDER || s.categoryId === EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM,
     );
 
     const calibryCameras = this.#itemsByCategory()[cameraCategory] ?? [];

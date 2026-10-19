@@ -20,6 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
 import type {
@@ -34,12 +35,13 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import type { MassiveConfigDialogData } from './massive-config-dialog';
+import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
 import { MassiveConfigDialog } from './massive-config-dialog';
 import {
   mapMunitionStateToRequest,
   mapPlanningSeriesToOptions,
   mapShotsToDisparoOptions,
+  resolveCamaraId,
 } from './munition-introduction.mapper';
 import { MunitionAcondicionamientoTabComponent } from './tabs/acondicionamiento-tab.component';
 import { MunitionIdentificacionTabComponent } from './tabs/identificacion-tab.component';
@@ -131,9 +133,11 @@ export interface AcondFormModel {
         </button>
 
         <!-- Aplicar configuración masiva -->
-        <button mat-flat-button color="primary" type="button" (click)="applyMassiveConfig()">
-          {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MASSIVE_CONFIG_BTN' | translate }}
-        </button>
+        @if (activeTab() === 'acondicionamiento') {
+          <button mat-flat-button color="primary" type="button" (click)="applyMassiveConfig()">
+            {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MASSIVE_CONFIG_BTN' | translate }}
+          </button>
+        }
 
         <div class="flex-1"></div>
 
@@ -502,8 +506,22 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     void this.#loadSelectedShotData();
   }
 
-  applyMassiveConfig(): void {
+  async applyMassiveConfig(): Promise<void> {
     const stored = this.#store.munitionIntroduction();
+    const fireTrialId = this.#store.fireTrialId();
+    if (!fireTrialId) return;
+
+    const planningSeries = this.#store.planningSeries() ?? [];
+    const progressSeries = this.#store.executionProgress()?.series ?? [];
+    const assignedShotIdsBySeries = Object.fromEntries(
+      this.serieOptions().map(({ value: seriesId }) => {
+        const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+        const shotIds = plannedShots?.length
+          ? plannedShots.map((shot) => shot.id)
+          : (progressSeries.find((series) => series.seriesId === seriesId)?.shots ?? []).map((shot) => shot.shotId);
+        return [seriesId, shotIds];
+      }),
+    );
 
     // Obtenemos el modelo actual del tab (aún si no se ha guardado) para mantener la experiencia de usuario.
     // Si la tab aún no fue montada o no existe, usamos los valores del store.
@@ -514,16 +532,28 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const camaraLabel =
       stored.camaraOptions.find((c) => c.value === acondModel.camara)?.label ?? acondModel.camara ?? '';
 
+    const currentSerie = this.selectorFormModel().serie ?? this.#store.activeSerieId();
     const data: MassiveConfigDialogData = {
+      fireTrialId,
+      assignedShotIdsBySeries,
       camaraLabel,
+      climaticChamberId: resolveCamaraId(acondModel.camara),
       componente: acondModel.componente,
       temperaturaCorregida: stored.acondicionamiento.temperaturaCorregida,
       fechaHoraEntrada: this.acondTab()?.fechaHoraEntradaField() ?? stored.acondicionamiento.fechaHoraEntrada,
       fechaHoraSalida: this.acondTab()?.fechaHoraSalidaField() ?? stored.acondicionamiento.fechaHoraSalida,
-      serieOptions: stored.serieOptions,
+      serieOptions: this.serieOptions(),
       componenteOptions: stored.componenteOptions,
+      initialSeries: currentSerie ? [currentSerie] : [],
     };
-    this.#dialog.open(MassiveConfigDialog, { width: '640px', data });
+    const dialogRef = this.#dialog.open<MassiveConfigDialog, MassiveConfigDialogData, MassiveConfigDialogResult>(
+      MassiveConfigDialog,
+      { width: '640px', data },
+    );
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result?.updatedShotIds.includes(this.selectorFormModel().disparo ?? '')) {
+      await this.#loadSelectedShotData();
+    }
   }
 
   setCurrentShot(): void {

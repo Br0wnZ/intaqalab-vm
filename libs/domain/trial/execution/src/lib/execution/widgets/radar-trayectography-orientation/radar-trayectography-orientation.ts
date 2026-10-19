@@ -53,7 +53,7 @@ interface RadarTrayectographyFilters {
         <!-- Serie -->
         @if (showSerieSelector()) {
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-            <mat-select [formField]="radarForm.serie">
+            <mat-select [formField]="radarForm.serie" (selectionChange)="onSerieChange($event.value)">
               <mat-label>
                 {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_PLACEHOLDER' | translate }}
               </mat-label>
@@ -67,7 +67,7 @@ interface RadarTrayectographyFilters {
         <!-- Disparo -->
         @if (showDisparoSelector()) {
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
-            <mat-select [formField]="radarForm.disparo">
+            <mat-select [formField]="radarForm.disparo" (selectionChange)="onDisparoChange($event.value)">
               <mat-label>
                 {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.DISPARO_PLACEHOLDER' | translate }}
               </mat-label>
@@ -492,17 +492,43 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
       const radarId = this.formModel().radar;
-      if (!fireTrialId || (fireTrialId === previousFireTrialId && radarId === previousRadarId)) return;
+      if (!fireTrialId) return;
+
+      const fireTrialChanged = fireTrialId !== previousFireTrialId;
+      const radarChanged = radarId !== previousRadarId;
+      if (!fireTrialChanged && !radarChanged) return;
+
       previousFireTrialId = fireTrialId;
       previousRadarId = radarId;
+      if (!fireTrialChanged && !this.#hasRequiredSelection()) return;
+
       untracked(() => this.#store.loadRadarTrayectographyOrientation(fireTrialId, radarId));
     });
 
+    let previousActiveSerieId = this.#store.activeSerieId();
+    let previousActiveShotId = this.#store.activeShotId();
     effect(() => {
       const serie = this.#store.activeSerieId();
       const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
-      untracked(() => this.formModel.update((value) => ({ ...value, serie, disparo })));
+      const fireTrialId = this.#store.fireTrialId();
+      const current = this.formModel();
+      const serieChanged = serie !== previousActiveSerieId;
+      const disparoChanged = disparo !== previousActiveShotId;
+      previousActiveSerieId = serie;
+      previousActiveShotId = disparo;
+
+      untracked(() => {
+        if (serie && serie !== current.serie) this.formModel.update((value) => ({ ...value, serie }));
+        if (disparo && disparo !== current.disparo) this.formModel.update((value) => ({ ...value, disparo }));
+      });
+
+      if (!fireTrialId || (!serieChanged && !disparoChanged)) return;
+      const shouldReload =
+        (serieChanged && this.showSerieSelector() && Boolean(serie)) ||
+        (disparoChanged && this.showDisparoSelector() && Boolean(disparo));
+      if (shouldReload) {
+        untracked(() => this.#store.loadRadarTrayectographyOrientation(fireTrialId, current.radar));
+      }
     });
 
     effect(() => {
@@ -518,6 +544,31 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
 
       untracked(() => this.formModel.update((value) => ({ ...value, serie: serieId, disparo: disparoId })));
     });
+  }
+
+  protected onSerieChange(serie: string | null): void {
+    this.formModel.update((value) => ({ ...value, serie }));
+    if (this.showSerieSelector()) this.#loadOrientation();
+  }
+
+  protected onDisparoChange(disparo: string | null): void {
+    this.formModel.update((value) => ({ ...value, disparo }));
+    if (this.showDisparoSelector()) this.#loadOrientation();
+  }
+
+  #loadOrientation(): void {
+    const fireTrialId = this.#store.fireTrialId();
+    if (!fireTrialId) return;
+    this.#store.loadRadarTrayectographyOrientation(fireTrialId, this.formModel().radar);
+  }
+
+  #hasRequiredSelection(): boolean {
+    const serieRequired = this.showSerieSelector();
+    const disparoRequired = this.showDisparoSelector();
+    const selection = this.formModel();
+
+    if (!serieRequired && !disparoRequired) return true;
+    return (!serieRequired || Boolean(selection.serie)) && (!disparoRequired || Boolean(selection.disparo));
   }
 
   // ── FormWidget implementation ─────────────────────────────────────────────

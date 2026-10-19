@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import type { ArmamentEquipmentItem } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { ArmamentIntroductionComponent } from './armament-introduction';
@@ -80,8 +81,25 @@ describe('ArmamentIntroductionComponent', () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
+    const weapon: ArmamentEquipmentItem = {
+      id: 21017,
+      tag: 'ARM-17',
+      serialNumber: 'SN-A-17',
+      denominationId: 10,
+      denominationName: 'Weapon 105mm',
+      modelName: 'M1',
+    };
+    vi.spyOn(executionService, 'loadArmamentEquipmentItems').mockResolvedValue([weapon]);
+    const loadWeaponDenominations = vi
+      .spyOn(executionService, 'loadArmamentWeaponDenominations')
+      .mockResolvedValue([{ id: 10, name: 'Weapon 105mm', itemType: 'WEAPON', familyId: 10, active: true }]);
+    vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
     const setShotArmament = vi.spyOn(executionService, 'setShotArmament');
     store.setFireTrialId('trial-id');
+    await vi.waitFor(() => {
+      expect(loadWeaponDenominations).toHaveBeenCalledOnce();
+      expect(fixture.componentInstance.armaOptions()).toContainEqual({ value: '10', label: 'Weapon 105mm' });
+    });
     store.setOptimisticActiveShot('series-id', 'shot-id');
     fixture.componentInstance['formModel'].update((value) => ({
       ...value,

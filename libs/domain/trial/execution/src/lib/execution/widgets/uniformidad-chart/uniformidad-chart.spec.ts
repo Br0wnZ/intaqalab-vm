@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -51,7 +50,7 @@ describe('UniformidadChartWidget', () => {
     const store = TestBed.inject(ExecutionStore);
     await fixture.componentInstance.saveForm();
     expect(store.uniformidadChart()).toBeDefined();
-    expect(store.uniformidadChart().selectedConfig).toBe('tarado-z1');
+    expect(store.uniformidadChart().selectedConfig).toBeNull();
   });
 
   it('resetForm restores values from the store', async () => {
@@ -68,18 +67,11 @@ describe('UniformidadChartWidget', () => {
     expect(fixture.componentInstance['formModel']().selectedSerie).toBe(stored.selectedSerie);
   });
 
-  it('velocidadMedia computes mean from filtered points', async () => {
+  it('does not show calculated statistics before API response arrives', async () => {
     const { fixture } = await renderWidget();
     const media = fixture.componentInstance['velocidadMedia']();
-    expect(media).not.toBeNull();
-    expect(media!).toBeGreaterThan(0);
-  });
-
-  it('desviacion computes std dev from filtered points', async () => {
-    const { fixture } = await renderWidget();
-    const desv = fixture.componentInstance['desviacion']();
-    expect(desv).not.toBeNull();
-    expect(desv!).toBeGreaterThanOrEqual(0);
+    expect(media).toBeNull();
+    expect(fixture.componentInstance['desviacion']()).toBeNull();
   });
 
   it('chartConfig returns a valid mixed scatter/line configuration', async () => {
@@ -89,11 +81,9 @@ describe('UniformidadChartWidget', () => {
     expect(config.data.datasets.length).toBe(4);
   });
 
-  it('selectedConfigData returns the matching config', async () => {
+  it('selectedConfigData stays empty until saved configurations arrive', async () => {
     const { fixture } = await renderWidget();
     const cfg = fixture.componentInstance['selectedConfigData']();
-    expect(cfg).not.toBeNull();
-    expect(cfg!.id).toBe('tarado-z1');
-    expect(cfg!.velocidadNominal).toBe(260);
+    expect(cfg).toBeNull();
   });
 });

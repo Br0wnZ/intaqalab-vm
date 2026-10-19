@@ -1,8 +1,8 @@
 ---
 name: widget-service-integration
-version: 1.0.1
-last-updated: 2026-10-09
-description: >
+version: 1.0.2
+last-updated: 2026-10-15
+description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
 ---
@@ -601,6 +601,8 @@ export function map<Widget>StateToRequest(params: {
 6. **`saveForm()` siempre hace `tab.save()`** — tras el PUT exitoso, para sincronizar el snapshot de dirty tracking.
 7. **Widgets autónomos (no reactivos a `updatedAt` de `GET /state`)** — si un widget debe gestionar su propio ciclo de carga sin refrescarse automáticamente cuando cambia `updatedAt` en el polling de `/state` (como `SeguimientoWidget`), definir `protected override readonly autonomousWidgetType = WidgetId.<ID>;` en el componente e incluir su `WidgetId` en `DEFAULT_AUTONOMOUS_WIDGETS` (`general-data.feature.ts`), comprobando `!untracked(() => store.isWidgetAutonomous(WidgetId.<ID>))` antes de disparar refrescos ligados a `updatedAt`.
 
+Importar `buildDisparoOptions` y `mapPlanningSeriesToOptions` desde `../utils/selection-options` en el fichero del widget.
+
 ```typescript
 @Component({
   selector: 'inta-<widget-name>',
@@ -692,20 +694,14 @@ export class <Widget> extends BaseFormWidgetComponent {
     ),
   );
 
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const progressShots = this.#store.executionProgress()
-      ?.series.find((s) => s.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.<widgetCamelName>().disparoOptions);
-    }
-    const planningShots = this.#store.planningSeries()
-      ?.find((s) => s.id === selectedSerie)?.shots;
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.<widgetCamelName>().disparoOptions);
-    }
-    return this.#store.<widgetCamelName>().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#store.planningSeries(),
+      storedOptions: this.#store.<widgetCamelName>().disparoOptions,
+    }),
+  );
 
   // Selector form (navegación — NO dirty)
   protected readonly selectorFormModel = signal<{ serie: string | null; disparo: string | null }>({
@@ -745,8 +741,8 @@ export class <Widget> extends BaseFormWidgetComponent {
     // Carga inicial idempotente al montar el widget con un disparo activo
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
 
       if (!fireTrialId || !activeSerieId || !activeShotId) return;
 

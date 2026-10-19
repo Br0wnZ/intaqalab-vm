@@ -1,0 +1,20 @@
+[
+  {
+    "configurationId": "550e8400-e29b-41d4-a716-446655440210",
+    "name": "Tarado inicial",
+    "shotIds": ["3fa85f64-5717-4562-b3fc-2c963f66bfa1", "3fa85f64-5717-4562-b3fc-2c963f66bfa2"],
+    "nominalSpeed": 850,
+    "nominalSpeedUnit": "M_S"
+  },
+  {
+    "configurationId": "550e8400-e29b-41d4-a716-446655440211",
+    "name": "Tarado completo",
+    "shotIds": [
+      "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+      "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+      "3fa85f64-5717-4562-b3fc-2c963f66bfa3"
+    ],
+    "nominalSpeed": 850,
+    "nominalSpeedUnit": "M_S"
+  }
+]

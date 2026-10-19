@@ -4,9 +4,12 @@ import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
 import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
+import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
+  ArmamentEquipmentDenomination,
+  ArmamentEquipmentDenominationsResponse,
   EquipmentMeasurementGroup,
   EquipmentSelectionItem,
   EquipmentSelectionList,
@@ -15,6 +18,11 @@ import type {
   JltMaoBulkConfigurationResponse,
   MaoTopographyBulkConfigurationRequest,
   MaoTopographyBulkConfigurationResponse,
+  MunitionConditioningBulkConfigurationRequest,
+  MunitionConditioningBulkConfigurationResponse,
+  PropellantChargeAdjustmentConfiguration,
+  PropellantChargeAdjustmentQuery,
+  PropellantChargeAdjustmentResponse,
   PropellantChargeParametersResponse,
   ShotAcousticLevelRequest,
   ShotAcousticLevelResponse,
@@ -39,6 +47,8 @@ import type {
   ShotVideoDataRequest,
   ShotVideoDataResponse,
   TrajectographyRadarOrientationResponse,
+  VelocityUniformityQuery,
+  VelocityUniformityResponse,
   WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
@@ -256,6 +266,8 @@ export interface PlanningSeriesShotItem {
 export interface PlanningConditionsResponse {
   units?: {
     orientation?: AngleUnitEnum | null;
+    shootingAngle?: AngleUnitEnum | null;
+    nominalSpeed?: SpeedUnitEnum | null;
   };
   series: PlanningConditionsSeries[];
 }
@@ -269,6 +281,9 @@ export interface PlanningConditionsShot {
   shotId: string;
   orientation?: number | null;
   orientationUnit?: AngleUnitEnum | null;
+  shootingAngle?: number | null;
+  shootingAngleUnit?: AngleUnitEnum | null;
+  nominalSpeed?: number | null;
 }
 
 export interface JltShotDataPayload {
@@ -329,6 +344,9 @@ interface ShotMunitionParams {
 
 interface ShotMunitionUpdateParams extends ShotMunitionParams {
   body: ShotMunitionRequest;
+}
+interface MunitionConditioningBulkConfigurationParams extends ExecutionParams {
+  body: MunitionConditioningBulkConfigurationRequest;
 }
 
 interface ShotManometerPressuresParams {
@@ -1093,6 +1111,40 @@ export class ExecutionService {
     this.#getPlanningConditionsParams.set({ fireTrialId });
   }
 
+  async fetchPlanningFuseGraduation(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<number | null> {
+    this.#planningMunitionsParams.set({ fireTrialId });
+    await this.#awaitResource(this.#planningMunitionsResource);
+
+    const response = this.#planningMunitionsResource.value();
+    const series =
+      isRecord(response) && Array.isArray(response['series'])
+        ? response['series'].find((item) => isRecord(item) && item['seriesId'] === seriesId)
+        : undefined;
+    if (!isRecord(series) || !Array.isArray(series['configurations'])) return null;
+
+    for (const configuration of series['configurations']) {
+      if (!isRecord(configuration)) continue;
+      const assignedShotIds = configuration['assignedShotIds'];
+      if (Array.isArray(assignedShotIds) && assignedShotIds.length > 0 && !assignedShotIds.includes(shotId)) {
+        continue;
+      }
+
+      const components = configuration['components'];
+      if (!Array.isArray(components)) continue;
+      for (const component of components) {
+        if (isRecord(component) && typeof component['fuseMeasurement'] === 'number') {
+          return component['fuseMeasurement'];
+        }
+      }
+    }
+
+    return null;
+  }
+
   // ── RADAR TRAYECTOGRAPHY ORIENTATION (Widget 7) ─────────────────────────
 
   readonly #getRadarTrayectographyOrientationParams = signal<{
@@ -1144,6 +1196,81 @@ export class ExecutionService {
   async fetchPropellingChargeParameters(fireTrialId: FireTrial['id']): Promise<PropellantChargeParametersResponse> {
     this.#fetchPropellingChargeParametersParams.set({ fireTrialId });
     return this.#awaitResourceValue(this.#fetchPropellingChargeParametersResource);
+  }
+
+  // ── PROPELLANT CHARGE ADJUSTMENT (Widget 10) ────────────────────────────
+
+  readonly #getPropellantChargeAdjustmentParams = signal<{
+    fireTrialId: FireTrial['id'];
+    query: PropellantChargeAdjustmentQuery;
+  } | null>(null);
+
+  readonly propellantChargeAdjustmentResource = httpResource<PropellantChargeAdjustmentResponse>(() => {
+    const params = this.#getPropellantChargeAdjustmentParams();
+    if (!params || params.query.shotIds.length === 0) return undefined;
+
+    let queryParams = new HttpParams()
+      .set('nominalSpeed', params.query.nominalSpeed)
+      .set('nominalSpeedUnit', params.query.nominalSpeedUnit ?? 'M_S');
+    params.query.shotIds.forEach((shotId) => {
+      queryParams = queryParams.append('shotIds', shotId);
+    });
+
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/propellant-charge-adjustment`,
+      params: queryParams,
+      method: 'GET',
+    };
+  });
+
+  getPropellantChargeAdjustment(fireTrialId: FireTrial['id'], query: PropellantChargeAdjustmentQuery): void {
+    this.#getPropellantChargeAdjustmentParams.set({ fireTrialId, query });
+  }
+
+  readonly #getVelocityUniformityParams = signal<{
+    fireTrialId: FireTrial['id'];
+    query: VelocityUniformityQuery;
+  } | null>(null);
+
+  readonly velocityUniformityResource = httpResource<VelocityUniformityResponse>(() => {
+    const params = this.#getVelocityUniformityParams();
+    if (!params || params.query.shotIds.length === 0 || !params.query.configurationId) return undefined;
+
+    let queryParams = new HttpParams().set('configurationId', params.query.configurationId);
+    [...new Set(params.query.shotIds)].forEach((shotId) => {
+      queryParams = queryParams.append('shotIds', shotId);
+    });
+
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocity-uniformity`,
+      params: queryParams,
+      method: 'GET',
+    };
+  });
+
+  getVelocityUniformity(fireTrialId: FireTrial['id'], query: VelocityUniformityQuery): void {
+    this.#getVelocityUniformityParams.set({ fireTrialId, query });
+  }
+
+  clearVelocityUniformity(): void {
+    this.#getVelocityUniformityParams.set(null);
+  }
+
+  readonly #listPropellantChargeAdjustmentConfigurationsFireTrialId = signal<FireTrial['id'] | null>(null);
+
+  readonly propellantChargeAdjustmentConfigurationsResource = httpResource<PropellantChargeAdjustmentConfiguration[]>(
+    () => {
+      const fireTrialId = this.#listPropellantChargeAdjustmentConfigurationsFireTrialId();
+      if (!fireTrialId) return undefined;
+      return {
+        url: `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/propellant-charge-adjustment/configurations`,
+        method: 'GET',
+      };
+    },
+  );
+
+  listPropellantChargeAdjustmentConfigurations(fireTrialId: FireTrial['id']): void {
+    this.#listPropellantChargeAdjustmentConfigurationsFireTrialId.set(fireTrialId);
   }
 
   // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
@@ -1785,6 +1912,23 @@ export class ExecutionService {
     return response.items;
   }
 
+  readonly #loadArmamentWeaponDenominationsRequest = signal(0);
+
+  readonly #loadArmamentWeaponDenominationsResource = httpResource<ArmamentEquipmentDenominationsResponse>(() => {
+    if (!this.#loadArmamentWeaponDenominationsRequest()) return undefined;
+    return {
+      url: `${this.#planningUrl}/equipment/denominations`,
+      method: 'GET',
+      params: { itemType: 'WEAPON' },
+    };
+  });
+
+  async loadArmamentWeaponDenominations(): Promise<ArmamentEquipmentDenomination[]> {
+    this.#loadArmamentWeaponDenominationsRequest.update((requestId) => requestId + 1);
+    const response = await this.#awaitResourceValue(this.#loadArmamentWeaponDenominationsResource);
+    return response.items;
+  }
+
   readonly #fetchPlanningArmamentParams = signal<ExecutionParams | null>(null);
 
   readonly #fetchPlanningArmamentResource = httpResource<PlanningArmamentResponse>(() => {
@@ -1839,10 +1983,10 @@ export class ExecutionService {
 
   // ── ARMAMENT BULK CONFIGURATION ──────────────────────────────────────────
 
-  readonly #applyArmamentBulkConfigurationParams = signal<ArmamentBulkConfigurationParams | null>(null);
+  readonly #applyArmamentBulkConfigurationParams = actionTrigger<ArmamentBulkConfigurationParams>();
 
   readonly applyArmamentBulkConfigurationResource = httpResource<void>(() => {
-    const params = this.#applyArmamentBulkConfigurationParams();
+    const params = this.#applyArmamentBulkConfigurationParams.value();
     if (!params) return undefined;
     return {
       url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/armament/bulk-configuration`,
@@ -1852,24 +1996,7 @@ export class ExecutionService {
   });
 
   applyArmamentBulkConfiguration(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): void {
-    this.#applyArmamentBulkConfigurationParams.set({ fireTrialId, body });
-  }
-
-  readonly #bulkConfigureArmamentParams = signal<ArmamentBulkConfigurationParams | null>(null);
-
-  readonly #bulkConfigureArmamentResource = httpResource<void>(() => {
-    const p = this.#bulkConfigureArmamentParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/armament/bulk-configuration`,
-      method: 'POST',
-      body: p.body,
-    };
-  });
-
-  async bulkConfigureArmament(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): Promise<void> {
-    this.#bulkConfigureArmamentParams.set({ fireTrialId, body });
-    await this.#awaitResource(this.#bulkConfigureArmamentResource);
+    this.#applyArmamentBulkConfigurationParams.fire({ fireTrialId, body });
   }
 
   // ── SHOT MUNITIONS: GET (Widget 20) ──────────────────────────────────────────
@@ -1935,6 +2062,27 @@ export class ExecutionService {
   ): Promise<ShotMunitionResponse> {
     this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body });
     return this.#awaitResourceValue(this.updateShotMunitionResource);
+  }
+  readonly #applyMunitionConditioningBulkConfigurationParams =
+    signal<MunitionConditioningBulkConfigurationParams | null>(null);
+
+  readonly applyMunitionConditioningBulkConfigurationResource =
+    httpResource<MunitionConditioningBulkConfigurationResponse>(() => {
+      const params = this.#applyMunitionConditioningBulkConfigurationParams();
+      if (!params) return undefined;
+      return {
+        url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/bulk-configuration`,
+        method: 'POST',
+        body: params.body,
+      };
+    });
+
+  async applyMunitionConditioningBulkConfiguration(
+    fireTrialId: FireTrial['id'],
+    body: MunitionConditioningBulkConfigurationRequest,
+  ): Promise<MunitionConditioningBulkConfigurationResponse> {
+    this.#applyMunitionConditioningBulkConfigurationParams.set({ fireTrialId, body });
+    return this.#awaitResourceValue(this.applyMunitionConditioningBulkConfigurationResource);
   }
 
   // ── SHOT MANOMETER PRESSURES: GET (Widget 21) ────────────────────────────────

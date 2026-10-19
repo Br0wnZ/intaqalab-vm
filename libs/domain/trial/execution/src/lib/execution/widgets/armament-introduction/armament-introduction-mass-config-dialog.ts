@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,18 +7,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
-import { injectParams } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { type CalibryTubeOption, type CalibryWeaponOption, ExecutionStore } from '../../../+state/execution.store';
 import {
-    type ArmamentBulkConfigurationRequest,
-    type ArmamentEquipmentItem,
-    ExecutionService,
+  type ArmamentBulkConfigurationRequest,
+  type ArmamentEquipmentItem,
+  ExecutionService,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 
 export interface ArmamentIntroductionMassConfigDialogData {
+  fireTrialId: string;
   serieOptions: { value: string; label: string }[];
   armaOptions: CalibryWeaponOption[];
   weaponItems: ArmamentEquipmentItem[];
@@ -181,11 +181,13 @@ export class ArmamentIntroductionMassConfigDialog {
   readonly data = inject<ArmamentIntroductionMassConfigDialogData>(MAT_DIALOG_DATA);
   readonly #executionService = inject(ExecutionService);
   readonly #store = inject(ExecutionStore, { optional: true });
-  readonly #fireTrialId = injectParams('fireTrialId');
 
-  readonly #isSavingInternal = signal(false);
+  readonly #pendingResult = signal<ArmamentIntroductionMassConfigDialogResult | null>(null);
+  readonly #requestStarted = signal(false);
   readonly isSaving = computed(
-    () => this.#isSavingInternal() || this.#executionService.applyArmamentBulkConfigurationResource.isLoading(),
+    () =>
+      this.#store?.isApplyingArmamentBulkConfiguration() === true ||
+      this.#executionService.applyArmamentBulkConfigurationResource.isLoading(),
   );
 
   // ── Modelo del formulario ────────────────────────────────────────────────
@@ -219,35 +221,53 @@ export class ArmamentIntroductionMassConfigDialog {
     () => this.#selectedItem(this.data.tubeItems, this.formModel().tubo)?.serialNumber ?? '',
   );
 
+  constructor() {
+    effect(() => {
+      const result = this.#pendingResult();
+      const isLoading = this.#executionService.applyArmamentBulkConfigurationResource.isLoading();
+      const status = this.#executionService.applyArmamentBulkConfigurationResource.status();
+      if (result && isLoading) {
+        this.#requestStarted.set(true);
+        return;
+      }
+      if (result && this.#requestStarted() && status === 'resolved') {
+        this.#dialogRef.close(result);
+        return;
+      }
+      if (result && this.#requestStarted() && status === 'error') {
+        this.#requestStarted.set(false);
+        this.#pendingResult.set(null);
+      }
+    });
+  }
+
   async apply(): Promise<void> {
     const formValue = this.formModel();
-    const weaponId = this.#numericId(formValue.arma);
-    const tubeId = this.#numericId(formValue.tubo);
+    const weaponId = this.#numericId(formValue.arma, this.data.weaponItems);
+    const tubeId = this.#numericId(formValue.tubo, this.data.tubeItems);
     if (!formValue.series.length || weaponId === null || tubeId === null) return;
 
-    const fireTrialId = this.#fireTrialId() || this.#store?.fireTrialId?.();
-    if (fireTrialId) {
-      const payload: ArmamentBulkConfigurationRequest = {
-        assignedSeriesIds: formValue.series,
-        weaponId,
-        tubeId,
-        observations: formValue.observations || null,
-      };
+    const fireTrialId = this.data.fireTrialId || this.#store?.fireTrialId?.();
+    if (!fireTrialId) return;
 
-      this.#isSavingInternal.set(true);
-      try {
-        await this.#executionService.bulkConfigureArmament(fireTrialId, payload);
-        this.#dialogRef.close({
-          assignedSeriesIds: formValue.series,
-          weaponId,
-          tubeId,
-          observations: formValue.observations,
-        });
-      } catch (error) {
-        console.error('Error applying mass configuration:', error);
-      } finally {
-        this.#isSavingInternal.set(false);
-      }
+    const payload: ArmamentBulkConfigurationRequest = {
+      assignedSeriesIds: formValue.series,
+      weaponId,
+      tubeId,
+      observations: formValue.observations || null,
+    };
+
+    const result: ArmamentIntroductionMassConfigDialogResult = {
+      assignedSeriesIds: formValue.series,
+      weaponId,
+      tubeId,
+      observations: formValue.observations,
+    };
+    this.#pendingResult.set(result);
+    if (this.#store) {
+      this.#store.applyArmamentBulkConfiguration(fireTrialId, payload);
+    } else {
+      this.#executionService.applyArmamentBulkConfiguration(fireTrialId, payload);
     }
   }
 
@@ -256,12 +276,23 @@ export class ArmamentIntroductionMassConfigDialog {
   }
 
   #selectedItem(items: ArmamentEquipmentItem[], selectedId: string | null): ArmamentEquipmentItem | undefined {
-    return items.find((item) => String(item.id) === selectedId);
+    return (
+      items.find((item) => String(item.denominationId) === selectedId) ??
+      items.find((item) => String(item.id) === selectedId)
+    );
   }
 
-  #numericId(value: string | null): number | null {
+  #numericId(value: string | null, items?: ArmamentEquipmentItem[]): number | null {
     if (!value) return null;
-    const id = Number(value);
-    return Number.isInteger(id) ? id : null;
+    if (items) {
+      const item = this.#selectedItem(items, value);
+      if (item) {
+        const itemIdNum = Number(item.id);
+        if (Number.isInteger(itemIdNum)) return itemIdNum;
+      }
+    }
+    const directNum = Number(value);
+    if (Number.isInteger(directNum)) return directNum;
+    return null;
   }
 }

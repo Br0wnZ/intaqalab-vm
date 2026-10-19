@@ -18,7 +18,7 @@ Tres problemas detectados con el enfoque original (flags internas de Signal Form
    `serie`/`disparo` que son controles de navegación: al cambiarlos se dispara un GET para traer
    los datos del disparo, pero no son datos persistibles. Al vivir dentro del mismo Signal Form,
    `form().dirty()` se marcaba al cambiarlos → widget aparecía dirty → PUT innecesarios.
-2. **El patch tras el GET marcaba dirty/touched.** Las flags de Signal Forms son *sticky*: una vez
+2. **El patch tras el GET marcaba dirty/touched.** Las flags de Signal Forms son _sticky_: una vez
    marcadas no se limpian si el campo vuelve a su valor guardado, y se marcan también cuando el
    formulario se rellena programáticamente con la respuesta del GET → widget "dirty" sin interacción
    del usuario.
@@ -46,6 +46,7 @@ protected readonly isDirty = this.#dirtyTracker.isDirty;
 ```
 
 Reglas:
+
 - Los selectores `serie`/`disparo` **nunca** van en `editableFields`.
 - Todo campo que `saveForm()` envíe al backend **debe** estar en el tracker.
 - Prohibido derivar dirty de flags del form (`form().dirty()`) ni de heurísticas de contenido
@@ -60,7 +61,7 @@ Directiva `FormTouchDirective` (`widgets/directives/form-touch.directive.ts`, se
 reacciona a interacción real — inmune al patch programático.
 
 ```html
-<div intaReadonlyContent intaFormTouch #touch="intaFormTouch" class="...">
+<div intaReadonlyContent intaFormTouch class="..." #touch="intaFormTouch">
   <!-- campos editables -->
 </div>
 ```
@@ -98,6 +99,7 @@ Toda mutación remota se hace con `await`; `syncSnapshot()` SOLO si el PUT tiene
 error. Prohibido fire-and-forget — desincroniza el snapshot y oculta fallos.
 
 **Alternativas rechazadas:**
+
 - Sacar `serie`/`disparo` del Signal Form a signals independientes: mismo resultado observable pero
   rompe templates (`[formField]`) y specs; la exclusión por valor es menos invasiva. Deuda residual:
   las flags internas del form siguen marcándose al cambiar selectores (inertes mientras nadie las
@@ -129,4 +131,4 @@ error. Prohibido fire-and-forget — desincroniza el snapshot y oculta fallos.
 - Directiva: `libs/domain/trial/execution/src/lib/execution/widgets/directives/form-touch.directive.ts`
 - Skill de dominio: `.agents/skills/execution-domain-expert/SKILL.md` (nota de arquitectura de widgets)
 - Widgets migrados: armament-introduction, velocity-introduction, manometer-introduction,
-  munition-introduction (+tabs), piezo-pressure-introduction, jlt-shot-data, shot-widget
+  munition-introduction (+tabs), piezo-pressure-introduction, jlt-shot-data

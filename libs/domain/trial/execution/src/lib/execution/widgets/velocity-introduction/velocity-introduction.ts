@@ -31,7 +31,11 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
+import {
+  buildDisparoOptions,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+} from '../utils/selection-options';
 import { injectInitialVelocityEquipments } from './inject-initial-velocity-equipments';
 import {
   type InputFieldValue,
@@ -39,7 +43,6 @@ import {
   mapPlanningSeriesToOptions,
   mapRemoteToVelocityState,
   mapShotStatusToEstadoDisparo,
-  mapShotsToDisparoOptions,
   mapVelocityFormToRequest,
   numToField,
   parseNum,
@@ -294,18 +297,14 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
     mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.velocityIntroduction().serieOptions),
   );
 
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const series = this.#store.executionProgress()?.series;
-    const progressShots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const shots = progressShots?.map((shot) => ({
-      ...shot,
-      globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
-    }));
-
-    return mapShotsToDisparoOptions(shots, this.#store.velocityIntroduction().disparoOptions);
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#store.planningSeries(),
+      storedOptions: this.#store.velocityIntroduction().disparoOptions,
+    }),
+  );
 
   /**
    * Opciones combinadas Radar / Antena: producto cartesiano de los items cargados desde la API.

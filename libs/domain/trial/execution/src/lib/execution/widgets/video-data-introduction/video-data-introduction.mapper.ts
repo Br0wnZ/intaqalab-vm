@@ -23,9 +23,11 @@ export function buildVideoEquipmentCombinedValue(
 /**
  * Splits composite equipment string into its camera, recorder, and channel components.
  */
-export function splitVideoEquipmentCombinedValue(
-  value: string | null | undefined,
-): { camera: string | null; grabador: string | null; canal: string | null } {
+export function splitVideoEquipmentCombinedValue(value: string | null | undefined): {
+  camera: string | null;
+  grabador: string | null;
+  canal: string | null;
+} {
   if (!value) return { camera: null, grabador: null, canal: null };
   const parts = value.split(VIDEO_EQUIPMENT_SEPARATOR);
   return {

@@ -86,6 +86,32 @@ describe('JltMao', () => {
     });
   });
 
+  it('does not load a fallback shot before active shot IDs are available', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({});
+    const plannedFuseGraduationSpy = vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(12);
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+
+    expect(fixture.componentInstance['formModel']().serie).toBeNull();
+    expect(fixture.componentInstance['formModel']().disparo).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    store.setOptimisticActiveShot('initial-series-id', 'assigned-shot-id');
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'initial-series-id', 'assigned-shot-id');
+      expect(plannedFuseGraduationSpy).toHaveBeenCalledWith('trial-123', 'initial-series-id', 'assigned-shot-id');
+      expect(fixture.componentInstance['graduacionEspoletaField']()?.value).toBe('12');
+      expect(fixture.componentInstance['velocidadInicialField']()).toBeNull();
+      expect(fixture.componentInstance['anguloTiroField']()).toBeNull();
+    });
+  });
+
   it('posts the selected bulk values to all shots in selected planning series', async () => {
     const result = {
       action: 'apply' as const,
@@ -127,6 +153,59 @@ describe('JltMao', () => {
     expect(bulkSpy).toHaveBeenCalledWith('trial-123', {
       assignedShotIds: ['shot-1', 'shot-2', 'shot-3'],
       theoreticalInitialVelocity: 810,
+    });
+  });
+
+  it('applies calculated OLT only to shots from series without planned orientation', async () => {
+    const dialogResult = {
+      action: 'apply' as const,
+      series: ['series-1', 'series-2'],
+      velocidadInicial: { value: '810', unit: 'm/s' },
+      diferenciaAngular: { value: '20', unit: 'oo' },
+      orientation: { seriesIds: ['series-1'], lineOfFireOrientation: 250 },
+    };
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(dialogResult) });
+    const { fixture } = await render(JltMao, {
+      inputs: { widgetId: 'test-jlt-mao' },
+      providers: [
+        provideNoopAnimations(),
+        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: MatDialog, useValue: { open: dialogOpen } },
+        ExecutionStore,
+      ],
+      imports: [TranslateModule.forRoot()],
+    });
+    const store = TestBed.inject(ExecutionStore);
+    const executionService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
+      updatedShotIds: ['shot-1', 'shot-2', 'shot-3'],
+    });
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/series'))
+      .flush([
+        { id: 'series-1', name: 'Series 1', shots: [{ id: 'shot-1' }, { id: 'shot-2' }] },
+        { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }] },
+      ]);
+    TestBed.tick();
+
+    await fixture.componentInstance.openMassConfig();
+
+    expect(bulkSpy).toHaveBeenNthCalledWith(1, 'trial-123', {
+      assignedShotIds: ['shot-3'],
+      theoreticalInitialVelocity: 810,
+    });
+    expect(bulkSpy).toHaveBeenNthCalledWith(2, 'trial-123', {
+      assignedShotIds: ['shot-1', 'shot-2'],
+      lineOfFireOrientation: 250,
+      theoreticalInitialVelocity: 810,
+      angularDifference: 20,
     });
   });
 
@@ -213,5 +292,40 @@ describe('JltMao', () => {
     expect(await piquetaSelect.isDisabled()).toBe(true);
     expect(component['angularDifferenceReadOnly']()).toBe(true);
     expect(component['calculatedAngularDifference']()).toBe(0);
+  });
+
+  it('uses planned shooting angle and fuse graduation when shot data has no values', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const store = TestBed.inject(ExecutionStore);
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
+      jltMaoData: { shootingAngle: null, fuseGraduation: null },
+    });
+    const plannedFuseGraduationSpy = vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(7.25);
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const conditionsRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
+
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+
+    await vi.waitFor(() => expect(Number(component['graduacionEspoletaField']()?.value)).toBe(7.25));
+    expect(plannedFuseGraduationSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1');
+
+    conditionsRequest.flush({
+      units: { shootingAngle: AngleUnitEnum.DEGREES },
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [{ shotId: 'shot-1', shootingAngle: 15 }],
+        },
+      ],
+    });
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(Number(component['anguloTiroField']()?.value)).toBeCloseTo(266.667, 3));
   });
 });

@@ -1,6 +1,15 @@
 import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -144,37 +153,37 @@ interface TaradoVelocidadForm {
               {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.LEGEND_PUNTO' | translate }}
             </span>
           </div>
-          @if (r2()) {
-            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2()! | number: '1.4-4' }}</span>
+          @if (r2(); as r2Value) {
+            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2Value | number: '1.4-4' }}</span>
           }
         </div>
 
         <!-- Stats grid -->
         <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
-          @if (regression()) {
+          @if (regression(); as regressionValue) {
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.pendiente | number: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.PESO_TARADO_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.pesoTarado }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.pesoTarado }} g</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.ordenada | number: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.wcTarado | number: '1.4-4' }} g</p>
             </div>
           }
         </div>
@@ -220,20 +229,79 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #loadedFireTrialId = signal<string | null>(null);
+  readonly #lastCalculationKey = signal<string | null>(null);
+
+  constructor() {
+    super();
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      const planningSeries = this.#store.planningSeries();
+      const planningConditions = this.#store.planningConditions();
+      const activeSerieId = this.#store.activeSerieId();
+      const activeShotId = this.#store.activeShotId();
+      const formValue = this.formModel();
+      if (
+        !fireTrialId ||
+        !planningSeries ||
+        this.#store.isLoadingPlanningSeries() ||
+        !planningConditions ||
+        this.#store.isLoadingPlanningConditions()
+      ) {
+        return;
+      }
+
+      if (this.#loadedFireTrialId() !== fireTrialId) {
+        const activeSerie = planningSeries.find((serie) => serie.id === activeSerieId);
+        const activeShot = activeSerie?.shots?.find((shot) => shot.id === activeShotId);
+        if (!activeSerieId || !activeShotId || !activeShot) return;
+
+        const selectedSerie = [activeSerieId];
+        const selectedDisparo = [activeShotId];
+        this.formModel.update((current) => ({
+          ...current,
+          selectedSerie,
+          selectedDisparo,
+          selectedVelocidadNominal: '',
+        }));
+        this.#store.updateTaradoVelocidadChart({ selectedSerie, selectedDisparo, selectedVelocidadNominal: '' });
+        this.#loadedFireTrialId.set(fireTrialId);
+        this.#lastCalculationKey.set(this.#calculationKey(fireTrialId, selectedSerie, selectedDisparo, ''));
+        this.#store.loadTaradoVelocidadChart(fireTrialId);
+        return;
+      }
+
+      const calculationKey = this.#calculationKey(
+        fireTrialId,
+        formValue.selectedSerie,
+        formValue.selectedDisparo,
+        formValue.selectedVelocidadNominal,
+      );
+      if (calculationKey === this.#lastCalculationKey()) return;
+
+      this.#store.updateTaradoVelocidadChart({
+        selectedSerie: formValue.selectedSerie,
+        selectedDisparo: formValue.selectedDisparo,
+        selectedVelocidadNominal: formValue.selectedVelocidadNominal,
+      });
+      this.#lastCalculationKey.set(calculationKey);
+      this.#store.calculateTaradoVelocidadChart(fireTrialId);
+    });
+  }
 
   // Data from store
-  protected readonly serieOptions = computed(() => this.#store.taradoVelocidadChart().serieOptions);
+  protected readonly serieOptions = computed(() => this.#store.taradoVelocidadChartView().serieOptions);
   protected readonly disparoOptions = computed(() =>
     mapShotOptionsToPlanningNumbers(
-      this.#store.taradoVelocidadChart().disparoOptions,
+      this.#store.taradoVelocidadChartView().disparoOptions,
       this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
     ),
   );
   protected readonly velocidadNominalOptions = computed(
-    () => this.#store.taradoVelocidadChart().velocidadNominalOptions,
+    () => this.#store.taradoVelocidadChartView().velocidadNominalOptions,
   );
-  protected readonly configuracionOptions = computed(() => this.#store.taradoVelocidadChart().configuracionOptions);
-  protected readonly regression = computed(() => this.#store.taradoVelocidadChart().regression);
+  protected readonly configuracionOptions = computed(() => this.#store.taradoVelocidadChartView().configuracionOptions);
+  protected readonly regression = computed(() => this.#store.taradoVelocidadChartView().regression);
   protected readonly r2 = computed(() => {
     const reg = this.regression();
     return reg ? Math.pow(reg.correlacion, 2) : null;
@@ -258,7 +326,7 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
 
   /** Configuración reactiva del gráfico — la directiva uiChart reacciona automáticamente a cambios */
   protected readonly chartConfig = computed<ChartConfiguration>(() => {
-    const state = this.#store.taradoVelocidadChart();
+    const state = this.#store.taradoVelocidadChartView();
     const { scatterData, regressionLine, puntoTarado } = this.#computeChartData(state);
     return {
       type: 'scatter',
@@ -342,24 +410,42 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
     });
   }
 
+  #calculationKey(
+    fireTrialId: string,
+    selectedSerie: string[] | null,
+    selectedDisparo: string[] | null,
+    selectedVelocidadNominal: string | null,
+  ): string {
+    return JSON.stringify([
+      fireTrialId,
+      [...(selectedSerie ?? [])].sort(),
+      [...(selectedDisparo ?? [])].sort(),
+      selectedVelocidadNominal,
+    ]);
+  }
+
   #computeChartData(state: TaradoVelocidadChartState): {
     scatterData: { x: number; y: number }[];
     regressionLine: { x: number; y: number }[];
     puntoTarado: { x: number; y: number } | null;
   } {
     const filteredBySerie = state.selectedSerie?.length
-      ? state.dataPoints.filter((p) => state.selectedSerie!.includes(p.serie))
+      ? state.dataPoints.filter((point) => state.selectedSerie?.includes(point.serie) ?? false)
       : state.dataPoints;
 
     const filtered = state.selectedDisparo?.length
-      ? filteredBySerie.filter((p) => state.selectedDisparo!.includes(String(p.disparo)))
+      ? filteredBySerie.filter(
+          (point) =>
+            state.selectedDisparo?.includes(point.shotId ?? '') ||
+            state.selectedDisparo?.includes(String(point.disparo)),
+        )
       : filteredBySerie;
 
     const sortedByDisparo = [...filtered].sort((a, b) => a.disparo - b.disparo);
     const scatterData = sortedByDisparo.map((p) => ({ x: p.wc, y: p.v0c }));
 
     const reg = state.regression;
-    if (!reg) return { scatterData, regressionLine: [], puntoTarado: null };
+    if (!reg || state.dataPoints.length === 0) return { scatterData, regressionLine: [], puntoTarado: null };
 
     const wcs = state.dataPoints.map((p) => p.wc);
     const minWc = Math.min(...wcs) - 10;
@@ -369,10 +455,13 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
       { x: maxWc, y: reg.pendiente * maxWc + reg.ordenada },
     ];
 
-    const puntoTarado = {
-      x: reg.wcTarado,
-      y: reg.pendiente * reg.wcTarado + reg.ordenada,
-    };
+    const puntoTarado =
+      reg.wcTarado === null
+        ? null
+        : {
+            x: reg.wcTarado,
+            y: reg.pendiente * reg.wcTarado + reg.ordenada,
+          };
 
     return { scatterData, regressionLine, puntoTarado };
   }

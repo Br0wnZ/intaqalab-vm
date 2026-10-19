@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { TrialsDataService } from '@intaqalab/data-access';
+import { TrialStatus } from '@intaqalab/models';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -90,7 +91,11 @@ import { MunitionLocationComponent } from '../location/location.component';
               ></inta-munition-identification>
             }
 
-            <inta-general-data [form]="form" [associatedTrials]="associatedTrials()" />
+            <inta-general-data
+              [form]="form"
+              [associatedTrials]="associatedTrials()"
+              (clientChange)="onClientChange($event)"
+            />
 
             <inta-munition-location [form]="form"></inta-munition-location>
 
@@ -170,6 +175,20 @@ export class MunitionsShellComponent {
       };
     });
   });
+
+  onClientChange(clientId: string) {
+    this.#trialsDataService.search({
+      clientId,
+      status: [
+        TrialStatus.PLANNED,
+        TrialStatus.UNDER_REVIEW,
+        TrialStatus.IN_PROGRESS,
+        TrialStatus.INTERRUPTED,
+        TrialStatus.STARTED,
+      ],
+      sort: ['trialNumber;asc'],
+    });
+  }
 
   readonly associatedComponents = computed(() => {
     const associatedComponents = this.formModel().associatedComponents;

@@ -43,8 +43,10 @@ export function mapJltMaoMassConfigToRequest(
   values: Partial<JltMaoMassConfigFields>,
   current: JltMaoMassConfigFields,
   assignedShotIds: string[],
+  lineOfFireOrientation?: number,
 ): JltMaoBulkConfigurationRequest | null {
   const body: JltMaoBulkConfigurationRequest = { assignedShotIds: [...new Set(assignedShotIds)] };
+  if (lineOfFireOrientation !== undefined) body.lineOfFireOrientation = lineOfFireOrientation;
   const theoreticalInitialVelocity = resolveNumber(values.velocidadInicial, current.velocidadInicial);
   const plannedImpactDistance = resolveNumber(values.distanciaPique, current.distanciaPique);
   const tabularDrift = resolveNumber(values.derivaTabular, current.derivaTabular);
@@ -76,6 +78,7 @@ export function mapJltMaoMassConfigToRequest(
     body.functioningHeight,
     body.functioningDistance,
     body.observations,
+    body.lineOfFireOrientation,
   ].some((value) => value !== undefined);
 
   return body.assignedShotIds.length > 0 && hasRequiredField ? body : null;

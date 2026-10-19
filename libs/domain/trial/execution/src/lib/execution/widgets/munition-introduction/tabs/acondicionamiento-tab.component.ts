@@ -15,6 +15,7 @@ import {
   type MunitionIntroCamaraOption,
 } from '../../../../+state/execution.store';
 import { EquipmentTypeEnum } from '../../../models';
+import { injectClimaticChamberEquipments } from '../inject-climatic-chamber-equipments';
 import type { AcondFormModel } from '../munition-introduction';
 
 @Component({
@@ -216,15 +217,30 @@ export class MunitionAcondicionamientoTabComponent {
 
   readonly isValid = computed(() => this.acondForm().valid());
 
-  readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
+  readonly #climaticChambers = injectClimaticChamberEquipments(() => {
+    const serie = this.#store.munitionIntroduction().serie ?? this.#store.activeSerieId();
+    return serie ? [serie] : [];
+  });
+
+  readonly componenteOptions = computed(() => {
+    const chamberOptions = this.#climaticChambers.options();
+    return chamberOptions.length > 0 ? chamberOptions : this.#store.munitionIntroduction().componenteOptions;
+  });
   readonly camaraOptions = computed<MunitionIntroCamaraOption[]>(() => {
+    const chamberOptions = this.#climaticChambers.options();
+    if (chamberOptions.length > 0) return chamberOptions;
+
     const seen = new Set<string>();
+    const activeSerie = this.#store.munitionIntroduction().serie ?? this.#store.activeSerieId();
     return (
       this.#store
         .equipmentSelectorRemote()
         ?.flatMap((group) =>
           group.selections.flatMap((selection): MunitionIntroCamaraOption[] => {
             if (selection.categoryId !== EquipmentTypeEnum.CLIMATIC_CHAMBER) return [];
+            if (activeSerie && selection.seriesIds?.length && !selection.seriesIds.includes(activeSerie)) {
+              return [];
+            }
 
             const equipmentId = selection.equipmentItemId ?? selection.equipmentDenominationId;
             if (equipmentId === undefined) return [];

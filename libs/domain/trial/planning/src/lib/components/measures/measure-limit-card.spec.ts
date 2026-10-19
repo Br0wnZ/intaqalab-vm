@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, type OnInit, signal } from '@angular/core';
+import { disabled, form, required, validate } from '@angular/forms/signals';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { render, screen } from '@testing-library/angular';
@@ -13,6 +14,7 @@ import { MeasureLimitCard } from './measure-limit-card';
     <inta-measure-limit-card
       [measure]="measure"
       [measureName]="measureName"
+      [measureForm]="measureForm"
       [isQuantitative]="isQuantitative"
       [readonly]="readonly"
       (remove)="onRemove()"
@@ -22,7 +24,7 @@ import { MeasureLimitCard } from './measure-limit-card';
   `,
   imports: [MeasureLimitCard],
 })
-class TestHostComponent {
+class TestHostComponent implements OnInit {
   measure: MeasureSelectionData = {
     id: 'm-1',
     expanded: false,
@@ -30,6 +32,29 @@ class TestHostComponent {
     maxLimit: 50,
     deviation: 2,
   };
+  readonly measureModel = signal<MeasureSelectionData>(this.measure);
+  readonly isReadonly = signal(false);
+  readonly measureForm = form(this.measureModel, (measurePath) => {
+    disabled(measurePath, () => this.isReadonly());
+    required(measurePath.minLimit, {
+      message: 'COMMONS.REQUIRED_FIELD',
+      when: () => this.isQuantitative,
+    });
+    required(measurePath.maxLimit, {
+      message: 'COMMONS.REQUIRED_FIELD',
+      when: () => this.isQuantitative,
+    });
+    validate(measurePath.minLimit, ({ value, valueOf }) =>
+      this.#isInvalidLimit(value(), valueOf(measurePath.maxLimit))
+        ? { kind: 'invalidLimitRange', message: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE' }
+        : undefined,
+    );
+    validate(measurePath.maxLimit, ({ value, valueOf }) =>
+      this.#isInvalidLimit(valueOf(measurePath.minLimit), value())
+        ? { kind: 'invalidLimitRange', message: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE' }
+        : undefined,
+    );
+  });
   measureName = 'Presión';
   isQuantitative = true;
   readonly = false;
@@ -37,6 +62,15 @@ class TestHostComponent {
   readonly onRemove = vi.fn();
   readonly onToggleExpanded = vi.fn();
   readonly onLimitChange = vi.fn();
+
+  ngOnInit(): void {
+    this.measureModel.set(this.measure);
+    this.isReadonly.set(this.readonly);
+  }
+
+  #isInvalidLimit(minLimit: number | null, maxLimit: number | null): boolean {
+    return this.isQuantitative && minLimit !== null && maxLimit !== null && minLimit >= maxLimit;
+  }
 }
 
 describe('MeasureLimitCard', () => {
@@ -97,6 +131,37 @@ describe('MeasureLimitCard', () => {
   });
 
   describe('Expanded State', () => {
+    it('should show invalid range messages in both limit fields', async () => {
+      const { user } = await runSetup({
+        measure: { id: 'm-1', expanded: true, minLimit: 50, maxLimit: 10, deviation: 2 },
+      });
+      const minInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i);
+      const maxInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i);
+
+      await user.click(minInput);
+      await user.tab();
+      await user.click(maxInput);
+      await user.tab();
+
+      expect(
+        screen.getAllByText(
+          /TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.INVALID_RANGE|El límite mínimo debe ser menor que el máximo/i,
+        ),
+      ).toHaveLength(2);
+    });
+
+    it('should show the required message when minimum limit is empty and touched', async () => {
+      const { user } = await runSetup({
+        measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: 50, deviation: 2 },
+      });
+      const minInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i);
+
+      await user.click(minInput);
+      await user.tab();
+
+      expect(screen.getByText(/COMMONS\.REQUIRED_FIELD|Valor requerido/i)).toBeInTheDocument();
+    });
+
     it('should render expand_less icon when expanded', async () => {
       await runSetup({
         measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: null, deviation: null },

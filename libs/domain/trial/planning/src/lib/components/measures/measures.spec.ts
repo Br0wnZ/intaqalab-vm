@@ -142,7 +142,7 @@ describe('Measures', () => {
 
     it('should render the configuration toggle button', async () => {
       await runSetup();
-      expect(screen.getByText(/Configurar por serie/i)).toBeInTheDocument();
+      expect(screen.getByText(/TRIAL_PLANNING.MEASURES.SERIE_CONFIG/i)).toBeInTheDocument();
     });
 
     it('should render global configuration fields by default', async () => {
@@ -201,7 +201,7 @@ describe('Measures', () => {
     it('should switch to series configuration when toggle button is clicked', async () => {
       const { user, loader } = await runSetup();
 
-      const toggleButton = screen.getByText(/Configurar por serie/i);
+      const toggleButton = screen.getByText(/TRIAL_PLANNING.MEASURES.SERIE_CONFIG/i);
       await user.click(toggleButton);
 
       const panels = await loader.getAllHarnesses(MatExpansionPanelHarness);
@@ -211,7 +211,7 @@ describe('Measures', () => {
     it('should switch back to global configuration when clicked again', async () => {
       const { user, loader } = await runSetup();
 
-      const toggleButton = screen.getByText(/Configurar por serie/i);
+      const toggleButton = screen.getByText(/TRIAL_PLANNING.MEASURES.SERIE_CONFIG/i);
       await user.click(toggleButton);
       await user.click(toggleButton);
 
@@ -277,7 +277,7 @@ describe('Measures', () => {
       const { user, view } = await runSetup();
 
       // Enable series configuration
-      const toggleButton = screen.getByText(/Configurar por serie/i);
+      const toggleButton = screen.getByText(/TRIAL_PLANNING.MEASURES.SERIE_CONFIG/i);
       await user.click(toggleButton);
 
       view.fixture.componentInstance.onCategoryChange('series-1', 'topografia', [
@@ -331,6 +331,133 @@ describe('Measures', () => {
 
       expect(screen.getByText('Magnitudes y registros de topografía')).toBeInTheDocument();
       expect(screen.getByText('Magnitudes y registros de municiones')).toBeInTheDocument();
+    });
+  });
+
+  describe('Limit validation', () => {
+    it('should require both limits for quantitative measures', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      component.seriesSignal.set([
+        {
+          id: 'series-1',
+          nombre: 'Serie A',
+          expanded: false,
+          topografia: [{ id: 'cat-1', minLimit: null, maxLimit: null, deviation: null, expanded: true }],
+          municiones: [],
+          armamento: [],
+          balistica: [],
+        },
+      ]);
+
+      const measureFields = component.seriesForm[0]?.topografia[0];
+      if (!measureFields) throw new Error('Expected quantitative measure fields');
+
+      expect(
+        measureFields
+          .minLimit()
+          .errors()
+          .map((error) => error.message),
+      ).toContain('COMMONS.REQUIRED_FIELD');
+      expect(
+        measureFields
+          .maxLimit()
+          .errors()
+          .map((error) => error.message),
+      ).toContain('COMMONS.REQUIRED_FIELD');
+    });
+
+    it('should reject equal limits on both fields and prevent saving', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      component.seriesSignal.set([
+        {
+          id: 'series-1',
+          nombre: 'Serie A',
+          expanded: false,
+          topografia: [{ id: 'cat-1', minLimit: 10, maxLimit: 10, deviation: null, expanded: true }],
+          municiones: [],
+          armamento: [],
+          balistica: [],
+        },
+      ]);
+
+      const measureFields = component.seriesForm[0]?.topografia[0];
+      if (!measureFields) throw new Error('Expected quantitative measure fields');
+
+      expect(
+        measureFields
+          .minLimit()
+          .errors()
+          .map((error) => error.message),
+      ).toContain('TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE');
+      expect(
+        measureFields
+          .maxLimit()
+          .errors()
+          .map((error) => error.message),
+      ).toContain('TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE');
+
+      component.save();
+
+      expect(mockMeasuresService.updateMeasures).not.toHaveBeenCalled();
+    });
+
+    it('should show only the required error when one limit is empty', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+      component.seriesSignal.set([
+        {
+          id: 'series-1',
+          nombre: 'Serie A',
+          expanded: false,
+          topografia: [
+            { id: 'cat-1', minLimit: 1, maxLimit: '' as unknown as number, deviation: null, expanded: true },
+          ],
+          municiones: [],
+          armamento: [],
+          balistica: [],
+        },
+      ]);
+
+      const measureFields = component.seriesForm[0]?.topografia[0];
+      if (!measureFields) throw new Error('Expected quantitative measure fields');
+
+      const minErrors = measureFields
+        .minLimit()
+        .errors()
+        .map((error) => error.message);
+      const maxErrors = measureFields
+        .maxLimit()
+        .errors()
+        .map((error) => error.message);
+
+      expect(minErrors).not.toContain('TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE');
+      expect(maxErrors).toContain('COMMONS.REQUIRED_FIELD');
+      expect(maxErrors).not.toContain('TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE');
+    });
+
+    it('should not require limits for qualitative measures', async () => {
+      const catalogData = [{ ...defaultCatalogData[0], id: 'cat-qual', qualificationType: 'QUALITATIVE' }];
+      const { view } = await runSetup({ catalogData });
+      const component = view.fixture.componentInstance;
+      component.seriesSignal.set([
+        {
+          id: 'series-1',
+          nombre: 'Serie A',
+          expanded: false,
+          topografia: [{ id: 'cat-qual', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
+          municiones: [],
+          armamento: [],
+          balistica: [],
+        },
+      ]);
+
+      const measureFields = component.seriesForm[0]?.topografia[0];
+      if (!measureFields) throw new Error('Expected qualitative measure fields');
+
+      expect(measureFields.minLimit().invalid()).toBe(false);
+      expect(measureFields.maxLimit().invalid()).toBe(false);
     });
   });
 

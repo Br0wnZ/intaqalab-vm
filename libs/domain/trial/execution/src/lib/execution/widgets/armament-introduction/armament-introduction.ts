@@ -1,15 +1,15 @@
 import type { Signal } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
-    viewChild,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,11 +25,12 @@ import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { ArmamentEquipmentDenomination } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -114,7 +115,12 @@ interface ArmamentIntroductionSelectForm {
         </button>
       </div>
 
-      <div intaReadonlyContent intaFormTouch #touch="intaFormTouch" class="grid grid-cols-4 gap-3 min-h-0 content-start">
+      <div
+        intaReadonlyContent
+        intaFormTouch
+        class="grid grid-cols-4 gap-3 min-h-0 content-start"
+        #touch="intaFormTouch"
+      >
         <!-- Arma -->
         <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}</mat-label>
@@ -188,12 +194,11 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   readonly #dialog = inject(MatDialog);
   readonly #executionService = inject(ExecutionService);
   readonly #weaponItems = signal<ArmamentEquipmentItem[]>([]);
+  readonly #weaponDenominations = signal<ArmamentEquipmentDenomination[]>([]);
   readonly #tubeItems = signal<ArmamentEquipmentItem[]>([]);
   readonly #planningArmament = signal<PlanningArmamentResponse | null>(null);
   readonly #lastActiveSelection = signal<string | null>(null);
-  readonly #selectorKey = computed(() =>
-    shotSelectionKey(this.formModel().serie, this.formModel().disparo),
-  );
+  readonly #selectorKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectorKey());
 
   // ── Signals de datos del store ────────────────────────────────────────
@@ -216,7 +221,9 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     }
     return this.#store.armamentIntroduction().disparoOptions;
   });
-  protected readonly armaOptions = computed(() => this.#toEquipmentOptions(this.#weaponItems(), 'armaOptions'));
+  protected readonly armaOptions = computed(() =>
+    this.#weaponDenominations().map((denomination) => ({ value: String(denomination.id), label: denomination.name })),
+  );
   protected readonly tuboOptions = computed(() => this.#toEquipmentOptions(this.#tubeItems(), 'tuboOptions'));
 
   // ── Signal Form ──────────────────────────────────────────────────────────
@@ -225,8 +232,12 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   protected readonly selectForm = form(this.formModel);
   readonly #dirtyTracker = createDirtyTracker(() => this.#editableValues());
   protected readonly isDirty = this.#dirtyTracker.isDirty;
-  protected readonly selectedWeaponSerial = computed(() => this.#findSelectedItem(this.#weaponItems(), this.formModel().arma)?.serialNumber ?? '');
-  protected readonly selectedTubeSerial = computed(() => this.#findSelectedItem(this.#tubeItems(), this.formModel().tubo)?.serialNumber ?? '');
+  protected readonly selectedWeaponSerial = computed(
+    () => this.#findSelectedItem(this.#weaponItems(), this.formModel().arma)?.serialNumber ?? '',
+  );
+  protected readonly selectedTubeSerial = computed(
+    () => this.#findSelectedItem(this.#tubeItems(), this.formModel().tubo)?.serialNumber ?? '',
+  );
   protected readonly selectedPlanningArmament = computed(() => {
     const { serie, disparo } = this.formModel();
     return this.#planningArmament()
@@ -264,7 +275,8 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const serie = this.#store.activeSerieId() ?? formValue.serie;
     const disparo = this.#store.activeShotId() ?? formValue.disparo;
     const { arma, tubo, observations } = formValue;
-    const serieArma = this.selectedWeaponSerial() || null;
+    const selectedWeaponItem = this.#findSelectedItem(this.#weaponItems(), arma);
+    const serieArma = selectedWeaponItem?.serialNumber ?? null;
     const serieTubo = this.selectedTubeSerial() || null;
     this.#store.updateArmamentIntroduction({
       serie,
@@ -277,7 +289,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     });
 
     const fireTrialId = this.#store.fireTrialId();
-    const weaponId = this.#numericEquipmentId(arma);
+    const weaponId = selectedWeaponItem ? this.#numericEquipmentId(String(selectedWeaponItem.id)) : null;
     const tubeId = this.#numericEquipmentId(tubo);
     if (fireTrialId && serie && disparo && weaponId !== null && tubeId !== null) {
       try {
@@ -348,12 +360,14 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   }
 
   async #loadInitialData(fireTrialId: string): Promise<void> {
-    const [weapons, tubes, planningArmament] = await Promise.all([
-      this.#executionService.loadArmamentEquipmentItems('WEAPON'),
+    const weapons = await this.#executionService.loadArmamentEquipmentItems('WEAPON');
+    const [tubes, planningArmament, weaponDenominations] = await Promise.all([
       this.#executionService.loadArmamentEquipmentItems('TUBE'),
       this.#executionService.fetchPlanningArmament(fireTrialId),
+      this.#executionService.loadArmamentWeaponDenominations(),
     ]);
     this.#weaponItems.set(weapons);
+    this.#weaponDenominations.set(weaponDenominations);
     this.#tubeItems.set(tubes);
     this.#planningArmament.set(planningArmament);
     this.#applyPlanningSelection();
@@ -394,7 +408,9 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
       const armament = response.armamentData;
       this.formModel.update((formValue) => ({
         ...formValue,
-        arma: armament?.weapon?.id ? String(armament.weapon.id) : formValue.arma,
+        arma: armament?.weapon?.id
+          ? (this.#weaponDenominationId(String(armament.weapon.id)) ?? formValue.arma)
+          : formValue.arma,
         tubo: armament?.tube?.id ? String(armament.tube.id) : formValue.tubo,
         observations: armament?.observations ?? this.selectedPlanningArmament()?.observations ?? '',
       }));
@@ -421,11 +437,18 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     this.#syncSnapshot();
   }
 
-  #findSelectedItem(items: ArmamentEquipmentItem[], denominationId: string | null): ArmamentEquipmentItem | undefined {
-    return items.find((item) => String(item.id) === denominationId);
+  #findSelectedItem(
+    items: ArmamentEquipmentItem[],
+    idOrDenomination: string | null,
+  ): ArmamentEquipmentItem | undefined {
+    if (!idOrDenomination) return undefined;
+    return (
+      items.find((item) => String(item.denominationId) === idOrDenomination) ??
+      items.find((item) => String(item.id) === idOrDenomination)
+    );
   }
 
-  #toEquipmentOptions(items: ArmamentEquipmentItem[], fallbackKey: 'armaOptions' | 'tuboOptions') {
+  #toEquipmentOptions(items: ArmamentEquipmentItem[], fallbackKey: 'tuboOptions') {
     if (!items.length) return this.#store.armamentIntroduction()[fallbackKey];
     return items.map((item) => ({ value: String(item.id), label: item.denominationName }));
   }
@@ -435,7 +458,12 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const item = items.find(
       (candidate) => Number(candidate.id) === externalId || candidate.denominationId === externalId,
     );
-    return item ? String(item.id) : null;
+    return item ? String(item.denominationId) : null;
+  }
+
+  #weaponDenominationId(itemId: string): string | null {
+    const item = this.#weaponItems().find((candidate) => String(candidate.id) === itemId);
+    return item ? String(item.denominationId) : null;
   }
 
   #numericEquipmentId(value: string | null): number | null {
@@ -460,7 +488,8 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
       this.#dialog
         .open(ArmamentIntroductionMassConfigDialog, {
           data: {
-            serieOptions: state.serieOptions,
+            fireTrialId: this.#store.fireTrialId() ?? '',
+            serieOptions: this.serieOptions(),
             armaOptions: this.armaOptions(),
             weaponItems: this.#weaponItems(),
             tuboOptions: this.tuboOptions(),
@@ -476,13 +505,15 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     );
 
     if (result) {
+      const selectedWeapon = this.#findSelectedItem(this.#weaponItems(), String(result.weaponId));
+      const selectedTube = this.#findSelectedItem(this.#tubeItems(), String(result.tubeId));
       this.#store.updateArmamentIntroduction({
         serie: result.assignedSeriesIds[0] ?? state.serie,
         disparo: state.disparo,
-        arma: String(result.weaponId),
-        serieArma: this.#findSelectedItem(this.#weaponItems(), String(result.weaponId))?.serialNumber ?? null,
-        tubo: String(result.tubeId),
-        serieTubo: this.#findSelectedItem(this.#tubeItems(), String(result.tubeId))?.serialNumber ?? null,
+        arma: selectedWeapon ? String(selectedWeapon.denominationId) : String(result.weaponId),
+        serieArma: selectedWeapon?.serialNumber ?? null,
+        tubo: selectedTube ? String(selectedTube.id) : String(result.tubeId),
+        serieTubo: selectedTube?.serialNumber ?? null,
         observations: result.observations,
       });
       this.resetForm();

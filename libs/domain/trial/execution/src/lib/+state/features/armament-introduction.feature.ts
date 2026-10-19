@@ -1,5 +1,7 @@
-import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { type ArmamentBulkConfigurationRequest, ExecutionService } from '../../services/execution.service';
 import type {
   ArmamentIntroductionState,
   CalibryEquipmentOption,
@@ -63,6 +65,16 @@ const initialState: ArmamentIntroductionSlice = {
 export function withArmamentIntroduction() {
   return signalStoreFeature(
     withState(initialState),
+    withComputed((store, executionService = inject(ExecutionService)) => ({
+      isApplyingArmamentBulkConfiguration: computed(() =>
+        executionService.applyArmamentBulkConfigurationResource.isLoading(),
+      ),
+    })),
+    withMethods((store, executionService = inject(ExecutionService)) => ({
+      applyArmamentBulkConfiguration(fireTrialId: string, request: ArmamentBulkConfigurationRequest): void {
+        executionService.applyArmamentBulkConfiguration(fireTrialId, request);
+      },
+    })),
     withMethods((store) => ({
       /** Actualiza los campos del widget Introducción de datos de Armamento */
       updateArmamentIntroduction(updates: Partial<ArmamentIntroductionState>): void {

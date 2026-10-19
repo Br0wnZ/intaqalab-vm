@@ -1,5 +1,5 @@
 {
-  "totalElements": 37,
+  "totalElements": 38,
   "items": [
     {
       "id": "3f1a2b10-0000-4000-8000-000000000101",
@@ -387,10 +387,10 @@
       "active": true
     },
     {
-      "id": "meas-bal-001",
+      "id": "21031",
       "tag": "BAL-001",
       "serialNumber": "SN-BAL-001",
-      "denominationId": 9501,
+      "denominationId": 21031,
       "denominationName": "Balanza Mettler Toledo XP10000",
       "modelName": "XP10000",
       "itemType": "MEASUREMENT",
@@ -398,23 +398,34 @@
       "active": true
     },
     {
-      "id": "meas-bal-002",
+      "id": "21032",
       "tag": "BAL-002",
       "serialNumber": "SN-BAL-002",
-      "denominationId": 9502,
-      "denominationName": "Balanza Mettler Toledo XP10000",
-      "modelName": "XP10000",
+      "denominationId": 21032,
+      "denominationName": "Balanza Sartorius Entris II",
+      "modelName": "Entris II",
       "itemType": "MEASUREMENT",
       "categoryId": "BALANCE",
       "active": true
     },
     {
-      "id": "meas-clim-001",
+      "id": "21045",
       "tag": "CAM-CLI-001",
       "serialNumber": "SN-CLM-001",
-      "denominationId": 9601,
+      "denominationId": 21045,
       "denominationName": "Cámara Climática Weiss WT3-180",
       "modelName": "Weiss WT3-180",
+      "itemType": "MEASUREMENT",
+      "categoryId": "CLIMATIC_CHAMBER",
+      "active": true
+    },
+    {
+      "id": "21046",
+      "tag": "CAM-CLI-002",
+      "serialNumber": "SN-CLM-002",
+      "denominationId": 21046,
+      "denominationName": "Cámara Climática Binder MK 56",
+      "modelName": "Binder MK 56",
       "itemType": "MEASUREMENT",
       "categoryId": "CLIMATIC_CHAMBER",
       "active": true
