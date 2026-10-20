@@ -19,37 +19,7 @@ export const DEFAULT_PIEZO_POSITIONS: PiezoPosition[] = ['CLOSING', 'HALF', 'SHE
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
-/**
- * Mapea las series de planificación a opciones para el selector.
- */
-export const mapPlanningSeriesToOptions = (
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
-
-/**
- * Mapea los disparos de una serie a opciones para el selector.
- */
-export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId: string; globalNumber?: number | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (shots?.length) {
-    return shots.map((shot, index) => ({
-      value: shot.shotId,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
+export { buildDisparoOptions, mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 /**
  * Convierte un número y unidad a la estructura de InputSelect.

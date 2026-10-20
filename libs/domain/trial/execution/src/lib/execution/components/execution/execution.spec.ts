@@ -12,6 +12,7 @@ import { ActivatedRoute } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
+import { PlanningConditionsService, PlanningSeriesService } from '@intaqalab/data-access-planning';
 import { type FireTrial, MeasureUnitEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -200,6 +201,31 @@ describe('Execution', () => {
         provideHttpClientTesting(),
         ExecutionStore,
         {
+          provide: PlanningSeriesService,
+          useValue: {
+            seriesResource: createMockResource<PlanningSeriesItem[]>([
+              {
+                id: 'serie-1',
+                name: 'Serie 1',
+                shots: [
+                  { id: 'shot-1', globalNumber: 1 },
+                  { id: 'shot-2', globalNumber: 2 },
+                ],
+              },
+            ]),
+            load: vi.fn(),
+            reload: vi.fn(),
+          },
+        },
+        {
+          provide: PlanningConditionsService,
+          useValue: {
+            conditionsResource: createMockResource<PlanningConditionsResponse>({ series: [] }),
+            load: vi.fn(),
+            reload: vi.fn(),
+          },
+        },
+        {
           provide: TrialsDataService,
           useValue: trialsDataService,
         },
@@ -280,16 +306,6 @@ describe('Execution', () => {
 
   it('includes the active shot when execution progress omits it', async () => {
     const executionService = createMockExecutionService();
-    executionService.planningSeriesResource = createMockResource<PlanningSeriesItem[]>([
-      {
-        id: 'serie-1',
-        name: 'Serie 1',
-        shots: [
-          { id: 'shot-1', globalNumber: 1 },
-          { id: 'shot-2', globalNumber: 2 },
-        ],
-      },
-    ]);
     executionService.executionProgressResource = createMockResource<ExecutionProgressResponse>({
       series: [
         {

@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -267,7 +268,7 @@ describe('JltMao', () => {
 
     component.onSerieSelected('series-1');
     component.onDisparoSelected('shot-1');
-    service.getPlanningConditions('trial-123');
+    TestBed.inject(PlanningConditionsService).load('trial-123');
     TestBed.tick();
 
     const request = httpMock.expectOne((req) => req.url.endsWith('/fire-trials/trial-123/planning/conditions'));

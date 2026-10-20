@@ -1,7 +1,7 @@
 ---
 name: angular-testing-expert
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-10-19
 description: Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses.
 user-invocable: true
 ---
@@ -60,6 +60,7 @@ afterEach(() => {
   ```
   Evita `nxCopyAssetsPlugin` (obsoleto). La propiedad `tsconfig: './tsconfig.spec.json'` es obligatoria para evitar advertencias de Analog buscando `tsconfig.app.json`.
 - **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4.
+- **OXC Runtime Helpers (`@oxc-project/runtime`):** `@analogjs/vite-plugin-angular` transfigura paquetes Angular a `es2016` con OXC para que Zone.js intercepte `async/await` en tests (`fakeAsync`). Los helpers emitidos (`@oxc-project/runtime/helpers/*`) se resuelven automáticamente gracias a `@oxc-project/runtime` en root `devDependencies` (ver Issue #21 en [known-issues.md](references/known-issues.md)).
 - **Concurrencia en ejecución masiva:** Para suites completas en local, evita saturación de memoria en JSDOM limitando el paralelismo (`npx nx run-many -t test --parallel=2` o ejecutando por dominio `-p [domain]`).
 
 ## 📋 Workflow: "Dame los tests de {{ componente }}"
@@ -75,6 +76,7 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
    - Subcomponentes con `input.required` de Signal Forms → usar `TestWrapperComponent` local (Issue #16)
    - Crash `SyntaxError: '' is not a valid selector` al usar `.with(...)` o `getOptions(...)` → usar `getAllHarnesses(HarnessClass)[index]` y ATL `screen.getByText` + `user.click` (Issue #19)
    - Discrepancia en array de `mat-select multiple` → Angular Material ordena según el orden de las opciones en el DOM, no el orden de clic (Issue #20)
+   - Fallo de import `Failed to resolve import "@oxc-project/runtime/helpers/..."` → verificar `@oxc-project/runtime` en `devDependencies` del root `package.json` (Issue #21)
 
 1. **Analiza el componente:** Lee el archivo `.ts` del componente para entender:
    - Tipo: componente, diálogo, servicio, store, interceptor, pipe

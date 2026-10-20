@@ -1,8 +1,16 @@
+import { formatShotLabel } from '@intaqalab/data-access-planning';
+import type { PlanningSeriesItem } from '@intaqalab/data-access-planning';
 import { DistanceUnitEnum } from '@intaqalab/models';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import type { JltShotDataPayload, JltShotDataRequest, JltShotDataResponse } from '../../../services/execution.service';
-import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
+import {
+  mapPlanningSeriesToOptions,
+  mapSelectedShotStatusClass,
+  mapSelectedShotStatusLabel,
+} from '../utils/selection-options';
+
+export { mapPlanningSeriesToOptions, mapSelectedShotStatusClass, mapSelectedShotStatusLabel };
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
@@ -26,16 +34,8 @@ export interface ProgressSeriesItem {
   shots: SeriesShotItem[];
 }
 
-export interface PlanningShotItem {
-  id: string;
-  globalNumber?: number | null;
-}
-
-export interface PlanningSeriesItem {
-  id: string;
-  name?: string | null;
-  shots?: PlanningShotItem[];
-}
+/** Modelos de planning/series: fuente única en @intaqalab/data-access-planning. */
+export type { PlanningSeriesItem };
 
 /**
  * Convierte un número y una unidad a la estructura InputFieldValue de UI.
@@ -86,22 +86,6 @@ export const mapEstadoDisparoToClass = (estado: string | null | undefined): stri
 };
 
 /**
- * Mapea series de planificación a opciones para el selector.
- */
-export const mapPlanningSeriesToOptions = (
-  planningSeries?: PlanningSeriesItem[] | null,
-  fallback: SelectOption[] = [],
-): SelectOption[] => {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallback;
-};
-
-/**
  * Mapea disparos de planificación o progreso a opciones para el selector.
  */
 export const mapPlanningShotsToDisparoOptions = (
@@ -112,7 +96,7 @@ export const mapPlanningShotsToDisparoOptions = (
   if (planningSerie?.shots?.length) {
     return planningSerie.shots.map((shot, index) => ({
       value: shot.id,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
+      label: formatShotLabel(shot.globalNumber, index),
     }));
   }
 

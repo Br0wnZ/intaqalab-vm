@@ -17,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -337,6 +338,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
 
   // ── Unit options ───────────────────────────────────────────────────────────
   protected readonly mumOptions = [
@@ -354,14 +356,17 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
 
   // ── Options from store & API ───────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.manometerIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.manometerIntroduction().serieOptions,
+    ),
   );
 
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.selectorFormModel().serie,
       executionProgress: this.#store.executionProgress(),
-      planningSeries: this.#store.planningSeries(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
       storedOptions: this.#store.manometerIntroduction().disparoOptions,
     }),
   );

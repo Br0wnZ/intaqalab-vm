@@ -33,7 +33,8 @@
       "@intaqalab/master-data": ["libs/domain/master-data/src/index.ts"],
       "@intaqalab/warehouse-management": ["libs/domain/warehouse-management/src/index.ts"],
       "@intaqalab/event-log": ["libs/domain/event-log/src/index.ts"],
-      "@intaqalab/execution": ["libs/domain/trial/execution/src/index.ts"]
+      "@intaqalab/execution": ["libs/domain/trial/execution/src/index.ts"],
+      "@intaqalab/data-access-planning": ["./libs/domain/trial/data-access-planning/src/index.ts"]
     },
     "strict": false
   },

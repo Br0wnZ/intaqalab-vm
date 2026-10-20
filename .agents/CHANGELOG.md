@@ -53,3 +53,35 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [widget-service-integration - 1.0.2] - 2026-10-15
 
 - Use buildDisparoOptions in execution widget templates
+
+## [execution-domain-expert - 1.1.0] - 2026-10-19
+
+- ADR-017 planning data-access layer: shared read layer, check:planning-urls pre-commit rule, docs/WIDGET_SYSTEM.md
+
+## [widget-service-integration - 1.1.0] - 2026-10-19
+
+- ADR-017 planning data-access layer: shared read layer, check:planning-urls pre-commit rule, docs/WIDGET_SYSTEM.md
+
+## [planning-specialist - 1.1.0] - 2026-10-19
+
+- ADR-017 planning data-access layer: shared read layer, check:planning-urls pre-commit rule, docs/WIDGET_SYSTEM.md
+
+## [swagger-api-architect - 1.1.0] - 2026-10-19
+
+- ADR-017 planning data-access layer: shared read layer, check:planning-urls pre-commit rule, docs/WIDGET_SYSTEM.md
+
+## [AGENTS.md - 1.1.0] - 2026-10-19
+
+- ADR-017 planning data-access layer: shared read layer, check:planning-urls pre-commit rule, docs/WIDGET_SYSTEM.md
+
+## [angular-testing-expert - 1.0.1] - 2026-10-19
+
+- Document @oxc-project/runtime Vitest helpers and issue 21
+
+## [nx-generator-expert - 1.0.1] - 2026-10-19
+
+- Add @oxc-project/runtime requirement for Vitest libraries
+
+## [AGENTS.md - 1.1.1] - 2026-10-19
+
+- Add @oxc-project/runtime to workspace Vite and Vitest standards

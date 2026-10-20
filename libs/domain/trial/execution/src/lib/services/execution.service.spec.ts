@@ -33,11 +33,8 @@ import {
   type ArmamentEquipmentItem,
   ExecutionService,
   type PlanningArmamentResponse,
-  type PlanningConditionsResponse,
   type PlanningResponse,
-  type PlanningSeriesItem,
   type ProfilesReadinessResponse,
-  type PropellantChargeParametersResponse,
   type SecurityCountdownResponse,
   type ShotArmamentResponse,
   type ShotPressuresResponse,
@@ -227,30 +224,6 @@ describe('ExecutionService', () => {
     });
   });
 
-  it('should GET planning series when getPlanningSeries() is called', async () => {
-    const mockSeries: PlanningSeriesItem[] = [
-      {
-        id: 'series-1',
-        name: 'Serie A',
-        shotQuantity: 3,
-        executionOrder: 1,
-        shots: [{ id: 'shot-1', globalNumber: 1 }],
-      },
-    ];
-
-    service.getPlanningSeries(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/series`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockSeries);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.planningSeriesResource.value()).toEqual(mockSeries);
-    });
-  });
-
   it('should GET radar orientation again when selected radar changes', async () => {
     const response: TrajectographyRadarOrientationResponse = { sameForAllSeries: false, series: [] };
 
@@ -272,30 +245,6 @@ describe('ExecutionService', () => {
     const secondRequest = httpMock.expectOne(`${EXECUTION_BASE_URL}/trajectography-radar/orientation`);
     expect(secondRequest.request.method).toBe('GET');
     secondRequest.flush(response);
-  });
-
-  it('should GET planning conditions when getPlanningConditions() is called', async () => {
-    const mockConditions: PlanningConditionsResponse = {
-      units: { orientation: AngleUnitEnum.DEGREES },
-      series: [
-        {
-          seriesId: 'series-1',
-          shots: [{ shotId: 'shot-1', orientation: 15, orientationUnit: AngleUnitEnum.DEGREES }],
-        },
-      ],
-    };
-
-    service.getPlanningConditions(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/conditions`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockConditions);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.planningConditionsResource.value()).toEqual(mockConditions);
-    });
   });
 
   it('fetches planned fuse graduation assigned to the selected shot', async () => {
@@ -323,73 +272,6 @@ describe('ExecutionService', () => {
     });
 
     await expect(promise).resolves.toBe(7.25);
-  });
-
-  it('should GET propelling charge parameters when getPropellingChargeParameters() is called', async () => {
-    const mockParameters: PropellantChargeParametersResponse = {
-      series: [
-        {
-          seriesId: 'series-1',
-          seriesNumber: 1,
-          seriesName: 'Serie 1',
-          loadingZone: 'Z1',
-          nominalSpeed: 780,
-          nominalSpeedUnit: SpeedUnitEnum.M_S,
-          maximumSpeedDeviation: 10,
-          maximumSpeedDeviationUnit: SpeedUnitEnum.M_S,
-          powderWeight: 3.75,
-          powderWeightUnit: WeightUnitEnum.KG,
-          observations: 'Test',
-        },
-      ],
-    };
-
-    service.getPropellingChargeParameters(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const req = httpMock.expectOne(
-      `${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`,
-    );
-    expect(req.request.method).toBe('GET');
-    req.flush(mockParameters);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.propellingChargeParametersResource.value()).toEqual(mockParameters);
-    });
-  });
-
-  it('should fetch propelling charge parameters imperatively when fetchPropellingChargeParameters() is called', async () => {
-    const mockParameters: PropellantChargeParametersResponse = {
-      series: [
-        {
-          seriesId: 'series-1',
-          seriesNumber: 1,
-          seriesName: 'Serie 1',
-          loadingZone: 'Z1',
-          nominalSpeed: 780,
-          nominalSpeedUnit: SpeedUnitEnum.M_S,
-          maximumSpeedDeviation: 10,
-          maximumSpeedDeviationUnit: SpeedUnitEnum.M_S,
-          powderWeight: 3.75,
-          powderWeightUnit: WeightUnitEnum.KG,
-          observations: 'Test',
-        },
-      ],
-    };
-
-    const promise = service.fetchPropellingChargeParameters(DEMO_TRIAL_ID);
-    TestBed.tick();
-
-    const req = httpMock.expectOne(
-      `${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/propelling-charge-parameters`,
-    );
-    expect(req.request.method).toBe('GET');
-    req.flush(mockParameters);
-    TestBed.tick();
-
-    const result = await promise;
-    expect(result).toEqual(mockParameters);
   });
 
   it('should GET execution state when getExecutionState() is called', async () => {

@@ -16,6 +16,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -32,11 +33,11 @@ import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamiento
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
 import {
+  buildDisparoOptions,
   mapPlanningSeriesToOptions,
   mapRemoteToTrayectografiaState,
   mapShotStatusToClass,
   mapShotStatusToLabel,
-  mapShotsToDisparoOptions,
   mapTrayectografiaStateToRequest,
 } from './trayectografia-introduction.mapper';
 
@@ -185,6 +186,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
 
   readonly #selectionKey = computed(() =>
     shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
@@ -202,26 +204,19 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.trayectografiaIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.trayectografiaIntroduction().serieOptions,
+    ),
   );
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots,
-        this.#store.trayectografiaIntroduction().disparoOptions,
-        planningShots,
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.trayectografiaIntroduction().disparoOptions);
-    }
-    return this.#store.trayectografiaIntroduction().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.trayectografiaIntroduction().disparoOptions,
+    }),
+  );
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
   protected readonly estadoDisparo = computed(() =>

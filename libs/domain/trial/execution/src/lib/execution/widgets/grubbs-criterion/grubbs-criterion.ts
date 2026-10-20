@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -22,6 +23,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapPlanningSeriesToOptions } from '../utils/selection-options';
 
 interface GrubbsFilterForm {
   serie: string | null;
@@ -141,16 +143,15 @@ export class GrubbsCriterionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #trialShots = injectTrialShots();
 
   // ── Options from store ────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries();
-    if (!planningSeries?.length) return this.#store.grubbsCriterion().serieOptions;
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.grubbsCriterion().serieOptions,
+    ),
+  );
   protected readonly variableOptions = computed(() => this.#store.grubbsCriterion().variableOptions);
 
   // ── Outliers from store ───────────────────────────────────────────────────

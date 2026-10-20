@@ -74,7 +74,8 @@ describe('TaradoPresionChartWidget', () => {
     const { fixture } = await renderWidget();
     const reg = fixture.componentInstance['regression']();
     expect(reg).not.toBeNull();
-    expect(reg!.pendiente).toBeGreaterThan(0);
+    if (!reg) throw new Error('reg is null');
+    expect(reg.pendiente).toBeGreaterThan(0);
   });
 
   it('r2 is computed from correlacion', async () => {

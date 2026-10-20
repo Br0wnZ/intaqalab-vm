@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -38,9 +39,9 @@ import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard
 import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
 import { MassiveConfigDialog } from './massive-config-dialog';
 import {
+  buildDisparoOptions,
   mapMunitionStateToRequest,
   mapPlanningSeriesToOptions,
-  mapShotsToDisparoOptions,
   resolveCamaraId,
 } from './munition-introduction.mapper';
 import { MunitionAcondicionamientoTabComponent } from './tabs/acondicionamiento-tab.component';
@@ -216,6 +217,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
+  readonly #trialShots = injectTrialShots();
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
   readonly #planningOptionsTrial = signal<string | null>(null);
   readonly #planningOptionsBySelection = signal<Record<string, PlanningOptionsGroup>>({});
@@ -238,25 +240,21 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
 
   // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries();
-    return mapPlanningSeriesToOptions(planningSeries, this.#store.munitionIntroduction().serieOptions);
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.munitionIntroduction().serieOptions,
+    ),
+  );
 
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, this.#store.munitionIntroduction().disparoOptions, planningShots);
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.munitionIntroduction().disparoOptions);
-    }
-    return this.#store.munitionIntroduction().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.munitionIntroduction().disparoOptions,
+    }),
+  );
 
   protected readonly selectedShotProgress = computed(() => {
     const { serie, disparo } = this.selectorFormModel();

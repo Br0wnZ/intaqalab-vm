@@ -11,7 +11,7 @@ import type {
  */
 export function normalizePowderWeightToGrams(
   weight: number | null | undefined,
-  unit: WeightUnitEnum | null | undefined,
+  unit: string | null | undefined,
 ): number | null {
   if (weight === null || weight === undefined) return null;
 
@@ -28,10 +28,7 @@ export function normalizePowderWeightToGrams(
 /**
  * Normaliza la velocidad a m/s (por defecto M_S en el Swagger de tarado).
  */
-export function normalizeSpeedToMs(
-  speed: number | null | undefined,
-  unit: SpeedUnitEnum | null | undefined,
-): number | null {
+export function normalizeSpeedToMs(speed: number | null | undefined, unit: string | null | undefined): number | null {
   if (speed === null || speed === undefined) return null;
   if (unit === SpeedUnitEnum.KM_H) {
     return Math.round((speed / 3.6) * 100) / 100;

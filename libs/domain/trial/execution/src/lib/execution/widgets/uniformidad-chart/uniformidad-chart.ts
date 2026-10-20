@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
@@ -179,6 +180,7 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
   readonly #loadedFireTrialId = signal<string | null>(null);
   readonly #lastCalculationKey = signal<string | null>(null);
 
@@ -194,7 +196,7 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
         return;
       }
 
-      const planningSeries = this.#store.planningSeries();
+      const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries();
       const chart = this.#store.uniformidadChartView();
       const activeSerieId = this.#store.activeSerieId();
       const activeShotId = this.#store.activeShotId();
@@ -244,7 +246,7 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
   protected readonly disparoOptions = computed(() =>
     mapShotOptionsToPlanningNumbers(
       this.#store.uniformidadChartView().disparoOptions,
-      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+      (this.#trialShots.series() ?? this.#store.planningSeries())?.flatMap((serie) => serie.shots ?? []) ?? [],
     ),
   );
 

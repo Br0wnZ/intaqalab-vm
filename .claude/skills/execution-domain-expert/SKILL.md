@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.0.5
-last-updated: 2026-10-15
+version: 1.1.0
+last-updated: 2026-10-19
 description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
@@ -170,3 +170,11 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 3. Use `provideMockStore()` to isolate stores in component tests.
 4. Verify `httpMock.verify()` in `afterEach()` in all service tests.
 5. All test descriptions (`it()`) MUST be written in English.
+
+## 🔗 Planning Data Access (ADR-017) — Mandatory
+
+- Planned data (series/shots, conditions, measures, munitions, armament, propelling-charge-parameters) is **read-only here** and MUST come from `@intaqalab/data-access-planning`. NEVER declare `/planning/...` GET URLs in `libs/domain/trial/execution` (`npm run check:planning-urls`, enforced in pre-commit).
+- Query services: `PlanningSeriesService`, `PlanningConditionsService`, `PlanningMeasuresService`, `PlanningMunitionsService`, `PlanningArmamentService`, `PropellantChargeParametersService` (`httpResource`, `providedIn: 'root'`). `PlanningTrialContextService` is set once by the `Execution` shell; widgets never pass trial params for planning reads.
+- Pure helpers: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`, `flattenSeriesShots`. Shot option labels: `formatShotLabel(globalNumber, index, 'plain' | 'padded')` — do not hand-build `` `Disparo ${...}` ``. Series/shots handle: `injectTrialShots()`.
+- `ExecutionService` keeps only execution endpoints and writes; planning types come from the data-access lib (no duplicated models).
+- Widget system doc: `docs/WIDGET_SYSTEM.md`.

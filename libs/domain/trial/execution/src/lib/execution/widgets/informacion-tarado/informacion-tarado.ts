@@ -15,13 +15,13 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { PropellantChargeParametersService } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, SpeedUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { InformacionTaradoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -142,7 +142,7 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #propellantChargeParametersService = inject(PropellantChargeParametersService);
   readonly #lastLoadedTrialId = signal<string | null>(null);
 
   readonly carouselEl = viewChild<ElementRef<HTMLDivElement>>('carouselEl');
@@ -181,7 +181,7 @@ export class InformacionTaradoWidget extends BaseFormWidgetComponent {
 
   async loadPropellingChargeParameters(fireTrialId: string): Promise<void> {
     try {
-      const response = await this.#executionService.fetchPropellingChargeParameters(fireTrialId);
+      const response = await this.#propellantChargeParametersService.fetchParameters(fireTrialId);
       if (response?.series) {
         this.#store.setPropellantChargeParameters(response);
       }

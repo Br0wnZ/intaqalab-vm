@@ -6,13 +6,13 @@ import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { PropellantChargeParametersService } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { InformacionTaradoWidget } from './informacion-tarado';
 
@@ -35,7 +35,7 @@ describe('InformacionTaradoWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionService,
+        PropellantChargeParametersService,
         ExecutionStore,
       ],
       imports: [TranslateModule.forRoot()],
@@ -100,7 +100,7 @@ describe('InformacionTaradoWidget', () => {
   it('loads and maps propelling charge parameters and updates the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const parametersService = TestBed.inject(PropellantChargeParametersService);
 
     const mockResponse = {
       series: [
@@ -120,7 +120,7 @@ describe('InformacionTaradoWidget', () => {
       ],
     };
 
-    vi.spyOn(executionService, 'fetchPropellingChargeParameters').mockResolvedValue(mockResponse);
+    vi.spyOn(parametersService, 'fetchParameters').mockResolvedValue(mockResponse);
 
     await fixture.componentInstance.loadPropellingChargeParameters('test-trial-123');
 
@@ -134,14 +134,14 @@ describe('InformacionTaradoWidget', () => {
     expect(series[0].pesoPolvora).toBe(3500);
   });
 
-  it('keeps existing series when fetchPropellingChargeParameters fails', async () => {
+  it('keeps existing series when fetchParameters fails', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const parametersService = TestBed.inject(PropellantChargeParametersService);
 
     const initialSeries = [...store.informacionTarado().series];
 
-    vi.spyOn(executionService, 'fetchPropellingChargeParameters').mockRejectedValue(new Error('Network error'));
+    vi.spyOn(parametersService, 'fetchParameters').mockRejectedValue(new Error('Network error'));
 
     await fixture.componentInstance.loadPropellingChargeParameters('test-trial-123');
 

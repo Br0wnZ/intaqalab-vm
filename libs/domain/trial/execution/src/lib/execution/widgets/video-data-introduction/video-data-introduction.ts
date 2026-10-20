@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -30,6 +31,8 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
@@ -253,6 +256,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
 
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
   readonly #remoteVideoData = signal<ShotVideoDataResponse | null>(null);
@@ -427,18 +431,15 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   protected readonly disparoActual = computed(() => this.#store.activeShotId());
 
   protected readonly serieOptions = computed(() =>
-    (this.#store.planningSeries() ?? []).map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    })),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
-  protected readonly disparoOptions = computed(() => {
-    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.selectorModel().serie)?.shots ?? [];
-    return shots.map((shot, index) => ({
-      value: shot.id,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
-    }));
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+    }),
+  );
 
   // ── Signal Form (estado local del formulario) ─────────────────────────────
 

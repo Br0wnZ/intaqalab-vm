@@ -1,4 +1,5 @@
 import { computed, inject } from '@angular/core';
+import { PlanningConditionsService, PlanningSeriesService, formatShotLabel } from '@intaqalab/data-access-planning';
 import { SpeedUnitEnum } from '@intaqalab/models';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
@@ -75,149 +76,163 @@ const initialState: TaradoChartsSlice = {
 export function withTaradoCharts() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      taradoVelocidadChartView: computed(() => {
-        const chart = store.taradoVelocidadChart();
-        const planningSeries = safeResourceValue(executionService.planningSeriesResource) ?? [];
-        const planningConditions = safeResourceValue(executionService.planningConditionsResource);
-        const response = safeResourceValue(executionService.propellantChargeAdjustmentResource);
-        const configurations = safeResourceValue(executionService.propellantChargeAdjustmentConfigurationsResource);
-        const seriesByShotId = new Map<string, { serieId: string; globalNumber: number | undefined }>();
+    withComputed(
+      (
+        store,
+        executionService = inject(ExecutionService),
+        seriesService = inject(PlanningSeriesService),
+        conditionsService = inject(PlanningConditionsService),
+      ) => ({
+        taradoVelocidadChartView: computed(() => {
+          const chart = store.taradoVelocidadChart();
+          const planningSeries = safeResourceValue(seriesService.seriesResource) ?? [];
+          const planningConditions = safeResourceValue(conditionsService.conditionsResource);
+          const response = safeResourceValue(executionService.propellantChargeAdjustmentResource);
+          const configurations = safeResourceValue(executionService.propellantChargeAdjustmentConfigurationsResource);
+          const seriesByShotId = new Map<string, { serieId: string; globalNumber: number | undefined }>();
 
-        planningSeries.forEach((serie) => {
-          (serie.shots ?? []).forEach((shot) => {
-            seriesByShotId.set(shot.id, { serieId: serie.id, globalNumber: shot.globalNumber });
+          planningSeries.forEach((serie) => {
+            (serie.shots ?? []).forEach((shot) => {
+              seriesByShotId.set(shot.id, { serieId: serie.id, globalNumber: shot.globalNumber });
+            });
           });
-        });
 
-        const dataPoints =
-          response?.points.flatMap((point, index) => {
-            const planningShot = seriesByShotId.get(point.shotId);
-            if (!planningShot) return [];
-            return [
-              {
-                shotId: point.shotId,
-                wc: point.powderWeight,
-                v0c: point.velocity,
-                serie: planningShot.serieId,
-                disparo: planningShot.globalNumber ?? index + 1,
-              },
-            ];
-          }) ?? [];
+          const dataPoints =
+            response?.points.flatMap((point, index) => {
+              const planningShot = seriesByShotId.get(point.shotId);
+              if (!planningShot) return [];
+              return [
+                {
+                  shotId: point.shotId,
+                  wc: point.powderWeight,
+                  v0c: point.velocity,
+                  serie: planningShot.serieId,
+                  disparo: planningShot.globalNumber ?? index + 1,
+                },
+              ];
+            }) ?? [];
 
-        const apiRegression = response?.regression;
-        const regression = apiRegression
-          ? {
-              pendiente: apiRegression.slope,
-              ordenada: apiRegression.intercept,
-              correlacion: Math.sqrt(Math.max(apiRegression.rSquared ?? 0, 0)),
-              wcTarado: response.powderWeightAtNominalSpeed ?? null,
-              pesoTarado: response.adjustedPowderWeight ?? null,
-            }
-          : null;
-        const nominalSpeedUnit = planningConditions?.units?.nominalSpeed ?? SpeedUnitEnum.M_S;
-        const nominalSpeedValues = new Set(
-          (planningConditions?.series ?? []).flatMap((serie) =>
-            serie.shots.flatMap((shot) =>
-              shot.nominalSpeed !== null && shot.nominalSpeed !== undefined && Number.isFinite(shot.nominalSpeed)
-                ? [shot.nominalSpeed]
-                : [],
+          const apiRegression = response?.regression;
+          const regression = apiRegression
+            ? {
+                pendiente: apiRegression.slope,
+                ordenada: apiRegression.intercept,
+                correlacion: Math.sqrt(Math.max(apiRegression.rSquared ?? 0, 0)),
+                wcTarado: response.powderWeightAtNominalSpeed ?? null,
+                pesoTarado: response.adjustedPowderWeight ?? null,
+              }
+            : null;
+          const nominalSpeedUnit = planningConditions?.units?.nominalSpeed ?? SpeedUnitEnum.M_S;
+          const nominalSpeedValues = new Set(
+            (planningConditions?.series ?? []).flatMap((serie) =>
+              serie.shots.flatMap((shot) =>
+                shot.nominalSpeed !== null && shot.nominalSpeed !== undefined && Number.isFinite(shot.nominalSpeed)
+                  ? [shot.nominalSpeed]
+                  : [],
+              ),
             ),
-          ),
-        );
+          );
 
-        return {
-          ...chart,
-          dataPoints,
-          regression,
-          serieOptions: planningSeries.map((serie, index) => ({
-            value: serie.id,
-            label: serie.name || `Serie ${index + 1}`,
-          })),
-          disparoOptions: planningSeries.flatMap((serie) =>
-            (serie.shots ?? []).map((shot, index) => ({
-              value: shot.id,
-              label: `Disparo ${shot.globalNumber ?? index + 1}`,
+          return {
+            ...chart,
+            dataPoints,
+            regression,
+            serieOptions: planningSeries.map((serie, index) => ({
+              value: serie.id,
+              label: serie.name || `Serie ${index + 1}`,
             })),
-          ),
-          velocidadNominalOptions: [...nominalSpeedValues]
-            .sort((first, second) => first - second)
-            .map((speed) => ({
-              value: String(speed),
-              label: `${speed} ${nominalSpeedUnit === SpeedUnitEnum.KM_H ? 'km/h' : 'm/s'}`,
+            disparoOptions: planningSeries.flatMap((serie) =>
+              (serie.shots ?? []).map((shot, index) => ({
+                value: shot.id,
+                label: formatShotLabel(shot.globalNumber, index),
+              })),
+            ),
+            velocidadNominalOptions: [...nominalSpeedValues]
+              .sort((first, second) => first - second)
+              .map((speed) => ({
+                value: String(speed),
+                label: `${speed} ${nominalSpeedUnit === SpeedUnitEnum.KM_H ? 'km/h' : 'm/s'}`,
+              })),
+            configuracionOptions: (configurations ?? []).map((configuration) => ({
+              value: configuration.configurationId,
+              label: configuration.name,
             })),
-          configuracionOptions: (configurations ?? []).map((configuration) => ({
-            value: configuration.configurationId,
-            label: configuration.name,
-          })),
-        };
+          };
+        }),
       }),
-    })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
-      /** Actualiza el estado del widget Gráfica Tarado - Velocidad */
-      updateTaradoVelocidadChart(updates: Partial<TaradoVelocidadChartState>): void {
-        patchState(store, (state) => ({
-          taradoVelocidadChart: { ...state.taradoVelocidadChart, ...updates },
-        }));
-      },
+    ),
+    withMethods(
+      (
+        store,
+        executionService = inject(ExecutionService),
+        seriesService = inject(PlanningSeriesService),
+        conditionsService = inject(PlanningConditionsService),
+      ) => ({
+        /** Actualiza el estado del widget Gráfica Tarado - Velocidad */
+        updateTaradoVelocidadChart(updates: Partial<TaradoVelocidadChartState>): void {
+          patchState(store, (state) => ({
+            taradoVelocidadChart: { ...state.taradoVelocidadChart, ...updates },
+          }));
+        },
 
-      loadTaradoVelocidadChart(fireTrialId: string): void {
-        executionService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
-        this.calculateTaradoVelocidadChart(fireTrialId);
-      },
+        loadTaradoVelocidadChart(fireTrialId: string): void {
+          executionService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
+          this.calculateTaradoVelocidadChart(fireTrialId);
+        },
 
-      calculateTaradoVelocidadChart(fireTrialId: string): void {
-        const planningSeries = safeResourceValue(executionService.planningSeriesResource);
-        const planningConditions = safeResourceValue(executionService.planningConditionsResource);
-        const chart = store.taradoVelocidadChart();
-        if (!planningSeries || !planningConditions) return;
+        calculateTaradoVelocidadChart(fireTrialId: string): void {
+          const planningSeries = safeResourceValue(seriesService.seriesResource);
+          const planningConditions = safeResourceValue(conditionsService.conditionsResource);
+          const chart = store.taradoVelocidadChart();
+          if (!planningSeries || !planningConditions) return;
 
-        const shotIds = planningSeries.flatMap((serie) => {
-          if (chart.selectedSerie?.length && !chart.selectedSerie.includes(serie.id)) return [];
-          return (serie.shots ?? [])
-            .filter((shot) => {
-              if (!chart.selectedDisparo?.length) return true;
-              return (
-                chart.selectedDisparo.includes(shot.id) ||
-                chart.selectedDisparo.includes(String(shot.globalNumber ?? ''))
-              );
-            })
-            .map((shot) => shot.id);
-        });
+          const shotIds = planningSeries.flatMap((serie) => {
+            if (chart.selectedSerie?.length && !chart.selectedSerie.includes(serie.id)) return [];
+            return (serie.shots ?? [])
+              .filter((shot) => {
+                if (!chart.selectedDisparo?.length) return true;
+                return (
+                  chart.selectedDisparo.includes(shot.id) ||
+                  chart.selectedDisparo.includes(String(shot.globalNumber ?? ''))
+                );
+              })
+              .map((shot) => shot.id);
+          });
 
-        if (shotIds.length === 0) return;
-        const selectedNominalSpeed = chart.selectedVelocidadNominal?.trim();
-        const nominalSpeeds = new Set(
-          planningConditions.series.flatMap((serie) =>
-            serie.shots.flatMap((shot) =>
-              shotIds.includes(shot.shotId) &&
-              shot.nominalSpeed !== null &&
-              shot.nominalSpeed !== undefined &&
-              Number.isFinite(shot.nominalSpeed)
-                ? [shot.nominalSpeed]
-                : [],
+          if (shotIds.length === 0) return;
+          const selectedNominalSpeed = chart.selectedVelocidadNominal?.trim();
+          const nominalSpeeds = new Set(
+            planningConditions.series.flatMap((serie) =>
+              serie.shots.flatMap((shot) =>
+                shotIds.includes(shot.shotId) &&
+                shot.nominalSpeed !== null &&
+                shot.nominalSpeed !== undefined &&
+                Number.isFinite(shot.nominalSpeed)
+                  ? [shot.nominalSpeed]
+                  : [],
+              ),
             ),
-          ),
-        );
-        const nominalSpeed = selectedNominalSpeed
-          ? Number(selectedNominalSpeed)
-          : nominalSpeeds.size === 1
-            ? [...nominalSpeeds][0]
-            : undefined;
-        if (nominalSpeed === undefined || !Number.isFinite(nominalSpeed)) return;
-        executionService.getPropellantChargeAdjustment(fireTrialId, {
-          shotIds: [...new Set(shotIds)],
-          nominalSpeed,
-          nominalSpeedUnit: planningConditions.units?.nominalSpeed ?? SpeedUnitEnum.M_S,
-        });
-      },
+          );
+          const nominalSpeed = selectedNominalSpeed
+            ? Number(selectedNominalSpeed)
+            : nominalSpeeds.size === 1
+              ? [...nominalSpeeds][0]
+              : undefined;
+          if (nominalSpeed === undefined || !Number.isFinite(nominalSpeed)) return;
+          executionService.getPropellantChargeAdjustment(fireTrialId, {
+            shotIds: [...new Set(shotIds)],
+            nominalSpeed,
+            nominalSpeedUnit: planningConditions.units?.nominalSpeed ?? SpeedUnitEnum.M_S,
+          });
+        },
 
-      /** Actualiza los campos del widget Gráfica Tarado - Presiones */
-      updateTaradoPresionChart(updates: Partial<TaradoPresionChartState>): void {
-        patchState(store, (state) => ({
-          taradoPresionChart: { ...state.taradoPresionChart, ...updates },
-        }));
-      },
-    })),
+        /** Actualiza los campos del widget Gráfica Tarado - Presiones */
+        updateTaradoPresionChart(updates: Partial<TaradoPresionChartState>): void {
+          patchState(store, (state) => ({
+            taradoPresionChart: { ...state.taradoPresionChart, ...updates },
+          }));
+        },
+      }),
+    ),
   );
 }

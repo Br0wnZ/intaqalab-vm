@@ -338,11 +338,11 @@ if (isValidWidgetId(testId)) {
 
 ## 📚 References
 
-- [WidgetId Enum](./models/widget-id.enum.ts)
-- [Widget Registry](./models/widget-registry.ts)
-- [Execution Grid Models](./models/execution-grid.models.ts)
-- [Execution Store](../../+state/execution.store.ts)
-- [Execution Service](../../services/execution.service.ts)
+- [WidgetId Enum](../libs/domain/trial/execution/src/lib/execution/models/widget-id.enum.ts)
+- [Widget Registry](../libs/domain/trial/execution/src/lib/execution/models/widget-registry.ts)
+- [Execution Grid Models](../libs/domain/trial/execution/src/lib/execution/models/execution-grid.models.ts)
+- [Execution Store](../libs/domain/trial/execution/src/lib/+state/execution.store.ts)
+- [Execution Service](../libs/domain/trial/execution/src/lib/services/execution.service.ts)
 
 ## Patrón de diálogos de transición
 
@@ -470,3 +470,12 @@ export class MyExecutionWidget {
 | `equipmentSelectorRemote()`      | `EquipmentSelectionApiList \| undefined` | Datos crudos del backend provenientes de `equipmentSelectorResource` (`httpResource`).                   |
 | `isLoadingEquipmentSelector()`   | `boolean`                                | Indica si el GET de asignaciones de equipos está en progreso.                                            |
 | `isUpdatingEquipmentSelector()`  | `boolean`                                | Indica si el PUT de asignaciones de equipos está en progreso.                                            |
+
+## 🔗 Datos de Planning en widgets
+
+Los datos planificados (series/disparos, conditions, measures, munitions, armament, tarado) se leen de `@intaqalab/data-access-planning`, nunca con HTTP propio:
+
+- Servicios query (`PlanningSeriesService`, `PlanningConditionsService`, `PlanningMeasuresService`, `PlanningMunitionsService`, `PlanningArmamentService`, `PropellantChargeParametersService`) con `httpResource`; el contexto lo fija el shell `Execution` vía `PlanningTrialContextService`.
+- Selector serie/disparo: `injectTrialShots()`; etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`.
+- Selectores puros: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`.
+- Regla: `npm run check:planning-urls`.

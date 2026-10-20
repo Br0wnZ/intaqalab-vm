@@ -45,39 +45,7 @@ export const mapManometerStateToEquipmentValue = (equipment: {
   });
 };
 
-/**
- * Mapea las series de planificación a opciones para el selector.
- */
-export const mapPlanningSeriesToOptions = (
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
-
-/**
- * Mapea los disparos de una serie a opciones para el selector.
- */
-export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
-): Array<{ value: string; label: string }> => {
-  if (shots?.length) {
-    const planningNumbersByShotId = new Map(planningShots.map((shot) => [shot.id, shot.globalNumber]));
-    return shots.map((shot, index) => ({
-      value: shot.shotId ?? shot.id ?? `shot-${index + 1}`,
-      label: `Disparo ${planningNumbersByShotId.get(shot.shotId ?? shot.id ?? '') ?? shot.globalNumber ?? index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
+export { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 /**
  * Convierte unidad de distancia API a etiqueta de UI ('UM' -> 'μm', 'MM' -> 'mm').

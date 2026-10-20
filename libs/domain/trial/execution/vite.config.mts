@@ -16,6 +16,9 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
+    // Suite de 69 archivos con renders Angular: bajo carga paralela los renders
+    // superan el 5000ms por defecto y generan flakes de timeout aislables.
+    testTimeout: 15000,
     deps: {
       inline: ['@angular/compiler', '@angular/common'],
     },

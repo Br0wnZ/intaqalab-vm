@@ -6,9 +6,9 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-09-29",
-      "checksum": "78829cc593686f93",
+      "version": "1.1.1",
+      "lastUpdated": "2026-10-19",
+      "checksum": "de7cedbf6227b701",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
@@ -28,9 +28,9 @@
       "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
     },
     "angular-testing-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "04baa3fb987feb51",
+      "version": "1.0.1",
+      "lastUpdated": "2026-10-19",
+      "checksum": "9e79402ece980abb",
       "path": ".agents/skills/angular-testing-expert/SKILL.md",
       "description": "Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses."
     },
@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.0.5",
-      "lastUpdated": "2026-10-15",
-      "checksum": "655f087ff36515a7",
+      "version": "1.1.0",
+      "lastUpdated": "2026-10-19",
+      "checksum": "3bdd145f7d833902",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
@@ -105,9 +105,9 @@
       "description": "Expert in validating and constraining numeric inputs using Angular directives and context-aware min/max values from INTAQALAB functional specs (planning, execution, admin). Handles locale-aware decimals, leading zeros removal, and physics domain range validation."
     },
     "nx-generator-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "3d028928de95b063",
+      "version": "1.0.1",
+      "lastUpdated": "2026-10-19",
+      "checksum": "d2c179da38b5660c",
       "path": ".agents/skills/nx-generator-expert/SKILL.md",
       "description": "Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility."
     },
@@ -133,9 +133,9 @@
       "description": "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
     },
     "planning-specialist": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "292ff70b2bf0ccd0",
+      "version": "1.1.0",
+      "lastUpdated": "2026-10-19",
+      "checksum": "efaf05afe3afac18",
       "path": ".agents/skills/planning-specialist/SKILL.md",
       "description": ">"
     },
@@ -154,9 +154,9 @@
       "description": "NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities."
     },
     "swagger-api-architect": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "c584a69489b0be6f",
+      "version": "1.1.0",
+      "lastUpdated": "2026-10-19",
+      "checksum": "f6fe437a6dc4b031",
       "path": ".agents/skills/swagger-api-architect/SKILL.md",
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
@@ -175,9 +175,9 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.0.2",
-      "lastUpdated": "2026-10-15",
-      "checksum": "07652fea18cbf34e",
+      "version": "1.1.0",
+      "lastUpdated": "2026-10-19",
+      "checksum": "c945137b7f810587",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
       "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     }

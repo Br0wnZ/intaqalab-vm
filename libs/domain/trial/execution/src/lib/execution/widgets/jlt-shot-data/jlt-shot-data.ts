@@ -17,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
@@ -239,6 +240,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
@@ -277,12 +279,16 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.jltShotData().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.jltShotData().serieOptions,
+    ),
   );
 
   protected readonly disparoOptions = computed(() => {
     const selectedSerie = this.formModel().serie;
-    const planningSerie = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie);
+    const series = this.#trialShots.series() ?? this.#store.planningSeries();
+    const planningSerie = series?.find((serie) => serie.id === selectedSerie);
     const progressSerie = this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie);
 
     return mapPlanningShotsToDisparoOptions(planningSerie, progressSerie, this.#store.jltShotData().disparoOptions);
@@ -428,7 +434,7 @@ export class JltShotData extends BaseFormWidgetComponent {
       current.disparo,
       serie,
       this.#store.executionProgress()?.series,
-      this.#store.planningSeries(),
+      this.#trialShots.series() ?? this.#store.planningSeries(),
     )
       ? current.disparo
       : null;
@@ -502,6 +508,7 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     this.#store.updateJltShotData(updates);
     this.#syncSnapshot();
+    this.historicalEditEnabled.set(false);
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

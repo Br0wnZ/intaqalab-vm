@@ -15,6 +15,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -157,6 +158,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   protected override readonly autonomousWidgetType = WidgetId.SEGUIMIENTO;
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
 
   // Tab options for selector
   readonly tabOptions: readonly SeguimientoTab[] = [
@@ -182,7 +184,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       return this.#store.seguimiento().series;
     }
 
-    return mapShotMeasurements(resource.value(), this.#store.planningSeries?.() ?? []);
+    return mapShotMeasurements(resource.value(), this.#trialShots.series() ?? this.#store.planningSeries?.() ?? []);
   });
 
   // Local UI signal for active tab

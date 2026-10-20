@@ -1,0 +1,20 @@
+{
+  "name": "data-access-planning",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domain/trial/data-access-planning/src",
+  "prefix": "inta",
+  "projectType": "library",
+  "tags": ["scope:trials", "type:data-access"],
+  "// targets": "to see all targets run: nx show project data-access-planning --web",
+  "targets": {
+    "test": {
+      "outputs": [
+        "{projectRoot}/{options.coverage.reportsDirectory}",
+        "{workspaceRoot}/coverage/libs/domain/trial/data-access-planning"
+      ],
+      "options": {
+        "coverage.reportsDirectory": "../../../../../coverage/libs/domain/trial/data-access-planning"
+      }
+    }
+  }
+}

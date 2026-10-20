@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { formatShotLabel, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { deepEqual } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -17,6 +18,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { mapPlanningSeriesToOptions } from '../utils/selection-options';
 
 /**
  * 🛡️ Widget "Preparación ejecución – JLT" (W3)
@@ -209,21 +211,19 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #executionStore = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
 
   // 🔄 Selectores (estado LOCAL desacoplado, inicializado desde store)
   readonly selectedSerie = linkedSignal(() => this.#executionStore.activeSerieId());
   readonly selectedShot = linkedSignal(() => this.#executionStore.activeShotId());
 
   readonly serieOptions = computed(() =>
-    (this.#executionStore.planningSeries() ?? []).map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    })),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#executionStore.planningSeries()),
   );
 
   readonly shotOptions = computed(() => {
     const serieId = this.resolvedSerieId();
-    const planningSeries = this.#executionStore.planningSeries() ?? [];
+    const planningSeries = this.#trialShots.series() ?? this.#executionStore.planningSeries() ?? [];
     const progressSeries = this.#executionStore.executionProgress()?.series;
     const progressShots = serieId ? progressSeries?.find((serie) => serie.seriesId === serieId)?.shots : undefined;
     const firedShotIds = new Set(
@@ -234,7 +234,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     if (serie?.shots?.length) {
       return serie.shots.map((shot, index) => ({
         value: shot.id,
-        label: `Disparo ${shot.globalNumber ?? index + 1}`,
+        label: formatShotLabel(shot.globalNumber, index),
         disabled: firedShotIds.has(shot.id),
       }));
     }
@@ -256,7 +256,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
       return activeSerieId;
     }
 
-    const planningSerieId = this.#executionStore.planningSeries()?.[0]?.id;
+    const planningSerieId = (this.#trialShots.series() ?? this.#executionStore.planningSeries())?.[0]?.id;
     if (planningSerieId) {
       return planningSerieId;
     }

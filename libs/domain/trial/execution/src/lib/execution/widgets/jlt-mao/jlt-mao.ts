@@ -17,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
@@ -33,11 +34,11 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
+  buildDisparoOptions,
   mapPlanningSeriesToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
-  mapShotsToDisparoOptions,
 } from '../utils/selection-options';
 import type { JltMaoMassConfigDialogResult } from './jlt-mao-mass-config-dialog';
 import { JltMaoMassConfigDialog } from './jlt-mao-mass-config-dialog';
@@ -299,6 +300,7 @@ export class JltMao extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
+  readonly #trialShots = injectTrialShots();
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
@@ -313,28 +315,19 @@ export class JltMao extends BaseFormWidgetComponent {
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly piquetaOptions = computed(() => this.#store.jltMao().piquetaOptions);
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.jltMao().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.jltMao().serieOptions,
+    ),
   );
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.formModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots.map((shot) => ({
-          ...shot,
-          globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
-        })),
-        this.#store.jltMao().disparoOptions,
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.jltMao().disparoOptions);
-    }
-    return this.#store.jltMao().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.jltMao().disparoOptions,
+    }),
+  );
 
   protected readonly plannedOlt = computed(() => this.#store.jltMaoPlannedOlt());
   protected readonly plannedShootingAngle = computed(() => {
@@ -802,7 +795,7 @@ export class JltMao extends BaseFormWidgetComponent {
     const fireTrialId = this.#store.fireTrialId();
     if (!fireTrialId || selectedSeries.length === 0) return;
 
-    const planningSeries = this.#store.planningSeries() ?? [];
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     const executionSeries = this.#store.executionProgress()?.series ?? [];
     const selectedShotGroups = selectedSeries.map((seriesId) => {
       const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
@@ -855,7 +848,7 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   #getSeriesOrientations(): { seriesId: string; orientations: (number | null)[] }[] {
-    const planningSeries = this.#store.planningSeries() ?? [];
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     const executionSeries = this.#store.executionProgress()?.series ?? [];
     const conditions = this.#store.planningConditions();
 

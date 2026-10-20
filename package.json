@@ -80,6 +80,7 @@
     "coverage:full": "npm run test:coverage:all && npm run coverage:merge",
     "agents:status": "node scripts/agents-version.mjs status",
     "agents:check": "node scripts/agents-version.mjs check",
+    "check:planning-urls": "node scripts/check-planning-urls.mjs",
     "agents:bump": "node scripts/agents-version.mjs bump",
     "agents:sync": "node scripts/agents-version.mjs sync",
     "prepare": "husky"
@@ -141,6 +142,7 @@
     "@nx/vitest": "23.2.1",
     "@nx/web": "23.2.1",
     "@nx/workspace": "23.2.1",
+    "@oxc-project/runtime": "^0.115.0",
     "@schematics/angular": "^21.0.0",
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.8",

@@ -16,6 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -29,18 +30,13 @@ import type { ShotMaoTopographyResponse } from '../../models/shot-mao-topography
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
+import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
 import type {
   MaoTopographyMassConfigDialogData,
   MaoTopographyMassConfigDialogResult,
 } from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
-import {
-  fromPosition,
-  numToField,
-  parseNum,
-  toPosition,
-} from './mao-topography.mapper';
+import { fromPosition, numToField, parseNum, toPosition } from './mao-topography.mapper';
 
 interface MaoTopographySelectForm {
   serie: string | null;
@@ -184,6 +180,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
+  readonly #trialShots = injectTrialShots();
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
@@ -196,27 +193,16 @@ export class MaoTopography extends BaseFormWidgetComponent {
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly observadorOptions = computed(() => this.#store.maoTopography().observadorOptions);
   protected readonly blancoEnabled = computed(() => this.#store.maoTopography().blancoEnabled);
-  protected readonly serieOptions = computed(() => mapPlanningSeriesToOptions(this.#store.planningSeries(), []));
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.formModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots.map((shot) => ({
-          ...shot,
-          globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
-        })),
-        [],
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, []);
-    }
-    return [];
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries(), []),
+  );
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+    }),
+  );
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
@@ -452,7 +438,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
     };
 
     const fireTrialId = this.#store.fireTrialId() ?? null;
-    const planningSeries = this.#store.planningSeries() ?? [];
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     const executionSeries = this.#store.executionProgress()?.series ?? [];
     const shotIdsBySeries = Object.fromEntries(
       this.serieOptions().map((option) => {
@@ -479,14 +465,11 @@ export class MaoTopography extends BaseFormWidgetComponent {
       MaoTopographyMassConfigDialog,
       MaoTopographyMassConfigDialogData,
       MaoTopographyMassConfigDialogResult
-    >(
-      MaoTopographyMassConfigDialog,
-      {
-        width: '800px',
-        maxWidth: '800px',
-        data,
-      },
-    );
+    >(MaoTopographyMassConfigDialog, {
+      width: '800px',
+      maxWidth: '800px',
+      data,
+    });
 
     const result = await firstValueFrom(ref.afterClosed());
 

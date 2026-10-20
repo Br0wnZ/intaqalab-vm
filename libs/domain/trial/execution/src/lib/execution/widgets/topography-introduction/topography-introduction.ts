@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -33,11 +34,11 @@ import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard
 import { mapSelectedShotStatus } from '../utils/selection-options';
 import {
   type InputFieldValue,
+  buildDisparoOptions,
   mapPlanningSeriesToOptions,
   mapRemoteToTopographyState,
   mapShotStatusToClass,
   mapShotStatusToLabel,
-  mapShotsToDisparoOptions,
   mapTopographyStateToRequest,
   numToField,
   parseNum,
@@ -194,6 +195,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
   readonly #chronometerOptions = signal<Array<{ value: string; label: string }>>([]);
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
@@ -221,26 +223,19 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
     return [...options.values()];
   });
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.topographyIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.topographyIntroduction().serieOptions,
+    ),
   );
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.formModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots,
-        this.#store.topographyIntroduction().disparoOptions,
-        planningShots,
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.topographyIntroduction().disparoOptions);
-    }
-    return this.#store.topographyIntroduction().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.topographyIntroduction().disparoOptions,
+    }),
+  );
 
   // ── Select form (Signal Forms for dirty tracking) ─────────────────────────
   protected readonly formModel = signal<TopographyFormModel>({

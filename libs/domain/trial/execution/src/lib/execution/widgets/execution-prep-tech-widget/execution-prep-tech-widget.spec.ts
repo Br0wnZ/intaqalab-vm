@@ -1,4 +1,6 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
@@ -115,6 +117,8 @@ async function runSetup(options: SetupOptions = {}) {
     },
     providers: [
       provideTestingEnvironment(),
+      provideHttpClient(),
+      provideHttpClientTesting(),
       { provide: ExecutionStore, useValue: mockStore },
       { provide: WidgetStateService, useValue: mockWidgetStateService },
     ],

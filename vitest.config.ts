@@ -25,6 +25,7 @@ export default defineConfig({
       'libs/domain/calendar-trials/vite.config.mts',
       'libs/domain/event-log/vite.config.mts',
       'libs/domain/master-data/vite.config.mts',
+      'libs/domain/trial/data-access-planning/vite.config.mts',
       'libs/domain/trial/execution/vite.config.mts',
       'libs/domain/trial/planning/vite.config.mts',
       'libs/domain/trial/trial-management/vite.config.mts',

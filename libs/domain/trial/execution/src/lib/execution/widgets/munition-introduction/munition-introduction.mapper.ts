@@ -31,39 +31,7 @@ export function parseNum(field: InputFieldValue): number | null {
   return isNaN(n) ? null : n;
 }
 
-/**
- * Maps planning series to selector options.
- */
-export function mapPlanningSeriesToOptions(
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-}
-
-/**
- * Maps shots in a series to selector options.
- */
-export function mapShotsToDisparoOptions(
-  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
-): Array<{ value: string; label: string }> {
-  if (shots?.length) {
-    const planningNumbersByShotId = new Map(planningShots.map((shot) => [shot.id, shot.globalNumber]));
-    return shots.map((shot, index) => ({
-      value: shot.shotId ?? shot.id ?? `disparo-${index + 1}`,
-      label: `Disparo ${shot.globalNumber ?? planningNumbersByShotId.get(shot.shotId ?? shot.id ?? '') ?? index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-}
+export { buildDisparoOptions, mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 // ─── ID resolution helpers ────────────────────────────────────────────────────
 

@@ -5,6 +5,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
@@ -111,31 +112,31 @@ interface TaradoPresionForm {
         </div>
 
         <!-- Stats: Pendiente / Peso tarado / Ordenada / Wc/g -->
-        @if (regression()) {
+        @if (regression(); as reg) {
           <div class="border bg-gray-50 border-gray-50  rounded-xl p-2 grid grid-cols-2 gap-x-4 gap-y-1 content-center">
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.pendiente | number: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.PESO_TARADO_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.pesoTarado }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.pesoTarado }} g</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.ordenada | number: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regression()!.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.wcTarado | number: '1.4-4' }} g</p>
             </div>
           </div>
         }
@@ -171,13 +172,14 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
 
   // Data from store (read-only)
   protected readonly serieOptions = computed(() => this.#store.taradoPresionChart().serieOptions);
   protected readonly disparoOptions = computed(() =>
     mapShotOptionsToPlanningNumbers(
       this.#store.taradoPresionChart().disparoOptions,
-      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+      (this.#trialShots.series() ?? this.#store.planningSeries())?.flatMap((serie) => serie.shots ?? []) ?? [],
     ),
   );
   protected readonly regression = computed(() => this.#store.taradoPresionChart().regression);
@@ -285,12 +287,14 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
     regressionLine: { x: number; y: number }[];
     puntoTarado: { x: number; y: number } | null;
   } {
-    const filteredBySerie = state.selectedSerie?.length
-      ? state.dataPoints.filter((p) => state.selectedSerie!.includes(p.serie))
+    const selectedSerie = state.selectedSerie;
+    const filteredBySerie = selectedSerie?.length
+      ? state.dataPoints.filter((p) => selectedSerie.includes(p.serie))
       : state.dataPoints;
 
-    const filtered = state.selectedDisparo?.length
-      ? filteredBySerie.filter((p) => state.selectedDisparo!.includes(String(p.disparo)))
+    const selectedDisparo = state.selectedDisparo;
+    const filtered = selectedDisparo?.length
+      ? filteredBySerie.filter((p) => selectedDisparo.includes(String(p.disparo)))
       : filteredBySerie;
 
     const sortedByDisparo = [...filtered].sort((a, b) => a.disparo - b.disparo);

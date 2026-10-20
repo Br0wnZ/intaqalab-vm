@@ -1,4 +1,5 @@
 import { computed, inject } from '@angular/core';
+import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
@@ -47,48 +48,50 @@ const initialState: JltMaoSlice = {
 export function withJltMao() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      isLoadingJltMao: computed(() => executionService.shotJltMaoResource.isLoading()),
-      isSavingJltMao: computed(() => executionService.updateShotJltMaoResource.isLoading()),
-      jltMaoPlannedOlt: computed((): number | null => {
-        const s = store.jltMao();
-        if (!s.serie || !s.disparo) {
-          return null;
-        }
-        const conditions = executionService.planningConditionsResource.value();
-        if (!conditions?.series) {
-          return null;
-        }
-        const targetSeries = conditions.series.find((serie) => serie.seriesId === s.serie);
-        const targetShot = targetSeries?.shots?.find((shot) => shot.shotId === s.disparo);
-        if (targetShot?.orientation === undefined || targetShot.orientation === null) {
-          return null;
-        }
-        const unit = conditions.units?.orientation ?? AngleUnitEnum.MILS;
-        if (unit === AngleUnitEnum.DEGREES) {
-          return targetShot.orientation * (6400 / 360);
-        }
-        return targetShot.orientation;
+    withComputed(
+      (store, executionService = inject(ExecutionService), conditionsService = inject(PlanningConditionsService)) => ({
+        isLoadingJltMao: computed(() => executionService.shotJltMaoResource.isLoading()),
+        isSavingJltMao: computed(() => executionService.updateShotJltMaoResource.isLoading()),
+        jltMaoPlannedOlt: computed((): number | null => {
+          const s = store.jltMao();
+          if (!s.serie || !s.disparo) {
+            return null;
+          }
+          const conditions = conditionsService.conditionsResource.value();
+          if (!conditions?.series) {
+            return null;
+          }
+          const targetSeries = conditions.series.find((serie) => serie.seriesId === s.serie);
+          const targetShot = targetSeries?.shots?.find((shot) => shot.shotId === s.disparo);
+          if (targetShot?.orientation === undefined || targetShot.orientation === null) {
+            return null;
+          }
+          const unit = conditions.units?.orientation ?? AngleUnitEnum.MILS;
+          if (unit === AngleUnitEnum.DEGREES) {
+            return targetShot.orientation * (6400 / 360);
+          }
+          return targetShot.orientation;
+        }),
+        /**
+         * Deriva de puntería = Deriva tabular (diferencia angular + marcación a la piqueta).
+         * Depende de la posición de la pieza (MAO Topografía) y de las coordenadas de la piqueta seleccionada.
+         */
+        derivaPunteriaCalculada: computed(() => {
+          const s = store.jltMao();
+          const maoTopo = (store as unknown as { maoTopography: () => MaoTopographyState }).maoTopography?.() ?? {
+            xPieza: null,
+            yPieza: null,
+          };
+          const piqueta = s.piquetaOptions.find((p) => p.value === s.piqueta) ?? null;
+          if (!piqueta || maoTopo.xPieza === null || maoTopo.yPieza === null || s.diferenciaAngular === null) {
+            return s.olt;
+          }
+          const bearingRad = Math.atan2(piqueta.y - maoTopo.yPieza, piqueta.x - maoTopo.xPieza);
+          const bearingMils = bearingRad * (3200 / Math.PI);
+          return s.diferenciaAngular + bearingMils;
+        }),
       }),
-      /**
-       * Deriva de puntería = Deriva tabular (diferencia angular + marcación a la piqueta).
-       * Depende de la posición de la pieza (MAO Topografía) y de las coordenadas de la piqueta seleccionada.
-       */
-      derivaPunteriaCalculada: computed(() => {
-        const s = store.jltMao();
-        const maoTopo = (store as unknown as { maoTopography: () => MaoTopographyState }).maoTopography?.() ?? {
-          xPieza: null,
-          yPieza: null,
-        };
-        const piqueta = s.piquetaOptions.find((p) => p.value === s.piqueta) ?? null;
-        if (!piqueta || maoTopo.xPieza === null || maoTopo.yPieza === null || s.diferenciaAngular === null) {
-          return s.olt;
-        }
-        const bearingRad = Math.atan2(piqueta.y - maoTopo.yPieza, piqueta.x - maoTopo.xPieza);
-        const bearingMils = bearingRad * (3200 / Math.PI);
-        return s.diferenciaAngular + bearingMils;
-      }),
-    })),
+    ),
     withMethods((store, executionService = inject(ExecutionService)) => ({
       async loadShotJltMao(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {

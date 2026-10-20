@@ -71,3 +71,7 @@ npm start                  # Serve de la aplicación
 npm run start:dev          # Serve aplicación + mock server
 npm run start:mocks        # Solo mock server
 ```
+
+## 6. Acceso a datos de Planning compartido (`data-access-planning`)
+
+`libs/domain/trial/data-access-planning` (`@intaqalab/data-access-planning`, tags `scope:trials`, `type:data-access`) es la única fuente de **lectura** de los GET de `planning-api.json` para execution (ver [ADR-017](adrs/017-planning-trial-data-access-layer.md)). Execution no declara URLs `/planning/...` propias: `npm run check:planning-urls` lo verifica. Las mutaciones (PUT/POST) siguen en los servicios de cada dominio.

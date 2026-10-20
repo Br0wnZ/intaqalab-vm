@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -28,11 +29,11 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
+  buildDisparoOptions,
   mapPlanningSeriesToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
-  mapShotsToDisparoOptions,
 } from '../utils/selection-options';
 
 type InputFieldValue = { value: string; unit: string } | null;
@@ -191,6 +192,8 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
 
+  readonly #trialShots = injectTrialShots();
+
   readonly #selectionKey = computed(() =>
     shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
   );
@@ -203,26 +206,19 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.acousticLevelIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.acousticLevelIntroduction().serieOptions,
+    ),
   );
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(
-        progressShots,
-        this.#store.acousticLevelIntroduction().disparoOptions,
-        planningShots,
-      );
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, this.#store.acousticLevelIntroduction().disparoOptions);
-    }
-    return this.#store.acousticLevelIntroduction().disparoOptions;
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.acousticLevelIntroduction().disparoOptions,
+    }),
+  );
   protected readonly equipoOptions = computed(() => this.#store.acousticLevelIntroduction().equipoOptions);
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────

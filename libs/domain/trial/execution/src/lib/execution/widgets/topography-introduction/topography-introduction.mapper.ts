@@ -6,11 +6,7 @@ import type {
   ShotTopographyRequest,
   ShotTopographyResponse,
 } from '../../models/shot-topography.models';
-import {
-  mapSelectedShotStatusClass,
-  mapSelectedShotStatusLabel,
-  mapShotsToDisparoOptions as mapSelectionShotsToDisparoOptions,
-} from '../utils/selection-options';
+import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
 
 export interface SelectOption {
   value: string;
@@ -75,28 +71,7 @@ export const mapShotStatusToClass = (status?: string | null): string => {
   return mapSelectedShotStatusClass(status);
 };
 
-/**
- * Mapea series de planificación a opciones de selector.
- */
-export const mapPlanningSeriesToOptions = (
-  series: { id: string; name?: string }[] | null | undefined,
-  fallback: SelectOption[] = [],
-): SelectOption[] => {
-  if (!series || series.length === 0) return fallback;
-  return series.map((s, idx) => ({
-    value: s.id,
-    label: s.name && s.name.trim() !== '' ? s.name : `Serie ${idx + 1}`,
-  }));
-};
-
-/**
- * Mapea disparos a opciones de selector.
- */
-export const mapShotsToDisparoOptions = (
-  shots: { shotId?: string; id?: string; globalNumber?: number | null }[] | null | undefined,
-  fallback: SelectOption[] = [],
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
-): SelectOption[] => mapSelectionShotsToDisparoOptions(shots, fallback, planningShots);
+export { buildDisparoOptions, mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 /**
  * Extrae los datos de topografía de la respuesta.

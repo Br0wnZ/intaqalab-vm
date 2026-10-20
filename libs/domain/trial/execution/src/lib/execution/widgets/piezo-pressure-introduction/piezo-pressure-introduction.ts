@@ -15,6 +15,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum, TimeUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
@@ -42,11 +43,11 @@ import {
 } from '../utils/selection-options';
 import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
 import {
+  buildDisparoOptions,
   buildPiezoEquipmentCombinedValue,
   buildShotPressuresRequest,
   extractPressuresResponse,
   mapPlanningSeriesToOptions,
-  mapShotsToDisparoOptions,
   matchesEquipmentId,
   normalizeDifferentialPressure,
   normalizePiezoPressures,
@@ -215,6 +216,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
 
   // ── Opciones de unidad ──────────────────────────────────────────────────────
   protected readonly pressureUnitOptions = [
@@ -283,21 +285,20 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
 
   // ── Options: Series y Disparos dinámicos desde planning y progress ───────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.piezoPressureIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.piezoPressureIntroduction().serieOptions,
+    ),
   );
 
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.selectorFormModel().serie;
-    const series = this.#store.executionProgress()?.series;
-    const progressShots = selectedSerie ? series?.find((serie) => serie.seriesId === selectedSerie)?.shots : undefined;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerie)?.shots;
-    const shots = progressShots?.map((shot) => ({
-      ...shot,
-      globalNumber: planningShots?.find((planningShot) => planningShot.id === shot.shotId)?.globalNumber,
-    }));
-
-    return mapShotsToDisparoOptions(shots, this.#store.piezoPressureIntroduction().disparoOptions);
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.piezoPressureIntroduction().disparoOptions,
+    }),
+  );
 
   // ── Options: Equipos desde API (con fallback a store) ────────────────────────
   /**
@@ -482,7 +483,9 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     if (progressShots?.length) {
       return progressShots.map((s) => s.shotId);
     }
-    const planningShots = this.#store.planningSeries()?.find((s) => s.id === serieId)?.shots;
+    const planningShots = (this.#trialShots.series() ?? this.#store.planningSeries())?.find(
+      (s) => s.id === serieId,
+    )?.shots;
     if (planningShots?.length) {
       return planningShots.map((s) => s.id);
     }

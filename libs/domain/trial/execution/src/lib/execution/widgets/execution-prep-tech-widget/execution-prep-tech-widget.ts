@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -265,6 +266,7 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
   // 💉
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
 
   /**
    * ⚙️ Computed: Configuración visual del perfil activo
@@ -286,7 +288,7 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
   readonly seriesReadiness = linkedSignal<SerieReadiness[]>(() => {
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
     const profilesReadiness = this.#store.profilesReadiness();
-    const planningSeries = this.#store.planningSeries();
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries();
     const profileItem = profilesReadiness?.find((p) => p.profile === apiProfile);
     const readinessBySeriesId = new Map(profileItem?.seriesReadiness.map((serie) => [serie.seriesId, serie]));
 

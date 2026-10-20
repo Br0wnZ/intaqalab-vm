@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -15,11 +16,11 @@ import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
-  mapShotOptionsToPlanningNumbers,
-  mapShotsToDisparoOptions,
 } from '../utils/selection-options';
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
@@ -169,7 +170,8 @@ interface SeguridadSelectsModel {
                 rows="5"
                 class="resize-none"
                 [value]="pruebaTexto() ?? ''"
-                (input)="pruebaTexto.set($any($event.target).value || null)"
+                (input)="pruebaTexto.set(pruebaInput.value || null)"
+                #pruebaInput
               ></textarea>
             </mat-form-field>
           </div>
@@ -211,7 +213,8 @@ interface SeguridadSelectsModel {
                 rows="4"
                 class="resize-none"
                 [value]="blancoTexto() ?? ''"
-                (input)="blancoTexto.set($any($event.target).value || null)"
+                (input)="blancoTexto.set(blancoInput.value || null)"
+                #blancoInput
               ></textarea>
             </mat-form-field>
           </div>
@@ -251,7 +254,8 @@ interface SeguridadSelectsModel {
                 rows="4"
                 class="resize-none"
                 [value]="bocaTexto() ?? ''"
-                (input)="bocaTexto.set($any($event.target).value || null)"
+                (input)="bocaTexto.set(bocaInput.value || null)"
+                #bocaInput
               ></textarea>
             </mat-form-field>
           </div>
@@ -291,7 +295,8 @@ interface SeguridadSelectsModel {
                 rows="4"
                 class="resize-none"
                 [value]="cierreTexto() ?? ''"
-                (input)="cierreTexto.set($any($event.target).value || null)"
+                (input)="cierreTexto.set(cierreInput.value || null)"
+                #cierreInput
               ></textarea>
             </mat-form-field>
           </div>
@@ -331,7 +336,8 @@ interface SeguridadSelectsModel {
                 rows="4"
                 class="resize-none"
                 [value]="piqueTexto() ?? ''"
-                (input)="piqueTexto.set($any($event.target).value || null)"
+                (input)="piqueTexto.set(piqueInput.value || null)"
+                #piqueInput
               ></textarea>
             </mat-form-field>
           </div>
@@ -346,29 +352,26 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #trialShots = injectTrialShots();
 
   // ── UI state ──────────────────────────────────────────────────────────────
   protected readonly activeTab = signal<SeguridadTab>('convencional');
 
   // ── Options from store ────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.seguridad().serieOptions);
-  protected readonly disparoOptions = computed(() => {
-    const storedOptions = this.#store.seguridad().disparoOptions;
-    const planningSeries = this.#store.planningSeries();
-    const selectedSerie = this.formModel().serie;
-    const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, storedOptions);
-    }
-    return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.seguridad().serieOptions,
+    ),
+  );
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.seguridad().disparoOptions,
+    }),
+  );
   protected readonly camaraOptions = computed(() => this.#store.seguridad().camaraOptions);
   protected readonly grabadorOptions = computed(() => this.#store.seguridad().grabadorOptions);
   protected readonly canalOptions = computed(() => this.#store.seguridad().canalOptions);

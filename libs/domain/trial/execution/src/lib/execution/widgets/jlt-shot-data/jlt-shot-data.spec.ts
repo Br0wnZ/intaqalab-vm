@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -58,9 +58,9 @@ const shotResponses: Record<string, typeof currentShotResponse | typeof lastShot
 };
 
 const mockWidgetStateService = {
-  updateWidgetFormState: () => {},
-  registerWidgetInstance: () => {},
-  unregisterWidgetInstance: () => {},
+  updateWidgetFormState: vi.fn(),
+  registerWidgetInstance: vi.fn(),
+  unregisterWidgetInstance: vi.fn(),
   placedWidgets: () => [],
 };
 
@@ -200,6 +200,7 @@ describe('JltShotData', () => {
         provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
         { provide: ExecutionService, useValue: mockExecutionService },
@@ -375,6 +376,21 @@ describe('JltShotData', () => {
     fixture.componentInstance.enableHistoricalEdit();
 
     expect(fixture.componentInstance['readOnly']()).toBe(false);
+  });
+
+  it('disables historical edit after saving changes', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    await fixture.whenStable();
+    fixture.componentInstance.enableHistoricalEdit();
+    fixture.componentInstance['jetField'].set('JET-UPDATED');
+
+    await fixture.componentInstance.saveForm();
+
+    expect(fixture.componentInstance['historicalEditEnabled']()).toBe(false);
+    expect(fixture.componentInstance['readOnly']()).toBe(true);
   });
 
   it('renders filter selectors and current shot action', async () => {

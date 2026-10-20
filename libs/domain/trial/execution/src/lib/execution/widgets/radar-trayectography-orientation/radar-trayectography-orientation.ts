@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -284,23 +285,26 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
 
   // ── Datos desde el store — opciones y valores de otros widgets ────────────
 
   protected readonly radarOptions = computed(() => this.#store.radarTrayectographyOrientation().radarOptions);
-  protected readonly serieOptions = computed(() =>
-    (this.#store.radarTrayectographyOrientationResponse()?.series ?? []).map((serie, index) => {
-      const plannedSerie = (this.#store.planningSeries() ?? []).find((item) => item.id === serie.seriesId);
+  protected readonly serieOptions = computed(() => {
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
+    return (this.#store.radarTrayectographyOrientationResponse()?.series ?? []).map((serie, index) => {
+      const plannedSerie = planningSeries.find((item) => item.id === serie.seriesId);
       return {
         value: serie.seriesId,
         label: plannedSerie?.name?.trim() || `Serie ${index + 1}`,
       };
-    }),
-  );
+    });
+  });
   protected readonly disparoOptions = computed(() => {
     const response = this.#store.radarTrayectographyOrientationResponse();
     const serie = response?.series.find((item) => item.seriesId === this.formModel().serie) ?? response?.series[0];
-    const plannedSerie = (this.#store.planningSeries() ?? []).find((item) => item.id === serie?.seriesId);
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
+    const plannedSerie = planningSeries.find((item) => item.id === serie?.seriesId);
     return (serie?.shots ?? []).map((shot, index) => {
       const plannedShot = (plannedSerie?.shots ?? []).find((item) => item.id === shot.shotId);
       return { value: shot.shotId, label: `Disparo ${String(plannedShot?.globalNumber ?? index + 1)}` };

@@ -1,4 +1,5 @@
 import { computed, effect, inject, untracked } from '@angular/core';
+import { type PlanningSeriesItem, PlanningSeriesService, formatShotLabel } from '@intaqalab/data-access-planning';
 import { patchState, signalStoreFeature, type, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
 import type {
@@ -8,7 +9,7 @@ import type {
   EquipmentSelectionApiList,
 } from '../../execution/models';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../../execution/models';
-import { ExecutionService, type PlanningSeriesItem } from '../../services/execution.service';
+import { ExecutionService } from '../../services/execution.service';
 import type { EquipmentSelectorState } from '../execution-state.models';
 
 function flattenGroupedEquipments(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentItemSelection[] {
@@ -126,7 +127,7 @@ function buildSeriesSelectionData(
       if (!seenShotIds.has(shot.id)) {
         disparoOptions.push({
           value: shot.id,
-          label: `Disparo ${shot.globalNumber ?? shotIndex + 1}`,
+          label: formatShotLabel(shot.globalNumber, shotIndex),
         });
         seenShotIds.add(shot.id);
       }
@@ -439,6 +440,8 @@ export function withEquipmentSelector() {
           }));
         });
 
+        const seriesService = inject(PlanningSeriesService);
+
         let lastUpdateStatus = executionService.updateEquipmentSelectorResource.status();
 
         effect(() => {
@@ -453,7 +456,11 @@ export function withEquipmentSelector() {
         });
 
         effect(() => {
-          const planningSeries = executionService.planningSeriesResource.value();
+          const fireTrialIdVal = store.fireTrialId();
+          if (fireTrialIdVal) {
+            seriesService.load(fireTrialIdVal);
+          }
+          const planningSeries = seriesService.seriesResource.value();
           const seriesSelectionData = buildSeriesSelectionData(planningSeries);
 
           patchState(store, (state) => ({

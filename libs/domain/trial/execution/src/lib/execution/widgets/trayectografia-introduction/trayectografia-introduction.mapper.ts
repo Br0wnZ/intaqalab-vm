@@ -11,11 +11,7 @@ import type {
   ShotTrajectographyRequest,
   ShotTrajectographyResponse,
 } from '../../models/shot-trajectography.models';
-import {
-  mapSelectedShotStatusClass,
-  mapSelectedShotStatusLabel,
-  mapShotsToDisparoOptions as mapSelectionShotsToDisparoOptions,
-} from '../utils/selection-options';
+import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../utils/selection-options';
 
 export type InputFieldValue = { value: string; unit: string } | null;
 
@@ -48,30 +44,7 @@ export const mapShotStatusToClass = (status: TrayectografiaIntroductionState['es
   return mapSelectedShotStatusClass(status);
 };
 
-/**
- * Mapea las series de planificación a opciones para el selector.
- */
-export const mapPlanningSeriesToOptions = (
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
-
-/**
- * Mapea los disparos a opciones para el selector.
- */
-export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
-): Array<{ value: string; label: string }> => mapSelectionShotsToDisparoOptions(shots, fallbackOptions, planningShots);
+export { buildDisparoOptions, mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 /**
  * Mapea una unidad de distancia a enum DistanceUnitEnum para API.

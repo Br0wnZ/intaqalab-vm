@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -16,11 +17,10 @@ import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import {
+  buildDisparoOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
-  mapShotOptionsToPlanningNumbers,
-  mapShotsToDisparoOptions,
 } from '../utils/selection-options';
 import {
   AplicarConfigMasivaDialog,
@@ -215,29 +215,21 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #dialog = inject(MatDialog);
+  readonly #trialShots = injectTrialShots();
 
   // ── Unit options ──────────────────────────────────────────────────────────
   protected readonly mOptions = [{ value: 'm', label: 'm' }];
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() => this.#store.datosBlancoBola().serieOptions);
-  protected readonly disparoOptions = computed(() => {
-    const storedOptions = this.#store.datosBlancoBola().disparoOptions;
-    const planningSeries = this.#store.planningSeries();
-    const selectedSerie = this.selectorFormModel().serie;
-    const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
-    const progressShots = this.#store
-      .executionProgress()
-      ?.series.find((serie) => serie.seriesId === selectedSerie)?.shots;
-
-    if (progressShots?.length) {
-      return mapShotsToDisparoOptions(progressShots, storedOptions, planningShots);
-    }
-    if (planningShots?.length) {
-      return mapShotsToDisparoOptions(planningShots, storedOptions);
-    }
-    return mapShotOptionsToPlanningNumbers(storedOptions, planningSeries?.flatMap((serie) => serie.shots ?? []) ?? []);
-  });
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.selectorFormModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.datosBlancoBola().disparoOptions,
+    }),
+  );
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());

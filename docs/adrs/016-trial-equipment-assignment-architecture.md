@@ -57,7 +57,7 @@ Se adopta una **arquitectura desacoplada en dos capas de estado** con sincroniza
 
 ## Referencias
 
-- `libs/domain/trial/execution/src/lib/execution/WIDGET_SYSTEM.md`
+- `docs/WIDGET_SYSTEM.md`
 - `libs/domain/trial/execution/src/lib/execution/dialogs/equipment-selector.store.ts`
 - `libs/domain/trial/execution/src/lib/+state/features/equipment-selector.feature.ts`
 - ADR-003: Signal Trigger Pattern

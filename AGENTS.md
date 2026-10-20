@@ -10,7 +10,7 @@
 - You have access to the Nx MCP server and its tools, use them to help the user
 - NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
 - **Inferred Targets (Nx 23.2.1+ / Project Crystal):** `lint` and `test` targets are inferred by `@nx/eslint/plugin` and `@nx/vitest`. NEVER manually declare `lint` or `test` executors in `project.json`. Always run `npx nx show project <name> --json` to inspect full resolved targets.
-- **Vite & Vitest Standards:** Library `vite.config.mts` must use `plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()]` (no `nxCopyAssetsPlugin`). Workspace test suite is tracked in `vitest.config.ts` (`projects` array; `vitest.workspace.ts` is obsolete).
+- **Vite & Vitest Standards:** Library `vite.config.mts` must use `plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()]` (no `nxCopyAssetsPlugin`). Workspace test suite is tracked in `vitest.config.ts` (`projects` array; `vitest.workspace.ts` is obsolete). Workspace root `devDependencies` requires `@oxc-project/runtime` for Vitest Analog/OXC runtime helpers.
 - **Execution & Output:** Nx 23 defaults to `static-failures-only` in CI/non-interactive. If unix socket issues occur in sandboxes, use `NX_DAEMON=false`. Granular migrations run with `npx nx migrate --run-migration=<pkg:name>`.
 
 ## Scaffolding & Generators
@@ -25,7 +25,7 @@
 
 <!-- nx configuration end-->
 
-<!-- AGENTS_VERSION: 1.0.1 | UPDATED: 2026-09-29 -->
+<!-- AGENTS_VERSION: 1.1.1 | UPDATED: 2026-10-19 -->
 
 ---
 
@@ -77,6 +77,7 @@ Route tasks to specialized skills in `.agents/skills/`:
 - **3-State Views (Skeleton):** `view-state-pattern`
 - **Trial Planning Domain:** `planning-specialist`
 - **Trial Execution Domain:** `execution-domain-expert`
+- **Planning data read layer (`@intaqalab/data-access-planning`, ADR-017):** `execution-domain-expert` / `planning-specialist`
 - **Master Data Domain:** `master-data-specialist`
 
 ## 🚀 Optimized Fast Prompts (Lightweight Mode)
@@ -107,6 +108,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
 - **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
 - **Backend:** Clean ExpressJS mock server with Zod schema validation.
+- **Planning reads (ADR-017):** GET `/planning/...` data used by Execution MUST come from `@intaqalab/data-access-planning` (query services, selectors, `injectTrialShots()`, `formatShotLabel()`). Never declare `/planning/` read URLs in `libs/domain/trial/execution`; `npm run check:planning-urls` runs in pre-commit (Node, macOS/Windows). Widget docs: `docs/WIDGET_SYSTEM.md`.
 
 ## Component Design & Best Practices 🧩
 

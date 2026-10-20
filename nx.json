@@ -91,6 +91,7 @@
         "libs/domain/calendar-trials/**/*",
         "libs/domain/event-log/**/*",
         "libs/domain/master-data/**/*",
+        "libs/domain/trial/data-access-planning/**/*",
         "libs/domain/trial/execution/**/*",
         "libs/domain/trial/planning/**/*",
         "libs/domain/trial/trial-management/**/*",

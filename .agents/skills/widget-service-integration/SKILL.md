@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.0.2
-last-updated: 2026-10-15
+version: 1.1.0
+last-updated: 2026-10-19
 description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
@@ -1299,3 +1299,11 @@ Muchos widgets del panel de ejecución (p. ej. `MunitionIntroduction`, `PiezoPre
    ```
 
 4. **Sincronización:** Cuando el usuario guarda cambios en el modal "Selector equipos" (`PUT /equipment-selection`), `ExecutionStore` actualiza sus signals reactivos automáticamente, refrescando al instante las opciones disponibles en todos los widgets montados en el grid.
+
+---
+
+## 🔗 Lecturas de Planning (ADR-017)
+
+> [!IMPORTANT]
+> Este patrón (trigger privado + `httpResource` en `ExecutionService`) es **solo para endpoints de `/execution/`**. Los GET de `/planning/...` (series, conditions, measures, munitions, armament, propelling-charge-parameters) se leen de `@intaqalab/data-access-planning` (`Planning*Service`, `injectTrialShots()`, selectores puros). Nunca añadas URLs `/planning/` en execution: `npm run check:planning-urls` (pre-commit) falla.
+> Etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`. Documentación: `docs/WIDGET_SYSTEM.md`.

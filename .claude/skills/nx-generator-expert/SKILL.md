@@ -1,7 +1,7 @@
 ---
 name: nx-generator-expert
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-10-19
 description: Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility.
 argument-hint: "E.g. 'Generate feature library for warehouse management', 'Create card component in ui-shared lib', or '/create-feature'."
 user-invocable: true
@@ -112,6 +112,10 @@ _⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical 
 3. **Register New Libraries in Vitest Root Config**:
    - When generating a library with tests, add its `vite.config.mts` path to the `projects` array in `vitest.config.ts`.
    - 🚫 **PROHIBITED:** Creating or restoring `vitest.workspace.ts` (deprecated and ignored by Vitest 4).
+
+4. **OXC Runtime Helpers for Vitest (`@oxc-project/runtime`)**:
+   - Monorepo root `package.json` must maintain `@oxc-project/runtime` in `devDependencies`.
+   - When scaffolding or verifying libraries with tests, the Analog Vitest plugin transforms Angular packages using OXC with downleveling to `es2016`, requiring `@oxc-project/runtime/helpers/*` imports to resolve cleanly.
 
 ---
 

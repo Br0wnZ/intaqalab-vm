@@ -17,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { CadenceUnitEnum, MEASURE_UNIT_LABELS, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, createDirtyTracker } from '@intaqalab/utils';
@@ -238,6 +239,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
   readonly #selectionKey = computed(() =>
     shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
   );
@@ -294,14 +296,17 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(this.#store.planningSeries(), this.#store.velocityIntroduction().serieOptions),
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.velocityIntroduction().serieOptions,
+    ),
   );
 
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.selectorFormModel().serie,
       executionProgress: this.#store.executionProgress(),
-      planningSeries: this.#store.planningSeries(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
       storedOptions: this.#store.velocityIntroduction().disparoOptions,
     }),
   );

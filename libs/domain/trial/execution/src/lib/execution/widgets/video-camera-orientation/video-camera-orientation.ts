@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -168,6 +169,7 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
 
   // ── Datos desde el store ──────────────────────────────────────────────────
 
@@ -217,7 +219,7 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
 
   protected readonly serieOptions = computed(() => {
     const series = this.orientationResponse()?.series ?? [];
-    const planningSeries = this.#store.planningSeries() ?? [];
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     return series.map((serie, index) => ({
       value: serie.seriesId,
       label: planningSeries.find((planned) => planned.id === serie.seriesId)?.name?.trim() || `Serie ${index + 1}`,
@@ -231,7 +233,9 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
       ? response.series[0]
       : response?.series.find((serie) => serie.seriesId === selectedId);
     const plannedShots =
-      this.#store.planningSeries()?.find((serie) => serie.id === selectedSeries?.seriesId)?.shots ?? [];
+      (this.#trialShots.series() ?? this.#store.planningSeries())?.find(
+        (serie) => serie.id === selectedSeries?.seriesId,
+      )?.shots ?? [];
     return (selectedSeries?.shots ?? []).map((shot, index) => ({
       value: shot.shotId,
       label: `Disparo #${String(plannedShots.find((planned) => planned.id === shot.shotId)?.globalNumber ?? index + 1).padStart(2, '0')}`,

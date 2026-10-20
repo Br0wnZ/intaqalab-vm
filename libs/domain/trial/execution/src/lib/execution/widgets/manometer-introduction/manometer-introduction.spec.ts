@@ -5,6 +5,7 @@ import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { PlanningSeriesService } from '@intaqalab/data-access-planning';
 import { DistanceUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -93,7 +94,7 @@ describe('ManometerIntroduction', () => {
     const executionService = TestBed.inject(ExecutionService);
     const http = TestBed.inject(HttpTestingController);
 
-    executionService.getPlanningSeries('trial-123');
+    TestBed.inject(PlanningSeriesService).load('trial-123');
     executionService.getExecutionProgress('trial-123');
     TestBed.tick();
     http

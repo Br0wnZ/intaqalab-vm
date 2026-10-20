@@ -1,12 +1,40 @@
+import type { PlanningSeriesItem, PlanningSeriesShotItem, TrialShotsHandle } from '@intaqalab/data-access-planning';
+
+export type PlanningSeriesSource = PlanningSeriesItem[] | TrialShotsHandle | null | undefined;
+
+function isTrialShotsHandle(source: unknown): source is TrialShotsHandle {
+  return (
+    typeof source === 'object' &&
+    source !== null &&
+    'series' in source &&
+    typeof (source as { series?: unknown }).series === 'function'
+  );
+}
+
+function resolvePlanningSeries(source: PlanningSeriesSource): PlanningSeriesItem[] | null | undefined {
+  if (source === null) {
+    return undefined;
+  }
+  if (Array.isArray(source)) {
+    return source;
+  }
+  if (isTrialShotsHandle(source)) {
+    return source.series();
+  }
+  return undefined;
+}
+
 /**
  * Mapea las series de planificación a opciones para el selector.
+ * Acepta array de series o el handle `TrialShotsHandle` devuelto por `injectTrialShots()`.
  */
 export function mapPlanningSeriesToOptions(
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
+  planningSeries?: PlanningSeriesSource,
   fallbackOptions: Array<{ value: string; label: string }> = [],
 ): Array<{ value: string; label: string }> {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
+  const series = resolvePlanningSeries(planningSeries);
+  if (series?.length) {
+    return series.map((serie, index) => ({
       value: serie.id,
       label: serie.name?.trim() || `Serie ${index + 1}`,
     }));
@@ -20,14 +48,18 @@ export function mapPlanningSeriesToOptions(
 export function mapShotsToDisparoOptions(
   shots?: Array<{ shotId?: string; id?: string; globalNumber?: number | null }> | null,
   fallbackOptions: Array<{ value: string; label: string }> = [],
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
+  planningShots: PlanningSeriesShotItem[] | null | undefined = [],
 ): Array<{ value: string; label: string }> {
   if (shots?.length) {
-    const planningNumbersByShotId = new Map(planningShots.map((shot) => [shot.id, shot.globalNumber]));
-    return shots.map((shot, index) => ({
-      value: shot.shotId ?? shot.id ?? `disparo-${index + 1}`,
-      label: `Disparo ${shot.globalNumber ?? planningNumbersByShotId.get(shot.shotId ?? shot.id ?? '') ?? index + 1}`,
-    }));
+    const planningNumbersByShotId = new Map((planningShots ?? []).map((shot) => [shot.id, shot.globalNumber]));
+    return shots.map((shot, index) => {
+      const shotId = shot.shotId ?? shot.id ?? '';
+      const globalNumber = planningNumbersByShotId.get(shotId) ?? shot.globalNumber ?? index + 1;
+      return {
+        value: shot.shotId ?? shot.id ?? `disparo-${index + 1}`,
+        label: `Disparo ${globalNumber}`,
+      };
+    });
   }
   return fallbackOptions;
 }
@@ -37,10 +69,10 @@ export function mapShotsToDisparoOptions(
  */
 export function mapShotOptionsToPlanningNumbers(
   options: Array<{ value: string; label: string }>,
-  planningShots: Array<{ id: string; globalNumber?: number | null }> = [],
+  planningShots: PlanningSeriesShotItem[] | null | undefined = [],
 ): Array<{ value: string; label: string }> {
   const planningNumbersByShotId = new Map(
-    planningShots.map((shot, index) => [shot.id, { globalNumber: shot.globalNumber, index }]),
+    (planningShots ?? []).map((shot, index) => [shot.id, { globalNumber: shot.globalNumber, index }]),
   );
 
   return options.map((option) => {
@@ -66,10 +98,11 @@ export function buildDisparoOptions(params: {
     | { series: Array<{ seriesId: string; shots: Array<{ shotId: string; status?: string | null }> }> }
     | null
     | undefined;
-  planningSeries: Array<{ id: string; shots?: Array<{ id: string; globalNumber?: number | null }> }> | null | undefined;
+  planningSeries: PlanningSeriesSource;
   storedOptions?: Array<{ value: string; label: string }>;
 }): Array<{ value: string; label: string }> {
-  const { selectedSerie, executionProgress, planningSeries, storedOptions = [] } = params;
+  const { selectedSerie, executionProgress, storedOptions = [] } = params;
+  const planningSeries = resolvePlanningSeries(params.planningSeries);
   const planningShots = planningSeries?.find((serie) => serie.id === selectedSerie)?.shots;
   const progressShots = selectedSerie
     ? executionProgress?.series.find((serie) => serie.seriesId === selectedSerie)?.shots

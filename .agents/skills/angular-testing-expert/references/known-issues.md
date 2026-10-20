@@ -568,3 +568,27 @@ expect(formModel().measurements).toEqual(['INITIAL_VELOCITY', 'SOUND', 'TRAJECTO
 // ✅ Correcto (respeta el orden ordinal del DOM):
 expect(formModel().measurements).toEqual(['INITIAL_VELOCITY', 'TRAJECTOGRAPHY', 'SOUND']);
 ```
+
+---
+
+## 21. `Failed to resolve import "@oxc-project/runtime/helpers/..."` en Vitest
+
+**Contexto:** Al ejecutar tests unitarios con Vitest (`npx nx test <project>`), el análisis de imports de Vite (`vite:import-analysis`) falla de forma abrupta:
+
+```text
+Failed to resolve import "@oxc-project/runtime/helpers/asyncToGenerator" from "node_modules/@angular/core/fesm2022/core.mjs"
+```
+
+**Causa:**
+`@analogjs/vite-plugin-angular` transfigura paquetes `@angular/*` y `@angular/cdk` a target `es2016` mediante `transformWithOxc()` para que `async/await` pueda ser interceptado por Zone.js en utilidades de testing (`fakeAsync`, `tick`). El compilador OXC emite llamadas a helpers externos (`@oxc-project/runtime/helpers/*`). Al no venir incluido transitivamente en upstream, Vite no puede resolver la ruta a menos que esté instalado en el monorepo.
+
+**Solución:**
+Asegurar que `@oxc-project/runtime` esté presente en las `devDependencies` del `package.json` raíz del workspace:
+
+```json
+"devDependencies": {
+  "@oxc-project/runtime": "^0.115.0"
+}
+```
+
+No requiere ningún import manual en el código fuente de los tests ni de los componentes; el compilador OXC y Vite consumen los helpers de runtime de manera transparente durante la ejecución del test runner.

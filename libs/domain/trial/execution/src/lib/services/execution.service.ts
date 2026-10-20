@@ -3,7 +3,9 @@ import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
-import type { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
+import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
+import type { TrialArmamentResponse } from '@intaqalab/data-access-planning';
+import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
 
@@ -248,43 +250,14 @@ export interface PlanningApprovalRequest {
   comments?: string | null;
 }
 
-export interface PlanningSeriesItem {
-  id: string;
-  name: string;
-  shotQuantity?: number;
-  executionOrder?: number;
-  observations?: string;
-  shots?: PlanningSeriesShotItem[];
-}
-
-export interface PlanningSeriesShotItem {
-  id: string;
-  globalNumber?: number;
-  observation?: string | null;
-}
-
-export interface PlanningConditionsResponse {
-  units?: {
-    orientation?: AngleUnitEnum | null;
-    shootingAngle?: AngleUnitEnum | null;
-    nominalSpeed?: SpeedUnitEnum | null;
-  };
-  series: PlanningConditionsSeries[];
-}
-
-export interface PlanningConditionsSeries {
-  seriesId: string;
-  shots: PlanningConditionsShot[];
-}
-
-export interface PlanningConditionsShot {
-  shotId: string;
-  orientation?: number | null;
-  orientationUnit?: AngleUnitEnum | null;
-  shootingAngle?: number | null;
-  shootingAngleUnit?: AngleUnitEnum | null;
-  nominalSpeed?: number | null;
-}
+/** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
+export type {
+  PlanningSeriesItem,
+  PlanningSeriesShotItem,
+  PlanningConditionsResponse,
+  PlanningConditionsSeries,
+  PlanningConditionsShot,
+} from '@intaqalab/data-access-planning';
 
 export interface JltShotDataPayload {
   jet: string;
@@ -453,20 +426,10 @@ export interface ArmamentEquipmentItem {
   modelName: string;
 }
 
-export interface PlanningShotArmament {
-  weaponExternalId?: number;
-  tubeExternalId?: number;
-  isInstrumented?: boolean;
-  tubeLifePercentage?: number;
-  observations?: string;
-}
-
-export interface PlanningArmamentResponse {
-  series: Array<{
-    seriesId: string;
-    shots: Array<{ shotId: string; armament?: PlanningShotArmament }>;
-  }>;
-}
+/** Modelos de planning/armament: fuente única en @intaqalab/data-access-planning. */
+export type PlanningArmamentResponse = TrialArmamentResponse;
+/** Modelos de planning/munitions (shape raw del backend): fuente única en @intaqalab/data-access-planning. */
+export type { TrialMunitionsRawItem } from '@intaqalab/data-access-planning';
 
 export interface ShotArmamentRequest {
   weaponId: number | null;
@@ -660,12 +623,13 @@ interface LoadEquipmentByTypeParams {
 export class ExecutionService {
   readonly #lifecycleService = inject(FireTrialLifecycleService);
   readonly #equipmentCatalogService = inject(EquipmentCatalogService);
+  readonly #planningMunitionsService = inject(PlanningMunitionsService);
+  readonly #planningArmamentService = inject(PlanningArmamentService);
   readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #warehouseUrl = injectWharehouseEndpoint();
 
-  readonly #planningMunitionsParams = signal<ExecutionParams | null>(null);
   readonly #componentTypesParams = signal<{ pageSize: number; active: boolean } | null>(null);
   readonly #warehouseDenominationsParams = signal<{
     pageSize: number;
@@ -673,12 +637,6 @@ export class ExecutionService {
     munitionTypeId?: string;
   } | null>(null);
   readonly #availableStockParams = signal<string[] | null>(null);
-
-  readonly #planningMunitionsResource = httpResource<unknown>(() => {
-    const params = this.#planningMunitionsParams();
-    if (!params) return undefined;
-    return { url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/munitions`, method: 'GET' };
-  });
 
   readonly #componentTypesResource = httpResource<unknown>(() => {
     const params = this.#componentTypesParams();
@@ -779,14 +737,17 @@ export class ExecutionService {
   async fetchPlanningMunitionOptions(fireTrialId: FireTrial['id']): Promise<PlanningMunitionOptionData> {
     this.#componentTypesParams.set({ pageSize: 100, active: true });
     this.#warehouseDenominationsParams.set({ pageSize: 100, active: true });
-    this.#planningMunitionsParams.set({ fireTrialId });
+    this.#planningMunitionsService.load(fireTrialId);
     await Promise.all([
       this.#awaitResource(this.#componentTypesResource),
       this.#awaitResource(this.warehouseDenominationsResource),
-      this.#awaitResource(this.#planningMunitionsResource),
+      this.#awaitResource(this.#planningMunitionsService.munitionsResource),
     ]);
 
-    const response = this.#planningMunitionsResource.value();
+    // Shape raw del backend: mismo parsing defensivo que antes, alimentado por la nueva capa.
+    const response: unknown = this.#planningMunitionsService.munitionsResource.value();
+    const root = isRecord(response) ? response : {};
+    const seriesList = Array.isArray(root['series']) ? root['series'] : [];
     const componentTypeCatalog = this.#catalogItems(this.#componentTypesResource.value());
     const componentTypeMap = new Map<string, { label: string; category: string }>();
     componentTypeCatalog.forEach((item) => {
@@ -829,9 +790,6 @@ export class ExecutionService {
         warehouseDenominationsByType.set(compTypeId, list);
       }
     });
-
-    const root = isRecord(response) ? response : {};
-    const seriesList = Array.isArray(root['series']) ? root['series'] : [];
 
     const configurationIds: string[] = [];
     const globalComponentTypes = new Map<string, PlanningComponentType>();
@@ -1079,65 +1037,30 @@ export class ExecutionService {
     return value['items'].filter(isRecord);
   }
 
-  // ── PLANNING SERIES ──────────────────────────────────────────────────────
-
-  readonly #getPlanningSeriesParams = signal<ExecutionParams | null>(null);
-
-  readonly planningSeriesResource = httpResource<PlanningSeriesItem[]>(() => {
-    const params = this.#getPlanningSeriesParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/series`,
-      method: 'GET',
-    };
-  });
-
-  getPlanningSeries(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningSeriesParams.set({ fireTrialId });
-  }
-
-  readonly #getPlanningConditionsParams = signal<ExecutionParams | null>(null);
-
-  readonly planningConditionsResource = httpResource<PlanningConditionsResponse>(() => {
-    const params = this.#getPlanningConditionsParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/conditions`,
-      method: 'GET',
-    };
-  });
-
-  getPlanningConditions(fireTrialId: FireTrial['id']): void {
-    this.#getPlanningConditionsParams.set({ fireTrialId });
-  }
+  // ── PLANNING SERIES / CONDITIONS ─────────────────────────────────────────
+  // series y conditions migradas a PlanningSeriesService/PlanningConditionsService;
+  // munitions y armament migradas a PlanningMunitionsService/PlanningArmamentService.
+  // Quedan aquí las mutaciones (PUT/POST) y las familias de execution.
 
   async fetchPlanningFuseGraduation(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<number | null> {
-    this.#planningMunitionsParams.set({ fireTrialId });
-    await this.#awaitResource(this.#planningMunitionsResource);
+    const response = await this.#planningMunitionsService.fetchMunitions(fireTrialId);
 
-    const response = this.#planningMunitionsResource.value();
-    const series =
-      isRecord(response) && Array.isArray(response['series'])
-        ? response['series'].find((item) => isRecord(item) && item['seriesId'] === seriesId)
-        : undefined;
-    if (!isRecord(series) || !Array.isArray(series['configurations'])) return null;
+    const series = response.series.find((item) => item.seriesId === seriesId);
+    if (!series) return null;
 
-    for (const configuration of series['configurations']) {
-      if (!isRecord(configuration)) continue;
-      const assignedShotIds = configuration['assignedShotIds'];
-      if (Array.isArray(assignedShotIds) && assignedShotIds.length > 0 && !assignedShotIds.includes(shotId)) {
+    for (const configuration of series.configurations) {
+      const assignedShotIds = configuration.assignedShotIds ?? [];
+      if (assignedShotIds.length > 0 && !assignedShotIds.includes(shotId)) {
         continue;
       }
 
-      const components = configuration['components'];
-      if (!Array.isArray(components)) continue;
-      for (const component of components) {
-        if (isRecord(component) && typeof component['fuseMeasurement'] === 'number') {
-          return component['fuseMeasurement'];
+      for (const component of configuration.components) {
+        if (typeof component.fuseMeasurement === 'number') {
+          return component.fuseMeasurement;
         }
       }
     }
@@ -1163,39 +1086,6 @@ export class ExecutionService {
 
   getRadarTrayectographyOrientation(fireTrialId: FireTrial['id'], radarId: string | null): void {
     this.#getRadarTrayectographyOrientationParams.set({ fireTrialId, radarId });
-  }
-
-  // ── PLANNING PROPELLING CHARGE PARAMETERS (Widget 9) ──────────────────────
-
-  readonly #getPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
-
-  readonly propellingChargeParametersResource = httpResource<PropellantChargeParametersResponse>(() => {
-    const params = this.#getPropellingChargeParametersParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/propelling-charge-parameters`,
-      method: 'GET',
-    };
-  });
-
-  getPropellingChargeParameters(fireTrialId: FireTrial['id']): void {
-    this.#getPropellingChargeParametersParams.set({ fireTrialId });
-  }
-
-  readonly #fetchPropellingChargeParametersParams = signal<ExecutionParams | null>(null);
-
-  readonly #fetchPropellingChargeParametersResource = httpResource<PropellantChargeParametersResponse>(() => {
-    const p = this.#fetchPropellingChargeParametersParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#planningUrl}/fire-trials/${p.fireTrialId}/planning/propelling-charge-parameters`,
-      method: 'GET',
-    };
-  });
-
-  async fetchPropellingChargeParameters(fireTrialId: FireTrial['id']): Promise<PropellantChargeParametersResponse> {
-    this.#fetchPropellingChargeParametersParams.set({ fireTrialId });
-    return this.#awaitResourceValue(this.#fetchPropellingChargeParametersResource);
   }
 
   // ── PROPELLANT CHARGE ADJUSTMENT (Widget 10) ────────────────────────────
@@ -1929,20 +1819,9 @@ export class ExecutionService {
     return response.items;
   }
 
-  readonly #fetchPlanningArmamentParams = signal<ExecutionParams | null>(null);
-
-  readonly #fetchPlanningArmamentResource = httpResource<PlanningArmamentResponse>(() => {
-    const p = this.#fetchPlanningArmamentParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#planningUrl}/fire-trials/${p.fireTrialId}/planning/armament`,
-      method: 'GET',
-    };
-  });
-
   async fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
-    this.#fetchPlanningArmamentParams.set({ fireTrialId });
-    return this.#awaitResourceValue(this.#fetchPlanningArmamentResource);
+    // planning/armament migrado a PlanningArmamentService (@intaqalab/data-access-planning).
+    return this.#planningArmamentService.fetchArmament(fireTrialId);
   }
 
   readonly #fetchShotArmamentParams = signal<ShotPressuresParams | null>(null);

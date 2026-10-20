@@ -3,6 +3,7 @@ import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { PlanningTrialContextService } from '@intaqalab/data-access-planning';
 import { ErrorState, Skeleton } from '@intaqalab/ui';
 import { explicitEffect, injectParams } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -81,6 +82,7 @@ export class Execution implements OnDestroy {
   readonly #router = inject(Router);
   readonly #executionFacade = inject(ExecutionPageFacade);
   readonly #executionService = inject(ExecutionService);
+  readonly #planningTrialContext = inject(PlanningTrialContextService);
   readonly #fireTrialId = injectParams('fireTrialId');
   #trialSelectorOpen = false;
 
@@ -99,6 +101,7 @@ export class Execution implements OnDestroy {
   // eslint-disable-next-line no-unused-private-class-members
   readonly #routeSyncEffect = explicitEffect([this.#fireTrialId], ([fireTrialId]) => {
     if (fireTrialId) {
+      this.#planningTrialContext.setTrial({ fireTrialId });
       this.#executionFacade.initialize(fireTrialId);
       this.#executionService.getEquipmentSelector(fireTrialId);
       return;

@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -36,6 +37,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
 import { ArmamentIntroductionMassConfigDialog } from './armament-introduction-mass-config-dialog';
 
 interface ArmamentIntroductionSelectForm {
@@ -193,6 +195,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #dialog = inject(MatDialog);
   readonly #executionService = inject(ExecutionService);
+  readonly #trialShots = injectTrialShots();
   readonly #weaponItems = signal<ArmamentEquipmentItem[]>([]);
   readonly #weaponDenominations = signal<ArmamentEquipmentDenomination[]>([]);
   readonly #tubeItems = signal<ArmamentEquipmentItem[]>([]);
@@ -202,25 +205,20 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   readonly #selectionGuard = createSelectionGuard(() => this.#selectorKey());
 
   // ── Signals de datos del store ────────────────────────────────────────
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries();
-    if (!planningSeries?.length) return this.#store.armamentIntroduction().serieOptions;
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  });
-  protected readonly disparoOptions = computed(() => {
-    const selectedSerieId = this.formModel().serie;
-    const planningShots = this.#store.planningSeries()?.find((serie) => serie.id === selectedSerieId)?.shots;
-    if (planningShots?.length) {
-      return planningShots.map((shot, index) => ({
-        value: shot.id,
-        label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
-      }));
-    }
-    return this.#store.armamentIntroduction().disparoOptions;
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.armamentIntroduction().serieOptions,
+    ),
+  );
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.armamentIntroduction().disparoOptions,
+    }),
+  );
   protected readonly armaOptions = computed(() =>
     this.#weaponDenominations().map((denomination) => ({ value: String(denomination.id), label: denomination.name })),
   );

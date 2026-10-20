@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
@@ -229,6 +230,7 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  readonly #trialShots = injectTrialShots();
   readonly #loadedFireTrialId = signal<string | null>(null);
   readonly #lastCalculationKey = signal<string | null>(null);
 
@@ -236,7 +238,7 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
     super();
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const planningSeries = this.#store.planningSeries();
+      const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries();
       const planningConditions = this.#store.planningConditions();
       const activeSerieId = this.#store.activeSerieId();
       const activeShotId = this.#store.activeShotId();
@@ -244,7 +246,8 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
       if (
         !fireTrialId ||
         !planningSeries ||
-        this.#store.isLoadingPlanningSeries() ||
+        (this.#trialShots.isLoading() && !this.#store.planningSeries()) ||
+        (!this.#trialShots.series() && this.#store.isLoadingPlanningSeries()) ||
         !planningConditions ||
         this.#store.isLoadingPlanningConditions()
       ) {
@@ -294,7 +297,7 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
   protected readonly disparoOptions = computed(() =>
     mapShotOptionsToPlanningNumbers(
       this.#store.taradoVelocidadChartView().disparoOptions,
-      this.#store.planningSeries()?.flatMap((serie) => serie.shots ?? []) ?? [],
+      (this.#trialShots.series() ?? this.#store.planningSeries())?.flatMap((serie) => serie.shots ?? []) ?? [],
     ),
   );
   protected readonly velocidadNominalOptions = computed(

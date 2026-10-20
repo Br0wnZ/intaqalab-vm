@@ -71,37 +71,7 @@ export const mapShotStatusToEstadoDisparo = (
   }
 };
 
-/**
- * Mapea las series de planificación a opciones para el selector.
- */
-export const mapPlanningSeriesToOptions = (
-  planningSeries?: Array<{ id: string; name?: string | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (planningSeries?.length) {
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
-
-/**
- * Mapea los disparos de una serie a opciones para el selector.
- */
-export const mapShotsToDisparoOptions = (
-  shots?: Array<{ shotId: string; globalNumber?: number | null }> | null,
-  fallbackOptions: Array<{ value: string; label: string }> = [],
-): Array<{ value: string; label: string }> => {
-  if (shots?.length) {
-    return shots.map((shot, index) => ({
-      value: shot.shotId,
-      label: `Disparo ${shot.globalNumber ?? index + 1}`,
-    }));
-  }
-  return fallbackOptions;
-};
+export { mapPlanningSeriesToOptions, mapShotsToDisparoOptions } from '../utils/selection-options';
 
 /**
  * Mapea la respuesta del backend a la estructura parcial de VelocityIntroductionState.

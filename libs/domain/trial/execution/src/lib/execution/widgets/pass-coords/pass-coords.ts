@@ -14,6 +14,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -22,6 +23,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
 
 interface PassCoordsSelectForm {
   serie: string | null;
@@ -162,24 +164,23 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #trialShots = injectTrialShots();
 
   // ── Options from store ────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#store.planningSeries();
-    if (!planningSeries?.length) return this.#store.passCoords().serieOptions;
-    return planningSeries.map((serie, index) => ({
-      value: serie.id,
-      label: serie.name?.trim() || `Serie ${index + 1}`,
-    }));
-  });
-  protected readonly disparoOptions = computed(() => {
-    const shots = this.#store.planningSeries()?.find((serie) => serie.id === this.formModel().serie)?.shots;
-    if (!shots?.length) return this.#store.passCoords().disparoOptions;
-    return shots.map((shot, index) => ({
-      value: shot.id,
-      label: `Disparo #${String(shot.globalNumber ?? index + 1).padStart(2, '0')}`,
-    }));
-  });
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(
+      this.#trialShots.series() ?? this.#store.planningSeries(),
+      this.#store.passCoords().serieOptions,
+    ),
+  );
+  protected readonly disparoOptions = computed(() =>
+    buildDisparoOptions({
+      selectedSerie: this.formModel().serie,
+      executionProgress: this.#store.executionProgress(),
+      planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+      storedOptions: this.#store.passCoords().disparoOptions,
+    }),
+  );
 
   // ── Calculated output fields (read-only from store) ───────────────────────
   protected readonly alturaBocaBolaPieza = computed(() => this.#store.passCoords().alturaBocaBolaPieza);

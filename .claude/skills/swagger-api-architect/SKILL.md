@@ -1,7 +1,7 @@
 ---
 name: swagger-api-architect
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.1.0
+last-updated: 2026-10-19
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---
@@ -561,3 +561,7 @@ SALIDA ESPERADA:
 2. Angular Data-Access Service usando `httpResource` (no Observables).
 3. ExpressJS Route mockeado + Fixtures (JSON realista).
    Genera directamente el código de las tres partes, sin teoría ni adornos.
+
+## 🔗 Planning API reads (ADR-017)
+
+For GET endpoints of `apis/planning-api.json` consumed by execution, generate models and `httpResource` query services in `libs/domain/trial/data-access-planning` (export via its `index.ts`, add spec), NOT in `ExecutionService`. Run `npm run check:planning-urls` afterwards.
