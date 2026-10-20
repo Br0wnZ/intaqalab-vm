@@ -282,6 +282,36 @@ describe('JltShotData', () => {
     expect(fixture.componentInstance['operadorPiezaDisplayValue']()).toBe('OP-LAST');
   });
 
+  it('fetches selected shot before fetching the last shot', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+    mockExecutionService.fetchJltShotData.mockClear();
+
+    let resolveSelectedShot: ((value: typeof lastShotResponse) => void) | undefined;
+    mockExecutionService.fetchJltShotData.mockImplementation((_trialId, _serieId, shotId) => {
+      if (shotId === 'shot-1') {
+        return new Promise((resolve) => {
+          resolveSelectedShot = resolve;
+        });
+      }
+      return Promise.resolve(lastShotResponse);
+    });
+
+    fixture.componentInstance.onDisparoSelected('shot-1');
+
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenCalledTimes(1);
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, 'shot-1');
+
+    if (!resolveSelectedShot) {
+      throw new Error('Selected shot request was not started');
+    }
+    resolveSelectedShot(previousFiredShotResponse);
+    await fixture.whenStable();
+
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenCalledTimes(2);
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenLastCalledWith('trial-123', ACTIVE_SERIE_ID, LAST_SHOT_ID);
+  });
+
   it('hydrates fields from flat JLT API response', async () => {
     const { fixture } = await renderWidget();
     await fixture.whenStable();
@@ -292,14 +322,44 @@ describe('JltShotData', () => {
     expect(fixture.componentInstance['retrocesoField']()).toEqual({ value: '14', unit: 'MM' });
   });
 
-  it('saveForm persists current selection to store only', async () => {
+  it('saveForm persists current selection to store and service', async () => {
     const { fixture } = await renderWidget();
     await fixture.whenStable();
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setJltShotData).not.toHaveBeenCalled();
+    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+      'trial-123',
+      ACTIVE_SERIE_ID,
+      ACTIVE_SHOT_ID,
+      expect.objectContaining({ jet: 'JET-CURRENT' }),
+    );
     expect(TestBed.inject(ExecutionStore).jltShotData().disparo).toBe(ACTIVE_SHOT_ID);
+  });
+
+  it('saves the shot selected in the widget even when store selection differs', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    await fixture.whenStable();
+    activeShotId.set('shot-2');
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance['formModel']().disparo).toBe('shot-1');
+
+    fixture.componentInstance.enableHistoricalEdit();
+    fixture.componentInstance['jetField'].set('JET-UPDATED');
+    TestBed.inject(ExecutionStore).updateJltShotData({ disparo: ACTIVE_SHOT_ID });
+
+    await fixture.componentInstance.saveForm();
+
+    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+      'trial-123',
+      ACTIVE_SERIE_ID,
+      'shot-1',
+      expect.objectContaining({ jet: 'JET-UPDATED' }),
+    );
   });
 
   it('marks dirty when atacado changes', async () => {

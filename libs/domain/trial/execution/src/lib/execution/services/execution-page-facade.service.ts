@@ -336,16 +336,9 @@ export class ExecutionPageFacade {
   }
 
   async saveAllChanges(): Promise<void> {
-    const shouldSaveJltShotData = this.#widgetState
-      .dirtyWidgets()
-      .some((widgetState) => this.#findPlacedWidgetType(widgetState.widgetId) === WidgetId.JLT_SHOT_DATA);
-
     this.#isSaving.set(true);
     try {
       await this.#widgetState.saveAllDirtyForms();
-      if (shouldSaveJltShotData) {
-        this.#withTrialId((fireTrialId) => this.#store.saveJltShotData(fireTrialId));
-      }
     } finally {
       this.#isSaving.set(false);
     }
@@ -388,10 +381,6 @@ export class ExecutionPageFacade {
     if (fireTrialId) {
       action(fireTrialId);
     }
-  }
-
-  #findPlacedWidgetType(widgetInstanceId: string): WidgetId | null {
-    return this.#widgetState.placedWidgets().find((widget) => widget.id === widgetInstanceId)?.type ?? null;
   }
 
   #mapShotStatus(status: string): string {

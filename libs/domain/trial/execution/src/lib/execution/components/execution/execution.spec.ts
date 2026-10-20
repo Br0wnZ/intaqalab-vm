@@ -13,7 +13,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import { PlanningConditionsService, PlanningSeriesService } from '@intaqalab/data-access-planning';
-import { type FireTrial, MeasureUnitEnum } from '@intaqalab/models';
+import type { FireTrial } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -597,22 +597,12 @@ describe('Execution', () => {
     });
   });
 
-  it('saves JLT shot data from parent when jlt-shot-data widget is dirty', async () => {
+  it('saves dirty widget forms from parent', async () => {
     const executionService = createMockExecutionService();
     const { view } = await setup({ executionService });
     const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
-    const store = view.fixture.debugElement.injector.get(ExecutionStore);
 
     const placedWidgetId = widgetStateService.addWidget(WidgetId.JLT_SHOT_DATA, 1);
-    store.updateJltShotData({
-      serie: 'serie-1',
-      disparo: 'shot-1',
-      jet: 'JET-001',
-      operadorPieza: 'OP-001',
-      observaciones: 'Saved from parent',
-      atacado: 12,
-      retroceso: 8,
-    });
     widgetStateService.updateWidgetFormState(placedWidgetId, {
       widgetId: placedWidgetId,
       dirty: true,
@@ -620,23 +610,11 @@ describe('Execution', () => {
       valid: true,
       hasChanges: true,
     });
-    vi.spyOn(widgetStateService, 'saveAllDirtyForms').mockResolvedValue();
+    const saveAllDirtyForms = vi.spyOn(widgetStateService, 'saveAllDirtyForms').mockResolvedValue();
 
     await view.fixture.componentInstance.saveAllChanges();
 
-    expect(executionService.setJltShotData).toHaveBeenCalledWith(
-      'b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c',
-      'serie-1',
-      'shot-1',
-      {
-        jet: 'JET-001',
-        pieceOperator: 'OP-001',
-        attackDistance: 12,
-        attackDistanceUnit: MeasureUnitEnum.MM,
-        recoilDistance: 8,
-        recoilDistanceUnit: MeasureUnitEnum.MM,
-        observations: 'Saved from parent',
-      },
-    );
+    expect(saveAllDirtyForms).toHaveBeenCalledOnce();
+    expect(executionService.setJltShotData).not.toHaveBeenCalled();
   });
 });

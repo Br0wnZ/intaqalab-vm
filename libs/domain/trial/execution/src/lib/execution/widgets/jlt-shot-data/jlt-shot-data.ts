@@ -25,7 +25,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import type { JltShotDataResponse } from '../../../services/execution.service';
+import type { JltShotDataRequest, JltShotDataResponse } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -244,6 +244,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  #hasManualSelection = false;
 
   constructor() {
     super();
@@ -254,6 +255,10 @@ export class JltShotData extends BaseFormWidgetComponent {
       const activeShotId = this.#store.activeShotId();
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
+        return;
+      }
+
+      if (this.#hasManualSelection) {
         return;
       }
 
@@ -429,6 +434,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   }));
 
   onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
     const current = this.formModel();
     const disparo = isShotInSerie(
       current.disparo,
@@ -450,6 +456,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   }
 
   onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
     const current = this.formModel();
     this.formModel.set({
       ...current,
@@ -461,6 +468,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   }
 
   setCurrentShot(): void {
+    this.#hasManualSelection = false;
     const serie = this.#store.activeSerieId() ?? this.formModel().serie;
     const disparo = this.#store.activeShotId() ?? this.formModel().disparo;
 
@@ -505,8 +513,21 @@ export class JltShotData extends BaseFormWidgetComponent {
       atacado: parseNum(this.atacadoField()),
       retroceso: parseNum(this.retrocesoField()),
     };
+    const fireTrialId = this.#store.fireTrialId();
+    const request: JltShotDataRequest = {
+      jet: updates.jet ?? '',
+      pieceOperator: updates.operadorPieza ?? '',
+      attackDistance: updates.atacado ?? null,
+      attackDistanceUnit: MeasureUnitEnum.MM,
+      recoilDistance: updates.retroceso ?? null,
+      recoilDistanceUnit: MeasureUnitEnum.MM,
+      observations: updates.observaciones ?? null,
+    };
 
     this.#store.updateJltShotData(updates);
+    if (fireTrialId && serie && disparo) {
+      this.#executionService.setJltShotData(fireTrialId, serie, disparo, request);
+    }
     this.#syncSnapshot();
     this.historicalEditEnabled.set(false);
   }
@@ -528,8 +549,10 @@ export class JltShotData extends BaseFormWidgetComponent {
     }
 
     const lastShotId = findLastShotId(this.#store.executionProgress()?.series, serie);
-    const [currentShotResult, lastShotResult] = await Promise.allSettled([
+    const [currentShotResult] = await Promise.allSettled([
       this.#executionService.fetchJltShotData(fireTrialId, serie, disparo),
+    ]);
+    const [lastShotResult] = await Promise.allSettled([
       lastShotId ? this.#executionService.fetchJltShotData(fireTrialId, serie, lastShotId) : Promise.resolve(null),
     ]);
 
