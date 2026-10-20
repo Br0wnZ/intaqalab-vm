@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,7 +31,7 @@ import type { AcondFormModel } from '../munition-introduction';
     IntaIconComponent,
   ],
   template: `
-    <div class="flex-1 grid grid-cols-2 lg:grid-cols-5 gap-x-2 gap-y-1 min-h-0 content-start">
+    <div class="flex-1 grid grid-cols-2 lg:grid-cols-5 gap-x-2 gap-y-4 min-h-0 content-start">
       <!-- Componente -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
@@ -222,9 +222,13 @@ export class MunitionAcondicionamientoTabComponent {
     return serie ? [serie] : [];
   });
 
+  readonly plannedComponenteOptions = input<Array<{ value: string; label: string; category?: string }>>([]);
+
   readonly componenteOptions = computed(() => {
     const chamberOptions = this.#climaticChambers.options();
-    return chamberOptions.length > 0 ? chamberOptions : this.#store.munitionIntroduction().componenteOptions;
+    if (chamberOptions.length > 0) return chamberOptions;
+    const fromInput = this.plannedComponenteOptions();
+    return fromInput.length > 0 ? fromInput : this.#store.munitionIntroduction().componenteOptions;
   });
   readonly camaraOptions = computed<MunitionIntroCamaraOption[]>(() => {
     const chamberOptions = this.#climaticChambers.options();

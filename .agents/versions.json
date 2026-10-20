@@ -6,9 +6,9 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.1.1",
-      "lastUpdated": "2026-10-19",
-      "checksum": "de7cedbf6227b701",
+      "version": "1.2.0",
+      "lastUpdated": "2026-10-20",
+      "checksum": "4ed43a20b1ea159d",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-10-19",
-      "checksum": "3bdd145f7d833902",
+      "version": "1.2.0",
+      "lastUpdated": "2026-10-20",
+      "checksum": "0cebd01ce7503520",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
@@ -133,9 +133,9 @@
       "description": "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
     },
     "planning-specialist": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-10-19",
-      "checksum": "efaf05afe3afac18",
+      "version": "1.1.1",
+      "lastUpdated": "2026-10-20",
+      "checksum": "2b65ab3963e76cb0",
       "path": ".agents/skills/planning-specialist/SKILL.md",
       "description": ">"
     },
@@ -175,9 +175,9 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-10-19",
-      "checksum": "c945137b7f810587",
+      "version": "1.2.0",
+      "lastUpdated": "2026-10-20",
+      "checksum": "c8d3fd831c778b58",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
       "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     }

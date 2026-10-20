@@ -24,11 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
-import type {
-  PlanningComponentType,
-  PlanningDenominationOption,
-  PlanningOptionsGroup,
-} from '../../../services/execution.service';
+import { injectShotMunitionComponents } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import type { ShotMunitionResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -193,16 +189,19 @@ export interface AcondFormModel {
       <div intaFormTouch class="flex-1 min-h-0 mt-8 gap-8" #touch="intaFormTouch">
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
+          [componenteOptions]="componenteOptions()"
           (componentChange)="onComponentChange($event)"
-          (denominationChange)="onDenominationSelected($event)"
+          (denominationChange)="onDenominationSelected()"
         />
         <inta-munition-pesos-tab
           [class.hidden]="activeTab() !== 'pesos'"
+          [componenteOptions]="componenteOptions()"
           (componentChange)="onComponentChange($event)"
           (balanceChange)="onBalanceChange()"
         />
         <inta-munition-acondicionamiento-tab
           [class.hidden]="activeTab() !== 'acondicionamiento'"
+          [plannedComponenteOptions]="componenteOptions()"
           (componentChange)="onComponentChange($event)"
         />
       </div>
@@ -219,10 +218,14 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
-  readonly #planningOptionsTrial = signal<string | null>(null);
-  readonly #planningOptionsBySelection = signal<Record<string, PlanningOptionsGroup>>({});
-  readonly #planningOptionsByShot = signal<Record<string, PlanningOptionsGroup>>({});
-  readonly #planningOptionsBySeries = signal<Record<string, PlanningOptionsGroup>>({});
+
+  // ── Reactive shot-scoped planning munition components ─────────────────────
+  readonly #shotComponentsHandle = injectShotMunitionComponents({
+    seriesId: computed(() => this.selectorFormModel().serie),
+    shotId: computed(() => this.selectorFormModel().disparo),
+    fireTrialId: computed(() => this.#store.fireTrialId()),
+  });
+  protected readonly componenteOptions = this.#shotComponentsHandle.components;
 
   // ── UI state (local) ───────────────────────────────────────────────────────
   protected readonly activeTab = signal<TabType>('identificacion');
@@ -345,13 +348,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         return;
       }
 
-      if (this.#planningOptionsTrial() !== fireTrialId) {
-        untracked(() => {
-          this.#planningOptionsTrial.set(fireTrialId);
-          void this.#loadPlanningOptions(fireTrialId);
-        });
-      }
-
       const selectionKey = `${activeSerieId}|${activeShotId}`;
       if (this.#lastLoadedActiveSelection() === selectionKey) {
         return;
@@ -362,120 +358,37 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         this.#setSelection(activeSerieId, activeShotId);
       });
     });
+
+    // Auto-seleccionar primer componente disponible cuando cambian las opciones
+    effect(() => {
+      const options = this.componenteOptions();
+      const current = this.#store.munitionIntroduction().selectedComponentId;
+      if (options.length === 0) {
+        return;
+      }
+      if (!current || !options.some((o) => o.value === current)) {
+        const nextId = options[0]?.value;
+        if (nextId) {
+          untracked(() => this.onComponentChange(nextId));
+        }
+      }
+    });
   }
-
-  async #loadPlanningOptions(fireTrialId: string): Promise<void> {
-    try {
-      const options = await this.#executionService.fetchPlanningMunitionOptions(fireTrialId);
-      this.#planningOptionsBySelection.set(options.optionsBySelection);
-      this.#planningOptionsByShot.set(options.optionsByShot);
-      this.#planningOptionsBySeries.set(options.optionsBySeries);
-      const selection = this.selectorFormModel();
-      this.#applyPlanningOptions(selection.serie, selection.disparo);
-    } catch {
-      // Keep local fallback options when planning catalogs are unavailable.
-    }
-  }
-
-  #applyPlanningOptions(serieId: string | null, shotId: string | null): void {
-    const options =
-      (serieId && shotId ? this.#planningOptionsBySelection()[`${serieId}|${shotId}`] : undefined) ??
-      (shotId ? this.#planningOptionsByShot()[shotId] : undefined) ??
-      (serieId ? this.#planningOptionsBySeries()[serieId] : undefined);
-
-    const compTypes: PlanningComponentType[] =
-      options?.componentTypes ??
-      (serieId
-        ? []
-        : this.#store.munitionIntroduction().componenteOptions.map(({ value, label, category }) => ({
-            id: value,
-            label,
-            category,
-          })));
-    const denoms: PlanningDenominationOption[] =
-      options?.denominations ??
-      (serieId
-        ? []
-        : this.#store
-            .munitionIntroduction()
-            .denominacionOptions.map(({ value, label, componenteId, batch, clientNumber }) => ({
-              id: value,
-              name: label,
-              componentTypeId: componenteId,
-              batch: batch ?? null,
-              clientNumber: clientNumber ?? null,
-            })));
-
-    this.#store.updateMunitionIntroductionPlanningOptions(compTypes, denoms);
-
-    const currentComp = this.#store.munitionIntroduction().selectedComponentId;
-    const available = compTypes.map((c) => c.id);
-    const targetComp = !currentComp || !available.includes(currentComp) ? (compTypes[0]?.id ?? null) : currentComp;
-
-    if (targetComp) {
-      this.onComponentChange(targetComp);
-    }
-  }
-
-  readonly #loadingWarehouseDenominationComponents = new Set<string>();
-  readonly #warehouseDenominationsByComponent = new Map<string, PlanningDenominationOption[]>();
 
   #patchPlanningIdentificationForComponent(componentId: string | null): void {
     if (!componentId) return;
 
-    const selection = this.selectorFormModel();
-    const options =
-      (selection.serie && selection.disparo
-        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
-        : undefined) ??
-      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
-      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
-
-    const planningData = options?.componentData?.[componentId];
+    const planned = this.#shotComponentsHandle.findComponent(componentId)?.planned;
     const currentIdent = this.#store.munitionIntroduction().identificacion;
     const patched: MunitionIntroIdentificationState = {
       ...currentIdent,
       componente: componentId,
-      denominacion: currentIdent.denominacion ?? planningData?.denominationId ?? null,
-      lote: currentIdent.lote ?? planningData?.batch ?? null,
-      numeroCliente: currentIdent.numeroCliente ?? planningData?.clientNumber ?? null,
+      denominacion: currentIdent.denominacion ?? planned?.denominationId ?? null,
+      lote: currentIdent.lote ?? planned?.batch ?? null,
+      numeroCliente: currentIdent.numeroCliente ?? planned?.clientNumber ?? null,
     };
     this.#store.updateMunitionIntroductionIdentification(patched);
     this.identTab()?.applyData(patched);
-  }
-
-  async #loadWarehouseDenominationsForComponentIfMissing(componentId: string): Promise<void> {
-    const selection = this.selectorFormModel();
-    const options =
-      (selection.serie && selection.disparo
-        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
-        : undefined) ??
-      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
-      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
-
-    if (options?.componentData?.[componentId]) return;
-
-    const cachedDenominations = this.#warehouseDenominationsByComponent.get(componentId);
-    if (cachedDenominations) {
-      this.#store.addMunitionIntroductionDenominations(cachedDenominations);
-      return;
-    }
-
-    if (this.#loadingWarehouseDenominationComponents.has(componentId)) return;
-
-    this.#loadingWarehouseDenominationComponents.add(componentId);
-    try {
-      const warehouseDenominations = await this.#executionService.fetchWarehouseDenominations();
-      const componentDenominations = warehouseDenominations.filter(
-        (denomination) => denomination.componentTypeId === componentId,
-      );
-      this.#warehouseDenominationsByComponent.set(componentId, componentDenominations);
-      this.#store.addMunitionIntroductionDenominations(componentDenominations);
-    } catch {
-      this.#warehouseDenominationsByComponent.delete(componentId);
-    } finally {
-      this.#loadingWarehouseDenominationComponents.delete(componentId);
-    }
   }
 
   onSerieSelected(serie: string | null): void {
@@ -486,8 +399,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
-    this.#applyPlanningOptions(serie, disparo);
-
     this.#syncSelectionToStore(serie, disparo);
     void this.#loadSelectedShotData();
   }
@@ -498,8 +409,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       ...current,
       disparo,
     });
-    this.#applyPlanningOptions(current.serie, disparo);
-
     this.#syncSelectionToStore(current.serie, disparo);
     void this.#loadSelectedShotData();
   }
@@ -541,7 +450,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       fechaHoraEntrada: this.acondTab()?.fechaHoraEntradaField() ?? stored.acondicionamiento.fechaHoraEntrada,
       fechaHoraSalida: this.acondTab()?.fechaHoraSalidaField() ?? stored.acondicionamiento.fechaHoraSalida,
       serieOptions: this.serieOptions(),
-      componenteOptions: stored.componenteOptions,
+      componenteOptions: this.componenteOptions(),
       initialSeries: currentSerie ? [currentSerie] : [],
     };
     const dialogRef = this.#dialog.open<MassiveConfigDialog, MassiveConfigDialogData, MassiveConfigDialogResult>(
@@ -566,8 +475,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
-    this.#applyPlanningOptions(serie, disparo);
-
     this.#syncSelectionToStore(serie, disparo);
     void this.#loadSelectedShotData();
   }
@@ -575,11 +482,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   onComponentChange(componentId: string): void {
     this.#store.selectMunitionComponent(componentId);
     this.#patchPlanningIdentificationForComponent(componentId);
-    const identification = this.#store.munitionIntroduction().identificacion;
-    if (identification.denominacion && !identification.lote) {
-      void this.#loadStockBatchesForDenominations([identification.denominacion]);
-    }
-    void this.#loadWarehouseDenominationsForComponentIfMissing(componentId);
 
     const stored = this.#store.munitionIntroduction();
     this.identTab()?.applyData(stored.identificacion);
@@ -588,8 +490,8 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     this.touchRef()?.reset();
   }
 
-  onDenominationSelected(denominationId: string): void {
-    void this.#loadStockBatchesForDenominations([denominationId]);
+  onDenominationSelected(): void {
+    // Delegated to identTab reactive injectDenominationBatches
   }
 
   onBalanceChange(): void {
@@ -636,7 +538,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         this.#store.munitionIntroduction().selectedComponentId ??
         identUpdates.componente ??
         this.#store.munitionIntroduction().weight.componente ??
-        this.#store.munitionIntroduction().componenteOptions[0]?.value ??
+        this.componenteOptions()[0]?.value ??
         'granada-01';
 
       const existingComponents = this.#store.munitionIntroduction().remoteMunitionResponse?.munitionData ?? [];
@@ -681,19 +583,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
-      if (this.#hasMissingBatch(response)) {
-        const missingBatchDenominationIds = response.munitionData.flatMap((component) => {
-          const identification = component.identificationData;
-          return identification?.denominationId && !identification.batch ? [identification.denominationId] : [];
-        });
-        await this.#loadStockBatchesForDenominations(missingBatchDenominationIds);
-        if (!ticket.isFresh(selectionKey)) {
-          return;
-        }
-        this.#applyRemoteShotData(response);
-      } else {
-        this.#applyRemoteShotData(response);
-      }
+      this.#applyRemoteShotData(response);
     } catch {
       if (!ticket.isFresh(selectionKey)) {
         return;
@@ -721,48 +611,21 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     );
   }
 
-  #hasMissingBatch(response: ShotMunitionResponse): boolean {
-    return response.munitionData.some(
-      (component) => component.identificationData?.denominationId && !component.identificationData.batch,
-    );
-  }
-
-  async #loadStockBatchesForDenominations(denominationIds: string[]): Promise<void> {
-    const missingDenominations = new Set(denominationIds);
-    if (missingDenominations.size === 0) return;
-
-    try {
-      const stockBatches = await this.#executionService.fetchAvailableStockBatches([...missingDenominations]);
-      const matchingBatches = stockBatches.filter(({ denominationId }) => missingDenominations.has(denominationId));
-      this.#store.addMunitionIntroductionBatches(matchingBatches);
-    } catch {
-      // Keep the shot response usable when warehouse stock is unavailable.
-    }
-  }
-
   #applyRemoteShotData(response: ShotMunitionResponse): void {
     const preferredComponent = this.#store.munitionIntroduction().selectedComponentId;
     this.#store.loadMunitionIntroductionRemoteResponse(response, preferredComponent);
 
-    const selection = this.selectorFormModel();
-    const options =
-      (selection.serie && selection.disparo
-        ? this.#planningOptionsBySelection()[`${selection.serie}|${selection.disparo}`]
-        : undefined) ??
-      (selection.disparo ? this.#planningOptionsByShot()[selection.disparo] : undefined) ??
-      (selection.serie ? this.#planningOptionsBySeries()[selection.serie] : undefined);
-
     const stored = this.#store.munitionIntroduction();
     const currentIdent = stored.identificacion;
     const activeComp = stored.selectedComponentId;
-    const planningData = activeComp ? options?.componentData?.[activeComp] : undefined;
+    const planned = activeComp ? this.#shotComponentsHandle.findComponent(activeComp)?.planned : undefined;
 
-    if (planningData) {
+    if (planned) {
       const patched: MunitionIntroIdentificationState = {
         ...currentIdent,
-        denominacion: currentIdent.denominacion || (planningData.denominationId ?? null),
-        lote: currentIdent.lote || (planningData.batch ?? null),
-        numeroCliente: currentIdent.numeroCliente || (planningData.clientNumber ?? null),
+        denominacion: currentIdent.denominacion || (planned.denominationId ?? null),
+        lote: currentIdent.lote || (planned.batch ?? null),
+        numeroCliente: currentIdent.numeroCliente || (planned.clientNumber ?? null),
       };
       if (
         patched.denominacion !== currentIdent.denominacion ||
@@ -771,10 +634,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       ) {
         this.#store.updateMunitionIntroductionIdentification(patched);
       }
-    }
-
-    if (activeComp) {
-      void this.#loadWarehouseDenominationsForComponentIfMissing(activeComp);
     }
 
     const finalStored = this.#store.munitionIntroduction();

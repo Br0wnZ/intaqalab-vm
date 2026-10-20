@@ -1,7 +1,7 @@
 ---
 name: planning-specialist
-version: 1.1.0
-last-updated: 2026-10-19
+version: 1.1.1
+last-updated: 2026-10-20
 description: >
 ---
 
@@ -54,7 +54,8 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 - Ensure mutations are coordinated through feature stores via `patchState` and synchronous service dispatch.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, DTOs, store slices, and service calls must use strict TypeScript interfaces and domain types.
 
-## 🔗 Shared Read Layer (ADR-017)
+## 🔗 Shared Read Layer (ADR-017 & ADR-019)
 
 - GET reads of planning data consumed by Execution live in `libs/domain/trial/data-access-planning` (`@intaqalab/data-access-planning`): query services, models derived from `apis/planning-api.json`, pure selectors and `injectTrialShots()`. When adding or changing a planning GET model/endpoint, update that lib FIRST (models → query service → selectors → tests); execution must never re-declare it.
+- Execution widgets consume and project planning data per-shot through shared reactive helpers under `libs/domain/trial/execution/src/lib/data-access/` (ADR-019). Any changes to planning munitions/armament schemas must verify compatibility with execution normalizers.
 - Mutations (PUT/POST) and feature stores remain in `libs/domain/trial/planning`. Migrating this lib's own GETs to data-access is a pending follow-up (see `docs/plans/planning-data-access-helpers-plan.md`).

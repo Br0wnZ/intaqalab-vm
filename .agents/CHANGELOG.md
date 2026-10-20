@@ -85,3 +85,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.1.1] - 2026-10-19
 
 - Add @oxc-project/runtime to workspace Vite and Vitest standards
+
+## [execution-domain-expert - 1.2.0] - 2026-10-20
+
+- Add ADR-019 shot-scoped planning and warehouse read helpers pattern
+
+## [widget-service-integration - 1.2.0] - 2026-10-20
+
+- Add ADR-019 widget integration pattern for shot-scoped planning and warehouse helpers
+
+## [planning-specialist - 1.1.1] - 2026-10-20
+
+- Reference ADR-019 execution shot-scoped read helpers
+
+## [AGENTS.md - 1.2.0] - 2026-10-20
+
+- Add ADR-019 shot-scoped planning data pattern for execution widgets

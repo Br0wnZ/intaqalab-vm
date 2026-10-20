@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -282,7 +282,7 @@ export class MunitionPesosTabComponent {
     { value: 'kg', label: 'kg' },
   ];
 
-  readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
+  readonly componenteOptions = input<Array<{ value: string; label: string; category?: string }>>([]);
 
   readonly #balances = injectBalanceEquipments(
     () => {

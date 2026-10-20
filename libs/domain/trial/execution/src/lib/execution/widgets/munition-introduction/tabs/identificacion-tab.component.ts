@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, output, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,6 +8,11 @@ import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
+import {
+  injectComponentDenominations,
+  injectDenominationBatches,
+  type ShotMunitionComponentOption,
+} from '../../../../data-access';
 import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 
 @Component({
@@ -122,6 +127,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 export class MunitionIdentificacionTabComponent {
   readonly #store = inject(ExecutionStore);
 
+  readonly componenteOptions = input<ShotMunitionComponentOption[]>([]);
   readonly componentChange = output<string>();
   readonly denominationChange = output<string>();
 
@@ -167,17 +173,27 @@ export class MunitionIdentificacionTabComponent {
 
   readonly secondsOptions = [{ value: 's', label: 's' }];
 
-  readonly componenteOptions = computed(() => this.#store.munitionIntroduction().componenteOptions);
   readonly modoFuncionamientoOptions = computed(() => this.#store.munitionIntroduction().modoFuncionamientoOptions);
 
-  readonly denominacionError = computed(() => this.#store.munitionIntroduction().identificacion.denominacionNotInStock);
-  readonly loteError = computed(() => this.#store.munitionIntroduction().identificacion.loteNotInStock);
+  readonly selectedComponent = computed(() => {
+    const compId = this.identFormModel().componente;
+    return this.componenteOptions().find((c) => c.value === compId);
+  });
+
+  readonly #denominationsHandle = injectComponentDenominations({
+    munitionTypeId: computed(() => this.identFormModel().componente),
+    planned: computed(() => this.selectedComponent()?.planned ?? null),
+  });
+
+  readonly #batchesHandle = injectDenominationBatches({
+    denominationId: computed(() => this.identFormModel().denominacion),
+    plannedBatch: computed(() => this.selectedComponent()?.planned.batch ?? null),
+  });
 
   readonly filteredDenominacionOptions = computed(() => {
-    const componente = this.identFormModel().componente;
-    const opts = this.#store.munitionIntroduction().denominacionOptions;
-    const filtered = componente ? opts.filter((d) => d.componenteId === componente) : opts;
+    const warehouseOptions = this.#denominationsHandle.options();
     const currentDenomination = this.identFormModel().denominacion;
+    const componente = this.identFormModel().componente;
     const storedIdentification = this.#store.munitionIntroduction().identificacion;
 
     if (
@@ -185,29 +201,68 @@ export class MunitionIdentificacionTabComponent {
       currentDenomination &&
       storedIdentification.componente === componente &&
       storedIdentification.denominacion === currentDenomination &&
-      !filtered.some((denomination) => denomination.value === currentDenomination)
+      !warehouseOptions.some((d) => d.value === currentDenomination)
     ) {
       return [
-        ...filtered,
-        { value: currentDenomination, label: currentDenomination, componenteId: componente, inStock: true },
+        ...warehouseOptions,
+        {
+          value: currentDenomination,
+          label: currentDenomination,
+          munitionTypeId: componente,
+          inStock: true,
+          planned: false,
+        },
       ];
     }
 
-    return filtered;
+    return warehouseOptions;
   });
 
   readonly filteredLoteOptions = computed(() => {
-    const denominacion = this.identFormModel().denominacion;
+    const warehouseBatches = this.#batchesHandle.options();
     const currentLote = this.identFormModel().lote;
-    const opts = this.#store.munitionIntroduction().loteOptions;
-    const filtered = denominacion ? opts.filter((l) => l.denominacionId === denominacion) : opts;
-    if (currentLote && !filtered.some((l) => l.value === currentLote)) {
-      return [...filtered, { value: currentLote, label: currentLote, denominacionId: denominacion ?? '' }];
+    const denominacion = this.identFormModel().denominacion;
+
+    if (currentLote && !warehouseBatches.some((l) => l.value === currentLote)) {
+      return [
+        ...warehouseBatches,
+        {
+          value: currentLote,
+          label: currentLote,
+          denominationId: denominacion ?? '',
+          quantity: 0,
+          inStock: true,
+          planned: false,
+        },
+      ];
     }
-    return filtered;
+
+    return warehouseBatches;
+  });
+
+  readonly selectedDenominationOption = computed(() => {
+    const den = this.identFormModel().denominacion;
+    return this.filteredDenominacionOptions().find((d) => d.value === den);
+  });
+
+  readonly denominacionError = computed(() => {
+    const opt = this.selectedDenominationOption();
+    return opt ? !opt.inStock : false;
+  });
+
+  readonly selectedLoteOption = computed(() => {
+    const lot = this.identFormModel().lote;
+    return this.filteredLoteOptions().find((l) => l.value === lot);
+  });
+
+  readonly loteError = computed(() => {
+    const opt = this.selectedLoteOption();
+    return opt ? !opt.inStock : false;
   });
 
   readonly isEspoleta = computed(() => {
+    const comp = this.selectedComponent();
+    if (comp) return comp.isFuse;
     const componente = this.identFormModel().componente;
     return this.componenteOptions().find((c) => c.value === componente)?.category === 'espoleta';
   });

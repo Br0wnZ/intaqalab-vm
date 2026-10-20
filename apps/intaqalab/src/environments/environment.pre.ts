@@ -11,6 +11,7 @@ export const environment: AppEnvironment = {
   authConfig: {
     ...baseEnvironment.authConfig,
     authority: 'https://iam.pre.inta.es/realms/global',
+    postLogoutRedirectUri: 'https://intaqalab.pre.inta.es',
     secureRoutes: ['https://apis.pre.inta.es/intaqalab/', 'https://apis.pre.inta.es/intaqalab-usersapitest/'],
     clientId: '74a8819d-43e4-479a-a603-2b2406b4fa69',
   },

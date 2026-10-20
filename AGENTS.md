@@ -25,7 +25,7 @@
 
 <!-- nx configuration end-->
 
-<!-- AGENTS_VERSION: 1.1.1 | UPDATED: 2026-10-19 -->
+<!-- AGENTS_VERSION: 1.2.0 | UPDATED: 2026-10-20 -->
 
 ---
 
@@ -78,6 +78,7 @@ Route tasks to specialized skills in `.agents/skills/`:
 - **Trial Planning Domain:** `planning-specialist`
 - **Trial Execution Domain:** `execution-domain-expert`
 - **Planning data read layer (`@intaqalab/data-access-planning`, ADR-017):** `execution-domain-expert` / `planning-specialist`
+- **Execution Shot-Scoped Read Helpers (`libs/domain/trial/execution/src/lib/data-access`, ADR-019):** `execution-domain-expert` / `widget-service-integration`
 - **Master Data Domain:** `master-data-specialist`
 
 ## 🚀 Optimized Fast Prompts (Lightweight Mode)
@@ -108,7 +109,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
 - **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
 - **Backend:** Clean ExpressJS mock server with Zod schema validation.
-- **Planning reads (ADR-017):** GET `/planning/...` data used by Execution MUST come from `@intaqalab/data-access-planning` (query services, selectors, `injectTrialShots()`, `formatShotLabel()`). Never declare `/planning/` read URLs in `libs/domain/trial/execution`; `npm run check:planning-urls` runs in pre-commit (Node, macOS/Windows). Widget docs: `docs/WIDGET_SYSTEM.md`.
+- **Planning reads (ADR-017) & Shot-Scoped Helpers (ADR-019):** GET `/planning/...` data used by Execution MUST come from `@intaqalab/data-access-planning` (query services, selectors, `injectTrialShots()`, `formatShotLabel()`). Never declare `/planning/` read URLs in `libs/domain/trial/execution`; `npm run check:planning-urls` runs in pre-commit (Node, macOS/Windows). Execution widgets requiring planned configurations or warehouse catalogs per shot MUST reuse or contribute shared helpers in `libs/domain/trial/execution/src/lib/data-access/` (`injectShotMunitionComponents`, `injectComponentDenominations`, `injectDenominationBatches`, `injectMunitionTypes`, etc.). Prohibit duplicate planning queries and ad-hoc parsing in widgets. Widget docs: `docs/WIDGET_SYSTEM.md`.
 
 ## Component Design & Best Practices 🧩
 
@@ -127,6 +128,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **Event Isolation (`uiStopClick`):** ⚡ **MANDATORY.** When handling clicks on interactive child elements inside clickable parent containers (`mat-option`, accordion headers, table rows, cards), use `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`) instead of manually calling `event.stopPropagation()` and `event.preventDefault()` in component methods. E.g.: `<button type="button" uiStopClick (click)="toggleStar(id)">`. Keeps component methods pure and DOM-event agnostic.
 - **Inputs & Selects:** ⚡ **MANDATORY.** All `matInput` and `mat-select` controls MUST have floating labels via `<mat-label>{{ '...' | translate }}</mat-label>` inside `<mat-form-field>` and placeholder i18n (`[placeholder]="'...' | translate"`).
 - **Store Injection in Components:** 🚫 **PROHIBITED accessing stores in templates (`store.prop()`).** Stores are injected privately (`readonly #store = inject(Store)`). Templates access data exclusively through exposed computed signals.
+- **Shot-Scoped Planning Data in Execution Widgets:** ⚡ **MANDATORY.** Any execution widget needing shot-specific planned configurations or warehouse stocks MUST consume shared reactive handles (`inject*` from `@intaqalab/domain-trial-execution` or internal data-access). Widgets must pass down derived option signals via `input()` to child tabs (e.g. `[componenteOptions]="componenteOptions()"`). Never invoke `/planning/...` directly (ADR-017) and never write duplicate state/parsing logic inside widget classes (ADR-019).
 - **State Decision Hierarchy:**
   1. `readonly #store = inject(Store)` — Private store injection; component exposes computed signals for template.
   2. `model()` — Two-way local state (forms, toggles).

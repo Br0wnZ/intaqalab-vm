@@ -479,3 +479,38 @@ Los datos planificados (series/disparos, conditions, measures, munitions, armame
 - Selector serie/disparo: `injectTrialShots()`; etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`.
 - Selectores puros: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`.
 - Regla: `npm run check:planning-urls`.
+
+### 🎯 Helpers reactivos de Munición y Almacén por Disparo (ADR-019)
+
+Para consumir la configuración planificada de municiones por disparo y cruzarla con los catálogos/stock del almacén (`libs/domain/trial/execution/src/lib/data-access`), se proporcionan los siguientes helpers:
+
+```typescript
+import {
+  injectComponentDenominations,
+  injectDenominationBatches,
+  injectMunitionTypes,
+  injectShotMunitionComponents,
+} from '@intaqalab/domain-trial-execution';
+
+// 1. Obtener componentes planificados para el disparo activo
+const shotComponentsHandle = injectShotMunitionComponents({
+  fireTrialId: computed(() => store.fireTrialId()),
+  seriesId: computed(() => activeSerieId()),
+  shotId: computed(() => activeShotId()),
+});
+const componenteOptions = shotComponentsHandle.options; // Signal<ShotMunitionComponentOption[]>
+
+// 2. Denominaciones de almacén para el componente seleccionado
+const denominationsHandle = injectComponentDenominations({
+  munitionTypeId: computed(() => selectedComponentId()),
+  planned: computed(() => selectedComponent()?.planned ?? null),
+});
+const denominacionOptions = denominationsHandle.options; // Signal<DenominationOption[]>
+
+// 3. Lotes disponibles en almacén para la denominación seleccionada
+const batchesHandle = injectDenominationBatches({
+  denominationId: computed(() => selectedDenominationId()),
+  plannedBatch: computed(() => selectedComponent()?.planned.batch ?? null),
+});
+const loteOptions = batchesHandle.options; // Signal<BatchOption[]>
+```

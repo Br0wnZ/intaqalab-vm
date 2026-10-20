@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.1.0
-last-updated: 2026-10-19
+version: 1.2.0
+last-updated: 2026-10-20
 description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
@@ -178,3 +178,40 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 - Pure helpers: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`, `flattenSeriesShots`. Shot option labels: `formatShotLabel(globalNumber, index, 'plain' | 'padded')` — do not hand-build `` `Disparo ${...}` ``. Series/shots handle: `injectTrialShots()`.
 - `ExecutionService` keeps only execution endpoints and writes; planning types come from the data-access lib (no duplicated models).
 - Widget system doc: `docs/WIDGET_SYSTEM.md`.
+
+## 🎯 Shot-Scoped Planning & Warehouse Read Helpers (ADR-019) — Mandatory Pattern
+
+Whenever an Execution Grid widget (`libs/domain/trial/execution/src/lib/execution/widgets/`) needs to read planning data scoped to a shot or cross it with warehouse stock/catalogues (such as `munition-introduction`, `trayectografia-introduction`, `piezo-pressure-introduction`, etc.), **NEVER** duplicate planning queries, ad-hoc HTTP calls, or local parsing.
+
+### 1. Ubicación y exportaciones canónicas
+
+Todo el código compartido de lectura vive bajo:
+
+```
+libs/domain/trial/execution/src/lib/data-access/
+├── shared/
+│   └── unknown-readers.ts           ← Type-guards defensivos (readString, readNumber, readNestedId, readRecord, readArray). Zero `any`, zero `!`.
+├── munitions/
+│   ├── planning-munition.normalizer.ts ← Normaliza respuestas polimórficas de planificación (seriesId vs id, munitionType objeto vs string, isFuse).
+│   ├── shot-munition.selectors.ts      ← Selectores puros (selectShotMunitionComponents, selectPlannedMunitionForShot).
+│   └── inject-shot-munition-components.ts ← Handle reactivo para obtener componentes planificados del disparo activo.
+├── warehouse/
+│   ├── warehouse-endpoints.ts         ← Constructores de URLs tipadas para Almacén (/munition-types, /denominations, /stock).
+│   ├── warehouse.normalizers.ts       ← Normaliza catálogos y stock físico; conserva opciones planificadas fuera de stock (`inStock: false`).
+│   ├── inject-munition-types.ts       ← Handle reactivo para catálogo de tipos de munición.
+│   ├── inject-component-denominations.ts ← Handle reactivo para denominaciones filtradas por componente.
+│   └── inject-denomination-batches.ts    ← Handle reactivo para lotes disponibles de una denominación.
+└── index.ts                           ← Re-exporta todo lo anterior.
+```
+
+Exportado desde la raíz de la librería en `libs/domain/trial/execution/src/index.ts`.
+
+### 2. Reglas de uso para Widgets
+
+- **Reutilización obligatoria:** Antes de escribir una consulta o parser nuevo, comprueba si ya existe en `data-access`.
+- **Integración con Tabs/Componentes:** El widget contenedor inyecta el handle reactivo (ej. `injectShotMunitionComponents`) y pasa las opciones hacia las tabs hijas vía `input()` (ej. `[componenteOptions]="componenteOptions()"`).
+- **Extensión para nuevos dominios:** Si otro widget necesita datos planificados (ej. armamento o condiciones meteorológicas por disparo), sigue la misma arquitectura modular:
+  1. Utiliza `TrialsDataService` de `@intaqalab/data-access-planning` (cumpliendo ADR-017).
+  2. Implementa el normalizador defensivo con `unknown-readers.ts` y tests unitarios exhaustivos.
+  3. Crea la función reactiva `inject*` usando `httpResource` y signals.
+  4. Exporta en `data-access/index.ts`.

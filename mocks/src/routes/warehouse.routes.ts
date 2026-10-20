@@ -112,8 +112,31 @@ whareHouseRouter.get('/:centerId/warehouse/stock/:id/certificates', (req, res) =
   // });
 });
 
-whareHouseRouter.get('/:centerId/warehouse/stock/', (req, res) => {
-  const data = getFixture('fixtures/warehouse-management/stock-list', 'stock-list-fixture.json');
+whareHouseRouter.get(['/:centerId/warehouse/stock', '/:centerId/warehouse/stock/'], (req, res) => {
+  const data = getFixture('fixtures/warehouse-management/stock-list', 'stock-list-fixture.json') as {
+    page?: number;
+    pageSize?: number;
+    totalElements?: number;
+    items?: Array<{ denomination?: { id?: string } }>;
+  };
+  const denominationIdsParam = req.query['denominationIds'] ?? req.query['denominationId'];
+  if (denominationIdsParam && data?.items && Array.isArray(data.items)) {
+    const rawIds = Array.isArray(denominationIdsParam)
+      ? denominationIdsParam.map(String)
+      : String(denominationIdsParam).split(',');
+    const ids = new Set(rawIds.map((id) => id.trim()).filter(Boolean));
+    if (ids.size > 0) {
+      const filteredItems = data.items.filter((item) =>
+        item?.denomination?.id ? ids.has(item.denomination.id) : false,
+      );
+      res.status(200).send({
+        ...data,
+        items: filteredItems,
+        totalElements: filteredItems.length,
+      });
+      return;
+    }
+  }
   res.status(200).send(data);
 });
 

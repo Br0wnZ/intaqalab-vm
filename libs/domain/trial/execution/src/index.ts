@@ -10,3 +10,4 @@ export * from './lib/execution/models/index';
 export * from './lib/execution/services/execution-profile.service';
 export * from './lib/services/execution.service';
 export * from './lib/services/fire-trial-lifecycle.service';
+export * from './lib/data-access';

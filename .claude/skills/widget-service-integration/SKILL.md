@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.1.0
-last-updated: 2026-10-19
+version: 1.2.0
+last-updated: 2026-10-20
 description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
@@ -38,6 +38,7 @@ Referencia real: **Widget 20 — `MunitionIntroduction`**.
 
 ## 📋 Checklist de implementación (ejecutar en orden)
 
+- [ ] Paso 0 — Verificar si el widget requiere datos de planificación o almacén por disparo (ADR-019)
 - [ ] Paso 1 — Leer Swagger e identificar endpoints
 - [ ] Paso 2 — Añadir modelos TypeScript de Request/Response
 - [ ] Paso 3 — Añadir métodos en ExecutionService (GET fetch + PUT)
@@ -1302,8 +1303,74 @@ Muchos widgets del panel de ejecución (p. ej. `MunitionIntroduction`, `PiezoPre
 
 ---
 
-## 🔗 Lecturas de Planning (ADR-017)
+## 🔗 Lecturas de Planning y Almacén por Disparo (ADR-017 & ADR-019)
 
 > [!IMPORTANT]
-> Este patrón (trigger privado + `httpResource` en `ExecutionService`) es **solo para endpoints de `/execution/`**. Los GET de `/planning/...` (series, conditions, measures, munitions, armament, propelling-charge-parameters) se leen de `@intaqalab/data-access-planning` (`Planning*Service`, `injectTrialShots()`, selectores puros). Nunca añadas URLs `/planning/` en execution: `npm run check:planning-urls` (pre-commit) falla.
-> Etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`. Documentación: `docs/WIDGET_SYSTEM.md`.
+>
+> - Este patrón (trigger privado + `httpResource` en `ExecutionService`) es **solo para endpoints de `/execution/`**.
+> - Los GET de `/planning/...` (series, conditions, measures, munitions, armament, propelling-charge-parameters) se leen de `@intaqalab/data-access-planning` (`Planning*Service`, `injectTrialShots()`, selectores puros). Nunca añadas URLs `/planning/` en execution: `npm run check:planning-urls` (pre-commit) falla.
+> - **ADR-019 — Reutilización Obligatoria:** Cuando un widget del grid (como `MunitionIntroduction`, `TrayectografiaIntroduction`, `PiezoPressureIntroduction`, etc.) necesite consultar componentes, tipos o denominaciones planificadas por disparo y cruzarlas con Almacén, **ESTÁ PROHIBIDO** duplicar llamadas HTTP o parsing local en el widget. Debe usar los helpers centralizados de `libs/domain/trial/execution/src/lib/data-access/` (exportados desde `@intaqalab/domain-trial-execution`).
+
+### Patrón canónico de integración en Widgets:
+
+```typescript
+import {
+  type ShotMunitionComponentOption,
+  injectComponentDenominations,
+  injectDenominationBatches,
+  injectShotMunitionComponents,
+} from '@intaqalab/domain-trial-execution';
+
+export class MyWidgetComponent extends BaseFormWidgetComponent {
+  readonly #store = inject(ExecutionStore);
+
+  // 1. Selector reactivo de componentes planificados para el disparo activo
+  readonly #shotComponentsHandle = injectShotMunitionComponents({
+    fireTrialId: computed(() => this.#store.fireTrialId()),
+    seriesId: computed(() => this.selectorFormModel().serie),
+    shotId: computed(() => this.selectorFormModel().disparo),
+  });
+
+  // 2. Opciones computadas expuestas para la vista / tabs hijas
+  readonly componenteOptions = this.#shotComponentsHandle.options;
+
+  // 3. Auto-selección inicial del componente al cargar las opciones
+  constructor() {
+    super();
+    effect(() => {
+      const opts = this.componenteOptions();
+      const current = this.identTab()?.identFormModel().componente;
+      if (!current && opts.length > 0) {
+        untracked(() => {
+          this.identTab()?.applyData({ componente: opts[0].value });
+        });
+      }
+    });
+  }
+}
+```
+
+### Contrato en las Tabs Hijas (Sub-componentes):
+
+Las tabs hijas reciben las opciones vía `input()` y delegan la búsqueda de denominaciones y lotes a los handles específicos:
+
+```typescript
+export class MyWidgetIdentTabComponent {
+  readonly componenteOptions = input<ShotMunitionComponentOption[]>([]);
+
+  readonly #denominationsHandle = injectComponentDenominations({
+    munitionTypeId: computed(() => this.identFormModel().componente),
+    planned: computed(() => this.selectedComponent()?.planned ?? null),
+  });
+
+  readonly #batchesHandle = injectDenominationBatches({
+    denominationId: computed(() => this.identFormModel().denominacion),
+    plannedBatch: computed(() => this.selectedComponent()?.planned.batch ?? null),
+  });
+
+  readonly filteredDenominacionOptions = this.#denominationsHandle.options;
+  readonly filteredLoteOptions = this.#batchesHandle.options;
+}
+```
+
+Etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`. Documentación completa: `docs/WIDGET_SYSTEM.md` y `docs/adrs/019-execution-shot-scoped-read-helpers.md`.
