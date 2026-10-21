@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { type Signal, computed } from '@angular/core';
+
 import type { DenominationItem, DenominationOption, PlannedComponentData } from '../models';
 import { buildWarehouseDenominationsUrl, injectWarehouseUrl } from './warehouse-endpoints';
 import { normalizeDenominations, toDenominationOptions } from './warehouse.normalizers';

@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import type { PlannedComponentData } from '../models';
 import { injectComponentDenominations } from './inject-component-denominations';
 
@@ -24,9 +25,7 @@ describe('injectComponentDenominations', () => {
   it('does not send requests when munitionTypeId is null', () => {
     const munitionTypeId = signal<string | null>(null);
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectComponentDenominations({ munitionTypeId }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectComponentDenominations({ munitionTypeId }));
 
     expect(handle.options()).toEqual([]);
     httpMock.expectNone((req) => req.url.includes('/denominations'));
@@ -43,12 +42,12 @@ describe('injectComponentDenominations', () => {
       fuseMeasurement: null,
     });
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectComponentDenominations({ munitionTypeId, planned }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectComponentDenominations({ munitionTypeId, planned }));
     TestBed.tick();
 
-    const req = httpMock.expectOne((r) => r.url.includes('/denominations') && r.params.get('munitionTypeId') === 'type-1');
+    const req = httpMock.expectOne(
+      (r) => r.url.includes('/denominations') && r.params.get('munitionTypeId') === 'type-1',
+    );
     req.flush({
       items: [
         {

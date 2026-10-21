@@ -105,6 +105,7 @@ let uiDialog: ReturnType<typeof makeUiDialogService>;
 
 async function setup(options?: {
   confirmed?: boolean;
+  canManageStock?: boolean;
   dialogResult?: any;
   munitionOverrides?: Partial<MunitionDetailResponseModel>;
 }) {
@@ -130,6 +131,7 @@ async function setup(options?: {
     ],
     componentInputs: {
       munition: munitionData(options?.munitionOverrides),
+      canManageStock: options?.canManageStock ?? true,
     },
   });
 
@@ -179,6 +181,16 @@ describe('ComponentsTableComponent', () => {
     it('should render the Add Components button', async () => {
       await setup();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ADD_COMPONENTS')).toBeInTheDocument();
+    });
+
+    it('should hide the Add Components button when the user cannot manage stock', async () => {
+      await setup({ canManageStock: false });
+      expect(screen.queryByText('WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ADD_COMPONENTS')).not.toBeInTheDocument();
+    });
+
+    it('should hide the actions column when the user cannot manage stock', async () => {
+      await setup({ canManageStock: false });
+      expect(screen.queryByText('WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ACTIONS')).not.toBeInTheDocument();
     });
   });
 

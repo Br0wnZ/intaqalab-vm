@@ -275,8 +275,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   onSerieSelected(serie: string | null): void {
     this.formModel.update((m) => ({ ...m, serie }));
-    this.#store.updateMaoTopography({ serie });
-    void this.#loadSelectedShotData();
+    this.#setSelection(serie, this.disparoOptions()[0]?.value ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {

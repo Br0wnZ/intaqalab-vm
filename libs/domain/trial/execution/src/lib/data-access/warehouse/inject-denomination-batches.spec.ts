@@ -4,6 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { injectDenominationBatches } from './inject-denomination-batches';
 
 describe('injectDenominationBatches', () => {
@@ -23,9 +24,7 @@ describe('injectDenominationBatches', () => {
   it('does not send requests when denominationId is null', () => {
     const denominationId = signal<string | null>(null);
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectDenominationBatches({ denominationId }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectDenominationBatches({ denominationId }));
 
     expect(handle.options()).toEqual([]);
     httpMock.expectNone((req) => req.url.includes('/stock'));
@@ -35,9 +34,7 @@ describe('injectDenominationBatches', () => {
     const denominationId = signal<string | null>('den-1');
     const plannedBatch = signal<string | null>('LOT-PLANNED');
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectDenominationBatches({ denominationId, plannedBatch }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectDenominationBatches({ denominationId, plannedBatch }));
     TestBed.tick();
 
     const req = httpMock.expectOne((r) => r.url.includes('/stock') && r.params.get('denominationIds') === 'den-1');

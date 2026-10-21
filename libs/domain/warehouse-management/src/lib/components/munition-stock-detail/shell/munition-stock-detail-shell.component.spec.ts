@@ -7,6 +7,7 @@ import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AuthService, Role } from '@intaqalab/core';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockResource } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -95,7 +96,11 @@ let mockStore: any;
 let mockMunitionDumpsStore: ReturnType<typeof makeMunitionDumpsStore>;
 let router: { navigateByUrl: ReturnType<typeof vi.fn> };
 
-async function setup(entity: 'munitions' | 'munition-components' = 'munitions', munitionDumps: unknown[] = []) {
+async function setup(
+  entity: 'munitions' | 'munition-components' = 'munitions',
+  munitionDumps: unknown[] = [],
+  userRoles: Role[] = [],
+) {
   dialogMock = { open: vi.fn().mockReturnValue({ afterClosed: () => of(undefined) }) };
   router = { navigateByUrl: vi.fn() };
   mockStore = makeStockDetailStore();
@@ -109,6 +114,7 @@ async function setup(entity: 'munitions' | 'munition-components' = 'munitions', 
       provideTestingEnvironment(),
       { provide: MatDialog, useValue: dialogMock },
       { provide: Router, useValue: router },
+      { provide: AuthService, useValue: { userRoles: signal(userRoles) } },
       // Shell's own store mock (shell has no providers[] for this store)
       { provide: MunitionsStockDetailStore, useValue: mockStore },
       { provide: MunitionsDumpsStore, useValue: mockMunitionDumpsStore },
@@ -206,6 +212,20 @@ describe('MunitionStockDetailShellComponent', () => {
   });
 
   describe('Actions menu', () => {
+    it('should show the actions menu for users with a warehouse role', async () => {
+      await setup('munitions', [], [Role.INTAQALAB_MUNITIONS_UNIT_HEAD]);
+
+      expect(screen.getByRole('button', { name: 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTIONS' })).toBeInTheDocument();
+    });
+
+    it('should hide the actions menu for users without a warehouse role', async () => {
+      await setup('munitions', [], [Role.INTAQALAB_TRIAL_ENGINEER]);
+
+      expect(
+        screen.queryByRole('button', { name: 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTIONS' }),
+      ).not.toBeInTheDocument();
+    });
+
     it('should open RetireDialogComponent when retire() is called', async () => {
       const { component } = await setup();
       await component.retire();
@@ -245,7 +265,7 @@ describe('MunitionStockDetailShellComponent', () => {
     });
 
     it('should toggle opened signal when actions menu is opened/closed', async () => {
-      const { fixture } = await setup();
+      const { fixture } = await setup('munitions', [], [Role.INTAQALAB_MUNITIONS_UNIT_HEAD]);
       const triggerDe = fixture.debugElement.query(By.directive(MatMenuTrigger));
       const menuTrigger = triggerDe.injector.get(MatMenuTrigger);
       expect(menuTrigger.menuOpen).toBe(false);

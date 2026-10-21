@@ -74,6 +74,8 @@ describe('MassiveConfigDialog', () => {
 
     const entryInput = screen.getByLabelText(/FECHA_HORA_ENTRADA_LABEL/);
     expect(entryInput).not.toHaveAttribute('readonly');
+    expect(entryInput).toHaveAttribute('type', 'datetime-local');
+    expect(entryInput).toHaveAttribute('step', '60');
     expect(screen.queryByLabelText(/FECHA_HORA_SALIDA_LABEL/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/EQUIPO_LABEL/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/TEMPERATURA_PROGRAMADA_LABEL/)).not.toBeInTheDocument();

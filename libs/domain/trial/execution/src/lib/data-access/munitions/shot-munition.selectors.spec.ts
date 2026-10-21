@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
+
 import type { NormalizedMunitionConfig } from '../models';
-import {
-  filterConfigsForShot,
-  isConfigAssignedToShot,
-  selectShotMunitionComponents,
-} from './shot-munition.selectors';
+import { filterConfigsForShot, isConfigAssignedToShot, selectShotMunitionComponents } from './shot-munition.selectors';
 
 describe('shot-munition.selectors', () => {
   const sampleConfigs: NormalizedMunitionConfig[] = [

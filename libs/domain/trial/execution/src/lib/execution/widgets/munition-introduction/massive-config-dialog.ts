@@ -8,10 +8,9 @@ import {
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
@@ -48,16 +47,15 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
   imports: [
     MatDialogModule,
     MatButtonModule,
-    MatDatepickerModule,
     MatFormFieldModule,
     ReadonlyContentDirective,
     MatInputModule,
+    MatIconModule,
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
     SaveButton,
   ],
-  providers: [provideNativeDateAdapter()],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title>
@@ -67,13 +65,13 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
 
     <!-- Content -->
     <mat-dialog-content intaReadonlyContent class="!px-0 !overflow-visible">
-      <div class="flex flex-col gap-3 w-full">
+      <div class="flex flex-col gap-8 w-full">
         <!-- Series (full width, multi-select) -->
         <div>
           <mat-label class="block text-sm font-medium text-gray-700 mb-2">
             {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.SERIES_LABEL' | translate }}
           </mat-label>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
             <mat-select
               id="munition-mass-series"
               multiple
@@ -91,7 +89,7 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
         <!-- Componente + Fecha y hora entrada -->
         <div class="grid grid-cols-2 gap-3">
           <!-- Componente (editable) -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
             <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.COMPONENTE_LABEL' | translate }}</mat-label>
             <mat-select
               id="munition-mass-component"
@@ -106,23 +104,24 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
           </mat-form-field>
 
           <!-- Fecha y hora entrada -->
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
             <mat-label>
               {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}
             </mat-label>
             <input
-              id="munition-mass-entry-date"
+              id="munition-mass-entry-date-time"
               matInput
-              [matDatepicker]="entryPicker"
+              type="datetime-local"
+              step="60"
               [value]="fechaHoraEntrada()"
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.DIALOG.DATE_PLACEHOLDER' | translate"
-              (dateChange)="updateFechaHoraEntrada($event.value)"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
               (input)="updateFechaHoraEntrada($event)"
-              (click)="entryPicker.open()"
-              #entryDateInput
+              (click)="openFechaHoraEntradaPicker(entryDateTimeInput)"
+              #entryDateTimeInput
             />
-            <mat-datepicker-toggle matIconSuffix [for]="entryPicker" />
-            <mat-datepicker (closed)="entryDateInput.blur()" #entryPicker />
+            <button mat-icon-button matSuffix type="button" (click)="captureFechaHoraEntrada()">
+              <mat-icon class="!text-[16px] text-slate-400">schedule</mat-icon>
+            </button>
           </mat-form-field>
         </div>
       </div>
@@ -170,15 +169,23 @@ export class MassiveConfigDialog {
     }
     return options[0]?.value ?? null;
   });
-  protected readonly fechaHoraEntrada = signal<Date | null>(this.#parseDate(this.data.fechaHoraEntrada));
+  protected readonly fechaHoraEntrada = signal<string | null>(this.#toLocalDateTime(this.data.fechaHoraEntrada));
 
-  updateFechaHoraEntrada(value: Date | string | Event | null): void {
+  updateFechaHoraEntrada(value: Event): void {
     if (value instanceof Event) {
       const target = value.target as HTMLInputElement | null;
-      this.fechaHoraEntrada.set(this.#parseDate(target?.value));
-      return;
+      this.fechaHoraEntrada.set(target?.value || null);
     }
-    this.fechaHoraEntrada.set(this.#parseDate(value));
+  }
+
+  captureFechaHoraEntrada(): void {
+    this.fechaHoraEntrada.set(new Date().toISOString().substring(0, 16));
+  }
+
+  openFechaHoraEntradaPicker(input: HTMLInputElement): void {
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+    }
   }
 
   async apply(): Promise<void> {
@@ -239,5 +246,17 @@ export class MassiveConfigDialog {
   #toApiDateTime(value: Date | string | null): string | null {
     const parsed = this.#parseDate(value);
     return parsed ? parsed.toISOString() : null;
+  }
+
+  #toLocalDateTime(value: string | Date | null): string | null {
+    const parsed = this.#parseDate(value);
+    if (!parsed) return null;
+
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+    const day = String(parsed.getDate()).padStart(2, '0');
+    const hours = String(parsed.getHours()).padStart(2, '0');
+    const minutes = String(parsed.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 }

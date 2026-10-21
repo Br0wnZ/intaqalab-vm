@@ -56,9 +56,9 @@ export interface SoundLevelMeterValue {
               [id]="xInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [value]="xValue() ?? ''"
+              [decimalValue]="xValue()"
               [attr.aria-label]="xLabel()"
-              (input)="onXChange($event)"
+              (decimalValueChange)="onXChange($event)"
             />
           </div>
         </div>
@@ -92,9 +92,9 @@ export interface SoundLevelMeterValue {
               [id]="yInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [value]="yValue() ?? ''"
+              [decimalValue]="yValue()"
               [attr.aria-label]="yLabel()"
-              (input)="onYChange($event)"
+              (decimalValueChange)="onYChange($event)"
             />
           </div>
         </div>
@@ -128,9 +128,9 @@ export interface SoundLevelMeterValue {
               [id]="zInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [value]="zValue() ?? ''"
+              [decimalValue]="zValue()"
               [attr.aria-label]="zLabel()"
-              (input)="onZChange($event)"
+              (decimalValueChange)="onZChange($event)"
             />
           </div>
         </div>
@@ -214,38 +214,32 @@ export class SoundLevelMeterInput implements FormValueControl<SoundLevelMeterVal
   protected readonly zInputId = computed(() => `sound-level-meter-z-${this.#uid}`);
 
   // ── Event Handlers ────────────────────────────────────────────────────────
-  onXChange(event: Event): void {
-    const rawValue = (event.target as HTMLInputElement).value;
-    const num = rawValue === '' ? null : Number(rawValue);
+  onXChange(value: number | null): void {
     const current = this.value();
     this.value.set({
-      x: num,
+      x: value,
       y: current?.y ?? null,
       z: current?.z ?? null,
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }
 
-  onYChange(event: Event): void {
-    const rawValue = (event.target as HTMLInputElement).value;
-    const num = rawValue === '' ? null : Number(rawValue);
+  onYChange(value: number | null): void {
     const current = this.value();
     this.value.set({
       x: current?.x ?? null,
-      y: num,
+      y: value,
       z: current?.z ?? null,
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }
 
-  onZChange(event: Event): void {
-    const rawValue = (event.target as HTMLInputElement).value;
-    const num = rawValue === '' ? null : Number(rawValue);
+  onZChange(value: number | null): void {
     const current = this.value();
     this.value.set({
       x: current?.x ?? null,
       y: current?.y ?? null,
-      z: num,
+      z: value,
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }

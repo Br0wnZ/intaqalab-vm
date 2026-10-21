@@ -107,13 +107,9 @@ export function normalizePlanningMunitions(
         readNestedId(munitionTypeRaw) ??
         (denomRec ? readString(denomRec['munitionTypeId']) : null);
 
-      const denomId = denomRec
-        ? readNestedId(denomRec['id'])
-        : readString(denomRaw);
+      const denomId = denomRec ? readNestedId(denomRec['id']) : readString(denomRaw);
 
-      const denomName = denomRec
-        ? readString(denomRec['name']) ?? denomId
-        : denomId;
+      const denomName = denomRec ? (readString(denomRec['name']) ?? denomId) : denomId;
 
       const batch =
         readString(configRec['batch']) ??
@@ -185,9 +181,7 @@ export function normalizePlanningMunitions(
         const compDenomRec = readRecord(compDenomRaw);
         const compDenomIdRec = readRecord(compDenomIdRaw);
 
-        const compDenomId =
-          readNestedId(compDenomRaw) ??
-          readNestedId(compDenomIdRaw);
+        const compDenomId = readNestedId(compDenomRaw) ?? readNestedId(compDenomIdRaw);
 
         const compDenomName =
           (compDenomRec ? readString(compDenomRec['name']) : null) ??
@@ -196,17 +190,13 @@ export function normalizePlanningMunitions(
 
         const catalogInfo = typeCatalog.get(compTypeId);
         const labelFromPayload =
-          (typeRec ? readString(typeRec['label']) : null) ??
-          (typeIdRec ? readString(typeIdRec['label']) : null);
+          (typeRec ? readString(typeRec['label']) : null) ?? (typeIdRec ? readString(typeIdRec['label']) : null);
 
         const label = labelFromPayload ?? catalogInfo?.label ?? compDenomName ?? compTypeId;
         const rawType =
-          (typeRec ? readString(typeRec['type']) : null) ??
-          (typeIdRec ? readString(typeIdRec['type']) : null);
+          (typeRec ? readString(typeRec['type']) : null) ?? (typeIdRec ? readString(typeIdRec['type']) : null);
 
-        const category =
-          catalogInfo?.category ??
-          resolveComponentCategory(label, rawType ?? 'MUNITION_COMPONENT');
+        const category = catalogInfo?.category ?? resolveComponentCategory(label, rawType ?? 'MUNITION_COMPONENT');
         const rawCategory = catalogInfo?.rawCategory ?? 'MUNITION_COMPONENT';
 
         const compBatch =
@@ -220,8 +210,7 @@ export function normalizePlanningMunitions(
           (compDenomRec ? readStringOrNumber(compDenomRec['clientNumber']) : null);
 
         const fuseWorkingModeId =
-          readNestedId(compRec['fuseWorkingMode']) ??
-          readNestedId(compRec['fuseWorkingModeId']);
+          readNestedId(compRec['fuseWorkingMode']) ?? readNestedId(compRec['fuseWorkingModeId']);
 
         const fuseMeasurement = readNumber(compRec['fuseMeasurement']);
 

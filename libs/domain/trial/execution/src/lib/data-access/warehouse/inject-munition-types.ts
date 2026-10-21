@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { type Signal, computed, inject } from '@angular/core';
+
 import type { MunitionTypeItem } from '../models';
 import type { TypeCatalogInfo } from '../munitions/planning-munition.normalizer';
 import { buildTypeCatalogMap } from '../munitions/planning-munition.normalizer';

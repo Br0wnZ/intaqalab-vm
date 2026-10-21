@@ -349,15 +349,17 @@ describe('MunitionIntroduction', () => {
     for (let i = 0; i < 4; i++) {
       await Promise.resolve();
       TestBed.tick();
-      httpMock.match((r) => r.url.includes('/stock')).forEach((req) =>
-        req.flush({
-          items: [
-            { denomination: { id: 'den-other' }, batch: 'LOT-OTHER' },
-            { denomination: { id: 'den-01' }, batch: 'LOT-MATCHED' },
-            { denomination: { id: 'den-01' }, batch: 'LOT-MATCHED-2' },
-          ],
-        }),
-      );
+      httpMock
+        .match((r) => r.url.includes('/stock'))
+        .forEach((req) =>
+          req.flush({
+            items: [
+              { denomination: { id: 'den-other' }, batch: 'LOT-OTHER' },
+              { denomination: { id: 'den-01' }, batch: 'LOT-MATCHED' },
+              { denomination: { id: 'den-01' }, batch: 'LOT-MATCHED-2' },
+            ],
+          }),
+        );
     }
 
     const optionValues = fixture.componentInstance
@@ -621,7 +623,9 @@ describe('MunitionIntroduction', () => {
       TestBed.tick();
       httpMock.match((r) => r.url.includes('/munition-types')).forEach((r) => r.flush({ items: flushData.types }));
       httpMock.match((r) => r.url.includes('planning/munitions')).forEach((r) => r.flush(flushData.planning));
-      httpMock.match((r) => r.url.includes('/denominations')).forEach((r) => r.flush({ items: flushData.denominations }));
+      httpMock
+        .match((r) => r.url.includes('/denominations'))
+        .forEach((r) => r.flush({ items: flushData.denominations }));
     }
 
     // 1. Select Serie Inicial: displays 2 components and patches initial component (Disparo Organizado)
@@ -719,9 +723,13 @@ describe('MunitionIntroduction', () => {
     for (let i = 0; i < 4; i++) {
       await Promise.resolve();
       TestBed.tick();
-      httpMock.match((r) => r.url.includes('/munition-types')).forEach((r) => r.flush({ items: flushDataUnassigned.types }));
+      httpMock
+        .match((r) => r.url.includes('/munition-types'))
+        .forEach((r) => r.flush({ items: flushDataUnassigned.types }));
       httpMock.match((r) => r.url.includes('planning/munitions')).forEach((r) => r.flush(flushDataUnassigned.planning));
-      httpMock.match((r) => r.url.includes('/denominations')).forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
+      httpMock
+        .match((r) => r.url.includes('/denominations'))
+        .forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
     }
 
     fixture.componentInstance.onSerieSelected('serie-unassigned');
@@ -729,7 +737,9 @@ describe('MunitionIntroduction', () => {
     for (let i = 0; i < 4; i++) {
       await Promise.resolve();
       TestBed.tick();
-      httpMock.match((r) => r.url.includes('/denominations')).forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
+      httpMock
+        .match((r) => r.url.includes('/denominations'))
+        .forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
     }
 
     const identTab = fixture.componentInstance.identTab();
@@ -773,14 +783,16 @@ describe('MunitionIntroduction', () => {
     for (let i = 0; i < 4; i++) {
       await Promise.resolve();
       TestBed.tick();
-      httpMock.match((r) => r.url.includes('/stock')).forEach((r) =>
-        r.flush({
-          items: [
-            { denomination: { id: 'denom-wh-1' }, batch: 'LOT-WH-1' },
-            { denomination: { id: 'denom-wh-1' }, batch: 'LOT-WH-1-2' },
-          ],
-        }),
-      );
+      httpMock
+        .match((r) => r.url.includes('/stock'))
+        .forEach((r) =>
+          r.flush({
+            items: [
+              { denomination: { id: 'denom-wh-1' }, batch: 'LOT-WH-1' },
+              { denomination: { id: 'denom-wh-1' }, batch: 'LOT-WH-1-2' },
+            ],
+          }),
+        );
     }
 
     expect(identTab?.filteredLoteOptions().map((o) => o.value)).toEqual(
@@ -798,14 +810,16 @@ describe('MunitionIntroduction', () => {
     for (let i = 0; i < 4; i++) {
       await Promise.resolve();
       TestBed.tick();
-      httpMock.match((r) => r.url.includes('/denominations')).forEach((r) =>
-        r.flush({
-          items: [
-            { id: 'denom-esp-1', name: 'Espoleta M578', componentTypeId: 'type-esp' },
-            { id: 'denom-gr-1', name: 'Granada M107', componentTypeId: 'type-gr' },
-          ],
-        }),
-      );
+      httpMock
+        .match((r) => r.url.includes('/denominations'))
+        .forEach((r) =>
+          r.flush({
+            items: [
+              { id: 'denom-esp-1', name: 'Espoleta M578', componentTypeId: 'type-esp' },
+              { id: 'denom-gr-1', name: 'Granada M107', componentTypeId: 'type-gr' },
+            ],
+          }),
+        );
     }
 
     expect(fixture.componentInstance.identTab()?.filteredDenominacionOptions()).toHaveLength(1);

@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningMunitionsService, PlanningTrialContextService } from '@intaqalab/data-access-planning';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 import { injectShotMunitionComponents } from './inject-shot-munition-components';
 
 describe('injectShotMunitionComponents', () => {
@@ -32,9 +33,7 @@ describe('injectShotMunitionComponents', () => {
     const shotId = signal<string | null>('shot-1');
     const fireTrialId = signal<string | null>('trial-123');
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectShotMunitionComponents({ seriesId, shotId, fireTrialId }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectShotMunitionComponents({ seriesId, shotId, fireTrialId }));
     TestBed.tick();
 
     // Initial state before HTTP requests respond
@@ -59,9 +58,7 @@ describe('injectShotMunitionComponents', () => {
     const shotId = signal<string | null>('shot-1');
     const fireTrialId = signal<string | null>('trial-123');
 
-    const handle = TestBed.runInInjectionContext(() =>
-      injectShotMunitionComponents({ seriesId, shotId, fireTrialId }),
-    );
+    const handle = TestBed.runInInjectionContext(() => injectShotMunitionComponents({ seriesId, shotId, fireTrialId }));
     TestBed.tick();
 
     const typesReq = httpMock.expectOne((req) => req.url.includes('/munition-types'));

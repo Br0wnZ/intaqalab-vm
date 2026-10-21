@@ -1,13 +1,6 @@
-import type {
-  NormalizedMunitionComponent,
-  NormalizedMunitionConfig,
-  ShotMunitionComponentOption,
-} from '../models';
+import type { NormalizedMunitionComponent, NormalizedMunitionConfig, ShotMunitionComponentOption } from '../models';
 
-export function isConfigAssignedToShot(
-  config: NormalizedMunitionConfig,
-  shotId: string | null,
-): boolean {
+export function isConfigAssignedToShot(config: NormalizedMunitionConfig, shotId: string | null): boolean {
   if (!shotId) return true;
   if (!config.assignedShotIds || config.assignedShotIds.length === 0) return true;
   return config.assignedShotIds.includes(shotId);
@@ -19,9 +12,7 @@ export function filterConfigsForShot(
   shotId: string | null,
 ): NormalizedMunitionConfig[] {
   if (!seriesId) return [];
-  return configs.filter(
-    (cfg) => cfg.seriesId === seriesId && isConfigAssignedToShot(cfg, shotId),
-  );
+  return configs.filter((cfg) => cfg.seriesId === seriesId && isConfigAssignedToShot(cfg, shotId));
 }
 
 function toComponentOption(

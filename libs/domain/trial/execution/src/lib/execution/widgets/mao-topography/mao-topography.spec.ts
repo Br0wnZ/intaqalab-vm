@@ -132,6 +132,43 @@ describe('MaoTopography', () => {
     });
   });
 
+  it.each([
+    { selectedSerie: 'series-2', expectedShot: 'shot-2-1' },
+    { selectedSerie: 'series-empty', expectedShot: null },
+  ])('selects $expectedShot when switching to $selectedSerie', async ({ selectedSerie, expectedShot }) => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const execService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotMaoTopography').mockResolvedValue({
+      maoTopographyData: { pieceX: 10, pieceY: 20, pieceZ: 30 },
+    });
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/series'))
+      .flush([
+        { id: 'series-1', name: 'Serie 1', shots: [{ id: 'shot-1-1' }] },
+        { id: 'series-2', name: 'Serie 2', shots: [{ id: 'shot-2-1' }, { id: 'shot-2-2' }] },
+        { id: 'series-empty', name: 'Empty series', shots: [] },
+      ]);
+    TestBed.tick();
+    await vi.waitFor(() => expect(store.planningSeries()).toHaveLength(3));
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1-1');
+    fetchSpy.mockClear();
+
+    fixture.componentInstance.onSerieSelected(selectedSerie);
+
+    expect(store.maoTopography()).toMatchObject({ serie: selectedSerie, disparo: expectedShot });
+    if (expectedShot === null) {
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } else {
+      expect(fetchSpy).toHaveBeenCalledExactlyOnceWith('trial-123', selectedSerie, expectedShot);
+    }
+  });
+
   it('passes target context to the dialog without posting from the parent', async () => {
     const dialogResult = {
       action: 'apply' as const,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import type { DenominationItem, StockListItem } from '../models';
 import {
   normalizeDenominations,

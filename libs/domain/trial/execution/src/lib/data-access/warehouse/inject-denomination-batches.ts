@@ -1,5 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { type Signal, computed } from '@angular/core';
+
 import type { BatchOption, StockListItem } from '../models';
 import { buildWarehouseStockUrl, injectWarehouseUrl } from './warehouse-endpoints';
 import { normalizeStockItems, toBatchOptions } from './warehouse.normalizers';

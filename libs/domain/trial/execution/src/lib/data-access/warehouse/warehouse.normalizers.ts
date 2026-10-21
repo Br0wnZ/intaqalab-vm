@@ -6,14 +6,7 @@ import type {
   PlannedComponentData,
   StockListItem,
 } from '../models';
-import {
-  isRecord,
-  readArray,
-  readNestedId,
-  readNumber,
-  readRecord,
-  readString,
-} from '../shared/unknown-readers';
+import { isRecord, readArray, readNestedId, readNumber, readRecord, readString } from '../shared/unknown-readers';
 
 export function resolveI18nName(value: unknown, fallback = ''): string {
   if (typeof value === 'string' && value.trim()) {

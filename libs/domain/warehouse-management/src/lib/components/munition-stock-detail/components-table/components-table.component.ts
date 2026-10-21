@@ -57,7 +57,7 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch'];
             <h3 class="text-sm font-medium text-gray-900">
               {{ 'WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.HEADING' | translate }}
             </h3>
-            @if (munitionStockDetailStore.item()?.status !== 'RETIRED') {
+            @if (canManageStock() && munitionStockDetailStore.item()?.status !== 'RETIRED') {
               <div class="flex items-center gap-4">
                 <button mat-flat-button (click)="itemToEdit.set({ value: -1 })">
                   <mat-icon>add</mat-icon>
@@ -158,12 +158,13 @@ export class ComponentsTableComponent {
   readonly #dialog = inject(MatDialog);
 
   munition = input.required<MunitionDetailResponseModel>();
+  canManageStock = input.required<boolean>();
 
   readonly displayedColumns = computed(() => {
     const hasRetiredStatus = this.munitionStockDetailStore.item()?.status === 'RETIRED';
     const columns = [...DISPLAYED_COLUMNS];
 
-    if (!hasRetiredStatus) columns.push('actions');
+    if (!hasRetiredStatus && this.canManageStock()) columns.push('actions');
 
     return columns;
   });

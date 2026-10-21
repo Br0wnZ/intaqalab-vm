@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,9 +19,9 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
 import {
+  type ShotMunitionComponentOption,
   injectComponentDenominations,
   injectDenominationBatches,
-  type ShotMunitionComponentOption,
 } from '../../../../data-access';
 import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 

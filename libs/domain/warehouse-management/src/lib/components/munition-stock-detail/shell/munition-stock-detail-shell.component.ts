@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import { MENU_WAREHOUSE_ROLES, injectCurrentUserRole } from '@intaqalab/core';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { DialogConfirmComponent } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
@@ -41,27 +42,29 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
         {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.HEADING' | translate }}
       </h2>
 
-      <div class="w-full flex justify-end mb-6">
-        <button mat-flat-button [matMenuTriggerFor]="menu" #trigger="matMenuTrigger">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTIONS' | translate }}
-          <mat-icon>
-            {{ trigger.menuOpen ? 'expand_less' : 'expand_more' }}
-          </mat-icon>
-        </button>
-        <mat-menu #menu="matMenu">
-          @if (store.item()?.status !== 'RETIRED') {
-            <button mat-menu-item (click)="retire()">
-              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_RETIRE' | translate }}
-            </button>
-            <button mat-menu-item (click)="transfer()">
-              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_TRANSFER' | translate }}
-            </button>
-          }
-          <button mat-menu-item (click)="movements()">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_MOVEMENTS' | translate }}
+      @if (showActions()) {
+        <div class="w-full flex justify-end mb-6">
+          <button mat-flat-button [matMenuTriggerFor]="menu" #trigger="matMenuTrigger">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTIONS' | translate }}
+            <mat-icon>
+              {{ trigger.menuOpen ? 'expand_less' : 'expand_more' }}
+            </mat-icon>
           </button>
-        </mat-menu>
-      </div>
+          <mat-menu #menu="matMenu">
+            @if (store.item()?.status !== 'RETIRED') {
+              <button mat-menu-item (click)="retire()">
+                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_RETIRE' | translate }}
+              </button>
+              <button mat-menu-item (click)="transfer()">
+                {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_TRANSFER' | translate }}
+              </button>
+            }
+            <button mat-menu-item (click)="movements()">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.ACTION_MOVEMENTS' | translate }}
+            </button>
+          </mat-menu>
+        </div>
+      }
 
       <!-- formulario -->
       @let formData = store.item();
@@ -222,9 +225,14 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
         </div>
         <!-- fin formulario -->
         @if (categoryView() === 'MUNITION') {
-          <inta-components-table [munition]="formData"></inta-components-table>
+          <inta-components-table [munition]="formData" [canManageStock]="showActions()"></inta-components-table>
         }
-        <inta-certificates [id]="id()" [stockDetail]="formData" [contextComponents]="componentesCertificates()" />
+        <inta-certificates
+          [id]="id()"
+          [stockDetail]="formData"
+          [contextComponents]="componentesCertificates()"
+          [canManageStock]="showActions()"
+        />
       }
     </div>
   `,
@@ -241,6 +249,9 @@ export class MunitionStockDetailShellComponent {
 
   id = input.required<string>();
   entity = input.required<string>();
+
+  readonly #userRoles = injectCurrentUserRole();
+  readonly showActions = computed(() => this.#userRoles().some((role) => MENU_WAREHOUSE_ROLES.includes(role)));
 
   categoryView = computed(() => {
     const result = this.entity() === 'munitions' ? 'MUNITION' : 'MUNITION_COMPONENT';

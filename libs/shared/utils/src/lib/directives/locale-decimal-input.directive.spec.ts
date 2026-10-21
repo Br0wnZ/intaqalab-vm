@@ -1,10 +1,12 @@
 import { Component, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 import type { AppLocale } from '../tokens/locale-signal.token';
+import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 import { LocaleDecimalInputDirective } from './locale-decimal-input.directive';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -32,6 +34,21 @@ class HostComponent {}
 })
 class HostComponent3Decimals {}
 
+@Component({
+  imports: [LocaleDecimalInputDirective],
+  template: `
+    <input
+      aria-label="Coordinate"
+      libLocalDecimal
+      [decimalValue]="coordinate()"
+      (decimalValueChange)="coordinate.set($event)"
+    />
+  `,
+})
+class BoundValueHost {
+  readonly coordinate = signal<number | null>(1234.5);
+}
+
 // ── Event helpers ──────────────────────────────────────────────────────────────
 
 function fireKeydown(el: HTMLInputElement, key: string, extra?: KeyboardEventInit): boolean {
@@ -52,6 +69,44 @@ function firePaste(el: HTMLInputElement, text: string): void {
 describe('LocaleDecimalInputDirective', () => {
   let fixture: ComponentFixture<HostComponent>;
   let inputEl: HTMLInputElement;
+
+  it('keeps the latest externally loaded value when focused again', async () => {
+    const user = userEvent.setup();
+    const { fixture: boundFixture } = await render(BoundValueHost, {
+      providers: [localeSignalProvider('es-ES').provider],
+    });
+    const coordinate = screen.getByRole('textbox', { name: 'Coordinate' });
+
+    await user.click(coordinate);
+    await user.tab();
+    boundFixture.componentInstance.coordinate.set(5678.25);
+    boundFixture.detectChanges();
+    await user.click(coordinate);
+
+    expect(coordinate).toHaveValue('5678,25');
+    expect(boundFixture.componentInstance.coordinate()).toBe(5678.25);
+  });
+
+  it('emits numeric values while editing locale decimals and clearing the input', async () => {
+    const user = userEvent.setup();
+    const { fixture: boundFixture } = await render(BoundValueHost, {
+      providers: [localeSignalProvider('es-ES').provider],
+    });
+    const coordinate = screen.getByRole('textbox', { name: 'Coordinate' });
+
+    await user.clear(coordinate);
+    await user.type(coordinate, '-12,75');
+
+    expect(boundFixture.componentInstance.coordinate()).toBe(-12.75);
+    expect(coordinate).toHaveValue('-12,75');
+
+    await user.tab();
+    await user.click(coordinate);
+    expect(coordinate).toHaveValue('-12,75');
+
+    await user.clear(coordinate);
+    expect(boundFixture.componentInstance.coordinate()).toBeNull();
+  });
 
   async function setup(locale: AppLocale = 'es-ES', component = HostComponent) {
     const { provider, signal: localeSig } = localeSignalProvider(locale);

@@ -1,9 +1,10 @@
 import { type Signal, computed, effect, inject, untracked } from '@angular/core';
 import { PlanningMunitionsService, PlanningTrialContextService } from '@intaqalab/data-access-planning';
+
 import type { NormalizedMunitionConfig, ShotMunitionComponentOption } from '../models';
+import { injectMunitionTypes } from '../warehouse/inject-munition-types';
 import { normalizePlanningMunitions } from './planning-munition.normalizer';
 import { selectShotMunitionComponents } from './shot-munition.selectors';
-import { injectMunitionTypes } from '../warehouse/inject-munition-types';
 
 export interface ShotMunitionComponentsHandle {
   /** Shot-scoped munition component options (main munition + subcomponents, deduplicated) */

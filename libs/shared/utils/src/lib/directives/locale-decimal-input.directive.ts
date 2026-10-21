@@ -1,5 +1,16 @@
 import type { OnInit } from '@angular/core';
-import { Directive, ElementRef, HostListener, computed, effect, forwardRef, inject, input } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  computed,
+  effect,
+  forwardRef,
+  inject,
+  input,
+  output,
+  untracked,
+} from '@angular/core';
 import type { ControlValueAccessor } from '@angular/forms';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -23,6 +34,9 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
  */
 @Directive({
   selector: 'input[libLocalDecimal]',
+  host: {
+    '(input)': 'onInput()',
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -36,6 +50,8 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   readonly decimals = input<number>(2);
   /** Minimum fraction digits displayed — default 0. */
   readonly minDecimals = input<number>(0);
+  readonly decimalValue = input<number | null>();
+  readonly decimalValueChange = output<number | null>();
 
   readonly #el = inject(ElementRef<HTMLInputElement>);
   readonly #localeSignal = inject(LOCALE_SIGNAL);
@@ -59,6 +75,13 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   };
 
   constructor() {
+    effect(() => {
+      const value = this.decimalValue();
+      if (value !== undefined) {
+        untracked(() => this.writeValue(value));
+      }
+    });
+
     // Effect runs in injection context → auto-cleaned when directive is destroyed.
     effect(() => {
       // Register reactive dependency on locale signal.
@@ -83,9 +106,12 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
 
   writeValue(value: number | null | undefined): void {
     this.#hasWrittenValue = true;
+    const hasChanged = this.#internalValue !== (value ?? null);
     this.#internalValue = value ?? null;
     if (!this.#isFocused) {
       this.#renderDisplayValue();
+    } else if (hasChanged) {
+      this.#el.nativeElement.value = this.#internalValue === null ? '' : this.#toEditString(this.#internalValue);
     }
   }
 
@@ -103,6 +129,12 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
 
   // ── Host Listeners ──────────────────────────────────────────────────────────
 
+  onInput(): void {
+    const parsed = this.#parseLocaleString(this.#el.nativeElement.value);
+    this.#internalValue = parsed;
+    this.decimalValueChange.emit(parsed);
+  }
+
   @HostListener('focus')
   onFocus(): void {
     this.#isFocused = true;
@@ -118,6 +150,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     const parsed = this.#parseLocaleString(this.#el.nativeElement.value);
     this.#internalValue = parsed;
     this.#onChange(parsed);
+    this.decimalValueChange.emit(parsed);
     this.#renderDisplayValue();
   }
 

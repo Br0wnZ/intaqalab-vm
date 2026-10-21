@@ -152,6 +152,7 @@ let uiDialog: ReturnType<typeof mockUiDialogService>;
 async function setup(options?: {
   storeOverrides?: { items?: any[]; totalElements?: number };
   confirmed?: boolean;
+  canManageStock?: boolean;
   detail?: MunitionDetailResponseModel;
 }) {
   mockDialog = createMockMatDialog({ defaultResult: null });
@@ -171,6 +172,7 @@ async function setup(options?: {
     componentInputs: {
       stockDetail: options?.detail ?? stockDetail(),
       contextComponents: [],
+      canManageStock: options?.canManageStock ?? true,
     },
   });
 
@@ -218,6 +220,11 @@ describe('CertificatesComponent', () => {
       await userEvent.click(btn);
       expect(mockDialog.open).toHaveBeenCalledOnce();
     });
+
+    it('should hide document upload controls when the user cannot manage stock', async () => {
+      await setup({ storeOverrides: { totalElements: 0 }, canManageStock: false });
+      expect(screen.queryByRole('button', { name: /TRIAL_DOCS\.ADD_DOC/i })).not.toBeInTheDocument();
+    });
   });
 
   describe('With certificates (table visible)', () => {
@@ -233,6 +240,24 @@ describe('CertificatesComponent', () => {
       expect(
         screen.getByRole('button', { name: /WHAREHOUSE_MANAGMENT\.CERTIFICATES\.BUTTON_ADD/i }),
       ).toBeInTheDocument();
+    });
+
+    it('should hide the table add button when the user cannot manage stock', async () => {
+      await setup({
+        storeOverrides: { items: [certificateItem('cert-1', 'Doc 1')], totalElements: 1 },
+        canManageStock: false,
+      });
+      expect(
+        screen.queryByRole('button', { name: /WHAREHOUSE_MANAGMENT\.CERTIFICATES\.BUTTON_ADD/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should hide the actions column when the user cannot manage stock', async () => {
+      await setup({
+        storeOverrides: { items: [certificateItem('cert-1', 'Doc 1')], totalElements: 1 },
+        canManageStock: false,
+      });
+      expect(screen.queryByText('WHAREHOUSE_MANAGMENT.CERTIFICATES.ACTIONS')).not.toBeInTheDocument();
     });
 
     it('should open CertificatesFilePicker when clicking the table add button', async () => {
