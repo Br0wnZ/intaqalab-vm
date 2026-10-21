@@ -538,4 +538,73 @@ describe('EquipmentSelectorDialog', () => {
     expect(row.series).toEqual(['s2']);
     expect(row.disparos).toEqual(['d2']);
   });
+
+  it('enables magnitude field and returns Video AV and Video C magnitudes from planning measures', async () => {
+    const videoMeasuresPlanningService = {
+      load: vi.fn(),
+      trialMeasuresResource: {
+        status: signal<'resolved'>('resolved').asReadonly(),
+        value: () => ({
+          series: [
+            {
+              seriesId: 's1',
+              measures: {
+                ballisticsMeasures: [
+                  {
+                    id: 'av-boca',
+                    name: 'Vídeo Alta Velocidad en Boca',
+                    magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_ENTRANCE',
+                  },
+                  {
+                    id: 'c-boca',
+                    name: 'Vídeo Convencional en Boca',
+                    magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      },
+      catalogResource: {
+        status: signal<'resolved'>('resolved').asReadonly(),
+        value: () => ({ items: [] }),
+        isLoading: () => false,
+        error: () => null,
+      },
+      catalog: () => [
+        {
+          id: 'av-boca',
+          magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_ENTRANCE',
+          qualificationType: QualificationTypeEnum.QUANTITATIVE,
+          measurements: [EquipmentMagnitudeTagEnum.VIDEO_AV],
+        },
+        {
+          id: 'c-boca',
+          magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+          qualificationType: QualificationTypeEnum.QUANTITATIVE,
+          measurements: [EquipmentMagnitudeTagEnum.VIDEO_C],
+        },
+      ],
+      isLoading: () => false,
+      error: () => null,
+    };
+
+    const { component } = await setup(mockData, [Role.INTAQALAB_ADMIN], videoMeasuresPlanningService);
+
+    expect(component.isMagnitudeFieldEnabled(EquipmentMagnitudeTagEnum.VIDEO_AV)).toBe(true);
+    expect(component.isMagnitudeFieldEnabled(EquipmentMagnitudeTagEnum.VIDEO_C)).toBe(true);
+    expect(component.isMagnitudeFieldEnabled(EquipmentMagnitudeTagEnum.LONGITUD)).toBe(true);
+    expect(component.isMagnitudeFieldEnabled(EquipmentMagnitudeTagEnum.SONIDO)).toBe(false);
+
+    component.selectTag(EquipmentMagnitudeTagEnum.VIDEO_AV);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VIDEO_AV);
+    const avMagnitudes = component.getItemsByCategory('magnitud');
+    expect(avMagnitudes).toEqual([{ id: 'av-boca', label: 'Vídeo Alta Velocidad en Boca', value: 'av-boca' }]);
+
+    component.selectTag(EquipmentMagnitudeTagEnum.VIDEO_C);
+    expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VIDEO_C);
+    const cMagnitudes = component.getItemsByCategory('magnitud');
+    expect(cMagnitudes).toEqual([{ id: 'c-boca', label: 'Vídeo Convencional en Boca', value: 'c-boca' }]);
+  });
 });

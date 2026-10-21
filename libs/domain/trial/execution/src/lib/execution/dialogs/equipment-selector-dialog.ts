@@ -174,12 +174,13 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                             [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-' + field.key"
                             [disabled]="
                               field.sourceCategoryId === 'municion' ||
-                              (field.sourceCategoryId === 'magnitud' && selectedTagId() !== lengthTagId)
+                              (field.sourceCategoryId === 'magnitud' && !isMagnitudeFieldEnabled(selectedTagId()))
                             "
                             [value]="getFieldValue(row.rowId, field.key)"
+                            [panelWidth]="null"
                             (selectionChange)="setFieldValue(row.rowId, field.key, $event.value)"
                           >
-                            @for (opt of getItemsByCategory(field.sourceCategoryId); track opt.id) {
+                            @for (opt of getItemsByCategory(field.sourceCategoryId, row.series); track opt.id) {
                               <mat-option [value]="opt.id">{{ opt.label }}</mat-option>
                             }
                           </mat-select>
@@ -215,6 +216,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                         multiple
                         [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-series'"
                         [value]="row.series"
+                        [panelWidth]="null"
                         (selectionChange)="handleSeriesSelection(row.rowId, $event.value)"
                       >
                         <mat-option [value]="selectAllSeriesValue">
@@ -235,6 +237,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                         multiple
                         [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-shots'"
                         [value]="row.disparos"
+                        [panelWidth]="null"
                         (selectionChange)="setRowDisparos(row.rowId, $event.value)"
                       >
                         @for (opt of getShotOptions(row.series); track opt.value) {
@@ -328,8 +331,19 @@ export class EquipmentSelectorDialog {
     this.#store.init(this.data);
   }
 
-  getItemsByCategory(categoryId: EquipmentTypeEnum | string | ''): Array<{ id: string; label: string }> {
-    return this.#store.getItemsByCategory(categoryId);
+  isMagnitudeFieldEnabled(tagId: string): boolean {
+    return (
+      tagId === EquipmentMagnitudeTagEnum.LONGITUD ||
+      tagId === EquipmentMagnitudeTagEnum.VIDEO_AV ||
+      tagId === EquipmentMagnitudeTagEnum.VIDEO_C
+    );
+  }
+
+  getItemsByCategory(
+    categoryId: EquipmentTypeEnum | string | '',
+    series?: readonly string[],
+  ): Array<{ id: string; label: string }> {
+    return this.#store.getItemsByCategory(categoryId, series);
   }
 
   getShotOptions(series: readonly string[]): EquipmentSelectorDialogData['disparoOptions'] {

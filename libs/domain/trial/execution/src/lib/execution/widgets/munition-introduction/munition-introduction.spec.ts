@@ -427,7 +427,7 @@ describe('MunitionIntroduction', () => {
     expect(fixture.componentInstance.pesosTab()?.isDirty()).toBe(false);
   });
 
-  it('updates balance options to only show balances belonging to the active component', async () => {
+  it('keeps balance options empty across components when no balance equipment is selected', async () => {
     const { fixture } = await renderWidget();
     const execService = TestBed.inject(ExecutionService);
     const store = TestBed.inject(ExecutionStore);
@@ -455,20 +455,16 @@ describe('MunitionIntroduction', () => {
     });
     await vi.waitFor(() => {
       TestBed.tick();
-      expect(fixture.componentInstance.pesosTab()?.balanceOptions()).toHaveLength(2);
+      expect(fixture.componentInstance.pesosTab()?.balanceOptions()).toEqual([]);
     });
 
-    // granada-01 has 2 balances (21031 -> bal-01, 21032 -> bal-02)
     const granadaOptions = fixture.componentInstance.pesosTab()?.balanceOptions();
-    expect(granadaOptions).toHaveLength(2);
-    expect(granadaOptions?.map((b) => b.value)).toEqual(['bal-01', 'bal-02']);
+    expect(granadaOptions).toEqual([]);
 
-    // Switch component to espoleta-01 (only has 1 balance: 21031 -> bal-01)
     fixture.componentInstance.onComponentChange('espoleta-01');
 
     const espoletaOptions = fixture.componentInstance.pesosTab()?.balanceOptions();
-    expect(espoletaOptions).toHaveLength(1);
-    expect(espoletaOptions?.[0].value).toBe('bal-01');
+    expect(espoletaOptions).toEqual([]);
     expect(fixture.componentInstance.pesosTab()?.weightFormModel().balance).toBe('bal-01');
   });
 

@@ -3,8 +3,8 @@ import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
-import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { TrialArmamentResponse } from '@intaqalab/data-access-planning';
+import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
@@ -252,12 +252,20 @@ export interface PlanningApprovalRequest {
 
 /** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
 export type {
-  PlanningSeriesItem,
-  PlanningSeriesShotItem,
   PlanningConditionsResponse,
   PlanningConditionsSeries,
   PlanningConditionsShot,
+  PlanningSeriesItem,
+  PlanningSeriesShotItem,
 } from '@intaqalab/data-access-planning';
+export type {
+  PropellantChargeParametersResponse,
+  ShotDifferentialPressureData,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
+};
 
 export interface JltShotDataPayload {
   jet: string;
@@ -408,14 +416,6 @@ interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
 // ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
 
 export type ShotPressuresData = ShotPiezoPressureItem;
-export type {
-  PropellantChargeParametersResponse,
-  ShotDifferentialPressureData,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
-};
 
 export interface ArmamentEquipmentItem {
   id: number | string;
@@ -1816,6 +1816,34 @@ export class ExecutionService {
   async loadArmamentWeaponDenominations(): Promise<ArmamentEquipmentDenomination[]> {
     this.#loadArmamentWeaponDenominationsRequest.update((requestId) => requestId + 1);
     const response = await this.#awaitResourceValue(this.#loadArmamentWeaponDenominationsResource);
+    return response.items;
+  }
+
+  readonly #loadArmamentDenominationsParams = signal<{
+    itemType: 'MORTAR' | 'TUBE';
+    familyId?: number;
+  } | null>(null);
+
+  readonly #loadArmamentDenominationsResource = httpResource<ArmamentEquipmentDenominationsResponse>(() => {
+    const params = this.#loadArmamentDenominationsParams();
+    if (!params || (params.itemType === 'TUBE' && params.familyId === undefined)) return undefined;
+    return {
+      url: `${this.#planningUrl}/equipment/denominations`,
+      method: 'GET',
+      params: {
+        itemType: params.itemType,
+        ...(params.familyId === undefined ? {} : { familyId: params.familyId }),
+      },
+    };
+  });
+
+  async loadArmamentDenominations(
+    itemType: 'MORTAR' | 'TUBE',
+    familyId?: number,
+  ): Promise<ArmamentEquipmentDenomination[]> {
+    if (itemType === 'TUBE' && familyId === undefined) return [];
+    this.#loadArmamentDenominationsParams.set({ itemType, familyId });
+    const response = await this.#awaitResourceValue(this.#loadArmamentDenominationsResource);
     return response.items;
   }
 

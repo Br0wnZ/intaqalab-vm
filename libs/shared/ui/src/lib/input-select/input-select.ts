@@ -57,6 +57,7 @@ import { InputSelectInput } from './input-select-input.directive';
             libLocalDecimal
             inputmode="decimal"
             class="flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 placeholder:text-gray-500"
+            [numericSign]="numericSign()"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
             [style.color]="textColor() ?? null"
             [value]="inputValue()"
@@ -65,7 +66,7 @@ import { InputSelectInput } from './input-select-input.directive';
             [attr.aria-label]="label()"
             (input)="onInputChange($event)"
             (focus)="focused.set(true)"
-            (blur)="focused.set(false)"
+            (blur)="onInputBlur($event)"
           />
         }
 
@@ -126,6 +127,7 @@ export class InputSelect {
   readonly textColor = input<string | null>(null);
   readonly placeholder = input<string>('0,00');
   readonly readOnly = input(false);
+  readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
   readonly variant = input<'default' | 'computed'>('default');
   /**
    * Muestra el label flotante sobre el borde del campo.
@@ -168,6 +170,7 @@ export class InputSelect {
    * conecta sus eventos (input/focus/blur) para mantener el estado interno.
    */
   readonly projectedInput = contentChild(InputSelectInput);
+  #hasInvalidInput = false;
 
   /** Evita registrar los listeners más de una vez. */
   #projectedWired = false;
@@ -186,9 +189,8 @@ export class InputSelect {
 
   // ── Handlers (input interno) ─────────────────────────────────────────────
   onInputChange(event: Event): void {
-    const raw = (event.target as HTMLInputElement).value;
-    this.inputValue.set(raw);
-    this.value.set({ value: raw, unit: this.selectedUnit() });
+    const input = event.target as HTMLInputElement;
+    this.#updateInputValue(input.value, input);
   }
 
   onUnitChange(unit: string): void {
@@ -229,12 +231,46 @@ export class InputSelect {
     // Conecta eventos
     this.#unlisteners.push(
       this.#renderer.listen(el, 'input', (event: Event) => {
-        const raw = (event.target as HTMLInputElement).value;
-        this.inputValue.set(raw);
-        this.value.set({ value: raw, unit: this.selectedUnit() });
+        const input = event.target as HTMLInputElement;
+        this.#updateInputValue(input.value, input);
       }),
       this.#renderer.listen(el, 'focus', () => this.focused.set(true)),
-      this.#renderer.listen(el, 'blur', () => this.focused.set(false)),
+      this.#renderer.listen(el, 'blur', () => {
+        this.#restoreInvalidInput(el);
+        this.focused.set(false);
+      }),
     );
+  }
+
+  #updateInputValue(raw: string, input: HTMLInputElement): void {
+    const sign = this.numericSign();
+    const normalized = raw.trim();
+    const numericValue = Number(normalized.replace(',', '.'));
+    const signIsInvalid =
+      (sign === 'non-negative' && normalized.startsWith('-') && !Number.isFinite(numericValue)) ||
+      (sign === 'non-negative' && Number.isFinite(numericValue) && numericValue < 0) ||
+      (sign === 'non-positive' && Number.isFinite(numericValue) && numericValue > 0);
+
+    if (signIsInvalid) {
+      this.#hasInvalidInput = true;
+      return;
+    }
+
+    this.#hasInvalidInput = false;
+    this.inputValue.set(raw);
+    this.value.set({ value: raw, unit: this.selectedUnit() });
+  }
+
+  onInputBlur(event: Event): void {
+    this.#restoreInvalidInput(event.target as HTMLInputElement);
+    this.focused.set(false);
+  }
+
+  #restoreInvalidInput(input: HTMLInputElement): void {
+    if (!this.#hasInvalidInput) return;
+    const previousValue = this.value()?.value ?? '';
+    input.value = previousValue;
+    this.inputValue.set(previousValue);
+    this.#hasInvalidInput = false;
   }
 }

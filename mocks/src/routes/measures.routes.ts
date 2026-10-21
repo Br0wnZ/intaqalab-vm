@@ -159,29 +159,35 @@ measuresRouter.delete('/measures/:measureId/favorite', (req: Request, res: Respo
 
 // --- Planning Routes ---
 
-measuresRouter.get('/fire-trials/:fireTrialId/planning/measures', (req: Request, res: Response) => {
-  // En un mock real, filtraríamos por fireTrialId si tuviéramos múltiples fixtures
-  res.json(TRIAL_MEASURES);
-});
+measuresRouter.get(
+  ['/fire-trials/:fireTrialId/planning/measures', '/:centerId/fire-trials/:fireTrialId/planning/measures'],
+  (req: Request, res: Response) => {
+    // En un mock real, filtraríamos por fireTrialId si tuviéramos múltiples fixtures
+    res.json(TRIAL_MEASURES);
+  },
+);
 
-measuresRouter.put('/fire-trials/:fireTrialId/planning/measures', (req: Request, res: Response) => {
-  const { series } = req.body;
+measuresRouter.put(
+  ['/fire-trials/:fireTrialId/planning/measures', '/:centerId/fire-trials/:fireTrialId/planning/measures'],
+  (req: Request, res: Response) => {
+    const { series } = req.body;
 
-  if (!series || !Array.isArray(series)) {
-    return res.status(400).json({ title: 'Invalid data', status: 400 });
-  }
+    if (!series || !Array.isArray(series)) {
+      return res.status(400).json({ title: 'Invalid data', status: 400 });
+    }
 
-  // Actualizamos el mock en memoria
-  // Nota: Esto es una simplificación. En un caso real, updatearíamos TRIAL_MEASURES basándonos en los IDs recibidos.
-  // Como los response types son diferentes a los request types (ids vs objects), aquí simulamos que se guarda
-  // y devolvemos 200 OK.
+    // Actualizamos el mock en memoria
+    // Nota: Esto es una simplificación. En un caso real, updatearíamos TRIAL_MEASURES basándonos en los IDs recibidos.
+    // Como los response types son diferentes a los request types (ids vs objects), aquí simulamos que se guarda
+    // y devolvemos 200 OK.
 
-  // Para que el mock sea algo consistente, podríamos actualizar TRIAL_MEASURES
-  // reconstruyendo los objetos a partir de los IDs, pero para simular el éxito basta con:
+    // Para que el mock sea algo consistente, podríamos actualizar TRIAL_MEASURES
+    // reconstruyendo los objetos a partir de los IDs, pero para simular el éxito basta con:
 
-  console.log('Updating trial measures', JSON.stringify(series, null, 2));
+    console.log('Updating trial measures', JSON.stringify(series, null, 2));
 
-  res.status(200).send();
-});
+    res.status(200).send();
+  },
+);
 
 export { measuresRouter };

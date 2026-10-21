@@ -139,3 +139,10 @@ export function resolvePlannedLengthMagnitudes(
   );
   return MAGNITUDE_OPTIONS.filter((option) => plannedCodes.has(option.id));
 }
+
+export {
+  isConventionalVideoMeasure,
+  isHighSpeedVideoMeasure,
+  resolvePlannedVideoMagnitudes,
+  type VideoMagnitudeOption,
+} from '../../data-access/video/video-measures.normalizer';

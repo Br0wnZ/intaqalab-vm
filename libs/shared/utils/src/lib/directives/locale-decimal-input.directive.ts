@@ -50,6 +50,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   readonly decimals = input<number>(2);
   /** Minimum fraction digits displayed — default 0. */
   readonly minDecimals = input<number>(0);
+  readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
   readonly decimalValue = input<number | null>();
   readonly decimalValueChange = output<number | null>();
 
@@ -130,7 +131,10 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   // ── Host Listeners ──────────────────────────────────────────────────────────
 
   onInput(): void {
-    const parsed = this.#parseLocaleString(this.#el.nativeElement.value);
+    const raw = this.#el.nativeElement.value;
+    const parsed = this.#parseLocaleString(raw);
+    if (!this.#isSignAllowed(raw, parsed)) return;
+
     this.#internalValue = parsed;
     this.decimalValueChange.emit(parsed);
   }
@@ -147,7 +151,13 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   onBlur(): void {
     this.#isFocused = false;
     this.#onTouched();
-    const parsed = this.#parseLocaleString(this.#el.nativeElement.value);
+    const raw = this.#el.nativeElement.value;
+    const parsed = this.#parseLocaleString(raw);
+    if (!this.#isSignAllowed(raw, parsed)) {
+      this.#renderDisplayValue();
+      return;
+    }
+
     this.#internalValue = parsed;
     this.#onChange(parsed);
     this.decimalValueChange.emit(parsed);
@@ -170,6 +180,11 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     if (sanitized !== '') {
       this.#el.nativeElement.value = sanitized;
       const parsed = this.#parseLocaleString(sanitized);
+      if (!this.#isSignAllowed(sanitized, parsed)) {
+        this.#el.nativeElement.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+
       this.#internalValue = parsed;
       this.#onChange(parsed);
       this.#el.nativeElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -219,6 +234,14 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     }
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
+  }
+
+  #isSignAllowed(raw: string, value: number | null): boolean {
+    const sign = this.numericSign();
+    if (sign === 'any' || value === null) {
+      return sign !== 'non-negative' || !raw.trim().startsWith('-');
+    }
+    return sign === 'non-negative' ? value >= 0 : value <= 0;
   }
 
   /**

@@ -184,7 +184,7 @@ export const injectWidgets = (): Widget[] => [
     widgetComponent: ArmamentIntroductionComponent,
     title: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE',
     description: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.DESCRIPTION',
-    category: 'Municiones',
+    category: 'Armamento',
     badge: 'M',
     badgeColor: 'blue',
     defaultWidth: 3,

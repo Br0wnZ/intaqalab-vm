@@ -8,3 +8,4 @@ export * from './warehouse/warehouse.normalizers';
 export * from './warehouse/inject-munition-types';
 export * from './warehouse/inject-component-denominations';
 export * from './warehouse/inject-denomination-batches';
+export * from './video/video-measures.normalizer';

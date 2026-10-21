@@ -20,6 +20,7 @@ import {
         <!-- Presión Diferencial Positiva -->
         <ui-input-select
           subscriptSizing="dynamic"
+          numericSign="non-negative"
           [label]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_DIF_POSITIVA_LABEL' | translate"
           [opciones]="pressureUnitOptions()"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.INPUT_PLACEHOLDER_XXX' | translate"
@@ -30,6 +31,7 @@ import {
         <!-- Presión Diferencial Negativa -->
         <ui-input-select
           subscriptSizing="dynamic"
+          numericSign="non-positive"
           [label]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.PRESION_DIF_NEGATIVA_LABEL' | translate"
           [opciones]="pressureUnitOptions()"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.INPUT_PLACEHOLDER_XXX' | translate"
@@ -76,17 +78,31 @@ export class PiezoPressureDifferentialTab {
   );
 
   protected onPositiveChange(field: InputFieldValue): void {
+    if (field?.value === '-') return;
+
+    const pressure = parseNum(field);
+    if (pressure !== null && pressure < 0) {
+      return;
+    }
+
     this.model.update((current) => ({
       ...current,
-      positiveDifferentialPressure: parseNum(field),
+      positiveDifferentialPressure: pressure,
       positiveDifferentialPressureUnit: field?.unit ?? DEFAULT_PRESSURE_UNIT,
     }));
   }
 
   protected onNegativeChange(field: InputFieldValue): void {
+    if (field?.value === '-') return;
+
+    const pressure = parseNum(field);
+    if (pressure !== null && pressure > 0) {
+      return;
+    }
+
     this.model.update((current) => ({
       ...current,
-      negativeDifferentialPressure: parseNum(field),
+      negativeDifferentialPressure: pressure,
       negativeDifferentialPressureUnit: field?.unit ?? DEFAULT_PRESSURE_UNIT,
     }));
   }

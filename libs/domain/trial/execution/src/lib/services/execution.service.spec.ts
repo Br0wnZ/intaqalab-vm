@@ -1025,6 +1025,26 @@ describe('ExecutionService', () => {
     await expect(denominationsPromise).resolves.toEqual(denominations);
   });
 
+  it('loads tube denominations filtered by the selected weapon family', async () => {
+    const denominationsPromise = service.loadArmamentDenominations('TUBE', 10676);
+    TestBed.tick();
+
+    const request = httpMock.expectOne(
+      (req) =>
+        req.url === `${PLANNING_ROOT_URL}/equipment/denominations` &&
+        req.params.get('itemType') === 'TUBE' &&
+        req.params.get('familyId') === '10676',
+    );
+    expect(request.request.method).toBe('GET');
+    const denominations = [
+      { id: 16, name: 'Tube family 10676', itemType: 'TUBE' as const, familyId: 10676, active: true },
+    ];
+    request.flush({ totalElements: denominations.length, items: denominations });
+    TestBed.tick();
+
+    await expect(denominationsPromise).resolves.toEqual(denominations);
+  });
+
   it('handles bulk armament configuration via HTTP resource and Promise', async () => {
     const bulkPayload: ArmamentBulkConfigurationRequest = {
       assignedSeriesIds: ['s-1', 's-2'],

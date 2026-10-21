@@ -89,13 +89,25 @@ export interface PlanningMagnitudeSelection extends MagnitudeMeasureSource {
   readonly measurements: readonly string[];
 }
 
+export type TrialPlanningMeasureItem = {
+  readonly id: string;
+  readonly name?: string;
+  readonly unit?: string | null;
+  readonly measurementArea?: string | null;
+  readonly magnitudeCode?: string | null;
+  readonly minLimit?: number | null;
+  readonly maxLimit?: number | null;
+  readonly deviation?: number | null;
+};
+
 export type TrialPlanningMeasuresResponse = {
   readonly series: ReadonlyArray<{
     readonly seriesId: string;
+    readonly seriesName?: string;
     readonly measures: Partial<
       Record<
         'topographyMeasures' | 'munitionsMeasures' | 'armamentMeasures' | 'ballisticsMeasures',
-        ReadonlyArray<{ readonly id: string }>
+        ReadonlyArray<TrialPlanningMeasureItem>
       >
     >;
   }>;
@@ -118,7 +130,7 @@ export type EquipmentMeasureMagnitude = EquipmentMagnitudeEnum | 'ATTACK' | 'REC
 export interface EquipmentItemSelection {
   itemId: string;
   categoryId: EquipmentTypeEnum;
-  magnitude?: EquipmentMeasureMagnitude | null;
+  magnitude?: EquipmentMeasureMagnitude | string | null;
   channel?: number | null;
   series: string[];
   disparos: string[];
@@ -137,8 +149,8 @@ export interface EquipmentSelectionItem {
   equipmentItemId: number;
   /** Categoría del equipo de medición (clave de filtrado en Calibry). */
   categoryId: EquipmentTypeEnum;
-  /** Magnitud de medida del equipo (ATTACK o RECOIL). */
-  magnitude?: EquipmentMagnitudeEnum | EquipmentMeasureMagnitude | null;
+  /** Magnitud de medida del equipo (ATTACK o RECOIL o ID de medida planificada). */
+  magnitude?: EquipmentMagnitudeEnum | EquipmentMeasureMagnitude | string | null;
   /** Canal del equipo de medida (1–32). */
   channel?: number | null;
   /** Series a las que está asignado este equipo. */

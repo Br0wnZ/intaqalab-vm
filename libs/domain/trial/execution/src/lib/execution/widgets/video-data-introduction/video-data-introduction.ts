@@ -22,6 +22,8 @@ import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { resolveObservedResultControlConfig, resolvePlannedVideoMagnitudes } from '../../../data-access';
+import { EquipmentPlanningService } from '../../../services/equipment-planning.service';
 import { ExecutionService } from '../../../services/execution.service';
 import type { ShotVideoDataResponse } from '../../models';
 import { EquipmentTypeEnum } from '../../models/equipment.models';
@@ -192,6 +194,7 @@ interface VideoDataIntroductionForm {
                   id="magnitud-select"
                   [placeholder]="'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.MAGNITUD_LABEL' | translate"
                   [formField]="form.magnitud"
+                  (selectionChange)="onMagnitudSelected($event.value)"
                 >
                   @for (opt of magnitudOptions(); track opt.value) {
                     <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -205,16 +208,50 @@ interface VideoDataIntroductionForm {
                 <mat-label>
                   {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate }}
                 </mat-label>
-                <input
-                  id="resultado-input"
-                  matInput
-                  [placeholder]="
-                    'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate
-                  "
-                  [value]="selectorModel().resultadoObservado"
-                  (input)="updateResultadoObservado(resultadoInput.value)"
-                  #resultadoInput
-                />
+                @if (observedResultControlConfig().type === 'numeric') {
+                  <input
+                    id="resultado-input"
+                    data-testid="resultado-numeric-input"
+                    matInput
+                    type="number"
+                    [min]="observedResultControlConfig().min ?? null"
+                    [max]="observedResultControlConfig().max ?? null"
+                    [placeholder]="
+                      'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate
+                    "
+                    [value]="selectorModel().resultadoObservado"
+                    (keydown)="onNumericKeydown($event)"
+                    (input)="updateResultadoObservado(resultadoInput.value)"
+                    (blur)="onResultadoBlur()"
+                    #resultadoInput
+                  />
+                } @else if (observedResultControlConfig().type === 'select') {
+                  <mat-select
+                    id="resultado-select"
+                    data-testid="resultado-select"
+                    [placeholder]="
+                      'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate
+                    "
+                    [value]="selectorModel().resultadoObservado"
+                    (selectionChange)="updateResultadoObservado($event.value)"
+                  >
+                    @for (opt of observedResultControlConfig().options; track opt.value) {
+                      <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                    }
+                  </mat-select>
+                } @else {
+                  <input
+                    id="resultado-input"
+                    data-testid="resultado-text-input"
+                    matInput
+                    [placeholder]="
+                      'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.RESULTADO_OBSERVADO_LABEL' | translate
+                    "
+                    [value]="selectorModel().resultadoObservado"
+                    (input)="updateResultadoObservado(resultadoInput.value)"
+                    #resultadoInput
+                  />
+                }
               </mat-form-field>
             </div>
           </div>
@@ -257,6 +294,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
   readonly #trialShots = injectTrialShots();
+  readonly #equipmentPlanningService = inject(EquipmentPlanningService);
 
   readonly #itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
   readonly #remoteVideoData = signal<ShotVideoDataResponse | null>(null);
@@ -411,7 +449,23 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   protected readonly canalOptions = computed(() => []);
 
   /** Lista de magnitudes disponibles (procedentes de planificación) */
-  protected readonly magnitudOptions = computed(() => this.#store.videoDataIntroduction().magnitudOptions);
+  protected readonly magnitudOptions = computed(() => {
+    const tipo = this.selectorModel().tipoVideo;
+    if (!tipo) return [];
+    const serie = this.selectorModel().serie;
+    const response = this.#equipmentPlanningService.trialMeasuresResource.value();
+    const catalog = this.#equipmentPlanningService.catalog();
+    return resolvePlannedVideoMagnitudes(response, tipo, serie ? [serie] : undefined, catalog);
+  });
+
+  /** Configuración reactiva del control de resultado observado según tipo cualitativo / cuantitativo */
+  protected readonly observedResultControlConfig = computed(() => {
+    const magnitudId = this.selectorModel().magnitud;
+    const response = this.#equipmentPlanningService.trialMeasuresResource.value();
+    const catalog = this.#equipmentPlanningService.catalog();
+    const serie = this.selectorModel().serie;
+    return resolveObservedResultControlConfig(magnitudId, response, catalog, serie);
+  });
 
   /** Estado del disparo seleccionado (read-only) */
   protected readonly selectedShotStatus = computed(() =>
@@ -478,6 +532,20 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
+      if (fireTrialId) {
+        this.#equipmentPlanningService.load(fireTrialId);
+      }
+    });
+
+    effect(() => {
+      const options = this.magnitudOptions();
+      untracked(() => {
+        this.#store.updateVideoDataIntroduction({ magnitudOptions: options });
+      });
+    });
+
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
       const serie = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
       const disparo = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
       if (!fireTrialId || !serie || !disparo) return;
@@ -530,8 +598,65 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     void this.#loadSelectedShotData();
   }
 
+  onMagnitudSelected(magnitud: string | null): void {
+    this.selectorModel.update((value) => ({ ...value, magnitud }));
+    this.#store.updateVideoDataIntroduction({ magnitud });
+    const nextConfig = resolveObservedResultControlConfig(
+      magnitud,
+      this.#equipmentPlanningService.trialMeasuresResource.value(),
+      this.#equipmentPlanningService.catalog(),
+      this.selectorModel().serie,
+    );
+    if (nextConfig.type === 'select') {
+      const current = this.selectorModel().resultadoObservado;
+      const isValid = nextConfig.options.some((opt) => opt.value === current);
+      if (!isValid) {
+        this.updateResultadoObservado('');
+      }
+    } else if (nextConfig.type === 'numeric') {
+      const current = this.selectorModel().resultadoObservado;
+      if (current && Number.isNaN(Number(current))) {
+        this.updateResultadoObservado('');
+      }
+    }
+  }
+
+  onNumericKeydown(event: KeyboardEvent): void {
+    const config = this.observedResultControlConfig();
+    if (
+      config.type === 'numeric' &&
+      config.min !== null &&
+      config.min >= 0 &&
+      (event.key === '-' || event.key === '+')
+    ) {
+      event.preventDefault();
+    }
+  }
+
   updateResultadoObservado(resultadoObservado: string): void {
-    this.selectorModel.update((value) => ({ ...value, resultadoObservado }));
+    const config = this.observedResultControlConfig();
+    let sanitized = resultadoObservado;
+    if (config.type === 'numeric' && sanitized.trim() !== '') {
+      const num = Number(sanitized);
+      if (!Number.isNaN(num) && config.max !== null && config.max !== undefined && num > config.max) {
+        sanitized = String(config.max);
+      }
+    }
+    this.selectorModel.update((value) => ({ ...value, resultadoObservado: sanitized }));
+  }
+
+  onResultadoBlur(): void {
+    const config = this.observedResultControlConfig();
+    if (config.type === 'numeric' && this.selectorModel().resultadoObservado.trim() !== '') {
+      const num = Number(this.selectorModel().resultadoObservado);
+      if (!Number.isNaN(num)) {
+        if (config.min !== null && config.min !== undefined && num < config.min) {
+          this.selectorModel.update((value) => ({ ...value, resultadoObservado: String(config.min) }));
+        } else if (config.max !== null && config.max !== undefined && num > config.max) {
+          this.selectorModel.update((value) => ({ ...value, resultadoObservado: String(config.max) }));
+        }
+      }
+    }
   }
 
   updateObservaciones(observaciones: string): void {

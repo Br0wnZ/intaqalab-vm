@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
@@ -56,6 +56,30 @@ describe('MunitionAcondicionamientoTabComponent', () => {
   it('starts not dirty', async () => {
     const { view } = await runSetup();
     expect(view.fixture.componentInstance.isDirty()).toBe(false);
+  });
+
+  it('allows editing the entry date and time', async () => {
+    const { view } = await runSetup();
+    const input = screen.getByLabelText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL');
+
+    expect(input).toHaveAttribute('type', 'datetime-local');
+    expect(input).not.toHaveAttribute('readonly');
+
+    fireEvent.input(input, { target: { value: '2026-10-21T09:30' } });
+
+    expect(view.fixture.componentInstance.fechaHoraEntradaField()).toBe('2026-10-21T09:30');
+  });
+
+  it('allows editing the exit date and time', async () => {
+    const { view } = await runSetup();
+    const input = screen.getByLabelText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL');
+
+    expect(input).toHaveAttribute('type', 'datetime-local');
+    expect(input).not.toHaveAttribute('readonly');
+
+    fireEvent.input(input, { target: { value: '2026-10-21T10:45' } });
+
+    expect(view.fixture.componentInstance.fechaHoraSalidaField()).toBe('2026-10-21T10:45');
   });
 
   it('save updates the store', async () => {

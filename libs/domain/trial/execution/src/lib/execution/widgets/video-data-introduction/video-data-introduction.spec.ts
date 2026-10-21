@@ -4,12 +4,16 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
-import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models/equipment.models';
+import {
+  EquipmentMeasurementGroupEnum,
+  EquipmentTypeEnum,
+  type TrialPlanningMeasuresResponse,
+} from '../../models/equipment.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { injectInitialVideoEquipments } from './inject-initial-video-equipments';
 import { VideoDataIntroduction } from './video-data-introduction';
@@ -307,5 +311,259 @@ describe('VideoDataIntroduction', () => {
       },
       conventionalVideoData: response.conventionalVideoData,
     });
+  });
+
+  it('resolves magnitudOptions from planned measures according to video type and selected series', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const mockPlanningMeasures: TrialPlanningMeasuresResponse = {
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesName: 'Serie 1',
+          measures: {
+            topographyMeasures: [],
+            munitionsMeasures: [],
+            armamentMeasures: [],
+            ballisticsMeasures: [
+              {
+                id: 'meas-av-1',
+                name: 'Vídeo Alta Velocidad en Blanco',
+                unit: 'BALLISTICS',
+                measurementArea: 'Cámaras de vídeo de alta velocidad y convencionales',
+                magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_TARJET',
+                minLimit: null,
+                maxLimit: null,
+                deviation: null,
+              },
+              {
+                id: 'meas-c-1',
+                name: 'Vídeo Convencional en Boca',
+                unit: 'BALLISTICS',
+                measurementArea: 'Cámaras de vídeo de alta velocidad y convencionales',
+                magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+                minLimit: null,
+                maxLimit: null,
+                deviation: null,
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+
+    const allRequests = httpMock.match(() => true);
+    for (const req of allRequests) {
+      if (req.request.url.includes('/fire-trials/') && req.request.url.includes('/planning/measures')) {
+        req.flush(mockPlanningMeasures);
+      } else if (!req.request.url.includes('/fire-trials/') && req.request.url.includes('/measures')) {
+        req.flush({ page: 1, pageSize: 100, totalElements: 0, items: [] });
+      }
+    }
+    TestBed.tick();
+
+    fixture.componentInstance['selectorModel'].update((m) => ({
+      ...m,
+      serie: 'series-1',
+      tipoVideo: 'AV',
+    }));
+
+    await vi.waitFor(() => {
+      expect(fixture.componentInstance['magnitudOptions']()).toEqual([
+        {
+          id: 'meas-av-1',
+          value: 'meas-av-1',
+          label: 'Vídeo Alta Velocidad en Blanco',
+        },
+      ]);
+    });
+
+    fixture.componentInstance['selectorModel'].update((m) => ({
+      ...m,
+      tipoVideo: 'C',
+    }));
+
+    await vi.waitFor(() => {
+      expect(fixture.componentInstance['magnitudOptions']()).toEqual([
+        {
+          id: 'meas-c-1',
+          value: 'meas-c-1',
+          label: 'Vídeo Convencional en Boca',
+        },
+      ]);
+    });
+  });
+
+  it('switches resultadoObservado between number input with min/max, select, and text depending on magnitude qualificationType', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const mockPlanningMeasures: TrialPlanningMeasuresResponse = {
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesName: 'Serie 1',
+          measures: {
+            topographyMeasures: [],
+            munitionsMeasures: [],
+            armamentMeasures: [],
+            ballisticsMeasures: [
+              {
+                id: 'meas-quant-1',
+                name: 'Vídeo Alta Velocidad en Blanco',
+                unit: 'BALLISTICS',
+                measurementArea: 'Cámaras',
+                magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_TARJET',
+                minLimit: 10,
+                maxLimit: 100,
+                deviation: null,
+              },
+              {
+                id: 'meas-qual-1',
+                name: 'Vídeo Convencional en Boca',
+                unit: 'BALLISTICS',
+                measurementArea: 'Cámaras',
+                magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+                minLimit: null,
+                maxLimit: null,
+                deviation: null,
+              },
+              {
+                id: 'meas-qual-empty',
+                name: 'Vídeo Convencional en Cierre',
+                unit: 'BALLISTICS',
+                measurementArea: 'Cámaras',
+                magnitudeCode: 'BAL_CAMERA_CONV_SEAL',
+                minLimit: null,
+                maxLimit: null,
+                deviation: null,
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const mockCatalog = {
+      page: 1,
+      pageSize: 100,
+      totalElements: 3,
+      items: [
+        {
+          id: 'meas-quant-1',
+          magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_TARJET',
+          magnitudeLabel: 'Vídeo Alta Velocidad en Blanco',
+          qualificationType: 'QUANTITATIVE',
+          minValue: 0,
+          maxValue: 200,
+          measureUnit: 'FPS',
+          measurements: ['HIGH_SPEED_VIDEO'],
+        },
+        {
+          id: 'meas-qual-1',
+          magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+          magnitudeLabel: 'Vídeo Convencional en Boca',
+          qualificationType: 'QUALITATIVE',
+          measurements: ['CONVENTIONAL_VIDEO'],
+          values: [
+            { code: 'CORRECT', name: { es: 'Correcto', en: 'Correct' }, active: true },
+            { code: 'DEFECTIVE', name: { es: 'Defectuoso', en: 'Defective' }, active: true },
+          ],
+        },
+        {
+          id: 'meas-qual-empty',
+          magnitudeCode: 'BAL_CAMERA_CONV_SEAL',
+          magnitudeLabel: 'Vídeo Convencional en Cierre',
+          qualificationType: 'QUALITATIVE',
+          measurements: ['CONVENTIONAL_VIDEO'],
+          values: [],
+        },
+      ],
+    };
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+
+    const allRequests2 = httpMock.match(() => true);
+    for (const req of allRequests2) {
+      if (req.request.url.includes('/fire-trials/') && req.request.url.includes('/planning/measures')) {
+        req.flush(mockPlanningMeasures);
+      } else if (!req.request.url.includes('/fire-trials/') && req.request.url.includes('/measures')) {
+        req.flush(mockCatalog);
+      }
+    }
+    TestBed.tick();
+
+    fixture.componentInstance['selectorModel'].update((m) => ({
+      ...m,
+      serie: 'series-1',
+      tipoVideo: 'AV',
+      magnitud: 'meas-quant-1',
+    }));
+    fixture.detectChanges();
+
+    // 1. Quantitative: input is type number and min/max are 10 and 100
+    await vi.waitFor(() => {
+      const config = fixture.componentInstance['observedResultControlConfig']();
+      expect(config.type).toBe('numeric');
+      expect(config.isQuantitative).toBe(true);
+      expect(config.min).toBe(10);
+      expect(config.max).toBe(100);
+    });
+
+    const numInput = screen.getByTestId<HTMLInputElement>('resultado-numeric-input');
+    expect(numInput).toBeInTheDocument();
+    expect(numInput.type).toBe('number');
+    expect(numInput.min).toBe('10');
+    expect(numInput.max).toBe('100');
+
+    // Clamps max if exceeded
+    fixture.componentInstance.updateResultadoObservado('150');
+    expect(fixture.componentInstance['selectorModel']().resultadoObservado).toBe('100');
+
+    // Clamps min on blur if below min
+    fixture.componentInstance.updateResultadoObservado('5');
+    fixture.componentInstance.onResultadoBlur();
+    expect(fixture.componentInstance['selectorModel']().resultadoObservado).toBe('10');
+
+    // 2. Qualitative with values: select is rendered
+    fixture.componentInstance.onMagnitudSelected('meas-qual-1');
+    fixture.detectChanges();
+
+    await vi.waitFor(() => {
+      const config = fixture.componentInstance['observedResultControlConfig']();
+      expect(config.type).toBe('select');
+      expect(config.options).toEqual([
+        { value: 'CORRECT', label: 'Correcto' },
+        { value: 'DEFECTIVE', label: 'Defectuoso' },
+      ]);
+    });
+
+    const selectEl = screen.getByTestId('resultado-select');
+    expect(selectEl).toBeInTheDocument();
+
+    fixture.componentInstance.updateResultadoObservado('CORRECT');
+    expect(fixture.componentInstance['selectorModel']().resultadoObservado).toBe('CORRECT');
+
+    // 3. Qualitative without values: falls back to regular text input
+    fixture.componentInstance.onMagnitudSelected('meas-qual-empty');
+    fixture.detectChanges();
+
+    await vi.waitFor(() => {
+      const config = fixture.componentInstance['observedResultControlConfig']();
+      expect(config.type).toBe('text');
+    });
+
+    const textInput = screen.getByTestId<HTMLInputElement>('resultado-text-input');
+    expect(textInput).toBeInTheDocument();
+    expect(textInput.type).toBe('text');
   });
 });

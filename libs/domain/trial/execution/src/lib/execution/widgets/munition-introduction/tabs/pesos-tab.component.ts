@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -324,38 +314,11 @@ export class MunitionPesosTabComponent {
       if (entry.weightUnit) weightUnitByBalanceId.set(balanceId, entry.weightUnit.toLowerCase());
     }
 
-    if (injectedOptions.length > 0) {
-      return injectedOptions.map((opt) => ({
-        value: opt.value,
-        label: opt.label,
-        unit: opt.unit ?? weightUnitByBalanceId.get(opt.value) ?? 'g',
-      }));
-    }
-
-    const equipmentItems = this.#store.munitionBalanceItems() ?? [];
-    const componentBalanceIds = new Set<string>();
-    for (const entry of comp?.weightData ?? []) {
-      if (entry.balanceId === null || entry.balanceId === undefined) continue;
-      const balanceId = resolveBalanceKey(entry.balanceId) ?? String(entry.balanceId);
-      componentBalanceIds.add(balanceId);
-    }
-
-    for (const [key, weight] of Object.entries(this.#store.munitionIntroduction().weightDataByBalance)) {
-      if (!selectedComponentId || weight.componente === selectedComponentId) {
-        componentBalanceIds.add(resolveBalanceKey(key) ?? key);
-      }
-    }
-
-    const matchingItems = equipmentItems.filter((item) => {
-      const itemId = resolveBalanceKey(item.id) ?? item.id;
-      return componentBalanceIds.has(itemId);
-    });
-    const availableItems = matchingItems.length > 0 ? matchingItems : equipmentItems;
-
-    return availableItems.map((item) => {
-      const id = resolveBalanceKey(item.id) ?? item.id;
-      return { value: id, label: item.label, unit: weightUnitByBalanceId.get(id) ?? 'g' };
-    });
+    return injectedOptions.map((opt) => ({
+      value: opt.value,
+      label: opt.label,
+      unit: opt.unit ?? weightUnitByBalanceId.get(opt.value) ?? 'g',
+    }));
   });
 
   readonly isPolvo = computed(() => {
@@ -379,14 +342,6 @@ export class MunitionPesosTabComponent {
 
   constructor() {
     this.#syncPristineSnapshot();
-    effect(() => {
-      const componentId = this.weightFormModel().componente ?? this.#store.munitionIntroduction().selectedComponentId;
-      const isLoaded = this.#store.munitionBalanceItems() !== null;
-      const isLoading = this.#store.isLoadingMunitionBalanceItems();
-      if (componentId && !isLoaded && !isLoading) {
-        untracked(() => void this.#store.loadMunitionBalanceItems());
-      }
-    });
   }
 
   readonly balanceChange = output<string>();

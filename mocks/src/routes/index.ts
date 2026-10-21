@@ -28,6 +28,7 @@ router.use('/centers/:centerId', measuresRouter);
 router.use('/centers', equipmentRouter);
 router.use('/', masterDataRouter);
 router.use('/', planningGeneralDataRouter);
+router.use('/', measuresRouter);
 router.use('/centers', eventLogRouter);
 
 export default router;

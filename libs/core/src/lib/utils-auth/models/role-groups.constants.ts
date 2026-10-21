@@ -181,12 +181,14 @@ export const CAN_MANAGE_SPECIAL_DAYS_ROLES: ReadonlyArray<Role> = [
 /** Puede añadir observaciones al calendario */
 export const CAN_ADD_CALENDAR_OBSERVATIONS_ROLES: ReadonlyArray<Role> = [
   Role.INTAQALAB_ADMIN,
-  Role.INTAQALAB_TRIAL_ADMINISTRATIVE,
   Role.INTAQALAB_TRIAL_ENGINEER,
 ] as const;
 
 /** Puede programar/desprogramar prueba en el calendario */
-export const CAN_SCHEDULE_TRIAL_ROLES: ReadonlyArray<Role> = [Role.INTAQALAB_ADMIN] as const;
+export const CAN_SCHEDULE_TRIAL_ROLES: ReadonlyArray<Role> = [
+  Role.INTAQALAB_ADMIN,
+  Role.INTAQALAB_TRIAL_ENGINEER,
+] as const;
 
 // ─── ALMACÉN ─────────────────────────────────────────────────────────────────
 

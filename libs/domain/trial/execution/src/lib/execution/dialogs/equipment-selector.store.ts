@@ -19,6 +19,7 @@ import {
   resolvePlannedEquipmentTags,
   resolvePlannedLengthMagnitudes,
   resolvePlannedSeriesByTag,
+  resolvePlannedVideoMagnitudes,
   resolveRequiredEquipmentCategories,
   resolveVisibleEquipmentTags,
 } from '../utils/equipment-planning.utils';
@@ -146,6 +147,16 @@ export const EquipmentSelectorStore = signalStore(
         return resource.status() === 'error' && !isNotFoundError(resource.error());
       });
 
+      const plannedVideoAvMagnitudes = computed(() => {
+        const response = planningService.trialMeasuresResource.value();
+        return resolvePlannedVideoMagnitudes(response, 'AV', null, planningService.catalog());
+      });
+
+      const plannedVideoCMagnitudes = computed(() => {
+        const response = planningService.trialMeasuresResource.value();
+        return resolvePlannedVideoMagnitudes(response, 'C', null, planningService.catalog());
+      });
+
       const isLoading = computed(() => {
         if (error()) return false;
         return (
@@ -162,6 +173,8 @@ export const EquipmentSelectorStore = signalStore(
         enabledTagIds,
         enabledVisibleTags,
         plannedMagnitudes,
+        plannedVideoAvMagnitudes,
+        plannedVideoCMagnitudes,
         plannedSeriesByTag,
         activeSeriesOptions,
         activeTagFields,
@@ -175,190 +188,217 @@ export const EquipmentSelectorStore = signalStore(
       };
     },
   ),
-  withMethods((store, executionService = inject(ExecutionService)) => {
-    function updateTag(tagId: string, updater: (s: TagTableState) => TagTableState): void {
-      patchState(store, (state) => ({
-        tagStates: {
-          ...state.tagStates,
-          [tagId]: updater(state.tagStates[tagId] ?? INIT_STATE()),
-        },
-      }));
-    }
-
-    function getDisparosBySeries(series: readonly string[]): string[] {
-      if (!series.length) return [];
-      const map = store.serieDisparoMap();
-      if (!Object.keys(map).length) {
-        return store.disparoOptions().map((d) => d.value);
-      }
-      const disparos = series.flatMap((serie) => map[serie] ?? []);
-      return [...new Set(disparos)];
-    }
-
-    function loadTagItems(tagId: string, isInitial = false): void {
-      const tag = TAG_CONFIGS.find((config) => config.id === tagId);
-      if (!tag) {
-        if (isInitial) patchState(store, { isInitialized: true });
-        return;
+  withMethods(
+    (store, executionService = inject(ExecutionService), planningService = inject(EquipmentPlanningService)) => {
+      function updateTag(tagId: string, updater: (s: TagTableState) => TagTableState): void {
+        patchState(store, (state) => ({
+          tagStates: {
+            ...state.tagStates,
+            [tagId]: updater(state.tagStates[tagId] ?? INIT_STATE()),
+          },
+        }));
       }
 
-      const loaded = store.loadedCategories();
-      const missing = resolveRequiredEquipmentCategories([tag]).filter((category) => !loaded[category]);
-
-      if (!missing.length) {
-        if (isInitial) patchState(store, { isInitialized: true });
-        return;
+      function getDisparosBySeries(series: readonly string[]): string[] {
+        if (!series.length) return [];
+        const map = store.serieDisparoMap();
+        if (!Object.keys(map).length) {
+          return store.disparoOptions().map((d) => d.value);
+        }
+        const disparos = series.flatMap((serie) => map[serie] ?? []);
+        return [...new Set(disparos)];
       }
 
-      if (isInitial) patchState(store, { itemsLoading: true });
-
-      untracked(() => {
-        executionService
-          .loadEquipmentItemsByCategories(missing)
-          .then((items) => {
-            patchState(store, (state) => ({
-              itemsByCategory: { ...state.itemsByCategory, ...items },
-              loadedCategories: missing.reduce<Record<string, boolean>>(
-                (acc, category) => ({ ...acc, [category]: true }),
-                state.loadedCategories,
-              ),
-              isInitialized: true,
-              itemsLoading: false,
-              itemsError: false,
-            }));
-          })
-          .catch((err: unknown) => {
-            console.error('[EquipmentSelectorStore] Error cargando equipos por categoría', err);
-            patchState(store, { itemsLoading: false, itemsError: true });
-          });
-      });
-    }
-
-    return {
-      init(data: EquipmentSelectorDialogData): void {
-        patchState(store, {
-          fireTrialId: data.fireTrialId,
-          serieOptions: data.serieOptions,
-          disparoOptions: data.disparoOptions,
-          serieDisparoMap: data.serieDisparoMap ?? {},
-          itemsByCategory: {},
-          loadedCategories: {},
-          itemsLoading: false,
-          itemsError: false,
-          isInitialized: false,
-        });
-      },
-
-      selectTag(tagId: string): void {
-        if (!store.visibleTags().some((tag) => tag.id === tagId) || !store.enabledTagIds().has(tagId)) {
+      function loadTagItems(tagId: string, isInitial = false): void {
+        const tag = TAG_CONFIGS.find((config) => config.id === tagId);
+        if (!tag) {
+          if (isInitial) patchState(store, { isInitialized: true });
           return;
         }
-        patchState(store, (state) => ({
-          selectedTagId: tagId,
-          tagStates: state.tagStates[tagId] ? state.tagStates : { ...state.tagStates, [tagId]: INIT_STATE() },
-        }));
-        loadTagItems(tagId);
-      },
 
-      /**
-       * Carga perezosamente los equipos de las categorías requeridas por la tag indicada.
-       * Solo solicita las categorías aún no cargadas, fusionando el resultado en `itemsByCategory`.
-       */
-      loadTagItems,
+        const loaded = store.loadedCategories();
+        const missing = resolveRequiredEquipmentCategories([tag]).filter((category) => !loaded[category]);
 
-      addRow(): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => {
-          const rowId = `row-${s.nextId}`;
-          return {
-            ...s,
-            rows: [...s.rows, { rowId, fieldValues: {}, series: [], disparos: [] }],
-            nextId: s.nextId + 1,
-          };
-        });
-      },
-
-      removeRow(rowId: string): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => ({
-          ...s,
-          rows: s.rows.filter((r) => r.rowId !== rowId),
-        }));
-      },
-
-      setFieldValue(rowId: string, fieldKey: string, value: string): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => ({
-          ...s,
-          rows: s.rows.map((r) =>
-            r.rowId === rowId ? { ...r, fieldValues: { ...r.fieldValues, [fieldKey]: value } } : r,
-          ),
-        }));
-      },
-
-      setRowSeries(rowId: string, series: string[]): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => ({
-          ...s,
-          rows: s.rows.map((r) => (r.rowId === rowId ? { ...r, series } : r)),
-        }));
-      },
-
-      setRowDisparos(rowId: string, disparos: string[]): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => ({
-          ...s,
-          rows: s.rows.map((r) =>
-            r.rowId === rowId
-              ? { ...r, disparos: disparos.filter((id) => getDisparosBySeries(r.series).includes(id)) }
-              : r,
-          ),
-        }));
-      },
-
-      handleSeriesSelection(rowId: string, selectedValues: readonly string[]): void {
-        const allowedSeries = store.activeSeriesOptions().map((serie) => serie.value);
-        const series = selectedValues.includes(SELECT_ALL_SERIES_VALUE)
-          ? allowedSeries
-          : selectedValues.filter((value) => allowedSeries.includes(value));
-        const disparos = getDisparosBySeries(series);
-
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-
-        updateTag(tagId, (s) => ({
-          ...s,
-          rows: s.rows.map((r) => (r.rowId === rowId ? { ...r, series, disparos } : r)),
-        }));
-      },
-
-      setPageIndex(pageIndex: number): void {
-        const tagId = store.selectedTagId();
-        if (!tagId) return;
-        updateTag(tagId, (s) => ({ ...s, pageIndex }));
-      },
-
-      getItemsByCategory(categoryId: EquipmentTypeEnum | string | ''): Array<{ id: string; label: string }> {
-        if (!categoryId) return [];
-        if (categoryId === 'magnitud') {
-          return store.selectedTagId() === EquipmentMagnitudeTagEnum.LONGITUD
-            ? resolvePlannedLengthMagnitudes(store.plannedMagnitudes())
-            : [];
+        if (!missing.length) {
+          if (isInitial) patchState(store, { isInitialized: true });
+          return;
         }
-        return store.itemsByCategory()[categoryId] ?? [];
-      },
 
-      getShotOptions(series: readonly string[]): EquipmentSelectorDialogData['disparoOptions'] {
-        const availableShots = new Set(getDisparosBySeries(series));
-        return store.disparoOptions().filter((shot) => availableShots.has(shot.value));
-      },
-    };
-  }),
+        if (isInitial) patchState(store, { itemsLoading: true });
+
+        untracked(() => {
+          executionService
+            .loadEquipmentItemsByCategories(missing)
+            .then((items) => {
+              patchState(store, (state) => ({
+                itemsByCategory: { ...state.itemsByCategory, ...items },
+                loadedCategories: missing.reduce<Record<string, boolean>>(
+                  (acc, category) => ({ ...acc, [category]: true }),
+                  state.loadedCategories,
+                ),
+                isInitialized: true,
+                itemsLoading: false,
+                itemsError: false,
+              }));
+            })
+            .catch((err: unknown) => {
+              console.error('[EquipmentSelectorStore] Error cargando equipos por categoría', err);
+              patchState(store, { itemsLoading: false, itemsError: true });
+            });
+        });
+      }
+
+      return {
+        init(data: EquipmentSelectorDialogData): void {
+          patchState(store, {
+            fireTrialId: data.fireTrialId,
+            serieOptions: data.serieOptions,
+            disparoOptions: data.disparoOptions,
+            serieDisparoMap: data.serieDisparoMap ?? {},
+            itemsByCategory: {},
+            loadedCategories: {},
+            itemsLoading: false,
+            itemsError: false,
+            isInitialized: false,
+          });
+        },
+
+        selectTag(tagId: string): void {
+          if (!store.visibleTags().some((tag) => tag.id === tagId) || !store.enabledTagIds().has(tagId)) {
+            return;
+          }
+          patchState(store, (state) => ({
+            selectedTagId: tagId,
+            tagStates: state.tagStates[tagId] ? state.tagStates : { ...state.tagStates, [tagId]: INIT_STATE() },
+          }));
+          loadTagItems(tagId);
+        },
+
+        /**
+         * Carga perezosamente los equipos de las categorías requeridas por la tag indicada.
+         * Solo solicita las categorías aún no cargadas, fusionando el resultado en `itemsByCategory`.
+         */
+        loadTagItems,
+
+        addRow(): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => {
+            const rowId = `row-${s.nextId}`;
+            return {
+              ...s,
+              rows: [...s.rows, { rowId, fieldValues: {}, series: [], disparos: [] }],
+              nextId: s.nextId + 1,
+            };
+          });
+        },
+
+        removeRow(rowId: string): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => ({
+            ...s,
+            rows: s.rows.filter((r) => r.rowId !== rowId),
+          }));
+        },
+
+        setFieldValue(rowId: string, fieldKey: string, value: string): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => ({
+            ...s,
+            rows: s.rows.map((r) =>
+              r.rowId === rowId ? { ...r, fieldValues: { ...r.fieldValues, [fieldKey]: value } } : r,
+            ),
+          }));
+        },
+
+        setRowSeries(rowId: string, series: string[]): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => ({
+            ...s,
+            rows: s.rows.map((r) => (r.rowId === rowId ? { ...r, series } : r)),
+          }));
+        },
+
+        setRowDisparos(rowId: string, disparos: string[]): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => ({
+            ...s,
+            rows: s.rows.map((r) =>
+              r.rowId === rowId
+                ? { ...r, disparos: disparos.filter((id) => getDisparosBySeries(r.series).includes(id)) }
+                : r,
+            ),
+          }));
+        },
+
+        handleSeriesSelection(rowId: string, selectedValues: readonly string[]): void {
+          const allowedSeries = store.activeSeriesOptions().map((serie) => serie.value);
+          const series = selectedValues.includes(SELECT_ALL_SERIES_VALUE)
+            ? allowedSeries
+            : selectedValues.filter((value) => allowedSeries.includes(value));
+          const disparos = getDisparosBySeries(series);
+
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+
+          updateTag(tagId, (s) => ({
+            ...s,
+            rows: s.rows.map((r) => (r.rowId === rowId ? { ...r, series, disparos } : r)),
+          }));
+        },
+
+        setPageIndex(pageIndex: number): void {
+          const tagId = store.selectedTagId();
+          if (!tagId) return;
+          updateTag(tagId, (s) => ({ ...s, pageIndex }));
+        },
+
+        getItemsByCategory(
+          categoryId: EquipmentTypeEnum | string | '',
+          series?: readonly string[],
+        ): Array<{ id: string; label: string }> {
+          if (!categoryId) return [];
+          if (categoryId === 'magnitud') {
+            const tagId = store.selectedTagId();
+            if (tagId === EquipmentMagnitudeTagEnum.LONGITUD) {
+              return resolvePlannedLengthMagnitudes(store.plannedMagnitudes());
+            }
+            if (tagId === EquipmentMagnitudeTagEnum.VIDEO_AV) {
+              return series?.length
+                ? resolvePlannedVideoMagnitudes(
+                    planningService.trialMeasuresResource.value(),
+                    'AV',
+                    series,
+                    planningService.catalog(),
+                  )
+                : store.plannedVideoAvMagnitudes();
+            }
+            if (tagId === EquipmentMagnitudeTagEnum.VIDEO_C) {
+              return series?.length
+                ? resolvePlannedVideoMagnitudes(
+                    planningService.trialMeasuresResource.value(),
+                    'C',
+                    series,
+                    planningService.catalog(),
+                  )
+                : store.plannedVideoCMagnitudes();
+            }
+            return [];
+          }
+          return store.itemsByCategory()[categoryId] ?? [];
+        },
+
+        getShotOptions(series: readonly string[]): EquipmentSelectorDialogData['disparoOptions'] {
+          const availableShots = new Set(getDisparosBySeries(series));
+          return store.disparoOptions().filter((shot) => availableShots.has(shot.value));
+        },
+      };
+    },
+  ),
   withHooks({
     onInit(store, planningService = inject(EquipmentPlanningService), executionService = inject(ExecutionService)) {
       // Dispara la carga remota cuando cambia fireTrialId

@@ -142,11 +142,15 @@ import type { AcondFormModel } from '../munition-introduction';
           {{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_ENTRADA_LABEL' | translate }}
         </mat-label>
         <input
+          id="munition-conditioning-entry-date-time"
           matInput
-          readonly
-          class="cursor-pointer"
+          type="datetime-local"
+          step="60"
           [value]="fechaHoraEntradaField() ?? ''"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
+          (click)="openFechaHoraEntradaPicker(fechaHoraEntradaInput)"
+          (input)="fechaHoraEntradaField.set($any($event.target).value || null)"
+          #fechaHoraEntradaInput
         />
         <button
           mat-icon-button
@@ -163,11 +167,15 @@ import type { AcondFormModel } from '../munition-introduction';
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full self-end">
         <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_SALIDA_LABEL' | translate }}</mat-label>
         <input
+          id="munition-conditioning-exit-date-time"
           matInput
-          readonly
-          class="cursor-pointer"
+          type="datetime-local"
+          step="60"
           [value]="fechaHoraSalidaField() ?? ''"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.FECHA_HORA_BTN' | translate"
+          (click)="openFechaHoraSalidaPicker(fechaHoraSalidaInput)"
+          (input)="fechaHoraSalidaField.set($any($event.target).value || null)"
+          #fechaHoraSalidaInput
         />
         <button
           mat-icon-button
@@ -291,6 +299,18 @@ export class MunitionAcondicionamientoTabComponent {
 
   captureFechaHoraEntrada(): void {
     this.fechaHoraEntradaField.set(new Date().toISOString().substring(0, 16));
+  }
+
+  openFechaHoraEntradaPicker(input: HTMLInputElement): void {
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+    }
+  }
+
+  openFechaHoraSalidaPicker(input: HTMLInputElement): void {
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+    }
   }
 
   captureFechaHoraSalida(): void {

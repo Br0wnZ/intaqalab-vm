@@ -55,7 +55,7 @@ describe('MunitionPesosTabComponent', () => {
     expect(view.fixture.componentInstance.isDirty()).toBe(false);
   });
 
-  it('loads balance equipment and filters it by the selected component balance IDs', async () => {
+  it('does not offer stored component balances when no equipment is selected', async () => {
     const { view, store } = await runSetup();
     store.loadMunitionIntroductionWeightData({
       'bal-01': {
@@ -83,12 +83,13 @@ describe('MunitionPesosTabComponent', () => {
     });
     await vi.waitFor(() => {
       TestBed.tick();
-      expect(view.fixture.componentInstance.balanceOptions().map((option) => option.value)).toEqual(['bal-01']);
+      expect(view.fixture.componentInstance.balanceOptions()).toEqual([]);
     });
   });
 
-  it('shows all balance equipment when selected component has no matching balance IDs', async () => {
+  it('does not fall back to the balance catalog when equipment selection is empty', async () => {
     const { view, store } = await runSetup();
+    TestBed.inject(ExecutionService).getEquipmentSelector('trial-1');
     store.loadMunitionIntroductionWeightData({
       'bal-99': {
         componente: 'another-component',
@@ -103,6 +104,9 @@ describe('MunitionPesosTabComponent', () => {
     });
     view.fixture.componentInstance.weightFormModel.set({ componente: 'component-01', balance: null });
     TestBed.tick();
+    TestBed.inject(HttpTestingController)
+      .expectOne((req) => req.url.includes('/execution/equipment-selection'))
+      .flush([]);
     const request = TestBed.inject(HttpTestingController).expectOne(
       (req) => req.url.includes('/equipment/items') && req.params.get('categoryId') === EquipmentTypeEnum.BALANCE,
     );
@@ -115,15 +119,12 @@ describe('MunitionPesosTabComponent', () => {
     });
     await vi.waitFor(() => {
       TestBed.tick();
-      expect(view.fixture.componentInstance.balanceOptions().map((option) => option.value)).toEqual([
-        'bal-01',
-        'bal-02',
-      ]);
+      expect(view.fixture.componentInstance.balanceOptions()).toEqual([]);
     });
   });
 
   it('shows no default balances when the balance equipment endpoint returns no items', async () => {
-    const { view, store } = await runSetup();
+    const { view } = await runSetup();
     view.fixture.componentInstance.weightFormModel.set({ componente: 'component-01', balance: null });
     TestBed.tick();
 
@@ -134,7 +135,6 @@ describe('MunitionPesosTabComponent', () => {
 
     await vi.waitFor(() => {
       TestBed.tick();
-      expect(store.munitionBalanceItems()).toEqual([]);
       expect(view.fixture.componentInstance.balanceOptions()).toEqual([]);
     });
   });
@@ -333,6 +333,12 @@ describe('MunitionPesosTabComponent', () => {
             seriesIds: ['serie-1'],
             shotIds: ['disparo-2'],
           },
+          {
+            equipmentItemId: 9876,
+            categoryId: EquipmentTypeEnum.DOPPLER_RADAR,
+            seriesIds: ['serie-1'],
+            shotIds: ['disparo-1', 'disparo-2'],
+          },
         ],
       },
     ]);
@@ -362,6 +368,15 @@ describe('MunitionPesosTabComponent', () => {
     await vi.waitFor(() => {
       TestBed.tick();
       expect(view.fixture.componentInstance.balanceOptions().map((b) => b.value)).toEqual(['bal-02']);
+    });
+
+    executionService.equipmentSelectorResource.reload();
+    TestBed.tick();
+    httpMock.expectOne((req) => req.url.includes('/execution/equipment-selection')).flush([]);
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(view.fixture.componentInstance.balanceOptions()).toEqual([]);
     });
   });
 });

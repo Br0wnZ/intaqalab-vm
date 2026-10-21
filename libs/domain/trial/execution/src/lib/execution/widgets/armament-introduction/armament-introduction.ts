@@ -18,7 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import { getArmamentByShotId, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -130,7 +130,7 @@ interface ArmamentIntroductionSelectForm {
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_PLACEHOLDER' | translate"
             [formField]="selectForm.arma"
           >
-            @for (opt of armaOptions(); track opt.value) {
+            @for (opt of plannedArmaOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
           </mat-select>
@@ -149,7 +149,7 @@ interface ArmamentIntroductionSelectForm {
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_PLACEHOLDER' | translate"
             [formField]="selectForm.tubo"
           >
-            @for (opt of tuboOptions(); track opt.value) {
+            @for (opt of plannedTuboOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
           </mat-select>
@@ -198,6 +198,9 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   readonly #trialShots = injectTrialShots();
   readonly #weaponItems = signal<ArmamentEquipmentItem[]>([]);
   readonly #weaponDenominations = signal<ArmamentEquipmentDenomination[]>([]);
+  readonly #mortarDenominations = signal<ArmamentEquipmentDenomination[]>([]);
+  readonly #tubeDenominations = signal<ArmamentEquipmentDenomination[]>([]);
+  readonly #tubeDenominationRequestKey = signal<string | null>(null);
   readonly #tubeItems = signal<ArmamentEquipmentItem[]>([]);
   readonly #planningArmament = signal<PlanningArmamentResponse | null>(null);
   readonly #lastActiveSelection = signal<string | null>(null);
@@ -223,6 +226,24 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     this.#weaponDenominations().map((denomination) => ({ value: String(denomination.id), label: denomination.name })),
   );
   protected readonly tuboOptions = computed(() => this.#toEquipmentOptions(this.#tubeItems(), 'tuboOptions'));
+  protected readonly plannedArmaOptions = computed(() => {
+    const armament = this.selectedPlanningArmament();
+    return this.#plannedDenominationOptions(
+      this.#weaponDenominationsForSelection(),
+      this.#weaponItems(),
+      armament?.weaponExternalId,
+      armament?.weaponName,
+    );
+  });
+  protected readonly plannedTuboOptions = computed(() => {
+    const armament = this.selectedPlanningArmament();
+    return this.#plannedDenominationOptions(
+      this.#tubeDenominations(),
+      this.#tubeItems(),
+      armament?.tubeExternalId,
+      armament?.tubeName,
+    );
+  });
 
   // ── Signal Form ──────────────────────────────────────────────────────────
   protected readonly formModel = signal<ArmamentIntroductionSelectForm>(this.#formFromStore());
@@ -238,9 +259,21 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   );
   protected readonly selectedPlanningArmament = computed(() => {
     const { serie, disparo } = this.formModel();
-    return this.#planningArmament()
-      ?.series.find((item) => item.seriesId === serie)
-      ?.shots.find((item) => item.shotId === disparo)?.armament;
+    if (!serie || !disparo) return undefined;
+    return getArmamentByShotId(this.#planningArmament(), serie, disparo)?.armament;
+  });
+  readonly #weaponDenominationsForSelection = computed(() => {
+    const armament = this.selectedPlanningArmament();
+    const itemType = (armament?.itemType ?? armament?.weaponType ?? 'WEAPON').toUpperCase();
+    return itemType === 'MORTAR' ? this.#mortarDenominations() : this.#weaponDenominations();
+  });
+  readonly #selectedWeaponDenomination = computed(() => {
+    const armament = this.selectedPlanningArmament();
+    return this.#findPlannedDenomination(
+      this.#weaponDenominationsForSelection(),
+      armament?.weaponExternalId,
+      armament?.weaponName,
+    );
   });
   protected readonly instrumentedLabel = computed(() =>
     this.selectedPlanningArmament()?.isInstrumented
@@ -323,10 +356,14 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
       tubo: null,
       observations: '',
     }));
+    this.#tubeDenominations.set([]);
+    this.#tubeDenominationRequestKey.set(this.#selectorKey());
   }
 
   onShotSelected(disparo: string | null): void {
     this.formModel.update((formValue) => ({ ...formValue, disparo }));
+    this.#applyPlanningSelection();
+    void this.#loadSelectedTubeDenominations();
     void this.loadSelectedShotData();
   }
   constructor() {
@@ -359,16 +396,19 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
 
   async #loadInitialData(fireTrialId: string): Promise<void> {
     const weapons = await this.#executionService.loadArmamentEquipmentItems('WEAPON');
-    const [tubes, planningArmament, weaponDenominations] = await Promise.all([
+    const [tubes, planningArmament, weaponDenominations, mortarDenominations] = await Promise.all([
       this.#executionService.loadArmamentEquipmentItems('TUBE'),
       this.#executionService.fetchPlanningArmament(fireTrialId),
       this.#executionService.loadArmamentWeaponDenominations(),
+      this.#executionService.loadArmamentDenominations('MORTAR'),
     ]);
     this.#weaponItems.set(weapons);
     this.#weaponDenominations.set(weaponDenominations);
+    this.#mortarDenominations.set(mortarDenominations);
     this.#tubeItems.set(tubes);
     this.#planningArmament.set(planningArmament);
     this.#applyPlanningSelection();
+    await this.#loadSelectedTubeDenominations();
     await this.loadSelectedShotData();
   }
 
@@ -389,6 +429,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     this.formModel.update((formValue) => ({ ...formValue, serie, disparo }));
     this.#store.updateArmamentIntroduction({ serie, disparo });
     this.#applyPlanningSelection();
+    void this.#loadSelectedTubeDenominations();
     void this.loadSelectedShotData();
   }
 
@@ -407,7 +448,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
       this.formModel.update((formValue) => ({
         ...formValue,
         arma: armament?.weapon?.id
-          ? (this.#weaponDenominationId(String(armament.weapon.id)) ?? formValue.arma)
+          ? (this.#weaponItemId(String(armament.weapon.id)) ?? formValue.arma)
           : formValue.arma,
         tubo: armament?.tube?.id ? String(armament.tube.id) : formValue.tubo,
         observations: armament?.observations ?? this.selectedPlanningArmament()?.observations ?? '',
@@ -425,12 +466,11 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
 
   #applyPlanningSelection(): void {
     const armament = this.selectedPlanningArmament();
-    if (!armament) return;
     this.formModel.update((formValue) => ({
       ...formValue,
-      arma: this.#resolveEquipmentItemId(this.#weaponItems(), armament.weaponExternalId) ?? formValue.arma,
-      tubo: this.#resolveEquipmentItemId(this.#tubeItems(), armament.tubeExternalId) ?? formValue.tubo,
-      observations: armament.observations ?? formValue.observations,
+      arma: this.#resolveEquipmentItemId(this.#weaponItems(), armament?.weaponExternalId, armament?.weaponName),
+      tubo: this.#resolveEquipmentItemId(this.#tubeItems(), armament?.tubeExternalId, armament?.tubeName),
+      observations: armament?.observations ?? '',
     }));
     this.#syncSnapshot();
   }
@@ -451,17 +491,96 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     return items.map((item) => ({ value: String(item.id), label: item.denominationName }));
   }
 
-  #resolveEquipmentItemId(items: ArmamentEquipmentItem[], externalId: number | undefined): string | null {
-    if (externalId === undefined) return null;
-    const item = items.find(
-      (candidate) => Number(candidate.id) === externalId || candidate.denominationId === externalId,
-    );
-    return item ? String(item.denominationId) : null;
+  #findEquipmentItemByExternalId(
+    items: ArmamentEquipmentItem[],
+    externalId: number | string | undefined,
+    plannedName?: string,
+  ): ArmamentEquipmentItem | undefined {
+    const externalIdText = externalId === undefined ? undefined : String(externalId);
+    const byId = externalIdText
+      ? items.find(
+          (candidate) => String(candidate.id) === externalIdText || String(candidate.denominationId) === externalIdText,
+        )
+      : undefined;
+    if (byId) return byId;
+
+    const normalizedName = plannedName?.trim().toLowerCase();
+    return normalizedName
+      ? items.find((candidate) => candidate.denominationName.trim().toLowerCase() === normalizedName)
+      : undefined;
   }
 
-  #weaponDenominationId(itemId: string): string | null {
+  #findPlannedDenomination(
+    denominations: ArmamentEquipmentDenomination[],
+    externalId: number | string | undefined,
+    plannedName?: string,
+  ): ArmamentEquipmentDenomination | undefined {
+    const externalIdText = externalId === undefined ? undefined : String(externalId);
+    const byId = externalIdText
+      ? denominations.find((denomination) => String(denomination.id) === externalIdText)
+      : undefined;
+    if (byId) return byId;
+
+    const normalizedName = plannedName?.trim().toLowerCase();
+    return normalizedName
+      ? denominations.find((denomination) => denomination.name.trim().toLowerCase() === normalizedName)
+      : undefined;
+  }
+
+  #plannedDenominationOptions(
+    denominations: ArmamentEquipmentDenomination[],
+    equipmentItems: ArmamentEquipmentItem[],
+    externalId: number | string | undefined,
+    plannedName?: string,
+  ): { value: string; label: string }[] {
+    if (externalId === undefined && !plannedName) return [];
+    const denomination = this.#findPlannedDenomination(denominations, externalId, plannedName);
+    const equipmentItem = this.#findEquipmentItemByExternalId(
+      equipmentItems,
+      denomination?.id ?? externalId,
+      denomination?.name ?? plannedName,
+    );
+    const value = equipmentItem
+      ? String(equipmentItem.id)
+      : denomination
+        ? String(denomination.id)
+        : externalId === undefined
+          ? ''
+          : String(externalId);
+    const label = denomination?.name ?? equipmentItem?.denominationName ?? plannedName ?? '';
+    return value && label ? [{ value, label }] : [];
+  }
+
+  async #loadSelectedTubeDenominations(): Promise<void> {
+    const selectionKey = this.#selectorKey();
+    const familyId = this.#selectedWeaponDenomination()?.familyId;
+    const requestKey = `${selectionKey}|${familyId ?? ''}`;
+    this.#tubeDenominationRequestKey.set(requestKey);
+    this.#tubeDenominations.set([]);
+    if (familyId === undefined) return;
+
+    try {
+      const denominations = await this.#executionService.loadArmamentDenominations('TUBE', familyId);
+      if (this.#tubeDenominationRequestKey() !== requestKey) return;
+      this.#tubeDenominations.set(denominations);
+    } catch {
+      if (this.#tubeDenominationRequestKey() === requestKey) this.#tubeDenominations.set([]);
+    }
+  }
+
+  #resolveEquipmentItemId(
+    items: ArmamentEquipmentItem[],
+    externalId: number | string | undefined,
+    plannedName?: string,
+  ): string | null {
+    const item = this.#findEquipmentItemByExternalId(items, externalId, plannedName);
+    if (item) return String(item.id);
+    return externalId === undefined ? null : String(externalId);
+  }
+
+  #weaponItemId(itemId: string): string | null {
     const item = this.#weaponItems().find((candidate) => String(candidate.id) === itemId);
-    return item ? String(item.denominationId) : null;
+    return item ? String(item.id) : null;
   }
 
   #numericEquipmentId(value: string | null): number | null {
