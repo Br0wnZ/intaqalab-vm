@@ -8,37 +8,37 @@ import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  EquipmentTypeEnum,
-  type JltMaoBulkConfigurationRequest,
-  type JltMaoBulkConfigurationResponse,
-  type MaoTopographyBulkConfigurationRequest,
-  type MaoTopographyBulkConfigurationResponse,
-  type MunitionConditioningBulkConfigurationRequest,
-  type MunitionConditioningBulkConfigurationResponse,
-  type PropellantChargeAdjustmentConfiguration,
-  type PropellantChargeAdjustmentResponse,
-  type ShotCameraOrientationResponse,
-  type ShotManometerPressuresRequest,
-  type ShotManometerPressuresResponse,
-  type ShotMunitionRequest,
-  type ShotMunitionResponse,
-  type ShotVideoDataRequest,
-  type ShotVideoDataResponse,
-  type TrajectographyRadarOrientationResponse,
-  type VelocityUniformityResponse,
-  WidgetId,
+    EquipmentTypeEnum,
+    type JltMaoBulkConfigurationRequest,
+    type JltMaoBulkConfigurationResponse,
+    type MaoTopographyBulkConfigurationRequest,
+    type MaoTopographyBulkConfigurationResponse,
+    type MunitionConditioningBulkConfigurationRequest,
+    type MunitionConditioningBulkConfigurationResponse,
+    type PropellantChargeAdjustmentConfiguration,
+    type PropellantChargeAdjustmentResponse,
+    type ShotCameraOrientationResponse,
+    type ShotManometerPressuresRequest,
+    type ShotManometerPressuresResponse,
+    type ShotMunitionRequest,
+    type ShotMunitionResponse,
+    type ShotVideoDataRequest,
+    type ShotVideoDataResponse,
+    type TrajectographyRadarOrientationResponse,
+    type VelocityUniformityResponse,
+    WidgetId,
 } from '../execution/models';
 import {
-  type ArmamentBulkConfigurationRequest,
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
-  type PlanningResponse,
-  type ProfilesReadinessResponse,
-  type SecurityCountdownResponse,
-  type ShotArmamentResponse,
-  type ShotPressuresResponse,
-  type ShotVelocitiesResponse,
+    type ArmamentBulkConfigurationRequest,
+    type ArmamentEquipmentItem,
+    ExecutionService,
+    type PlanningArmamentResponse,
+    type PlanningResponse,
+    type ProfilesReadinessResponse,
+    type SecurityCountdownResponse,
+    type ShotArmamentResponse,
+    type ShotPressuresResponse,
+    type ShotVelocitiesResponse,
 } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
@@ -958,6 +958,16 @@ describe('ExecutionService', () => {
 
     const weapons = await weaponsPromise;
     expect(weapons).toEqual(mockWeapons);
+
+    const mortarsPromise = service.loadArmamentEquipmentItems('MORTAR');
+    TestBed.tick();
+
+    const mortarsReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/items?itemType=MORTAR`);
+    expect(mortarsReq.request.method).toBe('GET');
+    mortarsReq.flush({ items: [] });
+    TestBed.tick();
+
+    expect(await mortarsPromise).toEqual([]);
 
     // fetchPlanningArmament
     const mockPlanningArmament: PlanningArmamentResponse = {

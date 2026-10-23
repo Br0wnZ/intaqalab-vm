@@ -22,6 +22,11 @@ import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import {
+  mapRadarSeriesToOptions,
+  mapRadarShotsToOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface RadarTrayectographyFilters {
   serie: string | null;
@@ -54,10 +59,11 @@ interface RadarTrayectographyFilters {
         <!-- Serie -->
         @if (showSerieSelector()) {
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-            <mat-select [formField]="radarForm.serie" (selectionChange)="onSerieChange($event.value)">
-              <mat-label>
-                {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_PLACEHOLDER' | translate }}
-              </mat-label>
+            <mat-select
+              [formField]="radarForm.serie"
+              [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.SERIE_LABEL' | translate"
+              (selectionChange)="onSerieChange($event.value)"
+            >
               @for (opt of serieOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
               }
@@ -286,29 +292,23 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  readonly #planningSeries = computed(() => {
+    const trialSeries = this.#trialShots.series();
+    return trialSeries?.length ? trialSeries : (this.#store.planningSeries() ?? []);
+  });
+  #hasManualSelection = false;
 
   // ── Datos desde el store — opciones y valores de otros widgets ────────────
 
   protected readonly radarOptions = computed(() => this.#store.radarTrayectographyOrientation().radarOptions);
-  protected readonly serieOptions = computed(() => {
-    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
-    return (this.#store.radarTrayectographyOrientationResponse()?.series ?? []).map((serie, index) => {
-      const plannedSerie = planningSeries.find((item) => item.id === serie.seriesId);
-      return {
-        value: serie.seriesId,
-        label: plannedSerie?.name?.trim() || `Serie ${index + 1}`,
-      };
-    });
-  });
+  protected readonly serieOptions = computed(() =>
+    mapRadarSeriesToOptions(this.#store.radarTrayectographyOrientationResponse()?.series ?? [], this.#planningSeries()),
+  );
   protected readonly disparoOptions = computed(() => {
     const response = this.#store.radarTrayectographyOrientationResponse();
     const serie = response?.series.find((item) => item.seriesId === this.formModel().serie) ?? response?.series[0];
-    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
-    const plannedSerie = planningSeries.find((item) => item.id === serie?.seriesId);
-    return (serie?.shots ?? []).map((shot, index) => {
-      const plannedShot = (plannedSerie?.shots ?? []).find((item) => item.id === shot.shotId);
-      return { value: shot.shotId, label: `Disparo ${String(plannedShot?.globalNumber ?? index + 1)}` };
-    });
+    const plannedSerie = this.#planningSeries().find((item) => item.id === serie?.seriesId);
+    return mapRadarShotsToOptions(serie?.shots ?? [], plannedSerie?.shots ?? []);
   });
   protected readonly showSerieSelector = computed(() => {
     const response = this.#store.radarTrayectographyOrientationResponse();
@@ -540,8 +540,19 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
       const current = this.formModel();
       if (!response) return;
 
-      const serie = response.series.find((item) => item.seriesId === current.serie) ?? response.series[0] ?? null;
-      const disparo = serie?.shots.find((item) => item.shotId === current.disparo) ?? serie?.shots[0] ?? null;
+      const selection = this.#hasManualSelection
+        ? { serie: current.serie, disparo: current.disparo }
+        : resolveInitialShotSelection({
+            seriesOptions: this.serieOptions(),
+            activeSerieId: this.#store.activeSerieId(),
+            activeShotId: this.#store.activeShotId(),
+            getShotOptions: (serieId) =>
+              response.series
+                .find((serie) => serie.seriesId === serieId)
+                ?.shots.map((shot) => ({ value: shot.shotId, label: shot.shotId })) ?? [],
+          });
+      const serie = response.series.find((item) => item.seriesId === selection.serie) ?? response.series[0] ?? null;
+      const disparo = serie?.shots.find((item) => item.shotId === selection.disparo) ?? serie?.shots[0] ?? null;
       const serieId = serie?.seriesId ?? null;
       const disparoId = disparo?.shotId ?? null;
       if (current.serie === serieId && current.disparo === disparoId) return;
@@ -551,11 +562,14 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   }
 
   protected onSerieChange(serie: string | null): void {
+    this.#hasManualSelection = true;
     this.formModel.update((value) => ({ ...value, serie }));
+    this.formModel.update((value) => ({ ...value, disparo: this.disparoOptions()[0]?.value ?? null }));
     if (this.showSerieSelector()) this.#loadOrientation();
   }
 
   protected onDisparoChange(disparo: string | null): void {
+    this.#hasManualSelection = true;
     this.formModel.update((value) => ({ ...value, disparo }));
     if (this.showDisparoSelector()) this.#loadOrientation();
   }

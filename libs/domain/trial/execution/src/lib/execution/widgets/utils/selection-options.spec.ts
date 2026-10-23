@@ -3,14 +3,57 @@ import { describe, expect, it } from 'vitest';
 import {
   buildDisparoOptions,
   mapPlanningSeriesToOptions,
+  mapRadarSeriesToOptions,
+  mapRadarShotsToOptions,
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
   mapShotOptionsToPlanningNumbers,
   mapShotsToDisparoOptions,
+  resolveInitialShotSelection,
 } from './selection-options';
 
 describe('selection-options', () => {
+  describe('mapRadarSeriesToOptions', () => {
+    it('removes the functioning prefix and sorts series by execution order', () => {
+      const result = mapRadarSeriesToOptions(
+        [{ seriesId: 'series-2' }, { seriesId: 'series-1' }],
+        [
+          { id: 'series-1', name: 'Funcionamiento I', executionOrder: 1 },
+          { id: 'series-2', name: 'Funcionamiento II', executionOrder: 2 },
+        ],
+      );
+
+      expect(result).toEqual([
+        { value: 'series-1', label: 'I' },
+        { value: 'series-2', label: 'II' },
+      ]);
+    });
+
+    it('removes functioning when it appears inside the planned series name', () => {
+      expect(
+        mapRadarSeriesToOptions([{ seriesId: 'series-1' }], [{ id: 'series-1', name: 'Serie Funcionamiento I' }]),
+      ).toEqual([{ value: 'series-1', label: 'Serie I' }]);
+    });
+  });
+
+  describe('mapRadarShotsToOptions', () => {
+    it('sorts shots and labels them using planning global numbers', () => {
+      const result = mapRadarShotsToOptions(
+        [{ shotId: 'shot-2' }, { shotId: 'shot-1' }],
+        [
+          { id: 'shot-1', globalNumber: 1 },
+          { id: 'shot-2', globalNumber: 2 },
+        ],
+      );
+
+      expect(result).toEqual([
+        { value: 'shot-1', label: 'Disparo 1' },
+        { value: 'shot-2', label: 'Disparo 2' },
+      ]);
+    });
+  });
+
   describe('mapPlanningSeriesToOptions', () => {
     it('maps planning series to selector options', () => {
       const planning = [
@@ -29,6 +72,53 @@ describe('selection-options', () => {
       expect(mapPlanningSeriesToOptions([], fallback)).toEqual(fallback);
       expect(mapPlanningSeriesToOptions(null, fallback)).toEqual(fallback);
       expect(mapPlanningSeriesToOptions(undefined, fallback)).toEqual(fallback);
+    });
+  });
+
+  describe('resolveInitialShotSelection', () => {
+    const seriesOptions = [
+      { value: 'serie-1', label: 'Serie 1' },
+      { value: 'serie-2', label: 'Serie 2' },
+    ];
+    const getShotOptions = (serieId: string) =>
+      serieId === 'serie-1'
+        ? [
+            { value: 'shot-1', label: 'Disparo 1' },
+            { value: 'shot-2', label: 'Disparo 2' },
+          ]
+        : [{ value: 'shot-3', label: 'Disparo 3' }];
+
+    it('keeps active series and shot when both are available', () => {
+      expect(
+        resolveInitialShotSelection({
+          seriesOptions,
+          activeSerieId: 'serie-2',
+          activeShotId: 'shot-3',
+          getShotOptions,
+        }),
+      ).toEqual({ serie: 'serie-2', disparo: 'shot-3' });
+    });
+
+    it('falls back to the first series and its first shot without a valid active shot', () => {
+      expect(
+        resolveInitialShotSelection({
+          seriesOptions,
+          activeSerieId: 'serie-2',
+          activeShotId: null,
+          getShotOptions,
+        }),
+      ).toEqual({ serie: 'serie-1', disparo: 'shot-1' });
+    });
+
+    it('returns an empty selection when no series or active IDs exist', () => {
+      expect(
+        resolveInitialShotSelection({
+          seriesOptions: [],
+          activeSerieId: null,
+          activeShotId: null,
+          getShotOptions,
+        }),
+      ).toEqual({ serie: null, disparo: null });
     });
   });
 

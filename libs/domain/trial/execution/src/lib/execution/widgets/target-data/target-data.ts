@@ -1,5 +1,15 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,7 +24,7 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { buildDisparoOptions } from '../utils/selection-options';
+import { buildDisparoOptions, resolveInitialShotSelection } from '../utils/selection-options';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -54,7 +64,7 @@ interface TargetDataFormModel {
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.SERIE_PLACEHOLDER' | translate"
             [value]="serieModel()"
             [disabled]="serieDisabled()"
-            (selectionChange)="serieModel.set($event.value)"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -68,7 +78,7 @@ interface TargetDataFormModel {
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DISPARO_PLACEHOLDER' | translate"
             [value]="disparoModel()"
             [disabled]="disparoDisabled()"
-            (selectionChange)="disparoModel.set($event.value)"
+            (selectionChange)="onDisparoSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -159,6 +169,7 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   protected readonly mmOptions = [{ value: 'mm', label: 'mm' }];
   protected readonly mOptions = [{ value: 'm', label: 'm' }];
@@ -234,6 +245,41 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     valid: this.selectForm().valid(),
     hasChanges: this.isDirty(),
   }));
+
+  constructor() {
+    super();
+    effect(() => {
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.targetData().disparoOptions,
+          }),
+      });
+      if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
+      untracked(() => {
+        this.serieModel.set(selection.serie);
+        this.disparoModel.set(selection.disparo);
+        this.#syncSnapshot();
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
+    this.serieModel.set(serie);
+    this.disparoModel.set(this.disparoOptions()[0]?.value ?? null);
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
+    this.disparoModel.set(disparo);
+  }
 
   resetForm(): void {
     const stored = this.#store.targetData();

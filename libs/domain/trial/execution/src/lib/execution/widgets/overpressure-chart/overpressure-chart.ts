@@ -1,5 +1,15 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -69,6 +79,7 @@ interface OverpressureChartForm {
               multiple
               [placeholder]="'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.SERIE_PLACEHOLDER' | translate"
               [formField]="chartForm.selectedSerie"
+              (selectionChange)="onSeriesSelected($event.value)"
             >
               @for (opt of serieOptions(); track opt.value) {
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -168,6 +179,7 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #defaultWeightUnit: WeightUnit = MeasureUnitEnum.G;
   readonly #defaultPressureUnit: PressureUnit = MeasureUnitEnum.MPA;
+  #hasManualSeriesSelection = false;
 
   // Data from store (read-only)
   protected readonly serieOptions = computed(() => this.#store.overpressureChart().serieOptions);
@@ -188,6 +200,25 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
     selectedPressureUnit: this.#defaultPressureUnit,
   });
   protected readonly chartForm = form(this.formModel);
+
+  constructor() {
+    super();
+    effect(() => {
+      const seriesOptions = this.serieOptions();
+      const activeSerieId = this.#store.activeSerieId();
+      const selectedSerie =
+        activeSerieId && seriesOptions.some((serie) => serie.value === activeSerieId)
+          ? activeSerieId
+          : seriesOptions[0]?.value;
+      if (this.#hasManualSeriesSelection || !selectedSerie) return;
+      untracked(() => this.formModel.update((current) => ({ ...current, selectedSerie: [selectedSerie] })));
+    });
+  }
+
+  onSeriesSelected(selectedSerie: string[] | null): void {
+    this.#hasManualSeriesSelection = true;
+    this.formModel.update((current) => ({ ...current, selectedSerie }));
+  }
 
   readonly formState: Signal<WidgetFormState> = computed(() => ({
     widgetId: this.widgetId(),

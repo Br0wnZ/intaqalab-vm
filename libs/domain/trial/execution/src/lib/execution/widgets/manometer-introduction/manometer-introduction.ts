@@ -40,6 +40,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import { injectManometerEquipments } from './inject-manometer-equipments';
 import type { InputFieldValue } from './manometer-introduction.mapper';
@@ -522,8 +523,19 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId();
-      const activeShotId = this.#store.activeShotId();
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.manometerIntroduction().disparoOptions,
+          }),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -542,16 +554,8 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   }
 
   onSerieSelected(serie: string | null): void {
-    const current = this.selectorFormModel();
-    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : null;
-
-    this.selectorFormModel.set({
-      serie,
-      disparo,
-    });
-
-    this.#syncSelectionToStore(serie, disparo);
-    void this.#loadSelectedShotData();
+    this.selectorFormModel.update((current) => ({ ...current, serie }));
+    this.#setSelection(serie, this.disparoOptions()[0]?.value ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -685,18 +689,6 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
-  }
-
-  #isShotInSerie(disparo: string | null, serie: string | null): boolean {
-    if (!disparo || !serie) {
-      return false;
-    }
-
-    return (
-      this.#store
-        .executionProgress()
-        ?.series.some((s) => s.seriesId === serie && s.shots.some((shot) => shot.shotId === disparo)) ?? false
-    );
   }
 
   #applyRemoteShotData(response: ShotManometerPressuresResponse): void {

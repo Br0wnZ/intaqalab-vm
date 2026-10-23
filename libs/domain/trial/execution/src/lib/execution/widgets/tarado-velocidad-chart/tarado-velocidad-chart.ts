@@ -27,7 +27,12 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
+import {
+  mapPlanningSeriesToOptions,
+  mapShotOptionsToPlanningNumbers,
+  mapShotsToDisparoOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface TaradoVelocidadForm {
   selectedSerie: string[] | null;
@@ -69,6 +74,7 @@ interface TaradoVelocidadForm {
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.SERIE_PLACEHOLDER' | translate"
             [formField]="taradoForm.selectedSerie"
+            (selectionChange)="onSeriesSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -82,6 +88,7 @@ interface TaradoVelocidadForm {
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.DISPARO_PLACEHOLDER' | translate"
             [formField]="taradoForm.selectedDisparo"
+            (selectionChange)="onShotsSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -255,12 +262,17 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
       }
 
       if (this.#loadedFireTrialId() !== fireTrialId) {
-        const activeSerie = planningSeries.find((serie) => serie.id === activeSerieId);
-        const activeShot = activeSerie?.shots?.find((shot) => shot.id === activeShotId);
-        if (!activeSerieId || !activeShotId || !activeShot) return;
+        const selection = resolveInitialShotSelection({
+          seriesOptions: mapPlanningSeriesToOptions(planningSeries, this.serieOptions()),
+          activeSerieId,
+          activeShotId,
+          getShotOptions: (serieId) =>
+            mapShotsToDisparoOptions(planningSeries.find((serie) => serie.id === serieId)?.shots),
+        });
+        if (!selection.serie || !selection.disparo) return;
 
-        const selectedSerie = [activeSerieId];
-        const selectedDisparo = [activeShotId];
+        const selectedSerie = [selection.serie];
+        const selectedDisparo = [selection.disparo];
         this.formModel.update((current) => ({
           ...current,
           selectedSerie,
@@ -326,6 +338,26 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
     valid: this.taradoForm().valid(),
     hasChanges: this.taradoForm().dirty(),
   }));
+
+  onSeriesSelected(selectedSerie: string[] | null): void {
+    const firstSerie = selectedSerie?.[0] ?? null;
+    const firstShot = firstSerie
+      ? (mapShotsToDisparoOptions(
+          (this.#trialShots.series() ?? this.#store.planningSeries())?.find((serie) => serie.id === firstSerie)?.shots,
+        )[0]?.value ??
+        this.disparoOptions()[0]?.value ??
+        null)
+      : null;
+    this.formModel.update((current) => ({
+      ...current,
+      selectedSerie,
+      selectedDisparo: firstShot ? [firstShot] : [],
+    }));
+  }
+
+  onShotsSelected(selectedDisparo: string[] | null): void {
+    this.formModel.update((current) => ({ ...current, selectedDisparo }));
+  }
 
   /** Configuración reactiva del gráfico — la directiva uiChart reacciona automáticamente a cambios */
   protected readonly chartConfig = computed<ChartConfiguration>(() => {

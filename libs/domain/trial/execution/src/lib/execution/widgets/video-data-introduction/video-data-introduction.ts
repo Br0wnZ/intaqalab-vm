@@ -38,6 +38,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import { injectInitialVideoEquipments } from './inject-initial-video-equipments';
 import {
@@ -546,8 +547,18 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const serie = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
-      const disparo = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+          }),
+      });
+      const { serie, disparo } = selection;
       if (!fireTrialId || !serie || !disparo) return;
 
       const selectionKey = shotSelectionKey(serie, disparo);
@@ -588,8 +599,14 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   }
 
   onSerieSelected(serie: string | null): void {
-    this.selectorModel.update((value) => ({ ...value, serie, disparo: null }));
-    this.#store.updateVideoDataIntroduction({ serie, disparo: null });
+    this.selectorModel.update((value) => ({ ...value, serie }));
+    const disparo = this.disparoOptions()[0]?.value ?? null;
+    if (serie && disparo) {
+      this.#setSelection(serie, disparo);
+      return;
+    }
+    this.selectorModel.update((value) => ({ ...value, disparo }));
+    this.#store.updateVideoDataIntroduction({ serie, disparo });
   }
 
   onDisparoSelected(disparo: string | null): void {

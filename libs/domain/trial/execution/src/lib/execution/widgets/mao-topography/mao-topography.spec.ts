@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -49,6 +50,77 @@ describe('MaoTopography', () => {
     expect(state.dirty).toBe(false);
     expect(state.touched).toBe(false);
     expect(state.hasChanges).toBe(false);
+  });
+
+  it('reloads conditions and enables target coordinates only for shots with a target type', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(TestBed.inject(ExecutionService), 'fetchShotMaoTopography').mockResolvedValue({});
+    const conditions = {
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [{ shotId: 'shot-1' }, { shotId: 'shot-2', targetTypeId: 'target-1' }],
+        },
+      ],
+    };
+    const expectTargetDisabled = (disabled: boolean) => {
+      fixture.detectChanges();
+      for (const coordinate of ['X', 'Y', 'Z']) {
+        const [pieceInput, targetInput] = screen.getAllByRole<HTMLInputElement>('textbox', { name: coordinate });
+        expect(pieceInput).toBeEnabled();
+        if (disabled) {
+          expect(targetInput).toBeDisabled();
+        } else {
+          expect(targetInput).toBeEnabled();
+        }
+      }
+    };
+
+    expectTargetDisabled(true);
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    TestBed.tick();
+    const initialRequests = httpMock.match((request) => request.url.endsWith('/planning/conditions'));
+    expect(initialRequests.length).toBeGreaterThan(0);
+    for (const request of initialRequests) request.flush(conditions);
+    const resource = fixture.debugElement.injector.get(PlanningConditionsService).conditionsResource;
+    await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
+    expectTargetDisabled(true);
+
+    fixture.componentInstance.onDisparoSelected('shot-2');
+    expectTargetDisabled(true);
+    TestBed.tick();
+    const interruptedRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    TestBed.tick();
+    expect(interruptedRequest.cancelled).toBe(true);
+    httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
+    await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
+    expectTargetDisabled(true);
+
+    fixture.componentInstance.onDisparoSelected('shot-2');
+    TestBed.tick();
+    httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
+    await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
+    expectTargetDisabled(false);
+
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    expectTargetDisabled(true);
+    TestBed.tick();
+    httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
+    await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
+    expectTargetDisabled(true);
+
+    fixture.componentInstance.onDisparoSelected('shot-2');
+    TestBed.tick();
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/conditions'))
+      .flush('Unavailable', { status: 500, statusText: 'Server Error' });
+    await vi.waitFor(() => expect(resource.error()).toBeTruthy());
+    expectTargetDisabled(true);
   });
 
   it('formState reports the correct widgetId', async () => {
@@ -193,6 +265,7 @@ describe('MaoTopography', () => {
     const executionService = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureMaoTopography');
+    vi.spyOn(executionService, 'fetchShotMaoTopography').mockResolvedValue({});
 
     store.setFireTrialId('trial-123');
     TestBed.tick();

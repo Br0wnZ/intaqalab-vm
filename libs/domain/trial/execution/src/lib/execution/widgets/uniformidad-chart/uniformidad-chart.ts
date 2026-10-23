@@ -24,7 +24,11 @@ import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
+import {
+  mapShotOptionsToPlanningNumbers,
+  mapShotsToDisparoOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface UniformidadForm {
   selectedConfig: string | null;
@@ -72,6 +76,7 @@ interface UniformidadForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.SERIE_PLACEHOLDER' | translate"
             [formField]="uniformidadForm.selectedSerie"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -84,6 +89,7 @@ interface UniformidadForm {
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DISPARO_PLACEHOLDER' | translate"
             [formField]="uniformidadForm.selectedDisparo"
+            (selectionChange)="onDisparosSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -205,6 +211,13 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
 
       const activeSerie = planningSeries.find((serie) => serie.id === activeSerieId);
       const activeShot = activeSerie?.shots?.find((shot) => shot.id === activeShotId);
+      const initialSelection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId,
+        activeShotId,
+        getShotOptions: (serieId) =>
+          mapShotsToDisparoOptions(planningSeries.find((serie) => serie.id === serieId)?.shots),
+      });
       const selectedConfig = current.selectedConfig ?? chart.configOptions[0]?.id ?? null;
       const selectedSerieFromShot = current.selectedDisparo?.length
         ? planningSeries.find((serie) =>
@@ -215,8 +228,15 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
             ),
           )?.id
         : null;
-      const selectedSerie = current.selectedSerie ?? selectedSerieFromShot ?? activeSerieId ?? null;
-      const selectedDisparo = current.selectedDisparo ?? (activeShot ? [activeShot.id] : null);
+      const isInitialSelection = this.#lastCalculationKey() === null;
+      const selectedSerie = isInitialSelection
+        ? initialSelection.serie
+        : (current.selectedSerie ?? selectedSerieFromShot ?? initialSelection.serie);
+      const selectedDisparo = isInitialSelection
+        ? initialSelection.disparo
+          ? [initialSelection.disparo]
+          : null
+        : (current.selectedDisparo ?? (activeShot ? [activeShot.id] : null));
 
       if (
         current.selectedConfig !== selectedConfig ||
@@ -300,6 +320,26 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
     valid: this.uniformidadForm().valid(),
     hasChanges: this.uniformidadForm().dirty(),
   }));
+
+  onSerieSelected(selectedSerie: string | null): void {
+    const firstShot = selectedSerie
+      ? (mapShotsToDisparoOptions(
+          (this.#trialShots.series() ?? this.#store.planningSeries())?.find((serie) => serie.id === selectedSerie)
+            ?.shots,
+        )[0]?.value ??
+        this.disparoOptions()[0]?.value ??
+        null)
+      : null;
+    this.formModel.update((current) => ({
+      ...current,
+      selectedSerie,
+      selectedDisparo: firstShot ? [firstShot] : null,
+    }));
+  }
+
+  onDisparosSelected(selectedDisparo: string[] | null): void {
+    this.formModel.update((current) => ({ ...current, selectedDisparo }));
+  }
 
   protected readonly chartConfig = computed<ChartConfiguration>(() => {
     const pts = this.filteredPoints();

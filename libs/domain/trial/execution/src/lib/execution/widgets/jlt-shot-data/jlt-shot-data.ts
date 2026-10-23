@@ -20,7 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { createDirtyTracker } from '@intaqalab/utils';
+import { LOCALE_SIGNAL, createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
@@ -32,13 +32,12 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapSelectedShotStatus } from '../utils/selection-options';
+import { mapSelectedShotStatus, resolveInitialShotSelection } from '../utils/selection-options';
 import type { InputFieldValue, JltInheritedDefaults } from './jlt-shot-data.mapper';
 import {
   calculateShotOrder,
   extractJltData,
   findLastShotId,
-  isShotInSerie,
   mapEstadoDisparoToClass,
   mapEstadoDisparoToLabel,
   mapPlanningSeriesToOptions,
@@ -241,6 +240,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #executionService = inject(ExecutionService);
   readonly #trialShots = injectTrialShots();
+  readonly #locale = inject(LOCALE_SIGNAL);
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
@@ -251,8 +251,13 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId();
-      const activeShotId = this.#store.activeShotId();
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) => this.#shotOptionsForSerie(serieId),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -291,13 +296,16 @@ export class JltShotData extends BaseFormWidgetComponent {
   );
 
   protected readonly disparoOptions = computed(() => {
-    const selectedSerie = this.formModel().serie;
+    return this.#shotOptionsForSerie(this.formModel().serie);
+  });
+
+  #shotOptionsForSerie(selectedSerie: string | null) {
     const series = this.#trialShots.series() ?? this.#store.planningSeries();
     const planningSerie = series?.find((serie) => serie.id === selectedSerie);
     const progressSerie = this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie);
 
     return mapPlanningShotsToDisparoOptions(planningSerie, progressSerie, this.#store.jltShotData().disparoOptions);
-  });
+  }
 
   protected readonly selectedSeriesProgress = computed(() => {
     const selectedSerie = this.formModel().serie;
@@ -391,10 +399,10 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   // ── Numeric fields with units (ui-input-select) ────────────────────────────
   protected readonly atacadoField = signal<InputFieldValue>(
-    numToField(this.#store.jltShotData().atacado, MeasureUnitEnum.MM),
+    numToField(this.#store.jltShotData().atacado, MeasureUnitEnum.MM, this.#locale()),
   );
   protected readonly retrocesoField = signal<InputFieldValue>(
-    numToField(this.#store.jltShotData().retroceso, MeasureUnitEnum.MM),
+    numToField(this.#store.jltShotData().retroceso, MeasureUnitEnum.MM, this.#locale()),
   );
 
   // ── Plain text signals ─────────────────────────────────────────────────────
@@ -435,24 +443,7 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   onSerieSelected(serie: string | null): void {
     this.#hasManualSelection = true;
-    const current = this.formModel();
-    const disparo = isShotInSerie(
-      current.disparo,
-      serie,
-      this.#store.executionProgress()?.series,
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-    )
-      ? current.disparo
-      : null;
-
-    this.formModel.set({
-      ...current,
-      serie,
-      disparo,
-    });
-
-    this.#syncSelectionToStore(serie, disparo);
-    void this.#loadSelectedShotData();
+    this.#setSelection(serie, this.#shotOptionsForSerie(serie)[0]?.value ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -599,8 +590,8 @@ export class JltShotData extends BaseFormWidgetComponent {
     this.jetField.set(stored.jet);
     this.operadorPiezaField.set(stored.operadorPieza);
     this.observacionesField.set(stored.observaciones);
-    this.atacadoField.set(numToField(stored.atacado, MeasureUnitEnum.MM));
-    this.retrocesoField.set(numToField(stored.retroceso, MeasureUnitEnum.MM));
+    this.atacadoField.set(numToField(stored.atacado, MeasureUnitEnum.MM, this.#locale()));
+    this.retrocesoField.set(numToField(stored.retroceso, MeasureUnitEnum.MM, this.#locale()));
     this.formModel.set({
       serie: stored.serie,
       disparo: stored.disparo,

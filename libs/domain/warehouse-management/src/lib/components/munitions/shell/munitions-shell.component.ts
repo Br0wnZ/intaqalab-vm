@@ -78,7 +78,12 @@ import { MunitionLocationComponent } from '../location/location.component';
                 </button>
               </div>
               @for (component of form.multipleComponentsData; track $index) {
-                <inta-component-munition data-testid="munitionComponent" [form]="component"></inta-component-munition>
+                <inta-component-munition
+                  data-testid="munitionComponent"
+                  [form]="component"
+                  [canRemove]="!$first"
+                  (remove)="removeMultipleComponentData($index)"
+                ></inta-component-munition>
                 @if (!$last) {
                   <div class="w-full border-b border-gray-200 pb-1 my-2 font-semibold text-base"></div>
                 }
@@ -113,6 +118,7 @@ import { MunitionLocationComponent } from '../location/location.component';
                   data-testid="munitionComponent"
                   [form]="component"
                   [hasQuantity]="false"
+                  (remove)="removeAssociatedComponent($index)"
                 ></inta-component-munition>
                 @if (!$last) {
                   <div class="w-full border-b border-gray-200 pb-1 my-2 font-semibold text-base"></div>
@@ -564,6 +570,20 @@ export class MunitionsShellComponent {
         multipleComponentsData: [...current.multipleComponentsData, defaultItemToPushModel()],
       };
     });
+  }
+
+  removeAssociatedComponent(index: number) {
+    this.formModel.update((current) => ({
+      ...current,
+      associatedComponents: current.associatedComponents.filter((_, componentIndex) => componentIndex !== index),
+    }));
+  }
+
+  removeMultipleComponentData(index: number) {
+    this.formModel.update((current) => ({
+      ...current,
+      multipleComponentsData: current.multipleComponentsData.filter((_, componentIndex) => componentIndex !== index),
+    }));
   }
 
   reset() {

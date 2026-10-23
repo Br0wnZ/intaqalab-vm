@@ -18,8 +18,10 @@ export class PlanningConditionsService {
   readonly #planningUrl = injectPlanningEndpoint();
   /** Trial fijado explícitamente por el llamador (prioridad sobre el contexto compartido). */
   readonly #explicitTrialId = signal<string | null>(null);
+  readonly #reloadVersion = signal(0);
 
   readonly conditionsResource = httpResource<PlanningConditionsResponse>(() => {
+    this.#reloadVersion();
     const explicitTrialId = this.#explicitTrialId();
     const context = this.#trialContext.context();
     const fireTrialId = explicitTrialId ?? context?.fireTrialId;
@@ -42,6 +44,6 @@ export class PlanningConditionsService {
 
   /** Re-fetch manual con el trial vigente (explícito o contexto compartido). */
   reload(): void {
-    this.conditionsResource.reload();
+    this.#reloadVersion.update((version) => version + 1);
   }
 }

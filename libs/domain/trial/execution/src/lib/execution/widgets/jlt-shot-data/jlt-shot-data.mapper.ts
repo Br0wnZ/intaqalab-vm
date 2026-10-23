@@ -1,5 +1,5 @@
-import { formatShotLabel } from '@intaqalab/data-access-planning';
 import type { PlanningSeriesItem } from '@intaqalab/data-access-planning';
+import { formatShotLabel } from '@intaqalab/data-access-planning';
 import { DistanceUnitEnum } from '@intaqalab/models';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
@@ -40,15 +40,26 @@ export type { PlanningSeriesItem };
 /**
  * Convierte un número y una unidad a la estructura InputFieldValue de UI.
  */
-export const numToField = (value: number | null | undefined, unit: string): InputFieldValue =>
-  value !== null && value !== undefined ? { value: value.toString(), unit } : null;
+export const numToField = (
+  value: number | null | undefined,
+  unit: string,
+  locale: 'es-ES' | 'en-US' = 'en-US',
+): InputFieldValue => {
+  if (value === null || value === undefined) return null;
+
+  const decimalSeparator = new Intl.NumberFormat(locale)
+    .formatToParts(1.1)
+    .find((part) => part.type === 'decimal')?.value;
+
+  return { value: value.toString().replace('.', decimalSeparator ?? '.'), unit };
+};
 
 /**
  * Parsea un InputFieldValue a número flotante o null si está vacío/inválido.
  */
 export const parseNum = (field: InputFieldValue): number | null => {
   if (!field?.value || field.value.trim() === '') return null;
-  const parsed = parseFloat(field.value);
+  const parsed = parseFloat(field.value.trim().replace(',', '.'));
   return isNaN(parsed) ? null : parsed;
 };
 

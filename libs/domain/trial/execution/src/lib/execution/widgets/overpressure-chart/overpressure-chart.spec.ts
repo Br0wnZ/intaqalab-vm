@@ -50,7 +50,7 @@ describe('OverpressureChartWidget', () => {
     const store = TestBed.inject(ExecutionStore);
     await fixture.componentInstance.saveForm();
     expect(store.overpressureChart()).toBeDefined();
-    expect(store.overpressureChart().selectedSerie).toBeNull();
+    expect(store.overpressureChart().selectedSerie).toEqual(['Serie A']);
   });
 
   it('resetForm restores selectedSerie from the store', async () => {

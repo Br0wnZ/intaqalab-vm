@@ -86,60 +86,62 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
             [formField]="massForm.series"
           >
-            @for (opt of data.serieOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            @for (opt of serieSelectOptions(); track opt.value) {
+              <mat-option [value]="opt.value" [disabled]="opt.disabled">{{ opt.label }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
       </div>
 
-      @if (selectedSeriesStatuses().length > 0) {
-        @if (hasInconsistentOrientation()) {
-          <p role="alert" class="mb-3 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_CONFLICT' | translate }}
-          </p>
-        } @else if (!planningConditionsReady()) {
-          <p role="alert" class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_UNAVAILABLE' | translate }}
-          </p>
-        } @else {
-          <div class="mb-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
-              <mat-select
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
-                [formField]="massForm.piqueta"
-              >
-                @for (option of data.piquetaOptions; track option.value) {
-                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+      @if (selectedSeriesStatuses().length > 0 && !planningConditionsReady()) {
+        <p role="alert" class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_UNAVAILABLE' | translate }}
+        </p>
+      }
 
-            <ui-input-select
-              [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
-              [opciones]="ooOptions"
-              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
-              [value]="diferenciaAngularField()"
-              [readOnly]="!needsManualOrientation()"
-              [variant]="needsManualOrientation() ? 'default' : 'computed'"
-              (valueChange)="diferenciaAngularField.set($event)"
-            >
-              <input inputSelectInput libLocalDecimal [decimals]="2" />
-            </ui-input-select>
-          </div>
-          @if (needsManualOrientation() && calculatedOlt() === null) {
-            <p role="status" class="mb-3 text-sm text-gray-600">
-              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_REQUIRED' | translate }}
-            </p>
-          }
-          @if (calculatedOlt() !== null) {
-            <p class="mb-3 text-sm font-medium text-gray-700">
-              {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_LABEL' | translate }}:
-              {{ calculatedOlt()?.toFixed(3) }} ºº
-            </p>
-          }
-        }
+      <!-- OLT / Piqueta / Diferencia angular -->
+      <div class="mb-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
+        <ui-input-select
+          label="OLT"
+          [opciones]="ooOptions"
+          [placeholder]="'0,000'"
+          [value]="oltDisplayField()"
+          [readOnly]="oltReadOnly()"
+          [variant]="oltReadOnly() ? 'computed' : 'default'"
+          (valueChange)="onOltChanged($event)"
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
+          <mat-select
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
+            [formField]="massForm.piqueta"
+          >
+            <mat-option [value]="null">—</mat-option>
+            @for (option of data.piquetaOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <ui-input-select
+          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
+          [opciones]="ooOptions"
+          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
+          [value]="diferenciaAngularField()"
+          [readOnly]="angularDifferenceReadOnly()"
+          [variant]="angularDifferenceReadOnly() ? 'computed' : 'default'"
+          (valueChange)="diferenciaAngularField.set($event)"
+        >
+          <input inputSelectInput libLocalDecimal [decimals]="2" />
+        </ui-input-select>
+      </div>
+      @if (needsManualOrientation() && calculatedOlt() === null) {
+        <p role="status" class="mb-3 text-sm text-gray-600">
+          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_REQUIRED' | translate }}
+        </p>
       }
 
       <!-- 2-column grid: numeric fields -->
@@ -178,15 +180,6 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_PLACEHOLDER' | translate"
           [value]="tiempoVueloField()"
           (valueChange)="tiempoVueloField.set($event)"
-        />
-
-        <!-- Diferencia angular -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
-          [value]="diferenciaAngularField()"
-          (valueChange)="diferenciaAngularField.set($event)"
         />
 
         <!-- Ángulo tiro -->
@@ -256,8 +249,17 @@ export class JltMaoMassConfigDialog {
     piqueta: this.data.currentPiqueta,
   });
   protected readonly massForm = form(this.formModel, (path) => {
-    disabled(path.piqueta, () => !this.needsManualOrientation());
+    disabled(path.piqueta, () => !this.needsManualOrientation() || this.hasManualOlt());
   });
+
+  protected readonly oltField = signal<InputFieldValue>(null);
+
+  protected readonly serieSelectOptions = computed(() =>
+    this.data.serieOptions.map((option) => ({
+      ...option,
+      disabled: this.#getSeriesOrientationStatus(option.value) === 'inconsistent',
+    })),
+  );
 
   protected readonly selectedSeriesStatuses = computed(() =>
     this.formModel().series.map((seriesId) => ({
@@ -280,14 +282,34 @@ export class JltMaoMassConfigDialog {
       .filter(({ status }) => status === 'missing')
       .map(({ seriesId }) => seriesId),
   );
+  protected readonly hasManualOlt = computed(() => this.#parseNumber(this.oltField()) !== null);
+  protected readonly plannedOlt = computed(() => {
+    const values = new Set(
+      this.selectedSeriesStatuses()
+        .filter(({ status }) => status === 'planned')
+        .map(
+          ({ seriesId }) => this.data.seriesOrientations.find((s) => s.seriesId === seriesId)?.orientations[0] ?? null,
+        ),
+    );
+    const [value] = [...values];
+    return values.size === 1 && value !== null && value !== undefined ? value : null;
+  });
+  protected readonly oltReadOnly = computed(() => !this.needsManualOrientation() || this.formModel().piqueta !== null);
+  protected readonly angularDifferenceReadOnly = computed(() => !this.needsManualOrientation() || this.hasManualOlt());
   protected readonly calculatedOlt = computed(() => {
     if (!this.needsManualOrientation()) return null;
-    const piqueta = this.data.piquetaOptions.find((option) => option.value === this.formModel().piqueta);
+    const selectedPiqueta = this.formModel().piqueta;
+    if (selectedPiqueta === null) return this.#parseNumber(this.oltField());
+    const piqueta = this.data.piquetaOptions.find((option) => option.value === selectedPiqueta);
     const { x, y } = this.data.piecePosition;
     const angularDifference = this.#parseNumber(this.diferenciaAngularField());
     if (!piqueta || x === null || y === null || angularDifference === null) return null;
     const bearing = Math.atan2(piqueta.y - y, piqueta.x - x) * (3200 / Math.PI);
     return angularDifference + bearing;
+  });
+  protected readonly oltDisplayField = computed<InputFieldValue>(() => {
+    if (!this.needsManualOrientation()) return this.#numToField(this.plannedOlt());
+    return this.formModel().piqueta !== null ? this.#numToField(this.calculatedOlt()) : this.oltField();
   });
 
   protected readonly canApply = computed(() => {
@@ -354,6 +376,14 @@ export class JltMaoMassConfigDialog {
 
   cancel(): void {
     this.#dialogRef.close({ action: 'cancel' });
+  }
+
+  onOltChanged(olt: InputFieldValue): void {
+    if (!this.oltReadOnly()) this.oltField.set(olt);
+  }
+
+  #numToField(value: number | null): InputFieldValue {
+    return value === null ? null : { value: value.toFixed(3), unit: 'oo' };
   }
 
   #getSeriesOrientationStatus(seriesId: string): SeriesOrientationStatus {

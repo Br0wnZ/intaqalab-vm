@@ -1,6 +1,16 @@
 import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,7 +26,11 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { mapShotOptionsToPlanningNumbers } from '../utils/selection-options';
+import {
+  mapShotOptionsToPlanningNumbers,
+  mapShotsToDisparoOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface TaradoPresionForm {
   selectedSerie: string[] | null;
@@ -54,6 +68,7 @@ interface TaradoPresionForm {
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.SERIE_PLACEHOLDER' | translate"
             [formField]="presionForm.selectedSerie"
+            (selectionChange)="onSeriesSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -66,6 +81,7 @@ interface TaradoPresionForm {
             multiple
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.DISPARO_PLACEHOLDER' | translate"
             [formField]="presionForm.selectedDisparo"
+            (selectionChange)="onShotsSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -202,6 +218,46 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
     valid: this.presionForm().valid(),
     hasChanges: this.presionForm().dirty(),
   }));
+
+  constructor() {
+    super();
+    effect(() => {
+      const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries();
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          mapShotsToDisparoOptions(planningSeries?.find((serie) => serie.id === serieId)?.shots),
+      });
+      if (!selection.serie || !selection.disparo) return;
+      const selectedSerie = [selection.serie];
+      const selectedDisparo = [selection.disparo];
+      untracked(() => {
+        this.formModel.set({ selectedSerie, selectedDisparo });
+        this.#store.updateTaradoPresionChart({ selectedSerie, selectedDisparo });
+      });
+    });
+  }
+
+  onSeriesSelected(selectedSerie: string[] | null): void {
+    const firstSeries = selectedSerie?.[0] ?? null;
+    const firstShot = firstSeries
+      ? (mapShotsToDisparoOptions(
+          (this.#trialShots.series() ?? this.#store.planningSeries())?.find((serie) => serie.id === firstSeries)?.shots,
+        )[0]?.value ??
+        this.disparoOptions()[0]?.value ??
+        null)
+      : null;
+    const selectedDisparo = firstShot ? [firstShot] : [];
+    this.formModel.update((current) => ({ ...current, selectedSerie, selectedDisparo }));
+    this.#store.updateTaradoPresionChart({ selectedSerie, selectedDisparo });
+  }
+
+  onShotsSelected(selectedDisparo: string[] | null): void {
+    this.formModel.update((current) => ({ ...current, selectedDisparo }));
+    this.#store.updateTaradoPresionChart({ selectedDisparo });
+  }
 
   /** Reactive chart config — ChartDirective (uiChart) reacts automatically to signal changes */
   protected readonly chartConfig = computed<ChartConfiguration>(() => {

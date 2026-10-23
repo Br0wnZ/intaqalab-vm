@@ -1,7 +1,7 @@
 import type { ArmamentData, ArmamentSerie, SeriesArmamentData } from '../../utils-models/armament.model';
 import type { SpecimenItem } from '../../utils-models/catalog.model';
 import type { Serie as SeriesAndShotsSerie } from '../../utils-models/series-and-shots.model';
-import type { SpecimenType } from '../../utils-models/specimen.model';
+import { SpecimenType } from '../../utils-models/specimen.model';
 
 /**
  * Mapea los datos provenientes del backend a la estructura local de ArmamentSerie.
@@ -75,9 +75,14 @@ export function mapLocalToRequest(series: ArmamentSerie[]) {
       shotId: shot.shotId,
       itemType: shot.armament.weaponType ? (shot.armament.weaponType.toUpperCase() as SpecimenType) : undefined,
       weaponExternalId: shot.armament.weaponExternalId ? Number(shot.armament.weaponExternalId) : undefined,
-      tubeExternalId: shot.armament.tubeExternalId ? Number(shot.armament.tubeExternalId) : undefined,
-      isInstrumented: shot.armament.isInstrumented,
+      tubeExternalId:
+        shot.armament.weaponType.toLowerCase() !== SpecimenType.Mortar && shot.armament.tubeExternalId
+          ? Number(shot.armament.tubeExternalId)
+          : undefined,
+      isInstrumented:
+        shot.armament.weaponType.toLowerCase() === SpecimenType.Mortar ? undefined : shot.armament.isInstrumented,
       lifeUsefulPercentage:
+        shot.armament.weaponType.toLowerCase() !== SpecimenType.Mortar &&
         shot.armament.tubeLifePercentage !== undefined &&
         shot.armament.tubeLifePercentage !== null &&
         (shot.armament.tubeLifePercentage as unknown) !== ''

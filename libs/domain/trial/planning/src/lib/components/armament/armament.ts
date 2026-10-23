@@ -354,7 +354,7 @@ export class Armament implements OnInit {
         required(shotPath.armament.tubeLifePercentage, {
           when: ({ valueOf }) => {
             const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
-            return !!weaponType && weaponType !== SpecimenType.Weapon;
+            return !!weaponType && weaponType !== SpecimenType.Mortar;
           },
         });
 
@@ -452,7 +452,10 @@ export class Armament implements OnInit {
           }
         }
 
-        if (config.denominacionTubo) {
+        if (updatedArmament.weaponType.toLowerCase() === SpecimenType.Mortar) {
+          updatedArmament.tubeExternalId = '';
+          updatedArmament.tubeName = '';
+        } else if (config.denominacionTubo) {
           updatedArmament.tubeExternalId = config.denominacionTubo;
           const foundTube =
             this.#armamentStore.tubeDenominations().find((t) => String(t.id) === String(config.denominacionTubo)) ??
@@ -470,9 +473,7 @@ export class Armament implements OnInit {
           updatedArmament.tubeLifePercentage = Number(config.vidaUtil);
         }
 
-        if (config.observaciones !== undefined && config.observaciones !== '') {
-          updatedArmament.observations = config.observaciones;
-        }
+        updatedArmament.observations = config.observaciones;
 
         return {
           ...shot,

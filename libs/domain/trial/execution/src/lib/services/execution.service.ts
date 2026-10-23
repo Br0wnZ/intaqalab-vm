@@ -10,48 +10,48 @@ import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-  ArmamentEquipmentDenomination,
-  ArmamentEquipmentDenominationsResponse,
-  EquipmentMeasurementGroup,
-  EquipmentSelectionItem,
-  EquipmentSelectionList,
-  EquipmentTypeEnum,
-  JltMaoBulkConfigurationRequest,
-  JltMaoBulkConfigurationResponse,
-  MaoTopographyBulkConfigurationRequest,
-  MaoTopographyBulkConfigurationResponse,
-  MunitionConditioningBulkConfigurationRequest,
-  MunitionConditioningBulkConfigurationResponse,
-  PropellantChargeAdjustmentConfiguration,
-  PropellantChargeAdjustmentQuery,
-  PropellantChargeAdjustmentResponse,
-  PropellantChargeParametersResponse,
-  ShotAcousticLevelRequest,
-  ShotAcousticLevelResponse,
-  ShotCameraOrientationResponse,
-  ShotDifferentialPressureData,
-  ShotJltMaoRequest,
-  ShotJltMaoResponse,
-  ShotManometerPressuresRequest,
-  ShotManometerPressuresResponse,
-  ShotMaoTopographyRequest,
-  ShotMaoTopographyResponse,
-  ShotMunitionRequest,
-  ShotMunitionResponse,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
-  ShotTopographyRequest,
-  ShotTopographyResponse,
-  ShotTrajectographyRequest,
-  ShotTrajectographyResponse,
-  ShotVideoDataRequest,
-  ShotVideoDataResponse,
-  TrajectographyRadarOrientationResponse,
-  VelocityUniformityQuery,
-  VelocityUniformityResponse,
-  WidgetPreferenceId,
+    ArmamentEquipmentDenomination,
+    ArmamentEquipmentDenominationsResponse,
+    EquipmentMeasurementGroup,
+    EquipmentSelectionItem,
+    EquipmentSelectionList,
+    EquipmentTypeEnum,
+    JltMaoBulkConfigurationRequest,
+    JltMaoBulkConfigurationResponse,
+    MaoTopographyBulkConfigurationRequest,
+    MaoTopographyBulkConfigurationResponse,
+    MunitionConditioningBulkConfigurationRequest,
+    MunitionConditioningBulkConfigurationResponse,
+    PropellantChargeAdjustmentConfiguration,
+    PropellantChargeAdjustmentQuery,
+    PropellantChargeAdjustmentResponse,
+    PropellantChargeParametersResponse,
+    ShotAcousticLevelRequest,
+    ShotAcousticLevelResponse,
+    ShotCameraOrientationResponse,
+    ShotDifferentialPressureData,
+    ShotJltMaoRequest,
+    ShotJltMaoResponse,
+    ShotManometerPressuresRequest,
+    ShotManometerPressuresResponse,
+    ShotMaoTopographyRequest,
+    ShotMaoTopographyResponse,
+    ShotMunitionRequest,
+    ShotMunitionResponse,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData,
+    ShotTopographyRequest,
+    ShotTopographyResponse,
+    ShotTrajectographyRequest,
+    ShotTrajectographyResponse,
+    ShotVideoDataRequest,
+    ShotVideoDataResponse,
+    TrajectographyRadarOrientationResponse,
+    VelocityUniformityQuery,
+    VelocityUniformityResponse,
+    WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
 import { EquipmentCatalogService } from './equipment-catalog.service';
@@ -252,19 +252,19 @@ export interface PlanningApprovalRequest {
 
 /** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
 export type {
-  PlanningConditionsResponse,
-  PlanningConditionsSeries,
-  PlanningConditionsShot,
-  PlanningSeriesItem,
-  PlanningSeriesShotItem,
+    PlanningConditionsResponse,
+    PlanningConditionsSeries,
+    PlanningConditionsShot,
+    PlanningSeriesItem,
+    PlanningSeriesShotItem
 } from '@intaqalab/data-access-planning';
 export type {
-  PropellantChargeParametersResponse,
-  ShotDifferentialPressureData,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
+    PropellantChargeParametersResponse,
+    ShotDifferentialPressureData,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData
 };
 
 export interface JltShotDataPayload {
@@ -612,7 +612,7 @@ interface SeriesReadinessOneParams {
 }
 
 interface LoadEquipmentByTypeParams {
-  itemType: 'WEAPON' | 'TUBE';
+  itemType: 'WEAPON' | 'MORTAR' | 'TUBE';
 }
 
 // ============= Service =============
@@ -1796,7 +1796,7 @@ export class ExecutionService {
     };
   });
 
-  async loadArmamentEquipmentItems(itemType: 'WEAPON' | 'TUBE'): Promise<ArmamentEquipmentItem[]> {
+  async loadArmamentEquipmentItems(itemType: LoadEquipmentByTypeParams['itemType']): Promise<ArmamentEquipmentItem[]> {
     this.#loadArmamentItemsParams.set({ itemType });
     const response = await this.#awaitResourceValue(this.#loadArmamentItemsResource);
     return response.items;

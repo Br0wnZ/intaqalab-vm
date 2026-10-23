@@ -49,6 +49,31 @@ class BoundValueHost {
   readonly coordinate = signal<number | null>(1234.5);
 }
 
+@Component({
+  imports: [LocaleDecimalInputDirective],
+  template: `
+    <input
+      aria-label="Readonly coordinate"
+      libLocalDecimal
+      readonly
+      [decimals]="2"
+      [minDecimals]="2"
+      [decimalValue]="coordinate()"
+    />
+  `,
+})
+class ReadonlyBoundValueHost {
+  readonly coordinate = signal<number | null>(12345.5);
+}
+
+@Component({
+  imports: [LocaleDecimalInputDirective],
+  template: `
+    <input aria-label="Readonly display" libLocalDecimal readonly value="12.34" />
+  `,
+})
+class ReadonlyDisplayHost {}
+
 // ── Event helpers ──────────────────────────────────────────────────────────────
 
 function fireKeydown(el: HTMLInputElement, key: string, extra?: KeyboardEventInit): boolean {
@@ -85,6 +110,32 @@ describe('LocaleDecimalInputDirective', () => {
 
     expect(coordinate).toHaveValue('5678,25');
     expect(boundFixture.componentInstance.coordinate()).toBe(5678.25);
+  });
+
+  it('preserves readonly decimal formatting on focus', async () => {
+    const user = userEvent.setup();
+    await render(ReadonlyBoundValueHost, {
+      providers: [localeSignalProvider('es-ES').provider],
+    });
+    const coordinate = screen.getByRole('textbox', { name: 'Readonly coordinate' });
+
+    expect(coordinate).toHaveValue('12.345,50');
+    await user.click(coordinate);
+
+    expect(coordinate).toHaveValue('12.345,50');
+  });
+
+  it('preserves readonly display values on blur when no decimal value is bound', async () => {
+    const user = userEvent.setup();
+    await render(ReadonlyDisplayHost, {
+      providers: [localeSignalProvider('es-ES').provider],
+    });
+    const display = screen.getByRole('textbox', { name: 'Readonly display' });
+
+    await user.click(display);
+    await user.tab();
+
+    expect(display).toHaveValue('12.34');
   });
 
   it('emits numeric values while editing locale decimals and clearing the input', async () => {

@@ -15,6 +15,7 @@ export type PlanningConditionsUnits = {
 
 export type PlanningConditionsShot = {
   shotId: string;
+  targetTypeId?: string | null;
   orientation?: number | null;
   orientationUnit?: AngleUnitEnum | null;
   shootingAngle?: number | null;

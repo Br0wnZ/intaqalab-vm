@@ -228,6 +228,45 @@ describe('MunitionIntroduction', () => {
     expect(fixture.componentInstance['estadoLabel']()).toBe('Pendiente');
   });
 
+  it('selects the first shot regardless of status when changing series', async () => {
+    const { fixture } = await renderWidget();
+    const executionService = TestBed.inject(ExecutionService);
+
+    executionService.executionProgressResource.set({
+      series: [
+        {
+          seriesId: 'serie-2',
+          shots: [
+            { shotId: 'shot-fired', status: 'FIRED', updatedAt: '2026-10-05T10:00:00Z' },
+            { shotId: 'shot-pending', status: 'PENDING', updatedAt: '2026-10-05T10:01:00Z' },
+            { shotId: 'shot-active', status: 'ACTIVE', updatedAt: '2026-10-05T10:02:00Z' },
+          ],
+        },
+      ],
+    });
+
+    fixture.componentInstance.onSerieSelected('serie-2');
+
+    expect(fixture.componentInstance['selectorFormModel']()).toEqual({
+      serie: 'serie-2',
+      disparo: 'shot-fired',
+    });
+  });
+
+  it('selects the active shot when active selection becomes available on initialization', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+
+    store.setOptimisticActiveShot('serie-active', 'shot-active');
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+
+    expect(fixture.componentInstance['selectorFormModel']()).toEqual({
+      serie: 'serie-active',
+      disparo: 'shot-active',
+    });
+  });
+
   it('saveForm persists selection to the store and calls ExecutionService', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
@@ -320,6 +359,23 @@ describe('MunitionIntroduction', () => {
     });
 
     expect(store.munitionIntroduction().identificacion.denominacion).toBe('den-01');
+  });
+
+  it('fetches shot munition data for every newly selected shot', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
+
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'shot-initial' });
+
+    fixture.componentInstance.onDisparoSelected('shot-2');
+    fixture.componentInstance.onDisparoSelected('shot-3');
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, 'trial-123', 'serie-1', 'shot-2');
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, 'trial-123', 'serie-1', 'shot-3');
   });
 
   it('fills missing batch from available warehouse stock matching denomination', async () => {

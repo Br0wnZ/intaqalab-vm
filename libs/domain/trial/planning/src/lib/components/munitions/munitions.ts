@@ -201,15 +201,24 @@ export class Munitions {
   readonly updateStatus = this.#munitionsStore.updateMunitionsStatus;
 
   readonly hasToBeDisabled = computed(() => {
-    const hasUnchangedData = JSON.stringify(this.seriesSignal()) === JSON.stringify(this.#initialSeriesData);
+    const initialSeriesById = new Map(this.#initialSeriesData().map((serie) => [serie.seriesId, serie]));
+    const hasUnchangedData = this.#validSeries().every(
+      (serie) => JSON.stringify(serie) === JSON.stringify(initialSeriesById.get(serie.seriesId)),
+    );
 
     return this.isSaving() || !this.isFormValid() || hasUnchangedData;
   });
 
+  readonly #validSeries = computed(() =>
+    this.seriesSignal().filter(
+      (serie, serieIndex) => serie.configurations.length > 0 && this.seriesForm[serieIndex]().valid(),
+    ),
+  );
+
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
-  #initialSeriesData: Serie[] = [];
+  readonly #initialSeriesData = signal<Serie[]>([]);
   #isLocalInitialized = false;
   #preDeleteSnapshot: Serie[] | null = null;
   #massiveDialogOpen = false;
@@ -238,7 +247,7 @@ export class Munitions {
       const fuseWorkingModes = this.#munitionsStore.fuseWorkingModes();
       const munitionsStatus = this.#munitionsStore.munitionsStatus();
 
-      if (!allSeries) return;
+      if (!allSeries || munitionsStatus === 'loading' || munitionsStatus === 'reloading') return;
 
       const mappedMunitions = mapBackendToLocal(seriesMunitions ?? [], componentTypes, denominations, fuseWorkingModes);
       const munitionsById = new Map(mappedMunitions.map((s) => [s.seriesId, s]));
@@ -248,14 +257,14 @@ export class Munitions {
           munitionsById.get(serie.id) ?? {
             seriesId: serie.id,
             seriesName: serie.name,
-            configurations: [],
+            configurations: [createEmptyConfiguration(serie.id)],
           },
       );
 
       this.seriesSignal.set(completeSeries);
 
       if (!this.#isLocalInitialized && (munitionsStatus === 'resolved' || munitionsStatus === 'error')) {
-        this.#initialSeriesData = this.#deepClone(completeSeries);
+        this.#initialSeriesData.set(this.#deepClone(completeSeries));
         this.#isLocalInitialized = true;
       }
     });
@@ -285,8 +294,7 @@ export class Munitions {
       required(seriePath.seriesId);
       applyEach(seriePath.configurations, (configPath) => {
         validate(configPath.denomination, ({ value, valueOf }) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const selected: string[] = valueOf(configPath.selectedComponents as any) ?? [];
+          const selected = valueOf(configPath).selectedComponents ?? [];
           const components: ComponentDetail[] = valueOf(configPath.components) ?? [];
           const shots: string[] = valueOf(configPath.assignedShotIds) ?? [];
 
@@ -408,9 +416,7 @@ export class Munitions {
   }
 
   isFormValid(): boolean {
-    const series = this.seriesSignal();
-    const allSeriesHaveConfigurations = series.length > 0 && series.some((s) => s.configurations.length > 0);
-    return allSeriesHaveConfigurations && this.seriesForm().valid();
+    return this.#validSeries().length > 0;
   }
 
   getFormValues(): Serie[] {
@@ -455,15 +461,14 @@ export class Munitions {
       return;
     }
 
-    const configurations = mapLocalToRequest(this.seriesSignal());
-    this.#munitionsStore.updateMunitions({ configurations });
+    this.#saveValidSeries();
   }
 
   resetForm(): void {
     if (this.readonly()) {
       return;
     }
-    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
+    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData()));
   }
 
   deleteConfiguration(serieIdx: number, configIdx: number): void {
@@ -485,13 +490,12 @@ export class Munitions {
       return;
     }
 
-    const configurations = mapLocalToRequest(this.seriesSignal());
-    this.#munitionsStore.updateMunitions({ configurations });
+    this.#saveValidSeries();
   }
 
   loadConfiguration(data: Serie[]): void {
     this.seriesSignal.set(data);
-    this.#initialSeriesData = this.#deepClone(data);
+    this.#initialSeriesData.set(this.#deepClone(data));
   }
 
   validateConfiguration(): boolean {
@@ -524,6 +528,10 @@ export class Munitions {
 
   #deepClone(data: Serie[]): Serie[] {
     return structuredClone(data);
+  }
+
+  #saveValidSeries(): void {
+    this.#munitionsStore.updateMunitions({ configurations: mapLocalToRequest(this.#validSeries()) });
   }
 
   // checkear si hay configuraciones en munitions

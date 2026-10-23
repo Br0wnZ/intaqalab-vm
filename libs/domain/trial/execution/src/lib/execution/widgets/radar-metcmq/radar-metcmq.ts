@@ -25,7 +25,11 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
+import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface RadarMetcmqForm {
   serie: string | null;
@@ -62,6 +66,7 @@ interface RadarMetcmqForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.SERIE_PLACEHOLDER' | translate"
             [formField]="metcmqForm.serie"
+            (selectionChange)="onSerieSelected($event.value)"
           >
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -74,6 +79,7 @@ interface RadarMetcmqForm {
           <mat-select
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.DISPARO_PLACEHOLDER' | translate"
             [formField]="metcmqForm.disparo"
+            (selectionChange)="onDisparoSelected($event.value)"
           >
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
@@ -120,10 +126,10 @@ interface RadarMetcmqForm {
 })
 export class RadarMetcmq extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
-
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   // Data from store
   protected readonly serieOptions = computed(() =>
@@ -152,11 +158,32 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
   constructor() {
     super();
     effect(() => {
-      const serie = this.#store.activeSerieId();
-      const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
-      untracked(() => this.formModel.set({ serie, disparo }));
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.radarMetcmq().disparoOptions,
+          }),
+      });
+      if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
+      untracked(() => this.formModel.set(selection));
     });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, serie }));
+    this.formModel.update((current) => ({ ...current, disparo: this.disparoOptions()[0]?.value ?? null }));
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, disparo }));
   }
 
   // FormWidget implementation

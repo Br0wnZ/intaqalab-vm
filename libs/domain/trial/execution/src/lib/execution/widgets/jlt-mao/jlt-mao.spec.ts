@@ -87,7 +87,7 @@ describe('JltMao', () => {
     });
   });
 
-  it('does not load a fallback shot before active shot IDs are available', async () => {
+  it('loads the first shot before active shot IDs are available, then switches to the active shot', async () => {
     const { fixture } = await renderWidget();
     const service = TestBed.inject(ExecutionService);
     const store = TestBed.inject(ExecutionStore);
@@ -97,9 +97,9 @@ describe('JltMao', () => {
     store.setFireTrialId('trial-123');
     TestBed.tick();
 
-    expect(fixture.componentInstance['formModel']().serie).toBeNull();
-    expect(fixture.componentInstance['formModel']().disparo).toBeNull();
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(fixture.componentInstance['formModel']().serie).toBe('funcionamiento-1');
+    expect(fixture.componentInstance['formModel']().disparo).toBe('disparo-1');
+    expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'funcionamiento-1', 'disparo-1');
 
     store.setOptimisticActiveShot('initial-series-id', 'assigned-shot-id');
     TestBed.tick();

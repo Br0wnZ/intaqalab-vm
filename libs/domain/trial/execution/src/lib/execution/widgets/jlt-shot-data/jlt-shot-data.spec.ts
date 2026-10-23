@@ -6,6 +6,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -239,18 +240,13 @@ describe('JltShotData', () => {
 
     const { fixture } = await renderWidget();
     await fixture.whenStable();
-    expect(mockExecutionService.fetchJltShotData).not.toHaveBeenCalled();
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenNthCalledWith(1, 'trial-123', 'funcionamiento-1', 'shot-1');
 
     activeSerieId.set(ACTIVE_SERIE_ID);
     activeShotId.set(ACTIVE_SHOT_ID);
     await fixture.whenStable();
 
-    expect(mockExecutionService.fetchJltShotData).toHaveBeenNthCalledWith(
-      1,
-      'trial-123',
-      ACTIVE_SERIE_ID,
-      ACTIVE_SHOT_ID,
-    );
+    expect(mockExecutionService.fetchJltShotData).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID);
   });
 
   it('reloads JLT data when execution state changes active shot', async () => {
@@ -335,6 +331,41 @@ describe('JltShotData', () => {
       expect.objectContaining({ jet: 'JET-CURRENT' }),
     );
     expect(TestBed.inject(ExecutionStore).jltShotData().disparo).toBe(ACTIVE_SHOT_ID);
+  });
+
+  it('preserves localized decimal values in the PUT payload', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+    fixture.componentInstance['atacadoField'].set({ value: '12,5', unit: 'MM' });
+    fixture.componentInstance['retrocesoField'].set({ value: '8,3', unit: 'MM' });
+
+    await fixture.componentInstance.saveForm();
+
+    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+      'trial-123',
+      ACTIVE_SERIE_ID,
+      ACTIVE_SHOT_ID,
+      expect.objectContaining({ attackDistance: 12.5, recoilDistance: 8.3 }),
+    );
+  });
+
+  it('keeps decimal values localized after patching and blurring the input', async () => {
+    const { fixture } = await renderWidget();
+    await fixture.whenStable();
+    jltShotDataState.update((state) => ({ ...state, atacado: 12.5, retroceso: 8.3 }));
+    fixture.componentInstance.resetForm();
+    await fixture.whenStable();
+
+    const attackInput = screen.getAllByRole('textbox')[1];
+    if (!attackInput) throw new Error('Attack distance input was not rendered');
+    expect(attackInput).toHaveValue('12,5');
+
+    await userEvent.click(attackInput);
+    await userEvent.tab();
+    await fixture.whenStable();
+
+    expect(attackInput).toHaveValue('12,5');
+    expect(fixture.componentInstance['atacadoField']()).toEqual({ value: '12,5', unit: 'MM' });
   });
 
   it('saves the shot selected in the widget even when store selection differs', async () => {

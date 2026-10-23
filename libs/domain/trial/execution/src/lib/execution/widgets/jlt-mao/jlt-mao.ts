@@ -39,6 +39,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import type { JltMaoMassConfigDialogResult } from './jlt-mao-mass-config-dialog';
 import { JltMaoMassConfigDialog } from './jlt-mao-mass-config-dialog';
@@ -510,8 +511,19 @@ export class JltMao extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId();
-      const activeShotId = this.#store.activeShotId();
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.jltMao().disparoOptions,
+          }),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -531,8 +543,7 @@ export class JltMao extends BaseFormWidgetComponent {
 
   onSerieSelected(serie: string | null): void {
     this.formModel.update((m) => ({ ...m, serie }));
-    this.#store.updateJltMao({ serie });
-    void this.#loadSelectedShotData();
+    this.#setSelection(serie, this.disparoOptions()[0]?.value ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -757,16 +768,17 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   async openMassConfig(): Promise<void> {
+    // Diálogo parte de un formulario limpio: baseline vacío para que solo se envíen los campos rellenados.
     const current: JltMaoMassConfigFields = {
-      velocidadInicial: this.velocidadInicialField(),
-      distanciaPique: this.distanciaPiqueField(),
-      derivaTabular: this.derivaTabularField(),
-      tiempoVuelo: this.tiempoVueloField(),
-      diferenciaAngular: this.diferenciaAngularField(),
-      anguloTiro: this.anguloTiroField(),
-      graduacionEspoleta: this.graduacionEspoletaField(),
-      alturaFuncionamiento: this.alturaFuncionamientoField(),
-      distanciaFuncionamiento: this.distanciaFuncionamientoField(),
+      velocidadInicial: null,
+      distanciaPique: null,
+      derivaTabular: null,
+      tiempoVuelo: null,
+      diferenciaAngular: null,
+      anguloTiro: null,
+      graduacionEspoleta: null,
+      alturaFuncionamiento: null,
+      distanciaFuncionamiento: null,
     };
     const ref = this.#dialog.open<JltMaoMassConfigDialog, unknown, JltMaoMassConfigDialogResult>(
       JltMaoMassConfigDialog,
@@ -782,7 +794,7 @@ export class JltMao extends BaseFormWidgetComponent {
             x: this.#store.maoTopography().xPieza,
             y: this.#store.maoTopography().yPieza,
           },
-          currentPiqueta: this.formModel().piqueta,
+          currentPiqueta: null,
           current,
         },
       },
@@ -823,7 +835,6 @@ export class JltMao extends BaseFormWidgetComponent {
         orientation: result.orientation,
       },
     ];
-    const updatedShotIds: string[] = [];
     for (const group of shotGroups) {
       if (group.shotIds.length === 0) continue;
       const values = {
@@ -837,14 +848,10 @@ export class JltMao extends BaseFormWidgetComponent {
         group.orientation?.lineOfFireOrientation,
       );
       if (!request) continue;
-      const response = await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
-      updatedShotIds.push(...response.updatedShotIds);
+      await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
     }
 
-    const { serie, disparo } = this.formModel();
-    if (serie && disparo && selectedSeries.includes(serie) && updatedShotIds.includes(disparo)) {
-      await this.#loadSelectedShotData();
-    }
+    await this.#loadSelectedShotData();
   }
 
   #getSeriesOrientations(): { seriesId: string; orientations: (number | null)[] }[] {

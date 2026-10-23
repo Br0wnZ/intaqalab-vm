@@ -1,12 +1,12 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { signal } from '@angular/core';
+import { inputBinding, outputBinding, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { fireEvent, render, screen, within } from '@testing-library/angular';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,9 +15,6 @@ import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.
 import type { Configuration } from '../../../utils-models/munitions.model';
 import { createEmptyComponentDetail, createEmptyConfiguration } from '../../../utils-models/munitions.model';
 import { ConfigurationFormComponent } from './configuration-form.component';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const waitFor = async (fn: () => any) => fn();
 
 const defaultImports = [TranslateModule.forRoot()];
 
@@ -158,8 +155,11 @@ describe('ConfigurationFormComponent', () => {
       const { fixture } = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       // Select a munition type first to enable the denomination field
@@ -222,50 +222,112 @@ describe('ConfigurationFormComponent', () => {
       expect(filteredOption).toBeInTheDocument();
     });
 
-    it('should emit changes when lot is modified', async () => {
+    it('should emit the current lot while typing without losing focus', async () => {
       const user = userEvent.setup();
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
-      const lotInput = screen.getByTestId('batch-input');
+      const lotInput = screen.getByRole('textbox', {
+        name: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.LOT_LABEL',
+      });
       await user.clear(lotInput);
       await user.type(lotInput, 'LOTE-001');
-      fireEvent.blur(lotInput);
 
-      await waitFor(() => {
-        expect(configChangeSpy).toHaveBeenCalled();
-        const emittedData = configChangeSpy.mock.calls[0][0];
-        expect(emittedData.batch).toBe('LOTE-001');
-      });
+      expect(lotInput).toHaveFocus();
+      expect(configChangeSpy).toHaveBeenLastCalledWith(expect.objectContaining({ batch: 'LOTE-001' }));
+
+      await user.clear(lotInput);
+
+      expect(lotInput).toHaveFocus();
+      expect(configChangeSpy).toHaveBeenLastCalledWith(expect.objectContaining({ batch: '' }));
     });
 
-    it('should emit changes when max failures number is modified', async () => {
+    it('should emit the current max failures while typing without losing focus', async () => {
       const user = userEvent.setup();
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
-      const maxFailuresInput = screen.getByTestId('max-errors-input');
+      const maxFailuresInput = screen.getByRole('spinbutton', {
+        name: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_LABEL',
+      });
       await user.clear(maxFailuresInput);
       await user.type(maxFailuresInput, '5');
-      fireEvent.blur(maxFailuresInput);
 
-      await waitFor(() => {
-        expect(configChangeSpy).toHaveBeenCalled();
-        const emittedData = configChangeSpy.mock.calls[0][0];
-        expect(emittedData.maxAllowedErrors).toBe(5);
+      expect(maxFailuresInput).toHaveFocus();
+      expect(configChangeSpy).toHaveBeenLastCalledWith(expect.objectContaining({ maxAllowedErrors: 5 }));
+    });
+
+    it('should update the parent model while typing without losing focus', async () => {
+      const user = userEvent.setup();
+      const configuration = signal<Configuration>({ ...defaultConfig, batch: '' });
+
+      await render(
+        `<inta-configuration-form [(config)]="configuration" [configIndex]="0" />
+         <output aria-label="Current lot">{{ configuration().batch }}</output>`,
+        {
+          imports: [...defaultImports, ConfigurationFormComponent],
+          providers: defaultProviders,
+          componentProperties: { configuration },
+        },
+      );
+
+      const lotInput = screen.getByRole('textbox', {
+        name: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.LOT_LABEL',
       });
+      await user.type(lotInput, '12244');
+
+      expect(lotInput).toHaveFocus();
+      expect(configuration().batch).toBe('12244');
+      expect(screen.getByRole('status', { name: 'Current lot' })).toHaveTextContent('12244');
+
+      await user.clear(lotInput);
+
+      expect(lotInput).toHaveFocus();
+      expect(configuration().batch).toBe('');
+      expect(screen.getByRole('status', { name: 'Current lot' })).toHaveTextContent(/^$/);
+    });
+
+    it('should emit the current observations while typing without losing focus', async () => {
+      const user = userEvent.setup();
+      const configChangeSpy = vi.fn();
+
+      await render(ConfigurationFormComponent, {
+        imports: defaultImports,
+        providers: defaultProviders,
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
+      });
+
+      const observationsInput = screen.getByRole('textbox', {
+        name: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OBSERVATIONS_LABEL',
+      });
+      await user.type(observationsInput, 'Updated observations');
+
+      expect(observationsInput).toHaveFocus();
+      expect(configChangeSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ observations: 'Updated observations' }),
+      );
     });
   });
 
@@ -322,8 +384,11 @@ describe('ConfigurationFormComponent', () => {
       await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       const checkbox = within(screen.getByTestId('conditioning-checkbox')).getByRole('checkbox');
@@ -345,8 +410,11 @@ describe('ConfigurationFormComponent', () => {
       const { fixture } = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       const select = document.querySelector('#selectedComponents-0') as HTMLElement;
@@ -418,8 +486,11 @@ describe('ConfigurationFormComponent', () => {
       const renderResult = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: configWithComponents, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => configWithComponents),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       const component = renderResult.fixture.componentInstance;
@@ -577,13 +648,13 @@ describe('ConfigurationFormComponent', () => {
       const { fixture } = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: {
-          config: defaultConfig,
-          configIndex: 0,
-          shots,
-          excludeShotIds: ['shot-2'],
-        },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          inputBinding('shots', () => shots),
+          inputBinding('excludeShotIds', () => ['shot-2']),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       const select = screen.getByTestId('assigned-shots-select');
@@ -615,13 +686,13 @@ describe('ConfigurationFormComponent', () => {
       const { fixture } = await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: {
-          config: defaultConfig,
-          configIndex: 0,
-          shots,
-          excludeShotIds: ['shot-2'],
-        },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          inputBinding('shots', () => shots),
+          inputBinding('excludeShotIds', () => ['shot-2']),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
       const select = screen.getByTestId('assigned-shots-select');
@@ -666,17 +737,21 @@ describe('ConfigurationFormComponent', () => {
       await render(ConfigurationFormComponent, {
         imports: defaultImports,
         providers: defaultProviders,
-        componentInputs: { config: defaultConfig, configIndex: 0 },
-        on: { configChange: configChangeSpy },
+        bindings: [
+          inputBinding('config', () => defaultConfig),
+          inputBinding('configIndex', () => 0),
+          outputBinding('configChange', configChangeSpy),
+        ],
       });
 
-      const clientInput = screen.getByTestId('client-number-input') as HTMLInputElement;
+      const clientInput = screen.getByRole('textbox', {
+        name: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.CLIENT_NUMBER_LABEL',
+      });
       await user.type(clientInput, ',,12,,abc,34,');
 
-      expect(clientInput.value).toBe('12,34,');
-      expect(configChangeSpy).toHaveBeenCalled();
-      const lastEmitted = configChangeSpy.mock.calls[configChangeSpy.mock.calls.length - 1][0];
-      expect(lastEmitted.clientNumber).toBe('12,34,');
+      expect(clientInput).toHaveValue('12,34,');
+      expect(clientInput).toHaveFocus();
+      expect(configChangeSpy).toHaveBeenLastCalledWith(expect.objectContaining({ clientNumber: '12,34,' }));
     });
 
     it('should validate trailing comma in clientNumber', async () => {

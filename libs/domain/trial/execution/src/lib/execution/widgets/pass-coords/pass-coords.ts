@@ -23,7 +23,11 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
+import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 
 interface PassCoordsSelectForm {
   serie: string | null;
@@ -58,7 +62,7 @@ interface PassCoordsSelectForm {
           <div class="flex flex-col gap-0.5">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.SERIE_PLACEHOLDER' | translate }}</mat-label>
-              <mat-select [formField]="selectForm.serie">
+              <mat-select [formField]="selectForm.serie" (selectionChange)="onSerieSelected($event.value)">
                 @for (opt of serieOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -70,7 +74,7 @@ interface PassCoordsSelectForm {
           <div class="flex flex-col gap-0.5">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
               <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.DISPARO_PLACEHOLDER' | translate }}</mat-label>
-              <mat-select [formField]="selectForm.disparo">
+              <mat-select [formField]="selectForm.disparo" (selectionChange)="onDisparoSelected($event.value)">
                 @for (opt of disparoOptions(); track opt.value) {
                   <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                 }
@@ -165,6 +169,7 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
@@ -206,11 +211,32 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   constructor() {
     super();
     effect(() => {
-      const serie = this.#store.activeSerieId();
-      const disparo = this.#store.activeShotId();
-      if (!serie || !disparo) return;
-      untracked(() => this.formModel.set({ serie, disparo }));
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.passCoords().disparoOptions,
+          }),
+      });
+      if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
+      untracked(() => this.formModel.set(selection));
     });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, serie }));
+    this.formModel.update((current) => ({ ...current, disparo: this.disparoOptions()[0]?.value ?? null }));
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, disparo }));
   }
 
   // ── FormWidget implementation ─────────────────────────────────────────────

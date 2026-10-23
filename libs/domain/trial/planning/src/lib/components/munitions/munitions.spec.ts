@@ -48,9 +48,20 @@ function createValidSerie(name: string): Serie {
   };
 }
 
+function createBackendSeries(series: Serie[]): SeriesMunitionsData[] {
+  return series.map((serie) => ({
+    ...serie,
+    configurations: serie.configurations.map((config) => ({
+      ...config,
+      seriesId: serie.seriesId,
+      denomination: config.denomination ? { id: config.denomination, name: config.denomination } : null,
+    })),
+  }));
+}
+
 // Setup
 
-const runSetup = async (options?: { mockDialog?: Partial<MatDialog> }) => {
+const runSetup = async (options?: { mockDialog?: Partial<MatDialog>; munitions?: SeriesMunitionsData[] }) => {
   const catalogData = createMunitionsCatalogTestData();
 
   const mockPlanningStore = createMockPlanningGeneralDataStore({
@@ -59,10 +70,14 @@ const runSetup = async (options?: { mockDialog?: Partial<MatDialog> }) => {
   });
 
   const mockMunitionsService = createMockMunitionsService({
+    munitions: options?.munitions ? { series: options.munitions } : undefined,
     componentTypes: catalogData.componentTypes,
     denominations: catalogData.denominations,
     fuseWorkingModes: catalogData.fuseWorkingModes,
   });
+  if (options?.munitions) {
+    mockMunitionsService.munitionsResource._setStatus('resolved');
+  }
 
   const mockSeriesService = createMockSeriesAndShotsService({
     series: [
@@ -108,6 +123,36 @@ describe('Munitions', () => {
       expect(component).toBeTruthy();
     });
 
+    it('should restore an empty initial configuration for an unsaved series after reloading saved series', async () => {
+      const savedSerie = { ...createValidSerie('Serie A'), seriesId: 'series-1' };
+      const { component, view } = await runSetup({ munitions: createBackendSeries([savedSerie]) });
+
+      const unsavedSerie = component.seriesSignal().find((serie) => serie.seriesId === 'series-2');
+      expect(unsavedSerie?.configurations).toHaveLength(1);
+      expect(unsavedSerie?.configurations[0]).toMatchObject({
+        seriesId: 'series-2',
+        denomination: '',
+        batch: '',
+        clientNumber: '',
+        components: [],
+      });
+      expect(component.seriesSignal()[0]?.configurations[0]?.denomination).toBe('Denom-1');
+      expect(component.hasToBeDisabled()).toBe(true);
+
+      component.resetForm();
+      view.fixture.detectChanges();
+
+      expect(component.seriesSignal().find((serie) => serie.seriesId === 'series-2')?.configurations).toHaveLength(1);
+    });
+
+    it('should preserve an explicitly empty configuration list returned for a series', async () => {
+      const { component } = await runSetup({
+        munitions: [{ seriesId: 'series-2', seriesName: 'Serie B', configurations: [] }],
+      });
+
+      expect(component.seriesSignal().find((serie) => serie.seriesId === 'series-2')?.configurations).toEqual([]);
+    });
+
     it('should render the trial code in the header', async () => {
       await runSetup();
       expect(screen.getByText(createTrial().code)).toBeInTheDocument();
@@ -148,6 +193,37 @@ describe('Munitions', () => {
   // Form state
 
   describe('Form state', () => {
+    it('should disable saving when only an invalid unsaved series has changes', async () => {
+      const savedSerie = { ...createValidSerie('Serie A'), seriesId: 'series-1' };
+      const { component, view } = await runSetup({ munitions: createBackendSeries([savedSerie]) });
+
+      component.seriesSignal.update((series) =>
+        series.map((serie) =>
+          serie.seriesId === 'series-2'
+            ? { ...serie, configurations: serie.configurations.map((config) => ({ ...config, batch: 'LOT-002' })) }
+            : serie,
+        ),
+      );
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(true);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+    });
+
+    it('should enable saving when an unsaved series becomes valid', async () => {
+      const savedSerie = { ...createValidSerie('Serie A'), seriesId: 'series-1' };
+      const { component, view } = await runSetup({ munitions: createBackendSeries([savedSerie]) });
+
+      component.seriesSignal.update((series) =>
+        series.map((serie) =>
+          serie.seriesId === 'series-2' ? { ...createValidSerie('Serie B'), seriesId: serie.seriesId } : serie,
+        ),
+      );
+      view.fixture.detectChanges();
+
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
+    });
+
     it('should report the form as valid when all required fields are filled', async () => {
       const { component, view } = await runSetup();
 
@@ -562,6 +638,254 @@ describe('Munitions', () => {
   // Save configuration
 
   describe('Save configuration', () => {
+    it.each([false, true])(
+      'should discard local selections when an invalid series is returned empty: %s',
+      async (returnsEmptySeries) => {
+        const { component, view, mockMunitionsService } = await runSetup({ munitions: [] });
+        const validSerie = { ...createValidSerie('Serie A'), seriesId: 'series-1' };
+        const draftSerie: Serie = {
+          seriesId: 'series-2',
+          seriesName: 'Serie B',
+          configurations: [
+            {
+              ...createEmptyConfiguration('series-2'),
+              selectedComponents: ['espoleta'],
+              observations: 'Pending draft',
+            },
+          ],
+        };
+        component.seriesSignal.set([validSerie, draftSerie]);
+        view.fixture.detectChanges();
+        component.saveForm();
+
+        expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith('trial-123', {
+          configurations: mapLocalToRequest([validSerie]),
+        });
+
+        const editedSerie = {
+          ...validSerie,
+          configurations: validSerie.configurations.map((config) => ({ ...config, observations: 'Edited during PUT' })),
+        };
+        component.seriesSignal.set([editedSerie, draftSerie]);
+        mockMunitionsService.updateMunitionsResource._setStatus('resolved');
+        view.fixture.detectChanges();
+
+        expect(mockMunitionsService.munitionsResource.reload).toHaveBeenCalledOnce();
+        mockMunitionsService.munitionsResource._setStatus('reloading');
+        view.fixture.detectChanges();
+        expect(structuredClone(component.seriesSignal())).toEqual(structuredClone([editedSerie, draftSerie]));
+
+        const savedSeries = createBackendSeries([validSerie]);
+        if (returnsEmptySeries) {
+          savedSeries.push({ seriesId: 'series-2', seriesName: 'Serie B', configurations: [] });
+        }
+        mockMunitionsService.munitionsResource._setValue({ series: savedSeries });
+        mockMunitionsService.munitionsResource._setStatus('resolved');
+        view.fixture.detectChanges();
+
+        expect(component.seriesSignal()[1]?.configurations).toHaveLength(returnsEmptySeries ? 0 : 1);
+        expect(
+          component.seriesSignal()[1]?.configurations.map((configuration) => ({
+            selectedComponents: configuration.selectedComponents,
+            observations: configuration.observations,
+          })),
+        ).toEqual(returnsEmptySeries ? [] : [{ selectedComponents: [], observations: '' }]);
+        expect(component.seriesSignal()[0]?.configurations[0]?.observations).toBe('');
+        expect(component.isFormValid()).toBe(true);
+        expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+        component.resetForm();
+        view.fixture.detectChanges();
+
+        expect(component.seriesSignal()[0]?.configurations[0]?.id).toBe(validSerie.configurations[0]?.id);
+        expect(component.seriesSignal()[0]?.configurations[0]?.observations).toBe('');
+        expect(component.seriesSignal()[1]?.configurations).toHaveLength(returnsEmptySeries ? 0 : 1);
+        if (!returnsEmptySeries) {
+          expect(component.seriesSignal()[1]?.configurations[0]).toMatchObject({
+            seriesId: 'series-2',
+            denomination: '',
+            observations: '',
+          });
+        }
+        expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+      },
+    );
+
+    it.each([
+      { maxAllowedErrors: 0, clientNumber: '1,' },
+      { maxAllowedErrors: 0, clientNumber: '1,2' },
+      { maxAllowedErrors: 0, clientNumber: '', denomination: { id: '', name: '' } },
+    ])('should block a series without a main denomination or valid selected components: %j', async (invalidFields) => {
+      const { component, view, mockMunitionsService } = await runSetup();
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const serie = createValidSerie('Serie 1');
+      serie.configurations[0].selectedComponents = ['espoleta'];
+      serie.configurations[0].components = [
+        { ...createEmptyComponentDetail('espoleta'), denomination: { id: 'denom-1', name: 'Espoleta' } },
+      ];
+      component.loadConfiguration([serie]);
+      component.seriesSignal.update((series) =>
+        series.map((current) => ({
+          ...current,
+          configurations: current.configurations.map((config) => ({
+            ...config,
+            denomination: '',
+            components: config.components.map((detail) => ({ ...detail, ...invalidFields })),
+          })),
+        })),
+      );
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { maxAllowedErrors: -1, clientNumber: '', componentDenomination: 'denom-1' },
+      { maxAllowedErrors: 100, clientNumber: '', componentDenomination: 'denom-1' },
+      { maxAllowedErrors: 0, clientNumber: '1,', componentDenomination: 'denom-1' },
+      { maxAllowedErrors: 0, clientNumber: '1,2', componentDenomination: 'denom-1' },
+      { maxAllowedErrors: 0, clientNumber: '', componentDenomination: '' },
+    ])('should preserve original validation when the main denomination is filled: %j', async (fields) => {
+      const { component, view, mockMunitionsService } = await runSetup();
+      const serie = createValidSerie('Serie 1');
+      const updatedSeries = [
+        {
+          ...serie,
+          configurations: serie.configurations.map((config) => ({
+            ...config,
+            maxAllowedErrors: fields.maxAllowedErrors,
+            selectedComponents: ['espoleta'],
+            components: [
+              {
+                ...createEmptyComponentDetail('espoleta'),
+                maxAllowedErrors: fields.maxAllowedErrors,
+                clientNumber: fields.clientNumber,
+                denomination: { id: fields.componentDenomination, name: 'Espoleta' },
+              },
+            ],
+          })),
+        },
+      ];
+      component.loadConfiguration([serie]);
+      component.seriesSignal.set(updatedSeries);
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(true);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith('trial-123', {
+        configurations: mapLocalToRequest(updatedSeries),
+      });
+    });
+
+    it('should keep save disabled when every series is invalid', async () => {
+      const { component, view, mockMunitionsService } = await runSetup();
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      component.seriesSignal.set([
+        { ...createEmptySerie('Serie 1'), configurations: [createEmptyConfiguration()] },
+        { ...createEmptySerie('Serie 2'), configurations: [createEmptyConfiguration()] },
+      ]);
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(false);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).not.toHaveBeenCalled();
+    });
+
+    it.each(['empty', 'partial'])('should save only valid new series alongside an %s configuration', async (state) => {
+      const { component, view, mockMunitionsService } = await runSetup();
+      const validSerie = createValidSerie('Serie 1');
+      const invalidSerie: Serie = {
+        ...createEmptySerie('Serie 2'),
+        configurations: [{ ...createEmptyConfiguration(), denomination: state === 'partial' ? 'Denom-2' : '' }],
+      };
+      component.seriesSignal.set([validSerie, invalidSerie]);
+      view.fixture.detectChanges();
+
+      expect(component.seriesForm().valid()).toBe(false);
+      expect(component.isFormValid()).toBe(true);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith('trial-123', {
+        configurations: mapLocalToRequest([validSerie]),
+      });
+    });
+
+    it('should exclude an entire new series when one of its configurations is invalid', async () => {
+      const { component, view, mockMunitionsService } = await runSetup();
+      const validSerie = createValidSerie('Serie 1');
+      const invalidSerie = createValidSerie('Serie 2');
+      invalidSerie.configurations.push(createEmptyConfiguration());
+      component.seriesSignal.set([validSerie, invalidSerie]);
+      view.fixture.detectChanges();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith('trial-123', {
+        configurations: mapLocalToRequest([validSerie]),
+      });
+    });
+
+    it('should save only valid loaded series and send all series once every series is valid', async () => {
+      const loadedSeries = [
+        { ...createValidSerie('Serie A'), seriesId: 'series-1' },
+        { ...createValidSerie('Serie B'), seriesId: 'series-2' },
+      ];
+      const { component, view, mockMunitionsService } = await runSetup({
+        munitions: createBackendSeries(loadedSeries),
+      });
+
+      component.seriesSignal.update((series) =>
+        series.map((serie, index) =>
+          index === 0
+            ? { ...serie, configurations: serie.configurations.map((config) => ({ ...config, denomination: '' })) }
+            : {
+                ...serie,
+                configurations: serie.configurations.map((config) => ({ ...config, observations: 'Updated' })),
+              },
+        ),
+      );
+      view.fixture.detectChanges();
+
+      expect(component.seriesForm().valid()).toBe(false);
+      expect(component.isFormValid()).toBe(true);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenCalledWith('trial-123', {
+        configurations: mapLocalToRequest(component.seriesSignal().filter((serie) => serie.seriesId === 'series-2')),
+      });
+
+      component.seriesSignal.set(
+        loadedSeries.map((serie) => ({
+          ...serie,
+          configurations: serie.configurations.map((config) => ({ ...config, observations: 'Updated' })),
+        })),
+      );
+      view.fixture.detectChanges();
+
+      expect(component.isFormValid()).toBe(true);
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
+
+      component.saveForm();
+
+      expect(mockMunitionsService.updateMunitions).toHaveBeenLastCalledWith('trial-123', {
+        configurations: mapLocalToRequest(component.seriesSignal()),
+      });
+    });
+
     it('should call saveForm without error when form is valid', async () => {
       const { component, view } = await runSetup();
 

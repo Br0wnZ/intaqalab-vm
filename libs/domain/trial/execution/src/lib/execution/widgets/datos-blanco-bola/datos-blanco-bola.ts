@@ -1,5 +1,15 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,6 +31,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import {
   AplicarConfigMasivaDialog,
@@ -62,7 +73,7 @@ interface SelectorFormModel {
         <!-- Serie -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.SERIE_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectorForm.serie">
+          <mat-select [formField]="selectorForm.serie" (selectionChange)="onSerieSelected($event.value)">
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -72,7 +83,7 @@ interface SelectorFormModel {
         <!-- Disparo -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.DISPARO_PLACEHOLDER' | translate }}</mat-label>
-          <mat-select [formField]="selectorForm.disparo">
+          <mat-select [formField]="selectorForm.disparo" (selectionChange)="onDisparoSelected($event.value)">
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -216,6 +227,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   // ── Unit options ──────────────────────────────────────────────────────────
   protected readonly mOptions = [{ value: 'm', label: 'm' }];
@@ -290,13 +302,55 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
     super();
     this.#applyFieldsFromStore();
     this.#savedSnapshot.set(this.#currentFieldSnapshot());
+
+    effect(() => {
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.datosBlancoBola().disparoOptions,
+          }),
+      });
+      if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
+      untracked(() => this.selectorFormModel.set(selection));
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
+    this.selectorFormModel.update((current) => ({ ...current, serie }));
+    this.selectorFormModel.update((current) => ({
+      ...current,
+      disparo: this.disparoOptions()[0]?.value ?? null,
+    }));
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
+    this.selectorFormModel.update((current) => ({ ...current, disparo }));
   }
 
   setCurrentShot(): void {
+    this.#hasManualSelection = false;
     this.selectorFormModel.update((m) => ({
       ...m,
-      serie: this.#store.activeSerieId() ?? m.serie,
-      disparo: this.#store.activeShotId() ?? m.disparo,
+      ...resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.datosBlancoBola().disparoOptions,
+          }),
+      }),
     }));
   }
 

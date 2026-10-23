@@ -31,7 +31,7 @@ import type { ShotTopographyResponse } from '../../models/shot-topography.models
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { mapSelectedShotStatus } from '../utils/selection-options';
+import { mapSelectedShotStatus, resolveInitialShotSelection } from '../utils/selection-options';
 import {
   type InputFieldValue,
   buildDisparoOptions,
@@ -314,8 +314,19 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions() ?? [],
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.topographyIntroduction().disparoOptions,
+          }),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -335,8 +346,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
 
   onSerieSelected(serie: string | null): void {
     this.formModel.update((m) => ({ ...m, serie }));
-    this.#store.updateTopographyIntroduction({ serie });
-    void this.#loadSelectedShotData();
+    this.#setSelection(serie, this.disparoOptions()?.[0]?.value ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {

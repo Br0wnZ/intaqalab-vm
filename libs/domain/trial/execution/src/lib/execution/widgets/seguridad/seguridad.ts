@@ -1,5 +1,15 @@
 import type { Signal } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +31,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
@@ -77,7 +88,7 @@ interface SeguridadSelectsModel {
       <div class="flex gap-2 shrink-0">
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.SERIE_LABEL' | translate }}</mat-label>
-          <mat-select [formField]="myForm.serie">
+          <mat-select [formField]="myForm.serie" (selectionChange)="onSerieSelected($event.value)">
             @for (opt of serieOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -85,7 +96,7 @@ interface SeguridadSelectsModel {
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 small-select">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.DISPARO_LABEL' | translate }}</mat-label>
-          <mat-select [formField]="myForm.disparo">
+          <mat-select [formField]="myForm.disparo" (selectionChange)="onDisparoSelected($event.value)">
             @for (opt of disparoOptions(); track opt.value) {
               <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
@@ -353,6 +364,7 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   // ── UI state ──────────────────────────────────────────────────────────────
   protected readonly activeTab = signal<SeguridadTab>('convencional');
@@ -419,6 +431,40 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
     valid: this.myForm().valid(),
     hasChanges: this.isDirty(),
   }));
+
+  constructor() {
+    super();
+    effect(() => {
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.seguridad().disparoOptions,
+          }),
+      });
+      if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
+      untracked(() => {
+        this.formModel.update((current) => ({ ...current, ...selection }));
+        this.#savedSnapshot.set(this.#currentSnapshot());
+      });
+    });
+  }
+
+  onSerieSelected(serie: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, serie }));
+    this.formModel.update((current) => ({ ...current, disparo: this.disparoOptions()[0]?.value ?? null }));
+  }
+
+  onDisparoSelected(disparo: string | null): void {
+    this.#hasManualSelection = true;
+    this.formModel.update((current) => ({ ...current, disparo }));
+  }
 
   setCurrentShot(): void {
     this.formModel.update((m) => ({

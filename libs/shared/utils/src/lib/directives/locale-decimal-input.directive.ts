@@ -141,17 +141,26 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
 
   @HostListener('focus')
   onFocus(): void {
+    const el = this.#el.nativeElement;
+    if (el.readOnly || el.disabled) return;
+
     this.#isFocused = true;
     if (this.#internalValue !== null && !isNaN(this.#internalValue)) {
-      this.#el.nativeElement.value = this.#toEditString(this.#internalValue);
+      el.value = this.#toEditString(this.#internalValue);
     }
   }
 
   @HostListener('blur')
   onBlur(): void {
+    const el = this.#el.nativeElement;
+    if (el.readOnly || el.disabled) {
+      this.#isFocused = false;
+      return;
+    }
+
     this.#isFocused = false;
     this.#onTouched();
-    const raw = this.#el.nativeElement.value;
+    const raw = el.value;
     const parsed = this.#parseLocaleString(raw);
     if (!this.#isSignAllowed(raw, parsed)) {
       this.#renderDisplayValue();

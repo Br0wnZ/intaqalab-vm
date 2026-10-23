@@ -176,8 +176,13 @@ export class GrubbsCriterionWidget extends BaseFormWidgetComponent {
     super();
     effect(() => {
       const activeSerieId = this.#store.activeSerieId();
-      if (!activeSerieId) return;
-      untracked(() => this.formModel.update((value) => ({ ...value, serie: activeSerieId })));
+      const seriesOptions = this.serieOptions();
+      const selectedSerie =
+        activeSerieId && seriesOptions.some((serie) => serie.value === activeSerieId)
+          ? activeSerieId
+          : seriesOptions[0]?.value;
+      if (!selectedSerie) return;
+      untracked(() => this.formModel.update((value) => ({ ...value, serie: selectedSerie })));
     });
 
     effect(() => {

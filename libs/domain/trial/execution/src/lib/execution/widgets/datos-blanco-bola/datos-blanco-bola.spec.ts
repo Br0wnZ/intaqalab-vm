@@ -96,7 +96,7 @@ describe('DatosBlancoBola', () => {
     fixture.componentInstance.setCurrentShot();
     const { serie, disparo } = fixture.componentInstance['selectorFormModel']();
     expect(serie).toBe(store.activeSerieId() ?? store.datosBlancoBola().serie);
-    expect(disparo).toBe(store.activeShotId() ?? store.datosBlancoBola().disparo);
+    expect(disparo).toBe(store.activeShotId() ?? 'disparo-1');
   });
 
   it('datosBlancoBola state is defined in the store', async () => {

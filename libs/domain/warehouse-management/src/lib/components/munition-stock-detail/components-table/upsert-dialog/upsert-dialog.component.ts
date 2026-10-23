@@ -188,7 +188,7 @@ export class UpsertDialogComponent {
       this.formModel.set({
         batch: item.batch || '',
         munitionTypeId: item.munitionType.id || '',
-        denominationId: item.denomination.id || '',
+        denominationId: { id: item.denomination.id, name: item.denomination.name },
       });
     }
 

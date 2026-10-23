@@ -1,6 +1,77 @@
-import type { PlanningSeriesItem, PlanningSeriesShotItem, TrialShotsHandle } from '@intaqalab/data-access-planning';
+import {
+  type PlanningSeriesItem,
+  type PlanningSeriesShotItem,
+  type TrialShotsHandle,
+  formatShotLabel,
+} from '@intaqalab/data-access-planning';
 
 export type PlanningSeriesSource = PlanningSeriesItem[] | TrialShotsHandle | null | undefined;
+
+export interface ShotSelectionOption {
+  value: string;
+  label: string;
+}
+
+export interface ShotSelection {
+  serie: string | null;
+  disparo: string | null;
+}
+
+export function mapRadarSeriesToOptions(
+  responseSeries: Array<{ seriesId: string }>,
+  planningSeries: PlanningSeriesItem[],
+): ShotSelectionOption[] {
+  return responseSeries
+    .map((serie, responseIndex) => {
+      const planningIndex = planningSeries.findIndex((item) => item.id === serie.seriesId);
+      const plannedSerie = planningSeries[planningIndex];
+
+      return {
+        value: serie.seriesId,
+        label: `Serie ${plannedSerie?.executionOrder ?? responseIndex + 1}`,
+        order: plannedSerie?.executionOrder ?? (planningIndex >= 0 ? planningIndex + 1 : responseIndex + 1),
+        responseIndex,
+      };
+    })
+    .sort((left, right) => left.order - right.order || left.responseIndex - right.responseIndex)
+    .map(({ value, label }) => ({ value, label }));
+}
+
+export function mapRadarShotsToOptions(
+  responseShots: Array<{ shotId: string }>,
+  planningShots: PlanningSeriesShotItem[],
+): ShotSelectionOption[] {
+  return responseShots
+    .map((shot, responseIndex) => {
+      const planningIndex = planningShots.findIndex((item) => item.id === shot.shotId);
+      const plannedShot = planningShots[planningIndex];
+      const order = plannedShot?.globalNumber ?? (planningIndex >= 0 ? planningIndex + 1 : responseIndex + 1);
+
+      return {
+        value: shot.shotId,
+        label: formatShotLabel(plannedShot?.globalNumber, planningIndex >= 0 ? planningIndex : responseIndex),
+        order,
+        responseIndex,
+      };
+    })
+    .sort((left, right) => left.order - right.order || left.responseIndex - right.responseIndex)
+    .map(({ value, label }) => ({ value, label }));
+}
+
+export function resolveInitialShotSelection(params: {
+  seriesOptions: ShotSelectionOption[];
+  activeSerieId: string | null;
+  activeShotId: string | null;
+  getShotOptions: (serieId: string) => ShotSelectionOption[];
+}): ShotSelection {
+  const { seriesOptions, activeSerieId, activeShotId, getShotOptions } = params;
+  if (activeSerieId && activeShotId) {
+    return { serie: activeSerieId, disparo: activeShotId };
+  }
+
+  const serie = seriesOptions[0]?.value ?? null;
+  return { serie, disparo: serie ? (getShotOptions(serie)[0]?.value ?? null) : null };
+}
 
 function isTrialShotsHandle(source: unknown): source is TrialShotsHandle {
   return (

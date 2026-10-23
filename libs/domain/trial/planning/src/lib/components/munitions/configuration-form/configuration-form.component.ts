@@ -9,7 +9,7 @@ import {
   inject,
   input,
   linkedSignal,
-  output,
+  model,
   signal,
   untracked,
   viewChild,
@@ -91,7 +91,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [formField]="configForm.denomination"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.OPTIONS.SELECT' | translate"
               [id]="'denomination-' + configIndex()"
-              (selectionChange)="emitChanges()"
               (openedChange)="onDenominationPanelToggle($event)"
             >
               <div class="px-3 py-2">
@@ -132,7 +131,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [formField]="configForm.batch"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.LOT_PLACEHOLDER' | translate"
               [id]="'batch-' + configIndex()"
-              (blur)="emitChanges()"
             />
           </mat-form-field>
         </div>
@@ -189,7 +187,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [formField]="configForm.maxAllowedErrors"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_PLACEHOLDER' | translate"
               [id]="'maxAllowedErrors-' + configIndex()"
-              (blur)="emitChanges()"
             />
           </mat-form-field>
         </div>
@@ -208,7 +205,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.CLIENT' | translate"
               [id]="'clientNumber-' + configIndex()"
               (input)="onClientNumberInput($event)"
-              (blur)="emitChanges()"
             />
             @if (configForm.clientNumber().touched() && configForm.clientNumber().errors()) {
               @for (error of configForm.clientNumber().errors(); track error) {
@@ -231,7 +227,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
             rows="2"
             [formField]="configForm.observations"
             [id]="'observations-' + configIndex()"
-            (blur)="emitChanges()"
           ></textarea>
         </mat-form-field>
       </div>
@@ -395,12 +390,11 @@ export class ConfigurationFormComponent {
   readonly componentSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('componentSearchInput');
   readonly #munitionsStore = inject(MunitionsStore);
 
-  readonly config = input.required<Configuration>();
+  readonly config = model.required<Configuration>();
   readonly configIndex = input.required<number>();
   readonly shots = input<Shot[]>([]);
   readonly excludeShotIds = input<string[]>([]);
   readonly readonly = input<boolean>(false);
-  readonly configChange = output<Configuration>();
 
   readonly componentTypes = this.#munitionsStore.componentTypes;
   readonly munitionTypes = this.#munitionsStore.munitionTypes;
@@ -428,7 +422,7 @@ export class ConfigurationFormComponent {
       return previous.value;
     },
   });
-  readonly formModel = linkedSignal(() => this.config());
+  readonly formModel = this.config;
   readonly denominationSearchTerm = signal('');
   readonly componentSearchTerm = signal('');
 
@@ -546,7 +540,6 @@ export class ConfigurationFormComponent {
             ...current,
             assignedShotIds: eligibleIds,
           }));
-          this.emitChanges();
         });
       }
     });
@@ -620,12 +613,7 @@ export class ConfigurationFormComponent {
         ...current,
         clientNumber: sanitized,
       }));
-      this.emitChanges();
     }
-  }
-
-  emitChanges(): void {
-    this.configChange.emit(this.formModel());
   }
 
   onDenominationSearchInput(event: Event): void {
@@ -667,7 +655,6 @@ export class ConfigurationFormComponent {
     // Clear denomination when type changes: old denomination would not belong
     // to the new type, keeping it would make the parent form falsely valid.
     this.formModel.update((c) => ({ ...c, denomination: '' }));
-    this.emitChanges();
   }
 
   #normalizeText(value: string): string {
@@ -687,7 +674,6 @@ export class ConfigurationFormComponent {
       ...current,
       assignedShotIds: ids,
     }));
-    this.emitChanges();
   }
 
   onAssignedShotsSelectChange(ids: string[]): void {
@@ -698,7 +684,6 @@ export class ConfigurationFormComponent {
       ...current,
       assignedShotIds: ids,
     }));
-    this.emitChanges();
   }
 
   onConditioningToggle(enabled: boolean): void {
@@ -711,7 +696,6 @@ export class ConfigurationFormComponent {
         ? { temperature: undefined, tolerance: undefined, timeMin: undefined, timeMax: undefined }
         : undefined,
     }));
-    this.emitChanges();
   }
 
   onConditioningChange(data: ReconditioningData): void {
@@ -722,7 +706,6 @@ export class ConfigurationFormComponent {
       ...current,
       reconditioning: data,
     }));
-    this.emitChanges();
   }
 
   onComponentsChange(components: string[]): void {
@@ -777,7 +760,6 @@ export class ConfigurationFormComponent {
       selectedComponents: updatedSelectedComponents,
       components: filteredComponents,
     }));
-    this.emitChanges();
   }
 
   removeMainPowder(): void {
@@ -836,7 +818,6 @@ export class ConfigurationFormComponent {
         components: updatedComponents,
       };
     });
-    this.emitChanges();
   }
 
   removeComponent(component: string): void {
@@ -872,7 +853,6 @@ export class ConfigurationFormComponent {
         components: remainingComponents,
       };
     });
-    this.emitChanges();
   }
 
   getComponentDetail(componentType: string): ComponentDetail {
@@ -899,7 +879,6 @@ export class ConfigurationFormComponent {
         components: updatedComponents,
       };
     });
-    this.emitChanges();
   }
 
   onAddPowder(_componentType: string): void {
@@ -943,8 +922,6 @@ export class ConfigurationFormComponent {
       selectedComponents: updatedSelected,
       components: [...current.components, newPowderDetail],
     }));
-
-    this.emitChanges();
   }
 
   onPowderDetailChange(powderType: string, detail: ComponentDetail): void {
@@ -963,6 +940,5 @@ export class ConfigurationFormComponent {
         components: updatedComponents,
       };
     });
-    this.emitChanges();
   }
 }

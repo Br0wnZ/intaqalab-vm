@@ -16,7 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import { PlanningConditionsService, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -30,7 +30,11 @@ import type { ShotMaoTopographyResponse } from '../../models/shot-mao-topography
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { buildDisparoOptions, mapPlanningSeriesToOptions } from '../utils/selection-options';
+import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 import type {
   MaoTopographyMassConfigDialogData,
   MaoTopographyMassConfigDialogResult,
@@ -46,6 +50,7 @@ interface MaoTopographySelectForm {
 
 @Component({
   selector: 'inta-mao-topography',
+  providers: [PlanningConditionsService],
   imports: [
     FormField,
     ReadonlyContentDirective,
@@ -181,6 +186,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
+  readonly #conditionsService = inject(PlanningConditionsService);
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
@@ -192,7 +198,19 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly observadorOptions = computed(() => this.#store.maoTopography().observadorOptions);
-  protected readonly blancoEnabled = computed(() => this.#store.maoTopography().blancoEnabled);
+  protected readonly blancoEnabled = computed(() => {
+    const { serie, disparo } = this.formModel();
+    const resource = this.#conditionsService.conditionsResource;
+    if (!serie || !disparo || resource.isLoading() || resource.error() || !resource.hasValue()) {
+      return false;
+    }
+    return Boolean(
+      resource
+        .value()
+        .series.find((series) => series.seriesId === serie)
+        ?.shots.find((shot) => shot.shotId === disparo)?.targetTypeId,
+    );
+  });
   protected readonly serieOptions = computed(() =>
     mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries(), []),
   );
@@ -254,8 +272,18 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()?.[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()?.[0]?.value ?? null;
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions() ?? [],
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+          }),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -303,6 +331,9 @@ export class MaoTopography extends BaseFormWidgetComponent {
     if (!fireTrialId || !serie || !disparo) {
       return;
     }
+
+    this.#conditionsService.load(fireTrialId);
+    this.#conditionsService.reload();
 
     try {
       const response = await this.#executionService.fetchShotMaoTopography(fireTrialId, serie, disparo);

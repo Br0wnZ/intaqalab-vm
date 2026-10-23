@@ -32,6 +32,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
+import { resolveInitialShotSelection } from '../utils/selection-options';
 import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
 import { MassiveConfigDialog } from './massive-config-dialog';
 import {
@@ -250,14 +251,16 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     ),
   );
 
-  protected readonly disparoOptions = computed(() =>
-    buildDisparoOptions({
-      selectedSerie: this.selectorFormModel().serie,
+  #buildDisparoOptions(selectedSerie: string | null) {
+    return buildDisparoOptions({
+      selectedSerie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
       storedOptions: this.#store.munitionIntroduction().disparoOptions,
-    }),
-  );
+    });
+  }
+
+  protected readonly disparoOptions = computed(() => this.#buildDisparoOptions(this.selectorFormModel().serie));
 
   protected readonly selectedShotProgress = computed(() => {
     const { serie, disparo } = this.selectorFormModel();
@@ -341,8 +344,13 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) => this.#buildDisparoOptions(serieId),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -392,23 +400,15 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   }
 
   onSerieSelected(serie: string | null): void {
-    const current = this.selectorFormModel();
-    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : null;
-
-    this.selectorFormModel.set({
-      serie,
-      disparo,
-    });
+    const disparo = this.#buildDisparoOptions(serie)[0]?.value ?? null;
+    this.selectorFormModel.set({ serie, disparo });
     this.#syncSelectionToStore(serie, disparo);
     void this.#loadSelectedShotData();
   }
 
   onDisparoSelected(disparo: string | null): void {
     const current = this.selectorFormModel();
-    this.selectorFormModel.set({
-      ...current,
-      disparo,
-    });
+    this.selectorFormModel.set({ ...current, disparo });
     this.#syncSelectionToStore(current.serie, disparo);
     void this.#loadSelectedShotData();
   }
@@ -597,18 +597,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       serie,
       disparo,
     });
-  }
-
-  #isShotInSerie(disparo: string | null, serie: string | null): boolean {
-    if (!disparo || !serie) {
-      return false;
-    }
-
-    return (
-      this.#store
-        .executionProgress()
-        ?.series.some((s) => s.seriesId === serie && s.shots.some((shot) => shot.shotId === disparo)) ?? false
-    );
   }
 
   #applyRemoteShotData(response: ShotMunitionResponse): void {

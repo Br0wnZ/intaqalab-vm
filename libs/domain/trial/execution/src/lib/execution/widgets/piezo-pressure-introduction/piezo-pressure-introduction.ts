@@ -40,6 +40,7 @@ import {
   mapSelectedShotStatus,
   mapSelectedShotStatusClass,
   mapSelectedShotStatusLabel,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
 import {
@@ -421,8 +422,19 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
-      const activeSerieId = this.#store.activeSerieId() ?? this.serieOptions()[0]?.value ?? null;
-      const activeShotId = this.#store.activeShotId() ?? this.disparoOptions()[0]?.value ?? null;
+      const selection = resolveInitialShotSelection({
+        seriesOptions: this.serieOptions(),
+        activeSerieId: this.#store.activeSerieId(),
+        activeShotId: this.#store.activeShotId(),
+        getShotOptions: (serieId) =>
+          buildDisparoOptions({
+            selectedSerie: serieId,
+            executionProgress: this.#store.executionProgress(),
+            planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+            storedOptions: this.#store.piezoPressureIntroduction().disparoOptions,
+          }),
+      });
+      const { serie: activeSerieId, disparo: activeShotId } = selection;
 
       if (!fireTrialId || !activeSerieId || !activeShotId) {
         return;
@@ -443,17 +455,8 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   // ── Handlers de selección ────────────────────────────────────────────────────
 
   onSerieSelected(serie: string | null): void {
-    const current = this.selectorFormModel();
     const shotsInSerie = this.#getShotsForSerie(serie);
-    const disparo = this.#isShotInSerie(current.disparo, serie) ? current.disparo : (shotsInSerie[0] ?? null);
-
-    this.selectorFormModel.set({
-      serie,
-      disparo,
-    });
-
-    this.#syncSelectionToStore(serie, disparo);
-    void this.loadSelectedShotData();
+    this.#setSelection(serie, shotsInSerie[0] ?? null);
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -490,13 +493,6 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       return planningShots.map((s) => s.id);
     }
     return this.#store.piezoPressureIntroduction().disparoOptions.map((o) => o.value);
-  }
-
-  #isShotInSerie(disparo: string | null, serieId: string | null): boolean {
-    if (!disparo || !serieId) {
-      return false;
-    }
-    return this.#getShotsForSerie(serieId).includes(disparo);
   }
 
   // ── Handlers de cambios de modelos ───────────────────────────────────────────

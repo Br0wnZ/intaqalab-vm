@@ -131,10 +131,11 @@ describe('InputSelect', () => {
     });
   });
 
-  it('should make the projected input read-only when the component is read-only', async () => {
+  it('should disable the projected input when the component is read-only', async () => {
     await render(ProjectedInputHost);
 
     expect(screen.getByRole('textbox')).toHaveProperty('readOnly', true);
+    expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
   it('should allow the projected input to shrink alongside the unit selector', async () => {

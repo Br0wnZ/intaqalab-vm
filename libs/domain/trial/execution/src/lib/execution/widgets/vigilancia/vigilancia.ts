@@ -1,6 +1,16 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +20,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { VigilanciaRow, VigilanciaState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -203,6 +212,7 @@ export class VigilanciaWidget extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
+  #hasManualSerieSelection = false;
 
   /** Transient loading state */
   protected readonly refreshing = signal(false);
@@ -213,6 +223,20 @@ export class VigilanciaWidget extends BaseFormWidgetComponent {
   protected readonly velocidadUnit = computed(() => this.#store.vigilancia().velocidadUnit);
   protected readonly presionUnit = computed(() => this.#store.vigilancia().presionUnit);
   protected readonly lastChecked = computed(() => this.#store.vigilancia().lastChecked);
+
+  constructor() {
+    super();
+    effect(() => {
+      const seriesOptions = this.serieOptions();
+      const activeSerieId = this.#store.activeSerieId();
+      const serie =
+        activeSerieId && seriesOptions.some((option) => option.value === activeSerieId)
+          ? activeSerieId
+          : seriesOptions[0]?.value;
+      if (this.#hasManualSerieSelection || !serie || serie === this.serie()) return;
+      untracked(() => this.#store.updateVigilancia({ serie } satisfies Partial<VigilanciaState>));
+    });
+  }
 
   // ── Unit options (static) ────────────────────────────────────────────────
   protected readonly velocidadUnitOptions: { value: string; label: string }[] = [
@@ -270,6 +294,7 @@ export class VigilanciaWidget extends BaseFormWidgetComponent {
 
   // ── Event handlers ───────────────────────────────────────────────────────
   onSerieChange(serie: string | null): void {
+    this.#hasManualSerieSelection = true;
     this.#store.updateVigilancia({ serie } satisfies Partial<VigilanciaState>);
   }
 

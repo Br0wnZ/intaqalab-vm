@@ -110,7 +110,7 @@ describe('UpsertDialogComponent', () => {
         id: 'comp-1',
         batch: 'Lote-123',
         munitionType: { id: '1', name: 'Type 1' },
-        denomination: { id: 'd1', name: 'DenominaciÃ³n 1' },
+        denomination: { id: 'd1', name: 'Denominación 1' },
         quantity: 5,
       },
       munitionTypeList: mockMunitionTypeList,
@@ -151,7 +151,7 @@ describe('UpsertDialogComponent', () => {
         expect.objectContaining({
           batch: 'Lote-123',
           munitionTypeId: '1',
-          denominationId: 'd1',
+          denominationId: { id: 'd1', name: 'Denominación 1' },
         }),
       );
     });

@@ -22,12 +22,15 @@ describe('jlt-shot-data.mapper', () => {
     it('converts number to field structure', () => {
       expect(numToField(25, 'mm')).toEqual({ value: '25', unit: 'mm' });
       expect(numToField(0, 'mm')).toEqual({ value: '0', unit: 'mm' });
+      expect(numToField(12.5, 'mm', 'es-ES')).toEqual({ value: '12,5', unit: 'mm' });
+      expect(numToField(12.5, 'mm', 'en-US')).toEqual({ value: '12.5', unit: 'mm' });
       expect(numToField(null, 'mm')).toBeNull();
       expect(numToField(undefined, 'mm')).toBeNull();
     });
 
     it('parses valid numeric field to float', () => {
       expect(parseNum({ value: '12.5', unit: 'mm' })).toBe(12.5);
+      expect(parseNum({ value: '12,5', unit: 'mm' })).toBe(12.5);
       expect(parseNum({ value: '0', unit: 'mm' })).toBe(0);
       expect(parseNum(null)).toBeNull();
       expect(parseNum({ value: '', unit: 'mm' })).toBeNull();

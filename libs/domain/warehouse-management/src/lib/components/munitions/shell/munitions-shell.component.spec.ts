@@ -177,4 +177,67 @@ describe('MunitionsShellComponent', () => {
     expect(fixture.componentInstance.formModel().batch).toBe('');
     expect(fixture.componentInstance.formModel().category).toBeNull();
   });
+
+  it.each(['MUNITION', 'MUNITION_COMPONENT'] as const)(
+    'should remove the selected %s component and preserve the remaining form values',
+    async (category) => {
+      const { fixture, user } = await setup();
+      const component = fixture.componentInstance;
+      const isMunition = category === 'MUNITION';
+      const field = category === 'MUNITION' ? 'associatedComponents' : 'multipleComponentsData';
+      const otherField = category === 'MUNITION' ? 'multipleComponentsData' : 'associatedComponents';
+      component.formModel.update((current) => ({
+        ...current,
+        category,
+        [field]: ['first', 'middle', 'last'].map((batch) => ({
+          munitionTypeId: '',
+          denominationId: '',
+          batch,
+          quantity: null,
+        })),
+      }));
+      fixture.detectChanges();
+      const otherComponents = structuredClone(component.formModel()[otherField]);
+      expect(screen.getAllByRole('button', { name: 'COMMONS.DELETE' })).toHaveLength(isMunition ? 3 : 2);
+      const removeButton = screen.getAllByRole('button', { name: 'COMMONS.DELETE' })[isMunition ? 1 : 0];
+      if (!removeButton) throw new Error('Missing middle component remove button');
+
+      await user.click(removeButton);
+
+      expect(component.formModel()[field].map((item) => item.batch)).toEqual(['first', 'last']);
+      expect(structuredClone(component.formModel()[otherField])).toEqual(otherComponents);
+      expect(
+        component.form[field]()
+          .value()
+          .map((item) => item.batch),
+      ).toEqual(['first', 'last']);
+      expect(screen.getAllByRole('button', { name: 'COMMONS.DELETE' })).toHaveLength(isMunition ? 2 : 1);
+      expect(screen.getByDisplayValue('first')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('last')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('middle')).not.toBeInTheDocument();
+
+      const lastRemoveButton = screen.getAllByRole('button', { name: 'COMMONS.DELETE' }).at(-1);
+      if (!lastRemoveButton) throw new Error('Missing last component remove button');
+      await user.click(lastRemoveButton);
+
+      expect(component.formModel()[field].map((item) => item.batch)).toEqual(['first']);
+      expect(
+        component.form[field]()
+          .value()
+          .map((item) => item.batch),
+      ).toEqual(['first']);
+
+      if (isMunition) {
+        await user.click(screen.getByRole('button', { name: 'COMMONS.DELETE' }));
+
+        expect(component.formModel()[field]).toHaveLength(0);
+        expect(component.form[field]().value()).toHaveLength(0);
+        expect(screen.queryByDisplayValue('first')).not.toBeInTheDocument();
+      } else {
+        expect(screen.getByDisplayValue('first')).toBeInTheDocument();
+      }
+
+      expect(screen.queryByRole('button', { name: 'COMMONS.DELETE' })).not.toBeInTheDocument();
+    },
+  );
 });

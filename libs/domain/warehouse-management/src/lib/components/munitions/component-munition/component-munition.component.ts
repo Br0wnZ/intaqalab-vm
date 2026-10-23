@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,8 +16,10 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
@@ -44,96 +47,116 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
     MatInputModule,
     FormsModule,
     MatAutocompleteModule,
+    MatIconModule,
+    MatTooltipModule,
   ],
   template: `
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-      <div>
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'munitionType'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form().munitionTypeId"
-          [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_PLACEHOLDER' | translate"
-          [options]="munitionTypes()"
-          (selectionChange)="munitionTypeChangeHandler()"
-        />
-        @if (form().munitionTypeId().touched() && form().munitionTypeId().errors().length) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
-          </div>
-        }
-      </div>
-      <div>
-        <label for="denomination" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="denomination"
-            type="text"
-            matInput
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER' | translate"
-            [formField]="form().denominationId"
-            [matAutocomplete]="auto"
-          />
-          <mat-autocomplete [displayWith]="displayFn" #auto="matAutocomplete">
-            @for (option of filteredOptions(); track option.id) {
-              <mat-option [value]="option">{{ option.name }}</mat-option>
-            }
-          </mat-autocomplete>
-        </mat-form-field>
-        @if (
-          form().denominationId().touched() &&
-          (form().denominationId().disabled() || form().denominationId().errors().length)
-        ) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
-          </div>
-        }
-      </div>
-      <div>
-        <label for="batch" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="batch"
-            matInput
-            [formField]="form().batch"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL' | translate"
-          />
-        </mat-form-field>
-        @if (form().batch().touched() && form().batch().errors().length) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
-          </div>
-        }
-      </div>
-
-      @if (this.hasQuantity()) {
+    <div class="grid grid-cols-[minmax(0,1fr)_48px] gap-2 items-start">
+      <div
+        class="grid grid-cols-1 gap-4"
+        [class.lg:grid-cols-4]="hasQuantity()"
+        [class.lg:grid-cols-3]="!hasQuantity()"
+      >
         <div>
-          <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate }}
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'munitionType'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form().munitionTypeId"
+            [label]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_LABEL' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.MUNITION_TYPE_PLACEHOLDER' | translate"
+            [options]="munitionTypes()"
+            (selectionChange)="munitionTypeChangeHandler()"
+          />
+          @if (form().munitionTypeId().touched() && form().munitionTypeId().errors().length) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
+            </div>
+          }
+        </div>
+        <div>
+          <label for="denomination" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_LABEL' | translate }}
           </label>
           <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
             <input
-              id="quantity"
+              id="denomination"
+              type="text"
               matInput
-              type="number"
-              [formField]="form().quantity!"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER' | translate"
+              [formField]="form().denominationId"
+              [matAutocomplete]="auto"
             />
-          </mat-form-field>
-          @if (form().quantity!().touched() && form().quantity!().errors()) {
-            @for (error of form().quantity!().errors(); track error) {
-              @if (error.kind === 'greater_than_zero') {
-                <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' | translate }}</mat-error>
+            <mat-autocomplete [displayWith]="displayFn" #auto="matAutocomplete">
+              @for (option of filteredOptions(); track option.id) {
+                <mat-option [value]="option">{{ option.name }}</mat-option>
               }
-            }
+            </mat-autocomplete>
+          </mat-form-field>
+          @if (
+            form().denominationId().touched() &&
+            (form().denominationId().disabled() || form().denominationId().errors().length)
+          ) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
+            </div>
           }
         </div>
+        <div>
+          <label for="batch" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="batch"
+              matInput
+              [formField]="form().batch"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.BATCH_LABEL' | translate"
+            />
+          </mat-form-field>
+          @if (form().batch().touched() && form().batch().errors().length) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              <p>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</p>
+            </div>
+          }
+        </div>
+
+        @if (this.hasQuantity()) {
+          <div>
+            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="quantity"
+                matInput
+                type="number"
+                [formField]="form().quantity!"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.QUANTITY_LABEL' | translate"
+              />
+            </mat-form-field>
+            @if (form().quantity!().touched() && form().quantity!().errors()) {
+              @for (error of form().quantity!().errors(); track error) {
+                @if (error.kind === 'greater_than_zero') {
+                  <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' | translate }}</mat-error>
+                }
+              }
+            }
+          </div>
+        }
+      </div>
+      @if (canRemove()) {
+        <button
+          mat-icon-button
+          type="button"
+          class="mt-7 text-client-error"
+          [attr.aria-label]="'COMMONS.DELETE' | translate"
+          [matTooltip]="'COMMONS.DELETE' | translate"
+          (click)="remove.emit()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
       }
     </div>
   `,
@@ -148,6 +171,8 @@ export class ComponentMunitionComponent {
 
   form = input.required<FieldTree<MunitionIdentificationForm>>();
   hasQuantity = input<boolean>(true);
+  readonly canRemove = input(true);
+  readonly remove = output<void>();
 
   readonly munitionsDumpList = computed(() => this.#munitionsDumpsStore.items() as MunitionsDumpModel[]);
   readonly munitionTypes = computed(() =>

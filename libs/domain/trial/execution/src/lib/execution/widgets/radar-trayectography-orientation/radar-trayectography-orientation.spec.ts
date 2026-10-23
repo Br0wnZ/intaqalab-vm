@@ -61,7 +61,7 @@ describe('RadarTrayectographyOrientation', () => {
     expect(within(screen.getByTestId('radar-filters')).getAllByRole('combobox')).toHaveLength(1);
   });
 
-  it('shows series and shot selectors when response flags indicate different values', async () => {
+  it('shows selectors and preserves decimal values when readonly fields receive focus', async () => {
     const { fixture } = await renderWidget();
     const service = TestBed.inject(ExecutionService);
     const http = TestBed.inject(HttpTestingController);
@@ -78,6 +78,11 @@ describe('RadarTrayectographyOrientation', () => {
     fixture.detectChanges();
 
     expect(within(screen.getByTestId('radar-filters')).getAllByRole('combobox')).toHaveLength(3);
+    const xPieza = screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ });
+    expect(xPieza).toHaveValue('10.0');
+    expect(xPieza).toBeDisabled();
+    xPieza.focus();
+    expect(xPieza).toHaveValue('10.0');
   });
 
   it('formState starts clean (not dirty)', async () => {

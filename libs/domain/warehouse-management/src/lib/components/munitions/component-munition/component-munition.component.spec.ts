@@ -121,6 +121,18 @@ describe('ComponentMunitionComponent', () => {
   });
 
   describe('Initialization', () => {
+    it('should emit remove without changing the form when the remove button is clicked', async () => {
+      const { component, user, formModel } = await setup();
+      const remove = vi.fn();
+      component.remove.subscribe(remove);
+      const initialModel = structuredClone(formModel());
+
+      await user.click(screen.getByRole('button', { name: 'COMMONS.DELETE' }));
+
+      expect(remove).toHaveBeenCalledExactlyOnceWith(undefined);
+      expect(formModel()).toEqual(initialModel);
+    });
+
     it('should create the component', async () => {
       const { component } = await setup();
       expect(component).toBeTruthy();

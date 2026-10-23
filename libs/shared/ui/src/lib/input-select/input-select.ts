@@ -62,6 +62,7 @@ import { InputSelectInput } from './input-select-input.directive';
             [style.color]="textColor() ?? null"
             [value]="inputValue()"
             [readonly]="readOnly()"
+            [disabled]="readOnly()"
             [placeholder]="!showLabel() || labelFloating() ? placeholder() : ''"
             [attr.aria-label]="label()"
             (input)="onInputChange($event)"
@@ -211,6 +212,7 @@ export class InputSelect {
 
     const el = projected.el.nativeElement as HTMLInputElement;
     this.#renderer.setProperty(el, 'readOnly', this.readOnly());
+    this.#renderer.setProperty(el, 'disabled', this.readOnly());
     if (!this.focused() && el.value !== this.inputValue()) {
       this.#renderer.setProperty(el, 'value', this.inputValue());
     }

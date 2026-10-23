@@ -22,6 +22,7 @@ import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
+import { resolveInitialShotSelection } from '../utils/selection-options';
 
 interface CameraSelectionForm {
   camera: string | null;
@@ -170,6 +171,7 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  #hasManualSelection = false;
 
   // ── Datos desde el store ──────────────────────────────────────────────────
 
@@ -312,12 +314,27 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
       const selection = this.selectorModel();
       if (!response) return;
 
+      const initialSelection = this.#hasManualSelection
+        ? { serie: selection.serie, disparo: selection.disparo }
+        : resolveInitialShotSelection({
+            seriesOptions: response.series.map((serie, index) => ({
+              value: serie.seriesId,
+              label:
+                this.serieOptions().find((option) => option.value === serie.seriesId)?.label ?? `Serie ${index + 1}`,
+            })),
+            activeSerieId: this.#store.activeSerieId(),
+            activeShotId: this.#store.activeShotId(),
+            getShotOptions: (serieId) =>
+              response.series
+                .find((serie) => serie.seriesId === serieId)
+                ?.shots.map((shot) => ({ value: shot.shotId, label: shot.shotId })) ?? [],
+          });
       const selectedSeries = response.sameForAllSeries
         ? response.series[0]
-        : (response.series.find((serie) => serie.seriesId === selection.serie) ?? response.series[0]);
+        : (response.series.find((serie) => serie.seriesId === initialSelection.serie) ?? response.series[0]);
       const selectedShot = selectedSeries?.sameForAllShots
         ? selectedSeries.shots[0]
-        : (selectedSeries?.shots.find((shot) => shot.shotId === selection.disparo) ?? selectedSeries?.shots[0]);
+        : (selectedSeries?.shots.find((shot) => shot.shotId === initialSelection.disparo) ?? selectedSeries?.shots[0]);
 
       untracked(() => {
         const current = this.selectorModel();
@@ -336,11 +353,14 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   }
 
   protected onSerieChange(serie: string | null): void {
+    this.#hasManualSelection = true;
     this.selectorModel.update((current) => ({ ...current, serie }));
+    this.selectorModel.update((current) => ({ ...current, disparo: this.disparoOptions()[0]?.value ?? null }));
     this.#loadOrientationForSelectorChange();
   }
 
   protected onDisparoChange(disparo: string | null): void {
+    this.#hasManualSelection = true;
     this.selectorModel.update((current) => ({ ...current, disparo }));
     this.#loadOrientationForSelectorChange();
   }
