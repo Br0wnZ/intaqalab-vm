@@ -663,4 +663,3 @@ describe('Execution', () => {
     expect(callOrder).toEqual(['widget1', 'widget2']);
   });
 });
-
