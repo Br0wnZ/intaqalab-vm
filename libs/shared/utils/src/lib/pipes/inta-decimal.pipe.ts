@@ -1,7 +1,8 @@
 import type { PipeTransform } from '@angular/core';
-import { Pipe, computed, inject } from '@angular/core';
+import { Pipe, inject } from '@angular/core';
 
 import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
+import { formatPreciseNumber } from './format-precise-number';
 
 /**
  * Locale-aware decimal pipe.
@@ -25,17 +26,6 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 export class IntaDecimalPipe implements PipeTransform {
   readonly #localeSignal = inject(LOCALE_SIGNAL);
 
-  /** Cached formatter — recreated only when locale changes. */
-  readonly #formatter = computed(() => {
-    // Reading the signal here registers the reactive dependency.
-    // The formatter is recreated on locale change automatically.
-    return (minFrac: number, maxFrac: number) =>
-      new Intl.NumberFormat(this.#localeSignal(), {
-        minimumFractionDigits: minFrac,
-        maximumFractionDigits: maxFrac,
-      });
-  });
-
   /**
    * @param value    - Number to format (null/undefined renders as empty string)
    * @param digitsInfo - Format string `minInt.minFrac-maxFrac` (default `'1.0-2'`)
@@ -45,8 +35,8 @@ export class IntaDecimalPipe implements PipeTransform {
     if (value == null || isNaN(value)) return '';
 
     const [, fracPart] = digitsInfo.split('.');
-    const [minFrac, maxFrac] = (fracPart ?? '0-2').split('-').map(Number);
+    const [minFrac] = (fracPart ?? '0-2').split('-').map(Number);
 
-    return this.#formatter()(minFrac ?? 0, maxFrac ?? 2).format(value);
+    return formatPreciseNumber(value, this.#localeSignal(), minFrac ?? 0);
   }
 }

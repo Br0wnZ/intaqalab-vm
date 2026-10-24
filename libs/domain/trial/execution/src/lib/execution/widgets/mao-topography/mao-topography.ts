@@ -135,16 +135,18 @@ interface MaoTopographySelectForm {
         />
 
         <!-- Blanco Position -->
-        <ui-sound-level-meter-input
-          size="small"
-          class="col-span-1 md:col-span-3"
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
-          [placeholder]="'0'"
-          [unitOptions]="metersOptions"
-          [disabled]="readOnly() || !blancoEnabled()"
-          [value]="blancoPosition()"
-          (valueChange)="blancoPosition.set($event)"
-        />
+        @if (blancoEnabled()) {
+          <ui-sound-level-meter-input
+            size="small"
+            class="col-span-1 md:col-span-3"
+            [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
+            [placeholder]="'0'"
+            [unitOptions]="metersOptions"
+            [disabled]="readOnly()"
+            [value]="blancoPosition()"
+            (valueChange)="blancoPosition.set($event)"
+          />
+        }
 
         <!-- Observador -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-1 md:col-span-1 w-full">
@@ -170,9 +172,6 @@ interface MaoTopographySelectForm {
         gap: 0.25rem !important;
         padding-left: 0.375rem !important;
         padding-right: 0.375rem !important;
-      }
-      inta-mao-topography ui-sound-level-meter-input input {
-        max-width: 2rem;
       }
     `,
   ],
@@ -525,18 +524,10 @@ export class MaoTopography extends BaseFormWidgetComponent {
   #applyFieldsFromStore(): void {
     const stored = this.#store.maoTopography();
     this.piezaPosition.set(
-      toPosition(
-        numToField(stored.xPieza, 'm', 1),
-        numToField(stored.yPieza, 'm', 1),
-        numToField(stored.zPieza, 'm', 1),
-      ),
+      toPosition(numToField(stored.xPieza, 'm'), numToField(stored.yPieza, 'm'), numToField(stored.zPieza, 'm')),
     );
     this.blancoPosition.set(
-      toPosition(
-        numToField(stored.xBlanco, 'm', 1),
-        numToField(stored.yBlanco, 'm', 1),
-        numToField(stored.zBlanco, 'm', 1),
-      ),
+      toPosition(numToField(stored.xBlanco, 'm'), numToField(stored.yBlanco, 'm'), numToField(stored.zBlanco, 'm')),
     );
   }
 }

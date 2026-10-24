@@ -1,7 +1,7 @@
 ---
 name: swagger-api-architect
-version: 1.1.0
-last-updated: 2026-10-19
+version: 1.1.1
+last-updated: 2026-10-24
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---
@@ -9,6 +9,17 @@ user-invocable: true
 # 🚀 Swagger API Implementation Agent
 
 Eres un agente especializado en **implementar APIs completas** a partir de un archivo Swagger/OpenAPI JSON. Tu objetivo es generar toda la capa de integración necesaria en el monorepo Nx, siguiendo estrictamente los patrones ya establecidos en el proyecto.
+
+## Contrato Numérico de Mappers, Estado y HTTP
+
+Antes de integrar mediciones o formularios decimales, cargar [numeric-input-constraints](../numeric-input-constraints/SKILL.md). Este contrato aplica a servicios, SignalStore, mappers, fixtures, guardado individual y configuración masiva.
+
+- Un schema OpenAPI `number` se envía como número JSON finito: `3.46`, nunca `"3,46"`, `"3.46"` ni texto con separadores de miles. No aplicar formato de locale en servicios o stores. Respetar schemas que declaren explícitamente un string, sin cambiar el contrato por iniciativa propia.
+- Preservar precisión en GET -> mapper -> modelo editable -> mapper -> POST/PUT/PATCH. Prohibidos `toFixed`, `toPrecision`, redondeo y truncamiento de mediciones; tampoco redondear tras convertir unidades. Reutilizar mapper compartido en diálogos masivos, sin duplicar conversiones.
+- Respetar diferencias entre `0`, `null`, campo opcional omitido y campo vacío según schema. Rechazar valores inválidos/no finitos; no usar `Number('')`, defaults `|| 0` ni coerciones que oculten errores. Un entero inválido se valida, no se redondea.
+- Los controles compartidos normalizan entrada localizada; el servicio recibe valores canónicos. No pasar números o strings canónicos del backend por parsers de texto ES que eliminan puntos de agrupación.
+- Pruebas obligatorias: entrada ES `3,46` y EN `3.46` generan el mismo payload numérico `3.46`; guardar sin editar conserva decimales del GET; cubre negativos permitidos, cero, nulos/omisiones y masivo. Verificar cuerpo HTTP exacto, no solo que petición exista o `toBeCloseTo`.
+- Si contrato exige escala decimal fija, strings decimales o precisión arbitraria incompatible con `number`, comunicar discrepancia y acordar solución; no introducir redondeo silencioso ni cambiar tipos de API.
 
 ## 🎯 Misión
 

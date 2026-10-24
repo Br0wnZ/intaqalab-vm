@@ -1,4 +1,3 @@
-import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
@@ -16,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
+import { IntaDecimalPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -39,7 +39,7 @@ interface UniformidadForm {
 @Component({
   selector: 'inta-uniformidad-chart',
   imports: [
-    DecimalPipe,
+    IntaDecimalPipe,
     FormField,
     MatFormFieldModule,
     MatIconModule,
@@ -146,7 +146,7 @@ interface UniformidadForm {
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.PENDIENTE_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ configData.pendiente !== null ? (configData.pendiente | number: '1.5-5') : '—' }}
+                {{ configData.pendiente !== null ? (configData.pendiente | intaDecimal: '1.5-5') : '—' }}
               </p>
             </div>
             <div>
@@ -154,7 +154,7 @@ interface UniformidadForm {
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.WC_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ configData.wcTarado !== null ? (configData.wcTarado | number: '1.0-0') + ' g' : '—' }}
+                {{ configData.wcTarado !== null ? (configData.wcTarado | intaDecimal: '1.0-0') + ' g' : '—' }}
               </p>
             </div>
             <div>
@@ -162,7 +162,7 @@ interface UniformidadForm {
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.ORDENADA_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ ordenada() !== null ? (ordenada() | number: '1.5-5') : '—' }}
+                {{ ordenada() !== null ? (ordenada() | intaDecimal: '1.5-5') : '—' }}
               </p>
             </div>
             <div>
@@ -170,7 +170,7 @@ interface UniformidadForm {
                 {{ 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.DESVIACION_LABEL' | translate }}
               </p>
               <p class="text-xs font-regular text-gray-500">
-                {{ desviacion() !== null ? (desviacion() | number: '1.2-2') + ' m/s' : '—' }}
+                {{ desviacion() !== null ? (desviacion() | intaDecimal: '1.2-2') + ' m/s' : '—' }}
               </p>
             </div>
           </div>
@@ -377,7 +377,7 @@ export class UniformidadChartWidget extends BaseFormWidgetComponent {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} m/s`,
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} m/s`,
             },
           },
         },

@@ -351,21 +351,18 @@ export class WidgetStateService {
   }
 
   /**
-   * 💾 Guardar todos los formularios dirty
+   * 💾 Guardar todos los formularios dirty secuencialmente
    */
   async saveAllDirtyForms(): Promise<void> {
     const dirtyWidgets = this.dirtyWidgets();
     console.log(`Guardando ${dirtyWidgets.length} formularios...`);
 
-    const savePromises = dirtyWidgets.map((widgetState) => {
+    for (const widgetState of dirtyWidgets) {
       const instance = this.#widgetInstances.get(widgetState.widgetId);
       if (instance && typeof instance.saveForm === 'function') {
-        return instance.saveForm();
+        await instance.saveForm();
       }
-      return Promise.resolve();
-    });
-
-    await Promise.all(savePromises);
+    }
   }
 
   /**

@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,6 +19,22 @@ class ProjectedInputHost {
   readonly opciones = [{ value: 'm/s', label: 'm/s' }];
   readonly value = signal<{ value: string; unit: string } | null>(null);
   readonly readOnly = signal(true);
+}
+
+@Component({
+  imports: [InputSelect, InputSelectInput, LocaleDecimalInputDirective],
+  template: `
+    <ui-input-select label="Velocidad" [opciones]="opciones" [value]="value()">
+      <input inputSelectInput libLocalDecimal [decimals]="2" />
+    </ui-input-select>
+  `,
+})
+class ProjectedInputWithDirectiveHost {
+  readonly opciones = [{ value: 'm/s', label: 'm/s' }];
+  readonly value = signal<{ value: number | string | null; unit: string } | null>({
+    value: '123.45',
+    unit: 'm/s',
+  });
 }
 
 describe('InputSelect', () => {
@@ -83,7 +100,7 @@ describe('InputSelect', () => {
       expect(input).toHaveClass('placeholder:text-gray-500');
     });
 
-    it('should restrict internal input to two decimal places by default', async () => {
+    it('should preserve additional decimal places in internal input', async () => {
       await render(InputSelect, { componentInputs: defaultInputs });
       const input = screen.getByRole('textbox') as HTMLInputElement;
       input.value = '1,23';
@@ -92,7 +109,7 @@ describe('InputSelect', () => {
       const event = new KeyboardEvent('keydown', { key: '4', bubbles: true, cancelable: true });
       input.dispatchEvent(event);
 
-      expect(event.defaultPrevented).toBe(true);
+      expect(event.defaultPrevented).toBe(false);
     });
 
     it('should update its model with sanitized pasted input', async () => {
@@ -104,8 +121,8 @@ describe('InputSelect', () => {
 
       input.dispatchEvent(event);
 
-      expect(input).toHaveValue('1,23');
-      expect(fixture.componentInstance.value()).toEqual({ value: '1,23', unit: 'kg' });
+      expect(input).toHaveValue('1,234');
+      expect(fixture.componentInstance.value()).toEqual({ value: 1.234, unit: 'kg' });
     });
 
     it('should have correct aria-label on input', async () => {
@@ -114,11 +131,9 @@ describe('InputSelect', () => {
     });
 
     it('should render mat-select with role combobox', async () => {
-      // mat-select usa aria-labelledby internamente; verificamos la presencia y rol
-      const { container } = await render(InputSelect, { componentInputs: defaultInputs });
-      const matSelect = container.querySelector('mat-select');
+      await render(InputSelect, { componentInputs: defaultInputs });
+      const matSelect = screen.getByRole('combobox');
       expect(matSelect).toBeInTheDocument();
-      expect(matSelect).toHaveAttribute('role', 'combobox');
     });
 
     it('should have all option labels available in opciones signal', async () => {
@@ -145,13 +160,26 @@ describe('InputSelect', () => {
     expect(screen.getByRole('combobox')).toBeVisible();
   });
 
-  it('should reflect external value updates in the projected input', async () => {
+  it('should reflect external value updates in the projected input with locale formatting', async () => {
     const { fixture } = await render(ProjectedInputHost);
     fixture.componentInstance.readOnly.set(false);
-    fixture.componentInstance.value.set({ value: '0.5', unit: 'm/s' });
+    fixture.componentInstance.value.set({ value: '0.56789', unit: 'm/s' });
     await fixture.whenStable();
 
-    expect(screen.getByRole('textbox')).toHaveValue('0.5');
+    expect(screen.getByRole('textbox')).toHaveValue('0,56789');
+  });
+
+  it('should format and preserve decimals on focus and blur in projected input with libLocalDecimal', async () => {
+    const { fixture } = await render(ProjectedInputWithDirectiveHost);
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+
+    expect(input).toHaveValue('123,45');
+
+    input.focus();
+    input.blur();
+
+    expect(input).toHaveValue('123,45');
+    expect(fixture.componentInstance.value()?.value).toBe('123.45');
   });
 
   describe('Two-way binding with model', () => {
@@ -162,6 +190,41 @@ describe('InputSelect', () => {
       const component = fixture.componentInstance;
       expect(component.inputValue()).toBe('10');
       expect(screen.getByRole('textbox') as HTMLInputElement).toHaveValue('10');
+    });
+
+    it('should format backend string decimals using locale decimal separator', async () => {
+      await render(InputSelect, {
+        componentInputs: { ...defaultInputs, value: { value: '123.45', unit: 'kg' } },
+      });
+      expect(screen.getByRole('textbox') as HTMLInputElement).toHaveValue('123,45');
+    });
+
+    it('should format backend numeric decimals using locale decimal separator', async () => {
+      await render(InputSelect, {
+        componentInputs: { ...defaultInputs, value: { value: 123.45, unit: 'kg' } },
+      });
+      expect(screen.getByRole('textbox') as HTMLInputElement).toHaveValue('123,45');
+    });
+
+    it('should not lose decimals when focusing and blurring input', async () => {
+      await render(InputSelect, {
+        componentInputs: { ...defaultInputs, value: { value: '123.45', unit: 'kg' } },
+      });
+      const input = screen.getByRole('textbox') as HTMLInputElement;
+      expect(input).toHaveValue('123,45');
+
+      input.focus();
+      expect(input).toHaveValue('123,45');
+
+      input.blur();
+      expect(input).toHaveValue('123,45');
+    });
+
+    it('should handle negative numbers correctly', async () => {
+      await render(InputSelect, {
+        componentInputs: { ...defaultInputs, value: { value: -42.5, unit: 'kg' } },
+      });
+      expect(screen.getByRole('textbox') as HTMLInputElement).toHaveValue('-42,5');
     });
 
     it('should select correct initial unit', async () => {
@@ -177,7 +240,7 @@ describe('InputSelect', () => {
 
       await userEvent.type(screen.getByRole('textbox'), '25');
 
-      expect(component.value()).toEqual({ value: '25', unit: 'kg' });
+      expect(component.value()).toEqual({ value: 25, unit: 'kg' });
     });
 
     it('should update model when unit changes', async () => {
@@ -186,7 +249,7 @@ describe('InputSelect', () => {
 
       component.onUnitChange('g');
 
-      expect(component.value()).toEqual({ value: '', unit: 'g' });
+      expect(component.value()).toEqual({ value: null, unit: 'g' });
     });
 
     it('should update both value and unit in model', async () => {
@@ -196,7 +259,7 @@ describe('InputSelect', () => {
       await userEvent.type(screen.getByRole('textbox'), '100');
       component.onUnitChange('lb');
 
-      expect(component.value()).toEqual({ value: '100', unit: 'lb' });
+      expect(component.value()).toEqual({ value: 100, unit: 'lb' });
     });
   });
 
@@ -247,7 +310,7 @@ describe('InputSelect', () => {
       component.onUnitChange('g');
 
       expect(component.selectedUnit()).toBe('g');
-      expect(component.value()).toEqual({ value: '5', unit: 'g' });
+      expect(component.value()).toEqual({ value: 5, unit: 'g' });
     });
   });
 
@@ -279,7 +342,7 @@ describe('InputSelect', () => {
       await userEvent.clear(input);
       await userEvent.type(input, '75');
 
-      expect(component.value()).toEqual({ value: '75', unit: 'g' });
+      expect(component.value()).toEqual({ value: 75, unit: 'g' });
     });
 
     it('should handle null value gracefully', async () => {

@@ -8,16 +8,66 @@ import {
   afterEveryRender,
   computed,
   contentChild,
+  effect,
   inject,
   input,
   linkedSignal,
   model,
   signal,
+  untracked,
 } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
-import { LocaleDecimalInputDirective } from '@intaqalab/utils';
+import { LOCALE_SIGNAL, LocaleDecimalInputDirective, formatPreciseNumber } from '@intaqalab/utils';
 
 import { InputSelectInput } from './input-select-input.directive';
+
+export interface InputSelectValue<T = number | string | null> {
+  value: T;
+  unit: string;
+}
+
+/**
+ * Normaliza cualquier entrada numérica (number, string formateado o plano) a number | null.
+ */
+function parseToNumber(raw: number | string | null | undefined): number | null {
+  if (raw === null || raw === undefined || raw === '') return null;
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null;
+  const str = raw.trim();
+  if (!str) return null;
+
+  const lastDot = str.lastIndexOf('.');
+  const lastComma = str.lastIndexOf(',');
+  if (lastDot !== -1 && lastComma !== -1) {
+    if (lastComma > lastDot) {
+      // e.g. "1.234,56" (ES)
+      const normalized = str.replace(/\./g, '').replace(',', '.');
+      const num = Number(normalized);
+      return Number.isFinite(num) ? num : null;
+    } else {
+      // e.g. "1,234.56" (EN)
+      const normalized = str.replace(/,/g, '');
+      const num = Number(normalized);
+      return Number.isFinite(num) ? num : null;
+    }
+  }
+
+  if (lastComma !== -1) {
+    const normalized = str.replace(',', '.');
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  const num = Number(str);
+  return Number.isFinite(num) ? num : null;
+}
+
+/**
+ * Formatea un valor numérico para display según el locale activo.
+ */
+function formatDisplayNumber(value: number | null, locale: string, minDec: number): string {
+  if (value === null || !Number.isFinite(value)) return '';
+  return formatPreciseNumber(value, locale, minDec);
+}
 
 @Component({
   selector: 'ui-input-select',
@@ -58,16 +108,18 @@ import { InputSelectInput } from './input-select-input.directive';
             inputmode="decimal"
             class="flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 placeholder:text-gray-500"
             [numericSign]="numericSign()"
+            [decimals]="decimals()"
+            [minDecimals]="minDecimals()"
+            [decimalValue]="numericValue()"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
             [style.color]="textColor() ?? null"
-            [value]="inputValue()"
             [readonly]="readOnly()"
             [disabled]="readOnly()"
             [placeholder]="!showLabel() || labelFloating() ? placeholder() : ''"
             [attr.aria-label]="label()"
-            (input)="onInputChange($event)"
+            (decimalValueChange)="onNumericChange($event)"
             (focus)="focused.set(true)"
-            (blur)="onInputBlur($event)"
+            (blur)="focused.set(false)"
           />
         }
 
@@ -121,7 +173,7 @@ import { InputSelectInput } from './input-select-input.directive';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InputSelect {
+export class InputSelect<T extends number | string | null = number | string | null> {
   // ── Inputs ────────────────────────────────────────────────────────────────
   readonly label = input.required<string>();
   readonly opciones = input.required<{ value: string; label: string }[]>();
@@ -129,6 +181,8 @@ export class InputSelect {
   readonly placeholder = input<string>('0,00');
   readonly readOnly = input(false);
   readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
+  readonly decimals = input<number>(2);
+  readonly minDecimals = input<number>(0);
   readonly variant = input<'default' | 'computed'>('default');
   /**
    * Muestra el label flotante sobre el borde del campo.
@@ -140,10 +194,16 @@ export class InputSelect {
   readonly floatLabel = input<'auto' | 'always'>('auto');
 
   // ── Two-way binding ───────────────────────────────────────────────────────
-  readonly value = model<{ value: string; unit: string } | null>(null);
+  readonly value = model<InputSelectValue<T> | null>(null);
 
   // ── Estado interno derivado del modelo ───────────────────────────────────
-  readonly inputValue = linkedSignal(() => this.value()?.value ?? '');
+  readonly numericValue = computed<number | null>(() => {
+    return parseToNumber(this.value()?.value);
+  });
+  readonly inputValue = computed<string>(() => {
+    const val = this.value()?.value;
+    return val !== null && val !== undefined ? String(val) : '';
+  });
   readonly selectedUnit = linkedSignal(() => this.value()?.unit ?? this.opciones()[0]?.value ?? '');
 
   // ── Label flotante ────────────────────────────────────────────────────────
@@ -162,6 +222,7 @@ export class InputSelect {
   readonly #elRef = inject(ElementRef);
   readonly #renderer = inject(Renderer2);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #localeSignal = inject(LOCALE_SIGNAL);
   readonly panelWidth = signal<number | null>(null);
 
   // ── Content projection ───────────────────────────────────────────────────
@@ -171,7 +232,6 @@ export class InputSelect {
    * conecta sus eventos (input/focus/blur) para mantener el estado interno.
    */
   readonly projectedInput = contentChild(InputSelectInput);
-  #hasInvalidInput = false;
 
   /** Evita registrar los listeners más de una vez. */
   #projectedWired = false;
@@ -183,20 +243,62 @@ export class InputSelect {
       this.#wireProjectedInput();
     });
 
+    effect(() => {
+      const num = this.numericValue();
+      const projected = this.projectedInput();
+      if (!projected) return;
+
+      const dir = projected.decimalDirective;
+      if (dir) {
+        untracked(() => {
+          dir.writeValue(num);
+        });
+      } else if (!this.focused()) {
+        const formatted = formatDisplayNumber(num, this.#localeSignal(), this.minDecimals());
+        this.#renderer.setProperty(projected.el.nativeElement, 'value', formatted);
+      }
+    });
+
     this.#destroyRef.onDestroy(() => {
       this.#unlisteners.forEach((fn) => fn());
     });
   }
 
-  // ── Handlers (input interno) ─────────────────────────────────────────────
-  onInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.#updateInputValue(input.value, input);
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  onNumericChange(num: number | null): void {
+    const current = this.value();
+    const currentVal = current?.value;
+    let nextVal: T;
+
+    if (typeof currentVal === 'string') {
+      nextVal = (num !== null ? String(num) : '') as T;
+    } else {
+      nextVal = num as T;
+    }
+
+    this.value.set({
+      value: nextVal,
+      unit: this.selectedUnit(),
+    });
   }
 
   onUnitChange(unit: string): void {
     this.selectedUnit.set(unit);
-    this.value.set({ value: this.inputValue(), unit });
+    const current = this.value();
+    const currentVal = current?.value;
+    let nextVal: T;
+
+    if (typeof currentVal === 'string') {
+      const num = this.numericValue();
+      nextVal = (num !== null ? String(num) : (currentVal ?? '')) as T;
+    } else {
+      nextVal = (this.numericValue() ?? null) as T;
+    }
+
+    this.value.set({
+      value: nextVal,
+      unit,
+    });
   }
 
   // ── Private ───────────────────────────────────────────────────────────────
@@ -210,12 +312,9 @@ export class InputSelect {
     const projected = this.projectedInput();
     if (!projected) return;
 
-    const el = projected.el.nativeElement as HTMLInputElement;
+    const el = projected.el.nativeElement;
     this.#renderer.setProperty(el, 'readOnly', this.readOnly());
     this.#renderer.setProperty(el, 'disabled', this.readOnly());
-    if (!this.focused() && el.value !== this.inputValue()) {
-      this.#renderer.setProperty(el, 'value', this.inputValue());
-    }
 
     if (this.#projectedWired) return;
     this.#projectedWired = true;
@@ -230,49 +329,35 @@ export class InputSelect {
     this.#renderer.setAttribute(el, 'inputmode', 'decimal');
     this.#renderer.setAttribute(el, 'placeholder', this.placeholder());
 
-    // Conecta eventos
-    this.#unlisteners.push(
-      this.#renderer.listen(el, 'input', (event: Event) => {
-        const input = event.target as HTMLInputElement;
-        this.#updateInputValue(input.value, input);
-      }),
-      this.#renderer.listen(el, 'focus', () => this.focused.set(true)),
-      this.#renderer.listen(el, 'blur', () => {
-        this.#restoreInvalidInput(el);
-        this.focused.set(false);
-      }),
-    );
-  }
-
-  #updateInputValue(raw: string, input: HTMLInputElement): void {
-    const sign = this.numericSign();
-    const normalized = raw.trim();
-    const numericValue = Number(normalized.replace(',', '.'));
-    const signIsInvalid =
-      (sign === 'non-negative' && normalized.startsWith('-') && !Number.isFinite(numericValue)) ||
-      (sign === 'non-negative' && Number.isFinite(numericValue) && numericValue < 0) ||
-      (sign === 'non-positive' && Number.isFinite(numericValue) && numericValue > 0);
-
-    if (signIsInvalid) {
-      this.#hasInvalidInput = true;
-      return;
+    const dir = projected.decimalDirective;
+    if (dir) {
+      this.#unlisteners.push(
+        this.#renderer.listen(el, 'input', (event: Event) => {
+          const input = event.target as HTMLInputElement;
+          const parsed = parseToNumber(input.value);
+          this.onNumericChange(parsed);
+        }),
+        this.#renderer.listen(el, 'focus', () => this.focused.set(true)),
+        this.#renderer.listen(el, 'blur', () => {
+          this.focused.set(false);
+          const parsed = parseToNumber(el.value);
+          this.onNumericChange(parsed);
+        }),
+      );
+    } else {
+      this.#unlisteners.push(
+        this.#renderer.listen(el, 'input', (event: Event) => {
+          const input = event.target as HTMLInputElement;
+          const parsed = parseToNumber(input.value);
+          this.onNumericChange(parsed);
+        }),
+        this.#renderer.listen(el, 'focus', () => this.focused.set(true)),
+        this.#renderer.listen(el, 'blur', () => {
+          this.focused.set(false);
+          const formatted = formatDisplayNumber(this.numericValue(), this.#localeSignal(), this.minDecimals());
+          this.#renderer.setProperty(el, 'value', formatted);
+        }),
+      );
     }
-
-    this.#hasInvalidInput = false;
-    this.inputValue.set(raw);
-    this.value.set({ value: raw, unit: this.selectedUnit() });
-  }
-
-  onInputBlur(event: Event): void {
-    this.#restoreInvalidInput(event.target as HTMLInputElement);
-    this.focused.set(false);
-  }
-
-  #restoreInvalidInput(input: HTMLInputElement): void {
-    if (!this.#hasInvalidInput) return;
-    const previousValue = this.value()?.value ?? '';
-    input.value = previousValue;
-    this.inputValue.set(previousValue);
-    this.#hasInvalidInput = false;
   }
 }

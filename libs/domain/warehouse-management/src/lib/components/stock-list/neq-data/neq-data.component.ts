@@ -55,6 +55,6 @@ export class NeqDataComponent {
     if (!current) return '0';
 
     const maxRisk = cell.currentRiskGroups11And12Neq ? maxRiskGroupNeqPerCell : maxNeq;
-    return `${current.toFixed(2)} / ${maxRisk}`;
+    return `${current} / ${maxRisk}`;
   }
 }

@@ -1,4 +1,3 @@
-import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
@@ -18,6 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
+import { IntaDecimalPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -44,7 +44,7 @@ interface TaradoVelocidadForm {
 @Component({
   selector: 'inta-tarado-velocidad-chart',
   imports: [
-    DecimalPipe,
+    IntaDecimalPipe,
     FormField,
     ReadonlyContentDirective,
     MatButtonModule,
@@ -162,7 +162,7 @@ interface TaradoVelocidadForm {
             </span>
           </div>
           @if (r2(); as r2Value) {
-            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2Value | number: '1.4-4' }}</span>
+            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2Value | intaDecimal: '1.4-4' }}</span>
           }
         </div>
 
@@ -173,7 +173,7 @@ interface TaradoVelocidadForm {
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regressionValue.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.pendiente | intaDecimal: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
@@ -185,13 +185,13 @@ interface TaradoVelocidadForm {
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regressionValue.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.ordenada | intaDecimal: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ regressionValue.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ regressionValue.wcTarado | intaDecimal: '1.4-4' }} g</p>
             </div>
           }
         </div>
@@ -403,7 +403,7 @@ export class TaradoVelocidadChartWidget extends BaseFormWidgetComponent {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => `(${ctx.parsed.x?.toFixed(2)}, ${ctx.parsed.y?.toFixed(2)} m/s)`,
+              label: (ctx) => `(${ctx.parsed.x}, ${ctx.parsed.y} m/s)`,
             },
           },
         },

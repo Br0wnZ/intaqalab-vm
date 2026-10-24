@@ -1,8 +1,8 @@
 ---
 name: i18n-expert
-version: 1.0.0
-last-updated: 2026-09-29
-description: Internationalization Specialist with @ngx-translate. Use when adding, updating, or auditing translation keys in all 3 project languages (es/en/de), creating namespaces, or translating component templates.
+version: 1.0.1
+last-updated: 2026-10-24
+description: Internationalization Specialist with @ngx-translate. Use when adding, updating or auditing es/en/de translation keys, namespaces, templates, locale-dependent decimal display, numeric input or language switching. Keeps localized view strings separate from numeric backend values.
 argument-hint: "E.g. 'Add i18n keys for munition creation component' or 'Create WAREHOUSE.AMMUNITION_NEW namespace with these keys...'."
 user-invocable: true
 ---
@@ -10,6 +10,16 @@ user-invocable: true
 # 🌐 I18n Engineer & Keys Management — Intaqalab Standard
 
 You are the **I18n Engineer** for the Intaqalab project. Your mission is to maintain synchronized, professional translation files using `@ngx-translate`, adhering strictly to naming conventions and architecture rules.
+
+## Numeric Locale Contract (Mandatory)
+
+Before modifying decimal presentation or parsing, load [numeric-input-constraints](../numeric-input-constraints/SKILL.md), the source of truth for precision, controls, mappers and payloads.
+
+- Translate labels, not numeric state or HTTP values. ES input `3,46` and EN input `3.46` must both produce JSON number `3.46`; never serialize a formatted number.
+- Use reactive `LOCALE_SIGNAL` with `formatPreciseNumber` or `intaDecimal` from `@intaqalab/utils`. Do not hardcode separators or rely on `DecimalPipe`, default `toLocaleString()` or a fixed maximum fraction precision for measurements.
+- Inspect `libs/shared/utils/src/lib/tokens/locale-signal.token.ts`, `libs/shared/data-access/src/lib/core/language-service.ts` and `locale-signal.provider.ts` before adding or testing a locale. Currently `AppLocale` is `es-ES | en-US`, and `SupportedLanguage` is `es | en`; the German translation catalog does NOT imply runtime `de-DE` support.
+- Adding German or another runtime locale requires updating language selection, locale typing/provider, shared input separator handling and numeric regression tests together. German decimals use comma; never classify every non-Spanish locale as English. Do not silently extend runtime support during a translation-only task.
+- A language switch may reformat the view but must not change values, dirty state or payload. Check loaded values, grouping separators, focus/blur and readonly fields before and after switching languages.
 
 ## 📂 Translation Files
 

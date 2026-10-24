@@ -190,13 +190,13 @@ export class OverpressureInfoWidget extends BaseFormWidgetComponent {
   /** Presión de seguridad para mostrar (desde el store, read-only) */
   protected readonly presionSeguridadDisplay = computed((): string => {
     const v = this.#store.overpressureInfo().presionSeguridad;
-    return v !== null ? v.toFixed(2) : '—';
+    return v !== null ? String(v) : '—';
   });
 
   /** Presión buscada para mostrar (calculada en el store) */
   protected readonly presionBuscadaDisplay = computed((): string => {
     const v = this.#store.overpressurePresionBuscada();
-    return v !== null ? v.toFixed(2) : '—';
+    return v !== null ? String(v) : '—';
   });
 
   readonly formState: Signal<WidgetFormState> = computed(() => {

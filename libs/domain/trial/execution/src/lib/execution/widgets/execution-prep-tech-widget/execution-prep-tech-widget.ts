@@ -410,7 +410,7 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
 
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
 
-    this.#store.saveProfileReadiness(
+    await this.#store.saveProfileReadiness(
       fireTrialId,
       apiProfile,
       this.seriesReadiness().map((s) => ({

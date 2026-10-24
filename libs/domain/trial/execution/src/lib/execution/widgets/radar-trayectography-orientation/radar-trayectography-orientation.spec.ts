@@ -1,10 +1,15 @@
+import { manualChangeDetection } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { LOCALE_SIGNAL } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen, waitFor, within } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -79,10 +84,86 @@ describe('RadarTrayectographyOrientation', () => {
 
     expect(within(screen.getByTestId('radar-filters')).getAllByRole('combobox')).toHaveLength(3);
     const xPieza = screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ });
-    expect(xPieza).toHaveValue('10.0');
+    expect(xPieza).toHaveValue('10');
     expect(xPieza).toBeDisabled();
     xPieza.focus();
-    expect(xPieza).toHaveValue('10.0');
+    expect(xPieza).toHaveValue('10');
+  });
+
+  it('renders backend precision, thousands and measurement units without changing values', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const http = TestBed.inject(HttpTestingController);
+    const response = createOrientationResponse(false, true);
+    const data = response.series[0]?.shots[0]?.orientationData;
+    if (!data) throw new Error('Expected orientation data');
+    Object.assign(data, {
+      pieceX: null,
+      plannedImpactDistance: 12345.678,
+      theoreticalInitialVelocity: 115.125,
+      theoreticalFlightTime: 400.375,
+      fuseGraduation: 50.625,
+      shootingAngle: 15.875,
+      shootingAngleUnit: 'MILS',
+      nominalProjectileWeight: 47.125,
+    });
+    const secondSeriesShot = response.series[1]?.shots[0];
+    if (!secondSeriesShot) throw new Error('Expected second series shot');
+    secondSeriesShot.orientationData = {
+      ...secondSeriesShot.orientationData,
+      pieceX: 0,
+      pieceXUnit: 'MM',
+      plannedImpactDistance: null,
+      theoreticalInitialVelocity: null,
+      theoreticalFlightTime: null,
+      fuseGraduation: 50.125,
+      shootingAngle: null,
+    };
+    service.getRadarTrayectographyOrientation('trial-1', null);
+    TestBed.tick();
+    http.expectOne((req) => req.url.endsWith('/execution/trajectography-radar/orientation')).flush(response);
+    await waitFor(() => {
+      TestBed.tick();
+      expect(service.radarTrayectographyOrientationResource.value()).toEqual(response);
+    });
+    fixture.detectChanges();
+
+    const formatter = new Intl.NumberFormat(TestBed.inject(LOCALE_SIGNAL)(), { maximumFractionDigits: 3 });
+    for (const [label, value] of [
+      ['ALCANCE_PREVISTO_LABEL', 12345.678],
+      ['VELOCIDAD_INICIAL_LABEL', 115.125],
+      ['TIEMPO_VUELO_LABEL', 400.375],
+      ['GRAD_ESPOLETA_LABEL', 50.625],
+      ['ANGULO_TIRO_LABEL', 15.875],
+      ['PESO_PROYECTIL_LABEL', 47.125],
+    ] as const) {
+      expect(screen.getByRole('textbox', { name: new RegExp(label) })).toHaveValue(formatter.format(value));
+    }
+    expect(screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ })).toHaveValue('');
+    expect(screen.getByRole('combobox', { name: 'mil', exact: true })).toHaveTextContent('mil');
+    expect(screen.getByRole('combobox', { name: 'kg', exact: true })).toHaveTextContent('kg');
+
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const user = userEvent.setup();
+    await manualChangeDetection(async () => {
+      const [seriesSelect] = await loader.getAllHarnesses(MatSelectHarness);
+      if (!seriesSelect) throw new Error('Expected series selector');
+      await seriesSelect.open();
+      fixture.detectChanges();
+      const [, secondSeriesOption] = screen.getAllByRole('option');
+      if (!secondSeriesOption) throw new Error('Expected second series option');
+      await user.click(secondSeriesOption);
+      fixture.detectChanges();
+    });
+
+    expect(screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ })).toHaveValue('0');
+    expect(screen.getByRole('textbox', { name: /ALCANCE_PREVISTO_LABEL/ })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: /VELOCIDAD_INICIAL_LABEL/ })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: /TIEMPO_VUELO_LABEL/ })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: /ANGULO_TIRO_LABEL/ })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: /GRAD_ESPOLETA_LABEL/ })).toHaveValue(formatter.format(50.125));
+    expect(screen.getByRole('combobox', { name: 'mm', exact: true })).toHaveTextContent('mm');
+    expect(screen.getByRole('combobox', { name: 'kg', exact: true })).toHaveTextContent('kg');
   });
 
   it('formState starts clean (not dirty)', async () => {

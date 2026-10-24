@@ -1,15 +1,15 @@
 import type { Signal } from '@angular/core';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    ViewEncapsulation,
-    computed,
-    effect,
-    inject,
-    input,
-    signal,
-    untracked,
-    viewChild,
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,9 +27,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ArmamentEquipmentDenomination } from '../../models';
@@ -39,9 +39,9 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import {
-    buildDisparoOptions,
-    mapPlanningSeriesToOptions,
-    resolveInitialShotSelection,
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
+  resolveInitialShotSelection,
 } from '../utils/selection-options';
 import { getBulkCompatibleArmamentSeries } from './armament-bulk-compatibility';
 import { ArmamentIntroductionMassConfigDialog } from './armament-introduction-mass-config-dialog';
@@ -250,17 +250,13 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
 
   // ── Signals de datos del store ────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.armamentIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.formModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.armamentIntroduction().disparoOptions,
     }),
   );
   protected readonly armaOptions = computed(() =>
@@ -455,7 +451,6 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.armamentIntroduction().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;

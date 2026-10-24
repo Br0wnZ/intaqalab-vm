@@ -8,6 +8,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatTooltipHarness } from '@angular/material/tooltip/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { PlanningSeriesService } from '@intaqalab/data-access-planning';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -45,6 +46,32 @@ describe('ArmamentIntroductionComponent', () => {
     expect(document.querySelector('h3')).toBeTruthy();
   });
 
+  it('waits for real shot IDs before loading armament and uses the active UUIDs', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    vi.spyOn(service, 'loadArmamentEquipmentItems').mockResolvedValue([]);
+    vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+    const loadDenominations = vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
+    const fetchShot = vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({});
+
+    store.setFireTrialId('39a1ad65-f27c-4629-af94-5dbd711197ed');
+    await vi.waitFor(() => expect(loadDenominations).toHaveBeenCalled());
+    fixture.detectChanges();
+
+    expect(fetchShot).not.toHaveBeenCalled();
+    expect(fixture.componentInstance['serieOptions']()).toEqual([]);
+    expect(fixture.componentInstance['disparoOptions']()).toEqual([]);
+
+    const seriesId = 'e73f5270-b09d-4b85-8ce5-1570bd3d2db1';
+    const shotId = 'fbcb0883-a4d8-4b36-a104-2a3d42d3c061';
+    store.setOptimisticActiveShot(seriesId, shotId);
+    await vi.waitFor(() =>
+      expect(fetchShot).toHaveBeenCalledExactlyOnceWith('39a1ad65-f27c-4629-af94-5dbd711197ed', seriesId, shotId),
+    );
+  });
+
   it.each(['empty', 'heterogeneous', 'homogeneous'] as const)(
     'updates the bulk configuration button and tooltip for %s planning',
     async (scenario) => {
@@ -74,12 +101,12 @@ describe('ArmamentIntroductionComponent', () => {
       vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
       const fetchPlanning = vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue(planning);
       vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({});
-      store.updateArmamentIntroduction({ serieOptions: [{ value: 'series-1', label: 'Series 1' }] });
       store.setFireTrialId('trial-id');
       await vi.waitFor(() => expect(fetchPlanning).toHaveBeenCalled());
       for (const request of TestBed.inject(HttpTestingController).match(() => true)) {
         request.flush({ series: [], items: [] });
       }
+      TestBed.inject(PlanningSeriesService).seriesResource.set([{ id: 'series-1', name: 'Series 1', shots: [] }]);
       fixture.detectChanges();
 
       const button = screen.getByRole('button', { name: /MASS_CONFIG_BTN/ });
@@ -427,10 +454,10 @@ describe('ArmamentIntroductionComponent', () => {
       type === 'MORTAR'
         ? [{ id: 30, name: 'Mortar 81mm', itemType: 'MORTAR', familyId: 10678, active: true }]
         : type === 'TUBE' && familyId === 10676
-        ? [{ id: 20, name: 'Tube 105mm', itemType: 'TUBE', familyId, active: true }]
-        : type === 'TUBE' && familyId === 10677
-          ? [{ id: 21, name: 'Tube 120mm', itemType: 'TUBE', familyId, active: true }]
-          : [],
+          ? [{ id: 20, name: 'Tube 105mm', itemType: 'TUBE', familyId, active: true }]
+          : type === 'TUBE' && familyId === 10677
+            ? [{ id: 21, name: 'Tube 120mm', itemType: 'TUBE', familyId, active: true }]
+            : [],
     );
     vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue(plannedArmament);
     vi.spyOn(executionService, 'fetchShotArmament').mockResolvedValue({});

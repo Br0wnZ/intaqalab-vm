@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-    fromPosition,
-    mapMaoTopographyMassConfigToRequest,
-    numToField,
-    parseNum,
-    toPosition,
+  fromPosition,
+  mapMaoTopographyMassConfigToRequest,
+  numToField,
+  parseNum,
+  toPosition,
 } from './mao-topography.mapper';
 
 describe('mao-topography.mapper', () => {
@@ -19,14 +19,40 @@ describe('mao-topography.mapper', () => {
     expect(fromPosition({ x: 10.5, y: null, z: 30, unit: 'm' })).toEqual({
       x: { value: '10.5', unit: 'm' },
       y: null,
-      z: { value: '30.0', unit: 'm' },
+      z: { value: '30', unit: 'm' },
+    });
+  });
+
+  it.each([3.46, -3.46, 3.456789, 0, 0.000001])(
+    'preserves coordinate precision for %s through load and save',
+    (value) => {
+      const field = numToField(value, 'm');
+      const position = toPosition(field, field, field);
+      const fields = fromPosition(position);
+
+      expect(position).toEqual({ x: value, y: value, z: value, unit: 'm' });
+      expect(parseNum(fields.x)).toBe(value);
+      expect(parseNum(fields.y)).toBe(value);
+      expect(parseNum(fields.z)).toBe(value);
+    },
+  );
+
+  it('preserves comma decimal precision in single and bulk save mappings', () => {
+    const position = toPosition({ value: '3,46', unit: 'm' }, null, null);
+    const fields = fromPosition(position);
+
+    expect(parseNum(fields.x)).toBe(3.46);
+    expect(mapMaoTopographyMassConfigToRequest({ xPieza: fields.x }, {}, ['shot-1'])).toEqual({
+      assignedShotIds: ['shot-1'],
+      pieceX: 3.46,
+      pieceXUnit: 'M',
     });
   });
 
   it('parses numeric fields and preserves empty values as null', () => {
     expect(parseNum({ value: '12,50', unit: 'm' })).toBe(12.5);
     expect(parseNum(null)).toBeNull();
-    expect(numToField(null, 'm', 1)).toBeNull();
+    expect(numToField(null, 'm')).toBeNull();
   });
 
   it('applies prefilled and changed coordinates in a deduplicated bulk request', () => {

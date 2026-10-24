@@ -64,4 +64,12 @@ describe('NeqDataComponent', () => {
     const { component } = await setup();
     expect(component).toBeTruthy();
   });
+
+  it('should preserve NEQ precision in cell labels', async () => {
+    const { component } = await setup();
+
+    expect(component.setCellNeqLabel({ name: 'Cell 1', currentOtherRiskGroupsNeq: 3.456789 }, 100, 200)).toBe(
+      '3.456789 / 200',
+    );
+  });
 });

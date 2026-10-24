@@ -144,7 +144,7 @@ describe('App', () => {
   });
 
   describe('token expiration', () => {
-    it('should log off and clear auth state when SilentRenewFailed event is received', async () => {
+    it('should log off locally, re-authorize and clear auth state when SilentRenewFailed event is received', async () => {
       const mockEvents = makeMockPublicEventsService();
       const { mockOidcSecurityService, mockAuthService, componentInstance } = await setup(true, undefined, mockEvents);
 
@@ -154,19 +154,8 @@ describe('App', () => {
 
       expect(componentInstance.isAuthenticated()).toBe(false);
       expect(mockAuthService.clear).toHaveBeenCalled();
-      expect(mockOidcSecurityService.logoff).toHaveBeenCalled();
-    });
-
-    it('should fallback to logoffLocal if logoff throws on SilentRenewFailed', async () => {
-      const mockEvents = makeMockPublicEventsService();
-      const { mockOidcSecurityService, mockAuthService } = await setup(true, undefined, mockEvents);
-      mockOidcSecurityService.logoff.mockReturnValue(throwError(() => new Error('Network error')));
-
-      mockEvents.events$.next({ type: EventTypes.SilentRenewFailed });
-
-      expect(mockAuthService.clear).toHaveBeenCalled();
-      expect(mockOidcSecurityService.logoff).toHaveBeenCalled();
       expect(mockOidcSecurityService.logoffLocal).toHaveBeenCalled();
+      expect(mockOidcSecurityService.authorize).toHaveBeenCalled();
     });
 
     it('should not log off when an unrelated event is received', async () => {
@@ -177,7 +166,8 @@ describe('App', () => {
 
       expect(componentInstance.isAuthenticated()).toBe(true);
       expect(mockAuthService.clear).not.toHaveBeenCalled();
-      expect(mockOidcSecurityService.logoff).not.toHaveBeenCalled();
+      expect(mockOidcSecurityService.logoffLocal).not.toHaveBeenCalled();
+      expect(mockOidcSecurityService.authorize).not.toHaveBeenCalled();
     });
   });
 });

@@ -443,8 +443,7 @@ export class OverpressureChartWidget extends BaseFormWidgetComponent {
             intersect: false,
             filter: (item) => item.dataset.label !== 'Recta presión (puntos)',
             callbacks: {
-              label: (ctx) =>
-                `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(4)} ${MEASURE_UNIT_LABELS[selectedPressureUnit]}`,
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} ${MEASURE_UNIT_LABELS[selectedPressureUnit]}`,
             },
           },
         },

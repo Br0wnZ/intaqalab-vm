@@ -4,6 +4,7 @@ export * from './lib/directives/locale-decimal-input.directive';
 export * from './lib/directives/no-leading-zeros.directive';
 export * from './lib/directives/no-negative-values.directive';
 export * from './lib/master-data/magnitude-measure-resolver';
+export * from './lib/pipes/format-precise-number';
 export * from './lib/pipes/inta-date-pipe';
 export * from './lib/pipes/inta-decimal.pipe';
 export * from './lib/pipes/inta-trial-status-label.pipe';

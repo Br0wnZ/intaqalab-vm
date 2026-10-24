@@ -15,6 +15,8 @@ export const baseEnvironment: Omit<AppEnvironment, 'production' | 'apiUrl'> = {
     useCustomAuth0Domain: false,
     silentRenew: true,
     useRefreshToken: true,
+    ignoreNonceAfterRefresh: true,
+    useRefreshTokenLock: true,
     // logLevel: LogLevel.Debug,
     renewTimeBeforeTokenExpiresInSeconds: 60,
     postLogoutRedirectUri: 'https://intranet.inta.es/',

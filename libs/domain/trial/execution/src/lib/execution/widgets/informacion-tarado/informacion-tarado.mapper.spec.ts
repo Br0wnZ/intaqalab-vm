@@ -25,6 +25,11 @@ describe('informacion-tarado.mapper', () => {
       expect(normalizePowderWeightToGrams(400, WeightUnitEnum.G)).toBe(400);
     });
 
+    it('preserves all decimals during weight conversion', () => {
+      expect(normalizePowderWeightToGrams(0.123456789, WeightUnitEnum.KG)).toBe(0.123456789 * 1000);
+      expect(normalizePowderWeightToGrams(0.123456789, undefined)).toBe(0.123456789 * 1000);
+    });
+
     it('heuristically converts small weights without unit as kg', () => {
       expect(normalizePowderWeightToGrams(4.2, undefined)).toBe(4200);
       expect(normalizePowderWeightToGrams(450, undefined)).toBe(450);
@@ -44,6 +49,10 @@ describe('informacion-tarado.mapper', () => {
 
     it('converts KM_H to m/s', () => {
       expect(normalizeSpeedToMs(360, SpeedUnitEnum.KM_H)).toBe(100);
+    });
+
+    it('does not round converted speed', () => {
+      expect(normalizeSpeedToMs(3.46, SpeedUnitEnum.KM_H)).toBe(3.46 / 3.6);
     });
   });
 

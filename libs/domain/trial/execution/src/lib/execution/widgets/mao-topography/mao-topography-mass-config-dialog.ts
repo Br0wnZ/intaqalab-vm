@@ -12,7 +12,7 @@ import type { CalibryObserverOption } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { MaoTopographyMassConfigValues } from './mao-topography.mapper';
-import { mapMaoTopographyMassConfigToRequest } from './mao-topography.mapper';
+import { fromPosition, mapMaoTopographyMassConfigToRequest, toPosition } from './mao-topography.mapper';
 
 export interface MaoTopographyMassConfigDialogData {
   fireTrialId: string | null;
@@ -31,8 +31,7 @@ export interface MaoTopographyMassConfigDialogData {
 }
 
 export type MaoTopographyMassConfigDialogResult =
-  | { action: 'apply'; updatedShotIds: string[]; observador: string | null }
-  | { action: 'cancel' };
+  { action: 'apply'; updatedShotIds: string[]; observador: string | null } | { action: 'cancel' };
 
 interface MassConfigForm {
   series: string[];
@@ -173,25 +172,11 @@ export class MaoTopographyMassConfigDialog {
 
   // Helper mappings
   #toPosition(x: InputFieldValue, y: InputFieldValue, z: InputFieldValue): SoundLevelMeterValue | null {
-    if (!x && !y && !z) return null;
-    return {
-      x: x?.value ? parseFloat(x.value.replace(',', '.')) : null,
-      y: y?.value ? parseFloat(y.value.replace(',', '.')) : null,
-      z: z?.value ? parseFloat(z.value.replace(',', '.')) : null,
-      unit: x?.unit ?? y?.unit ?? z?.unit ?? 'm',
-    };
+    return toPosition(x, y, z);
   }
 
   #fromPosition(pos: SoundLevelMeterValue | null): { x: InputFieldValue; y: InputFieldValue; z: InputFieldValue } {
-    if (!pos) {
-      return { x: null, y: null, z: null };
-    }
-    const unit = pos.unit ?? 'm';
-    return {
-      x: pos.x !== null ? { value: pos.x.toFixed(1), unit } : null,
-      y: pos.y !== null ? { value: pos.y.toFixed(1), unit } : null,
-      z: pos.z !== null ? { value: pos.z.toFixed(1), unit } : null,
-    };
+    return fromPosition(pos);
   }
 
   async apply(): Promise<void> {

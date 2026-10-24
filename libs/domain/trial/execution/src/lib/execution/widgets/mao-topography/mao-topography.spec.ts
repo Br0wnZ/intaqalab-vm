@@ -52,7 +52,7 @@ describe('MaoTopography', () => {
     expect(state.hasChanges).toBe(false);
   });
 
-  it('reloads conditions and enables target coordinates only for shots with a target type', async () => {
+  it('reloads conditions and renders target coordinates only for shots with a target type', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -65,20 +65,18 @@ describe('MaoTopography', () => {
         },
       ],
     };
-    const expectTargetDisabled = (disabled: boolean) => {
+    const expectTargetHidden = (hidden: boolean) => {
       fixture.detectChanges();
       for (const coordinate of ['X', 'Y', 'Z']) {
-        const [pieceInput, targetInput] = screen.getAllByRole<HTMLInputElement>('textbox', { name: coordinate });
-        expect(pieceInput).toBeEnabled();
-        if (disabled) {
-          expect(targetInput).toBeDisabled();
-        } else {
-          expect(targetInput).toBeEnabled();
+        const inputs = screen.getAllByRole<HTMLInputElement>('textbox', { name: coordinate });
+        expect(inputs).toHaveLength(hidden ? 1 : 2);
+        for (const input of inputs) {
+          expect(input).toBeEnabled();
         }
       }
     };
 
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
     store.setFireTrialId('trial-123');
     fixture.componentInstance.onSerieSelected('series-1');
     fixture.componentInstance.onDisparoSelected('shot-1');
@@ -88,10 +86,10 @@ describe('MaoTopography', () => {
     for (const request of initialRequests) request.flush(conditions);
     const resource = fixture.debugElement.injector.get(PlanningConditionsService).conditionsResource;
     await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
 
     fixture.componentInstance.onDisparoSelected('shot-2');
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
     TestBed.tick();
     const interruptedRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
     fixture.componentInstance.onDisparoSelected('shot-1');
@@ -99,20 +97,20 @@ describe('MaoTopography', () => {
     expect(interruptedRequest.cancelled).toBe(true);
     httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
     await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
 
     fixture.componentInstance.onDisparoSelected('shot-2');
     TestBed.tick();
     httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
     await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
-    expectTargetDisabled(false);
+    expectTargetHidden(false);
 
     fixture.componentInstance.onDisparoSelected('shot-1');
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
     TestBed.tick();
     httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush(conditions);
     await vi.waitFor(() => expect(resource.isLoading()).toBe(false));
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
 
     fixture.componentInstance.onDisparoSelected('shot-2');
     TestBed.tick();
@@ -120,7 +118,7 @@ describe('MaoTopography', () => {
       .expectOne((request) => request.url.endsWith('/planning/conditions'))
       .flush('Unavailable', { status: 500, statusText: 'Server Error' });
     await vi.waitFor(() => expect(resource.error()).toBeTruthy());
-    expectTargetDisabled(true);
+    expectTargetHidden(true);
   });
 
   it('formState reports the correct widgetId', async () => {
@@ -152,6 +150,40 @@ describe('MaoTopography', () => {
       }
     ).formModel();
     expect(formValues.observador).toBe('obs-01');
+  });
+
+  it('sends the entered comma decimal to the backend without rounding after blur', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const service = TestBed.inject(ExecutionService);
+    const fetchSpy = vi.spyOn(service, 'fetchShotMaoTopography').mockResolvedValue({
+      maoTopographyData: { pieceX: 1.23456789 },
+    });
+    const updateSpy = vi.spyOn(service, 'updateShotMaoTopography').mockResolvedValue({});
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1'));
+    fixture.detectChanges();
+    const [pieceXInput] = screen.getAllByRole('textbox', { name: 'X' });
+    if (!pieceXInput) throw new Error('Piece X input was not rendered');
+    expect(pieceXInput).toHaveValue('1,23456789');
+    const user = userEvent.setup();
+    await user.clear(pieceXInput);
+    await user.type(pieceXInput, '3,46');
+    await user.tab();
+
+    await fixture.componentInstance.saveForm();
+
+    expect(updateSpy).toHaveBeenCalledWith(
+      'trial-123',
+      'series-1',
+      'shot-1',
+      expect.objectContaining({ pieceX: 3.46 }),
+    );
+    expect(store.maoTopography().xPieza).toBe(3.46);
+    expect(pieceXInput).toHaveValue('3,46');
+    expect(fixture.componentInstance.formState().dirty).toBe(false);
   });
 
   it('numeric fields default to null when store has no data', async () => {

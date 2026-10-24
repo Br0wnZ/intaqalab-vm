@@ -14,6 +14,7 @@ import {
 import type { ControlValueAccessor } from '@angular/forms';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
+import { formatPreciseNumber } from '../pipes/format-precise-number';
 import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 
 /**
@@ -22,7 +23,7 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
  * Transforms an `<input>` into a locale-aware decimal field:
  * - Sets `type="text"` + `inputMode="decimal"` (numeric keyboard on mobile).
  * - Allows only digits, the locale-specific decimal separator, `-` (negatives), and navigation keys.
- * - Enforces max decimal places on keydown AND paste — extra digits beyond `[decimals]` are blocked.
+ * - Preserves all decimal places on input, paste, display, and blur.
  * - On focus: converts the stored JS number to an editable locale string (no thousands separator).
  * - On blur: parses the locale string back to a JS `number` and notifies the form.
  * - Implements `ControlValueAccessor` → compatible with `[formField]`, `ngModel`, `formControl`.
@@ -46,7 +47,7 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
   ],
 })
 export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit {
-  /** Maximum fraction digits — default 2, user cannot type more. */
+  /** Retained for compatibility; precision is never limited. */
   readonly decimals = input<number>(2);
   /** Minimum fraction digits displayed — default 0. */
   readonly minDecimals = input<number>(0);
@@ -212,10 +213,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
       el.value = '';
       return;
     }
-    el.value = new Intl.NumberFormat(this.#localeSignal(), {
-      minimumFractionDigits: this.minDecimals(),
-      maximumFractionDigits: this.decimals(),
-    }).format(this.#internalValue);
+    el.value = formatPreciseNumber(this.#internalValue, this.#localeSignal(), this.minDecimals());
   }
 
   /**
@@ -258,7 +256,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
    *
    * Rules:
    * - Navigation keys, Ctrl/Meta combos → always allowed.
-   * - Digits (0-9) → allowed unless adding the digit would exceed `decimals()` max.
+   * - Digits (0-9) → always allowed.
    * - Locale decimal separator → allowed only once.
    * - `-` → allowed only at position 0 and only once.
    * - Everything else → blocked.
@@ -284,7 +282,7 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     if (event.ctrlKey || event.metaKey) return true;
 
     if (/^\d$/.test(event.key)) {
-      return !this.#wouldExceedMaxDecimals(event.key, sep);
+      return true;
     }
 
     if (event.key === sep) {
@@ -300,40 +298,13 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
   }
 
   /**
-   * Checks whether inserting `digit` at the current cursor position would push
-   * the fractional part beyond `decimals()` max digits.
-   */
-  #wouldExceedMaxDecimals(digit: string, sep: string): boolean {
-    const el = this.#el.nativeElement;
-    const value = el.value;
-    const sepIndex = value.indexOf(sep);
-    if (sepIndex === -1) return false; // no decimal part yet → safe
-
-    const cursorPos = el.selectionStart ?? value.length;
-    const selectionEnd = el.selectionEnd ?? cursorPos;
-
-    // Only counts if the cursor is AFTER the separator
-    if (cursorPos <= sepIndex) return false;
-
-    // Simulate insertion
-    const newValue = value.slice(0, cursorPos) + digit + value.slice(selectionEnd);
-    const newSepIndex = newValue.indexOf(sep);
-    if (newSepIndex === -1) return false;
-
-    const fractionalDigits = newValue.length - newSepIndex - 1;
-    return fractionalDigits > this.decimals();
-  }
-
-  /**
    * Sanitizes pasted text:
    * - Strips disallowed characters.
    * - Allows only one decimal separator.
-   * - Truncates fractional part to `decimals()` max.
    * - Ensures `-` only appears at position 0.
    */
   #sanitizeInput(text: string): string {
     const sep = this.#decimalSeparator();
-    const maxDec = this.decimals();
 
     // Strip chars not valid for this locale
     const allowedPattern = sep === ',' ? /[^0-9,-]/g : /[^0-9.-]/g;
@@ -343,12 +314,6 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     const parts = result.split(sep);
     if (parts.length > 2) {
       result = parts[0] + sep + parts.slice(1).join('');
-    }
-
-    // Truncate fractional part to max decimals
-    const finalParts = result.split(sep);
-    if (finalParts.length === 2 && finalParts[1].length > maxDec) {
-      result = finalParts[0] + sep + finalParts[1].slice(0, maxDec);
     }
 
     // Minus sign only at position 0

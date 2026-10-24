@@ -8,37 +8,37 @@ import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-    EquipmentTypeEnum,
-    type JltMaoBulkConfigurationRequest,
-    type JltMaoBulkConfigurationResponse,
-    type MaoTopographyBulkConfigurationRequest,
-    type MaoTopographyBulkConfigurationResponse,
-    type MunitionConditioningBulkConfigurationRequest,
-    type MunitionConditioningBulkConfigurationResponse,
-    type PropellantChargeAdjustmentConfiguration,
-    type PropellantChargeAdjustmentResponse,
-    type ShotCameraOrientationResponse,
-    type ShotManometerPressuresRequest,
-    type ShotManometerPressuresResponse,
-    type ShotMunitionRequest,
-    type ShotMunitionResponse,
-    type ShotVideoDataRequest,
-    type ShotVideoDataResponse,
-    type TrajectographyRadarOrientationResponse,
-    type VelocityUniformityResponse,
-    WidgetId,
+  EquipmentTypeEnum,
+  type JltMaoBulkConfigurationRequest,
+  type JltMaoBulkConfigurationResponse,
+  type MaoTopographyBulkConfigurationRequest,
+  type MaoTopographyBulkConfigurationResponse,
+  type MunitionConditioningBulkConfigurationRequest,
+  type MunitionConditioningBulkConfigurationResponse,
+  type PropellantChargeAdjustmentConfiguration,
+  type PropellantChargeAdjustmentResponse,
+  type ShotCameraOrientationResponse,
+  type ShotManometerPressuresRequest,
+  type ShotManometerPressuresResponse,
+  type ShotMunitionRequest,
+  type ShotMunitionResponse,
+  type ShotVideoDataRequest,
+  type ShotVideoDataResponse,
+  type TrajectographyRadarOrientationResponse,
+  type VelocityUniformityResponse,
+  WidgetId,
 } from '../execution/models';
 import {
-    type ArmamentBulkConfigurationRequest,
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
-    type PlanningResponse,
-    type ProfilesReadinessResponse,
-    type SecurityCountdownResponse,
-    type ShotArmamentResponse,
-    type ShotPressuresResponse,
-    type ShotVelocitiesResponse,
+  type ArmamentBulkConfigurationRequest,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
+  type PlanningResponse,
+  type ProfilesReadinessResponse,
+  type SecurityCountdownResponse,
+  type ShotArmamentResponse,
+  type ShotPressuresResponse,
+  type ShotVelocitiesResponse,
 } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
@@ -656,6 +656,22 @@ describe('ExecutionService', () => {
         observations: 'Serie lista',
       });
     });
+
+    const updatedJltBody = {
+      sanitaryServicesReady: true,
+      securityReady: true,
+      vesselReady: false,
+      observations: 'Sin embarcacion',
+    };
+    const updatePromise = service.updateJltReadiness(DEMO_TRIAL_ID, seriesId, updatedJltBody);
+    TestBed.tick();
+
+    const updateReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/jlt-preparation/series/${seriesId}`);
+    expect(updateReq.request.method).toBe('PUT');
+    expect(updateReq.request.body).toEqual(updatedJltBody);
+    updateReq.flush(updatedJltBody);
+
+    await expect(updatePromise).resolves.toEqual(updatedJltBody);
 
     service.selectShot(DEMO_TRIAL_ID, shotId);
     TestBed.tick();

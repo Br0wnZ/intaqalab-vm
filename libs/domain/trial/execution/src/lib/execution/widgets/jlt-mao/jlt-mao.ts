@@ -374,10 +374,10 @@ export class JltMao extends BaseFormWidgetComponent {
     const referenceOlt = this.plannedOlt();
     return olt !== null && referenceOlt !== null ? olt - referenceOlt : null;
   });
-  protected readonly oltDisplayField = computed<InputFieldValue>(() => this.#numToField(this.effectiveOlt(), 'oo', 3));
+  protected readonly oltDisplayField = computed<InputFieldValue>(() => this.#numToField(this.effectiveOlt(), 'oo'));
   protected readonly angularDifferenceDisplayField = computed<InputFieldValue>(() =>
     this.angularDifferenceReadOnly()
-      ? this.#numToField(this.calculatedAngularDifference(), 'oo', 3)
+      ? this.#numToField(this.calculatedAngularDifference(), 'oo')
       : this.diferenciaAngularField(),
   );
 
@@ -425,7 +425,7 @@ export class JltMao extends BaseFormWidgetComponent {
 
   // ── TTN plain signal (not part of Signal Form — matInput does not accept null) ──
   protected readonly ttnField = signal<string | null>(this.#store.jltMao().ttn);
-  protected readonly oltField = signal<InputFieldValue>(this.#numToField(this.#store.jltMao().olt, 'oo', 3));
+  protected readonly oltField = signal<InputFieldValue>(this.#numToField(this.#store.jltMao().olt, 'oo'));
 
   // ── Select form ───────────────────────────────────────────────────────────
   protected readonly formModel = signal<JltMaoSelectForm>({
@@ -649,7 +649,7 @@ export class JltMao extends BaseFormWidgetComponent {
     });
 
     if (data.numericFiringTable !== undefined) this.ttnField.set(data.numericFiringTable ?? null);
-    this.oltField.set(this.#numToField(remoteOlt, 'oo', 3));
+    this.oltField.set(this.#numToField(remoteOlt, 'oo'));
     this.formModel.update((model) => ({ ...model, piqueta: remotePiqueta }));
     if (data.theoreticalInitialVelocity !== undefined)
       this.velocidadInicialField.set(this.#numToField(data.theoreticalInitialVelocity, 'm/s'));
@@ -674,7 +674,7 @@ export class JltMao extends BaseFormWidgetComponent {
   resetForm(): void {
     const stored = this.#store.jltMao();
     this.ttnField.set(stored.ttn);
-    this.oltField.set(this.#numToField(stored.olt, 'oo', 3));
+    this.oltField.set(this.#numToField(stored.olt, 'oo'));
     this.formModel.set({
       serie: stored.serie,
       disparo: stored.disparo,
@@ -881,8 +881,8 @@ export class JltMao extends BaseFormWidgetComponent {
 
   // ── Private helpers ───────────────────────────────────────────────────────
 
-  #numToField(v: number | null, unit: string, decimals?: number): InputFieldValue {
-    return v !== null ? { value: decimals === undefined ? String(v) : v.toFixed(decimals), unit } : null;
+  #numToField(v: number | null, unit: string): InputFieldValue {
+    return v !== null ? { value: String(v), unit } : null;
   }
 
   #parseNum(field: InputFieldValue): number | null {

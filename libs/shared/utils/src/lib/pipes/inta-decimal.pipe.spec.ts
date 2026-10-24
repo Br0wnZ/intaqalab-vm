@@ -3,8 +3,8 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 import type { AppLocale } from '../tokens/locale-signal.token';
+import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 import { IntaDecimalPipe } from './inta-decimal.pipe';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -47,6 +47,14 @@ describe('IntaDecimalPipe', () => {
       const result = pipe.transform(3.14159, '1.2-4');
       expect(result).toContain(',');
       expect(result).not.toContain('.'); // no dot as decimal in ES
+      expect(result).toBe('3,14159');
+    });
+
+    it.each([3.46, -3.456789, 1e-7, 1e-101, Number.MIN_VALUE])('preserves numeric precision for %s', (value) => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+      const formatted = pipe.transform(value, '1.0-1');
+
+      expect(Number(formatted.replace(/\./g, '').replace(',', '.'))).toBe(value);
     });
 
     it('formats negative — comma as decimal sep', () => {

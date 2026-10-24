@@ -101,17 +101,17 @@ describe('MaoTopographyMassConfigDialog', () => {
   it('posts bulk configuration and closes only after success', async () => {
     const { fixture } = await renderDialog();
     fixture.componentInstance.formModel.update((model) => ({ ...model, series: ['serie-01'] }));
-    fixture.componentInstance.piezaPosition.set({ x: 101, y: 200, z: 10, unit: 'm' });
+    fixture.componentInstance.piezaPosition.set({ x: 3.46, y: -200.123456, z: 10.98765, unit: 'm' });
 
     await fixture.componentInstance.apply();
 
     expect(mockExecutionService.bulkConfigureMaoTopography).toHaveBeenCalledWith('trial-123', {
       assignedShotIds: ['shot-01'],
-      pieceX: 101,
+      pieceX: 3.46,
       pieceXUnit: 'M',
-      pieceY: 200,
+      pieceY: -200.123456,
       pieceYUnit: 'M',
-      pieceZ: 10,
+      pieceZ: 10.98765,
       pieceZUnit: 'M',
       targetX: 300,
       targetXUnit: 'M',

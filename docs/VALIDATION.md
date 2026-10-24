@@ -33,3 +33,13 @@ Este comando activa automáticamente el script `scripts/merge-coverage.js` volca
 ## 3. Hook Pre-Push
 
 Por defecto, el repositorio debe protegerse. Si se activa Husky o si utilizas Nx Cloud, el pipeline bloqueará cualquier inserción de código a `master` si los tests en el scope alterado fallan local o remotamente.
+
+## 4. Precisión de Mediciones
+
+- Las mediciones conservan su valor durante carga, edición, pegado, pérdida de foco, guardado y configuración masiva. No usar `toFixed`, `toPrecision` ni redondeos explícitos en estas rutas, tampoco para presentar resultados.
+- Usar `formatPreciseNumber` de `@intaqalab/utils` o el pipe `intaDecimal` para mostrar números con separadores locales sin reducir precisión. Los decimales mínimos pueden añadir ceros; nunca deben eliminar cifras existentes.
+- `libLocalDecimal` conserva todos los decimales introducidos. Su input `decimals` se mantiene por compatibilidad, pero ya no limita ni trunca valores. `minDecimals` controla únicamente los ceros mínimos mostrados.
+- Las conversiones de unidades conservan el resultado numérico completo. Cambiar solo la representación o la unidad visual no debe reescribir el valor base.
+- El contrato numérico sigue siendo `number` de JavaScript: no recupera precisión ya perdida en backend ni ofrece aritmética decimal arbitraria. Los índices, descomposición de tiempos y porcentajes de progreso no son mediciones.
+
+Regresión mínima: introducir `3,46`, perder foco y guardar debe enviar `3.46`, no `3.5`. Incluir también negativos, varios decimales y carga de valores existentes.

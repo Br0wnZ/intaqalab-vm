@@ -16,7 +16,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { ArmamentService } from '../../services/armament-service';
-import type { MassiveConfigData, TrialArmamentResponse, UpdateArmamentDialogResult } from '../../utils-models/armament.model';
+import type {
+  MassiveConfigData,
+  TrialArmamentResponse,
+  UpdateArmamentDialogResult,
+} from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { Armament } from './armament';
 import { ArmamentRow } from './armament-row';
@@ -222,20 +226,23 @@ describe('Armament', () => {
       expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' })).toBeEnabled();
     });
 
-    it.each([null, 0])('should require weapon tube life while accepting zero percent (%s)', async (tubeLifePercentage) => {
-      const { view } = await runSetup();
-      const component = view.fixture.componentInstance;
+    it.each([null, 0])(
+      'should require weapon tube life while accepting zero percent (%s)',
+      async (tubeLifePercentage) => {
+        const { view } = await runSetup();
+        const component = view.fixture.componentInstance;
 
-      component.armamentSignal.update((series) => {
-        const updatedSeries = structuredClone(series);
-        updatedSeries[0].shots[0].armament.tubeLifePercentage = tubeLifePercentage;
-        return updatedSeries;
-      });
-      view.fixture.detectChanges();
+        component.armamentSignal.update((series) => {
+          const updatedSeries = structuredClone(series);
+          updatedSeries[0].shots[0].armament.tubeLifePercentage = tubeLifePercentage;
+          return updatedSeries;
+        });
+        view.fixture.detectChanges();
 
-      expect(component.isFormValid()).toBe(tubeLifePercentage !== null);
-      expect(component.hasToBeDisabled()).toBe(tubeLifePercentage === null);
-    });
+        expect(component.isFormValid()).toBe(tubeLifePercentage !== null);
+        expect(component.hasToBeDisabled()).toBe(tubeLifePercentage === null);
+      },
+    );
 
     it('should have a valid form when data is correct', async () => {
       const { view } = await runSetup();
@@ -313,46 +320,49 @@ describe('Armament', () => {
   });
 
   describe('Massive configuration', () => {
-    it.each(['', 'Massive observations'])('should replace observations and clear mortar tubes only in selected series (%s)', async (observaciones) => {
-      const { view } = await runSetup();
-      const component = view.fixture.componentInstance;
-      const config: MassiveConfigData = {
-        series: ['series-1'],
-        tipo: SpecimenType.Mortar,
-        denominacionArma: '1',
-        denominacionTubo: '',
-        instrumentado: '',
-        vidaUtil: '',
-        observaciones,
-      };
+    it.each(['', 'Massive observations'])(
+      'should replace observations and clear mortar tubes only in selected series (%s)',
+      async (observaciones) => {
+        const { view } = await runSetup();
+        const component = view.fixture.componentInstance;
+        const config: MassiveConfigData = {
+          series: ['series-1'],
+          tipo: SpecimenType.Mortar,
+          denominacionArma: '1',
+          denominacionTubo: '',
+          instrumentado: '',
+          vidaUtil: '',
+          observaciones,
+        };
 
-      mockDialog.open.mockReturnValueOnce({
-        componentInstance: {},
-        afterClosed: () => of(config),
-        close: vi.fn(),
-      } as unknown as MatDialogRef<MassiveShotsConfigurationDialog, MassiveConfigData>);
+        mockDialog.open.mockReturnValueOnce({
+          componentInstance: {},
+          afterClosed: () => of(config),
+          close: vi.fn(),
+        } as unknown as MatDialogRef<MassiveShotsConfigurationDialog, MassiveConfigData>);
 
-      await component.openMassiveConfiguration();
+        await component.openMassiveConfiguration();
 
-      const [configuredSeries, unchangedSeries] = component.armamentSignal();
-      for (const shot of configuredSeries.shots) {
-        expect(shot.armament.weaponType).toBe(SpecimenType.Mortar);
-        expect(shot.armament.tubeExternalId).toBe('');
-        expect(shot.armament.tubeName).toBe('');
-        expect(shot.armament.observations).toBe(observaciones);
-      }
-      expect(unchangedSeries.shots[0].armament.tubeExternalId).toBe('1');
-      expect(unchangedSeries.shots[0].armament.tubeName).toBe('Tube 1');
-      expect(unchangedSeries.shots[0].armament.observations).toBe('Observation 1');
-      expect(mockArmamentService.updateArmament).toHaveBeenCalledWith(
-        'trial-123',
-        expect.objectContaining({
-          shots: expect.arrayContaining([
-            expect.objectContaining({ shotId: 'shot-1-1', observations: observaciones || undefined }),
-          ]),
-        }),
-      );
-    });
+        const [configuredSeries, unchangedSeries] = component.armamentSignal();
+        for (const shot of configuredSeries.shots) {
+          expect(shot.armament.weaponType).toBe(SpecimenType.Mortar);
+          expect(shot.armament.tubeExternalId).toBe('');
+          expect(shot.armament.tubeName).toBe('');
+          expect(shot.armament.observations).toBe(observaciones);
+        }
+        expect(unchangedSeries.shots[0].armament.tubeExternalId).toBe('1');
+        expect(unchangedSeries.shots[0].armament.tubeName).toBe('Tube 1');
+        expect(unchangedSeries.shots[0].armament.observations).toBe('Observation 1');
+        expect(mockArmamentService.updateArmament).toHaveBeenCalledWith(
+          'trial-123',
+          expect.objectContaining({
+            shots: expect.arrayContaining([
+              expect.objectContaining({ shotId: 'shot-1-1', observations: observaciones || undefined }),
+            ]),
+          }),
+        );
+      },
+    );
 
     it('should open dialog when massive config button is clicked', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

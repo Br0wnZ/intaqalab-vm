@@ -1,13 +1,48 @@
-import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { MatSelectModule } from '@angular/material/select';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 
-export interface SoundLevelMeterValue {
-  x: number | null;
-  y: number | null;
-  z: number | null;
+export interface SoundLevelMeterValue<T = number | null> {
+  x: T;
+  y: T;
+  z: T;
   unit: string;
+}
+
+/**
+ * Normaliza cualquier entrada numérica (number, string formateado o plano) a number | null.
+ */
+function parseToNumber(raw: number | string | null | undefined): number | null {
+  if (raw === null || raw === undefined || raw === '') return null;
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null;
+  const str = raw.trim();
+  if (!str) return null;
+
+  const lastDot = str.lastIndexOf('.');
+  const lastComma = str.lastIndexOf(',');
+  if (lastDot !== -1 && lastComma !== -1) {
+    if (lastComma > lastDot) {
+      // e.g. "1.234,56" (ES)
+      const normalized = str.replace(/\./g, '').replace(',', '.');
+      const num = Number(normalized);
+      return Number.isFinite(num) ? num : null;
+    } else {
+      // e.g. "1,234.56" (EN)
+      const normalized = str.replace(/,/g, '');
+      const num = Number(normalized);
+      return Number.isFinite(num) ? num : null;
+    }
+  }
+
+  if (lastComma !== -1) {
+    const normalized = str.replace(',', '.');
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  const num = Number(str);
+  return Number.isFinite(num) ? num : null;
 }
 
 @Component({
@@ -35,9 +70,9 @@ export interface SoundLevelMeterValue {
         [class.rounded-lg]="size() === 'small'"
       >
         <!-- Campo X -->
-        <div class="flex-1 flex flex-col justify-center h-full">
+        <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
             [class.text-[9px]]="size() !== 'small'"
             [class.mb-0.5]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
@@ -46,17 +81,21 @@ export interface SoundLevelMeterValue {
           >
             {{ xLabel() }}
           </label>
-          <div class="flex items-center gap-1 h-5">
+          <div class="flex items-center gap-1 h-5 min-w-0">
             <input
-              type="number"
+              type="text"
+              inputmode="decimal"
               libLocalDecimal
-              class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="xInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [decimalValue]="xValue()"
+              [numericSign]="numericSign()"
+              [decimals]="decimals()"
+              [minDecimals]="minDecimals()"
+              [decimalValue]="numericXValue()"
               [attr.aria-label]="xLabel()"
               (decimalValueChange)="onXChange($event)"
             />
@@ -71,9 +110,9 @@ export interface SoundLevelMeterValue {
         ></div>
 
         <!-- Campo Y -->
-        <div class="flex-1 flex flex-col justify-center h-full">
+        <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
             [class.text-[9px]]="size() !== 'small'"
             [class.mb-0.5]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
@@ -82,17 +121,21 @@ export interface SoundLevelMeterValue {
           >
             {{ yLabel() }}
           </label>
-          <div class="flex items-center gap-1 h-5">
+          <div class="flex items-center gap-1 h-5 min-w-0">
             <input
-              type="number"
+              type="text"
+              inputmode="decimal"
               libLocalDecimal
-              class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="yInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [decimalValue]="yValue()"
+              [numericSign]="numericSign()"
+              [decimals]="decimals()"
+              [minDecimals]="minDecimals()"
+              [decimalValue]="numericYValue()"
               [attr.aria-label]="yLabel()"
               (decimalValueChange)="onYChange($event)"
             />
@@ -107,9 +150,9 @@ export interface SoundLevelMeterValue {
         ></div>
 
         <!-- Campo Z -->
-        <div class="flex-1 flex flex-col justify-center h-full">
+        <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
             [class.text-[9px]]="size() !== 'small'"
             [class.mb-0.5]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
@@ -118,17 +161,21 @@ export interface SoundLevelMeterValue {
           >
             {{ zLabel() }}
           </label>
-          <div class="flex items-center gap-1 h-5">
+          <div class="flex items-center gap-1 h-5 min-w-0">
             <input
-              type="number"
+              type="text"
+              inputmode="decimal"
               libLocalDecimal
-              class="w-full font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="zInputId()"
               [placeholder]="placeholder()"
               [disabled]="disabled()"
-              [decimalValue]="zValue()"
+              [numericSign]="numericSign()"
+              [decimals]="decimals()"
+              [minDecimals]="minDecimals()"
+              [decimalValue]="numericZValue()"
               [attr.aria-label]="zLabel()"
               (decimalValueChange)="onZChange($event)"
             />
@@ -186,8 +233,11 @@ export interface SoundLevelMeterValue {
     `,
   ],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SoundLevelMeterInput implements FormValueControl<SoundLevelMeterValue | null> {
+export class SoundLevelMeterInput<
+  T extends number | string | null = number | string | null,
+> implements FormValueControl<SoundLevelMeterValue<T> | null> {
   // ── Inputs ────────────────────────────────────────────────────────────────
   readonly size = input<'normal' | 'small'>('normal');
   readonly label = input<string | null>(null);
@@ -197,14 +247,17 @@ export class SoundLevelMeterInput implements FormValueControl<SoundLevelMeterVal
   readonly placeholder = input<string>('0');
   readonly disabled = input<boolean>(false);
   readonly unitOptions = input<{ value: string; label: string }[]>([{ value: 'm', label: 'm' }]);
+  readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
+  readonly decimals = input<number>(2);
+  readonly minDecimals = input<number>(0);
 
   // ── Bidirectional Signal Model (FormValueControl) ────────────────────────
-  readonly value = model<SoundLevelMeterValue | null>(null);
+  readonly value = model<SoundLevelMeterValue<T> | null>(null);
 
   // ── Derived values for view ───────────────────────────────────────────────
-  protected readonly xValue = computed(() => this.value()?.x ?? null);
-  protected readonly yValue = computed(() => this.value()?.y ?? null);
-  protected readonly zValue = computed(() => this.value()?.z ?? null);
+  protected readonly numericXValue = computed(() => parseToNumber(this.value()?.x));
+  protected readonly numericYValue = computed(() => parseToNumber(this.value()?.y));
+  protected readonly numericZValue = computed(() => parseToNumber(this.value()?.z));
   protected readonly unit = computed(() => this.value()?.unit ?? this.unitOptions()[0]?.value ?? 'm');
 
   // ── Accessibility Unique IDs ──────────────────────────────────────────────
@@ -214,32 +267,56 @@ export class SoundLevelMeterInput implements FormValueControl<SoundLevelMeterVal
   protected readonly zInputId = computed(() => `sound-level-meter-z-${this.#uid}`);
 
   // ── Event Handlers ────────────────────────────────────────────────────────
-  onXChange(value: number | null): void {
+  onXChange(num: number | null): void {
     const current = this.value();
+    const currentX = current?.x;
+    let nextX: T;
+    if (typeof currentX === 'string') {
+      nextX = (num !== null ? String(num) : '') as T;
+    } else {
+      nextX = num as T;
+    }
+
     this.value.set({
-      x: value,
-      y: current?.y ?? null,
-      z: current?.z ?? null,
+      x: nextX,
+      y: current?.y ?? (null as T),
+      z: current?.z ?? (null as T),
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }
 
-  onYChange(value: number | null): void {
+  onYChange(num: number | null): void {
     const current = this.value();
+    const currentY = current?.y;
+    let nextY: T;
+    if (typeof currentY === 'string') {
+      nextY = (num !== null ? String(num) : '') as T;
+    } else {
+      nextY = num as T;
+    }
+
     this.value.set({
-      x: current?.x ?? null,
-      y: value,
-      z: current?.z ?? null,
+      x: current?.x ?? (null as T),
+      y: nextY,
+      z: current?.z ?? (null as T),
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }
 
-  onZChange(value: number | null): void {
+  onZChange(num: number | null): void {
     const current = this.value();
+    const currentZ = current?.z;
+    let nextZ: T;
+    if (typeof currentZ === 'string') {
+      nextZ = (num !== null ? String(num) : '') as T;
+    } else {
+      nextZ = num as T;
+    }
+
     this.value.set({
-      x: current?.x ?? null,
-      y: current?.y ?? null,
-      z: value,
+      x: current?.x ?? (null as T),
+      y: current?.y ?? (null as T),
+      z: nextZ,
       unit: current?.unit ?? this.unitOptions()[0]?.value ?? 'm',
     });
   }
@@ -247,9 +324,9 @@ export class SoundLevelMeterInput implements FormValueControl<SoundLevelMeterVal
   onUnitChange(unit: string): void {
     const current = this.value();
     this.value.set({
-      x: current?.x ?? null,
-      y: current?.y ?? null,
-      z: current?.z ?? null,
+      x: current?.x ?? (null as T),
+      y: current?.y ?? (null as T),
+      z: current?.z ?? (null as T),
       unit,
     });
   }

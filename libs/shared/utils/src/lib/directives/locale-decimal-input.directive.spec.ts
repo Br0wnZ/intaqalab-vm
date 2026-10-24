@@ -95,6 +95,27 @@ describe('LocaleDecimalInputDirective', () => {
   let fixture: ComponentFixture<HostComponent>;
   let inputEl: HTMLInputElement;
 
+  it.each(['es-ES', 'en-US'] as const)(
+    'preserves loaded precision through repeated focus and blur in %s',
+    async (locale) => {
+      const user = userEvent.setup();
+      const { fixture: boundFixture } = await render(BoundValueHost, {
+        providers: [localeSignalProvider(locale).provider],
+      });
+      boundFixture.componentInstance.coordinate.set(3.456789);
+      boundFixture.detectChanges();
+      const coordinate = screen.getByRole('textbox', { name: 'Coordinate' });
+
+      await user.click(coordinate);
+      await user.tab();
+      await user.click(coordinate);
+      await user.tab();
+
+      expect(boundFixture.componentInstance.coordinate()).toBe(3.456789);
+      expect(coordinate).toHaveValue(new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(3.456789));
+    },
+  );
+
   it('keeps the latest externally loaded value when focused again', async () => {
     const user = userEvent.setup();
     const { fixture: boundFixture } = await render(BoundValueHost, {
@@ -233,7 +254,7 @@ describe('LocaleDecimalInputDirective', () => {
     });
   });
 
-  describe('max decimal enforcement (default = 2)', () => {
+  describe('decimal precision preservation (default = 2)', () => {
     beforeEach(async () => setup('es-ES'));
 
     it('allows 2nd decimal digit', () => {
@@ -243,11 +264,11 @@ describe('LocaleDecimalInputDirective', () => {
       expect(fireKeydown(inputEl, '6')).toBe(false); // 2nd decimal → allowed
     });
 
-    it('blocks 3rd decimal digit', () => {
+    it('allows 3rd decimal digit without losing precision', () => {
       // "1,56" — cursor at end, trying to add a 3rd decimal digit
       inputEl.value = '1,56';
       inputEl.setSelectionRange(4, 4);
-      expect(fireKeydown(inputEl, '7')).toBe(true); // 3rd decimal → blocked
+      expect(fireKeydown(inputEl, '7')).toBe(false);
     });
 
     it('allows digit before the separator (not a decimal digit)', () => {
@@ -265,11 +286,11 @@ describe('LocaleDecimalInputDirective', () => {
       expect(fireKeydown(inputEl, '7')).toBe(false); // 3rd decimal allowed
     });
 
-    it('blocks 4th decimal digit with [decimals]="3"', async () => {
+    it('allows 4th decimal digit with [decimals]="3"', async () => {
       await setup('es-ES', HostComponent3Decimals);
       inputEl.value = '1,567';
       inputEl.setSelectionRange(5, 5);
-      expect(fireKeydown(inputEl, '8')).toBe(true); // 4th → blocked
+      expect(fireKeydown(inputEl, '8')).toBe(false);
     });
   });
 
@@ -283,11 +304,9 @@ describe('LocaleDecimalInputDirective', () => {
       expect(inputEl.value).not.toContain('c');
     });
 
-    it('truncates pasted decimal to max 2 digits', () => {
+    it('preserves all pasted decimal digits', () => {
       firePaste(inputEl, '1,5678');
-      // Should truncate fractional to 2 digits
-      const fracPart = inputEl.value.split(',')[1];
-      expect(fracPart?.length).toBeLessThanOrEqual(2);
+      expect(inputEl.value).toBe('1,5678');
     });
   });
 

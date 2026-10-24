@@ -1,8 +1,8 @@
 ---
 name: angular-testing-expert
-version: 1.0.1
-last-updated: 2026-10-19
-description: Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses.
+version: 1.0.2
+last-updated: 2026-10-24
+description: Expert QA guide for Angular 21+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
 user-invocable: true
 ---
 
@@ -19,6 +19,17 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**
 - **Project Utilities:** `@intaqalab/utils/testing/core` y `@intaqalab/config`. Read [project-utilities.md](references/project-utilities.md)
 
 ## 🛡️ Reglas de Oro
+
+### Regresiones de Decimales y Locale (Obligatorias)
+
+Cargar [numeric-input-constraints](../numeric-input-constraints/SKILL.md) para su contrato y matriz de regresión. Las pruebas deben detectar pérdida de precisión, no reproducir expectativas antiguas de redondeo.
+
+- Parametrizar con `AppLocale` realmente soportados e inyectar `LOCALE_SIGNAL` mediante signal. Hoy ES/EN están habilitados; no añadir `de-DE` mediante casts ni asumir soporte por existir `de.json`.
+- Usar `userEvent` para escribir ES `3,46` / EN `3.46`, pegar más decimales, salir del campo y guardar. Comprobar valor visible, estado, dirty y cuerpo HTTP exacto como `pieceX: 3.46`; incluir guardado masivo.
+- Probar carga del backend con `3.456789`, guardar sin cambios y ciclos repetidos foco -> blur. Cubrir cero, negativos permitidos, vacío/null/omisión, agrupación de miles, notación científica, cambios externos, readonly/disabled y cambio de idioma/unidad sin modificar valor base.
+- Cubrir input interno y proyectado de `InputSelect`, X/Y/Z de `SoundLevelMeterInput`, mapper y servicio afectado. Cambios compartidos requieren pruebas de sus consumidores.
+- Usar `toBe`/`toEqual`/`toHaveBeenCalledWith` para preservar valores conocidos. `toBeCloseTo` puede servir para algoritmos de coma flotante, pero no demuestra ausencia de redondeo. No construir valor esperado con el mismo helper bajo prueba, `toFixed` o la misma limitación que se pretende detectar.
+- Actualizar pruebas que esperen bloqueo/truncamiento por `decimals`: ese input es solo compatibilidad. Padding de `minDecimals` no autoriza reducir precisión ni cambiar payload.
 
 ### 1. Filosofía de Testing 🧠
 

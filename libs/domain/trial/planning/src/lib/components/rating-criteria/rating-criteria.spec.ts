@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
@@ -53,6 +52,19 @@ const setup = async (ratingCriteria = mockRatingCriteria, readonly = false) => {
 };
 
 describe('RatingCriteria', () => {
+  it('should preserve initial criteria precision without rounding', async () => {
+    const criteria = {
+      ...mockRatingCriteria,
+      v0c: { ...mockRatingCriteria.v0c, useful1Min: 3.456789123 },
+      projectile: { ...mockRatingCriteria.projectile, useful1Min: 3.46 },
+    };
+    const { hostInstance } = await setup(criteria);
+
+    expect(hostInstance.criteria.v0c.useful1Min).toBe(3.456789123);
+    expect(hostInstance.criteria.projectile.useful1Min).toBe(3.46);
+    expect(screen.getAllByRole('spinbutton', { name: 'Min' })[0]).toHaveValue(3.456789123);
+  });
+
   it('should render title and headers', async () => {
     await setup();
     expect(screen.getByText('TRIAL_PLANNING.RATING_CRITERIA.TITLE')).toBeInTheDocument();

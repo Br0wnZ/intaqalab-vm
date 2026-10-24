@@ -259,6 +259,6 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   }
 
   protected formatValue(value: number | null): string {
-    return value !== null ? value.toFixed(3) : '—';
+    return value !== null ? String(value) : '—';
   }
 }

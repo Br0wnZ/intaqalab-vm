@@ -28,14 +28,14 @@ export const fromPosition = (
 
   const unit = position.unit ?? 'm';
   return {
-    x: position.x !== null ? { value: position.x.toFixed(1), unit } : null,
-    y: position.y !== null ? { value: position.y.toFixed(1), unit } : null,
-    z: position.z !== null ? { value: position.z.toFixed(1), unit } : null,
+    x: position.x !== null && position.x !== undefined ? { value: String(position.x), unit } : null,
+    y: position.y !== null && position.y !== undefined ? { value: String(position.y), unit } : null,
+    z: position.z !== null && position.z !== undefined ? { value: String(position.z), unit } : null,
   };
 };
 
-export const numToField = (value: number | null, unit: string, decimals: number): InputFieldValue =>
-  value !== null ? { value: value.toFixed(decimals), unit } : null;
+export const numToField = (value: number | null, unit: string): InputFieldValue =>
+  value !== null ? { value: String(value), unit } : null;
 
 export const parseNum = (field: InputFieldValue): number | null => {
   if (!field?.value) return null;
@@ -43,7 +43,10 @@ export const parseNum = (field: InputFieldValue): number | null => {
   return isNaN(parsed) ? null : parsed;
 };
 
-function valueToApply(value: InputFieldValue | undefined, current: InputFieldValue | undefined): number | null | undefined {
+function valueToApply(
+  value: InputFieldValue | undefined,
+  current: InputFieldValue | undefined,
+): number | null | undefined {
   if (value === undefined) return undefined;
   const parsedValue = parseNum(value);
   if (parsedValue === null && parseNum(current ?? null) === null) return undefined;

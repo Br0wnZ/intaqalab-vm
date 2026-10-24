@@ -617,4 +617,50 @@ describe('Execution', () => {
     expect(saveAllDirtyForms).toHaveBeenCalledOnce();
     expect(executionService.setJltShotData).not.toHaveBeenCalled();
   });
+
+  it('saves multiple dirty widget forms sequentially', async () => {
+    const executionService = createMockExecutionService();
+    const { view } = await setup({ executionService });
+    const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
+
+    const callOrder: string[] = [];
+    const widget1Id = widgetStateService.addWidget(WidgetId.JLT_SHOT_DATA, 1);
+    const widget2Id = widgetStateService.addWidget(WidgetId.ARMAMENT_INTRODUCTION, 1);
+
+    widgetStateService.registerWidgetInstance(widget1Id, {
+      formState: signal({ widgetId: widget1Id, dirty: true, touched: true, valid: true, hasChanges: true }),
+      resetForm: vi.fn(),
+      saveForm: vi.fn().mockImplementation(async () => {
+        callOrder.push('widget1');
+      }),
+    });
+
+    widgetStateService.registerWidgetInstance(widget2Id, {
+      formState: signal({ widgetId: widget2Id, dirty: true, touched: true, valid: true, hasChanges: true }),
+      resetForm: vi.fn(),
+      saveForm: vi.fn().mockImplementation(async () => {
+        callOrder.push('widget2');
+      }),
+    });
+
+    widgetStateService.updateWidgetFormState(widget1Id, {
+      widgetId: widget1Id,
+      dirty: true,
+      touched: true,
+      valid: true,
+      hasChanges: true,
+    });
+    widgetStateService.updateWidgetFormState(widget2Id, {
+      widgetId: widget2Id,
+      dirty: true,
+      touched: true,
+      valid: true,
+      hasChanges: true,
+    });
+
+    await view.fixture.componentInstance.saveAllChanges();
+
+    expect(callOrder).toEqual(['widget1', 'widget2']);
+  });
 });
+

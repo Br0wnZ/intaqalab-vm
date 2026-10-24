@@ -201,7 +201,7 @@ describe('ManometerIntroduction', () => {
     fixture.componentInstance['h5Field'].set(null);
 
     expect(fixture.componentInstance['alturaMedia']()).toBe(150);
-    expect(fixture.componentInstance['alturaMediaDisplay']()).toBe('150.00');
+    expect(fixture.componentInstance['alturaMediaDisplay']()).toBe('150');
 
     fixture.componentInstance['h1Field'].set(null);
     fixture.componentInstance['h2Field'].set(null);

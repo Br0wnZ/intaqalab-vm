@@ -383,7 +383,7 @@ export class JltMaoMassConfigDialog {
   }
 
   #numToField(value: number | null): InputFieldValue {
-    return value === null ? null : { value: value.toFixed(3), unit: 'oo' };
+    return value === null ? null : { value: String(value), unit: 'oo' };
   }
 
   #getSeriesOrientationStatus(seriesId: string): SeriesOrientationStatus {

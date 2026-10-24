@@ -16,13 +16,13 @@ export function normalizePowderWeightToGrams(
   if (weight === null || weight === undefined) return null;
 
   if (unit === WeightUnitEnum.KG) {
-    return Math.round(weight * 1000 * 100) / 100;
+    return weight * 1000;
   }
   if (unit === WeightUnitEnum.G) {
     return weight;
   }
   // Si no se especifica unidad, por defecto en balística valores pequeños (< 50) son kg
-  return weight < 50 ? Math.round(weight * 1000 * 100) / 100 : weight;
+  return weight < 50 ? weight * 1000 : weight;
 }
 
 /**
@@ -31,7 +31,7 @@ export function normalizePowderWeightToGrams(
 export function normalizeSpeedToMs(speed: number | null | undefined, unit: string | null | undefined): number | null {
   if (speed === null || speed === undefined) return null;
   if (unit === SpeedUnitEnum.KM_H) {
-    return Math.round((speed / 3.6) * 100) / 100;
+    return speed / 3.6;
   }
   return speed;
 }

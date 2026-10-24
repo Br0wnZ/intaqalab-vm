@@ -266,7 +266,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   readonly resolvedShotId = computed(() => {
     const activeShotId = this.selectedShot();
-    if (activeShotId && !this.#isShotDisabled(activeShotId)) {
+    if (activeShotId && this.shotOptions().some((shot) => shot.value === activeShotId && !shot.disabled)) {
       return activeShotId;
     }
 
@@ -346,7 +346,6 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     this.selectedSerie.set(serieId);
 
     this.selectedShot.set(this.shotOptions().find((shot) => !shot.disabled)?.value ?? null);
-    this.#executionStore.setOptimisticActiveShot(serieId, this.selectedShot());
 
     this.#lastLoadedJltPreparationKey = null;
     this.#loadJltPreparationIfReady();
@@ -397,7 +396,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
     }
     // Volcar el borrador al store antes del PUT para que dirty se recalcule contra lo guardado
     this.#executionStore.updateJltStatus(this.jltDraft());
-    this.#executionStore.saveJltReadiness(trialId, serieId);
+    await this.#executionStore.saveJltReadiness(trialId, serieId);
   }
 
   #mapSerieLabel(serieId: string | null): string {

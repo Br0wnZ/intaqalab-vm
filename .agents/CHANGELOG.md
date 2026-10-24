@@ -101,3 +101,31 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.2.0] - 2026-10-20
 
 - Add ADR-019 shot-scoped planning data pattern for execution widgets
+
+## [numeric-input-constraints - 1.1.0] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [i18n-expert - 1.0.1] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [ui-design-engineer - 1.0.3] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [swagger-api-architect - 1.1.1] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [angular-testing-expert - 1.0.2] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [chartjs-expert - 1.0.1] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [angular-developer - 1.0.1] - 2026-10-24
+
+- Define locale-aware decimal display, full measurement precision and numeric backend payload rules

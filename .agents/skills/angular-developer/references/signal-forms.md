@@ -426,10 +426,7 @@ validateAsync(s.username, {
 // WRONG - missing onError (it's required!)
 validateAsync(s.username, {
   params: ({ value }) => value(),
-  factory: (username) =>
-    resource({
-      /* ... */
-    }),
+  factory: (username) => resource({/* ... */}),
   onSuccess: (result) => (result ? { kind: 'error' } : undefined),
   // ERROR: 'onError' is missing but required!
 });
@@ -863,11 +860,11 @@ import { FormState } from '@angular/forms/signals';
 <!-- WRONG -->
 {{ totalPrice() | number:'1.2-2' }}
 
-<!-- RIGHT - format in the component -->
-totalPriceFormatted = computed(() => this.totalPrice().toFixed(2));
-<!-- then: -->
-{{ totalPriceFormatted() }}
+<!-- RIGHT - import IntaDecimalPipe from @intaqalab/utils in the component imports -->
+{{ totalPrice() | intaDecimal: '1.2-2' }}
 ```
+
+For numeric presentation, follow [numeric-input-constraints](../../numeric-input-constraints/SKILL.md). `intaDecimal` pads the minimum fraction digits without discarding existing precision. Keep the underlying form value numeric and never send localized display text to the backend. For `json` or `date`, import the corresponding pipe; replacing a missing pipe with `toFixed` is not a valid fix.
 
 ### `$parent.$index` in nested @for loops
 

@@ -1,4 +1,3 @@
-import { DecimalPipe } from '@angular/common';
 import type { Signal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
@@ -17,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
+import { IntaDecimalPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
@@ -40,7 +40,7 @@ interface TaradoPresionForm {
 @Component({
   selector: 'inta-tarado-presion-chart',
   imports: [
-    DecimalPipe,
+    IntaDecimalPipe,
     FormField,
     ReadonlyContentDirective,
     MatFormFieldModule,
@@ -123,7 +123,7 @@ interface TaradoPresionForm {
             </span>
           </div>
           @if (r2()) {
-            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2()! | number: '1.4-4' }}</span>
+            <span class="text-xs font-semibold text-slate-700 mt-1">R² = {{ r2() | intaDecimal: '1.4-4' }}</span>
           }
         </div>
 
@@ -134,7 +134,7 @@ interface TaradoPresionForm {
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.PENDIENTE_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ reg.pendiente | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.pendiente | intaDecimal: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
@@ -146,13 +146,13 @@ interface TaradoPresionForm {
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.ORDENADA_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ reg.ordenada | number: '1.5-5' }}</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.ordenada | intaDecimal: '1.5-5' }}</p>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-600">
                 {{ 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.WC_LABEL' | translate }}
               </p>
-              <p class="text-xs font-regular text-gray-500">{{ reg.wcTarado | number: '1.4-4' }} g</p>
+              <p class="text-xs font-regular text-gray-500">{{ reg.wcTarado | intaDecimal: '1.4-4' }} g</p>
             </div>
           </div>
         }
@@ -303,7 +303,7 @@ export class TaradoPresionChartWidget extends BaseFormWidgetComponent {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => `(${ctx.parsed.x?.toFixed(2)} g, ${ctx.parsed.y?.toFixed(2)} MPa)`,
+              label: (ctx) => `(${ctx.parsed.x} g, ${ctx.parsed.y} MPa)`,
             },
           },
         },

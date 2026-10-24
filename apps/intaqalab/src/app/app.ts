@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /* eslint-disable no-restricted-properties */
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -57,11 +55,8 @@ export class App {
           tap(() => {
             this.isAuthenticated.set(false);
             this.#authService.clear();
-            this.#oidcSecurityService.logoff().subscribe({
-              error: () => {
-                this.#oidcSecurityService.logoffLocal();
-              },
-            });
+            this.#oidcSecurityService.logoffLocal();
+            this.#oidcSecurityService.authorize();
           }),
         ),
   );
@@ -134,12 +129,12 @@ export class App {
   logout(): void {
     this.isAuthenticated.set(false);
     this.#authService.clear();
-    this.#oidcSecurityService.logoff().subscribe((result) => console.log(result));
+    this.#oidcSecurityService.logoff().subscribe();
   }
 
   logoffAndRevokeTokens(): void {
     this.isAuthenticated.set(false);
     this.#authService.clear();
-    this.#oidcSecurityService.logoffAndRevokeTokens().subscribe((result) => console.log('logoffffffffff', result));
+    this.#oidcSecurityService.logoffAndRevokeTokens().subscribe();
   }
 }

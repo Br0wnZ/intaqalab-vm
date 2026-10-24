@@ -213,10 +213,10 @@ export class VideoCameraOrientation extends BaseFormWidgetComponent {
   protected readonly operatingHeight = computed(() => this.selectedOrientationData()?.functioningHeight ?? null);
   protected readonly operatingRange = computed(() => this.selectedOrientationData()?.functioningDistance ?? null);
 
-  /** Diferencia angular devuelta por API, formateada a 2 decimales */
+  /** Diferencia angular devuelta por API, sin limitar precisión */
   protected readonly angularDifferenceFormatted = computed(() => {
     const val = this.selectedOrientationData()?.cameraAngularDifference;
-    return val !== null && val !== undefined ? val.toFixed(2) : null;
+    return val !== null && val !== undefined ? String(val) : null;
   });
 
   protected readonly serieOptions = computed(() => {

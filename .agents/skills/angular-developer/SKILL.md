@@ -1,7 +1,7 @@
 ---
 name: angular-developer
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-10-24
 description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 user-invocable: true
 ---
@@ -64,6 +64,7 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 
 ## Measurement Units & Strict Typing (Mandatory)
 
+- **Decimal precision and locale:** Before changing numeric inputs, display, unit conversions, mappers or HTTP payloads, load [numeric-input-constraints](../numeric-input-constraints/SKILL.md). Reuse `libLocalDecimal`, `InputSelect`, `SoundLevelMeterInput`, `formatPreciseNumber` and `intaDecimal`. Never round/truncate measurements or serialize localized strings; numeric state and JSON remain locale-independent. `decimals` is compatibility-only, not a digit limit.
 - All measurement units MUST use `MeasureUnitEnum` from `@intaqalab/models` as single source of truth.
 - Do not hardcode unit literals (`'kg'`, `'MPa'`, `'bar'`, etc.) in component/store/service logic.
 - For UI labels/options, reuse `MEASURE_UNIT_LABELS` and typed subsets (`WeightUnitEnum`, `PressureUnitEnum`, etc.) from `@intaqalab/models`.

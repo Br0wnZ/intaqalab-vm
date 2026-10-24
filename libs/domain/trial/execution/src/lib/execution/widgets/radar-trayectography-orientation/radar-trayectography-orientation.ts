@@ -15,6 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
+import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -109,9 +110,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.X_PIEZA_LABEL' | translate"
             [opciones]="distanceUnits"
             [value]="xPiezaModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="xyzPiezaUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- Pieza Y -->
@@ -119,9 +120,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.Y_PIEZA_LABEL' | translate"
             [opciones]="distanceUnits"
             [value]="yPiezaModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="xyzPiezaUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- Pieza Z -->
@@ -129,9 +130,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.Z_PIEZA_LABEL' | translate"
             [opciones]="distanceUnits"
             [value]="zPiezaModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="xyzPiezaUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- Alcance previsto pique -->
@@ -139,9 +140,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.ALCANCE_PREVISTO_LABEL' | translate"
             [opciones]="distanceUnits"
             [value]="alcancePrevModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="alcancePrevUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- X P. Caída (calculado) -->
@@ -152,7 +153,6 @@ interface RadarTrayectographyFilters {
             [value]="xPCaidaModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="xyCaidaUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- Y P. Caída (calculado) -->
@@ -163,7 +163,6 @@ interface RadarTrayectographyFilters {
             [value]="yCaidaModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="xyCaidaUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- OLT geográfico (calculado) -->
@@ -172,9 +171,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.OLT_GEOGRAFICO_LABEL' | translate"
             [opciones]="angleUnits"
             [value]="oltGeoModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="oltUnit.set($event?.unit ?? '°')"
           />
 
           <!-- Dif. angular radar (calculado) -->
@@ -185,7 +184,6 @@ interface RadarTrayectographyFilters {
             [value]="difAngularModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="difAngularUnit.set($event?.unit ?? '°')"
           />
         </div>
 
@@ -199,7 +197,6 @@ interface RadarTrayectographyFilters {
             [value]="iTransModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="iTransLongUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- I. Longitudinal (calculado) -->
@@ -210,7 +207,6 @@ interface RadarTrayectographyFilters {
             [value]="iLongModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="iTransLongUnit.set($event?.unit ?? 'm')"
           />
 
           <!-- Velocidad inicial teórica -->
@@ -218,9 +214,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.VELOCIDAD_INICIAL_LABEL' | translate"
             [opciones]="velocityUnits"
             [value]="velocidadModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="velocidadUnit.set($event?.unit ?? 'm/s')"
           />
 
           <!-- Tiempo de vuelo teórico -->
@@ -228,9 +224,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.TIEMPO_VUELO_LABEL' | translate"
             [opciones]="timeUnits"
             [value]="tiempoVueloModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="tiempoVueloUnit.set($event?.unit ?? 's')"
           />
 
           <!-- Graduación de espoleta -->
@@ -238,9 +234,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.GRAD_ESPOLETA_LABEL' | translate"
             [opciones]="timeUnits"
             [value]="gradEspoletaModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="gradEspoletaUnit.set($event?.unit ?? 's')"
           />
 
           <!-- Ángulo de tiro -->
@@ -248,9 +244,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.ANGULO_TIRO_LABEL' | translate"
             [opciones]="angleUnits"
             [value]="anguloTiroModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="anguloTiroUnit.set($event?.unit ?? '°')"
           />
 
           <!-- Peso nominal del proyectil -->
@@ -258,9 +254,9 @@ interface RadarTrayectographyFilters {
             [label]="'TRIAL_EXECUTION.WIDGETS.RADAR_TRAYECTOGRAPHY_ORIENTATION.PESO_PROYECTIL_LABEL' | translate"
             [opciones]="massUnits"
             [value]="pesoProyectilModel()"
+            [decimals]="3"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="pesoProyectilUnit.set($event?.unit ?? 'g')"
           />
 
           <!-- Altura de boca (calculado) -->
@@ -271,7 +267,6 @@ interface RadarTrayectographyFilters {
             [value]="alturaBocaModel()"
             [readOnly]="true"
             [placeholder]="'—'"
-            (valueChange)="alturaBocaUnit.set($event?.unit ?? 'm')"
           />
         </div>
       </div>
@@ -332,77 +327,74 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   /** Valores de entrada de otros widgets MAO (formateados para display) */
   protected readonly xPieza = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().xPieza?.toFixed(1) ?? null)
-      : (data.pieceX?.toFixed(1) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().xPieza : data.pieceX;
   });
   protected readonly yPieza = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().yPieza?.toFixed(1) ?? null)
-      : (data.pieceY?.toFixed(1) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().yPieza : data.pieceY;
   });
   protected readonly zPieza = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().zPieza?.toFixed(1) ?? null)
-      : (data.pieceZ?.toFixed(1) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().zPieza : data.pieceZ;
   });
   protected readonly alcancePrevisto = computed(() => {
     const data = this.selectedOrientationData();
     return data === null
-      ? (this.#store.radarTrayectographyOrientation().alcancePrevistoPique?.toFixed(1) ?? null)
-      : (data.plannedImpactDistance?.toFixed(1) ?? null);
+      ? this.#store.radarTrayectographyOrientation().alcancePrevistoPique
+      : data.plannedImpactDistance;
   });
   protected readonly velocidadInicial = computed(() => {
     const data = this.selectedOrientationData();
     return data === null
-      ? (this.#store.radarTrayectographyOrientation().velocidadInicialTeorica?.toFixed(2) ?? null)
-      : (data.theoreticalInitialVelocity?.toFixed(2) ?? null);
+      ? this.#store.radarTrayectographyOrientation().velocidadInicialTeorica
+      : data.theoreticalInitialVelocity;
   });
   protected readonly tiempoVuelo = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().tiempoVueloTeorico?.toFixed(2) ?? null)
-      : (data.theoreticalFlightTime?.toFixed(2) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().tiempoVueloTeorico : data.theoreticalFlightTime;
   });
   protected readonly gradEspoleta = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().graduacionEspoleta?.toFixed(2) ?? null)
-      : (data.fuseGraduation?.toFixed(2) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().graduacionEspoleta : data.fuseGraduation;
   });
   protected readonly anguloTiroFmt = computed(() => {
     const data = this.selectedOrientationData();
-    return data === null
-      ? (this.#store.radarTrayectographyOrientation().anguloTiro?.toFixed(2) ?? null)
-      : (data.shootingAngle?.toFixed(2) ?? null);
+    return data === null ? this.#store.radarTrayectographyOrientation().anguloTiro : data.shootingAngle;
   });
   protected readonly pesoProyectil = computed(() => {
     const data = this.selectedOrientationData();
     return data === null
-      ? (this.#store.radarTrayectographyOrientation().pesoNominalProyectil?.toFixed(2) ?? null)
-      : (data.nominalProjectileWeight?.toFixed(2) ?? null);
+      ? this.#store.radarTrayectographyOrientation().pesoNominalProyectil
+      : data.nominalProjectileWeight;
   });
 
   /** Valores calculados en el store */
-  protected readonly xPCaida = computed(() => this.#store.radarTrayectographyXPCaida()?.toFixed(2) ?? null);
-  protected readonly yCaida = computed(() => this.#store.radarTrayectographyYPCaida()?.toFixed(2) ?? null);
-  protected readonly oltGeografico = computed(() => this.#store.radarTrayectographyOltGeografico()?.toFixed(3) ?? null);
+  protected readonly xPCaida = computed(() => this.#store.radarTrayectographyXPCaida()?.toString() ?? null);
+  protected readonly yCaida = computed(() => this.#store.radarTrayectographyYPCaida()?.toString() ?? null);
+  protected readonly oltGeografico = computed(() => this.#store.radarTrayectographyOltGeografico()?.toString() ?? null);
   protected readonly difAngularRadar = computed(
-    () => this.#store.radarTrayectographyDifAngularRadar()?.toFixed(2) ?? null,
+    () => this.#store.radarTrayectographyDifAngularRadar()?.toString() ?? null,
   );
-  protected readonly iTransversal = computed(() => this.#store.radarTrayectographyITransversal()?.toFixed(2) ?? null);
-  protected readonly iLongitudinal = computed(() => this.#store.radarTrayectographyILongitudinal()?.toFixed(2) ?? null);
-  protected readonly alturaBoca = computed(() => this.#store.radarTrayectographyAlturaBoca()?.toFixed(2) ?? null);
+  protected readonly iTransversal = computed(() => this.#store.radarTrayectographyITransversal()?.toString() ?? null);
+  protected readonly iLongitudinal = computed(() => this.#store.radarTrayectographyILongitudinal()?.toString() ?? null);
+  protected readonly alturaBoca = computed(() => this.#store.radarTrayectographyAlturaBoca()?.toString() ?? null);
 
   // ── Modelos combinados (value + unit) para InputSelect ────────────────────
 
-  protected readonly xPiezaModel = computed(() => ({ value: this.xPieza() ?? '', unit: this.xyzPiezaUnit() }));
-  protected readonly yPiezaModel = computed(() => ({ value: this.yPieza() ?? '', unit: this.xyzPiezaUnit() }));
-  protected readonly zPiezaModel = computed(() => ({ value: this.zPieza() ?? '', unit: this.xyzPiezaUnit() }));
+  protected readonly xPiezaModel = computed(() => ({
+    value: this.xPieza(),
+    unit: this.selectedOrientationData()?.pieceXUnit ?? MeasureUnitEnum.M,
+  }));
+  protected readonly yPiezaModel = computed(() => ({
+    value: this.yPieza(),
+    unit: this.selectedOrientationData()?.pieceYUnit ?? MeasureUnitEnum.M,
+  }));
+  protected readonly zPiezaModel = computed(() => ({
+    value: this.zPieza(),
+    unit: this.selectedOrientationData()?.pieceZUnit ?? MeasureUnitEnum.M,
+  }));
   protected readonly alcancePrevModel = computed(() => ({
-    value: this.alcancePrevisto() ?? '',
+    value: this.alcancePrevisto(),
     unit: this.alcancePrevUnit(),
   }));
   protected readonly xPCaidaModel = computed(() => ({ value: this.xPCaida() ?? '', unit: this.xyCaidaUnit() }));
@@ -415,23 +407,23 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   protected readonly iTransModel = computed(() => ({ value: this.iTransversal() ?? '', unit: this.iTransLongUnit() }));
   protected readonly iLongModel = computed(() => ({ value: this.iLongitudinal() ?? '', unit: this.iTransLongUnit() }));
   protected readonly velocidadModel = computed(() => ({
-    value: this.velocidadInicial() ?? '',
+    value: this.velocidadInicial(),
     unit: this.velocidadUnit(),
   }));
   protected readonly tiempoVueloModel = computed(() => ({
-    value: this.tiempoVuelo() ?? '',
+    value: this.tiempoVuelo(),
     unit: this.tiempoVueloUnit(),
   }));
   protected readonly gradEspoletaModel = computed(() => ({
-    value: this.gradEspoleta() ?? '',
+    value: this.gradEspoleta(),
     unit: this.gradEspoletaUnit(),
   }));
   protected readonly anguloTiroModel = computed(() => ({
-    value: this.anguloTiroFmt() ?? '',
+    value: this.anguloTiroFmt(),
     unit: this.anguloTiroUnit(),
   }));
   protected readonly pesoProyectilModel = computed(() => ({
-    value: this.pesoProyectil() ?? '',
+    value: this.pesoProyectil(),
     unit: this.pesoProyectilUnit(),
   }));
   protected readonly alturaBocaModel = computed(() => ({
@@ -441,43 +433,42 @@ export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
 
   // ── Señales de unidad (preferencias de visualización, no afectan al store) ─
 
-  protected readonly xyzPiezaUnit = signal('m');
-  protected readonly alcancePrevUnit = signal('m');
-  protected readonly xyCaidaUnit = signal('m');
-  protected readonly oltUnit = signal('°');
-  protected readonly difAngularUnit = signal('°');
-  protected readonly iTransLongUnit = signal('m');
-  protected readonly velocidadUnit = signal('m/s');
-  protected readonly tiempoVueloUnit = signal('s');
-  protected readonly gradEspoletaUnit = signal('s');
-  protected readonly anguloTiroUnit = signal('°');
-  protected readonly pesoProyectilUnit = signal('g');
-  protected readonly alturaBocaUnit = signal('m');
+  protected readonly alcancePrevUnit = computed(
+    () => this.selectedOrientationData()?.plannedImpactDistanceUnit ?? MeasureUnitEnum.M,
+  );
+  protected readonly xyCaidaUnit = signal(MeasureUnitEnum.M);
+  protected readonly oltUnit = signal(MeasureUnitEnum.DEGREES);
+  protected readonly difAngularUnit = signal(MeasureUnitEnum.DEGREES);
+  protected readonly iTransLongUnit = signal(MeasureUnitEnum.M);
+  protected readonly velocidadUnit = computed(
+    () => this.selectedOrientationData()?.theoreticalInitialVelocityUnit ?? MeasureUnitEnum.M_S,
+  );
+  protected readonly tiempoVueloUnit = computed(
+    () => this.selectedOrientationData()?.theoreticalFlightTimeUnit ?? MeasureUnitEnum.S,
+  );
+  protected readonly gradEspoletaUnit = computed(
+    () => this.selectedOrientationData()?.fuseGraduationUnit ?? MeasureUnitEnum.S,
+  );
+  protected readonly anguloTiroUnit = computed(
+    () => this.selectedOrientationData()?.shootingAngleUnit ?? MeasureUnitEnum.DEGREES,
+  );
+  protected readonly pesoProyectilUnit = computed(
+    () => this.selectedOrientationData()?.nominalProjectileWeightUnit ?? MeasureUnitEnum.G,
+  );
+  protected readonly alturaBocaUnit = signal(MeasureUnitEnum.M);
 
   // ── Opciones de unidades ──────────────────────────────────────────────────
 
-  protected readonly distanceUnits = [
-    { value: 'm', label: 'm' },
-    { value: 'cm', label: 'cm' },
-    { value: 'ft', label: 'ft' },
-  ];
-  protected readonly angleUnits = [
-    { value: '°', label: '°' },
-    { value: 'rad', label: 'rad' },
-    { value: 'mrad', label: 'mrad' },
-  ];
-  protected readonly velocityUnits = [
-    { value: 'm/s', label: 'm/s' },
-    { value: 'ft/s', label: 'ft/s' },
-  ];
-  protected readonly timeUnits = [
-    { value: 's', label: 's' },
-    { value: 'ms', label: 'ms' },
-  ];
-  protected readonly massUnits = [
-    { value: 'g', label: 'g' },
-    { value: 'kg', label: 'kg' },
-  ];
+  protected readonly distanceUnits = toUnitOptions([
+    MeasureUnitEnum.UM,
+    MeasureUnitEnum.MM,
+    MeasureUnitEnum.M,
+    MeasureUnitEnum.KM,
+  ]);
+  protected readonly angleUnits = toUnitOptions([MeasureUnitEnum.DEGREES, MeasureUnitEnum.RAD, MeasureUnitEnum.MILS]);
+  protected readonly velocityUnits = toUnitOptions([MeasureUnitEnum.M_S, MeasureUnitEnum.KM_H]);
+  protected readonly timeUnits = toUnitOptions([MeasureUnitEnum.S, MeasureUnitEnum.MS]);
+  protected readonly massUnits = toUnitOptions([MeasureUnitEnum.G, MeasureUnitEnum.KG]);
 
   // ── Signal Form (filtros: serie, disparo, radar) ──────────────────────────
 

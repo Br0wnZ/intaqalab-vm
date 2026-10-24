@@ -426,7 +426,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   protected readonly presionUnit = computed(() => this.#store.manometerIntroduction().presionUnit);
   protected readonly presionDisplay = computed(() => {
     const p = this.#store.manometerIntroduction().presion;
-    return p !== null ? p.toFixed(2) : '—';
+    return p !== null ? String(p) : '—';
   });
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
@@ -488,7 +488,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
 
   protected readonly alturaMediaDisplay = computed(() => {
     const v = this.alturaMedia();
-    return v !== null ? v.toFixed(2) : '—';
+    return v !== null ? String(v) : '—';
   });
 
   // ── Snapshot for dirty tracking (selectores serie/disparo excluidos) ────────

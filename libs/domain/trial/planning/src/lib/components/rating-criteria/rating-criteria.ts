@@ -213,13 +213,15 @@ export class RatingCriteria {
   ];
 
   readonly localCriteria = signal<LocalRatingCriteria | undefined>(undefined);
+  #syncedLocalCriteria: LocalRatingCriteria | undefined;
 
   constructor() {
     // Sync: base units (ratingCriteria) -> UI units (localCriteria)
     effect(() => {
       const data = this.ratingCriteria();
       if (!data) {
-        this.localCriteria.set(createEmptyLocalCriteria());
+        this.#syncedLocalCriteria = createEmptyLocalCriteria();
+        this.localCriteria.set(this.#syncedLocalCriteria);
         return;
       }
 
@@ -228,14 +230,14 @@ export class RatingCriteria {
 
       const toUiSpeed = (val: number | null | undefined): number | null => {
         if (val === null || val === undefined) return null;
-        if (vUnit === MeasureUnitEnum.KM_H) return Number((val * 3.6).toFixed(6));
+        if (vUnit === MeasureUnitEnum.KM_H) return val * 3.6;
         return val;
       };
 
       const toUiPressure = (val: number | null | undefined): number | null => {
         if (val === null || val === undefined) return null;
-        if (pUnit === MeasureUnitEnum.MPA) return Number((val * 0.1).toFixed(6));
-        if (pUnit === MeasureUnitEnum.KG_CM2) return Number((val * 1.01972).toFixed(6));
+        if (pUnit === MeasureUnitEnum.MPA) return val * 0.1;
+        if (pUnit === MeasureUnitEnum.KG_CM2) return val * 1.01972;
         return val;
       };
 
@@ -248,7 +250,7 @@ export class RatingCriteria {
         useless: { min: convertFn(row?.uselessMin), max: convertFn(row?.uselessMax) },
       });
 
-      this.localCriteria.set({
+      this.#syncedLocalCriteria = {
         v0c: mapRow(data.v0c, toUiSpeed),
         v0cMean: mapRow(data.v0cMean, toUiSpeed),
         v0cStdDev: mapRow(data.v0cStdDev, toUiSpeed),
@@ -257,14 +259,15 @@ export class RatingCriteria {
         projectile: mapRow(data.projectile, passThrough),
         primer: mapRow(data.primer, passThrough),
         fuse: mapRow(data.fuse, passThrough),
-      });
+      };
+      this.localCriteria.set(this.#syncedLocalCriteria);
     });
 
     // Sync: UI units (localCriteria) -> base units (ratingCriteria)
     // Fields with no value default to 0.
     effect(() => {
       const localData = this.localCriteria();
-      if (!localData) return;
+      if (!localData || localData === this.#syncedLocalCriteria) return;
 
       const currentBase = untracked(() => this.ratingCriteria());
       const vUnit = untracked(() => this.selectedVelocityUnit());
@@ -272,20 +275,20 @@ export class RatingCriteria {
 
       const toBaseSpeed = (val: number | null | undefined): number => {
         if (val === null || val === undefined || isNaN(val)) return 0;
-        if (vUnit === MeasureUnitEnum.KM_H) return Number((val / 3.6).toFixed(6));
+        if (vUnit === MeasureUnitEnum.KM_H) return val / 3.6;
         return val;
       };
 
       const toBasePressure = (val: number | null | undefined): number => {
         if (val === null || val === undefined || isNaN(val)) return 0;
-        if (pUnit === MeasureUnitEnum.MPA) return Number((val / 0.1).toFixed(6));
-        if (pUnit === MeasureUnitEnum.KG_CM2) return Number((val / 1.01972).toFixed(6));
+        if (pUnit === MeasureUnitEnum.MPA) return val / 0.1;
+        if (pUnit === MeasureUnitEnum.KG_CM2) return val / 1.01972;
         return val;
       };
 
       const toBaseInt = (val: number | null | undefined): number => {
         if (val === null || val === undefined || isNaN(val)) return 0;
-        return Math.round(val);
+        return val;
       };
 
       const mapRow = (

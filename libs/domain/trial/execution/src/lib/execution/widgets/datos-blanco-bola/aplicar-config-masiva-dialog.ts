@@ -205,9 +205,6 @@ export type AplicarConfigMasivaDialogResult =
         padding-left: 0.375rem !important;
         padding-right: 0.375rem !important;
       }
-      inta-aplicar-config-masiva-dialog ui-sound-level-meter-input input {
-        max-width: 2rem;
-      }
     `,
   ],
   encapsulation: ViewEncapsulation.None,

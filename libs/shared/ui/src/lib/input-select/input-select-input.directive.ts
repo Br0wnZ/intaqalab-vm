@@ -1,4 +1,5 @@
 import { Directive, ElementRef, inject } from '@angular/core';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 
 /**
  * Directiva marcadora para proyectar un `<input>` nativo dentro de `ui-input-select`.
@@ -22,4 +23,6 @@ import { Directive, ElementRef, inject } from '@angular/core';
 export class InputSelectInput {
   /** Referencia al elemento `<input>` nativo decorado. */
   readonly el = inject(ElementRef<HTMLInputElement>);
+  /** Instancia opcional de LocaleDecimalInputDirective en el mismo elemento. */
+  readonly decimalDirective = inject(LocaleDecimalInputDirective, { optional: true });
 }

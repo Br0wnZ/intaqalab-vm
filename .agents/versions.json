@@ -21,23 +21,23 @@
       "description": "Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns."
     },
     "angular-developer": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "c97357580d521d6d",
+      "version": "1.0.1",
+      "lastUpdated": "2026-10-24",
+      "checksum": "16bd1d91a1e79cf5",
       "path": ".agents/skills/angular-developer/SKILL.md",
       "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
     },
     "angular-testing-expert": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-10-19",
-      "checksum": "9e79402ece980abb",
+      "version": "1.0.2",
+      "lastUpdated": "2026-10-24",
+      "checksum": "8ceaceb501891e17",
       "path": ".agents/skills/angular-testing-expert/SKILL.md",
-      "description": "Expert QA guide for Angular 21+, Vitest, and Angular Testing Library, focusing on behavior-driven testing, signal-based architecture, and Angular Material Component Harnesses."
+      "description": "Expert QA guide for Angular 21+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads."
     },
     "chartjs-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "7693b01309c68201",
+      "version": "1.0.1",
+      "lastUpdated": "2026-10-24",
+      "checksum": "b05061fdd4226135",
       "path": ".agents/skills/chartjs-expert/SKILL.md",
       "description": "USE WHEN building Chart.js visualizations, configuring charts, optimizing rendering performance, integrating plugins (annotation, datalabels, zoom, decimation), working with time-series charts, or adapting charts to any component-based framework. Trigger: chart, Chart.js, visualization, canvas, data chart, graph, bar chart, line chart, pie chart, scatter plot, histogram, datalabels, ng2-charts, chart performance."
     },
@@ -70,11 +70,11 @@
       "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
     "i18n-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "a42551982288780b",
+      "version": "1.0.1",
+      "lastUpdated": "2026-10-24",
+      "checksum": "b90f763a0270da0b",
       "path": ".agents/skills/i18n-expert/SKILL.md",
-      "description": "Internationalization Specialist with @ngx-translate. Use when adding, updating, or auditing translation keys in all 3 project languages (es/en/de), creating namespaces, or translating component templates."
+      "description": "Internationalization Specialist with @ngx-translate. Use when adding, updating or auditing es/en/de translation keys, namespaces, templates, locale-dependent decimal display, numeric input or language switching. Keeps localized view strings separate from numeric backend values."
     },
     "interface-design": {
       "version": "1.0.0",
@@ -98,11 +98,11 @@
       "description": "Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines."
     },
     "numeric-input-constraints": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "5bfbf84985873437",
+      "version": "1.1.0",
+      "lastUpdated": "2026-10-24",
+      "checksum": "516c5add3885f5f6",
       "path": ".agents/skills/numeric-input-constraints/SKILL.md",
-      "description": "Expert in validating and constraining numeric inputs using Angular directives and context-aware min/max values from INTAQALAB functional specs (planning, execution, admin). Handles locale-aware decimals, leading zeros removal, and physics domain range validation."
+      "description": "Use when creating or changing decimal inputs, localized numeric display, precision, unit conversions, numeric mappers or backend payloads. Defines the no-rounding contract for multilingual views, LOCALE_SIGNAL, libLocalDecimal, InputSelect, SoundLevelMeterInput and JSON numbers, plus domain min/max validation."
     },
     "nx-generator-expert": {
       "version": "1.0.1",
@@ -154,16 +154,16 @@
       "description": "NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities."
     },
     "swagger-api-architect": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-10-19",
-      "checksum": "f6fe437a6dc4b031",
+      "version": "1.1.1",
+      "lastUpdated": "2026-10-24",
+      "checksum": "c5c966d28de22500",
       "path": ".agents/skills/swagger-api-architect/SKILL.md",
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
     "ui-design-engineer": {
-      "version": "1.0.2",
-      "lastUpdated": "2026-10-06",
-      "checksum": "ba2aeb93d31b7712",
+      "version": "1.0.3",
+      "lastUpdated": "2026-10-24",
+      "checksum": "e74062abd19816ef",
       "path": ".agents/skills/ui-design-engineer/SKILL.md",
       "description": "Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards."
     },

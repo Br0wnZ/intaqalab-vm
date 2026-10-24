@@ -185,14 +185,19 @@ export function withReadiness() {
         executionService.getJltPreparation(fireTrialId, seriesId);
       },
 
-      saveJltReadiness(fireTrialId: string, seriesId: string): void {
+      async saveJltReadiness(fireTrialId: string, seriesId: string): Promise<void> {
         const jlt = store.jltStatus();
-        executionService.setJltReadiness(fireTrialId, seriesId, {
+        const body = {
           sanitaryServicesReady: jlt.sanitary,
           securityReady: jlt.security,
           vesselReady: jlt.boat,
           observations: jlt.observations || null,
-        });
+        };
+        if (typeof executionService?.updateJltReadiness === 'function') {
+          await executionService.updateJltReadiness(fireTrialId, seriesId, body);
+        } else {
+          executionService.setJltReadiness(fireTrialId, seriesId, body);
+        }
       },
 
       selectJltShot(fireTrialId: string, shotId: string): void {

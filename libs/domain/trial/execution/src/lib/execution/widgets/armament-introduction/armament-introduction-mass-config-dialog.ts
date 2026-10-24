@@ -11,10 +11,10 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { type CalibryTubeOption, type CalibryWeaponOption, ExecutionStore } from '../../../+state/execution.store';
 import {
-    type ArmamentBulkConfigurationRequest,
-    type ArmamentEquipmentItem,
-    ExecutionService,
-    type PlanningArmamentResponse,
+  type ArmamentBulkConfigurationRequest,
+  type ArmamentEquipmentItem,
+  ExecutionService,
+  type PlanningArmamentResponse,
 } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { getBulkCompatibleArmamentSeries } from './armament-bulk-compatibility';
