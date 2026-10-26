@@ -33,6 +33,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 
 type SeguridadTab = 'convencional' | 'alta-velocidad';
 
@@ -68,6 +70,7 @@ interface SeguridadSelectsModel {
     MatSelectModule,
     TranslateModule,
     IntaIconComponent,
+    ShotEditButton,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
@@ -79,9 +82,12 @@ interface SeguridadSelectsModel {
             {{ 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE' | translate }}
           </h3>
         </div>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
-          {{ estadoLabel() }}
-        </span>
+        <div class="flex items-center gap-1.5 shrink-0 self-start">
+          <inta-shot-edit-button [lock]="shotLock" />
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold" [class]="estadoClass()">
+            {{ estadoLabel() }}
+          </span>
+        </div>
       </div>
 
       <!-- ── Serie + Disparo ─────────────────────────────────────────────── -->
@@ -142,8 +148,8 @@ interface SeguridadSelectsModel {
 
       <!-- ── Scrollable content ──────────────────────────────────────────── -->
       <div
-        intaReadonlyContent
         class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pr-0.5 [&>div:not(:last-child)]:border-b-1 [&>div:not(:last-child)]:border-gray-200 [&>div:not(:last-child)]:pb-3"
+        [intaReadonlyContent]="shotLock.readOnly()"
       >
         @if (activeTab() === 'convencional') {
           <!-- ── Prueba block ──────────────────────────────────────────── -->
@@ -366,6 +372,11 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
   readonly #trialShots = injectTrialShots();
   #hasManualSelection = false;
 
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.formModel().serie,
+    disparo: this.formModel().disparo,
+  }));
+
   // ── UI state ──────────────────────────────────────────────────────────────
   protected readonly activeTab = signal<SeguridadTab>('convencional');
 
@@ -487,9 +498,11 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
     this.cierreTexto.set(stored.cierre.texto);
     this.piqueTexto.set(stored.pique.texto);
     this.#savedSnapshot.set(this.#currentSnapshot());
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const m = this.formModel();
     this.#store.updateSeguridad({
       serie: m.serie,
@@ -501,6 +514,7 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
       pique: { camara: m.piqueCamara, grabador: m.piqueGrabador, canal: m.piqueCanal, texto: this.piqueTexto() },
     });
     this.#savedSnapshot.set(this.#currentSnapshot());
+    this.shotLock.lock();
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

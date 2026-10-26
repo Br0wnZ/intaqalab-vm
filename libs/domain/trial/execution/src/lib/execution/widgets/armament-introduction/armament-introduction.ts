@@ -43,6 +43,8 @@ import {
   mapPlanningSeriesToOptions,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { getBulkCompatibleArmamentSeries } from './armament-bulk-compatibility';
 import { ArmamentIntroductionMassConfigDialog } from './armament-introduction-mass-config-dialog';
 
@@ -62,6 +64,7 @@ interface ArmamentIntroductionSelectForm {
     FormField,
     ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -118,6 +121,8 @@ interface ArmamentIntroductionSelectForm {
 
         <div class="flex-1"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Aplicar configuración masiva -->
         <span
           class="inline-flex"
@@ -138,9 +143,9 @@ interface ArmamentIntroductionSelectForm {
       </div>
 
       <div
-        intaReadonlyContent
         intaFormTouch
         class="grid grid-cols-4 gap-3 min-h-0 content-start"
+        [intaReadonlyContent]="shotLock.readOnly()"
         #touch="intaFormTouch"
       >
         <!-- Arma -->
@@ -299,6 +304,10 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   protected readonly selectForm = form(this.formModel, (path) => {
     disabled(path.tubo, () => this.tubeDisabled());
   });
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.formModel().serie,
+    disparo: this.formModel().disparo,
+  }));
   readonly #dirtyTracker = createDirtyTracker(() => this.#editableValues());
   protected readonly isDirty = this.#dirtyTracker.isDirty;
   protected readonly weaponSerialOptions = computed(() => {
@@ -369,6 +378,9 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const formValue = this.formModel();
     const serie = this.#store.activeSerieId() ?? formValue.serie;
     const disparo = this.#store.activeShotId() ?? formValue.disparo;
@@ -398,6 +410,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
           observations: observations || null,
         });
         this.#syncSnapshot();
+        this.shotLock.lock();
       } catch (error) {
         console.error('Failed to save shot armament', error);
         throw error;

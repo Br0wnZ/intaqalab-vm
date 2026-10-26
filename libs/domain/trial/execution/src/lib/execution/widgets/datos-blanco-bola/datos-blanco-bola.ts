@@ -33,6 +33,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import {
   AplicarConfigMasivaDialog,
   type AplicarConfigMasivaDialogData,
@@ -49,6 +51,7 @@ interface SelectorFormModel {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -97,6 +100,8 @@ interface SelectorFormModel {
 
         <div class="flex-1"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Aplicar configuración masiva -->
         <button mat-flat-button type="button" (click)="openMasivaDialog()">
           {{ 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.MASIVA_BTN' | translate }}
@@ -110,8 +115,8 @@ interface SelectorFormModel {
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
       <div
-        intaReadonlyContent
         class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-2 items-end content-start min-h-0 mt-4 pt-2.5 pb-2 overflow-hidden"
+        [intaReadonlyContent]="shotLock.readOnly()"
       >
         <!-- Blanco bola Position -->
         <ui-sound-level-meter-input
@@ -264,6 +269,10 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
     disparo: this.#store.datosBlancoBola().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   // ── Position signals ──────────────────────────────────────────────────────
   protected readonly blancoBolaPosition = signal<SoundLevelMeterValue | null>(null);
@@ -406,9 +415,13 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
     this.selectorFormModel.set({ serie: stored.serie, disparo: stored.disparo });
     this.#applyFieldsFromStore();
     this.#savedSnapshot.set(this.#currentFieldSnapshot());
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { serie, disparo } = this.selectorFormModel();
     const blancoBola = this.#fromPosition(this.blancoBolaPosition());
     const bocaPieza = this.#fromPosition(this.bocaPiezaPosition());
@@ -436,6 +449,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
       camTransversalZ: camTransversal.z,
     });
     this.#savedSnapshot.set(this.#currentFieldSnapshot());
+    this.shotLock.lock();
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

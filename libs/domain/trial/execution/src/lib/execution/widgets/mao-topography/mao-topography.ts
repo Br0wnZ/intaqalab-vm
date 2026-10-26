@@ -35,6 +35,8 @@ import {
   mapPlanningSeriesToOptions,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import type {
   MaoTopographyMassConfigDialogData,
   MaoTopographyMassConfigDialogResult,
@@ -61,6 +63,7 @@ interface MaoTopographySelectForm {
     TranslateModule,
     IntaIconComponent,
     SoundLevelMeterInput,
+    ShotEditButton,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-4 overflow-auto">
@@ -104,6 +107,8 @@ interface MaoTopographySelectForm {
           {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.CURRENT_SHOT_BTN' | translate }}
         </button>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <div class="flex-1"></div>
 
         <!-- Aplicar configuración masiva -->
@@ -112,15 +117,20 @@ interface MaoTopographySelectForm {
         </button>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start bg-blue-100 text-blue-700">
-          En curso
-        </span>
+        @if (shotLock.statusLabel(); as status) {
+          <span
+            class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start"
+            [class]="shotLock.statusClass()"
+          >
+            {{ status | translate }}
+          </span>
+        }
       </div>
 
       <!-- Fields: 4 columns layout -->
       <div
-        intaReadonlyContent
         class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-8 items-end content-start min-h-0 pt-2.5 pb-2 overflow-y-auto"
+        [intaReadonlyContent]="shotLock.readOnly()"
       >
         <!-- Pieza Position -->
         <ui-sound-level-meter-input
@@ -168,7 +178,7 @@ interface MaoTopographySelectForm {
       inta-mao-topography ui-sound-level-meter-input {
         width: 100%;
       }
-      inta-mao-topography ui-sound-level-meter-input .flex {
+      inta-mao-topography ui-sound-level-meter-input > .relative > .flex {
         gap: 0.25rem !important;
         padding-left: 0.375rem !important;
         padding-right: 0.375rem !important;
@@ -221,9 +231,6 @@ export class MaoTopography extends BaseFormWidgetComponent {
     }),
   );
 
-  // ── ReadOnly State ─────────────────────────────────────────────────────────
-  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
-
   // ── Position signals ──────────────────────────────────────────────────────
   protected readonly piezaPosition = signal<SoundLevelMeterValue | null>(null);
   protected readonly blancoPosition = signal<SoundLevelMeterValue | null>(null);
@@ -235,6 +242,13 @@ export class MaoTopography extends BaseFormWidgetComponent {
     observador: this.#store.maoTopography().observador,
   });
   protected readonly selectForm = form(this.formModel);
+
+  // ── Shot Form Lock ────────────────────────────────────────────────────────
+  protected readonly shotLock = injectShotFormLock({
+    selectedSerieId: () => this.formModel().serie,
+    selectedShotId: () => this.formModel().disparo,
+  });
+  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
 
   // ── Snapshot for numeric dirty tracking ───────────────────────────────────
   readonly #savedSnapshot = signal<{
@@ -368,6 +382,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
     });
 
     this.#applyFieldsFromStore();
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 
@@ -384,6 +399,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
       zBlanco: null,
     });
     this.#applyFieldsFromStore();
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 
@@ -395,10 +411,12 @@ export class MaoTopography extends BaseFormWidgetComponent {
       observador: stored.observador,
     });
     this.#applyFieldsFromStore();
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo, observador } = this.formModel();
     const pieza = fromPosition(this.piezaPosition());
     const blanco = fromPosition(this.blancoPosition());
@@ -444,6 +462,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
       });
     }
 
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 

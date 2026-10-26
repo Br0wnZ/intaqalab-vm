@@ -27,12 +27,15 @@ import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
 import type { JltShotDataRequest, JltShotDataResponse } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { mapSelectedShotStatus, resolveInitialShotSelection } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import type { InputFieldValue, JltInheritedDefaults } from './jlt-shot-data.mapper';
 import {
   calculateShotOrder,
@@ -56,7 +59,9 @@ interface JltShotDataSelectForm {
   selector: 'inta-jlt-shot-data',
   imports: [
     FormField,
+    ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -113,17 +118,7 @@ interface JltShotDataSelectForm {
 
         <div class="flex-1"></div>
 
-        @if (canEnableHistoricalEdit()) {
-          <button
-            mat-icon-button
-            type="button"
-            [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ENABLE_EDIT' | translate"
-            [attr.title]="'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.ENABLE_EDIT' | translate"
-            (click)="enableHistoricalEdit()"
-          >
-            <ui-inta-icon name="edit_line" color="var(--inta-button)" />
-          </button>
-        }
+        <inta-shot-edit-button [lock]="shotLock" />
 
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
@@ -137,8 +132,7 @@ interface JltShotDataSelectForm {
       <!-- Fields layout: 3 columns (Col 1: JET + Atacado/Retroceso, Col 2: Operador, Col 3: Observaciones) -->
       <div
         class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_2fr_1fr] gap-x-3 gap-y-2 min-h-0 content-start"
-        [attr.inert]="readOnly() ? '' : null"
-        [class.inta-readonly-content]="readOnly()"
+        [intaReadonlyContent]="readOnly()"
       >
         <!-- ── Col 1: JET + Atacado / Retroceso ────────────────────────────── -->
         <div class="flex flex-col gap-2">
@@ -277,11 +271,6 @@ export class JltShotData extends BaseFormWidgetComponent {
         this.#lastLoadedActiveSelection.set(selectionKey);
       });
     });
-
-    effect(() => {
-      this.#selectionKey();
-      this.historicalEditEnabled.set(false);
-    });
   }
 
   // ── Unit options ───────────────────────────────────────────────────────────
@@ -348,26 +337,17 @@ export class JltShotData extends BaseFormWidgetComponent {
     return !this.isCurrentShot() && this.selectedShotProgress()?.status === 'PENDING';
   });
 
-  protected readonly isHistoricalFiredShot = computed(
-    () => !this.isCurrentShot() && this.selectedShotProgress()?.status === 'FIRED',
-  );
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.formModel().serie,
+    disparo: this.formModel().disparo,
+  }));
 
-  protected readonly historicalEditEnabled = signal(false);
-
-  protected readonly canEnableHistoricalEdit = computed(
-    () => !this.#store.isTrialReadOnly() && this.isHistoricalFiredShot() && !this.historicalEditEnabled(),
-  );
+  protected readonly isHistoricalFiredShot = this.shotLock.isHistoricalFiredShot;
+  protected readonly historicalEditEnabled = this.shotLock.historicalEditEnabled;
+  protected readonly canEnableHistoricalEdit = this.shotLock.canEnableHistoricalEdit;
 
   protected readonly readOnly = computed(() => {
-    const { serie, disparo } = this.formModel();
-
-    return (
-      !serie ||
-      !disparo ||
-      this.#store.isTrialReadOnly() ||
-      this.isFutureShot() ||
-      (this.isHistoricalFiredShot() && !this.historicalEditEnabled())
-    );
+    return this.isFutureShot() || this.shotLock.readOnly();
   });
 
   protected readonly inheritedDefaults = signal<JltInheritedDefaults>({
@@ -478,7 +458,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   }
 
   enableHistoricalEdit(): void {
-    this.historicalEditEnabled.set(true);
+    this.shotLock.enableHistoricalEdit();
   }
 
   resetForm(): void {
@@ -520,7 +500,7 @@ export class JltShotData extends BaseFormWidgetComponent {
       this.#executionService.setJltShotData(fireTrialId, serie, disparo, request);
     }
     this.#syncSnapshot();
-    this.historicalEditEnabled.set(false);
+    this.shotLock.lock();
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

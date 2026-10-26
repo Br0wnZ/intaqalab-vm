@@ -42,6 +42,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
 import {
   buildDisparoOptions,
@@ -71,6 +73,7 @@ interface SelectorFormModel {
     FormField,
     ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -143,6 +146,8 @@ interface SelectorFormModel {
 
         <div class="flex-1"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -150,7 +155,12 @@ interface SelectorFormModel {
       </div>
 
       <!-- ── Body ───────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent intaFormTouch class="flex-1 min-h-0 flex flex-col" #touch="intaFormTouch">
+      <div
+        intaFormTouch
+        class="flex-1 min-h-0 flex flex-col"
+        [intaReadonlyContent]="shotLock.readOnly()"
+        #touch="intaFormTouch"
+      >
         <!-- P. Cierre -->
         <inta-piezo-pressure-sensor-tab
           position="CLOSING"
@@ -385,6 +395,10 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     disparo: this.#store.piezoPressureIntroduction().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   // ── Snapshot para dirty tracking ─────────────────────────────────────────────
   readonly #dirtyTracker = createDirtyTracker(() => ({
@@ -527,9 +541,13 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     this.differentialPressureData.set(structuredClone(stored.differentialPressureData));
     this.timesData.set(structuredClone(stored.timesData));
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { serie, disparo } = this.selectorFormModel();
     const fireTrialId = this.#store.fireTrialId();
     const payload = buildShotPressuresRequest({
@@ -554,6 +572,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     }
 
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   // ── Métodos internos ────────────────────────────────────────────────────────
@@ -602,6 +621,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     });
 
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   #syncSelectionToStore(serie: string | null, disparo: string | null): void {

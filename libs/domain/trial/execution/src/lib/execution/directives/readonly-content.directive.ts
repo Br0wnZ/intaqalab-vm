@@ -1,44 +1,29 @@
-import { Directive, inject } from '@angular/core';
-import { computed } from '@angular/core';
+import { Directive, computed, inject, input } from '@angular/core';
 
 import { ExecutionStore } from '../../+state/execution.store';
 
 /**
  * 🔒 ReadonlyContentDirective
  *
- * Marca un área de contenido como no editable cuando la prueba se encuentra en
- * un estado de solo lectura (Ejecutada, Finalizando, Cerrada o Cancelada).
+ * Marca un área de contenido como no editable cuando la prueba o el disparo
+ * se encuentra en un estado de solo lectura (Ejecutada, Finalizando, Cerrada o Cancelada).
  *
  * ## Uso
  * Aplica el atributo `intaReadonlyContent` al div contenedor de los campos de
  * datos (NO al header con los selectores de serie/disparo, que deben permanecer
  * activos para consulta).
  *
+ * Permite override reactivo explícito mediante `[intaReadonlyContent]="shotLock.readOnly()"`.
+ *
  * ```html
  * <!-- Header con serie/disparo: permanece interactivo -->
  * <div class="flex shrink-0">...</div>
  *
  * <!-- Área de datos: se bloquea en modo lectura -->
- * <div class="flex-1 ..." intaReadonlyContent>
+ * <div class="flex-1 ..." [intaReadonlyContent]="shotLock.readOnly()">
  *   <mat-form-field>...</mat-form-field>
  * </div>
  * ```
- *
- * ## Mecanismo
- * - Aplica el atributo HTML estándar `inert` cuando la prueba es de solo lectura.
- *   El atributo `inert` deshabilita toda interacción (ratón, teclado, foco) en
- *   los elementos descendientes, siendo la solución más robusta y accesible.
- * - Añade la clase CSS `inta-readonly-content` para indicación visual (opacity,
- *   cursor) definida en el stylesheet global.
- *
- * ## Principios SOLID
- * - **SRP**: Solo gestiona el modo de solo lectura del área de contenido.
- * - **OCP**: Los nuevos widgets se integran añadiendo un único atributo.
- *   Los diálogos reutilizan la directiva sin configuración extra.
- * - **DIP**: El store es una dependencia **opcional**. Cuando la directiva se
- *   renderiza fuera del árbol de providers del store (p.ej. en un MatDialog
- *   abierto sin injector contextual), el store es `null` y la directiva
- *   permanece inactiva (modo editable) en lugar de lanzar NG0201.
  */
 @Directive({
   selector: '[intaReadonlyContent]',
@@ -49,12 +34,31 @@ import { ExecutionStore } from '../../+state/execution.store';
 })
 export class ReadonlyContentDirective {
   /**
+   * Permite override explícito (p.ej. [intaReadonlyContent]="shotLock.readOnly()").
+   * Si no se provee (o es string vacío como atributo puro `intaReadonlyContent`),
+   * consulta `store.isTrialReadOnly()`.
+   */
+  readonly readonlyInput = input<boolean | string | undefined>(undefined, { alias: 'intaReadonlyContent' });
+
+  /**
    * Store opcional: null cuando la directiva vive en un MatDialog abierto
    * sin un injector que provea ExecutionStore (p.ej. diálogos de configuración
    * masiva). En ese caso `isReadOnly` devuelve `false` de forma segura.
    */
   readonly #store = inject(ExecutionStore, { skipSelf: true, optional: true });
 
-  /** `true` solo cuando el store está presente y la prueba es de solo lectura. */
-  protected readonly isReadOnly = computed(() => this.#store?.isTrialReadOnly() ?? false);
+  /** `true` si el input explícito es true, o si falta el input y la prueba es de solo lectura. */
+  protected readonly isReadOnly = computed(() => {
+    const inputVal = this.readonlyInput();
+    if (typeof inputVal === 'boolean') {
+      return inputVal;
+    }
+    if (inputVal === 'true') {
+      return true;
+    }
+    if (inputVal === 'false') {
+      return false;
+    }
+    return this.#store?.isTrialReadOnly() ?? false;
+  });
 }

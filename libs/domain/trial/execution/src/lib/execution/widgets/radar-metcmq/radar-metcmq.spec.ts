@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
@@ -16,6 +17,7 @@ const mockWidgetStateService = {
   updateWidgetFormState: () => {},
   addWidget: () => {},
   placedWidgets: () => [],
+  saveSuccessCount: signal(0),
 };
 
 describe('RadarMetcmq', () => {

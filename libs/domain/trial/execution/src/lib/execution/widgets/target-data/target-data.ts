@@ -25,6 +25,8 @@ import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { buildDisparoOptions, resolveInitialShotSelection } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -39,6 +41,7 @@ interface TargetDataFormModel {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    ShotEditButton,
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
@@ -85,13 +88,17 @@ interface TargetDataFormModel {
             }
           </mat-select>
         </mat-form-field>
+
+        <div class="flex-1"></div>
+
+        <inta-shot-edit-button [lock]="shotLock" />
       </div>
 
       <!-- Divider -->
       <div class=""></div>
 
       <!-- ── Fields ───────────────────────────────────────────────────────── -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-3 gap-4 min-h-0 content-start">
+      <div class="flex-1 grid grid-cols-3 gap-4 min-h-0 content-start" [intaReadonlyContent]="shotLock.readOnly()">
         <!-- Row 1 -->
 
         <!-- Blanco -->
@@ -205,6 +212,10 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     dimensiones: this.#store.targetData().dimensiones,
   });
   protected readonly selectForm = form(this.formModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.serieModel(),
+    disparo: this.disparoModel(),
+  }));
 
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly espesorField = signal<InputFieldValue>(
@@ -294,9 +305,13 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     this.distanciaField.set(this.#numToField(stored.distancia, stored.distanciaUnit));
     this.inclinacionField.set(this.#numToField(stored.inclinacion, stored.inclinacionUnit));
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { blanco, material, dimensiones } = this.formModel();
     const updates: Partial<TargetDataState> = {
       serie: this.serieModel(),
@@ -313,6 +328,7 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     };
     this.#store.updateTargetData(updates);
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   #numToField(num: number | null, unit: string): InputFieldValue {

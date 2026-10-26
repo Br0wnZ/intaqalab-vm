@@ -29,6 +29,9 @@ export class WidgetStateService {
   // 📝 Estado de formularios de cada widget
   readonly #widgetFormsState = signal<Map<string, WidgetFormState>>(new Map());
 
+  // 💾 Contador de guardados exitosos para sincronizar auto-bloqueo de formularios
+  readonly #saveSuccessCount = signal(0);
+
   // 🎨 Paleta de colores para widgets
   readonly #colors = [
     '#3b82f6', // blue-500
@@ -44,6 +47,7 @@ export class WidgetStateService {
   // 🔄 Public readonly signals
   readonly placedWidgets = this.#placedWidgets.asReadonly();
   readonly widgetFormsState = this.#widgetFormsState.asReadonly();
+  readonly saveSuccessCount = this.#saveSuccessCount.asReadonly();
 
   /**
    * 🧮 Computed: Widgets con cambios sin guardar
@@ -363,6 +367,8 @@ export class WidgetStateService {
         await instance.saveForm();
       }
     }
+
+    this.#saveSuccessCount.update((count) => count + 1);
   }
 
   /**

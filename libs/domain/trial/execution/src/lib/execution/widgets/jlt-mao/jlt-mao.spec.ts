@@ -2,6 +2,7 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
@@ -17,6 +18,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
+import type { ShotJltMaoResponse } from '../../models/shot-jlt-mao.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { JltMao } from './jlt-mao';
 
@@ -24,6 +26,7 @@ const mockWidgetStateService = {
   updateWidgetFormState: () => {},
   addWidget: () => {},
   placedWidgets: () => [],
+  saveSuccessCount: signal(0),
 };
 
 describe('JltMao', () => {
@@ -136,6 +139,8 @@ describe('JltMao', () => {
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
+    vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
       updatedShotIds: ['shot-1', 'shot-2'],
     });
@@ -182,6 +187,8 @@ describe('JltMao', () => {
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
+    vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
       updatedShotIds: ['shot-1', 'shot-2', 'shot-3'],
     });

@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -17,6 +18,7 @@ const mockWidgetStateService = {
   updateWidgetFormState: () => {},
   addWidget: () => {},
   placedWidgets: () => [],
+  saveSuccessCount: signal(0),
 };
 
 describe('TrayectografiaIntroductionWidget', () => {
@@ -108,5 +110,17 @@ describe('TrayectografiaIntroductionWidget', () => {
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
     });
+  });
+
+  it('handles shotLock unlock and lock cycle', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance.onSerieSelected('s-1');
+    fixture.componentInstance.onDisparoSelected('d-1');
+    const lock = fixture.componentInstance['shotLock'];
+    expect(lock).toBeDefined();
+    lock.enableHistoricalEdit();
+    expect(lock.historicalEditEnabled()).toBe(true);
+    await fixture.componentInstance.saveForm();
+    expect(lock.historicalEditEnabled()).toBe(false);
   });
 });

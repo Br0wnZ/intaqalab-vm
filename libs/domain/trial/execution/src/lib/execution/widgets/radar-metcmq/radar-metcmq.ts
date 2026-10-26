@@ -30,6 +30,8 @@ import {
   mapPlanningSeriesToOptions,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 
 interface RadarMetcmqForm {
   serie: string | null;
@@ -48,6 +50,7 @@ interface RadarMetcmqForm {
     MatTooltipModule,
     TranslateModule,
     IntaIconComponent,
+    ShotEditButton,
   ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
@@ -57,6 +60,7 @@ interface RadarMetcmqForm {
         <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
           {{ 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE' | translate }}
         </h3>
+        <inta-shot-edit-button [lock]="shotLock" />
       </div>
 
       <!-- Selectors row: Serie + Disparo -->
@@ -92,7 +96,7 @@ interface RadarMetcmqForm {
       <div class="border-t-1 border-gray-200 mt-4"></div>
 
       <!-- Text output + Copy + Generar -->
-      <div intaReadonlyContent class="flex-1 flex items-center gap-1.5 min-h-0">
+      <div class="flex-1 flex items-center gap-1.5 min-h-0" [intaReadonlyContent]="shotLock.readOnly()">
         <div
           class="flex-1 flex items-center border border-slate-200 rounded-lg bg-slate-50 h-10 px-3 min-w-0 overflow-hidden"
         >
@@ -154,6 +158,10 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
     disparo: this.#store.radarMetcmq().disparo,
   });
   protected readonly metcmqForm = form(this.formModel);
+  protected readonly shotLock = injectShotFormLock({
+    selectedSerieId: () => this.formModel().serie,
+    selectedShotId: () => this.formModel().disparo,
+  });
 
   constructor() {
     super();
@@ -198,14 +206,18 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
   resetForm(): void {
     const stored = this.#store.radarMetcmq();
     this.formModel.set({ serie: stored.serie, disparo: stored.disparo });
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo } = this.formModel();
     this.#store.updateRadarMetcmq({ serie, disparo });
+    this.shotLock.lock();
   }
 
   generateBulletin(): void {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo } = this.formModel();
     this.#store.updateRadarMetcmq({ serie, disparo });
 

@@ -26,6 +26,7 @@ import { firstValueFrom } from 'rxjs';
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
 import { injectShotMunitionComponents } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotMunitionResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -33,6 +34,8 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { resolveInitialShotSelection } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
 import { MassiveConfigDialog } from './massive-config-dialog';
 import {
@@ -75,7 +78,9 @@ export interface AcondFormModel {
   selector: 'inta-munition-introduction',
   imports: [
     FormField,
+    ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -139,6 +144,8 @@ export interface AcondFormModel {
 
         <div class="flex-1"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Tab chips -->
         <div class="flex items-center gap-1 shrink-0">
           <button
@@ -187,7 +194,12 @@ export interface AcondFormModel {
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- Se utiliza [class.hidden] en lugar de @switch para preservar el estado interno de las tabs -->
-      <div intaFormTouch class="flex-1 min-h-0 mt-8 gap-8" #touch="intaFormTouch">
+      <div
+        intaFormTouch
+        class="flex-1 min-h-0 mt-8 gap-8"
+        [intaReadonlyContent]="shotLock.readOnly()"
+        #touch="intaFormTouch"
+      >
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
           [componenteOptions]="componenteOptions()"
@@ -310,6 +322,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     disparo: this.#store.munitionIntroduction().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   // ── Dirty tracking: los selectores serie/disparo son de consulta y NO
   //    participan del estado dirty. Solo cuentan las tabs de datos. ──────────
@@ -516,6 +532,9 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { serie, disparo } = this.selectorFormModel();
     const fireTrialId = this.#store.fireTrialId();
 
@@ -557,6 +576,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         this.pesosTab()?.save();
         this.acondTab()?.save();
         this.#store.loadMunitionIntroductionRemoteResponse(updatedResponse, componentId);
+        this.shotLock.lock();
       } catch (error) {
         console.error('Failed to save shot munition', error);
         throw error;
@@ -565,6 +585,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       this.identTab()?.save();
       this.pesosTab()?.save();
       this.acondTab()?.save();
+      this.shotLock.lock();
     }
   }
 

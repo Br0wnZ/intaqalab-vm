@@ -28,6 +28,8 @@ import {
   mapPlanningSeriesToOptions,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 
 interface PassCoordsSelectForm {
   serie: string | null;
@@ -39,6 +41,7 @@ interface PassCoordsSelectForm {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    ShotEditButton,
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
@@ -48,11 +51,14 @@ interface PassCoordsSelectForm {
   template: `
     <div class="h-full rounded-2xl bg-white p-3 flex flex-col gap-2">
       <!-- Header row 1: icon + title -->
-      <div class="flex items-center gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
-        <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
-        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
-          {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE' | translate }}
-        </h3>
+      <div class="flex items-center justify-between gap-1.5 shrink-0 sticky -top-4 z-2 bg-white min-h-8">
+        <div class="flex items-center gap-1.5">
+          <ui-inta-icon name="trello" color="var(--inta-button)" size="xl" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+            {{ 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE' | translate }}
+          </h3>
+        </div>
+        <inta-shot-edit-button [lock]="shotLock" />
       </div>
 
       <!-- Header row 2: selectors -->
@@ -88,7 +94,10 @@ interface PassCoordsSelectForm {
       <div class="h-px bg-slate-100 mb-2"></div>
 
       <!-- Output fields: 2 cols × 3 rows -->
-      <div intaReadonlyContent class="flex-1 grid grid-cols-2 gap-x-2 gap-y-4 min-h-0 content-start">
+      <div
+        class="flex-1 grid grid-cols-2 gap-x-2 gap-y-4 min-h-0 content-start"
+        [intaReadonlyContent]="shotLock.readOnly()"
+      >
         <!-- Altura boca-bola pieza -->
         <div class="flex flex-col gap-0.5">
           <span class="text-xs font-medium text-gray-700 leading-none">
@@ -207,6 +216,10 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
     disparo: this.#store.passCoords().disparo,
   });
   protected readonly selectForm = form(this.formModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.formModel().serie,
+    disparo: this.formModel().disparo,
+  }));
 
   constructor() {
     super();
@@ -251,11 +264,16 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
   resetForm(): void {
     const stored = this.#store.passCoords();
     this.formModel.set({ serie: stored.serie, disparo: stored.disparo });
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { serie, disparo } = this.formModel();
     this.#store.updatePassCoords({ serie, disparo });
+    this.shotLock.lock();
   }
 
   protected formatValue(value: number | null): string {

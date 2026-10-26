@@ -36,6 +36,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -53,6 +55,7 @@ interface DataFormModel {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -106,6 +109,8 @@ interface DataFormModel {
 
         <div class="flex-1 min-w-0"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -114,8 +119,8 @@ interface DataFormModel {
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
       <div
-        intaReadonlyContent
         class="flex-1 grid grid-cols-4 gap-x-3 gap-y-2 mt-2 items-start content-start min-h-0 overflow-hidden"
+        [intaReadonlyContent]="shotLock.readOnly()"
       >
         <!-- Row 1: Equipo, Distancia, Nivel, Observaciones (row-span-2) -->
 
@@ -246,6 +251,10 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
     disparo: this.#store.acousticLevelIntroduction().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   protected readonly dataFormModel = signal<DataFormModel>({
     equipo: this.#store.acousticLevelIntroduction().equipo,
@@ -431,9 +440,13 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
     });
     this.observacionesField.set(stored.observaciones);
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     const { serie, disparo } = this.selectorFormModel();
     const { equipo } = this.dataFormModel();
     const position = this.sonometroPositionField();
@@ -466,6 +479,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
     }
 
     this.#syncSnapshot();
+    this.shotLock.lock();
   }
 
   // ── Public helper (used in template) ──────────────────────────────────────

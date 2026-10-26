@@ -29,6 +29,8 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
 import { mapSelectedShotStatus, resolveInitialShotSelection } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { TrayectografiaFuncionamientosTabComponent } from './tabs/funcionamientos-tab.component';
 import { TrayectografiasTrayectoriasTabComponent } from './tabs/trayectorias-tab.component';
 import { TrayectografiaTrazasTabComponent } from './tabs/trazas-tab.component';
@@ -62,6 +64,7 @@ interface SelectorFormModel {
     TrayectografiaFuncionamientosTabComponent,
     TrayectografiaTrazasTabComponent,
     IntaIconComponent,
+    ShotEditButton,
   ],
   template: `
     <div class="h-full rounded-2xl bg-white p-4 flex flex-col gap-2">
@@ -149,9 +152,12 @@ interface SelectorFormModel {
         </div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
-          {{ estadoLabel() }}
-        </span>
+        <div class="flex items-center gap-1.5 shrink-0 self-start">
+          <inta-shot-edit-button [lock]="shotLock" />
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold" [class]="estadoClass()">
+            {{ estadoLabel() }}
+          </span>
+        </div>
       </div>
 
       <!-- Divider -->
@@ -159,7 +165,7 @@ interface SelectorFormModel {
 
       <!-- ── Tab bodies ───────────────────────────────────────────────────── -->
       <!-- [class.hidden] preserva el estado interno de cada tab -->
-      <div intaReadonlyContent class="flex-1 min-h-0">
+      <div class="flex-1 min-h-0" [intaReadonlyContent]="shotLock.readOnly()">
         <inta-trayectografia-trayectorias-tab
           [class.hidden]="activeTab() !== 'trayectorias'"
           [equipo]="equipoField()"
@@ -240,6 +246,11 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
     disparo: this.#store.trayectografiaIntroduction().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   // ── Equipo — managed separately (cross-tab shared field) ──────────────────
   protected readonly equipoField = signal<string | null>(this.#store.trayectografiaIntroduction().equipo);
@@ -399,9 +410,11 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
     this.trayectoriasTab()?.reset();
     this.funcionamientosTab()?.reset();
     this.trazasTab()?.reset();
+    this.shotLock.lock();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo } = this.selectorFormModel();
     this.#store.updateTrayectografiaSelector({ serie, disparo, equipo: this.equipoField() });
     this.#equipoSnapshot.set(this.equipoField());
@@ -420,5 +433,6 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
       });
       await this.#executionService.updateShotTrajectography(fireTrialId, serie, disparo, payload);
     }
+    this.shotLock.lock();
   }
 }

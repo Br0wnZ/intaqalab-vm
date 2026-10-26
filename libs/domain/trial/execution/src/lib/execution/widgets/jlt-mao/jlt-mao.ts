@@ -41,6 +41,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import type { JltMaoMassConfigDialogResult } from './jlt-mao-mass-config-dialog';
 import { JltMaoMassConfigDialog } from './jlt-mao-mass-config-dialog';
 import type { JltMaoMassConfigFields } from './jlt-mao-mass-config.mapper';
@@ -59,6 +61,7 @@ interface JltMaoSelectForm {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -147,6 +150,8 @@ interface JltMaoSelectForm {
           <input inputSelectInput libLocalDecimal [decimals]="2" />
         </ui-input-select>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -158,8 +163,8 @@ interface JltMaoSelectForm {
 
       <!-- Fields: 5 columns × 2 rows -->
       <div
-        intaReadonlyContent
         class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-3 gap-y-8 min-h-0 content-start mt-4"
+        [intaReadonlyContent]="shotLock.readOnly()"
       >
         <!-- ── Row 1 ─────────────────────────────────────────────────────── -->
 
@@ -436,6 +441,10 @@ export class JltMao extends BaseFormWidgetComponent {
   protected readonly selectForm = form(this.formModel, (path) => {
     disabled(path.piqueta, () => this.piquetaDisabled());
   });
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.formModel().serie,
+    disparo: this.formModel().disparo,
+  }));
 
   // ── Dirty tracking includes TTN (separate signal) ─────────────────────────
   readonly #savedTtn = signal<string | null>(this.ttnField());
@@ -668,6 +677,7 @@ export class JltMao extends BaseFormWidgetComponent {
       this.distanciaFuncionamientoField.set(this.#numToField(data.functioningDistance, 'm'));
 
     this.#savedTtn.set(this.ttnField());
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 
@@ -689,10 +699,12 @@ export class JltMao extends BaseFormWidgetComponent {
     this.graduacionEspoletaField.set(this.#numToField(stored.graduacionEspoleta, 's'));
     this.alturaFuncionamientoField.set(this.#numToField(stored.alturaFuncionamiento, 'm'));
     this.distanciaFuncionamientoField.set(this.#numToField(stored.distanciaFuncionamiento, 'm'));
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo, piqueta } = this.formModel();
     const ttn = this.ttnField();
     const velocidadInicialTeorica = this.#parseNum(this.velocidadInicialField());
@@ -757,6 +769,7 @@ export class JltMao extends BaseFormWidgetComponent {
     }
 
     this.#savedTtn.set(this.ttnField());
+    this.shotLock.lock();
     this.#syncSnapshot();
   }
 

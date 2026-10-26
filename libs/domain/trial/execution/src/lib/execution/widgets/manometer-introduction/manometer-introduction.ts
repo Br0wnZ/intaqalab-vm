@@ -42,6 +42,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { injectManometerEquipments } from './inject-manometer-equipments';
 import type { InputFieldValue } from './manometer-introduction.mapper';
 import {
@@ -82,6 +84,7 @@ export interface DataFormModel {
     FormField,
     ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -138,6 +141,8 @@ export interface DataFormModel {
 
         <div class="flex-1"></div>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
           {{ estadoLabel() }}
@@ -148,7 +153,12 @@ export interface DataFormModel {
       <div class=""></div>
 
       <!-- ── Body: flex container (data grid + observaciones) ──────────────── -->
-      <div intaReadonlyContent intaFormTouch class="flex-1 flex-wrap flex gap-2 min-h-0" #touch="intaFormTouch">
+      <div
+        intaFormTouch
+        class="flex-1 flex-wrap flex gap-2 min-h-0"
+        [intaReadonlyContent]="shotLock.readOnly()"
+        #touch="intaFormTouch"
+      >
         <!-- Data grid: two explicit rows inside a flex column -->
         <div class="flex-1 flex justify-evenly flex-col gap-4">
           <!-- Row 1: Manómetro | Crusher | Micrómetro | Presión (cols 1-4; 5-6 empty) -->
@@ -450,6 +460,10 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     disparo: this.#store.manometerIntroduction().disparo,
   });
   protected readonly selectorForm = form(this.selectorFormModel);
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
   protected readonly dataFormModel = signal<DataFormModel>({
     manometro: this.#store.manometerIntroduction().manometro,
@@ -636,6 +650,9 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) {
+      return;
+    }
     this.#syncCurrentDraftToStore();
     const { serie, disparo } = this.selectorFormModel();
     const fireTrialId = this.#store.fireTrialId();
@@ -651,12 +668,14 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       try {
         await this.#executionService.updateShotManometerPressures(fireTrialId, serie, disparo, payload);
         this.#syncSnapshot();
+        this.shotLock.lock();
       } catch (error) {
         console.error('Failed to save shot manometer pressures', error);
         throw error;
       }
     } else {
       this.#syncSnapshot();
+      this.shotLock.lock();
     }
   }
 

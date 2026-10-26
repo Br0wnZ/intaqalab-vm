@@ -38,6 +38,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { injectInitialVelocityEquipments } from './inject-initial-velocity-equipments';
 import {
   type InputFieldValue,
@@ -67,6 +69,7 @@ interface DataFormModel {
     FormField,
     ReadonlyContentDirective,
     FormTouchDirective,
+    ShotEditButton,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -117,17 +120,7 @@ interface DataFormModel {
 
         <div class="flex-1"></div>
 
-        @if (canEnableHistoricalEdit()) {
-          <button
-            mat-icon-button
-            type="button"
-            [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.ENABLE_EDIT' | translate"
-            [attr.title]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.ENABLE_EDIT' | translate"
-            (click)="enableHistoricalEdit()"
-          >
-            <ui-inta-icon name="edit_line" color="var(--inta-button)" />
-          </button>
-        }
+        <inta-shot-edit-button [lock]="shotLock" />
 
         <!-- Estado del disparo -->
         <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
@@ -140,11 +133,9 @@ interface DataFormModel {
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
       <div
-        intaReadonlyContent
         intaFormTouch
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 min-h-0 items-end"
-        [attr.inert]="readOnly() ? '' : null"
-        [class.inta-readonly-content]="readOnly()"
+        [intaReadonlyContent]="readOnly()"
         #touch="intaFormTouch"
       >
         <!-- Row 1 -->
@@ -287,11 +278,6 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
         this.#lastLoadedActiveSelection.set(selectionKey);
       });
     });
-
-    effect(() => {
-      this.#selectionKey();
-      this.historicalEditEnabled.set(false);
-    });
   }
 
   // ── Unit options ───────────────────────────────────────────────────────────
@@ -376,37 +362,17 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
     return selectedShot ? (series?.shots.find((shot) => shot.shotId === selectedShot) ?? null) : null;
   });
 
-  protected readonly isCurrentShot = computed(
-    () =>
-      this.selectorFormModel().serie === this.#store.activeSerieId() &&
-      this.selectorFormModel().disparo === this.#store.activeShotId(),
-  );
+  protected readonly shotLock = injectShotFormLock(() => ({
+    serie: this.selectorFormModel().serie,
+    disparo: this.selectorFormModel().disparo,
+  }));
 
-  protected readonly isUnexecutedShot = computed(
-    () => !this.isCurrentShot() && this.selectedShotProgress()?.status !== 'FIRED',
-  );
-
-  protected readonly isHistoricalFiredShot = computed(
-    () => !this.isCurrentShot() && this.selectedShotProgress()?.status === 'FIRED',
-  );
-
-  protected readonly historicalEditEnabled = signal(false);
-
-  protected readonly canEnableHistoricalEdit = computed(
-    () => !this.#store.isTrialReadOnly() && this.isHistoricalFiredShot() && !this.historicalEditEnabled(),
-  );
-
-  protected readonly readOnly = computed(() => {
-    const { serie, disparo } = this.selectorFormModel();
-
-    return (
-      !serie ||
-      !disparo ||
-      this.#store.isTrialReadOnly() ||
-      this.isUnexecutedShot() ||
-      (this.isHistoricalFiredShot() && !this.historicalEditEnabled())
-    );
-  });
+  protected readonly isCurrentShot = this.shotLock.isCurrentShot;
+  protected readonly isUnexecutedShot = this.shotLock.isUnexecutedShot;
+  protected readonly isHistoricalFiredShot = this.shotLock.isHistoricalFiredShot;
+  protected readonly historicalEditEnabled = this.shotLock.historicalEditEnabled;
+  protected readonly canEnableHistoricalEdit = this.shotLock.canEnableHistoricalEdit;
+  protected readonly readOnly = this.shotLock.readOnly;
 
   // ── Read-only: incertidumbre del software ─────────────────────────────────
   protected readonly incertidumbreSoftwareField = signal<InputFieldValue>(
@@ -524,7 +490,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   }
 
   enableHistoricalEdit(): void {
-    this.historicalEditEnabled.set(true);
+    this.shotLock.enableHistoricalEdit();
   }
 
   resetForm(): void {

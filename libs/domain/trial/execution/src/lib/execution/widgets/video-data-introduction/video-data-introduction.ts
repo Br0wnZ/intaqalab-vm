@@ -25,6 +25,7 @@ import { ExecutionStore } from '../../../+state/execution.store';
 import { resolveObservedResultControlConfig, resolvePlannedVideoMagnitudes } from '../../../data-access';
 import { EquipmentPlanningService } from '../../../services/equipment-planning.service';
 import { ExecutionService } from '../../../services/execution.service';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotVideoDataResponse } from '../../models';
 import { EquipmentTypeEnum } from '../../models/equipment.models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -40,6 +41,8 @@ import {
   mapSelectedShotStatusLabel,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
+import { ShotEditButton } from '../utils/shot-edit-button';
+import { injectShotFormLock } from '../utils/shot-form-lock';
 import { injectInitialVideoEquipments } from './inject-initial-video-equipments';
 import {
   buildVideoEquipmentCombinedValue,
@@ -75,6 +78,8 @@ interface VideoDataIntroductionForm {
     TranslateModule,
     IntaIconComponent,
     FormTouchDirective,
+    ReadonlyContentDirective,
+    ShotEditButton,
   ],
   template: `
     <div
@@ -129,6 +134,8 @@ interface VideoDataIntroductionForm {
           {{ 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.DISPARO_ACTUAL_LABEL' | translate }}
         </button>
 
+        <inta-shot-edit-button [lock]="shotLock" />
+
         <!-- Toggles: Video AV / Video C -->
         <div class="flex items-center gap-2 shrink-0">
           <button
@@ -160,13 +167,18 @@ interface VideoDataIntroductionForm {
         <div class="flex-1"></div>
 
         <!-- Estado del disparo -->
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start" [class]="estadoClass()">
-          {{ estadoDisparo() }}
-        </span>
+        @if (shotLock.statusLabel(); as status) {
+          <span
+            class="px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 self-start"
+            [class]="shotLock.statusClass()"
+          >
+            {{ status | translate }}
+          </span>
+        }
       </div>
 
       <!-- ── Body ────────────────────────────────────────────────────────── -->
-      <div class="flex-1 flex gap-3 min-h-0">
+      <div class="flex-1 flex gap-3 min-h-0" [intaReadonlyContent]="shotLock.readOnly()">
         <!-- Columna izquierda: 2 filas -->
         <div class="flex-[2.4] min-w-0 flex flex-col justify-evenly gap-2.5">
           <!-- Fila 1: Equipo (Cámara / Grabador / Canal) -->
@@ -516,6 +528,10 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   });
 
   protected readonly form = form(this.selectorModel);
+  protected readonly shotLock = injectShotFormLock({
+    selectedSerieId: () => this.selectorModel().serie,
+    selectedShotId: () => this.selectorModel().disparo,
+  });
   readonly #dirtyTracker = createDirtyTracker(() => this.#editableValues());
   protected readonly touchRef = viewChild('touch', { read: FormTouchDirective });
 
@@ -703,10 +719,12 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       resultadoObservado: stored.resultadoObservado ?? '',
       observaciones: stored.observaciones ?? '',
     });
+    this.shotLock.lock();
     this.#dirtyTracker.syncSnapshot();
   }
 
   async saveForm(): Promise<void> {
+    if (this.shotLock.readOnly()) return;
     const { serie, disparo, tipoVideo, camera, grabador, canal, magnitud, resultadoObservado, observaciones } =
       this.selectorModel();
     this.#store.updateVideoDataIntroduction({
@@ -728,6 +746,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     try {
       const response = await this.#executionService.updateShotVideoData(fireTrialId, serie, disparo, payload);
       this.#remoteVideoData.set(response);
+      this.shotLock.lock();
       this.#dirtyTracker.syncSnapshot();
     } catch (error) {
       console.error('Failed to save shot video data', error);
@@ -779,6 +798,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       equipment,
     }));
     this.#store.updateVideoDataIntroduction(this.selectorModel());
+    this.shotLock.lock();
     this.#dirtyTracker.syncSnapshot();
   }
 
