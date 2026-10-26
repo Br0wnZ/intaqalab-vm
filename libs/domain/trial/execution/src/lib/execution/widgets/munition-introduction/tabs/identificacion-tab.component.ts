@@ -270,14 +270,60 @@ export class MunitionIdentificacionTabComponent {
     return opt ? !opt.inStock : false;
   });
 
+  #checkIsProyectil(compId: string | null): boolean {
+    if (!compId) return false;
+
+    const comp =
+      this.componenteOptions().find((c) => c.value === compId) ??
+      this.#store.munitionIntroduction().componenteOptions.find((c) => c.value === compId);
+
+    const category = (comp?.category ?? '').toLowerCase();
+    const label = (comp?.label ?? '').toLowerCase();
+    const idLower = compId.toLowerCase();
+
+    return (
+      category === 'granada' ||
+      category === 'proyectil' ||
+      category === 'projectile' ||
+      label.includes('proyectil') ||
+      label.includes('granada') ||
+      label.includes('projectile') ||
+      idLower.includes('proyectil') ||
+      idLower.includes('granada')
+    );
+  }
+
+  readonly isProyectil = computed(() => this.#checkIsProyectil(this.identFormModel().componente));
+
   readonly isEspoleta = computed(() => {
+    if (this.isProyectil()) return false;
     const comp = this.selectedComponent();
     if (comp) return comp.isFuse;
     const componente = this.identFormModel().componente;
-    return this.componenteOptions().find((c) => c.value === componente)?.category === 'espoleta';
+    const fallbackCategory = this.#store
+      .munitionIntroduction()
+      .componenteOptions.find((c) => c.value === componente)?.category;
+    return (
+      this.componenteOptions().find((c) => c.value === componente)?.category === 'espoleta' ||
+      fallbackCategory === 'espoleta'
+    );
   });
 
   constructor() {
+    // Cascada: si el componente cambia y es proyectil, limpia modoFuncionamiento y graduacionEspoleta
+    effect(() => {
+      if (this.isProyectil()) {
+        untracked(() => {
+          if (this.identFormModel().modoFuncionamiento !== null) {
+            this.identFormModel.update((m) => ({ ...m, modoFuncionamiento: null }));
+          }
+          if (this.graduacionEspoletaField() !== null) {
+            this.graduacionEspoletaField.set(null);
+          }
+        });
+      }
+    });
+
     // Cascada: si el componente cambia y la denominación actual no es válida, la limpia
     effect(() => {
       const denOpts = this.filteredDenominacionOptions();
@@ -299,14 +345,15 @@ export class MunitionIdentificacionTabComponent {
 
   getFormUpdates(): Partial<MunitionIntroIdentificationState> {
     const { componente, denominacion, lote, modoFuncionamiento } = this.identFormModel();
+    const isEspoleta = this.isEspoleta();
     return {
       componente,
       denominacion,
       lote,
-      modoFuncionamiento,
+      modoFuncionamiento: isEspoleta ? modoFuncionamiento : null,
       numeroCliente: this.numeroClienteField(),
       observaciones: this.observacionesField(),
-      graduacionEspoleta: this.#parseNum(this.graduacionEspoletaField()),
+      graduacionEspoleta: isEspoleta ? this.#parseNum(this.graduacionEspoletaField()) : null,
     };
   }
 
@@ -329,16 +376,18 @@ export class MunitionIdentificacionTabComponent {
   }
 
   applyData(data: Partial<MunitionIntroIdentificationState>): void {
+    const targetCompId = data.componente !== undefined ? data.componente : this.identFormModel().componente;
+    const isProyectil = this.#checkIsProyectil(targetCompId);
     this.identFormModel.update((m) => ({
       ...m,
-      componente: data.componente !== undefined ? data.componente : m.componente,
+      componente: targetCompId,
       denominacion: data.denominacion ?? null,
       lote: data.lote ?? null,
-      modoFuncionamiento: data.modoFuncionamiento ?? null,
+      modoFuncionamiento: isProyectil ? null : (data.modoFuncionamiento ?? null),
     }));
     this.numeroClienteField.set(data.numeroCliente ?? null);
     this.observacionesField.set(data.observaciones ?? null);
-    this.graduacionEspoletaField.set(this.#numToField(data.graduacionEspoleta ?? null, 's'));
+    this.graduacionEspoletaField.set(isProyectil ? null : this.#numToField(data.graduacionEspoleta ?? null, 's'));
     this.#dirtyTracker.syncSnapshot();
   }
 
@@ -350,15 +399,16 @@ export class MunitionIdentificacionTabComponent {
 
   reset(): void {
     const stored = this.#store.munitionIntroduction().identificacion;
+    const isProyectil = this.#checkIsProyectil(stored.componente);
     this.identFormModel.set({
       componente: stored.componente,
       denominacion: stored.denominacion,
       lote: stored.lote,
-      modoFuncionamiento: stored.modoFuncionamiento,
+      modoFuncionamiento: isProyectil ? null : stored.modoFuncionamiento,
     });
     this.numeroClienteField.set(stored.numeroCliente);
     this.observacionesField.set(stored.observaciones);
-    this.graduacionEspoletaField.set(this.#numToField(stored.graduacionEspoleta, 's'));
+    this.graduacionEspoletaField.set(isProyectil ? null : this.#numToField(stored.graduacionEspoleta, 's'));
     this.#dirtyTracker.syncSnapshot();
   }
 }

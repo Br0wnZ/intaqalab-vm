@@ -31,8 +31,20 @@ export function isFuseComponent(params: {
   fuseMeasurement: number | null;
   rawType?: string | null;
 }): boolean {
+  const lowerLabel = params.label.toLowerCase();
+  const lowerCategory = params.category.toLowerCase();
+  if (
+    lowerCategory === 'granada' ||
+    lowerCategory === 'proyectil' ||
+    lowerCategory === 'projectile' ||
+    lowerLabel.includes('proyectil') ||
+    lowerLabel.includes('granada') ||
+    lowerLabel.includes('projectile')
+  ) {
+    return false;
+  }
   if (params.category === 'espoleta') return true;
-  if (params.label.toLowerCase().includes('espoleta') || params.label.toLowerCase().includes('fuse')) return true;
+  if (lowerLabel.includes('espoleta') || lowerLabel.includes('fuse')) return true;
   if (params.rawType?.toUpperCase() === 'FUSE') return true;
   if (params.fuseWorkingModeId !== null || params.fuseMeasurement !== null) return true;
   return false;

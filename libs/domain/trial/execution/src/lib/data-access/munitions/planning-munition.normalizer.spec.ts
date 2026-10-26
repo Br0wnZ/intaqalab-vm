@@ -70,6 +70,15 @@ describe('planning-munition.normalizer', () => {
           fuseMeasurement: null,
         }),
       ).toBe(false);
+
+      expect(
+        isFuseComponent({
+          label: 'Proyectil 155mm',
+          category: 'granada',
+          fuseWorkingModeId: 'mode-1',
+          fuseMeasurement: 5,
+        }),
+      ).toBe(false);
     });
   });
 

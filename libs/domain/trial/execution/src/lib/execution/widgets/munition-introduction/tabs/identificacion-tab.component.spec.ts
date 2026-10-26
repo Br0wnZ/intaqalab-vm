@@ -74,4 +74,84 @@ describe('MunitionIdentificacionTabComponent', () => {
     // Should be restored to initial null/undefined state from store
     expect(view.fixture.componentInstance.identFormModel().componente).toBeNull();
   });
+
+  it('hides modo funcionamiento and graduacion de espoleta when component is proyectil', async () => {
+    const { view } = await runSetup();
+    const component = view.fixture.componentInstance;
+
+    view.fixture.componentRef.setInput('componenteOptions', [
+      {
+        value: 'type-proj',
+        label: 'Proyectil 155mm ERFB',
+        category: 'granada',
+        rawCategory: 'MUNITION',
+        source: 'CONFIGURATION',
+        configurationId: 'cfg-1',
+        isFuse: false,
+        planned: {
+          denominationId: null,
+          denominationName: null,
+          batch: null,
+          clientNumber: null,
+          fuseWorkingModeId: null,
+          fuseMeasurement: null,
+        },
+      },
+    ]);
+
+    component.identFormModel.update((m) => ({ ...m, componente: 'type-proj' }));
+    view.fixture.detectChanges();
+
+    expect(component.isProyectil()).toBe(true);
+    expect(component.isEspoleta()).toBe(false);
+
+    expect(
+      screen.queryByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.GRADUACION_ESPOLETA_LABEL'),
+    ).not.toBeInTheDocument();
+
+    const updates = component.getFormUpdates();
+    expect(updates.modoFuncionamiento).toBeNull();
+    expect(updates.graduacionEspoleta).toBeNull();
+  });
+
+  it('shows modo funcionamiento and graduacion de espoleta when component is espoleta', async () => {
+    const { view } = await runSetup();
+    const component = view.fixture.componentInstance;
+
+    view.fixture.componentRef.setInput('componenteOptions', [
+      {
+        value: 'type-fuse',
+        label: 'Espoleta M578',
+        category: 'espoleta',
+        rawCategory: 'MUNITION_COMPONENT',
+        source: 'COMPONENT',
+        configurationId: 'cfg-1',
+        isFuse: true,
+        planned: {
+          denominationId: null,
+          denominationName: null,
+          batch: null,
+          clientNumber: null,
+          fuseWorkingModeId: null,
+          fuseMeasurement: null,
+        },
+      },
+    ]);
+
+    component.identFormModel.update((m) => ({ ...m, componente: 'type-fuse' }));
+    view.fixture.detectChanges();
+
+    expect(component.isProyectil()).toBe(false);
+    expect(component.isEspoleta()).toBe(true);
+
+    expect(
+      screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.GRADUACION_ESPOLETA_LABEL'),
+    ).toBeInTheDocument();
+  });
 });

@@ -184,8 +184,9 @@ describe('MunitionIntroduction', () => {
 
   it('shows massive configuration button only on acondicionamiento tab', async () => {
     const { fixture } = await renderWidget();
+    const root = fixture.nativeElement as HTMLElement;
     const hasMassiveConfigButton = () =>
-      Array.from(fixture.nativeElement.querySelectorAll<HTMLButtonElement>('button')).some((button) =>
+      Array.from(root.querySelectorAll<HTMLButtonElement>('button')).some((button) =>
         button.textContent?.includes('MASSIVE_CONFIG_BTN'),
       );
 
@@ -315,6 +316,9 @@ describe('MunitionIntroduction', () => {
     const pesosSpy = vi.spyOn(pesosTab, 'save');
     const acondSpy = vi.spyOn(acondTab, 'save');
 
+    const store = TestBed.inject(ExecutionStore);
+    store.setOptimisticActiveShot('serie-1', 'disparo-1');
+    fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'disparo-1' });
     await fixture.componentInstance.saveForm();
 
     expect(identSpy).toHaveBeenCalled();
@@ -882,5 +886,19 @@ describe('MunitionIntroduction', () => {
         ?.filteredDenominacionOptions()
         .map((option) => option.value),
     ).toEqual(['denom-esp-1']);
+  });
+
+  it('does not display modo funcionamiento or graduacion de espoleta when active component is a projectile', async () => {
+    const { fixture } = await renderWidget();
+    fixture.componentInstance.onComponentChange('granada-01');
+    fixture.detectChanges();
+
+    const identTab = fixture.componentInstance.identTab();
+    expect(identTab?.isProyectil()).toBe(true);
+    expect(identTab?.isEspoleta()).toBe(false);
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el).not.toHaveTextContent('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL');
+    expect(el).not.toHaveTextContent('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.GRADUACION_ESPOLETA_LABEL');
   });
 });
