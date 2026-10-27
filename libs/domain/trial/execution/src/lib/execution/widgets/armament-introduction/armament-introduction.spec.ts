@@ -260,6 +260,8 @@ describe('ArmamentIntroductionComponent', () => {
     store.setOptimisticActiveShot('series-id', 'shot-id');
     fixture.componentInstance['formModel'].update((value) => ({
       ...value,
+      serie: 'series-id',
+      disparo: 'shot-id',
       arma: '21017',
       tubo: '21099',
       observations: 'Sin incidencias.',

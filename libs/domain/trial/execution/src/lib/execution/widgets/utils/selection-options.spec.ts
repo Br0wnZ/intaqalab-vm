@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildDisparoOptions,
-  isUuid,
   mapPlanningSeriesToOptions,
   mapRadarSeriesToOptions,
   mapRadarShotsToOptions,
@@ -320,23 +319,6 @@ describe('selection-options', () => {
       expect(mapSelectedShotStatusClass(null)).toBe('');
       expect(mapSelectedShotStatusLabel('UNKNOWN')).toBe('');
       expect(mapSelectedShotStatusClass('UNKNOWN')).toBe('');
-    });
-  });
-
-  describe('isUuid', () => {
-    it('returns true for valid standard uuid strings', () => {
-      expect(isUuid('3fa85f64-5717-4562-b3fc-2c963f66bfa1')).toBe(true);
-      expect(isUuid('fbcb0883-a4d8-4b36-a104-2a3d42d3c061')).toBe(true);
-      expect(isUuid('3FA85F64-5717-4562-B3FC-2C963F66BFA1')).toBe(true);
-    });
-
-    it('returns false for non-uuid strings and invalid values', () => {
-      expect(isUuid('disparo-1')).toBe(false);
-      expect(isUuid('calentamiento')).toBe(false);
-      expect(isUuid('shot-1')).toBe(false);
-      expect(isUuid('')).toBe(false);
-      expect(isUuid(null)).toBe(false);
-      expect(isUuid(undefined)).toBe(false);
     });
   });
 });

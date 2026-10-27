@@ -137,17 +137,13 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
 
   // Data from store
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.radarMetcmq().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.formModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.radarMetcmq().disparoOptions,
     }),
   );
   protected readonly texto = computed(() => this.#store.radarMetcmq().texto);
@@ -175,7 +171,6 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.radarMetcmq().disparoOptions,
           }),
       });
       if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;

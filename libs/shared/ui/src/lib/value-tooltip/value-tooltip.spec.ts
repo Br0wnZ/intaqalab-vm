@@ -174,6 +174,20 @@ describe('ValueTooltip', () => {
     expect(await tooltip.getTooltipText()).toBe('Full observations for this component');
   });
 
+  it('should update explicit text on subsequent hover when uiValueTooltipValue changes', async () => {
+    const { view, tooltips } = await setup();
+    const tooltip = tooltipAt(tooltips, 4);
+    await tooltip.show();
+    expect(await tooltip.getTooltipText()).toBe('Full observations for this component');
+    await tooltip.hide();
+
+    view.fixture.componentInstance.observations.set('Updated observations');
+    view.fixture.detectChanges();
+
+    await tooltip.show();
+    expect(await tooltip.getTooltipText()).toBe('Updated observations');
+  });
+
   it('should apply text layout classes only when requested and remove them when disabled', async () => {
     const { view, tooltips } = await setup();
     const host = screen.getByText('Full observations for this component', { selector: 'span' });

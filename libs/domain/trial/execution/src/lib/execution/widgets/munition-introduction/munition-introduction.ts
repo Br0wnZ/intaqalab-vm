@@ -38,7 +38,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { isUuid, resolveInitialShotSelection } from '../utils/selection-options';
+import { resolveInitialShotSelection } from '../utils/selection-options';
 import { ShotEditButton } from '../utils/shot-edit-button';
 import { injectShotFormLock } from '../utils/shot-form-lock';
 import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
@@ -644,7 +644,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const selectionKey = this.#selectionKey();
     const ticket = this.#selectionGuard.begin();
 
-    if (!fireTrialId || !serie || !disparo || !isUuid(disparo)) {
+    if (!fireTrialId || !serie || !disparo) {
       return;
     }
 

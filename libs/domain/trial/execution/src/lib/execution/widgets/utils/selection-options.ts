@@ -17,12 +17,6 @@ export interface ShotSelection {
   disparo: string | null;
 }
 
-export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export function isUuid(value: string | null | undefined): value is string {
-  return typeof value === 'string' && UUID_REGEX.test(value);
-}
-
 export function mapRadarSeriesToOptions(
   responseSeries: Array<{ seriesId: string }>,
   planningSeries: PlanningSeriesItem[],
@@ -31,10 +25,13 @@ export function mapRadarSeriesToOptions(
     .map((serie, responseIndex) => {
       const planningIndex = planningSeries.findIndex((item) => item.id === serie.seriesId);
       const plannedSerie = planningSeries[planningIndex];
+      const label = plannedSerie?.name
+        ? plannedSerie.name.replace(/funcionamiento\s*/i, '').trim()
+        : `Serie ${plannedSerie?.executionOrder ?? responseIndex + 1}`;
 
       return {
         value: serie.seriesId,
-        label: `Serie ${plannedSerie?.executionOrder ?? responseIndex + 1}`,
+        label,
         order: plannedSerie?.executionOrder ?? (planningIndex >= 0 ? planningIndex + 1 : responseIndex + 1),
         responseIndex,
       };

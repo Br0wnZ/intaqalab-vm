@@ -19,15 +19,8 @@ const initialState: TargetDataSlice = {
     distanciaUnit: 'm',
     inclinacion: null,
     inclinacionUnit: 'º',
-    serieOptions: [
-      { value: 'func-1', label: 'Funcionamiento I' },
-      { value: 'func-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
     blancoOptions: [],
     materialOptions: [],
     dimensionesOptions: [],

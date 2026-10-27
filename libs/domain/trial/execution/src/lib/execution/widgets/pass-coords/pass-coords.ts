@@ -182,17 +182,13 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.passCoords().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.formModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.passCoords().disparoOptions,
     }),
   );
 
@@ -233,7 +229,6 @@ export class PassCoordsWidget extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.passCoords().disparoOptions,
           }),
       });
       if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;

@@ -102,6 +102,10 @@ describe('TopographyIntroductionWidget', () => {
   it('allows typing a flight time and keeps its value after blur', async () => {
     const user = userEvent.setup();
     const { fixture } = await renderWidget();
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    fixture.detectChanges();
+
     const flightTime = screen.getByRole('textbox', {
       name: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TIEMPO_VUELO_LABEL',
     });
@@ -111,12 +115,16 @@ describe('TopographyIntroductionWidget', () => {
     await user.tab();
 
     expect(flightTime).toHaveValue('12');
-    expect(fixture.componentInstance['tiempoVueloField']()).toEqual({ value: '12', unit: 's' });
+    expect(fixture.componentInstance['tiempoVueloField']()).toEqual({ value: 12, unit: 's' });
   });
 
   it('saveForm persists data to the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
+    fixture.detectChanges();
+
     fixture.componentInstance['tiempoVueloField'].set({ value: 12.5, unit: 's' });
     await fixture.componentInstance.saveForm();
     expect(store.topographyIntroduction().tiempoVuelo).toBe(12.5);

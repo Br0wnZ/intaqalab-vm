@@ -25,15 +25,8 @@ const initialState: VelocityIntroductionSlice = {
     cadencia: null,
     cadenciaUnit: CadenceUnitEnum.SPM,
     observaciones: null,
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
     radarDopplerOptions: [
       { value: 'W700I_SN8302', label: 'W700I_SN8302 / SL-520A_SN6124' },
       { value: 'W700I_SN9001', label: 'W700I_SN9001 / SL-520A_SN7200' },

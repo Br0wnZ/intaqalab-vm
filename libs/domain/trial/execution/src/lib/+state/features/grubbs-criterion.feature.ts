@@ -11,10 +11,7 @@ const initialState: GrubbsCriterionSlice = {
     serie: null,
     variable: null,
     outliers: [],
-    serieOptions: [
-      { value: 'func-1', label: 'Funcionamiento I' },
-      { value: 'func-2', label: 'Funcionamiento II' },
-    ],
+    serieOptions: [],
     variableOptions: [
       { value: 'velocidad', label: 'Velocidad inicial' },
       { value: 'presion', label: 'Presión máxima' },

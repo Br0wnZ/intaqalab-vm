@@ -3,7 +3,7 @@ import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
-import type { TrialArmamentResponse } from '@intaqalab/data-access-planning';
+import type { BackendMunitionComponent, TrialArmamentResponse } from '@intaqalab/data-access-planning';
 import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
@@ -1059,13 +1059,25 @@ export class ExecutionService {
       }
 
       for (const component of configuration.components) {
-        if (typeof component.fuseMeasurement === 'number') {
+        if (this.#isEspoletaComponent(component) && typeof component.fuseMeasurement === 'number') {
           return component.fuseMeasurement;
         }
       }
     }
 
     return null;
+  }
+
+  #isEspoletaComponent(component: BackendMunitionComponent): boolean {
+    const typeStr = (component.type?.type ?? component.typeId?.type ?? '').toUpperCase();
+    const label = (component.type?.label ?? component.typeId?.label ?? '').toLowerCase();
+    if (typeStr) {
+      return typeStr === 'FUZE' || typeStr === 'FUSE' || typeStr === 'ESPOLETA';
+    }
+    if (label) {
+      return label.includes('espoleta') || label.includes('fuze') || label.includes('fuse');
+    }
+    return typeof component.fuseMeasurement === 'number' || Boolean(component.fuseWorkingModeId);
   }
 
   // ── RADAR TRAYECTOGRAPHY ORIENTATION (Widget 7) ─────────────────────────

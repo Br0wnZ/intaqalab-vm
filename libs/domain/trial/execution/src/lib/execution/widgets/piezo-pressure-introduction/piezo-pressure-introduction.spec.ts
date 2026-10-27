@@ -210,6 +210,7 @@ describe('PiezoPressureIntroduction', () => {
     const fetchSpy = vi.spyOn(execService, 'fetchShotPressures').mockResolvedValue(mockResponse as never);
 
     fixture.componentInstance.onSerieSelected('funcionamiento-2');
+    fixture.componentInstance.onDisparoSelected('disparo-1');
 
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'funcionamiento-2', 'disparo-1');

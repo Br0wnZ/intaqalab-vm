@@ -26,15 +26,8 @@ const initialState: TopographyIntroductionSlice = {
       { value: 'cron-02', label: 'Cronómetro 02' },
       { value: 'timer-01', label: 'Temporizador 01' },
     ],
-    serieOptions: [
-      { value: 'func-1', label: 'Funcionamiento I' },
-      { value: 'func-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

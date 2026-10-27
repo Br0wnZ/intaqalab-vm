@@ -28,15 +28,8 @@ const initialState: ManometerIntroductionSlice = {
     presion: null,
     presionUnit: 'MPa',
     observaciones: null,
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
     manometroOptions: [
       { value: 'manometro-PN6-SN001', label: 'Manómetro PN6 / SN001' },
       { value: 'manometro-PN10-SN002', label: 'Manómetro PN10 / SN002' },

@@ -59,15 +59,8 @@ const initialState: TrayectografiaIntroductionSlice = {
       { value: 'radar-doppler-01', label: 'Radar Doppler 01' },
       { value: 'radar-doppler-02', label: 'Radar Doppler 02' },
     ],
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

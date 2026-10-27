@@ -367,10 +367,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
 
   // ── Options from store & API ───────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.manometerIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
 
   protected readonly disparoOptions = computed(() =>
@@ -378,7 +375,6 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       selectedSerie: this.selectorFormModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.manometerIntroduction().disparoOptions,
     }),
   );
 
@@ -546,7 +542,6 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.manometerIntroduction().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;

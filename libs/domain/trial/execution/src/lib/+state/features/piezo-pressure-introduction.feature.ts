@@ -100,15 +100,8 @@ const initialState: PiezoPressureIntroductionSlice = {
       tiempoAccion: null,
       tiempoRetardo: null,
     },
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
     captadorOptions: [
       { value: 'captador-kistler-6215', label: 'Kistler 6215 / SN001' },
       { value: 'captador-kistler-6215b', label: 'Kistler 6215B / SN002' },

@@ -17,7 +17,7 @@ describe('PiezoPressureDifferentialTab', () => {
 
   const renderTab = () =>
     render(PiezoPressureDifferentialTab, {
-      inputs: { model: initialModel(), pressureUnitOptions: [] },
+      componentInputs: { model: initialModel(), pressureUnitOptions: [] },
       imports: [TranslateModule.forRoot()],
     });
 

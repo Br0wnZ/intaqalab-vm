@@ -50,15 +50,8 @@ const initialState: ArmamentIntroductionSlice = {
       { value: 'eq-retro-01', label: 'Equipo Retroceso 01', family: 'dimensional' },
       { value: 'eq-retro-02', label: 'Equipo Retroceso 02', family: 'length' },
     ],
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

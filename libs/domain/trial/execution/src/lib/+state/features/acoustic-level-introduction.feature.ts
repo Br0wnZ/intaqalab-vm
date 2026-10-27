@@ -28,15 +28,8 @@ const initialState: AcousticLevelIntroductionSlice = {
       { value: 'sonometro-norsonic-145', label: 'Norsonic 145 / SN002' },
       { value: 'sonometro-bruel-2270', label: 'Brüel & Kjær 2270 / SN003' },
     ],
-    serieOptions: [
-      { value: 'func-1', label: 'Funcionamiento I' },
-      { value: 'func-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

@@ -7,6 +7,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   signal,
   untracked,
 } from '@angular/core';
@@ -18,8 +19,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
-import { AngleUnitEnum } from '@intaqalab/models';
-import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
+import { AngleUnitEnum, MEASURE_UNIT_LABELS } from '@intaqalab/models';
+import { InputSelect, InputSelectInput, IntaIconComponent, ValueTooltip } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -48,7 +49,7 @@ import { JltMaoMassConfigDialog } from './jlt-mao-mass-config-dialog';
 import type { JltMaoMassConfigFields } from './jlt-mao-mass-config.mapper';
 import { mapJltMaoMassConfigToRequest } from './jlt-mao-mass-config.mapper';
 
-type InputFieldValue = { value: string; unit: string } | null;
+type InputFieldValue = { value: number | string | null; unit: string } | null;
 
 interface JltMaoSelectForm {
   serie: string | null;
@@ -72,6 +73,7 @@ interface JltMaoSelectForm {
     InputSelectInput,
     IntaIconComponent,
     LocaleDecimalInputDirective,
+    ValueTooltip,
   ],
   template: `
     <div class="h-full rounded-2xl border border-purple-200 bg-white p-2 flex flex-col gap-1.5 overflow-auto">
@@ -137,14 +139,18 @@ interface JltMaoSelectForm {
 
         <!-- OLT: planificada, manual o calculada desde piqueta -->
         <ui-input-select
+          uiValueTooltip
+          uiValueTooltipPosition="above"
           label="OLT"
           floatLabel="always"
-          class="w-32 shrink-0"
-          [opciones]="ooOptions"
+          class="w-40 shrink-0"
+          [opciones]="angleOptions"
           [placeholder]="'0,000'"
           [value]="oltDisplayField()"
           [readOnly]="oltReadOnly()"
+          [unitDisabled]="false"
           [variant]="oltReadOnly() ? 'computed' : 'default'"
+          [uiValueTooltipValue]="oltDisplayField()?.value"
           (valueChange)="onOltChanged($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
@@ -201,7 +207,9 @@ interface JltMaoSelectForm {
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_LABEL' | translate"
           [opciones]="metersOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_PLACEHOLDER' | translate"
-          [value]="distanciaPiqueField()"
+          [value]="distanciaPiqueDisplayField()"
+          [readOnly]="distanciaPiqueReadOnly()"
+          [variant]="distanciaPiqueReadOnly() ? 'computed' : 'default'"
           (valueChange)="distanciaPiqueField.set($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
@@ -253,8 +261,10 @@ interface JltMaoSelectForm {
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_LABEL' | translate"
           [opciones]="ooOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_PLACEHOLDER' | translate"
-          [value]="anguloTiroField()"
-          (valueChange)="anguloTiroField.set($event)"
+          [value]="anguloTiroDisplayField()"
+          [readOnly]="anguloTiroReadOnly()"
+          [variant]="anguloTiroReadOnly() ? 'computed' : 'default'"
+          (valueChange)="onAnguloTiroChanged($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
         </ui-input-select>
@@ -265,8 +275,10 @@ interface JltMaoSelectForm {
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_LABEL' | translate"
           [opciones]="secondsOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_PLACEHOLDER' | translate"
-          [value]="graduacionEspoletaField()"
-          (valueChange)="graduacionEspoletaField.set($event)"
+          [value]="graduacionEspoletaDisplayField()"
+          [readOnly]="graduacionEspoletaReadOnly()"
+          [variant]="graduacionEspoletaReadOnly() ? 'computed' : 'default'"
+          (valueChange)="onGraduacionEspoletaChanged($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
         </ui-input-select>
@@ -277,7 +289,9 @@ interface JltMaoSelectForm {
           [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_FUNCIONAMIENTO_LABEL' | translate"
           [opciones]="metersOptions"
           [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_FUNCIONAMIENTO_PLACEHOLDER' | translate"
-          [value]="alturaFuncionamientoField()"
+          [value]="alturaFuncionamientoDisplayField()"
+          [readOnly]="alturaFuncionamientoReadOnly()"
+          [variant]="alturaFuncionamientoReadOnly() ? 'computed' : 'default'"
           (valueChange)="alturaFuncionamientoField.set($event)"
         >
           <input inputSelectInput libLocalDecimal [decimals]="2" />
@@ -315,43 +329,123 @@ export class JltMao extends BaseFormWidgetComponent {
   // ── Unit options ──────────────────────────────────────────────────────────
   protected readonly metersOptions = [{ value: 'm', label: 'm' }];
   protected readonly ooOptions = [{ value: 'oo', label: 'ºº' }];
+  protected readonly angleOptions = [AngleUnitEnum.DEGREES, AngleUnitEnum.MILS, AngleUnitEnum.RAD].map((unit) => ({
+    value: unit,
+    label: MEASURE_UNIT_LABELS[unit],
+  }));
   protected readonly secondsOptions = [{ value: 's', label: 's' }];
   protected readonly msOptions = [{ value: 'm/s', label: 'm/s' }];
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly piquetaOptions = computed(() => this.#store.jltMao().piquetaOptions);
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.jltMao().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.formModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.jltMao().disparoOptions,
     }),
   );
 
-  protected readonly plannedOlt = computed(() => this.#store.jltMaoPlannedOlt());
-  protected readonly plannedShootingAngle = computed(() => {
+  protected readonly plannedOltValue = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    if (!serie || !disparo) return null;
+    const shot = conditions?.series
+      .find((item) => item.seriesId === serie)
+      ?.shots.find((item) => item.shotId === disparo);
+    return shot?.orientation ?? null;
+  });
+
+  protected readonly plannedRange = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    return (
+      conditions?.series.find((item) => item.seriesId === serie)?.shots.find((item) => item.shotId === disparo)
+        ?.range ?? null
+    );
+  });
+
+  protected readonly plannedFunctioningHeight = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    return (
+      conditions?.series.find((item) => item.seriesId === serie)?.shots.find((item) => item.shotId === disparo)
+        ?.functioningHeight ?? null
+    );
+  });
+
+  protected readonly plannedOlt = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    if (!serie || !disparo) return this.#store.jltMaoPlannedOlt();
+    const shot = conditions?.series
+      .find((item) => item.seriesId === serie)
+      ?.shots.find((item) => item.shotId === disparo);
+    if (!shot || shot.orientation === undefined || shot.orientation === null) {
+      return this.#store.jltMaoPlannedOlt();
+    }
+
+    const unit = shot.orientationUnit ?? conditions?.units?.orientation ?? AngleUnitEnum.MILS;
+    return this.#angleToMils(shot.orientation, unit);
+  });
+
+  protected readonly plannedOltUnit = computed(() => {
     const conditions = this.#store.planningConditions();
     const { serie, disparo } = this.formModel();
     const shot = conditions?.series
       .find((item) => item.seriesId === serie)
       ?.shots.find((item) => item.shotId === disparo);
-    if (shot?.shootingAngle === undefined || shot.shootingAngle === null) return null;
+    return shot?.orientationUnit ?? conditions?.units?.orientation ?? AngleUnitEnum.MILS;
+  });
+
+  protected readonly oltDisplayUnit = linkedSignal({
+    source: () => ({ selection: this.#selectionKey(), unit: this.plannedOltUnit() }),
+    computation: ({ unit }) => unit,
+  });
+
+  protected readonly plannedShootingAngle = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    if (!serie || !disparo) return null;
+    const shot = conditions?.series
+      .find((item) => item.seriesId === serie)
+      ?.shots.find((item) => item.shotId === disparo);
+    if (!shot) return null;
+
+    const rawAngle = shot.angle ?? shot.shootingAngle;
+    if (rawAngle === undefined || rawAngle === null) return null;
 
     const unit =
+      shot.angleUnit ??
       shot.shootingAngleUnit ??
+      conditions?.units?.angle ??
       conditions?.units?.shootingAngle ??
       conditions?.units?.orientation ??
       AngleUnitEnum.MILS;
-    return unit === AngleUnitEnum.DEGREES ? shot.shootingAngle * (6400 / 360) : shot.shootingAngle;
+    return unit === AngleUnitEnum.DEGREES ? rawAngle * (6400 / 360) : rawAngle;
   });
+
+  protected readonly plannedFuseGraduation = signal<number | null>(null);
+  protected readonly remoteFuseGraduation = signal<number | null>(null);
+  protected readonly conditionsFuseGraduation = computed(() => {
+    const conditions = this.#store.planningConditions();
+    const { serie, disparo } = this.formModel();
+    return (
+      conditions?.series.find((item) => item.seriesId === serie)?.shots.find((item) => item.shotId === disparo)
+        ?.fuseGraduation ?? null
+    );
+  });
+
   protected readonly hasManualOlt = computed(() => this.#parseNum(this.oltField()) !== null);
+  protected readonly distanciaPiqueReadOnly = computed(
+    () => this.#store.isTrialReadOnly() || this.plannedRange() !== null,
+  );
+  protected readonly alturaFuncionamientoReadOnly = computed(
+    () => this.#store.isTrialReadOnly() || this.plannedFunctioningHeight() !== null,
+  );
   protected readonly oltReadOnly = computed(
     () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.formModel().piqueta !== null,
   );
@@ -361,6 +455,17 @@ export class JltMao extends BaseFormWidgetComponent {
   protected readonly angularDifferenceReadOnly = computed(
     () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.hasManualOlt(),
   );
+  protected readonly anguloTiroReadOnly = computed(
+    () => this.#store.isTrialReadOnly() || this.plannedShootingAngle() !== null,
+  );
+  protected readonly graduacionEspoletaReadOnly = computed(
+    () =>
+      this.#store.isTrialReadOnly() ||
+      this.plannedFuseGraduation() !== null ||
+      this.conditionsFuseGraduation() !== null ||
+      this.remoteFuseGraduation() !== null,
+  );
+
   protected readonly calculatedOlt = computed(() => {
     const piqueta = this.piquetaOptions().find((item) => item.value === this.formModel().piqueta);
     const maoTopography = this.#store.maoTopography();
@@ -374,12 +479,45 @@ export class JltMao extends BaseFormWidgetComponent {
   protected readonly effectiveOlt = computed(
     () => this.plannedOlt() ?? (this.formModel().piqueta ? this.calculatedOlt() : this.#parseNum(this.oltField())),
   );
+  protected readonly effectiveShootingAngle = computed(
+    () => this.plannedShootingAngle() ?? this.#parseNum(this.anguloTiroField()),
+  );
+  protected readonly effectiveFuseGraduation = computed(
+    () =>
+      this.plannedFuseGraduation() ??
+      this.conditionsFuseGraduation() ??
+      this.remoteFuseGraduation() ??
+      this.#parseNum(this.graduacionEspoletaField()),
+  );
+  protected readonly distanciaPiqueDisplayField = computed<InputFieldValue>(() =>
+    this.#numToField(this.plannedRange() ?? this.#parseNum(this.distanciaPiqueField()), 'm'),
+  );
+  protected readonly alturaFuncionamientoDisplayField = computed<InputFieldValue>(() =>
+    this.#numToField(this.plannedFunctioningHeight() ?? this.#parseNum(this.alturaFuncionamientoField()), 'm'),
+  );
   protected readonly calculatedAngularDifference = computed(() => {
     const olt = this.plannedOlt() ?? (this.hasManualOlt() ? this.#parseNum(this.oltField()) : null);
     const referenceOlt = this.plannedOlt();
     return olt !== null && referenceOlt !== null ? olt - referenceOlt : null;
   });
-  protected readonly oltDisplayField = computed<InputFieldValue>(() => this.#numToField(this.effectiveOlt(), 'oo'));
+  protected readonly oltDisplayField = computed<InputFieldValue>(() => {
+    const value = this.effectiveOlt();
+    const unit = this.oltDisplayUnit();
+    const plannedValue = this.plannedOltValue();
+    const displayValue =
+      plannedValue !== null && unit === this.plannedOltUnit()
+        ? plannedValue
+        : value === null
+          ? null
+          : this.#milsToAngle(value, unit);
+    return this.#numToField(displayValue, unit);
+  });
+  protected readonly anguloTiroDisplayField = computed<InputFieldValue>(() =>
+    this.#numToField(this.effectiveShootingAngle(), 'oo'),
+  );
+  protected readonly graduacionEspoletaDisplayField = computed<InputFieldValue>(() =>
+    this.#numToField(this.effectiveFuseGraduation(), 's'),
+  );
   protected readonly angularDifferenceDisplayField = computed<InputFieldValue>(() =>
     this.angularDifferenceReadOnly()
       ? this.#numToField(this.calculatedAngularDifference(), 'oo')
@@ -430,7 +568,7 @@ export class JltMao extends BaseFormWidgetComponent {
 
   // ── TTN plain signal (not part of Signal Form — matInput does not accept null) ──
   protected readonly ttnField = signal<string | null>(this.#store.jltMao().ttn);
-  protected readonly oltField = signal<InputFieldValue>(this.#numToField(this.#store.jltMao().olt, 'oo'));
+  protected readonly oltField = signal<InputFieldValue>(this.#numToField(this.#store.jltMao().olt, AngleUnitEnum.MILS));
 
   // ── Select form ───────────────────────────────────────────────────────────
   protected readonly formModel = signal<JltMaoSelectForm>({
@@ -510,10 +648,20 @@ export class JltMao extends BaseFormWidgetComponent {
 
     effect(() => {
       const plannedShootingAngle = this.plannedShootingAngle();
-      if (plannedShootingAngle === null || this.#parseNum(this.anguloTiroField()) !== null) return;
+      if (plannedShootingAngle === null) return;
       untracked(() => {
         this.anguloTiroField.set(this.#numToField(plannedShootingAngle, 'oo'));
         this.#store.updateJltMao({ anguloTiro: plannedShootingAngle });
+        this.#syncSnapshot();
+      });
+    });
+
+    effect(() => {
+      const plannedOlt = this.plannedOlt();
+      if (plannedOlt === null) return;
+      untracked(() => {
+        this.oltField.set(this.#numToField(plannedOlt, 'oo'));
+        this.#store.updateJltMao({ olt: plannedOlt });
         this.#syncSnapshot();
       });
     });
@@ -529,7 +677,6 @@ export class JltMao extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.jltMao().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;
@@ -551,8 +698,14 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   onSerieSelected(serie: string | null): void {
-    this.formModel.update((m) => ({ ...m, serie }));
-    this.#setSelection(serie, this.disparoOptions()[0]?.value ?? null);
+    const nextDisparo = serie
+      ? (buildDisparoOptions({
+          selectedSerie: serie,
+          executionProgress: this.#store.executionProgress(),
+          planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
+        })[0]?.value ?? null)
+      : null;
+    this.#setSelection(serie, nextDisparo);
   }
 
   onDisparoSelected(disparo: string | null): void {
@@ -569,9 +722,18 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   onOltChanged(olt: InputFieldValue): void {
+    const currentUnit = this.oltDisplayUnit();
+    if (olt && olt.unit !== currentUnit) {
+      this.oltDisplayUnit.set(olt.unit as AngleUnitEnum);
+      return;
+    }
     if (this.oltReadOnly()) return;
-    this.oltField.set(olt);
-    if (this.#parseNum(olt) !== null) {
+
+    const value = this.#parseNum(olt);
+    this.oltField.set(
+      value === null ? null : this.#numToField(this.#angleToMils(value, currentUnit), AngleUnitEnum.MILS),
+    );
+    if (value !== null) {
       this.formModel.update((model) => ({ ...model, piqueta: null }));
     }
   }
@@ -580,6 +742,16 @@ export class JltMao extends BaseFormWidgetComponent {
     if (!this.angularDifferenceReadOnly()) {
       this.diferenciaAngularField.set(value);
     }
+  }
+
+  onAnguloTiroChanged(value: InputFieldValue): void {
+    if (this.anguloTiroReadOnly()) return;
+    this.anguloTiroField.set(value);
+  }
+
+  onGraduacionEspoletaChanged(value: InputFieldValue): void {
+    if (this.graduacionEspoletaReadOnly()) return;
+    this.graduacionEspoletaField.set(value);
   }
 
   #setSelection(serie: string | null, disparo: string | null): void {
@@ -602,22 +774,24 @@ export class JltMao extends BaseFormWidgetComponent {
       return;
     }
 
+    this.plannedFuseGraduation.set(null);
+    this.remoteFuseGraduation.set(null);
+
     try {
       const response = await this.#executionService.fetchShotJltMao(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
-      let plannedFuseGraduation = response?.jltMaoData?.fuseGraduation ?? null;
-      if (plannedFuseGraduation === null) {
-        try {
-          plannedFuseGraduation = await this.#executionService.fetchPlanningFuseGraduation(fireTrialId, serie, disparo);
-        } catch {
-          plannedFuseGraduation = null;
-        }
+      let plannedFuseGraduation: number | null = null;
+      try {
+        plannedFuseGraduation = await this.#executionService.fetchPlanningFuseGraduation(fireTrialId, serie, disparo);
+      } catch {
+        plannedFuseGraduation = null;
       }
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
+      this.plannedFuseGraduation.set(plannedFuseGraduation);
       this.#applyRemoteShotData(response, plannedFuseGraduation);
     } catch {
       if (!ticket.isFresh(selectionKey)) {
@@ -628,19 +802,27 @@ export class JltMao extends BaseFormWidgetComponent {
 
   #applyRemoteShotData(response: ShotJltMaoResponse, plannedFuseGraduation: number | null): void {
     const data = response?.jltMaoData;
+    this.remoteFuseGraduation.set(data?.fuseGraduation ?? null);
     const plannedShootingAngle = this.plannedShootingAngle();
-    const shootingAngle = data?.shootingAngle ?? plannedShootingAngle;
-    const fuseGraduation = data?.fuseGraduation ?? plannedFuseGraduation;
+    const plannedOlt = this.plannedOlt();
+    const shootingAngle = plannedShootingAngle ?? data?.shootingAngle ?? null;
+    const fuseGraduation = plannedFuseGraduation ?? this.conditionsFuseGraduation() ?? data?.fuseGraduation ?? null;
+    const remoteOlt = plannedOlt ?? data?.lineOfFireOrientation ?? null;
+    const remotePiqueta = remoteOlt === null ? (data?.stakeId ?? null) : null;
     if (!data) {
-      this.#store.updateJltMao({ anguloTiro: shootingAngle, graduacionEspoleta: fuseGraduation });
+      this.#store.updateJltMao({
+        olt: remoteOlt,
+        piqueta: remotePiqueta,
+        anguloTiro: shootingAngle,
+        graduacionEspoleta: fuseGraduation,
+      });
+      this.oltField.set(this.#numToField(remoteOlt, 'oo'));
+      this.formModel.update((model) => ({ ...model, piqueta: remotePiqueta }));
       this.anguloTiroField.set(this.#numToField(shootingAngle, 'oo'));
       this.graduacionEspoletaField.set(this.#numToField(fuseGraduation, 's'));
       this.#syncSnapshot();
       return;
     }
-
-    const remoteOlt = data.lineOfFireOrientation ?? null;
-    const remotePiqueta = remoteOlt === null ? (data.stakeId ?? null) : null;
 
     this.#store.updateJltMao({
       olt: remoteOlt,
@@ -708,16 +890,16 @@ export class JltMao extends BaseFormWidgetComponent {
     const { serie, disparo, piqueta } = this.formModel();
     const ttn = this.ttnField();
     const velocidadInicialTeorica = this.#parseNum(this.velocidadInicialField());
-    const distanciaPrevistaPique = this.#parseNum(this.distanciaPiqueField());
+    const distanciaPrevistaPique = this.plannedRange() ?? this.#parseNum(this.distanciaPiqueField());
     const derivaTabular = this.#parseNum(this.derivaTabularField());
     const tiempoVueloTeorico = this.#parseNum(this.tiempoVueloField());
     const diferenciaAngular = this.angularDifferenceReadOnly()
       ? this.calculatedAngularDifference()
       : this.#parseNum(this.diferenciaAngularField());
     const olt = this.effectiveOlt();
-    const anguloTiro = this.#parseNum(this.anguloTiroField());
-    const graduacionEspoleta = this.#parseNum(this.graduacionEspoletaField());
-    const alturaFuncionamiento = this.#parseNum(this.alturaFuncionamientoField());
+    const anguloTiro = this.effectiveShootingAngle();
+    const graduacionEspoleta = this.effectiveFuseGraduation();
+    const alturaFuncionamiento = this.plannedFunctioningHeight() ?? this.#parseNum(this.alturaFuncionamientoField());
     const distanciaFuncionamiento = this.#parseNum(this.distanciaFuncionamientoField());
 
     const updates: Partial<JltMaoState> = {
@@ -867,7 +1049,11 @@ export class JltMao extends BaseFormWidgetComponent {
     await this.#loadSelectedShotData();
   }
 
-  #getSeriesOrientations(): { seriesId: string; orientations: (number | null)[] }[] {
+  #getSeriesOrientations(): {
+    seriesId: string;
+    orientations: (number | null)[];
+    sourceOrientations: { value: number | null; unit: AngleUnitEnum }[];
+  }[] {
     const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     const executionSeries = this.#store.executionProgress()?.series ?? [];
     const conditions = this.#store.planningConditions();
@@ -886,7 +1072,12 @@ export class JltMao extends BaseFormWidgetComponent {
           const shot = conditionSeries?.shots.find((conditionShot) => conditionShot.shotId === shotId);
           if (shot?.orientation === undefined || shot.orientation === null) return null;
           const unit = shot.orientationUnit ?? conditions?.units?.orientation ?? AngleUnitEnum.MILS;
-          return unit === AngleUnitEnum.DEGREES ? shot.orientation * (6400 / 360) : shot.orientation;
+          return this.#angleToMils(shot.orientation, unit);
+        }),
+        sourceOrientations: shotIds.map((shotId) => {
+          const shot = conditionSeries?.shots.find((conditionShot) => conditionShot.shotId === shotId);
+          const unit = shot?.orientationUnit ?? conditions?.units?.orientation ?? AngleUnitEnum.MILS;
+          return { value: shot?.orientation ?? null, unit };
         }),
       };
     });
@@ -899,9 +1090,24 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   #parseNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const n = parseFloat(field.value.replace(',', '.'));
+    if (field?.value === null || field?.value === undefined || field?.value === '') return null;
+    if (typeof field.value === 'number') {
+      return Number.isFinite(field.value) ? field.value : null;
+    }
+    const n = parseFloat(field.value.toString().replace(',', '.'));
     return isNaN(n) ? null : n;
+  }
+
+  #angleToMils(value: number, unit: AngleUnitEnum): number {
+    if (unit === AngleUnitEnum.DEGREES) return value * (6400 / 360);
+    if (unit === AngleUnitEnum.RAD) return value * (3200 / Math.PI);
+    return value;
+  }
+
+  #milsToAngle(value: number, unit: AngleUnitEnum): number {
+    if (unit === AngleUnitEnum.DEGREES) return value * (360 / 6400);
+    if (unit === AngleUnitEnum.RAD) return value * (Math.PI / 3200);
+    return value;
   }
 
   #syncSnapshot(): void {

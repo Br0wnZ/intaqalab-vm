@@ -1,10 +1,19 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewEncapsulation,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { AngleUnitEnum, MEASURE_UNIT_LABELS } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,7 +27,11 @@ type InputFieldValue = JltMaoMassConfigInputField;
 export interface JltMaoMassConfigDialogData {
   serieOptions: { value: string; label: string }[];
   planningConditionsReady: boolean;
-  seriesOrientations: { seriesId: string; orientations: (number | null)[] }[];
+  seriesOrientations: {
+    seriesId: string;
+    orientations: (number | null)[];
+    sourceOrientations?: { value: number | null; unit: AngleUnitEnum }[];
+  }[];
   piquetaOptions: { value: string; label: string; x: number; y: number }[];
   piecePosition: { x: number | null; y: number | null };
   currentPiqueta: string | null;
@@ -103,10 +116,11 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
       <div class="mb-3 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
         <ui-input-select
           label="OLT"
-          [opciones]="ooOptions"
+          [opciones]="angleOptions"
           [placeholder]="'0,000'"
           [value]="oltDisplayField()"
           [readOnly]="oltReadOnly()"
+          [unitDisabled]="false"
           [variant]="oltReadOnly() ? 'computed' : 'default'"
           (valueChange)="onOltChanged($event)"
         >
@@ -240,6 +254,10 @@ export class JltMaoMassConfigDialog {
   // ── Unit options ──────────────────────────────────────────────────────────
   protected readonly metersOptions = [{ value: 'm', label: 'm' }];
   protected readonly ooOptions = [{ value: 'oo', label: 'ºº' }];
+  protected readonly angleOptions = [AngleUnitEnum.DEGREES, AngleUnitEnum.MILS, AngleUnitEnum.RAD].map((unit) => ({
+    value: unit,
+    label: MEASURE_UNIT_LABELS[unit],
+  }));
   protected readonly secondsOptions = [{ value: 's', label: 's' }];
   protected readonly msOptions = [{ value: 'm/s', label: 'm/s' }];
 
@@ -294,6 +312,18 @@ export class JltMaoMassConfigDialog {
     const [value] = [...values];
     return values.size === 1 && value !== null && value !== undefined ? value : null;
   });
+  protected readonly plannedOltSource = computed(() => {
+    const plannedSeriesId = this.selectedSeriesStatuses().find(({ status }) => status === 'planned')?.seriesId;
+    if (!plannedSeriesId) return null;
+    return (
+      this.data.seriesOrientations.find((series) => series.seriesId === plannedSeriesId)?.sourceOrientations?.[0] ??
+      null
+    );
+  });
+  protected readonly oltDisplayUnit = linkedSignal({
+    source: () => this.formModel().series.join('|'),
+    computation: (): AngleUnitEnum => AngleUnitEnum.MILS,
+  });
   protected readonly oltReadOnly = computed(() => !this.needsManualOrientation() || this.formModel().piqueta !== null);
   protected readonly angularDifferenceReadOnly = computed(() => !this.needsManualOrientation() || this.hasManualOlt());
   protected readonly calculatedOlt = computed(() => {
@@ -308,8 +338,18 @@ export class JltMaoMassConfigDialog {
     return angularDifference + bearing;
   });
   protected readonly oltDisplayField = computed<InputFieldValue>(() => {
-    if (!this.needsManualOrientation()) return this.#numToField(this.plannedOlt());
-    return this.formModel().piqueta !== null ? this.#numToField(this.calculatedOlt()) : this.oltField();
+    const unit = this.oltDisplayUnit();
+    if (!this.needsManualOrientation()) {
+      const source = this.plannedOltSource();
+      const value = source?.unit === unit ? source.value : this.plannedOlt();
+      return this.#numToField(
+        value === null ? null : source?.unit === unit ? value : this.#milsToAngle(value, unit),
+        unit,
+      );
+    }
+
+    const value = this.formModel().piqueta !== null ? this.calculatedOlt() : this.#parseNumber(this.oltField());
+    return this.#numToField(value === null ? null : this.#milsToAngle(value, unit), unit);
   });
 
   protected readonly canApply = computed(() => {
@@ -379,11 +419,19 @@ export class JltMaoMassConfigDialog {
   }
 
   onOltChanged(olt: InputFieldValue): void {
-    if (!this.oltReadOnly()) this.oltField.set(olt);
+    const currentUnit = this.oltDisplayUnit();
+    if (olt && olt.unit !== currentUnit) {
+      this.oltDisplayUnit.set(olt.unit as AngleUnitEnum);
+      return;
+    }
+    if (this.oltReadOnly()) return;
+
+    const value = this.#parseNumber(olt);
+    this.oltField.set(value === null ? null : this.#numToField(this.#angleToMils(value, currentUnit)));
   }
 
-  #numToField(value: number | null): InputFieldValue {
-    return value === null ? null : { value: String(value), unit: 'oo' };
+  #numToField(value: number | null, unit: string = AngleUnitEnum.MILS): InputFieldValue {
+    return value === null ? null : { value: String(value), unit };
   }
 
   #getSeriesOrientationStatus(seriesId: string): SeriesOrientationStatus {
@@ -399,8 +447,23 @@ export class JltMaoMassConfigDialog {
   }
 
   #parseNumber(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const parsed = Number(field.value.replace(',', '.'));
+    if (field?.value === null || field?.value === undefined || field?.value === '') return null;
+    if (typeof field.value === 'number') {
+      return Number.isFinite(field.value) ? field.value : null;
+    }
+    const parsed = Number(field.value.toString().replace(',', '.'));
     return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  #angleToMils(value: number, unit: AngleUnitEnum): number {
+    if (unit === AngleUnitEnum.DEGREES) return value * (6400 / 360);
+    if (unit === AngleUnitEnum.RAD) return value * (3200 / Math.PI);
+    return value;
+  }
+
+  #milsToAngle(value: number, unit: AngleUnitEnum): number {
+    if (unit === AngleUnitEnum.DEGREES) return value * (360 / 6400);
+    if (unit === AngleUnitEnum.RAD) return value * (Math.PI / 3200);
+    return value;
   }
 }

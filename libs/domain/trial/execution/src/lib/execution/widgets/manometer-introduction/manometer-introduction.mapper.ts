@@ -80,8 +80,8 @@ export const numToField = (value: number | null | undefined, unit = 'μm'): Inpu
  * Parsea el valor string de un InputFieldValue a número o null.
  */
 export const parseNum = (field: InputFieldValue): number | null => {
-  if (!field || (!field.value && field.value !== '0')) return null;
-  const n = parseFloat(field.value.toString().replace(',', '.'));
+  if (!field || field.value === null || field.value === undefined || field.value === '') return null;
+  const n = typeof field.value === 'number' ? field.value : parseFloat(field.value.toString().replace(',', '.'));
   return isNaN(n) ? null : n;
 };
 

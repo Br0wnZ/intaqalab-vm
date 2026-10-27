@@ -1,5 +1,5 @@
 import { Component, type OnInit, signal } from '@angular/core';
-import { disabled, form, required, validate } from '@angular/forms/signals';
+import { disabled, form, validate } from '@angular/forms/signals';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { render, screen } from '@testing-library/angular';
@@ -36,14 +36,6 @@ class TestHostComponent implements OnInit {
   readonly isReadonly = signal(false);
   readonly measureForm = form(this.measureModel, (measurePath) => {
     disabled(measurePath, () => this.isReadonly());
-    required(measurePath.minLimit, {
-      message: 'COMMONS.REQUIRED_FIELD',
-      when: () => this.isQuantitative,
-    });
-    required(measurePath.maxLimit, {
-      message: 'COMMONS.REQUIRED_FIELD',
-      when: () => this.isQuantitative,
-    });
     validate(measurePath.minLimit, ({ value, valueOf }) =>
       this.#isInvalidLimit(value(), valueOf(measurePath.maxLimit))
         ? { kind: 'invalidLimitRange', message: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.INVALID_RANGE' }
@@ -150,17 +142,31 @@ describe('MeasureLimitCard', () => {
       ).toHaveLength(2);
     });
 
-    it('should show the required message when minimum limit is empty and touched', async () => {
-      const { user } = await runSetup({
-        measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: 50, deviation: 2 },
-      });
-      const minInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i);
+    it.each([
+      { minLimit: null, maxLimit: null },
+      { minLimit: null, maxLimit: 50 },
+      { minLimit: 10, maxLimit: null },
+    ])(
+      'should keep optional limits $minLimit / $maxLimit valid after touching both fields',
+      async ({ minLimit, maxLimit }) => {
+        const { user, host } = await runSetup({
+          measure: { id: 'm-1', expanded: true, minLimit, maxLimit, deviation: 2 },
+        });
+        const minInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i);
+        const maxInput = screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i);
 
-      await user.click(minInput);
-      await user.tab();
+        await user.click(minInput);
+        await user.tab();
+        await user.click(maxInput);
+        await user.tab();
 
-      expect(screen.getByText(/COMMONS\.REQUIRED_FIELD|Valor requerido/i)).toBeInTheDocument();
-    });
+        expect(minInput).not.toBeRequired();
+        expect(maxInput).not.toBeRequired();
+        expect(host.measureForm().valid()).toBe(true);
+        expect(screen.queryByText(/COMMONS\.REQUIRED_FIELD|Valor requerido/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.INVALID_RANGE/i)).not.toBeInTheDocument();
+      },
+    );
 
     it('should render expand_less icon when expanded', async () => {
       await runSetup({

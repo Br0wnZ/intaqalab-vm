@@ -32,7 +32,7 @@ const mockWidgetStateService = {
 describe('JltMao', () => {
   const renderWidget = (widgetId = 'test-jlt-mao') =>
     render(JltMao, {
-      inputs: { widgetId },
+      componentInputs: { widgetId },
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
@@ -90,7 +90,7 @@ describe('JltMao', () => {
     });
   });
 
-  it('loads the first shot before active shot IDs are available, then switches to the active shot', async () => {
+  it('does not load shot data before series and shot IDs are available, then loads the active shot', async () => {
     const { fixture } = await renderWidget();
     const service = TestBed.inject(ExecutionService);
     const store = TestBed.inject(ExecutionStore);
@@ -100,9 +100,9 @@ describe('JltMao', () => {
     store.setFireTrialId('trial-123');
     TestBed.tick();
 
-    expect(fixture.componentInstance['formModel']().serie).toBe('funcionamiento-1');
-    expect(fixture.componentInstance['formModel']().disparo).toBe('disparo-1');
-    expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'funcionamiento-1', 'disparo-1');
+    expect(fixture.componentInstance['formModel']().serie).toBeNull();
+    expect(fixture.componentInstance['formModel']().disparo).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
 
     store.setOptimisticActiveShot('initial-series-id', 'assigned-shot-id');
     TestBed.tick();
@@ -124,7 +124,7 @@ describe('JltMao', () => {
     };
     const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(result) });
     const { fixture } = await render(JltMao, {
-      inputs: { widgetId: 'test-jlt-mao' },
+      componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
@@ -172,7 +172,7 @@ describe('JltMao', () => {
     };
     const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(dialogResult) });
     const { fixture } = await render(JltMao, {
-      inputs: { widgetId: 'test-jlt-mao' },
+      componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
@@ -221,7 +221,7 @@ describe('JltMao', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
 
-    component.onOltChanged({ value: '120', unit: 'oo' });
+    component.onOltChanged({ value: '120', unit: AngleUnitEnum.MILS });
     expect(component['piquetaDisabled']()).toBe(true);
     expect(component['angularDifferenceReadOnly']()).toBe(true);
 
@@ -256,10 +256,13 @@ describe('JltMao', () => {
     const component = fixture.componentInstance;
     const loader = TestbedHarnessEnvironment.loader(fixture);
     const selects = await loader.getAllHarnesses(MatSelectHarness);
+    const oltUnitSelect = selects[2];
+    if (!oltUnitSelect) throw new Error('OLT unit selector was not rendered');
+    expect(await oltUnitSelect.isDisabled()).toBe(false);
     const piquetaSelect = selects[3];
     if (!piquetaSelect) throw new Error('Piqueta selector was not rendered');
 
-    component.onOltChanged({ value: '120', unit: 'oo' });
+    component.onOltChanged({ value: '120', unit: AngleUnitEnum.MILS });
     fixture.detectChanges();
 
     expect(await piquetaSelect.isDisabled()).toBe(true);
@@ -270,7 +273,6 @@ describe('JltMao', () => {
   it('uses planned OLT and calculates read-only angular difference', async () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
-    const service = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
 
     component.onSerieSelected('series-1');
@@ -290,6 +292,10 @@ describe('JltMao', () => {
     });
 
     await vi.waitFor(() => expect(component['plannedOlt']()).toBeCloseTo(266.667, 3));
+    expect(component['oltDisplayField']()).toEqual({ value: '15', unit: AngleUnitEnum.DEGREES });
+    component.onOltChanged({ value: '15', unit: AngleUnitEnum.MILS });
+    expect(component['oltDisplayField']()?.unit).toBe(AngleUnitEnum.MILS);
+    expect(Number(component['oltDisplayField']()?.value)).toBeCloseTo(266.667, 3);
     fixture.detectChanges();
     const loader = TestbedHarnessEnvironment.loader(fixture);
     const selects = await loader.getAllHarnesses(MatSelectHarness);
@@ -300,6 +306,36 @@ describe('JltMao', () => {
     expect(await piquetaSelect.isDisabled()).toBe(true);
     expect(component['angularDifferenceReadOnly']()).toBe(true);
     expect(component['calculatedAngularDifference']()).toBe(0);
+  });
+
+  it('uses planned range and functioning height as read-only values', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+    TestBed.inject(PlanningConditionsService).load('trial-123');
+    TestBed.tick();
+
+    httpMock
+      .expectOne((request) => request.url.endsWith('/fire-trials/trial-123/planning/conditions'))
+      .flush({
+        units: { range: 'M', functioningHeight: 'M' },
+        series: [
+          {
+            seriesId: 'series-1',
+            shots: [{ shotId: 'shot-1', range: 149, functioningHeight: 200 }],
+          },
+        ],
+      });
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(component['plannedRange']()).toBe(149));
+    expect(component['distanciaPiqueDisplayField']()).toEqual({ value: '149', unit: 'm' });
+    expect(component['alturaFuncionamientoDisplayField']()).toEqual({ value: '200', unit: 'm' });
+    expect(component['distanciaPiqueReadOnly']()).toBe(true);
+    expect(component['alturaFuncionamientoReadOnly']()).toBe(true);
   });
 
   it('uses planned shooting angle and fuse graduation when shot data has no values', async () => {
@@ -335,5 +371,157 @@ describe('JltMao', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(Number(component['anguloTiroField']()?.value)).toBeCloseTo(266.667, 3));
+    expect(component['anguloTiroReadOnly']()).toBe(true);
+    expect(component['graduacionEspoletaReadOnly']()).toBe(true);
+  });
+
+  it('disables fuse graduation when it is returned by the shot endpoint', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const store = TestBed.inject(ExecutionStore);
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
+      jltMaoData: { fuseGraduation: 9.5 },
+    });
+    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    httpMock.expectOne((request) => request.url.endsWith('/planning/conditions')).flush({ series: [] });
+    TestBed.tick();
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+
+    await vi.waitFor(() => {
+      expect(component['remoteFuseGraduation']()).toBe(9.5);
+      expect(component['graduacionEspoletaField']()?.value).toBe('9.5');
+      expect(component['graduacionEspoletaReadOnly']()).toBe(true);
+    });
+  });
+
+  it('disables fuse graduation when it is returned by planning conditions', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({ jltMaoData: null });
+    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+
+    TestBed.inject(ExecutionStore).setFireTrialId('trial-123');
+    TestBed.tick();
+    const conditionsRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+    conditionsRequest.flush({
+      series: [{ seriesId: 'series-1', shots: [{ shotId: 'shot-1', fuseGraduation: 8.25 }] }],
+    });
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      expect(component['conditionsFuseGraduation']()).toBe(8.25);
+      expect(component['graduacionEspoletaField']()?.value).toBe('8.25');
+      expect(component['graduacionEspoletaReadOnly']()).toBe(true);
+    });
+  });
+
+  it('disables OLT, shooting angle and fuse graduation when values come from planning backend', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const store = TestBed.inject(ExecutionStore);
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
+      jltMaoData: null,
+    });
+    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(10.5);
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const conditionsRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
+
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+
+    conditionsRequest.flush({
+      units: { orientation: AngleUnitEnum.DEGREES, angle: AngleUnitEnum.DEGREES },
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [{ shotId: 'shot-1', orientation: 45, angle: 30 }],
+        },
+      ],
+    });
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      expect(component['plannedOlt']()).toBeCloseTo(800, 3);
+      expect(component['plannedShootingAngle']()).toBeCloseTo(533.333, 3);
+      expect(component['plannedFuseGraduation']()).toBe(10.5);
+    });
+
+    expect(component['oltReadOnly']()).toBe(true);
+    expect(component['anguloTiroReadOnly']()).toBe(true);
+    expect(component['graduacionEspoletaReadOnly']()).toBe(true);
+  });
+
+  it('keeps fields enabled when values do not come from planning backend and handles distinct shot values', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const store = TestBed.inject(ExecutionStore);
+    const service = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
+      jltMaoData: null,
+    });
+    const fuseSpy = vi
+      .spyOn(service, 'fetchPlanningFuseGraduation')
+      .mockImplementation(async (_trialId, _serieId, shotId) => (shotId === 'shot-1' ? 8 : null));
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    const conditionsRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/conditions'));
+
+    conditionsRequest.flush({
+      units: { orientation: AngleUnitEnum.DEGREES, angle: AngleUnitEnum.DEGREES },
+      series: [
+        {
+          seriesId: 'series-1',
+          shots: [
+            { shotId: 'shot-1', orientation: 10, angle: 20 },
+            { shotId: 'shot-2', orientation: null, angle: null },
+          ],
+        },
+      ],
+    });
+    TestBed.tick();
+
+    // Select shot-1 with planned values
+    component.onSerieSelected('series-1');
+    component.onDisparoSelected('shot-1');
+
+    await vi.waitFor(() => {
+      expect(component['plannedOlt']()).toBeCloseTo(177.778, 3);
+      expect(component['plannedShootingAngle']()).toBeCloseTo(355.556, 3);
+      expect(component['plannedFuseGraduation']()).toBe(8);
+      expect(component['oltReadOnly']()).toBe(true);
+      expect(component['anguloTiroReadOnly']()).toBe(true);
+      expect(component['graduacionEspoletaReadOnly']()).toBe(true);
+    });
+
+    // Switch to shot-2 with NO planned values
+    component.onDisparoSelected('shot-2');
+
+    await vi.waitFor(() => {
+      expect(fuseSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-2');
+      expect(component['plannedOlt']()).toBeNull();
+      expect(component['plannedShootingAngle']()).toBeNull();
+      expect(component['plannedFuseGraduation']()).toBeNull();
+      expect(component['oltReadOnly']()).toBe(false);
+      expect(component['anguloTiroReadOnly']()).toBe(false);
+      expect(component['graduacionEspoletaReadOnly']()).toBe(false);
+    });
   });
 });

@@ -9,7 +9,7 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
-import { applyEach, disabled, form, required, validate } from '@angular/forms/signals';
+import { applyEach, disabled, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -366,14 +366,6 @@ export class Measures {
     applyEach(formPath, (seriePath) => {
       this.categories.forEach(({ key }) => {
         applyEach(seriePath[key], (measurePath) => {
-          required(measurePath.minLimit, {
-            message: 'COMMONS.REQUIRED_FIELD',
-            when: ({ valueOf }) => this.isQuantitative(valueOf(measurePath.id)),
-          });
-          required(measurePath.maxLimit, {
-            message: 'COMMONS.REQUIRED_FIELD',
-            when: ({ valueOf }) => this.isQuantitative(valueOf(measurePath.id)),
-          });
           validate(measurePath.minLimit, ({ value, valueOf }) =>
             this.#isInvalidLimitValues(valueOf(measurePath.id), value(), valueOf(measurePath.maxLimit))
               ? {

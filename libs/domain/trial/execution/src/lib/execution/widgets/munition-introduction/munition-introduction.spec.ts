@@ -947,19 +947,6 @@ describe('MunitionIntroduction', () => {
     expect(identTab?.graduacionEspoletaField()).toEqual({ value: '7.25', unit: 's' });
   });
 
-  it('does not fetch shot munition if shotId is not a valid uuid', async () => {
-    const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
-    const store = TestBed.inject(ExecutionStore);
-    const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
-
-    store.setFireTrialId('trial-123');
-    fixture.componentInstance.onSerieSelected('calentamiento');
-    fixture.componentInstance.onDisparoSelected('disparo-1');
-
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
   it('waits for real shot UUIDs before loading munition and does not call with mocked shot ID', async () => {
     const { fixture } = await renderWidget();
     const execService = TestBed.inject(ExecutionService);

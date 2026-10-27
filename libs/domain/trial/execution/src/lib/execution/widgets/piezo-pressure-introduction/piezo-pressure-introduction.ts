@@ -296,10 +296,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
 
   // ── Options: Series y Disparos dinámicos desde planning y progress ───────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.piezoPressureIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
 
   protected readonly disparoOptions = computed(() =>
@@ -307,7 +304,6 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       selectedSerie: this.selectorFormModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.piezoPressureIntroduction().disparoOptions,
     }),
   );
 
@@ -445,7 +441,6 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.piezoPressureIntroduction().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;
@@ -506,7 +501,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     if (planningShots?.length) {
       return planningShots.map((s) => s.id);
     }
-    return this.#store.piezoPressureIntroduction().disparoOptions.map((o) => o.value);
+    return [];
   }
 
   // ── Handlers de cambios de modelos ───────────────────────────────────────────

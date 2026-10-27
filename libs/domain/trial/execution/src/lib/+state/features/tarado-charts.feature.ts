@@ -50,26 +50,8 @@ const initialState: TaradoChartsSlice = {
       wcTarado: 703.6,
       pesoTarado: 704,
     },
-    serieOptions: [
-      { value: 'Baja Z1', label: 'Baja Z1' },
-      { value: 'Alta Z1', label: 'Alta Z1' },
-      { value: 'Baja Z3', label: 'Baja Z3' },
-      { value: 'Alta Z3', label: 'Alta Z3' },
-    ],
-    disparoOptions: [
-      { value: '3', label: 'Disparo 3' },
-      { value: '4', label: 'Disparo 4' },
-      { value: '5', label: 'Disparo 5' },
-      { value: '6', label: 'Disparo 6' },
-      { value: '7', label: 'Disparo 7' },
-      { value: '8', label: 'Disparo 8' },
-      { value: '9', label: 'Disparo 9' },
-      { value: '10', label: 'Disparo 10' },
-      { value: '11', label: 'Disparo 11' },
-      { value: '12', label: 'Disparo 12' },
-      { value: '13', label: 'Disparo 13' },
-      { value: '14', label: 'Disparo 14' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

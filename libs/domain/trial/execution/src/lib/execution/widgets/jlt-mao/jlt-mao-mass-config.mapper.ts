@@ -1,6 +1,6 @@
 import type { JltMaoBulkConfigurationRequest } from '../../models/shot-jlt-mao.models';
 
-export type JltMaoMassConfigInputField = { value: string; unit: string } | null;
+export type JltMaoMassConfigInputField = { value: number | string | null; unit: string } | null;
 
 export interface JltMaoMassConfigFields {
   velocidadInicial: JltMaoMassConfigInputField;
@@ -34,8 +34,12 @@ function resolveNumber(
 ): number | null | undefined {
   if (value === undefined || (omitUnchanged && isSameInputField(value, initialValue))) return undefined;
   if (value === null) return initialValue === null ? undefined : null;
+  if (value.value === null || value.value === undefined || value.value === '') return null;
 
-  const parsedValue = Number(value.value.replace(',', '.'));
+  if (typeof value.value === 'number') {
+    return Number.isFinite(value.value) ? value.value : undefined;
+  }
+  const parsedValue = Number(value.value.toString().replace(',', '.'));
   return Number.isFinite(parsedValue) ? parsedValue : undefined;
 }
 

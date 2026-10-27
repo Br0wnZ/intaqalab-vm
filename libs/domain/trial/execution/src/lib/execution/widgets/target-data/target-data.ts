@@ -24,7 +24,11 @@ import { ReadonlyContentDirective } from '../../directives/readonly-content.dire
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { buildDisparoOptions, resolveInitialShotSelection } from '../utils/selection-options';
+import {
+  buildDisparoOptions,
+  mapPlanningSeriesToOptions,
+  resolveInitialShotSelection,
+} from '../utils/selection-options';
 import { ShotEditButton } from '../utils/shot-edit-button';
 import { injectShotFormLock } from '../utils/shot-form-lock';
 
@@ -183,13 +187,14 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
   protected readonly degOptions = [{ value: 'º', label: 'º' }];
 
   // ── Options from store ─────────────────────────────────────────────────────
-  protected readonly serieOptions = computed(() => this.#store.targetData().serieOptions);
+  protected readonly serieOptions = computed(() =>
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
+  );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.serieModel(),
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.targetData().disparoOptions,
     }),
   );
   protected readonly blancoOptions = computed(() => this.#store.targetData().blancoOptions);
@@ -269,7 +274,6 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.targetData().disparoOptions,
           }),
       });
       if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;

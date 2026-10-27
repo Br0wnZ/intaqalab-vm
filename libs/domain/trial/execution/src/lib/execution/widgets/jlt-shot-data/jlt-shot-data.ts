@@ -278,10 +278,7 @@ export class JltShotData extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.jltShotData().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
 
   protected readonly disparoOptions = computed(() => {
@@ -293,7 +290,7 @@ export class JltShotData extends BaseFormWidgetComponent {
     const planningSerie = series?.find((serie) => serie.id === selectedSerie);
     const progressSerie = this.#store.executionProgress()?.series.find((serie) => serie.seriesId === selectedSerie);
 
-    return mapPlanningShotsToDisparoOptions(planningSerie, progressSerie, this.#store.jltShotData().disparoOptions);
+    return mapPlanningShotsToDisparoOptions(planningSerie, progressSerie);
   }
 
   protected readonly selectedSeriesProgress = computed(() => {

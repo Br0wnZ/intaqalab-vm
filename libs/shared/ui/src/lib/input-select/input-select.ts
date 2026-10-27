@@ -135,7 +135,7 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
           [value]="selectedUnit()"
           [attr.aria-label]="label() + ' unidad'"
           [panelWidth]="panelWidth()"
-          [disabled]="readOnly()"
+          [disabled]="unitDisabled() ?? readOnly()"
           (selectionChange)="onUnitChange($event.value)"
         >
           @for (opt of opciones(); track opt.value) {
@@ -180,6 +180,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
   readonly textColor = input<string | null>(null);
   readonly placeholder = input<string>('0,00');
   readonly readOnly = input(false);
+  readonly unitDisabled = input<boolean | null>(null);
   readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
   readonly decimals = input<number>(2);
   readonly minDecimals = input<number>(0);
@@ -271,7 +272,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
     let nextVal: T;
 
     if (typeof currentVal === 'string') {
-      nextVal = (num !== null ? String(num) : '') as T;
+      nextVal = (num !== null ? formatDisplayNumber(num, this.#localeSignal(), this.minDecimals()) : '') as T;
     } else {
       nextVal = num as T;
     }
@@ -290,7 +291,9 @@ export class InputSelect<T extends number | string | null = number | string | nu
 
     if (typeof currentVal === 'string') {
       const num = this.numericValue();
-      nextVal = (num !== null ? String(num) : (currentVal ?? '')) as T;
+      nextVal = (
+        num !== null ? formatDisplayNumber(num, this.#localeSignal(), this.minDecimals()) : (currentVal ?? '')
+      ) as T;
     } else {
       nextVal = (this.numericValue() ?? null) as T;
     }

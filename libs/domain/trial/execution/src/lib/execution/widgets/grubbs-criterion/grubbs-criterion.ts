@@ -147,10 +147,7 @@ export class GrubbsCriterionWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.grubbsCriterion().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly variableOptions = computed(() => this.#store.grubbsCriterion().variableOptions);
 

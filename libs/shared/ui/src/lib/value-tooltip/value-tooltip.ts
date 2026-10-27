@@ -32,8 +32,8 @@ import { MatTooltip } from '@angular/material/tooltip';
  * - Una posición explícita indica preferencia, no una ubicación absoluta:
  *   Material mantiene sus posiciones alternativas si no cabe en pantalla.
  * - Captura el mensaje tras el primer render si el valor no esta vacio.
- *   Si esta vacio, reintenta al entrar el raton hasta obtener texto.
- *   Tras capturarlo, cambios del valor no lo modifican.
+ *   Con `uiValueTooltipValue` explicito, refresca el mensaje en hover con el valor actual.
+ *   En controles sin valor explicito, conserva el texto capturado.
  * - En hover, calcula la posición y muestra MatTooltip. Al salir lo oculta.
  *   Un valor inicial vacío no muestra tooltip.
  *
@@ -63,7 +63,7 @@ import { MatTooltip } from '@angular/material/tooltip';
   },
 })
 export class ValueTooltip implements AfterViewInit {
-  readonly uiValueTooltipValue = input<string | null>();
+  readonly uiValueTooltipValue = input<string | number | null>();
   readonly uiValueTooltipPosition = input<TooltipPosition | 'auto'>('auto');
   readonly uiValueTooltipAnchor = input<'host' | 'text'>('host');
 
@@ -86,8 +86,13 @@ export class ValueTooltip implements AfterViewInit {
     });
   }
 
-  protected showTooltip() {
-    if (!this.#tooltip.message) this.#initializeMessage();
+  protected showTooltip(): void {
+    const explicitValue = this.uiValueTooltipValue();
+    if (explicitValue !== undefined) {
+      this.#tooltip.message = (explicitValue !== null ? String(explicitValue) : '').trim();
+    } else if (!this.#tooltip.message) {
+      this.#initializeMessage();
+    }
     this.#prepareTooltip();
     this.#tooltip.show();
   }
@@ -121,9 +126,11 @@ export class ValueTooltip implements AfterViewInit {
     this.#tooltip.position = position;
   }
 
-  #initializeMessage() {
+  #initializeMessage(): void {
     const explicitValue = this.uiValueTooltipValue();
-    const value = (explicitValue !== undefined ? (explicitValue ?? '') : this.#controlValue()).trim();
+    const value = (
+      explicitValue !== undefined ? (explicitValue !== null ? String(explicitValue) : '') : this.#controlValue()
+    ).trim();
     this.#tooltip.message = value;
   }
 

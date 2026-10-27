@@ -231,17 +231,13 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
     return [...options.values()];
   });
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.topographyIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.formModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.topographyIntroduction().disparoOptions,
     }),
   );
 
@@ -335,7 +331,6 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.topographyIntroduction().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;

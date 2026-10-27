@@ -210,17 +210,13 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.trayectografiaIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
   protected readonly disparoOptions = computed(() =>
     buildDisparoOptions({
       selectedSerie: this.selectorFormModel().serie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.trayectografiaIntroduction().disparoOptions,
     }),
   );
 
@@ -301,7 +297,6 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
             selectedSerie: serieId,
             executionProgress: this.#store.executionProgress(),
             planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-            storedOptions: this.#store.trayectografiaIntroduction().disparoOptions,
           }),
       });
       const { serie: activeSerieId, disparo: activeShotId } = selection;

@@ -22,6 +22,28 @@ class ProjectedInputHost {
 }
 
 @Component({
+  imports: [InputSelect, InputSelectInput],
+  template: `
+    <ui-input-select
+      label="Orientación"
+      [opciones]="opciones"
+      [value]="value()"
+      [readOnly]="true"
+      [unitDisabled]="false"
+    >
+      <input inputSelectInput />
+    </ui-input-select>
+  `,
+})
+class ReadonlyValueWithSelectableUnitHost {
+  readonly opciones = [
+    { value: 'DEGREES', label: '°' },
+    { value: 'MILS', label: 'mil' },
+  ];
+  readonly value = signal<{ value: string; unit: string } | null>({ value: '15', unit: 'DEGREES' });
+}
+
+@Component({
   imports: [InputSelect, InputSelectInput, LocaleDecimalInputDirective],
   template: `
     <ui-input-select label="Velocidad" [opciones]="opciones" [value]="value()">
@@ -151,6 +173,13 @@ describe('InputSelect', () => {
 
     expect(screen.getByRole('textbox')).toHaveProperty('readOnly', true);
     expect(screen.getByRole('textbox')).toBeDisabled();
+  });
+
+  it('should allow changing units while the numeric input is read-only', async () => {
+    await render(ReadonlyValueWithSelectableUnitHost);
+
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByRole('combobox')).toBeEnabled();
   });
 
   it('should allow the projected input to shrink alongside the unit selector', async () => {

@@ -274,6 +274,37 @@ describe('ExecutionService', () => {
     await expect(promise).resolves.toBe(7.25);
   });
 
+  it('only extracts fuse graduation if component is an espoleta and ignores other munition types', async () => {
+    const promise = service.fetchPlanningFuseGraduation(DEMO_TRIAL_ID, 'series-1', 'shot-1');
+    TestBed.tick();
+
+    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    req.flush({
+      series: [
+        {
+          seriesId: 'series-1',
+          configurations: [
+            {
+              assignedShotIds: ['shot-1'],
+              components: [
+                {
+                  type: { id: 't-proj', type: 'PROJECTILE', label: 'Proyectil' },
+                  fuseMeasurement: 99,
+                },
+                {
+                  type: { id: 't-fuze', type: 'FUZE', label: 'Espoleta M557' },
+                  fuseMeasurement: 14.5,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    await expect(promise).resolves.toBe(14.5);
+  });
+
   it('should GET execution state when getExecutionState() is called', async () => {
     const mockResponse = {
       status: 'IN_PROGRESS' as const,

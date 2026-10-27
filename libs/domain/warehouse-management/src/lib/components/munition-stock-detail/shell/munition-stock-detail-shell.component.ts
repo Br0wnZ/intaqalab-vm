@@ -219,7 +219,17 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
               {{ 'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.RETIREMENT_REASON' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input id="retirementReason" matInput disabled="true" [value]="formData.retirementReason" />
+              <input
+                id="retirementReason"
+                matInput
+                disabled="true"
+                [value]="
+                  formData.retirementReason
+                    ? ('WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.RETIREMENT_REASON_' + formData.retirementReason
+                      | translate)
+                    : ''
+                "
+              />
             </mat-form-field>
           </div>
         </div>

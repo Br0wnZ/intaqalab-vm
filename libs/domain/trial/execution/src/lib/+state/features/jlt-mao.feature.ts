@@ -33,15 +33,8 @@ const initialState: JltMaoSlice = {
       { value: 'piqueta-p2', label: 'Piqueta P2 (Auxiliar Norte)', x: 440250, y: 4480350 },
       { value: 'piqueta-p3', label: 'Piqueta P3 (Auxiliar Sur)', x: 439950, y: 4480050 },
     ],
-    serieOptions: [
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
   },
 };
 

@@ -23,15 +23,20 @@ class TestHostComponent {
 }
 
 describe('ShotEditButton', () => {
+  const renderHost = () =>
+    render(TestHostComponent, {
+      imports: [TranslateModule.forRoot()],
+    });
+
   it('renders edit button when canEnable is true', async () => {
-    await render(TestHostComponent);
+    await renderHost();
 
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
   });
 
   it('hides edit button when canEnable is false', async () => {
-    const { fixture } = await render(TestHostComponent);
+    const { fixture } = await renderHost();
     fixture.componentInstance.canEnable.set(false);
     fixture.detectChanges();
 
@@ -41,7 +46,7 @@ describe('ShotEditButton', () => {
 
   it('emits edit output when clicked', async () => {
     const user = userEvent.setup();
-    const { fixture } = await render(TestHostComponent);
+    const { fixture } = await renderHost();
 
     const button = screen.getByRole('button');
     await user.click(button);
@@ -69,7 +74,9 @@ describe('ShotEditButton', () => {
     }
 
     const user = userEvent.setup();
-    await render(LockHostComponent);
+    await render(LockHostComponent, {
+      imports: [TranslateModule.forRoot()],
+    });
 
     const button = screen.getByRole('button');
     await user.click(button);
