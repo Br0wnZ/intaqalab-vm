@@ -23,7 +23,13 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { FireTrial, TrialDocsFilter } from '@intaqalab/models';
 import { TrialDocsStatus, injectTrialDocsCategory, injectTrialDocsStatus } from '@intaqalab/models';
-import { DOC_VIEWER_SERVICE, DocViewer, IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
+import {
+  DOC_VIEWER_SERVICE,
+  DocViewer,
+  IntaIconComponent,
+  IntaSignalSelectComponent,
+  ValueTooltip,
+} from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -59,6 +65,7 @@ enum TrialDocsViewState {
     FormField,
     IntaDatePipe,
     IntaIconComponent,
+    ValueTooltip,
   ],
   template: `
     <div class="w-full">
@@ -203,10 +210,10 @@ enum TrialDocsViewState {
                       }
                     </div>
                     <div
-                      matTooltipPosition="above"
-                      matTooltipClass="tw-tooltip"
+                      uiValueTooltip
+                      uiValueTooltipPosition="above"
                       class="flex flex-col"
-                      [matTooltip]="documento.name"
+                      [uiValueTooltipValue]="documento.name"
                     >
                       <span class="text-sm  truncate font-medium text-gray-900">
                         {{ documento.name }}

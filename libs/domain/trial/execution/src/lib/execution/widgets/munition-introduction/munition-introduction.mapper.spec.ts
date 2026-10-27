@@ -92,6 +92,7 @@ describe('munition-introduction.mapper', () => {
               clientNumber: 'CL-1',
               fuseWorkingModeId: 'fwm-1',
               fuseGraduation: 5.5,
+              loadingZone: 'Z2',
               observations: 'Ident OK',
             },
             weightData: [
@@ -127,6 +128,8 @@ describe('munition-introduction.mapper', () => {
         numeroCliente: 'CL-1',
         modoFuncionamiento: 'fwm-1',
         graduacionEspoleta: 5.5,
+        loadingZone: 'Z2',
+        cantidad: null,
         observaciones: 'Ident OK',
       });
 
@@ -321,6 +324,33 @@ describe('munition-introduction.mapper', () => {
       expect(req.components[1].componentId).toBe('espoleta-01');
       expect(req.components[1].identificationData?.denominationId).toBe(2);
       expect(req.components[1].weightData?.[0].weight).toBe(520);
+    });
+
+    it('should map cantidad to quantity in request and parse quantity from remote', () => {
+      const res: ShotMunitionResponse = {
+        munitionData: [
+          {
+            componentId: 'comp-suppl',
+            identificationData: {
+              denominationId: 'den-s1',
+              quantity: 8,
+            },
+          },
+        ],
+      };
+      const state = mapRemoteToMunitionState(res);
+      expect(state.identificacion.cantidad).toBe(8);
+
+      const req = mapMunitionStateToRequest({
+        componentId: 'comp-suppl',
+        identificacion: {
+          denominacion: 'den-s1',
+          cantidad: 8,
+        },
+        weightDataByBalance: {},
+        acondicionamiento: {},
+      });
+      expect(req.components[0].identificationData?.quantity).toBe(8);
     });
   });
 });

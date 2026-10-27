@@ -1,0 +1,56 @@
+.mat-mdc-tooltip.ui-value-tooltip {
+  --ui-value-tooltip-background: #1e293b;
+
+  &::after {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    content: '';
+    pointer-events: none;
+  }
+
+  .mat-mdc-tooltip-surface {
+    max-width: min(24rem, calc(100vw - 2rem));
+    white-space: normal;
+    overflow-wrap: anywhere;
+    background: var(--ui-value-tooltip-background) !important;
+    color: var(--inta-bg-white) !important;
+    padding: 1rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1rem;
+    border-radius: 8px;
+  }
+}
+
+.mat-mdc-tooltip-panel-right .ui-value-tooltip::after {
+  top: 50%;
+  right: 100%;
+  border-left: 0;
+  border-right-color: var(--ui-value-tooltip-background);
+  transform: translateY(-50%);
+}
+
+.mat-mdc-tooltip-panel-left .ui-value-tooltip::after {
+  top: 50%;
+  left: 100%;
+  border-right: 0;
+  border-left-color: var(--ui-value-tooltip-background);
+  transform: translateY(-50%);
+}
+
+.mat-mdc-tooltip-panel-below .ui-value-tooltip::after {
+  bottom: 100%;
+  left: 50%;
+  border-top: 0;
+  border-bottom-color: var(--ui-value-tooltip-background);
+  transform: translateX(-50%);
+}
+
+.mat-mdc-tooltip-panel-above .ui-value-tooltip::after {
+  top: 100%;
+  left: 50%;
+  border-bottom: 0;
+  border-top-color: var(--ui-value-tooltip-background);
+  transform: translateX(-50%);
+}

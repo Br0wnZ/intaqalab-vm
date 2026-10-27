@@ -21,6 +21,9 @@ export type PlanningConditionsShot = {
   shootingAngle?: number | null;
   shootingAngleUnit?: AngleUnitEnum | null;
   nominalSpeed?: number | null;
+  fuseWorkingModeId?: string | null;
+  fuseMeasurement?: number | null;
+  fuseGraduation?: number | null;
 };
 
 export type PlanningConditionsSeries = {

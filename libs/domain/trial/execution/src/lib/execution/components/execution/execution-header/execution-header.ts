@@ -4,8 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { IntaIconComponent, getTrialStatusToneClass } from '@intaqalab/ui';
+import { IntaIconComponent, ValueTooltip, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../../../models/execution-page.models';
@@ -20,7 +19,7 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
     MatIconModule,
     MatMenuModule,
     MatSlideToggleModule,
-    MatTooltipModule,
+    ValueTooltip,
     TranslateModule,
     IntaIconComponent,
   ],
@@ -160,14 +159,15 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
 
         <div class="max-h-[350px] overflow-y-auto">
           @for (history of shotInfo().all; track history.serie) {
-            @for (historicShot of history.shots; track historicShot.timestamp) {
+            @for (historicShot of history.shots; track $index) {
               <div
                 class="grid grid-cols-4 px-6 py-4 items-center border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
               >
                 <span
-                  matTooltipPosition="above"
-                  class="text-sm font-medium text-gray-700 truncate pr-4"
-                  [matTooltip]="history.serie"
+                  uiValueTooltip
+                  uiValueTooltipPosition="right"
+                  uiValueTooltipAnchor="text"
+                  [uiValueTooltipValue]="history.serie"
                 >
                   {{ history.serie }}
                 </span>

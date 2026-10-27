@@ -9,6 +9,9 @@ export interface PlannedComponentData {
   clientNumber: string | null;
   fuseWorkingModeId: string | null;
   fuseMeasurement: number | null;
+  loadingZoneValue: string | null;
+  loadingZones: string[];
+  quantity: number | null;
 }
 
 export interface ShotMunitionComponentOption {
@@ -34,7 +37,10 @@ export interface NormalizedMunitionComponent {
   clientNumber: string | null;
   fuseWorkingModeId: string | null;
   fuseMeasurement: number | null;
+  loadingZoneValue: string | null;
+  loadingZones: string[];
   isFuse: boolean;
+  quantity: number | null;
 }
 
 export interface NormalizedMunitionConfig {

@@ -16,10 +16,29 @@ import {
 
 export function resolveComponentCategory(label: string, rawCategory?: string | null): string {
   const lower = label.toLowerCase();
-  if (lower.includes('espoleta') || lower.includes('fuse')) return 'espoleta';
+  const rawLower = (rawCategory ?? '').toLowerCase();
+  if (
+    lower.includes('espoleta') ||
+    lower.includes('fuse') ||
+    lower.includes('fuze') ||
+    rawLower.includes('fuse') ||
+    rawLower.includes('fuze')
+  ) {
+    return 'espoleta';
+  }
   if (lower.includes('pólvora') || lower.includes('polvora') || lower.includes('powder')) return 'polvo';
   if (lower.includes('granada') || lower.includes('grenade') || lower.includes('proyectil')) return 'granada';
-  if (lower.includes('carga') || lower.includes('charge')) return 'carga';
+  if (lower.includes('suplemento') || lower.includes('supplement') || rawLower.includes('supplement')) {
+    return 'suplemento';
+  }
+  if (
+    lower.includes('carga') ||
+    lower.includes('charge') ||
+    rawLower.includes('charge') ||
+    rawLower.includes('propell')
+  ) {
+    return 'carga';
+  }
   if (rawCategory === 'MUNITION') return 'munition';
   return 'componente';
 }
@@ -37,15 +56,27 @@ export function isFuseComponent(params: {
     lowerCategory === 'granada' ||
     lowerCategory === 'proyectil' ||
     lowerCategory === 'projectile' ||
+    lowerCategory === 'carga' ||
+    lowerCategory === 'charge' ||
+    lowerCategory === 'polvo' ||
+    lowerCategory === 'powder' ||
+    lowerCategory === 'suplemento' ||
     lowerLabel.includes('proyectil') ||
     lowerLabel.includes('granada') ||
-    lowerLabel.includes('projectile')
+    lowerLabel.includes('projectile') ||
+    lowerLabel.includes('carga') ||
+    lowerLabel.includes('charge') ||
+    lowerLabel.includes('propell') ||
+    lowerLabel.includes('pólvora') ||
+    lowerLabel.includes('polvora') ||
+    lowerLabel.includes('powder') ||
+    lowerLabel.includes('suplemento')
   ) {
     return false;
   }
   if (params.category === 'espoleta') return true;
-  if (lowerLabel.includes('espoleta') || lowerLabel.includes('fuse')) return true;
-  if (params.rawType?.toUpperCase() === 'FUSE') return true;
+  if (lowerLabel.includes('espoleta') || lowerLabel.includes('fuse') || lowerLabel.includes('fuze')) return true;
+  if (params.rawType?.toUpperCase() === 'FUSE' || params.rawType?.toUpperCase() === 'FUZE') return true;
   if (params.fuseWorkingModeId !== null || params.fuseMeasurement !== null) return true;
   return false;
 }
@@ -153,6 +184,9 @@ export function normalizePlanningMunitions(
           clientNumber,
           fuseWorkingModeId: null,
           fuseMeasurement: null,
+          loadingZoneValue: null,
+          loadingZones: [],
+          quantity: null,
           isFuse: isFuseComponent({
             label,
             category,
@@ -222,9 +256,34 @@ export function normalizePlanningMunitions(
           (compDenomRec ? readStringOrNumber(compDenomRec['clientNumber']) : null);
 
         const fuseWorkingModeId =
-          readNestedId(compRec['fuseWorkingMode']) ?? readNestedId(compRec['fuseWorkingModeId']);
+          readNestedId(compRec['fuseWorkingMode']) ??
+          readNestedId(compRec['fuseWorkingModeId']) ??
+          readNestedId(compRec['modoFuncionamiento']);
 
-        const fuseMeasurement = readNumber(compRec['fuseMeasurement']);
+        const fuseMeasurement =
+          readNumber(compRec['fuseMeasurement']) ??
+          readNumber(compRec['fuseGraduation']) ??
+          readNumber(compRec['graduacionEspoleta']);
+
+        const loadingZoneValue =
+          readString(compRec['loadingZoneValue']) ??
+          readString(compRec['loadingZone']) ??
+          readString(compRec['zona']) ??
+          readString(compRec['zone']);
+
+        const rawZonesArray = Array.isArray(compRec['zones'])
+          ? (compRec['zones'] as unknown[])
+          : Array.isArray(compRec['loadingZones'])
+            ? (compRec['loadingZones'] as unknown[])
+            : Array.isArray(compRec['zone'])
+              ? (compRec['zone'] as unknown[])
+              : null;
+
+        const parsedZones = rawZonesArray ? rawZonesArray.map(readString).filter((z): z is string => Boolean(z)) : [];
+
+        const loadingZones = parsedZones.length > 0 ? parsedZones : loadingZoneValue ? [loadingZoneValue] : [];
+
+        const quantity = readNumber(compRec['quantity']) ?? readNumber(compRec['cantidad']) ?? null;
 
         const isFuse = isFuseComponent({
           label,
@@ -246,7 +305,10 @@ export function normalizePlanningMunitions(
           clientNumber: compClientNumber,
           fuseWorkingModeId,
           fuseMeasurement,
+          loadingZoneValue,
+          loadingZones,
           isFuse,
+          quantity,
         });
       }
 

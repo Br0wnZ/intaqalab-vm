@@ -279,6 +279,7 @@ export interface MunitionIntroComponentOption {
   label: string;
   /** 'espoleta' | 'polvo' | 'granada' | 'carga' | etc. */
   category: string;
+  isFuse?: boolean;
 }
 
 /** Opción de denominación de munición */
@@ -911,6 +912,8 @@ export interface MunitionIntroIdentificationState {
   numeroCliente: string | null;
   modoFuncionamiento: string | null;
   graduacionEspoleta: number | null;
+  loadingZone: string | null;
+  cantidad: number | null;
   observaciones: string | null;
   denominacionFromPlanning: boolean;
   loteFromPlanning: boolean;

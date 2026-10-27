@@ -34,16 +34,25 @@ describe('topography-introduction.mapper', () => {
   describe('parseNum', () => {
     it('returns null when field is null or empty', () => {
       expect(parseNum(null)).toBeNull();
+      expect(parseNum({ value: null, unit: 's' })).toBeNull();
       expect(parseNum({ value: '', unit: 's' })).toBeNull();
       expect(parseNum({ value: '   ', unit: 's' })).toBeNull();
     });
 
     it('parses valid numeric string to float', () => {
       expect(parseNum({ value: '45.75', unit: 's' })).toBe(45.75);
+      expect(parseNum({ value: '45,75', unit: 's' })).toBe(45.75);
+      expect(parseNum({ value: '0', unit: 's' })).toBe(0);
+    });
+
+    it('parses numeric values without throwing trim error', () => {
+      expect(parseNum({ value: 45.75, unit: 's' })).toBe(45.75);
+      expect(parseNum({ value: 0, unit: 's' })).toBe(0);
     });
 
     it('returns null when value is not a valid number', () => {
       expect(parseNum({ value: 'invalid', unit: 's' })).toBeNull();
+      expect(parseNum({ value: NaN, unit: 's' })).toBeNull();
     });
   });
 

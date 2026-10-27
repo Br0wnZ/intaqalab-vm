@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { provideTestingEnvironment } from '@intaqalab/config';
+import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -72,31 +74,31 @@ describe('IntaMatSelect', () => {
     ];
 
     const { fixture } = await render(IntaSignalSelectComponent, {
-      componentProperties: {
-        label: () => 'Searchable',
-        placeholder: () => 'Buscar...',
-        options: () => options,
-        valueKey: () => 'value',
-        labelKey: () => 'label',
-        searchable: () => true,
-      } as any,
-      excludeComponentDeclaration: true,
+      imports: [TranslateModule.forRoot()],
+      providers: [provideTestingEnvironment()],
+      componentInputs: {
+        label: 'Searchable',
+        placeholder: 'Buscar...',
+        options,
+        valueKey: 'value',
+        labelKey: 'label',
+        searchable: true,
+      },
     });
 
-    // Usar MatSelectHarness para abrir el panel
+    const user = userEvent.setup();
     const loader = TestbedHarnessEnvironment.loader(fixture);
-    const select = await loader.getHarness(MatSelectHarness);
+    const [select] = await loader.getAllHarnesses(MatSelectHarness);
 
     await select.open();
 
-    // Buscar el input en el overlay global
-    const searchInput = document.body.querySelector('input.search-input') as HTMLInputElement;
-    expect(searchInput).toBeTruthy();
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.getByText('Gamma')).toBeInTheDocument();
 
-    // Simular escribir en el input de búsqueda
-    await userEvent.type(searchInput, 'be');
+    await user.type(screen.getByRole('textbox'), 'be');
+    fixture.detectChanges();
 
-    // Esperar a que solo la opción filtrada esté visible
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
     expect(screen.queryByText('Gamma')).not.toBeInTheDocument();

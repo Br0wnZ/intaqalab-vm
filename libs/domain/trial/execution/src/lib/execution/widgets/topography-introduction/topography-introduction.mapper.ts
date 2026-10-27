@@ -13,7 +13,7 @@ export interface SelectOption {
   label: string;
 }
 
-export type InputFieldValue = { value: string; unit: string } | null;
+export type InputFieldValue = { value: string | number | null; unit: string } | null;
 
 const TIME_UNIT_SECONDS = 'S' as TimeUnitEnum;
 const TIME_UNIT_MILLISECONDS = 'MS' as TimeUnitEnum;
@@ -30,9 +30,14 @@ export const numToField = (num: number | null | undefined, unit = 's'): InputFie
  * Parsea un InputFieldValue a número flotante o null si está vacío/inválido.
  */
 export const parseNum = (field: InputFieldValue): number | null => {
-  if (!field?.value || field.value.trim() === '') return null;
-  const parsed = Number(field.value);
-  return isNaN(parsed) ? null : parsed;
+  if (!field || field.value === null || field.value === undefined) return null;
+  if (typeof field.value === 'number') {
+    return Number.isFinite(field.value) ? field.value : null;
+  }
+  const str = String(field.value).trim();
+  if (str === '') return null;
+  const parsed = Number(str.replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : null;
 };
 
 /**

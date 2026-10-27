@@ -13,14 +13,13 @@ import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { FeatureFlagService } from '@intaqalab/config';
 import { Role, injectCurrentUserRole, injectionTokenTabCommand } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { TrialActions } from '@intaqalab/models';
 import { TrialStatus, injectTrialStatus } from '@intaqalab/models';
 import { FeaturePlanningGeneralDataShellComponent, PlanningPermissionsService } from '@intaqalab/planning';
-import { Badge, UiDialogService } from '@intaqalab/ui';
+import { Badge, UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import { TrialStatusLabelPipe, linkedQueryParam } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -41,7 +40,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
     MatButton,
     MatCardModule,
     MatIconModule,
-    MatTooltipModule,
+    ValueTooltip,
     TranslateModule,
     FeatureTrialCreateFormComponent,
     FeaturePlanningGeneralDataShellComponent,
@@ -69,7 +68,9 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
                 </ui-badge>
                 @if (u.status === trialStatusEnum.CANCELLED || u.status === trialStatusEnum.VOIDED) {
                   @if (u.statusReason) {
-                    <mat-icon matTooltipPosition="right" [matTooltip]="u.statusReason">info</mat-icon>
+                    <mat-icon uiValueTooltip uiValueTooltipPosition="right" [uiValueTooltipValue]="u.statusReason">
+                      info
+                    </mat-icon>
                   }
                 }
               </div>

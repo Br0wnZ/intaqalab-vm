@@ -8,8 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { UiDialogService } from '@intaqalab/ui';
+import { UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -29,11 +28,10 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components'];
     TranslateModule,
     MatIconModule,
     MatTableModule,
-    MatTooltipModule,
+    ValueTooltip,
     MatSelectModule,
     MatFormFieldModule,
     MatSlideToggleModule,
-    MatTooltipModule,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
@@ -117,10 +115,10 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components'];
                       <mat-icon class="text-purple-600! w-5! h-5! text-xl!">description</mat-icon>
                     </div>
                     <div
-                      matTooltipPosition="above"
-                      matTooltipClass="tw-tooltip"
+                      uiValueTooltip
+                      uiValueTooltipPosition="above"
                       class="flex flex-col"
-                      [matTooltip]="documento.name"
+                      [uiValueTooltipValue]="documento.name"
                     >
                       <span class="text-sm  truncate font-medium text-gray-900">
                         {{ documento.name }}

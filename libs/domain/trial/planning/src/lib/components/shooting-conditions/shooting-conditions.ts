@@ -10,7 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import type { MasterData, TargetDimension, TargetThickness } from '@intaqalab/models';
 import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
 import {
@@ -22,6 +21,7 @@ import {
   MatSelectClearable,
   Skeleton,
   SkeletonTable,
+  ValueTooltip,
 } from '@intaqalab/ui';
 import {
   IntaDatePipe,
@@ -52,7 +52,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
     MatButtonModule,
     MatIconModule,
     MatTableModule,
-    MatTooltipModule,
+    ValueTooltip,
     FormField,
     IntaDatePipe,
     Badge,
@@ -178,15 +178,15 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select clearable [formField]="getShotField(serieIdx, i).date">
                             @for (schedule of getTrialSchedulesResource.value(); track schedule.date) {
-                              <mat-option
-                                class="truncate"
-                                [value]="schedule.date"
-                                [matTooltip]="schedule.date | intaDate"
-                                [matTooltipDisabled]="(schedule.date | intaDate)!.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="schedule.date">
                                 <span class="truncate">{{ schedule.date | intaDate }}</span>
                               </mat-option>
                             }
@@ -208,15 +208,15 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select clearable [formField]="getShotField(serieIdx, i).impactZoneId">
                             @for (zone of impactZones(); track zone.id) {
-                              <mat-option
-                                class="truncate"
-                                [value]="zone.id"
-                                [matTooltip]="zone.label"
-                                [matTooltipDisabled]="zone.label.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="zone.id">
                                 <span class="truncate">{{ zone.label }}</span>
                               </mat-option>
                             }
@@ -238,15 +238,15 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select clearable [formField]="getShotField(serieIdx, i).targetTypeId">
                             @for (target of targetTypes(); track target.id) {
-                              <mat-option
-                                class="truncate"
-                                [value]="target.id"
-                                [matTooltip]="target.label"
-                                [matTooltipDisabled]="target.label.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="target.id">
                                 <span class="truncate">{{ target.label }}</span>
                               </mat-option>
                             }
@@ -268,15 +268,15 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
                             @for (material of targetMaterials(); track material.id) {
-                              <mat-option
-                                class="truncate"
-                                [value]="material.id"
-                                [matTooltip]="material.label"
-                                [matTooltipDisabled]="material.label.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="material.id">
                                 <span class="truncate">{{ material.label }}</span>
                               </mat-option>
                             }
@@ -298,19 +298,19 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select
                             clearable
                             matNativeControl
                             [formField]="getShotField(serieIdx, i).targetDimensionsId"
                           >
                             @for (dimension of targetDimensions(); track dimension.id) {
-                              <mat-option
-                                class="truncate"
-                                [value]="dimension.id"
-                                [matTooltip]="dimension.label"
-                                [matTooltipDisabled]="dimension.label.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="dimension.id">
                                 <span class="truncate">{{ dimension.label }}</span>
                               </mat-option>
                             }
@@ -332,15 +332,15 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-form-field
+                          uiValueTooltip
+                          appearance="outline"
+                          class="w-full"
+                          [subscriptSizing]="'dynamic'"
+                        >
                           <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
                             @for (thickness of targetThicknesses(); track thickness.id) {
-                              <mat-option
-                                class="truncate"
-                                [value]="thickness.id"
-                                [matTooltip]="thickness.name"
-                                [matTooltipDisabled]="thickness.name.length <= 20"
-                              >
+                              <mat-option class="truncate" [value]="thickness.id">
                                 <span class="truncate">{{ thickness.name }}</span>
                               </mat-option>
                             }

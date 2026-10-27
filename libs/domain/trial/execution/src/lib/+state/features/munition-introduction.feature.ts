@@ -64,6 +64,8 @@ const initialState: MunitionIntroductionSlice = {
       numeroCliente: null,
       modoFuncionamiento: null,
       graduacionEspoleta: null,
+      loadingZone: null,
+      cantidad: null,
       observaciones: null,
       denominacionFromPlanning: false,
       loteFromPlanning: false,
@@ -81,16 +83,8 @@ const initialState: MunitionIntroductionSlice = {
       temperaturaCorregida: null,
       observaciones: null,
     },
-    serieOptions: [
-      { value: 'calentamiento', label: 'Calentamiento' },
-      { value: 'funcionamiento-1', label: 'Funcionamiento I' },
-      { value: 'funcionamiento-2', label: 'Funcionamiento II' },
-    ],
-    disparoOptions: [
-      { value: 'disparo-1', label: 'Disparo 1' },
-      { value: 'disparo-2', label: 'Disparo 2' },
-      { value: 'disparo-3', label: 'Disparo 3' },
-    ],
+    serieOptions: [],
+    disparoOptions: [],
     componenteOptions: [
       { value: 'espoleta-01', label: 'Espoleta', category: 'espoleta' },
       { value: 'granada-01', label: 'Granada', category: 'granada' },

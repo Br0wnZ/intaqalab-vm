@@ -18,7 +18,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import {
+  PlanningConditionsService,
+  type PlanningConditionsShot,
+  PlanningFuseWorkingModesService,
+  injectTrialShots,
+} from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -33,7 +38,7 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
 import { FormTouchDirective } from '../directives/form-touch.directive';
 import { createSelectionGuard, shotSelectionKey } from '../utils/selection-guard';
-import { resolveInitialShotSelection } from '../utils/selection-options';
+import { isUuid, resolveInitialShotSelection } from '../utils/selection-options';
 import { ShotEditButton } from '../utils/shot-edit-button';
 import { injectShotFormLock } from '../utils/shot-form-lock';
 import type { MassiveConfigDialogData, MassiveConfigDialogResult } from './massive-config-dialog';
@@ -61,6 +66,8 @@ export interface IdentFormModel {
   denominacion: string | null;
   lote: string | null;
   modoFuncionamiento: string | null;
+  loadingZone: string | null;
+  cantidad: number | null;
 }
 
 /** @deprecated Renamed to WeightFormModel in pesos-tab.component */
@@ -203,6 +210,8 @@ export interface AcondFormModel {
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
           [componenteOptions]="componenteOptions()"
+          [modoFuncionamientoOptions]="modoFuncionamientoOptions()"
+          [shotConditions]="currentShotConditions()"
           (componentChange)="onComponentChange($event)"
           (denominationChange)="onDenominationSelected()"
         />
@@ -230,6 +239,8 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
+  readonly #fuseWorkingModesService = inject(PlanningFuseWorkingModesService);
+  readonly #conditionsService = inject(PlanningConditionsService, { optional: true });
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
   // ── Reactive shot-scoped planning munition components ─────────────────────
@@ -239,6 +250,22 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     fireTrialId: computed(() => this.#store.fireTrialId()),
   });
   protected readonly componenteOptions = this.#shotComponentsHandle.components;
+  protected readonly modoFuncionamientoOptions = computed(() => {
+    const resource = this.#fuseWorkingModesService.fuseWorkingModesResource;
+    if (!resource.hasValue()) return [];
+    return resource.value().items.map((mode) => ({ value: mode.id, label: mode.label }));
+  });
+
+  protected readonly currentShotConditions = computed<PlanningConditionsShot | null>(() => {
+    const shotId = this.selectorFormModel().disparo;
+    if (!shotId) return null;
+    const seriesList = this.#conditionsService?.conditionsResource.value()?.series ?? [];
+    for (const s of seriesList) {
+      const shot = s.shots.find((sh) => sh.shotId === shotId);
+      if (shot) return shot;
+    }
+    return null;
+  });
 
   // ── UI state (local) ───────────────────────────────────────────────────────
   protected readonly activeTab = signal<TabType>('identificacion');
@@ -257,10 +284,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
-    mapPlanningSeriesToOptions(
-      this.#trialShots.series() ?? this.#store.planningSeries(),
-      this.#store.munitionIntroduction().serieOptions,
-    ),
+    mapPlanningSeriesToOptions(this.#trialShots.series() ?? this.#store.planningSeries()),
   );
 
   #buildDisparoOptions(selectedSerie: string | null) {
@@ -268,7 +292,6 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       selectedSerie,
       executionProgress: this.#store.executionProgress(),
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
-      storedOptions: this.#store.munitionIntroduction().disparoOptions,
     });
   }
 
@@ -356,6 +379,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   constructor() {
     super();
+    this.#fuseWorkingModesService.load();
 
     // Sincronizar y cargar el disparo activo cuando el store lo proporcione o cambie
     effect(() => {
@@ -397,12 +421,33 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
         }
       }
     });
+
+    // Cargar condiciones de planning cuando el trial esté disponible
+    effect(() => {
+      const fireTrialId = this.#store.fireTrialId();
+      if (fireTrialId) {
+        this.#conditionsService?.load(fireTrialId);
+      }
+    });
   }
 
   #patchPlanningIdentificationForComponent(componentId: string | null): void {
     if (!componentId) return;
 
-    const planned = this.#shotComponentsHandle.findComponent(componentId)?.planned;
+    const comp = this.#shotComponentsHandle.findComponent(componentId);
+    const planned = comp?.planned;
+    const isSuplemento = comp?.category === 'suplemento' || (comp?.label ?? '').toLowerCase().includes('suplemento');
+    const isCharge =
+      !isSuplemento && (comp?.category === 'carga' || (comp?.label ?? '').toLowerCase().includes('carga'));
+    const isFuse = !isCharge && !isSuplemento && (comp?.isFuse ?? comp?.category?.toLowerCase() === 'espoleta');
+    const conditionsShot = this.currentShotConditions();
+    const plannedMode = isFuse ? (planned?.fuseWorkingModeId ?? conditionsShot?.fuseWorkingModeId ?? null) : null;
+    const plannedGrad = isFuse
+      ? (planned?.fuseMeasurement ?? conditionsShot?.fuseGraduation ?? conditionsShot?.fuseMeasurement ?? null)
+      : null;
+    const plannedLoadingZone = isCharge ? (planned?.loadingZoneValue ?? null) : null;
+    const plannedQuantity = isSuplemento ? (planned?.quantity ?? null) : null;
+
     const currentIdent = this.#store.munitionIntroduction().identificacion;
     const patched: MunitionIntroIdentificationState = {
       ...currentIdent,
@@ -410,6 +455,10 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       denominacion: currentIdent.denominacion ?? planned?.denominationId ?? null,
       lote: currentIdent.lote ?? planned?.batch ?? null,
       numeroCliente: currentIdent.numeroCliente ?? planned?.clientNumber ?? null,
+      modoFuncionamiento: isFuse ? (plannedMode ?? currentIdent.modoFuncionamiento) : null,
+      graduacionEspoleta: isFuse ? (plannedGrad ?? currentIdent.graduacionEspoleta) : null,
+      loadingZone: isCharge ? (currentIdent.loadingZone ?? plannedLoadingZone) : null,
+      cantidad: isSuplemento ? (currentIdent.cantidad ?? plannedQuantity) : null,
     };
     this.#store.updateMunitionIntroductionIdentification(patched);
     this.identTab()?.applyData(patched);
@@ -595,7 +644,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const selectionKey = this.#selectionKey();
     const ticket = this.#selectionGuard.begin();
 
-    if (!fireTrialId || !serie || !disparo) {
+    if (!fireTrialId || !serie || !disparo || !isUuid(disparo)) {
       return;
     }
 
@@ -627,19 +676,45 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     const stored = this.#store.munitionIntroduction();
     const currentIdent = stored.identificacion;
     const activeComp = stored.selectedComponentId;
-    const planned = activeComp ? this.#shotComponentsHandle.findComponent(activeComp)?.planned : undefined;
+    const comp = activeComp ? this.#shotComponentsHandle.findComponent(activeComp) : undefined;
+    const planned = comp?.planned;
+    const isSuplemento = comp?.category === 'suplemento' || (comp?.label ?? '').toLowerCase().includes('suplemento');
+    const isCharge =
+      !isSuplemento && (comp?.category === 'carga' || (comp?.label ?? '').toLowerCase().includes('carga'));
+    const isFuse = !isCharge && !isSuplemento && (comp?.isFuse ?? comp?.category?.toLowerCase() === 'espoleta');
+    const conditionsShot = this.currentShotConditions();
+    const plannedMode = isFuse ? (planned?.fuseWorkingModeId ?? conditionsShot?.fuseWorkingModeId ?? null) : null;
+    const plannedGrad = isFuse
+      ? (planned?.fuseMeasurement ?? conditionsShot?.fuseGraduation ?? conditionsShot?.fuseMeasurement ?? null)
+      : null;
+    const plannedLoadingZone = isCharge ? (planned?.loadingZoneValue ?? null) : null;
+    const plannedQuantity = isSuplemento ? (planned?.quantity ?? null) : null;
 
-    if (planned) {
+    if (
+      planned ||
+      plannedMode !== null ||
+      plannedGrad !== null ||
+      plannedLoadingZone !== null ||
+      plannedQuantity !== null
+    ) {
       const patched: MunitionIntroIdentificationState = {
         ...currentIdent,
-        denominacion: currentIdent.denominacion || (planned.denominationId ?? null),
-        lote: currentIdent.lote || (planned.batch ?? null),
-        numeroCliente: currentIdent.numeroCliente || (planned.clientNumber ?? null),
+        denominacion: currentIdent.denominacion || (planned?.denominationId ?? null),
+        lote: currentIdent.lote || (planned?.batch ?? null),
+        numeroCliente: currentIdent.numeroCliente || (planned?.clientNumber ?? null),
+        modoFuncionamiento: isFuse ? (plannedMode ?? currentIdent.modoFuncionamiento) : null,
+        graduacionEspoleta: isFuse ? (plannedGrad ?? currentIdent.graduacionEspoleta) : null,
+        loadingZone: isCharge ? currentIdent.loadingZone || plannedLoadingZone : null,
+        cantidad: isSuplemento ? (currentIdent.cantidad ?? plannedQuantity) : null,
       };
       if (
         patched.denominacion !== currentIdent.denominacion ||
         patched.lote !== currentIdent.lote ||
-        patched.numeroCliente !== currentIdent.numeroCliente
+        patched.numeroCliente !== currentIdent.numeroCliente ||
+        patched.modoFuncionamiento !== currentIdent.modoFuncionamiento ||
+        patched.graduacionEspoleta !== currentIdent.graduacionEspoleta ||
+        patched.loadingZone !== currentIdent.loadingZone ||
+        patched.cantidad !== currentIdent.cantidad
       ) {
         this.#store.updateMunitionIntroductionIdentification(patched);
       }

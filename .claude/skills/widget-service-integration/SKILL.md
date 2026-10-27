@@ -896,6 +896,8 @@ Cada tab es un componente presentacional que implementa el contrato:
 > **Regla de effects de cascada**: usar siempre `untracked()` para escribir en signals
 > dentro de un `effect()`. Sin esto, Angular puede detectar un loop reactivo y lanzar
 > `ExpressionChangedAfterItHasBeenCheckedError` o causar re-renders infinitos.
+>
+> **Prohibido `[disabled]`/`[readonly]`/`[value]` con `[formField]`**: 🚫 Nunca enlazar `[disabled]`, `[readonly]` o `[value]` en la plantilla sobre elementos que usen `[formField]`. Angular Signal Forms lanza: `Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive`. Toda regla de deshabilitado debe definirse en el callback del esquema: `form(this.model, (f) => { disabled(f.field, () => condition); })`.
 
 ```typescript
 @Component({

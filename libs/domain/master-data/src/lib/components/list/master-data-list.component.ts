@@ -18,7 +18,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
 import { BooleanStatusBadge, ErrorState, IntaIconComponent, SkeletonTable } from '@intaqalab/ui';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -42,7 +41,6 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
     FormsModule,
     MatPaginatorModule,
     MatSortModule,
-    MatTooltipModule,
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,

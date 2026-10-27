@@ -12,6 +12,7 @@ export interface ShotMunitionIdentificationData {
   fuseGraduationUnit?: TimeUnitEnum | null;
   loadingZone?: string | null;
   modules?: number | null;
+  quantity?: number | null;
   observations?: string | null;
 }
 

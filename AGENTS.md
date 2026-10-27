@@ -144,6 +144,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
   - ✅ Permitted: `toSignal(observable$)`, `firstValueFrom(observable$)`.
   - ❌ **PROHIBITED:** `.subscribe()` in components without `takeUntilDestroyed()`.
 - **Signal Forms:** Use modern `form()` API. **ELIMINATE** `ReactiveFormsModule` and `FormBuilder`. The model (`signal`) is the source of truth. Read and reset state via the model (`this.model()`, `this.model.set(initial)`), never via `form().reset()`.
+- **Signal Forms Template Directives (No `[disabled]` / `[readonly]` / `[value]` / `min` / `max` with `[formField]`):** 🚫 **PROHIBITED:** Binding `[disabled]`, `[readonly]`, `[value]`, `min`, `max`, or `required` attributes on elements using the `[formField]` directive. Angular Signal Forms throws: `"Setting the 'min' attribute is not allowed on nodes using the '[formField]' directive"` / `"Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive"`. All state, constraints, and validation logic MUST be configured exclusively in the form schema callback (`form(model, (f) => { disabled(f.field, () => condition); min(f.field, 0); })`).
 - **Safe Effects:** Read all signals before the first `await`. Use `untracked()` for non-reactive reads. For DOM manipulation, use `afterRenderEffect()`.
 - **httpResource:** Use `resource.hasValue()` as type guard.
 - **Control Flow:** Use native `@if`, `@for` (with mandatory `track`), `@switch`, `@empty`. Use `@defer` (`@placeholder`, `@loading`) for lazy rendering.

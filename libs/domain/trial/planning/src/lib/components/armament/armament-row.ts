@@ -18,8 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
+import { IntaIconComponent, MatSelectClearable, ValueTooltip } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
@@ -40,10 +39,10 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTooltipModule,
     FormField,
     TranslateModule,
     IntaIconComponent,
+    ValueTooltip,
   ],
   template: `
     <!-- Shot Column -->
@@ -62,7 +61,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
 
     <!-- Weapon Column -->
     <td class="py-2 px-1">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field uiValueTooltip appearance="outline" subscriptSizing="dynamic">
         <mat-select
           clearable
           [formField]="formPath().armament.weaponExternalId"
@@ -99,7 +98,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     <!-- Tube Column -->
     <td class="py-2 px-1">
       @if (shot().armament.weaponType.toLowerCase() !== mortarType) {
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-form-field uiValueTooltip appearance="outline" subscriptSizing="dynamic">
           <mat-select clearable [formField]="formPath().armament.tubeExternalId">
             @for (tube of tubeOptions(); track tube.id) {
               <mat-option [value]="(tube.denominationId ?? tube.id).toString()">
@@ -114,7 +113,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     <!-- Instrumented Column -->
     <td class="py-2 px-1">
       @if (shot().armament.weaponType.toLowerCase() !== mortarType) {
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="max-w-20">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-24">
           <mat-select clearable [formField]="formPath().armament.isInstrumented">
             <mat-option [value]="true">
               {{ 'TRIAL_PLANNING.ARMAMENT.TABLE.YES' | translate }}
@@ -141,11 +140,13 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     <td class="mat-column-observations py-2 px-1">
       <div class="flex gap-2">
         <button
+          uiValueTooltip
+          uiValueTooltipPosition="below"
           mat-icon-button
           type="button"
           class="!text-gray-600 scale-90"
           [attr.aria-label]="'COMMONS.OBSERVATIONS' | translate"
-          [matTooltip]="shot().armament.observations || ('COMMONS.NO_OBSERVATIONS' | translate)"
+          [uiValueTooltipValue]="shot().armament.observations || ('COMMONS.NO_OBSERVATIONS' | translate)"
         >
           <ui-inta-icon name="info" size="xxl" />
         </button>

@@ -14,6 +14,8 @@ describe('planning-munition.normalizer', () => {
       expect(resolveComponentCategory('Granada 155mm')).toBe('granada');
       expect(resolveComponentCategory('Pólvora negra')).toBe('polvo');
       expect(resolveComponentCategory('Carga de proyección')).toBe('carga');
+      expect(resolveComponentCategory('Suplemento')).toBe('suplemento');
+      expect(resolveComponentCategory('Charge supplement')).toBe('suplemento');
       expect(resolveComponentCategory('Proyectil iluminante')).toBe('granada');
       expect(resolveComponentCategory('Artillery round', 'MUNITION')).toBe('munition');
       expect(resolveComponentCategory('Desconocido', 'MUNITION_COMPONENT')).toBe('componente');
@@ -77,6 +79,33 @@ describe('planning-munition.normalizer', () => {
           category: 'granada',
           fuseWorkingModeId: 'mode-1',
           fuseMeasurement: 5,
+        }),
+      ).toBe(false);
+
+      expect(
+        isFuseComponent({
+          label: 'Carga de proyección M4A2',
+          category: 'carga',
+          fuseWorkingModeId: 'mode-1',
+          fuseMeasurement: 5,
+        }),
+      ).toBe(false);
+
+      expect(
+        isFuseComponent({
+          label: 'Pólvora simple base',
+          category: 'polvo',
+          fuseWorkingModeId: 'mode-1',
+          fuseMeasurement: null,
+        }),
+      ).toBe(false);
+
+      expect(
+        isFuseComponent({
+          label: 'Suplemento de carga',
+          category: 'suplemento',
+          fuseWorkingModeId: 'mode-1',
+          fuseMeasurement: null,
         }),
       ).toBe(false);
     });
@@ -209,6 +238,73 @@ describe('planning-munition.normalizer', () => {
       expect(normalizePlanningMunitions(null)).toEqual([]);
       expect(normalizePlanningMunitions({})).toEqual([]);
       expect(normalizePlanningMunitions({ series: [] })).toEqual([]);
+    });
+
+    it('normalizes loadingZoneValue and loadingZones for propellant charges', () => {
+      const raw = {
+        series: [
+          {
+            seriesId: 'series-01',
+            configurations: [
+              {
+                id: 'cfg-01',
+                seriesId: 'series-01',
+                components: [
+                  {
+                    id: 'comp-charge',
+                    type: { id: 'type-charge', label: 'Carga de proyección', type: 'PROPELLANT_CHARGE' },
+                    denomination: { id: 'den-charge', name: 'Carga M4' },
+                    loadingZoneValue: '3G',
+                  },
+                  {
+                    id: 'comp-charge-zones',
+                    type: { id: 'type-charge-2', label: 'Carga de proyección 2' },
+                    denomination: { id: 'den-charge-2', name: 'Carga M5' },
+                    zones: ['Z1', 'Z2'],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const configs = normalizePlanningMunitions(raw);
+      expect(configs[0].subComponents[0].loadingZoneValue).toBe('3G');
+      expect(configs[0].subComponents[0].loadingZones).toEqual(['3G']);
+      expect(configs[0].subComponents[0].category).toBe('carga');
+
+      expect(configs[0].subComponents[1].loadingZoneValue).toBeNull();
+      expect(configs[0].subComponents[1].loadingZones).toEqual(['Z1', 'Z2']);
+    });
+
+    it('normalizes quantity and suplemento category correctly', () => {
+      const raw = {
+        series: [
+          {
+            seriesId: 'series-01',
+            configurations: [
+              {
+                id: 'cfg-01',
+                seriesId: 'series-01',
+                components: [
+                  {
+                    id: 'comp-suppl',
+                    type: { id: 'type-suppl', label: 'Suplemento', type: 'MUNITION_COMPONENT' },
+                    denomination: { id: 'den-suppl', name: 'Suplemento A' },
+                    quantity: 4,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const configs = normalizePlanningMunitions(raw);
+      expect(configs[0].subComponents[0].category).toBe('suplemento');
+      expect(configs[0].subComponents[0].quantity).toBe(4);
+      expect(configs[0].subComponents[0].isFuse).toBe(false);
     });
   });
 });

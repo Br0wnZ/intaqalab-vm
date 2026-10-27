@@ -35,6 +35,9 @@ function toComponentOption(
       clientNumber: comp.clientNumber,
       fuseWorkingModeId: comp.fuseWorkingModeId,
       fuseMeasurement: comp.fuseMeasurement,
+      loadingZoneValue: comp.loadingZoneValue,
+      loadingZones: comp.loadingZones,
+      quantity: comp.quantity,
     },
   };
 }

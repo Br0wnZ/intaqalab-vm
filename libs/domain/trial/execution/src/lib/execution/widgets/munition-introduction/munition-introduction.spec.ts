@@ -9,6 +9,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialsDataService } from '@intaqalab/data-access';
+import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
@@ -128,6 +129,9 @@ const mockMunitionResponse: ShotMunitionResponse = {
 };
 
 describe('MunitionIntroduction', () => {
+  const VALID_SHOT_UUID = '3fa85f64-5717-4562-b3fc-2c963f66bfa2';
+  const VALID_SHOT_UUID_2 = '3fa85f64-5717-4562-b3fc-2c963f66bfa3';
+
   const renderWidget = (widgetId = 'test-widget', customProviders: Provider[] = []) =>
     render(MunitionIntroduction, {
       inputs: { widgetId },
@@ -355,11 +359,11 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     // Wait for async load to finish
     await vi.waitFor(() => {
-      expect(execService.fetchShotMunition).toHaveBeenCalledWith('trial-123', 'funcionamiento-1', 'disparo-2');
+      expect(execService.fetchShotMunition).toHaveBeenCalledWith('trial-123', 'funcionamiento-1', VALID_SHOT_UUID);
     });
 
     expect(store.munitionIntroduction().identificacion.denominacion).toBe('den-01');
@@ -374,12 +378,12 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
     fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'shot-initial' });
 
-    fixture.componentInstance.onDisparoSelected('shot-2');
-    fixture.componentInstance.onDisparoSelected('shot-3');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID_2);
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
-    expect(fetchSpy).toHaveBeenNthCalledWith(1, 'trial-123', 'serie-1', 'shot-2');
-    expect(fetchSpy).toHaveBeenNthCalledWith(2, 'trial-123', 'serie-1', 'shot-3');
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, 'trial-123', 'serie-1', VALID_SHOT_UUID);
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, 'trial-123', 'serie-1', VALID_SHOT_UUID_2);
   });
 
   it('fills missing batch from available warehouse stock matching denomination', async () => {
@@ -400,7 +404,7 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     await vi.waitFor(() => {
       expect(fixture.componentInstance.identTab()?.identFormModel().denominacion).toBe('den-01');
@@ -453,7 +457,7 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     await vi.waitFor(() => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
@@ -496,7 +500,7 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     await vi.waitFor(() => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
@@ -537,7 +541,7 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     await vi.waitFor(() => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
@@ -569,7 +573,7 @@ describe('MunitionIntroduction', () => {
     store.setFireTrialId('trial-123');
 
     fixture.componentInstance.onSerieSelected('funcionamiento-1');
-    fixture.componentInstance.onDisparoSelected('disparo-2');
+    fixture.componentInstance.onDisparoSelected(VALID_SHOT_UUID);
 
     await vi.waitFor(() => {
       expect(execService.fetchShotMunition).toHaveBeenCalled();
@@ -900,5 +904,81 @@ describe('MunitionIntroduction', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el).not.toHaveTextContent('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.MODO_FUNCIONAMIENTO_LABEL');
     expect(el).not.toHaveTextContent('TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.GRADUACION_ESPOLETA_LABEL');
+  });
+
+  it('recovers modo funcionamiento and graduacion de espoleta from planning conditions and disables them for espoleta', async () => {
+    const mockConditionsService = {
+      conditionsResource: {
+        value: signal({
+          series: [
+            {
+              seriesId: 'calentamiento',
+              shots: [
+                {
+                  shotId: 'disparo-1',
+                  fuseWorkingModeId: 'tiempo',
+                  fuseGraduation: 7.25,
+                },
+              ],
+            },
+          ],
+        }),
+      },
+      load: vi.fn(),
+      reload: vi.fn(),
+    };
+
+    const { fixture } = await renderWidget('test-widget', [
+      { provide: PlanningConditionsService, useValue: mockConditionsService },
+    ]);
+
+    fixture.componentInstance.onSerieSelected('calentamiento');
+    fixture.componentInstance.onDisparoSelected('disparo-1');
+    fixture.componentInstance.onComponentChange('espoleta-01');
+    fixture.detectChanges();
+
+    const identTab = fixture.componentInstance.identTab();
+    expect(identTab?.isEspoleta()).toBe(true);
+    expect(identTab?.plannedModoFuncionamiento()).toBe('tiempo');
+    expect(identTab?.plannedGraduacionEspoleta()).toBe(7.25);
+    expect(identTab?.isModoFuncionamientoDisabled()).toBe(true);
+    expect(identTab?.isGraduacionEspoletaDisabled()).toBe(true);
+    expect(identTab?.identFormModel().modoFuncionamiento).toBe('tiempo');
+    expect(identTab?.graduacionEspoletaField()).toEqual({ value: '7.25', unit: 's' });
+  });
+
+  it('does not fetch shot munition if shotId is not a valid uuid', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
+
+    store.setFireTrialId('trial-123');
+    fixture.componentInstance.onSerieSelected('calentamiento');
+    fixture.componentInstance.onDisparoSelected('disparo-1');
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('waits for real shot UUIDs before loading munition and does not call with mocked shot ID', async () => {
+    const { fixture } = await renderWidget();
+    const execService = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
+
+    store.setFireTrialId('39a1ad65-f27c-4629-af94-5dbd711197ed');
+    fixture.detectChanges();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(fixture.componentInstance['serieOptions']()).toEqual([]);
+    expect(fixture.componentInstance['disparoOptions']()).toEqual([]);
+
+    const seriesId = 'e73f5270-b09d-4b85-8ce5-1570bd3d2db1';
+    const shotId = 'fbcb0883-a4d8-4b36-a104-2a3d42d3c061';
+    store.setOptimisticActiveShot(seriesId, shotId);
+
+    await vi.waitFor(() =>
+      expect(fetchSpy).toHaveBeenCalledExactlyOnceWith('39a1ad65-f27c-4629-af94-5dbd711197ed', seriesId, shotId),
+    );
   });
 });

@@ -1585,6 +1585,8 @@
         "BALANZA_PLACEHOLDER": "Select scale",
         "CAMARA_LABEL": "Camera",
         "CAMARA_PLACEHOLDER": "Select camera",
+        "CANTIDAD_LABEL": "Quantity",
+        "CANTIDAD_PLACEHOLDER": "0",
         "COMPONENTE_LABEL": "Component",
         "COMPONENTE_PLACEHOLDER": "Select component",
         "CURRENT_SHOT_BTN": "Current shot",
@@ -1633,7 +1635,9 @@
         "TEMPERATURA_LABEL": "Temperature",
         "TEMPERATURA_PROGRAMADA_LABEL": "Temp. scheduled",
         "TIEMPO_CAMARA_LABEL": "Camera time",
-        "TITLE": "Entering ammunition data"
+        "TITLE": "Entering ammunition data",
+        "ZONA_MODULOS_LABEL": "Zone/Modules",
+        "ZONA_MODULOS_PLACEHOLDER": "Select zone/module"
       },
       "OVERPRESSURE_CHART": {
         "CHART_ARIA": "Overpressure Chart",

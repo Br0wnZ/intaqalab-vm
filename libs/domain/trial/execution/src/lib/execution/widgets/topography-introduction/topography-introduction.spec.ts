@@ -117,8 +117,9 @@ describe('TopographyIntroductionWidget', () => {
   it('saveForm persists data to the store', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
+    fixture.componentInstance['tiempoVueloField'].set({ value: 12.5, unit: 's' });
     await fixture.componentInstance.saveForm();
-    expect(store.topographyIntroduction()).toBeDefined();
+    expect(store.topographyIntroduction().tiempoVuelo).toBe(12.5);
   });
 
   it('resetForm restores values from the store', async () => {

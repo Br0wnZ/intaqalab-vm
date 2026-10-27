@@ -1585,6 +1585,8 @@
         "BALANZA_PLACEHOLDER": "Selecciona balanza",
         "CAMARA_LABEL": "Cámara",
         "CAMARA_PLACEHOLDER": "Selecciona cámara",
+        "CANTIDAD_LABEL": "Cantidad",
+        "CANTIDAD_PLACEHOLDER": "0",
         "COMPONENTE_LABEL": "Componente",
         "COMPONENTE_PLACEHOLDER": "Selecciona componente",
         "CURRENT_SHOT_BTN": "Disparo actual",
@@ -1633,7 +1635,9 @@
         "TEMPERATURA_LABEL": "Temperatura",
         "TEMPERATURA_PROGRAMADA_LABEL": "Temp. programada",
         "TIEMPO_CAMARA_LABEL": "Tiempo en cámara",
-        "TITLE": "Introducción datos municiones"
+        "TITLE": "Introducción datos municiones",
+        "ZONA_MODULOS_LABEL": "Zona/Módulos",
+        "ZONA_MODULOS_PLACEHOLDER": "Selecciona zona/módulo"
       },
       "OVERPRESSURE_CHART": {
         "CHART_ARIA": "Gráfica Sobrepresión",

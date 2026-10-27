@@ -3,10 +3,9 @@ import { FormField, form, max, min, required, validate } from '@angular/forms/si
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
 import { MatButtonModule, MatFormFieldModule, MatIconModule } from '@intaqalab/theme';
-import { InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
+import { InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable, ValueTooltip } from '@intaqalab/ui';
 import {
   IntaDatePipe,
   LocaleDecimalInputDirective,
@@ -54,7 +53,7 @@ interface DialogData {
     MatSelectModule,
     MatSelectClearable,
     MatIconModule,
-    MatTooltipModule,
+    ValueTooltip,
     FormField,
     IntaIconComponent,
     IntaDatePipe,
@@ -99,7 +98,7 @@ interface DialogData {
           <label for="bulk-date" class="text-xs font-bold text-slate-700 ml-1">
             {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_LABEL' | translate }}
           </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+          <mat-form-field uiValueTooltip appearance="outline" [subscriptSizing]="'dynamic'">
             <mat-select
               id="bulk-date"
               clearable
@@ -109,12 +108,7 @@ interface DialogData {
               [formField]="bulkForm.date"
             >
               @for (schedule of shootingConditionsService.getTrialSchedulesResource.value(); track schedule.date) {
-                <mat-option
-                  class="truncate"
-                  [value]="schedule.date"
-                  [matTooltip]="schedule.date | intaDate"
-                  [matTooltipDisabled]="(schedule.date | intaDate)!.length <= 20"
-                >
+                <mat-option class="truncate" [value]="schedule.date">
                   <span class="truncate">{{ schedule.date | intaDate }}</span>
                 </mat-option>
               }

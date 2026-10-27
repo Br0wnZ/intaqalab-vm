@@ -17,6 +17,12 @@ export interface ShotSelection {
   disparo: string | null;
 }
 
+export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isUuid(value: string | null | undefined): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
 export function mapRadarSeriesToOptions(
   responseSeries: Array<{ seriesId: string }>,
   planningSeries: PlanningSeriesItem[],

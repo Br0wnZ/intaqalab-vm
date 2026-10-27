@@ -35,7 +35,8 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 ### 2. Forms (Stable Signal Forms)
 
-- **State Configuration:** Always use `{ when: () => condition }` for `disabled`, `readonly`, and `hidden`.
+- **No Template `[disabled]` / `[readonly]` / `[value]` with `[formField]`:** 🚫 **STRICTLY PROHIBITED:** Binding `[disabled]`, `[readonly]`, or `[value]` on any HTML element or component that uses the `[formField]` directive. Angular Signal Forms throws: `"Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive"`. All disabled/readonly logic MUST be defined in the form schema callback: `form(model, (f) => { disabled(f.field, () => condition); })`.
+- **State Configuration:** Always use `{ when: () => condition }` or schema functions `disabled()`, `readonly()`, `hidden()` for dynamic state.
 - **Floating Labels & Placeholders:** All inputs (`matInput`) and selectors (`mat-select`) MUST have floating labels using `<mat-label>{{ '...' | translate }}</mat-label>` inside `<mat-form-field>` and their corresponding i18n placeholder `[placeholder]="'...' | translate"`. Never use external `<label>` or `<span>` tags.
 - **Single Source of Truth:** The model (`signal`) is the source of truth. Resetting and reading are performed on the model (`this.model.set(initial)`), never on `form().reset()`.
 

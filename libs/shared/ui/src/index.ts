@@ -13,6 +13,7 @@ export * from './lib/ui-dialogs/components/dialog-confirm/dialog-confirm.compone
 export * from './lib/ui-dialogs/components/dialog-input/dialog-input.component';
 export * from './lib/ui-dialogs/services/ui-dialog-service';
 export * from './lib/ui-dialogs/ui-dialog.model';
+export * from './lib/value-tooltip/value-tooltip';
 
 export * from './lib/badge/badge.component';
 export * from './lib/badge/trial-status-tone';
@@ -22,11 +23,11 @@ export * from './lib/boolean-status-badge/boolean-status-badge.component';
 
 export * from './lib/mat-select-clearable/mat-select-clearable';
 
+export * from './lib/error-state/error-state';
 export * from './lib/skeleton/skeleton';
 export * from './lib/skeleton/skeleton-card';
-export * from './lib/skeleton/skeleton-table';
 export * from './lib/skeleton/skeleton-form';
-export * from './lib/error-state/error-state';
+export * from './lib/skeleton/skeleton-table';
 
 export * from './lib/save-button/save-button';
 

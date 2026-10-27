@@ -1585,6 +1585,8 @@
         "BALANZA_PLACEHOLDER": "Waage auswählen",
         "CAMARA_LABEL": "Kammer",
         "CAMARA_PLACEHOLDER": "Kammer auswählen",
+        "CANTIDAD_LABEL": "Menge",
+        "CANTIDAD_PLACEHOLDER": "0",
         "COMPONENTE_LABEL": "Komponente",
         "COMPONENTE_PLACEHOLDER": "Komponente auswählen",
         "CURRENT_SHOT_BTN": "Aktueller Schuss",
@@ -1633,7 +1635,9 @@
         "TEMPERATURA_LABEL": "Temperatur",
         "TEMPERATURA_PROGRAMADA_LABEL": "Soll-Temp.",
         "TIEMPO_CAMARA_LABEL": "Kammerzeit",
-        "TITLE": "Munitionsdaten"
+        "TITLE": "Munitionsdaten",
+        "ZONA_MODULOS_LABEL": "Zone/Module",
+        "ZONA_MODULOS_PLACEHOLDER": "Zone/Modul auswählen"
       },
       "OVERPRESSURE_CHART": {
         "CHART_ARIA": "Überdruck-Diagramm",

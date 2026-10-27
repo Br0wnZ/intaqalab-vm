@@ -12,8 +12,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
+import { IntaIconComponent, UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { MunitionComponentStoreType } from '../../../+state/munition-component.store';
@@ -38,7 +37,7 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
     MatProgressSpinnerModule,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule,
+    ValueTooltip,
     MatSelectModule,
     MatSlideToggleModule,
     IntaIconComponent,
@@ -58,7 +57,7 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
       <div class="inta-bg-white overflow-hidden">
         <div class="overflow-x-auto">
           <table mat-table matSort class="w-full" [dataSource]="store.items()" (matSortChange)="onSort($event)">
-            <!-- Number Column -->
+            <!-- Component Type Column -->
             <ng-container matColumnDef="name">
               <th
                 *matHeaderCellDef
@@ -73,6 +72,7 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
               </td>
             </ng-container>
 
+            <!-- Category Column -->
             <ng-container matColumnDef="category">
               <th
                 *matHeaderCellDef
@@ -94,10 +94,10 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
               </th>
               <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-600 max-w-xs !bg-white">
                 <div
-                  matTooltipPosition="above"
-                  matTooltipClass="tw-tooltip"
+                  uiValueTooltip
+                  uiValueTooltipPosition="above"
                   class="truncate"
-                  [matTooltip]="item.observations"
+                  [uiValueTooltipValue]="item.observations"
                 >
                   <span class="text-sm text-gray-900">{{ item.observations }}</span>
                 </div>

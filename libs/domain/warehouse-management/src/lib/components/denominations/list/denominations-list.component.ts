@@ -12,7 +12,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -31,9 +30,9 @@ const DEFAULT_COLUMNS = [
   'munitionTypeName',
   'neq',
   'unNumber',
+  'riskGroup',
   'compatibility',
   'weight',
-  'riskGroup',
   'actions',
 ] as const;
 @Component({
@@ -49,7 +48,6 @@ const DEFAULT_COLUMNS = [
     MatProgressSpinnerModule,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule,
     MatSelectModule,
     MatSlideToggleModule,
     DenominationsFilter,
@@ -145,23 +143,6 @@ const DEFAULT_COLUMNS = [
               </th>
               <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
                 <span>{{ item.weight }}</span>
-              </td>
-            </ng-container>
-
-            <!-- Observations Column (Scheduler) -->
-            <ng-container matColumnDef="observations">
-              <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
-                {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.OBSERVATIONS' | translate }}
-              </th>
-              <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-600 max-w-xs !bg-white">
-                <div
-                  matTooltipPosition="above"
-                  matTooltipClass="tw-tooltip"
-                  class="truncate"
-                  [matTooltip]="item.observations"
-                >
-                  {{ item.observations }}
-                </div>
               </td>
             </ng-container>
 
