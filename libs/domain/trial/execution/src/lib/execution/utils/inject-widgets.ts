@@ -9,6 +9,7 @@ import { ExecutionPrepJltWidgetComponent } from '../widgets/execution-prep-jlt-w
 import { ExecutionPrepTechWidgetComponent } from '../widgets/execution-prep-tech-widget/execution-prep-tech-widget';
 import { GrubbsCriterionWidget } from '../widgets/grubbs-criterion/grubbs-criterion';
 import { InformacionTaradoWidget } from '../widgets/informacion-tarado/informacion-tarado';
+import { IpgPressureMeasurements } from '../widgets/ipg-pressure-measurements/ipg-pressure-measurements';
 import { JltMao } from '../widgets/jlt-mao/jlt-mao';
 import { JltShotData } from '../widgets/jlt-shot-data/jlt-shot-data';
 import { ManometerIntroduction } from '../widgets/manometer-introduction/manometer-introduction';
@@ -246,6 +247,18 @@ export const injectWidgets = (): Widget[] => [
     description: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.DESCRIPTION',
     category: 'Balística',
     badge: 'B',
+    badgeColor: 'blue',
+    defaultWidth: 3,
+    defaultHeight: 1,
+  },
+  {
+    id: 'medidas-presion-ipg',
+    widgetId: WidgetId.MEDIDAS_PRESION_IPG,
+    widgetComponent: IpgPressureMeasurements,
+    title: 'TRIAL_EXECUTION.WIDGETS.MEDIDAS_PRESION_IPG.TITLE',
+    description: 'TRIAL_EXECUTION.WIDGETS.MEDIDAS_PRESION_IPG.DESCRIPTION',
+    category: 'Municiones',
+    badge: 'M',
     badgeColor: 'blue',
     defaultWidth: 3,
     defaultHeight: 1,

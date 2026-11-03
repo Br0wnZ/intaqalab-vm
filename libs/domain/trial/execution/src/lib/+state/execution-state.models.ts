@@ -874,6 +874,21 @@ export interface ManometerIntroductionState {
   micrometroPalpadorOptions: { value: string; label: string }[];
 }
 
+/** Estado del widget Medidas presión IPG (Widget 32) */
+export interface MedidasPresionIpgState {
+  serie: string | null;
+  disparo: string | null;
+  estadoDisparo: 'EN_CURSO' | 'PENDIENTE' | 'EJECUTADA' | null;
+  sensorIpg: string | null;
+  micromodulo: string | null;
+  pmax: number | null;
+  observaciones: string | null;
+  serieOptions: { value: string; label: string }[];
+  disparoOptions: { value: string; label: string }[];
+  sensorIpgOptions: { value: string; label: string }[];
+  micromoduloOptions: { value: string; label: string }[];
+}
+
 /** Estado del widget Radar Trayectografía METCMQ */
 export interface RadarMetcmqState {
   /** Serie de disparo seleccionada */

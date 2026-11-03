@@ -183,6 +183,7 @@ export function withReadiness() {
 
       loadJltPreparation(fireTrialId: string, seriesId: string): void {
         executionService.getJltPreparation(fireTrialId, seriesId);
+        executionService.jltPreparationResource?.reload?.();
       },
 
       async saveJltReadiness(fireTrialId: string, seriesId: string): Promise<void> {

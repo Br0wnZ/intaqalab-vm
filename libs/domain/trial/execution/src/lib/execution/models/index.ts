@@ -42,3 +42,6 @@ export * from './propelling-charge-parameters.models';
 // Shot piezo pressures models (Widget 5)
 export * from './shot-piezo-pressures.models';
 export * from './shot-radar-trayectography-orientation.models';
+
+// Shot IPG pressures models (Widget 32)
+export * from './shot-ipg-pressures.models';

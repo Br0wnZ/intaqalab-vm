@@ -229,6 +229,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.trayectografiaIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

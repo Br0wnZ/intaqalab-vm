@@ -1936,12 +1936,13 @@ describe('ExecutionService', () => {
     const shotId = 'shot-video';
     const mockResponse: ShotVideoDataResponse = {
       highSpeedVideoData: {
-        cameraId: 'camera-1',
-        recorderId: 'recorder-1',
+        cameraId: 21051,
+        recorderId: 21073,
         channel: 1,
-        measureId: 'measure-1',
+        measurements: [{ measureId: 'measure-1', observedResult: 'Observed result' }],
       },
       conventionalVideoData: null,
+      observations: 'Shared observations',
     };
     const updateBody: ShotVideoDataRequest = mockResponse;
 

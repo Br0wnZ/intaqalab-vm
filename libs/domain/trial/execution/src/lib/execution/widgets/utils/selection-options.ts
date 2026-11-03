@@ -237,7 +237,12 @@ export function mapSelectedShotStatus(
   activeSerieId: string | null,
   activeShotId: string | null,
   fallback: SelectedShotState,
+  isExecutionStarted = true,
 ): SelectedShotState {
+  if (!isExecutionStarted) {
+    return 'PENDIENTE';
+  }
+
   if (selectedSerieId && selectedShotId && selectedSerieId === activeSerieId && selectedShotId === activeShotId) {
     return 'EN_CURSO';
   }

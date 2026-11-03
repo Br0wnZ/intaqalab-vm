@@ -302,6 +302,15 @@ describe('selection-options', () => {
       );
       expect(mapSelectedShotStatus(progress, 'serie-2', 'unknown-shot', null, null, 'PENDIENTE')).toBe('PENDIENTE');
     });
+
+    it('returns PENDIENTE when execution is not started', () => {
+      expect(
+        mapSelectedShotStatus(progress, 'serie-1', 'shot-active', 'serie-1', 'shot-active', 'EN_CURSO', false),
+      ).toBe('PENDIENTE');
+      expect(mapSelectedShotStatus(progress, 'serie-1', 'shot-fired', null, null, 'EJECUTADA', false)).toBe(
+        'PENDIENTE',
+      );
+    });
   });
 
   describe('selected shot status display', () => {

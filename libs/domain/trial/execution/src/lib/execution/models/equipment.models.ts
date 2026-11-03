@@ -149,8 +149,10 @@ export interface EquipmentSelectionItem {
   equipmentItemId: number;
   /** Categoría del equipo de medición (clave de filtrado en Calibry). */
   categoryId: EquipmentTypeEnum;
-  /** Magnitud de medida del equipo (ATTACK o RECOIL o ID de medida planificada). */
+  /** Magnitud de medida del equipo (ATTACK o RECOIL). */
   magnitude?: EquipmentMagnitudeEnum | EquipmentMeasureMagnitude | string | null;
+  /** Identificador de la medida planificada a la que se asigna el equipo. */
+  measureId?: string;
   /** Canal del equipo de medida (1–32). */
   channel?: number | null;
   /** Series a las que está asignado este equipo. */

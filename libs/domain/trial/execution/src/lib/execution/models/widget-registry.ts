@@ -138,6 +138,13 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetConfig> = {
     defaultWidth: 2,
     hasForm: true,
   },
+  [WidgetId.MEDIDAS_PRESION_IPG]: {
+    id: WidgetId.MEDIDAS_PRESION_IPG,
+    titleKey: 'TRIAL_EXECUTION.WIDGETS.MEDIDAS_PRESION_IPG.TITLE',
+    descriptionKey: 'TRIAL_EXECUTION.WIDGETS.MEDIDAS_PRESION_IPG.DESCRIPTION',
+    defaultWidth: 3,
+    hasForm: true,
+  },
 
   // Tarado y uniformidad
   [WidgetId.TARADO_VELOCIDAD_CHART]: {

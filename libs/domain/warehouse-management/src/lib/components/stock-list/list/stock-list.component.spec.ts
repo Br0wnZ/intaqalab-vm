@@ -6,9 +6,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AuthService, MENU_WAREHOUSE_ROLES, Role } from '@intaqalab/core';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -105,6 +107,7 @@ function makeRouter() {
 interface SetupOptions {
   items?: MunitionStockListResponse[];
   dialogResult?: any;
+  userRoles?: Role[];
 }
 
 async function setup(opts: SetupOptions = {}) {
@@ -115,6 +118,7 @@ async function setup(opts: SetupOptions = {}) {
   const dialogResult = opts.dialogResult === undefined ? true : opts.dialogResult;
   const mockDialog = makeDialog(dialogResult);
   const mockRouter = makeRouter();
+  const userRoles = signal(opts.userRoles ?? []);
 
   const view = await render(StockListComponent, {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
@@ -122,6 +126,7 @@ async function setup(opts: SetupOptions = {}) {
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
+      { provide: AuthService, useValue: { userRoles } },
       { provide: StockListStore, useValue: stockListStore },
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
       { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
@@ -136,7 +141,7 @@ async function setup(opts: SetupOptions = {}) {
   const component = fixture.componentInstance;
   const container = fixture.nativeElement as HTMLElement;
 
-  return { fixture, component, container, stockListStore, mockDialog, mockRouter, munitionsDumpsStore };
+  return { fixture, component, container, stockListStore, mockDialog, mockRouter, munitionsDumpsStore, userRoles };
 }
 
 // Tests
@@ -166,10 +171,38 @@ describe('StockListComponent', () => {
     });
 
     it('should have the transfer button disabled when no rows are selected', async () => {
-      const { container } = await setup();
+      const { container } = await setup({ userRoles: [...MENU_WAREHOUSE_ROLES] });
       const transferBtn = container.querySelector('[data-testid="transfer-btn"]') as HTMLButtonElement;
       expect(transferBtn.disabled).toBe(true);
     });
+
+    it.each(MENU_WAREHOUSE_ROLES)('should enable transfer for warehouse role %s with selected rows', async (role) => {
+      const item = makeStockItem();
+      await setup({ items: [item], userRoles: [role] });
+      await userEvent.click(screen.getByRole('checkbox'));
+
+      expect(screen.getByRole('button', { name: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER' })).toBeEnabled();
+    });
+
+    it.each([{ userRoles: [] }, { userRoles: [Role.INTAQALAB_TRIAL_ENGINEER] }])(
+      'should disable transfer without warehouse roles $userRoles even with selected rows',
+      async ({ userRoles }) => {
+        const item = makeStockItem();
+        const { fixture, userRoles: currentUserRoles } = await setup({
+          items: [item],
+          userRoles: [Role.INTAQALAB_ADMIN],
+        });
+        await userEvent.click(screen.getByRole('checkbox'));
+        expect(screen.getByRole('checkbox')).toBeChecked();
+
+        currentUserRoles.set(userRoles);
+        fixture.detectChanges();
+
+        expect(screen.getByRole('checkbox')).toBeChecked();
+        expect(screen.getByRole('checkbox')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER' })).toBeDisabled();
+      },
+    );
 
     it('should call MunitionsDumpsStore.search() on init', async () => {
       const { munitionsDumpsStore } = await setup();

@@ -20,6 +20,7 @@ describe('injectShotFormLock', () => {
     activeSerieId?: string | null;
     activeShotId?: string | null;
     isTrialReadOnly?: boolean;
+    isExecutionStarted?: boolean;
     progress?: {
       series: Array<{
         seriesId: string;
@@ -30,6 +31,7 @@ describe('injectShotFormLock', () => {
     const activeSerieId = signal<string | null>(options?.activeSerieId ?? 's-1');
     const activeShotId = signal<string | null>(options?.activeShotId ?? 'sh-1');
     const isTrialReadOnly = signal<boolean>(options?.isTrialReadOnly ?? false);
+    const isExecutionStarted = signal<boolean>(options?.isExecutionStarted ?? true);
     const executionProgress = signal(
       options?.progress ?? {
         series: [
@@ -49,6 +51,7 @@ describe('injectShotFormLock', () => {
       activeSerieId: activeSerieId.asReadonly(),
       activeShotId: activeShotId.asReadonly(),
       isTrialReadOnly: isTrialReadOnly.asReadonly(),
+      isExecutionStarted: isExecutionStarted.asReadonly(),
       executionProgress: executionProgress.asReadonly(),
     };
 
@@ -151,5 +154,18 @@ describe('injectShotFormLock', () => {
 
     expect(host.lock.readOnly()).toBe(true);
     expect(host.lock.canEnableHistoricalEdit()).toBe(true);
+  });
+
+  it('marks active shot as PENDIENTE when execution is not started', () => {
+    const { fixture, host } = setup({ isExecutionStarted: false });
+
+    host.selection.set({ serie: 's-1', disparo: 'sh-1' });
+    fixture.detectChanges();
+
+    expect(host.lock.isCurrentShot()).toBe(false);
+    expect(host.lock.shotStatus()).toBe('PENDIENTE');
+    expect(host.lock.statusLabel()).toBe('Pendiente');
+    expect(host.lock.statusClass()).toBe('bg-slate-100 text-slate-700');
+    expect(host.lock.readOnly()).toBe(true);
   });
 });

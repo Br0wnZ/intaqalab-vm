@@ -12,21 +12,21 @@ import {
 
 const response: ShotVideoDataResponse = {
   highSpeedVideoData: {
-    cameraId: 'camera-av',
-    recorderId: 'recorder-av',
+    cameraId: 21051,
+    recorderId: 21073,
     channel: 1,
-    measureId: 'measure-av',
-    observedResult: 'AV result',
-    observations: 'AV observations',
+    measurements: [
+      { measureId: 'measure-av', observedResult: 'AV result' },
+      { measureId: 'measure-av-other', observedResult: 'Other AV result' },
+    ],
   },
   conventionalVideoData: {
-    cameraId: 'camera-c',
-    recorderId: 'recorder-c',
+    cameraId: 21052,
+    recorderId: 21073,
     channel: 2,
-    measureId: 'measure-c',
-    observedResult: 'C result',
-    observations: 'C observations',
+    measurements: [{ measureId: 'measure-c', observedResult: 'C result' }],
   },
+  observations: 'Shared observations',
 };
 
 describe('video-data-introduction.mapper', () => {
@@ -43,13 +43,13 @@ describe('video-data-introduction.mapper', () => {
 
   it('maps API data to UI fields and zero-pads channel', () => {
     expect(mapVideoResponseToForm(response, 'C')).toEqual({
-      equipment: 'camera-c|recorder-c|02',
-      camera: 'camera-c',
-      grabador: 'recorder-c',
+      equipment: '21052|21073|02',
+      camera: '21052',
+      grabador: '21073',
       canal: '02',
       magnitud: 'measure-c',
       resultadoObservado: 'C result',
-      observaciones: 'C observations',
+      observaciones: 'Shared observations',
     });
   });
 
@@ -58,25 +58,27 @@ describe('video-data-introduction.mapper', () => {
       mapVideoFormToRequest(
         {
           tipoVideo: 'AV',
-          camera: 'camera-av-updated',
-          grabador: 'recorder-av',
+          camera: '21054',
+          grabador: '21073',
           canal: '03',
           magnitud: 'measure-av',
           resultadoObservado: '',
-          observaciones: '',
+          observaciones: 'Updated shared observations',
         },
         response,
       ),
     ).toEqual({
       highSpeedVideoData: {
-        cameraId: 'camera-av-updated',
-        recorderId: 'recorder-av',
+        cameraId: 21054,
+        recorderId: 21073,
         channel: 3,
-        measureId: 'measure-av',
-        observedResult: null,
-        observations: null,
+        measurements: [
+          { measureId: 'measure-av', observedResult: '' },
+          { measureId: 'measure-av-other', observedResult: 'Other AV result' },
+        ],
       },
       conventionalVideoData: response.conventionalVideoData,
+      observations: 'Updated shared observations',
     });
   });
 
@@ -85,7 +87,7 @@ describe('video-data-introduction.mapper', () => {
       mapVideoFormToRequest(
         {
           tipoVideo: 'AV',
-          equipment: 'camera-av-updated|recorder-av|03',
+          equipment: '21054|21073|03',
           camera: null,
           grabador: null,
           canal: null,
@@ -97,14 +99,16 @@ describe('video-data-introduction.mapper', () => {
       ),
     ).toEqual({
       highSpeedVideoData: {
-        cameraId: 'camera-av-updated',
-        recorderId: 'recorder-av',
+        cameraId: 21054,
+        recorderId: 21073,
         channel: 3,
-        measureId: 'measure-av',
-        observedResult: null,
-        observations: null,
+        measurements: [
+          { measureId: 'measure-av', observedResult: '' },
+          { measureId: 'measure-av-other', observedResult: 'Other AV result' },
+        ],
       },
       conventionalVideoData: response.conventionalVideoData,
+      observations: null,
     });
   });
 
@@ -114,7 +118,24 @@ describe('video-data-introduction.mapper', () => {
         {
           tipoVideo: 'AV',
           camera: null,
-          grabador: 'recorder-av',
+          grabador: '21073',
+          canal: '01',
+          magnitud: 'measure-av',
+          resultadoObservado: '',
+          observaciones: '',
+        },
+        response,
+      ),
+    ).toBeNull();
+  });
+
+  it('returns null when equipment IDs are not integers', () => {
+    expect(
+      mapVideoFormToRequest(
+        {
+          tipoVideo: 'AV',
+          camera: 'camera-av',
+          grabador: '21073',
           canal: '01',
           magnitud: 'measure-av',
           resultadoObservado: '',

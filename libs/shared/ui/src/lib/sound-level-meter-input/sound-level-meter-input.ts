@@ -62,7 +62,7 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
         </span>
       }
       <div
-        class="flex items-center w-full bg-white border border-slate-200 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100/50 transition-all px-4 py-2 gap-3 h-12 rounded-xl"
+        class="flex items-center w-full bg-white border border-slate-200 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100/50 transition-all px-4 py-1.5 gap-3 h-12 rounded-xl"
         [class.h-9]="size() === 'small'"
         [class.px-3]="size() === 'small'"
         [class.py-1]="size() === 'small'"
@@ -72,11 +72,11 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
         <!-- Campo X -->
         <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
-            [class.text-[9px]]="size() !== 'small'"
-            [class.mb-0.5]="size() !== 'small'"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate leading-none block"
+            [class.text-[10px]]="size() !== 'small'"
+            [class.mb-1]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
-            [class.mb-0]="size() === 'small'"
+            [class.mb-0.5]="size() === 'small'"
             [for]="xInputId()"
           >
             {{ xLabel() }}
@@ -86,7 +86,7 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
               type="text"
               inputmode="decimal"
               libLocalDecimal
-              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate leading-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="xInputId()"
@@ -112,11 +112,11 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
         <!-- Campo Y -->
         <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
-            [class.text-[9px]]="size() !== 'small'"
-            [class.mb-0.5]="size() !== 'small'"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate leading-none block"
+            [class.text-[10px]]="size() !== 'small'"
+            [class.mb-1]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
-            [class.mb-0]="size() === 'small'"
+            [class.mb-0.5]="size() === 'small'"
             [for]="yInputId()"
           >
             {{ yLabel() }}
@@ -126,7 +126,7 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
               type="text"
               inputmode="decimal"
               libLocalDecimal
-              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate leading-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="yInputId()"
@@ -152,11 +152,11 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
         <!-- Campo Z -->
         <div class="flex-1 min-w-0 flex flex-col justify-center h-full">
           <label
-            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate"
-            [class.text-[9px]]="size() !== 'small'"
-            [class.mb-0.5]="size() !== 'small'"
+            class="font-bold text-slate-400 tracking-wider uppercase select-none truncate leading-none block"
+            [class.text-[10px]]="size() !== 'small'"
+            [class.mb-1]="size() !== 'small'"
             [class.text-[8px]]="size() === 'small'"
-            [class.mb-0]="size() === 'small'"
+            [class.mb-0.5]="size() === 'small'"
             [for]="zInputId()"
           >
             {{ zLabel() }}
@@ -166,7 +166,7 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
               type="text"
               inputmode="decimal"
               libLocalDecimal
-              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate"
+              class="w-full min-w-0 font-semibold text-slate-800 bg-transparent border-none outline-none focus:ring-0 p-0 m-0 truncate leading-none"
               [class.text-sm]="size() !== 'small'"
               [class.text-xs]="size() === 'small'"
               [id]="zInputId()"

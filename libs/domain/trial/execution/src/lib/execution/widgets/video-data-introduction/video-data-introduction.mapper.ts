@@ -68,8 +68,9 @@ export function mapVideoResponseToForm(
   tipoVideo: VideoType | null,
 ): Omit<VideoDataFormValue, 'tipoVideo'> {
   const data = tipoVideo === 'AV' ? response?.highSpeedVideoData : response?.conventionalVideoData;
-  const camera = data?.cameraId ?? null;
-  const grabador = data?.recorderId ?? null;
+  const firstMeasurement = data?.measurements[0];
+  const camera = data ? String(data.cameraId) : null;
+  const grabador = data ? String(data.recorderId) : null;
   const canal = data ? String(data.channel).padStart(2, '0') : null;
   const equipment = buildVideoEquipmentCombinedValue(camera, grabador, canal);
 
@@ -78,10 +79,31 @@ export function mapVideoResponseToForm(
     camera,
     grabador,
     canal,
-    magnitud: data?.measureId ?? null,
-    resultadoObservado: data?.observedResult ?? '',
-    observaciones: data?.observations ?? '',
+    magnitud: firstMeasurement?.measureId ?? null,
+    resultadoObservado: firstMeasurement?.observedResult ?? '',
+    observaciones: response?.observations ?? '',
   };
+}
+
+function parseEquipmentId(id: string): number | null {
+  if (!/^\d+$/.test(id)) return null;
+  const parsed = Number(id);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function updateMeasurements(
+  measurements: ShotVideoData['measurements'],
+  measureId: string,
+  observedResult: string,
+): ShotVideoData['measurements'] {
+  const selectedMeasurement = { measureId, observedResult };
+  const hasSelectedMeasurement = measurements.some((measurement) => measurement.measureId === measureId);
+
+  if (!hasSelectedMeasurement) {
+    return [...measurements, selectedMeasurement];
+  }
+
+  return measurements.map((measurement) => (measurement.measureId === measureId ? selectedMeasurement : measurement));
 }
 
 export function mapVideoFormToRequest(
@@ -100,17 +122,22 @@ export function mapVideoFormToRequest(
 
   if (!tipoVideo || !camera || !grabador || !canal || !magnitud) return null;
 
+  const cameraId = parseEquipmentId(camera);
+  const recorderId = parseEquipmentId(grabador);
+  if (cameraId === null || recorderId === null) return null;
+
+  const current = currentResponse ?? {};
+  const currentVideoData = tipoVideo === 'AV' ? current.highSpeedVideoData : current.conventionalVideoData;
   const videoData: ShotVideoData = {
-    cameraId: camera,
-    recorderId: grabador,
+    cameraId,
+    recorderId,
     channel: Number(canal),
-    measureId: magnitud,
-    observedResult: resultadoObservado || null,
+    measurements: updateMeasurements(currentVideoData?.measurements ?? [], magnitud, resultadoObservado),
+  };
+
+  return {
+    highSpeedVideoData: tipoVideo === 'AV' ? videoData : (current.highSpeedVideoData ?? null),
+    conventionalVideoData: tipoVideo === 'C' ? videoData : (current.conventionalVideoData ?? null),
     observations: observaciones || null,
   };
-  const current = currentResponse ?? {};
-
-  return tipoVideo === 'AV'
-    ? { ...current, highSpeedVideoData: videoData }
-    : { ...current, conventionalVideoData: videoData };
 }

@@ -38,6 +38,7 @@ import {
 } from '../utils/selection-options';
 import { ShotEditButton } from '../utils/shot-edit-button';
 import { injectShotFormLock } from '../utils/shot-form-lock';
+import { injectAcousticLevelEquipments } from './inject-acoustic-level-equipments';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -169,13 +170,13 @@ interface DataFormModel {
             class="!resize-none"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.OBSERVACIONES_PLACEHOLDER' | translate"
             [value]="observacionesField() ?? ''"
-            (input)="observacionesField.set($any($event.target).value || null)"
+            (input)="onObservacionesInput($event)"
           ></textarea>
         </mat-form-field>
 
         <!-- Row 2: Posición Sonómetro (X, Y, Z) - ocupa 3 columnas -->
         <ui-sound-level-meter-input
-          class="col-span-3"
+          class="col-span-3 mt-2"
           [label]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.SONOMETRO_POSITION_LABEL' | translate"
           [xLabel]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.X_SONOMETRO_LABEL' | translate"
           [yLabel]="'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.Y_SONOMETRO_LABEL' | translate"
@@ -205,6 +206,10 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   );
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
+  readonly #acousticEquipments = injectAcousticLevelEquipments({
+    seriesFilter: () => this.selectorFormModel().serie,
+    shotFilter: () => this.selectorFormModel().disparo,
+  });
 
   // ── Unit options ───────────────────────────────────────────────────────────
   protected readonly mOptions = [{ value: 'm', label: 'm' }];
@@ -221,7 +226,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
     }),
   );
-  protected readonly equipoOptions = computed(() => this.#store.acousticLevelIntroduction().equipoOptions);
+  protected readonly equipoOptions = this.#acousticEquipments.options;
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
   protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
@@ -235,6 +240,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.acousticLevelIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 
@@ -343,6 +349,11 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
     this.selectorFormModel.update((m) => ({ ...m, disparo }));
     this.#store.updateAcousticLevelIntroduction({ disparo });
     void this.#loadSelectedShotData();
+  }
+
+  onObservacionesInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement | null;
+    this.observacionesField.set(target?.value || null);
   }
 
   #setSelection(serie: string | null, disparo: string | null): void {

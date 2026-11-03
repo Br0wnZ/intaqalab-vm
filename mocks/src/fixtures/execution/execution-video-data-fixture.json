@@ -1,18 +1,25 @@
 {
   "highSpeedVideoData": {
-    "cameraId": "meas-hsc-001",
-    "recorderId": "meas-rec-001",
+    "cameraId": 21051,
+    "recorderId": 21073,
     "channel": 1,
-    "measureId": "velocity",
-    "observedResult": "Secuencia capturada correctamente.",
-    "observations": "Imagen nítida durante todo el disparo."
+    "measurements": [
+      {
+        "measureId": "velocity",
+        "observedResult": "Secuencia capturada correctamente."
+      }
+    ]
   },
   "conventionalVideoData": {
-    "cameraId": "meas-cc-001",
-    "recorderId": "meas-rec-001",
+    "cameraId": 21052,
+    "recorderId": 21073,
     "channel": 2,
-    "measureId": "trajectory",
-    "observedResult": "Sin incidencias visibles.",
-    "observations": "Grabación completa."
-  }
+    "measurements": [
+      {
+        "measureId": "trajectory",
+        "observedResult": "Sin incidencias visibles."
+      }
+    ]
+  },
+  "observations": "Imagen nítida durante todo el disparo. Grabación completa."
 }

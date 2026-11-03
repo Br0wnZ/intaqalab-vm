@@ -18,7 +18,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import type { BackendMunitionComponent } from '@intaqalab/data-access-planning';
+import {
+  type PlanningConditionsResponse,
+  type PlanningConditionsShot,
+  type PlanningConditionsUnits,
+  PlanningMunitionsService,
+  type TrialMunitionsRawItem,
+  injectTrialShots,
+} from '@intaqalab/data-access-planning';
 import { AngleUnitEnum, MEASURE_UNIT_LABELS } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent, ValueTooltip } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
@@ -321,6 +329,7 @@ export class JltMao extends BaseFormWidgetComponent {
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
+  readonly #planningMunitions = inject(PlanningMunitionsService);
 
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
   readonly #selectionGuard = createSelectionGuard(() => this.#selectionKey());
@@ -533,6 +542,7 @@ export class JltMao extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.jltMao().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 
@@ -963,6 +973,22 @@ export class JltMao extends BaseFormWidgetComponent {
   }
 
   async openMassConfig(): Promise<void> {
+    const fireTrialId = this.#store.fireTrialId();
+    let planningMunitions: TrialMunitionsRawItem | null = null;
+    if (fireTrialId) {
+      try {
+        planningMunitions = await this.#planningMunitions.fetchMunitions(fireTrialId);
+      } catch {
+        // Fail closed: no se pueden comparar configuraciones sin los datos de planificación.
+      }
+    }
+
+    const planningConditions = this.#store.planningConditions();
+    const seriesConfigurations = planningMunitions
+      ? this.#getSeriesConfigurations(planningMunitions, planningConditions)
+      : [];
+    const planningConfigurationsReady = Boolean(planningConditions && planningMunitions);
+
     // Diálogo parte de un formulario limpio: baseline vacío para que solo se envíen los campos rellenados.
     const current: JltMaoMassConfigFields = {
       velocidadInicial: null,
@@ -981,9 +1007,14 @@ export class JltMao extends BaseFormWidgetComponent {
         width: '800px',
         maxWidth: '800px',
         data: {
+          fireTrialId,
+          shotIdsBySeries: this.#getSeriesShotIds(),
           serieOptions: this.serieOptions(),
-          planningConditionsReady: Boolean(this.#store.planningConditions()),
+          planningConditionsReady: Boolean(planningConditions),
+          planningConfigurationsReady,
+          seriesConfigurations,
           seriesOrientations: this.#getSeriesOrientations(),
+          seriesPlannedValues: this.#getSeriesPlannedValues(planningMunitions, planningConditions),
           piquetaOptions: this.#store.jltMao().piquetaOptions,
           piecePosition: {
             x: this.#store.maoTopography().xPieza,
@@ -999,8 +1030,18 @@ export class JltMao extends BaseFormWidgetComponent {
     if (result?.action !== 'apply') return;
 
     const selectedSeries = result.series ?? [];
-    const fireTrialId = this.#store.fireTrialId();
-    if (!fireTrialId || selectedSeries.length === 0) return;
+    const selectedSignatures = selectedSeries.map(
+      (seriesId) => seriesConfigurations.find((series) => series.seriesId === seriesId)?.signature,
+    );
+    if (
+      !fireTrialId ||
+      !planningConfigurationsReady ||
+      selectedSeries.length === 0 ||
+      selectedSignatures.some((signature) => signature === null || signature === undefined) ||
+      new Set(selectedSignatures).size !== 1
+    ) {
+      return;
+    }
 
     const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
     const executionSeries = this.#store.executionProgress()?.series ?? [];
@@ -1049,6 +1090,130 @@ export class JltMao extends BaseFormWidgetComponent {
     await this.#loadSelectedShotData();
   }
 
+  #getSeriesConfigurations(
+    munitions: TrialMunitionsRawItem,
+    conditions: PlanningConditionsResponse | undefined,
+  ): { seriesId: string; signature: string | null }[] {
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+
+    return this.serieOptions().map(({ value: seriesId }) => {
+      const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+      const executedShots = executionSeries.find((series) => series.seriesId === seriesId)?.shots;
+      const shotIds = plannedShots?.length
+        ? plannedShots.map((shot) => shot.id)
+        : (executedShots?.map((shot) => shot.shotId) ?? []);
+
+      if (shotIds.length === 0) return { seriesId, signature: null };
+
+      const shotConfigurations = shotIds.map((shotId) => {
+        const conditionShot = conditions?.series
+          .find((series) => series.seriesId === seriesId)
+          ?.shots.find((shot) => shot.shotId === shotId);
+        if (!conditionShot) return null;
+        const munitionConfiguration = this.#munitionConfigurationsForShot(munitions, seriesId, shotId);
+        if (munitionConfiguration === null) return null;
+        return this.#stableSerialize({
+          conditions: this.#conditionConfiguration(conditionShot, conditions?.units),
+          munitions: munitionConfiguration,
+        });
+      });
+      return {
+        seriesId,
+        signature: shotConfigurations.some((configuration) => configuration === null)
+          ? null
+          : JSON.stringify(shotConfigurations.sort()),
+      };
+    });
+  }
+
+  #conditionConfiguration(
+    shot: PlanningConditionsShot | undefined,
+    units: PlanningConditionsUnits | undefined,
+  ): unknown {
+    if (!shot) return null;
+    return {
+      units: units ?? null,
+      targetTypeId: shot.targetTypeId ?? null,
+      orientation: shot.orientation ?? null,
+      orientationUnit: shot.orientationUnit ?? null,
+      shootingAngle: shot.shootingAngle ?? null,
+      shootingAngleUnit: shot.shootingAngleUnit ?? null,
+      angle: shot.angle ?? null,
+      angleUnit: shot.angleUnit ?? null,
+      range: shot.range ?? null,
+      functioningHeight: shot.functioningHeight ?? null,
+      nominalSpeed: shot.nominalSpeed ?? null,
+      fuseWorkingModeId: shot.fuseWorkingModeId ?? null,
+      fuseMeasurement: shot.fuseMeasurement ?? null,
+      fuseGraduation: shot.fuseGraduation ?? null,
+    };
+  }
+
+  #munitionConfigurationsForShot(munitions: TrialMunitionsRawItem, seriesId: string, shotId: string): string[] | null {
+    const series = munitions.series.find((item) => item.seriesId === seriesId);
+    if (!series) return null;
+    return series.configurations
+      .filter((config) => !config.assignedShotIds?.length || config.assignedShotIds.includes(shotId))
+      .map((config) =>
+        this.#stableSerialize({
+          munitionTypeId: config.munitionTypeId ?? null,
+          denomination: config.denomination,
+          batch: config.batch ?? null,
+          clientNumber: config.clientNumber ?? null,
+          reconditioning: config.reconditioning ?? null,
+          maxAllowedErrors: config.maxAllowedErrors ?? null,
+          observations: config.observations ?? null,
+          components: config.components
+            .map((component: BackendMunitionComponent) => ({
+              munitionTypeId: component.munitionTypeId ?? null,
+              type: component.type ?? null,
+              denomination: component.denomination ?? null,
+              fuseWorkingMode: component.fuseWorkingMode ?? null,
+              fuseWorkingModeId: component.fuseWorkingModeId ?? null,
+              typeId: component.typeId ?? null,
+              denominationId: component.denominationId ?? null,
+              batch: component.batch ?? null,
+              loadingZoneValue: component.loadingZoneValue ?? null,
+              quantity: component.quantity ?? null,
+              reconditioning: component.reconditioning ?? null,
+              clientNumber: component.clientNumber ?? null,
+              observations: component.observations ?? null,
+              fuseMeasurement: component.fuseMeasurement ?? null,
+              maxAllowedErrors: component.maxAllowedErrors ?? null,
+            }))
+            .map((component) => this.#stableSerialize(component))
+            .sort(),
+        }),
+      )
+      .sort();
+  }
+
+  #stableSerialize(value: unknown): string {
+    if (Array.isArray(value)) return `[${value.map((item) => this.#stableSerialize(item)).join(',')}]`;
+    if (value !== null && typeof value === 'object') {
+      const entries = Object.entries(value).sort(([left], [right]) => left.localeCompare(right));
+      return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${this.#stableSerialize(item)}`).join(',')}}`;
+    }
+    return JSON.stringify(value) ?? 'null';
+  }
+
+  #getSeriesShotIds(): Record<string, string[]> {
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+    const result: Record<string, string[]> = {};
+    for (const opt of this.serieOptions()) {
+      const seriesId = opt.value;
+      const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+      const executedShots = executionSeries.find((series) => series.seriesId === seriesId)?.shots;
+      const shotIds = plannedShots?.length
+        ? plannedShots.map((shot) => shot.id)
+        : (executedShots?.map((shot) => shot.shotId) ?? []);
+      result[seriesId] = shotIds;
+    }
+    return result;
+  }
+
   #getSeriesOrientations(): {
     seriesId: string;
     orientations: (number | null)[];
@@ -1081,6 +1246,93 @@ export class JltMao extends BaseFormWidgetComponent {
         }),
       };
     });
+  }
+
+  #getSeriesPlannedValues(
+    munitions: TrialMunitionsRawItem | null,
+    conditions: PlanningConditionsResponse | undefined,
+  ): {
+    seriesId: string;
+    ranges: (number | null)[];
+    shootingAngles: (number | null)[];
+    fuseGraduations: (number | null)[];
+    functioningHeights: (number | null)[];
+  }[] {
+    const planningSeries = this.#trialShots.series() ?? this.#store.planningSeries() ?? [];
+    const executionSeries = this.#store.executionProgress()?.series ?? [];
+
+    return this.serieOptions().map(({ value: seriesId }) => {
+      const plannedShots = planningSeries.find((series) => series.id === seriesId)?.shots;
+      const executedShots = executionSeries.find((series) => series.seriesId === seriesId)?.shots;
+      const shotIds = plannedShots?.length
+        ? plannedShots.map((shot) => shot.id)
+        : (executedShots?.map((shot) => shot.shotId) ?? []);
+      const conditionSeries = conditions?.series.find((series) => series.seriesId === seriesId);
+
+      const ranges = shotIds.map((shotId) => {
+        const shot = conditionSeries?.shots.find((s) => s.shotId === shotId);
+        return shot?.range ?? null;
+      });
+
+      const shootingAngles = shotIds.map((shotId) => {
+        const shot = conditionSeries?.shots.find((s) => s.shotId === shotId);
+        if (!shot) return null;
+        const rawAngle = shot.angle ?? shot.shootingAngle;
+        if (rawAngle === undefined || rawAngle === null) return null;
+        const unit =
+          shot.angleUnit ??
+          shot.shootingAngleUnit ??
+          conditions?.units?.angle ??
+          conditions?.units?.shootingAngle ??
+          conditions?.units?.orientation ??
+          AngleUnitEnum.MILS;
+        return unit === AngleUnitEnum.DEGREES ? rawAngle * (6400 / 360) : rawAngle;
+      });
+
+      const functioningHeights = shotIds.map((shotId) => {
+        const shot = conditionSeries?.shots.find((s) => s.shotId === shotId);
+        return shot?.functioningHeight ?? null;
+      });
+
+      const fuseGraduations = shotIds.map((shotId) => {
+        const shot = conditionSeries?.shots.find((s) => s.shotId === shotId);
+        if (shot?.fuseGraduation !== undefined && shot?.fuseGraduation !== null) {
+          return shot.fuseGraduation;
+        }
+        if (munitions) {
+          const seriesMunitions = munitions.series.find((item) => item.seriesId === seriesId);
+          if (seriesMunitions) {
+            for (const config of seriesMunitions.configurations) {
+              const assigned = config.assignedShotIds ?? [];
+              if (assigned.length > 0 && !assigned.includes(shotId)) continue;
+              for (const comp of config.components) {
+                if (this.#isEspoletaComponent(comp) && typeof comp.fuseMeasurement === 'number') {
+                  return comp.fuseMeasurement;
+                }
+              }
+            }
+          }
+        }
+        if (shot?.fuseMeasurement !== undefined && shot?.fuseMeasurement !== null) {
+          return shot.fuseMeasurement;
+        }
+        return null;
+      });
+
+      return {
+        seriesId,
+        ranges,
+        shootingAngles,
+        fuseGraduations,
+        functioningHeights,
+      };
+    });
+  }
+
+  #isEspoletaComponent(component: BackendMunitionComponent): boolean {
+    const typeStr = (component.type?.type ?? component.typeId?.type ?? '').toUpperCase();
+    const label = (component.type?.label ?? component.typeId?.label ?? '').toLowerCase();
+    return typeStr === 'ESPOLETA' || typeStr === 'FUZE' || label.includes('espoleta') || label.includes('fuze');
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────

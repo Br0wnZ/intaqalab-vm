@@ -61,6 +61,7 @@ export function injectShotFormLock(
 
   const isCurrentShot = computed(() => {
     if (!store) return false;
+    if (store.isExecutionStarted && !store.isExecutionStarted()) return false;
     const { serie, disparo } = getSelection();
     if (!serie || !disparo) return false;
     const activeSerie = store.activeSerieId();
@@ -116,6 +117,7 @@ export function injectShotFormLock(
       store.activeSerieId(),
       store.activeShotId(),
       fallbackStatus,
+      store.isExecutionStarted?.() ?? true,
     );
   });
 

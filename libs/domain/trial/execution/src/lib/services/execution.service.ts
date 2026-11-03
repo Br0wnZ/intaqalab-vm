@@ -30,6 +30,8 @@ import type {
   ShotAcousticLevelResponse,
   ShotCameraOrientationResponse,
   ShotDifferentialPressureData,
+  ShotIpgPressuresRequest,
+  ShotIpgPressuresResponse,
   ShotJltMaoRequest,
   ShotJltMaoResponse,
   ShotManometerPressuresRequest,
@@ -338,6 +340,16 @@ interface ShotManometerPressuresParams {
 
 interface ShotManometerPressuresUpdateParams extends ShotManometerPressuresParams {
   body: ShotManometerPressuresRequest;
+}
+
+interface ShotIpgPressuresParams {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
+}
+
+interface ShotIpgPressuresUpdateParams extends ShotIpgPressuresParams {
+  body: ShotIpgPressuresRequest;
 }
 
 interface ShotJltMaoParams {
@@ -2081,6 +2093,76 @@ export class ExecutionService {
   ): Promise<ShotManometerPressuresResponse> {
     this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body });
     return this.#awaitResourceValue(this.updateShotManometerPressuresResource);
+  }
+
+  // ── SHOT IPG PRESSURES: GET (Widget 32) ───────────────────────────────────
+
+  readonly #getShotIpgPressuresParams = signal<ShotIpgPressuresParams | null>(null);
+
+  readonly shotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
+    const params = this.#getShotIpgPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/ipg-pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  getShotIpgPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId });
+  }
+
+  readonly #fetchShotIpgPressuresParams = signal<ShotIpgPressuresParams | null>(null);
+
+  readonly #fetchShotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
+    const p = this.#fetchShotIpgPressuresParams();
+    if (!p) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/ipg-pressures/series/${p.seriesId}/shots/${p.shotId}`,
+      method: 'GET',
+    };
+  });
+
+  async fetchShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotIpgPressuresResponse> {
+    this.#fetchShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId });
+    return this.#awaitResourceValue(this.#fetchShotIpgPressuresResource);
+  }
+
+  // ── SHOT IPG PRESSURES: PUT (Widget 32) ───────────────────────────────────
+
+  readonly #updateShotIpgPressuresParams = signal<ShotIpgPressuresUpdateParams | null>(null);
+
+  readonly updateShotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
+    const params = this.#updateShotIpgPressuresParams();
+    if (!params) return undefined;
+    return {
+      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/ipg-pressures/series/${params.seriesId}/shots/${params.shotId}`,
+      method: 'PUT',
+      body: params.body,
+    };
+  });
+
+  setShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotIpgPressuresRequest,
+  ): void {
+    this.#updateShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId, body });
+  }
+
+  async updateShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotIpgPressuresRequest,
+  ): Promise<ShotIpgPressuresResponse> {
+    this.#updateShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId, body });
+    return this.#awaitResourceValue(this.updateShotIpgPressuresResource);
   }
 
   // ── SHOT JLT MAO: GET ────────────────────────────────

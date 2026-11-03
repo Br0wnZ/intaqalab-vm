@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { HttpErrorResponse } from '@angular/common/http';
+import type { OnDestroy } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -143,7 +145,7 @@ import { MunitionLocationComponent } from '../location/location.component';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MunitionsShellComponent {
+export class MunitionsShellComponent implements OnDestroy {
   readonly #router = inject(Router);
   readonly #uiDialogs = inject(UiDialogService);
   readonly #munitionComponentStore = inject(MunitionComponentStore);
@@ -324,18 +326,31 @@ export class MunitionsShellComponent {
 
       this.#confirmationInProgress = true;
       try {
-        const detail = resource.error()?.message || '';
-        const message: UIDialogConfirm = detail.toLocaleLowerCase().includes('neq')
-          ? {
-              labelButtonConfirm: 'COMMONS.CONFIRM',
-              title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
-              htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
-            }
-          : {
-              labelButtonConfirm: 'COMMONS.CONFIRM',
-              title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
-              htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
-            };
+        const detail = (resource.error() as HttpErrorResponse)?.error.detail || '';
+        const normalizedDetail = detail.toLocaleLowerCase();
+        const hasNeq = normalizedDetail.includes('neq');
+        const hasIncompatibility = normalizedDetail.includes('incompatible');
+        let message: UIDialogConfirm;
+
+        if (hasNeq && hasIncompatibility) {
+          message = {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_COMPATIBILITY_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_COMPATIBILITY_TEXT',
+          };
+        } else if (hasNeq) {
+          message = {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
+          };
+        } else {
+          message = {
+            labelButtonConfirm: 'COMMONS.CONFIRM',
+            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
+            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
+          };
+        }
         const ok = await this.#uiDialogs.confirm(message);
         if (!ok) return;
 
@@ -588,5 +603,9 @@ export class MunitionsShellComponent {
 
   reset() {
     this.formModel.set(this.#defaultFormModel);
+  }
+
+  ngOnDestroy(): void {
+    this.munitionsStockDataService.clear();
   }
 }

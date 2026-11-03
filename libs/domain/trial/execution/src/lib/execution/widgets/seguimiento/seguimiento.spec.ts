@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/angular';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ExecutionService } from '../../../services/execution.service';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguimientoWidget } from './seguimiento';
@@ -144,5 +145,38 @@ describe('SeguimientoWidget', () => {
     store.setOptimisticActiveShot('funcionamiento-2', 'shot-2');
     fixture.detectChanges();
     expect(fixture.componentInstance['activeSerieId']()).toBe('funcionamiento-1');
+  });
+
+  it('calls getShotMeasurements and reloads shotMeasurementsResource when reload is invoked or reload button clicked', async () => {
+    const { fixture } = await renderWidget();
+    const service = TestBed.inject(ExecutionService);
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-abc');
+    fixture.detectChanges();
+
+    const initialReq = httpTesting.expectOne((req) => req.url.includes('/shot-measurements'));
+    initialReq.flush({ series: [] });
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    const getSpy = vi.spyOn(service, 'getShotMeasurements');
+    const reloadSpy = vi.spyOn(service.shotMeasurementsResource, 'reload');
+
+    const reloadButton = screen.getByRole('button', {
+      name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD',
+    });
+    expect(reloadButton).toBeInTheDocument();
+    expect(reloadButton).toBeEnabled();
+
+    reloadButton.click();
+    fixture.detectChanges();
+
+    expect(getSpy).toHaveBeenCalledWith('trial-abc');
+    expect(reloadSpy).toHaveBeenCalled();
+
+    const reloadReq = httpTesting.expectOne((req) => req.url.includes('/shot-measurements'));
+    reloadReq.flush({ series: [] });
   });
 });

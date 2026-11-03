@@ -304,11 +304,18 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   });
 
   protected readonly isCurrentShot = computed(() => {
+    if (this.#store.isExecutionStarted && !this.#store.isExecutionStarted()) {
+      return false;
+    }
     const { serie, disparo } = this.selectorFormModel();
     return serie === this.#store.activeSerieId() && disparo === this.#store.activeShotId();
   });
 
   protected readonly estadoDisparo = computed(() => {
+    if (this.#store.isExecutionStarted && !this.#store.isExecutionStarted()) {
+      return 'PENDIENTE';
+    }
+
     if (this.isCurrentShot()) {
       return 'EN_CURSO';
     }

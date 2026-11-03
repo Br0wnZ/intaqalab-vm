@@ -121,6 +121,28 @@ export function withGeneralData() {
           return status !== null && READONLY_STATUSES.includes(status as TrialStatus);
         }),
 
+        /**
+         * Indica si la ejecución del ensayo ha sido iniciada.
+         * Devuelve `false` si el ensayo está en estado PLANNED, PREPARED o UNDER_REVIEW,
+         * o si el estado de ejecución reportado por la API es 'PLANNED'.
+         */
+        isExecutionStarted: computed(() => {
+          const execState = safeResourceValue(executionService.executionStateResource);
+          if (execState?.status) {
+            return execState.status !== 'PLANNED';
+          }
+          const trialStatus = store.fireTrial()?.status ?? safeResourceValue(trialsService.byIdResource)?.status;
+          if (trialStatus) {
+            const notStartedStatuses: TrialStatus[] = [
+              TrialStatus.PLANNED,
+              TrialStatus.PREPARED,
+              TrialStatus.UNDER_REVIEW,
+            ];
+            return !notStartedStatuses.includes(trialStatus as TrialStatus);
+          }
+          return true;
+        }),
+
         // Execution transitions status
         pauseExecutionStatus: computed(() => executionService.pauseResource.status()),
 

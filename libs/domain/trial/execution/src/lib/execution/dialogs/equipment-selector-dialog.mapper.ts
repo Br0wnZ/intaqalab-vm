@@ -220,7 +220,11 @@ export function apiToDialogFormat(apiGroups: EquipmentMeasurementGroupApi[]): Eq
     selections: apiGroup.selections.map((sel) => ({
       itemId: String(sel.equipmentItemId ?? sel.equipmentDenominationId ?? ''),
       categoryId: sel.categoryId,
-      magnitude: sel.magnitude ?? null,
+      magnitude:
+        (apiGroup.measurementGroup === EquipmentMagnitudeTagEnum.VIDEO_AV ||
+        apiGroup.measurementGroup === EquipmentMagnitudeTagEnum.VIDEO_C
+          ? sel.measureId
+          : sel.magnitude) ?? null,
       channel: sel.channel ?? null,
       series: sel.seriesIds ?? [],
       disparos: sel.shotIds ?? sel.shootIds ?? [],

@@ -444,6 +444,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.manometerIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

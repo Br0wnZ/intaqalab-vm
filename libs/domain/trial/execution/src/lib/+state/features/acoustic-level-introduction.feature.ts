@@ -23,11 +23,7 @@ const initialState: AcousticLevelIntroductionSlice = {
     nivelAcustico: null,
     nivelAcusticoUnit: 'db',
     observaciones: null,
-    equipoOptions: [
-      { value: 'sonometro-norsonic-140', label: 'Norsonic 140 / SN001' },
-      { value: 'sonometro-norsonic-145', label: 'Norsonic 145 / SN002' },
-      { value: 'sonometro-bruel-2270', label: 'Brüel & Kjær 2270 / SN003' },
-    ],
+    equipoOptions: [],
     serieOptions: [],
     disparoOptions: [],
   },

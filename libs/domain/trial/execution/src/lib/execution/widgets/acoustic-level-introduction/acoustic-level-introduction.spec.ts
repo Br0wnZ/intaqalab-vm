@@ -10,6 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { AcousticLevelIntroduction } from './acoustic-level-introduction';
 
@@ -77,5 +78,46 @@ describe('AcousticLevelIntroduction', () => {
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 's-1', 'd-1');
     });
+  });
+
+  it('equipoOptions is empty by default when equipment-selection has no items', async () => {
+    const { fixture } = await renderWidget();
+    expect(fixture.componentInstance['equipoOptions']()).toEqual([]);
+  });
+
+  it('equipoOptions reflects SOUND_LEVEL_METER from equipmentSelectorResource', async () => {
+    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+      [EquipmentTypeEnum.SOUND_LEVEL_METER]: [{ id: '5001', label: 'Norsonic 140 / SOM-001' }],
+    });
+
+    const { fixture } = await renderWidget();
+    TestBed.inject(ExecutionService).equipmentSelectorResource.set([
+      {
+        measurementGroup: EquipmentMeasurementGroupEnum.SOUND,
+        selections: [
+          {
+            equipmentItemId: 5001,
+            categoryId: EquipmentTypeEnum.SOUND_LEVEL_METER,
+          },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    await vi.waitFor(() => {
+      expect(fixture.componentInstance['equipoOptions']()).toEqual([
+        { value: '5001', label: 'Norsonic 140 / SOM-001' },
+      ]);
+    });
+  });
+
+  it('updates observaciones when onObservacionesInput is triggered', async () => {
+    const { fixture } = await renderWidget();
+    const event = {
+      target: { value: 'New observation' } as unknown as HTMLTextAreaElement,
+    } as unknown as Event;
+
+    fixture.componentInstance.onObservacionesInput(event);
+    expect(fixture.componentInstance['observacionesField']()).toBe('New observation');
   });
 });

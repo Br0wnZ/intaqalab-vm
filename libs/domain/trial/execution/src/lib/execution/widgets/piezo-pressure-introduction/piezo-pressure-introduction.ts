@@ -379,6 +379,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.piezoPressureIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

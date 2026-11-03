@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, type PlanningMagnitudeSelection } from '../models';
 import {
   TAG_CONFIGS,
+  apiToDialogFormat,
   collectPlannedMeasureIds,
   dialogStatesToApiFormat,
   hasIncompleteEquipmentRows,
@@ -81,6 +82,36 @@ describe('piezoelectric pressure equipment', () => {
 });
 
 describe('video equipment', () => {
+  it('hydrates video magnitude selections from measureId in the API response', () => {
+    const groups = [
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_AV,
+        selections: [
+          {
+            equipmentItemId: 1,
+            categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+            measureId: 'planned-video-av-measure',
+          },
+        ],
+      },
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_C,
+        selections: [
+          {
+            equipmentItemId: 2,
+            categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+            measureId: 'planned-video-c-measure',
+          },
+        ],
+      },
+    ];
+
+    expect(apiToDialogFormat(groups).map((group) => group.selections[0]?.magnitude)).toEqual([
+      'planned-video-av-measure',
+      'planned-video-c-measure',
+    ]);
+  });
+
   it('should preserve camera and recorder as distinct categories when hydrating and saving', () => {
     const groups = [
       {

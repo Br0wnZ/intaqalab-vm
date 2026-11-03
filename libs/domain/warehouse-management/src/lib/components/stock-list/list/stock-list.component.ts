@@ -1,4 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
+import type { HttpErrorResponse } from '@angular/common/http';
+import type { OnDestroy } from '@angular/core';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -13,8 +15,9 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { MENU_WAREHOUSE_ROLES, injectCurrentUserRole } from '@intaqalab/core';
 import type { UIDialogConfirm } from '@intaqalab/ui';
-import { BooleanStatusBadge, DialogConfirmComponent, IntaIconComponent } from '@intaqalab/ui';
+import { BooleanStatusBadge, DialogConfirmComponent, IntaIconComponent, ValueTooltip } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -60,6 +63,7 @@ const DEFAULT_COLUMNS = [
     MatMenuModule,
     NeqDataComponent,
     MatSlideToggleModule,
+    ValueTooltip,
   ],
   template: `
     <div class="flex justify-between items-center">
@@ -68,23 +72,15 @@ const DEFAULT_COLUMNS = [
       </h2>
       <div class="flex items-center gap-2 relative">
         <button
+          uiValueTooltip
+          uiValueTooltipPosition="left"
           type="button"
           class="self-center text-client-primary hover:text-client-primary/80 transition-colors"
-          (mouseenter)="showTooltip = true"
-          (mouseleave)="showTooltip = false"
+          [uiValueTooltipValue]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON_TOOLTIP' | translate"
+          [attr.aria-label]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON' | translate"
         >
           <ui-inta-icon name="info" size="lg" />
         </button>
-        @if (showTooltip) {
-          <div
-            class="absolute right-full top-0 mr-3 w-[600px] bg-slate-800 text-white rounded-lg shadow-lg p-4 text-sm z-50 whitespace-pre-line text-left"
-          >
-            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON_TOOLTIP' | translate }}
-            <div
-              class="absolute left-full top-3 w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-slate-800"
-            ></div>
-          </div>
-        }
         <button mat-flat-button [matMenuTriggerFor]="menu">
           {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.NEQ_DATA.NEQ_BUTTON' | translate }}
         </button>
@@ -110,7 +106,7 @@ const DEFAULT_COLUMNS = [
       <button
         mat-flat-button
         data-testid="transfer-btn"
-        [disabled]="selection.selected.length === 0"
+        [disabled]="selection.selected.length === 0 || !showActions()"
         (click)="transfer()"
       >
         {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRANSFER' | translate }}
@@ -138,7 +134,7 @@ const DEFAULT_COLUMNS = [
               <div class="flex items-center gap-1">
                 <mat-checkbox
                   [checked]="selection.isSelected(item)"
-                  [disabled]="item.status === 'RETIRED'"
+                  [disabled]="item.status === 'RETIRED' || !showActions()"
                   (click)="$event.stopPropagation()"
                   (change)="selection.toggle(item)"
                 ></mat-checkbox>
@@ -310,7 +306,7 @@ const DEFAULT_COLUMNS = [
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StockListComponent {
+export class StockListComponent implements OnDestroy {
   readonly stockListStore = inject(StockListStore);
   readonly #munitionDumpsStore: MunitionsDumpsStoreType = inject(MunitionsDumpsStore);
   readonly #munitionsStockDetailService = inject(MunitionsStockDetailService);
@@ -318,9 +314,13 @@ export class StockListComponent {
   readonly #dialog = inject(MatDialog);
   readonly #router = inject(Router);
 
+  readonly #userRoles = injectCurrentUserRole();
+  protected readonly showActions = computed(() =>
+    this.#userRoles().some((role) => MENU_WAREHOUSE_ROLES.includes(role)),
+  );
+
   readonly displayedColumns = computed(() => [...DEFAULT_COLUMNS]);
   selection = new SelectionModel<MunitionStockListResponse>(true, []);
-  showTooltip = false;
   readonly status = WarehouseMunitionStatus;
   readonly showOnlyActive = signal<boolean>(true);
 
@@ -361,18 +361,31 @@ export class StockListComponent {
 
       if (statusCode !== 400) return;
 
-      const detail = resource.error()?.message || '';
-      const message: UIDialogConfirm = detail.toLocaleLowerCase().includes('neq')
-        ? {
-            labelButtonConfirm: 'COMMONS.CONFIRM',
-            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
-            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
-          }
-        : {
-            labelButtonConfirm: 'COMMONS.CONFIRM',
-            title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
-            htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
-          };
+      const detail = (resource.error() as HttpErrorResponse)?.error.detail || '';
+      const normalizedDetail = detail.toLocaleLowerCase();
+      const hasNeq = normalizedDetail.includes('neq');
+      const hasIncompatibility = normalizedDetail.includes('incompatible');
+      let message: UIDialogConfirm;
+
+      if (hasNeq && hasIncompatibility) {
+        message = {
+          labelButtonConfirm: 'COMMONS.CONFIRM',
+          title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_COMPATIBILITY_TITLE',
+          htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_COMPATIBILITY_TEXT',
+        };
+      } else if (hasNeq) {
+        message = {
+          labelButtonConfirm: 'COMMONS.CONFIRM',
+          title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TITLE',
+          htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_NEQ_CONTROL_TEXT',
+        };
+      } else {
+        message = {
+          labelButtonConfirm: 'COMMONS.CONFIRM',
+          title: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TITLE',
+          htmlText: 'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.CONFIRM_COMPATIBILITY_TEXT',
+        };
+      }
 
       const dialogRef = this.#dialog.open(DialogConfirmComponent, {
         data: message,
@@ -405,6 +418,10 @@ export class StockListComponent {
     if (payload) {
       this.#lastTransferPayload = payload;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.#munitionsStockDetailService.transfer.set(undefined);
   }
 
   navigate(item: MunitionStockListResponse) {

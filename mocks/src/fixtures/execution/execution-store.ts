@@ -159,6 +159,7 @@ const pressuresStateMap = new Map<string, Map<string, ShotPressuresResponse>>();
 const armamentStateMap = new Map<string, Map<string, ShotArmamentResponse>>();
 const munitionStateMap = new Map<string, Map<string, ShotMunitionResponse>>();
 const manometerPressuresStateMap = new Map<string, Map<string, ShotManometerPressuresResponse>>();
+const ipgPressuresStateMap = new Map<string, Map<string, ShotIpgPressuresResponse>>();
 
 function defaultExecutionState(): ExecutionState {
   return getFixture<ExecutionState>('fixtures/execution', 'execution-state-fixture.json');
@@ -1852,17 +1853,16 @@ export function setShotAcousticLevel(
 // ── SHOT VIDEO DATA ──────────────────────────────────────────────────────
 
 export interface ShotVideoData {
-  cameraId: string;
-  recorderId: string;
+  cameraId: number;
+  recorderId: number;
   channel: number;
-  measureId: string;
-  observedResult?: string | null;
-  observations?: string | null;
+  measurements: Array<{ measureId: string; observedResult: string }>;
 }
 
 export interface ShotVideoDataRequest {
   highSpeedVideoData?: ShotVideoData | null;
   conventionalVideoData?: ShotVideoData | null;
+  observations?: string | null;
 }
 
 export type ShotVideoDataResponse = ShotVideoDataRequest;
@@ -1920,4 +1920,86 @@ export function setShotVideoData(
   const updated = cloneShotVideoDataState(payload);
   state.set(key, updated);
   return cloneShotVideoDataState(updated);
+}
+
+// ── SHOT IPG PRESSURES tipos y store (Widget 32) ───────────────────────────
+
+export interface ShotIpgPressures {
+  ipgSensorId?: number | null;
+  micromoduleId?: number | null;
+  maxPressure?: number | null;
+  maxPressureUnit?: string | null;
+  observations?: string | null;
+}
+
+export interface ShotIpgPressuresResponse {
+  ipgPressuresData?: ShotIpgPressures[] | null;
+}
+
+export interface ShotIpgPressuresRequest {
+  ipgPressuresData?: ShotIpgPressures[] | null;
+}
+
+function defaultIpgPressuresState(): ShotIpgPressuresResponse {
+  return getFixture<ShotIpgPressuresResponse>('fixtures/execution', 'execution-ipg-pressures-fixture.json');
+}
+
+function cloneIpgPressuresState(state: ShotIpgPressuresResponse): ShotIpgPressuresResponse {
+  return structuredClone(state);
+}
+
+function getOrCreateIpgPressuresMap(fireTrialId: string): Map<string, ShotIpgPressuresResponse> {
+  let state = ipgPressuresStateMap.get(fireTrialId);
+  if (!state) {
+    state = new Map<string, ShotIpgPressuresResponse>();
+    ipgPressuresStateMap.set(fireTrialId, state);
+  }
+  return state;
+}
+
+export function getShotIpgPressures(fireTrialId: string, seriesId: string, shotId: string): ShotIpgPressuresResponse {
+  const state = getOrCreateIpgPressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+  const current = state.get(key);
+
+  if (!current) {
+    const initial = cloneIpgPressuresState(defaultIpgPressuresState());
+    state.set(key, initial);
+    return cloneIpgPressuresState(initial);
+  }
+
+  return cloneIpgPressuresState(current);
+}
+
+export function setShotIpgPressures(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  payload: ShotIpgPressuresRequest,
+): ShotIpgPressuresResponse {
+  const shotProgress = getShotProgress(seriesId, shotId);
+  if (!shotProgress) {
+    throw new Error('SHOT_NOT_FOUND');
+  }
+
+  if (shotProgress.status !== 'ACTIVE' && shotProgress.status !== 'FIRED' && shotProgress.status !== 'PENDING') {
+    throw new Error('SHOT_NOT_EDITABLE');
+  }
+
+  const state = getOrCreateIpgPressuresMap(fireTrialId);
+  const key = `${seriesId}|${shotId}`;
+
+  const updated: ShotIpgPressuresResponse = {
+    ipgPressuresData:
+      payload.ipgPressuresData?.map((entry) => ({
+        ipgSensorId: entry.ipgSensorId ?? null,
+        micromoduleId: entry.micromoduleId ?? null,
+        maxPressure: entry.maxPressure ?? null,
+        maxPressureUnit: entry.maxPressureUnit ?? 'BAR',
+        observations: entry.observations ?? null,
+      })) ?? [],
+  };
+
+  state.set(key, updated);
+  return cloneIpgPressuresState(updated);
 }

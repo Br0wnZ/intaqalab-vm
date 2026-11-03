@@ -275,21 +275,21 @@ describe('VideoDataIntroduction', () => {
     const store = TestBed.inject(ExecutionStore);
     const response = {
       highSpeedVideoData: {
-        cameraId: 'camera-av-1',
-        recorderId: 'recorder-1',
+        cameraId: 21051,
+        recorderId: 21073,
         channel: 1,
-        measureId: 'measure-1',
-        observedResult: 'AV result',
-        observations: 'AV observations',
+        measurements: [
+          { measureId: 'measure-1', observedResult: 'AV result' },
+          { measureId: 'measure-av-other', observedResult: 'Other AV result' },
+        ],
       },
       conventionalVideoData: {
-        cameraId: 'camera-c-1',
-        recorderId: 'recorder-1',
+        cameraId: 21052,
+        recorderId: 21073,
         channel: 2,
-        measureId: 'measure-2',
-        observedResult: 'C result',
-        observations: 'C observations',
+        measurements: [{ measureId: 'measure-2', observedResult: 'C result' }],
       },
+      observations: 'Shared observations',
     };
     const fetchSpy = vi.spyOn(executionService, 'fetchShotVideoData').mockResolvedValue(response);
     const updateSpy = vi.spyOn(executionService, 'updateShotVideoData').mockResolvedValue(response);
@@ -299,19 +299,20 @@ describe('VideoDataIntroduction', () => {
 
     await vi.waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1');
-      expect(fixture.componentInstance['selectorModel']().camera).toBe('camera-av-1');
-      expect(fixture.componentInstance['selectorModel']().equipment).toBe('camera-av-1|recorder-1|01');
+      expect(fixture.componentInstance['selectorModel']().camera).toBe('21051');
+      expect(fixture.componentInstance['selectorModel']().equipment).toBe('21051|21073|01');
     });
 
-    fixture.componentInstance['selectorModel'].update((value) => ({ ...value, camera: 'camera-av-2' }));
+    fixture.componentInstance['selectorModel'].update((value) => ({ ...value, camera: '21054' }));
     await fixture.componentInstance.saveForm();
 
     expect(updateSpy).toHaveBeenCalledWith('trial-123', 'series-1', 'shot-1', {
       highSpeedVideoData: {
         ...response.highSpeedVideoData,
-        cameraId: 'camera-av-2',
+        cameraId: 21054,
       },
       conventionalVideoData: response.conventionalVideoData,
+      observations: 'Shared observations',
     });
   });
 

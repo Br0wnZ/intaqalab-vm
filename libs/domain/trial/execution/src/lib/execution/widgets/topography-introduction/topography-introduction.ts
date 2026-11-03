@@ -296,6 +296,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.topographyIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

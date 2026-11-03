@@ -116,7 +116,9 @@ export class ExecutionPageFacade {
             timestamp: shot.updatedAt,
             status:
               serie.seriesId === activeSerieId && shot.shotId === activeShotId
-                ? 'EN_CURSO'
+                ? this.#store.isExecutionStarted()
+                  ? 'EN_CURSO'
+                  : 'PENDIENTE'
                 : this.#mapShotStatus(shot.status),
           };
         }),
@@ -135,7 +137,7 @@ export class ExecutionPageFacade {
       const activeShotHistory = {
         shot: `Disparo ${activeShot.globalNumber ?? activeShotIndex + 1}`,
         timestamp: '',
-        status: 'EN_CURSO',
+        status: this.#store.isExecutionStarted() ? 'EN_CURSO' : 'PENDIENTE',
       };
 
       if (activeSerieHistory) {

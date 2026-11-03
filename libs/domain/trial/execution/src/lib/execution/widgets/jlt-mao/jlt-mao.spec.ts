@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { PlanningConditionsService } from '@intaqalab/data-access-planning';
+import { PlanningConditionsService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -139,6 +139,14 @@ describe('JltMao', () => {
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
+    const conditionsService = TestBed.inject(PlanningConditionsService);
+    const munitionsService = TestBed.inject(PlanningMunitionsService);
+    vi.spyOn(munitionsService, 'fetchMunitions').mockResolvedValue({
+      series: [
+        { seriesId: 'series-1', seriesName: 'Series 1', configurations: [] },
+        { seriesId: 'series-2', seriesName: 'Series 2', configurations: [] },
+      ],
+    });
     vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
     vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
@@ -150,16 +158,107 @@ describe('JltMao', () => {
     const planningSeriesRequest = httpMock.expectOne((request) => request.url.endsWith('/planning/series'));
     planningSeriesRequest.flush([
       { id: 'series-1', name: 'Series 1', shots: [{ id: 'shot-1' }, { id: 'shot-2' }] },
-      { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }] },
+      { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }, { id: 'shot-4' }] },
     ]);
+    TestBed.tick();
+    conditionsService.load('trial-123');
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/conditions'))
+      .flush({
+        series: [
+          { seriesId: 'series-1', shots: [{ shotId: 'shot-1' }, { shotId: 'shot-2' }] },
+          { seriesId: 'series-2', shots: [{ shotId: 'shot-3' }, { shotId: 'shot-4' }] },
+        ],
+      });
     TestBed.tick();
 
     await fixture.componentInstance.openMassConfig();
 
     expect(bulkSpy).toHaveBeenCalledWith('trial-123', {
-      assignedShotIds: ['shot-1', 'shot-2', 'shot-3'],
+      assignedShotIds: ['shot-1', 'shot-2', 'shot-3', 'shot-4'],
       theoreticalInitialVelocity: 810,
     });
+  });
+
+  it('rejects bulk configuration when planned munition applies only to some shots in a series', async () => {
+    const dialogResult = {
+      action: 'apply' as const,
+      series: ['series-1', 'series-2'],
+      velocidadInicial: { value: '810', unit: 'm/s' },
+    };
+    const dialogOpen = vi.fn().mockReturnValue({ afterClosed: () => of(dialogResult) });
+    const { fixture } = await render(JltMao, {
+      componentInputs: { widgetId: 'test-jlt-mao' },
+      providers: [
+        provideNoopAnimations(),
+        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: MatDialog, useValue: { open: dialogOpen } },
+        ExecutionStore,
+      ],
+      imports: [TranslateModule.forRoot()],
+    });
+    const store = TestBed.inject(ExecutionStore);
+    const executionService = TestBed.inject(ExecutionService);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const conditionsService = TestBed.inject(PlanningConditionsService);
+    const munitionsService = TestBed.inject(PlanningMunitionsService);
+    vi.spyOn(munitionsService, 'fetchMunitions').mockResolvedValue({
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesName: 'Series 1',
+          configurations: [
+            {
+              id: 'config-shot-1',
+              seriesId: 'series-1',
+              denomination: null,
+              components: [],
+              assignedShotIds: ['shot-1'],
+            },
+          ],
+        },
+        { seriesId: 'series-2', seriesName: 'Series 2', configurations: [] },
+      ],
+    });
+    vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
+    vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+    const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({ updatedShotIds: [] });
+
+    store.setFireTrialId('trial-123');
+    TestBed.tick();
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/series'))
+      .flush([
+        {
+          id: 'series-1',
+          name: 'Series 1',
+          shots: [{ id: 'shot-1' }, { id: 'shot-2' }],
+        },
+        {
+          id: 'series-2',
+          name: 'Series 2',
+          shots: [{ id: 'shot-3' }, { id: 'shot-4' }],
+        },
+      ]);
+    TestBed.tick();
+    conditionsService.load('trial-123');
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/conditions'))
+      .flush({
+        series: [
+          { seriesId: 'series-1', shots: [{ shotId: 'shot-1' }, { shotId: 'shot-2' }] },
+          { seriesId: 'series-2', shots: [{ shotId: 'shot-3' }, { shotId: 'shot-4' }] },
+        ],
+      });
+    TestBed.tick();
+
+    await fixture.componentInstance.openMassConfig();
+
+    expect(dialogOpen).toHaveBeenCalledOnce();
+    expect(bulkSpy).not.toHaveBeenCalled();
   });
 
   it('applies calculated OLT only to shots from series without planned orientation', async () => {
@@ -187,6 +286,14 @@ describe('JltMao', () => {
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
     const httpMock = TestBed.inject(HttpTestingController);
+    const conditionsService = TestBed.inject(PlanningConditionsService);
+    const munitionsService = TestBed.inject(PlanningMunitionsService);
+    vi.spyOn(munitionsService, 'fetchMunitions').mockResolvedValue({
+      series: [
+        { seriesId: 'series-1', seriesName: 'Series 1', configurations: [] },
+        { seriesId: 'series-2', seriesName: 'Series 2', configurations: [] },
+      ],
+    });
     vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
     vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
@@ -199,14 +306,24 @@ describe('JltMao', () => {
       .expectOne((request) => request.url.endsWith('/planning/series'))
       .flush([
         { id: 'series-1', name: 'Series 1', shots: [{ id: 'shot-1' }, { id: 'shot-2' }] },
-        { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }] },
+        { id: 'series-2', name: 'Series 2', shots: [{ id: 'shot-3' }, { id: 'shot-4' }] },
       ]);
+    TestBed.tick();
+    conditionsService.load('trial-123');
+    httpMock
+      .expectOne((request) => request.url.endsWith('/planning/conditions'))
+      .flush({
+        series: [
+          { seriesId: 'series-1', shots: [{ shotId: 'shot-1' }, { shotId: 'shot-2' }] },
+          { seriesId: 'series-2', shots: [{ shotId: 'shot-3' }, { shotId: 'shot-4' }] },
+        ],
+      });
     TestBed.tick();
 
     await fixture.componentInstance.openMassConfig();
 
     expect(bulkSpy).toHaveBeenNthCalledWith(1, 'trial-123', {
-      assignedShotIds: ['shot-3'],
+      assignedShotIds: ['shot-3', 'shot-4'],
       theoreticalInitialVelocity: 810,
     });
     expect(bulkSpy).toHaveBeenNthCalledWith(2, 'trial-123', {
@@ -523,5 +640,32 @@ describe('JltMao', () => {
       expect(component['anguloTiroReadOnly']()).toBe(false);
       expect(component['graduacionEspoletaReadOnly']()).toBe(false);
     });
+  });
+
+  it('displays shot status as Pendiente when execution is not started', async () => {
+    const { fixture } = await render(JltMao, {
+      componentInputs: { widgetId: 'test-jlt-mao' },
+      providers: [
+        provideNoopAnimations(),
+        provideTestingEnvironment(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        {
+          provide: ExecutionStore,
+          useFactory: () => {
+            const store = new ExecutionStore();
+            Object.defineProperty(store, 'isExecutionStarted', {
+              value: signal(false),
+            });
+            return store;
+          },
+        },
+      ],
+      imports: [TranslateModule.forRoot()],
+    });
+
+    expect(fixture.componentInstance['estadoDisparo']()).toBe('PENDIENTE');
+    expect(fixture.componentInstance['estadoLabel']()).toBe('Pendiente');
   });
 });

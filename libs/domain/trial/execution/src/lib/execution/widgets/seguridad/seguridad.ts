@@ -408,6 +408,7 @@ export class SeguridadWidget extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.seguridad().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

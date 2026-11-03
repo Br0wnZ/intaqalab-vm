@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PlanningSeriesItem } from '@intaqalab/data-access-planning';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { JltStatus } from '../../../+state/execution.store';
@@ -159,5 +159,22 @@ describe('ExecutionPrepJltWidgetComponent', () => {
 
     expect(mockStore.setOptimisticActiveShot).toHaveBeenCalledWith('serie-2', 'shot-2-2');
     expect(mockStore.selectJltShot).toHaveBeenCalledWith('trial-123', 'shot-2-2');
+  });
+
+  it('calls loadJltPreparation when reload is invoked or reload button clicked', async () => {
+    const { fixture } = await renderWidget();
+    fixture.detectChanges();
+
+    mockStore.loadJltPreparation.mockClear();
+
+    const reloadButton = screen.getByRole('button', {
+      name: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.RELOAD',
+    });
+    expect(reloadButton).toBeInTheDocument();
+
+    reloadButton.click();
+    fixture.detectChanges();
+
+    expect(mockStore.loadJltPreparation).toHaveBeenCalledWith('trial-123', 'serie-1');
   });
 });

@@ -489,6 +489,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.videoDataIntroduction().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
   protected readonly estadoDisparo = computed(() => mapSelectedShotStatusLabel(this.selectedShotStatus()));

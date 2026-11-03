@@ -51,6 +51,12 @@ function resolveItemIdFromDenomination(
   return String(denominationId);
 }
 
+function isVideoMeasurementGroup(measurementGroup: string): boolean {
+  return (
+    measurementGroup === EquipmentMagnitudeTagEnum.VIDEO_AV || measurementGroup === EquipmentMagnitudeTagEnum.VIDEO_C
+  );
+}
+
 function toEquipmentSelectionApi(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentSelectionApiList {
   return equipments.map((group) => ({
     measurementGroup: group.id,
@@ -65,7 +71,9 @@ function toEquipmentSelectionApi(equipments: EquipmentMagnitudeSelectionGroup[])
           equipmentItemId,
           equipmentDenominationId: equipmentItemId,
           categoryId: selection.categoryId,
-          magnitude: selection.magnitude ?? null,
+          ...(isVideoMeasurementGroup(group.id)
+            ? { measureId: selection.magnitude ?? undefined }
+            : { magnitude: selection.magnitude ?? null }),
           channel: selection.channel ?? null,
           seriesIds: selection.series,
           shotIds: selection.disparos,
@@ -91,7 +99,8 @@ function fromEquipmentSelectionApi(
         return {
           itemId: resolveItemIdFromDenomination(denominationId, items, selection.categoryId),
           categoryId: selection.categoryId as EquipmentTypeEnum,
-          magnitude: selection.magnitude ?? null,
+          magnitude:
+            (isVideoMeasurementGroup(group.measurementGroup) ? selection.measureId : selection.magnitude) ?? null,
           channel: selection.channel ?? null,
           series: selection.seriesIds ?? [],
           disparos: selection.shotIds ?? selection.shootIds ?? [],

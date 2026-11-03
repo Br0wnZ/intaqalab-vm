@@ -378,14 +378,17 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   );
 
   // ── Estado del disparo ─────────────────────────────────────────────────────
-  protected readonly estadoDisparo = computed(() =>
-    this.isCurrentShot()
+  protected readonly estadoDisparo = computed(() => {
+    if (this.#store.isExecutionStarted && !this.#store.isExecutionStarted()) {
+      return 'PENDIENTE';
+    }
+    return this.isCurrentShot()
       ? 'EN_CURSO'
       : mapShotStatusToEstadoDisparo(
           this.selectedShotProgress()?.status,
           this.#store.velocityIntroduction().estadoDisparo,
-        ),
-  );
+        );
+  });
 
   protected readonly estadoLabel = computed(() => mapSelectedShotStatusLabel(this.estadoDisparo()));
   protected readonly estadoClass = computed(() => mapSelectedShotStatusClass(this.estadoDisparo()));

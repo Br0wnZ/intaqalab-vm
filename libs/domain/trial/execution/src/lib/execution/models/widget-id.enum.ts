@@ -29,6 +29,7 @@ export enum WidgetId {
   VIDEO_DATA_INTRODUCTION = 'video-data-introduction',
   MANOMETER_INTRODUCTION = 'manometer-introduction',
   PIEZO_PRESSURE_INTRODUCTION = 'piezo-pressure-introduction',
+  MEDIDAS_PRESION_IPG = 'medidas-presion-ipg',
 
   // Tarado y uniformidad
   TARADO_VELOCIDAD_CHART = 'tarado-velocidad-chart',

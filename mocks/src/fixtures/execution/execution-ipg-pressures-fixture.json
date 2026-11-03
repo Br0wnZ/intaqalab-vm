@@ -1,0 +1,11 @@
+{
+  "ipgPressuresData": [
+    {
+      "ipgSensorId": 21081,
+      "micromoduleId": 21082,
+      "maxPressure": 3200.5,
+      "maxPressureUnit": "BAR",
+      "observations": ""
+    }
+  ]
+}

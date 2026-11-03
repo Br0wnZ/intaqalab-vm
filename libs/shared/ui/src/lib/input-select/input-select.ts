@@ -175,8 +175,8 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
 })
 export class InputSelect<T extends number | string | null = number | string | null> {
   // ── Inputs ────────────────────────────────────────────────────────────────
-  readonly label = input.required<string>();
-  readonly opciones = input.required<{ value: string; label: string }[]>();
+  readonly label = input<string>('');
+  readonly opciones = input<{ value: string; label: string }[]>([]);
   readonly textColor = input<string | null>(null);
   readonly placeholder = input<string>('0,00');
   readonly readOnly = input(false);

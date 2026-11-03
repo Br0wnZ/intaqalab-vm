@@ -257,6 +257,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.datosBlancoBola().estadoDisparo,
+      this.#store.isExecutionStarted(),
     ),
   );
 

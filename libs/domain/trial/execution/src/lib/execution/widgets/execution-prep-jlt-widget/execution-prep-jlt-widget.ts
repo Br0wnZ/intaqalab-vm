@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { formatShotLabel, injectTrialShots } from '@intaqalab/data-access-planning';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, StopClick } from '@intaqalab/ui';
 import { deepEqual } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -41,6 +41,7 @@ import { mapPlanningSeriesToOptions } from '../utils/selection-options';
     MatTooltipModule,
     MatSelectModule,
     IntaIconComponent,
+    StopClick,
   ],
   template: `
     <mat-card class="h-full min-h-0 !shadow-none border border-gray-100 flex flex-col bg-white overflow-auto">
@@ -63,20 +64,36 @@ import { mapPlanningSeriesToOptions } from '../utils/selection-options';
             </mat-form-field>
           </div>
 
-          <!-- Estado Global -->
-          <div
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
-            [class]="isAllReady() ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'"
-          >
-            <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">{{ isAllReady() ? 'check_circle' : 'pending' }}</mat-icon>
-            <span class="text-xs font-semibold">
-              {{
-                (isAllReady()
-                  ? 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SERIE_READY'
-                  : 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SERIE_PENDING'
-                ) | translate
-              }}
-            </span>
+          <!-- Estado Global + Refrescar -->
+          <div class="flex items-center gap-2">
+            <div
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300"
+              [class]="isAllReady() ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'"
+            >
+              <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">{{ isAllReady() ? 'check_circle' : 'pending' }}</mat-icon>
+              <span class="text-xs font-semibold">
+                {{
+                  (isAllReady()
+                    ? 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SERIE_READY'
+                    : 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.SERIE_PENDING'
+                  ) | translate
+                }}
+              </span>
+            </div>
+
+            <!-- Botón Refrescar -->
+            <button
+              uiStopClick
+              mat-icon-button
+              type="button"
+              class="!w-7 !h-7 !p-0 flex items-center justify-center text-slate-500 hover:text-slate-800"
+              [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.RELOAD' | translate"
+              [matTooltip]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.RELOAD' | translate"
+              [disabled]="isLoading()"
+              (click)="reload()"
+            >
+              <mat-icon class="!text-[18px] !w-[18px] !h-[18px]" [class.animate-spin]="isLoading()">refresh</mat-icon>
+            </button>
           </div>
         </div>
       </mat-card-header>
@@ -286,6 +303,7 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
 
   // 🏁 Computed: ¿Está todo preparado?
   readonly isAllReady = this.#executionStore.isReadyForExecution;
+  readonly isLoading = this.#executionStore.isLoadingJltPreparation;
 
   readonly fireTrialId = this.#executionStore.fireTrialId;
 
@@ -337,6 +355,17 @@ export class ExecutionPrepJltWidgetComponent extends BaseFormWidgetComponent {
   // ──────────────────────────────────────────────────────────────────────────
   // Acciones
   // ──────────────────────────────────────────────────────────────────────────
+
+  reload(): void {
+    const trialId = this.fireTrialId();
+    const serieId = this.resolvedSerieId();
+    if (!trialId || !serieId) {
+      return;
+    }
+
+    this.#lastLoadedJltPreparationKey = null;
+    this.#executionStore.loadJltPreparation(trialId, serieId);
+  }
 
   updateJlt(field: keyof JltStatus, value: boolean): void {
     this.jltDraft.update((draft) => ({ ...draft, [field]: value }));

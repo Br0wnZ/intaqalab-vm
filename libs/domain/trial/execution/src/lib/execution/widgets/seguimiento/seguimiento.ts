@@ -11,12 +11,14 @@ import {
   untracked,
 } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
+import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, StopClick } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution.store';
@@ -55,21 +57,39 @@ interface ComputedSerie {
   imports: [
     FormField,
     ReadonlyContentDirective,
+    MatButtonModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
+    MatTooltipModule,
     TranslateModule,
     IntaIconComponent,
+    StopClick,
   ],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-4 flex flex-col gap-1.5 overflow-hidden">
-      <!-- Header: Icon + Title -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <ui-inta-icon name="file" color="var(--inta-button)" />
-        <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
-          {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
-        </h3>
+      <!-- Header: Icon + Title + Reload -->
+      <div class="flex items-center justify-between gap-1.5 shrink-0">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <ui-inta-icon name="file" color="var(--inta-button)" />
+          <h3 class="text-sm font-semibold text-gray-700 leading-tight truncate">
+            {{ 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' | translate }}
+          </h3>
+        </div>
+
+        <button
+          uiStopClick
+          mat-icon-button
+          type="button"
+          class="!w-7 !h-7 !p-0 flex items-center justify-center text-slate-500 hover:text-slate-800"
+          [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD' | translate"
+          [matTooltip]="'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD' | translate"
+          [disabled]="isLoading()"
+          (click)="reload()"
+        >
+          <mat-icon class="!text-[18px] !w-[18px] !h-[18px]" [class.animate-spin]="isLoading()">refresh</mat-icon>
+        </button>
       </div>
 
       <!-- Controls row: Tab selector + Unit selectors -->
@@ -159,6 +179,10 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #executionService = inject(ExecutionService);
   readonly #trialShots = injectTrialShots();
+
+  protected readonly isLoading = computed(
+    () => this.#executionService.shotMeasurementsResource?.isLoading?.() ?? false,
+  );
 
   // Tab options for selector
   readonly tabOptions: readonly SeguimientoTab[] = [
@@ -342,6 +366,15 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   async saveForm(): Promise<void> {
     const { presionVelocidadUnit, pesosUnit } = this.formModel();
     this.#store.updateSeguimiento({ presionVelocidadUnit, pesosUnit, activeTab: this.activeTab() });
+  }
+
+  reload(): void {
+    const fireTrialId = this.#store.fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+    this.#executionService.getShotMeasurements(fireTrialId);
+    this.#executionService.shotMeasurementsResource?.reload?.();
   }
 
   protected setActiveTab(tab: SeguimientoTab): void {

@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum } from '../execution/models';
 import { WidgetId } from '../execution/models/widget-id.enum';
 import { ExecutionService } from '../services/execution.service';
 import { ExecutionStore } from './execution.store';
@@ -32,6 +33,10 @@ describe('ExecutionStore (composición de features)', () => {
   it('expone el slice de general-data y su método de escritura', () => {
     store.setFireTrialId('trial-1');
     expect(store.fireTrialId()).toBe('trial-1');
+  });
+
+  it('determines if execution is started based on trial status and execution state', () => {
+    expect(store.isExecutionStarted()).toBe(true);
   });
 
   it('does not load the security countdown when execution initializes', () => {
@@ -86,6 +91,80 @@ describe('ExecutionStore (composición de features)', () => {
 
     expect(() => store.equipmentSelectorRemote()).not.toThrow();
     expect(store.equipmentSelectorRemote()).toBeUndefined();
+  });
+
+  it('sends video equipment magnitude selections as measureId without magnitude', () => {
+    const http = TestBed.inject(HttpTestingController);
+    store.setFireTrialId('trial-1');
+    TestBed.tick();
+
+    http.expectOne((request) => request.method === 'GET' && request.url.includes('/equipment-selection')).flush([]);
+
+    store.updateEquipmentSelections([
+      {
+        id: EquipmentMagnitudeTagEnum.VIDEO_AV,
+        selections: [
+          {
+            itemId: 'camera-1',
+            categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+            magnitude: 'planned-video-av-measure',
+            channel: 1,
+            series: ['series-1'],
+            disparos: ['shot-1'],
+          },
+        ],
+      },
+      {
+        id: EquipmentMagnitudeTagEnum.VIDEO_C,
+        selections: [
+          {
+            itemId: 'camera-2',
+            categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+            magnitude: 'planned-video-c-measure',
+            channel: 2,
+            series: ['series-1'],
+            disparos: ['shot-2'],
+          },
+        ],
+      },
+    ]);
+    TestBed.tick();
+
+    const putRequest = http.expectOne(
+      (request) => request.method === 'PUT' && request.url.includes('/equipment-selection'),
+    );
+    expect(putRequest.request.body).toEqual([
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_AV,
+        selections: [
+          {
+            equipmentItemId: 1,
+            equipmentDenominationId: 1,
+            categoryId: EquipmentTypeEnum.HIGH_SPEED_CAMERA,
+            measureId: 'planned-video-av-measure',
+            channel: 1,
+            seriesIds: ['series-1'],
+            shotIds: ['shot-1'],
+          },
+        ],
+      },
+      {
+        measurementGroup: EquipmentMagnitudeTagEnum.VIDEO_C,
+        selections: [
+          {
+            equipmentItemId: 2,
+            equipmentDenominationId: 2,
+            categoryId: EquipmentTypeEnum.CONVENTIONAL_CAMERA,
+            measureId: 'planned-video-c-measure',
+            channel: 2,
+            seriesIds: ['series-1'],
+            shotIds: ['shot-2'],
+          },
+        ],
+      },
+    ]);
+    putRequest.flush(null);
+    TestBed.tick();
   });
 
   it('expone los slices de widgets de orientación e introducción de datos', () => {

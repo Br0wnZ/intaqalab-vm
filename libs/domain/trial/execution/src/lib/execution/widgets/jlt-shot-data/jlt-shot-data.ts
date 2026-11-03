@@ -366,6 +366,7 @@ export class JltShotData extends BaseFormWidgetComponent {
       this.#store.activeSerieId(),
       this.#store.activeShotId(),
       this.#store.jltShotData().estadoDisparo,
+      this.#store.isExecutionStarted?.() ?? true,
     ),
   );
 
