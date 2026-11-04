@@ -63,6 +63,17 @@ describe('VelocityIntroduction', () => {
   const activeShotId = signal<string | null>(ACTIVE_SHOT_ID);
   const fireTrialId = signal<string | null>('trial-123');
   const isTrialReadOnly = signal(false);
+  // El store real expone `executionCapabilities`; el doble las deriva del flag de solo lectura.
+  const executionCapabilities = () => {
+    const readOnly = isTrialReadOnly();
+    return {
+      canEditSetup: !readOnly,
+      canUpdateParticipatingEquipment: !readOnly,
+      canRegisterNewShots: !readOnly,
+      canEditExecutedShots: !readOnly,
+      isReadOnly: readOnly,
+    };
+  };
   const planningSeries = signal([
     { id: 'funcionamiento-1', name: 'Funcionamiento I' },
     { id: 'funcionamiento-2', name: 'Funcionamiento II' },
@@ -94,6 +105,7 @@ describe('VelocityIntroduction', () => {
     activeShotId,
     fireTrialId,
     isTrialReadOnly,
+    executionCapabilities,
     updateVelocityIntroduction: (updates: Record<string, unknown>) => {
       velocityState.update((state) => ({ ...state, ...updates }));
     },

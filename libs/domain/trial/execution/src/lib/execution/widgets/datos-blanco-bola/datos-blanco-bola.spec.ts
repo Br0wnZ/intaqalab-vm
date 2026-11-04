@@ -4,6 +4,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TrialStatus, type TrialCreateModifyForm } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
 import { TranslateModule } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
@@ -18,9 +20,26 @@ const mockWidgetStateService = {
   placedWidgets: () => [],
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('DatosBlancoBola', () => {
-  const renderWidget = (widgetId = 'test-datos-blanco-bola') =>
-    render(DatosBlancoBola, {
+  const renderWidget = async (widgetId = 'test-datos-blanco-bola') => {
+    const result = await render(DatosBlancoBola, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -32,6 +51,10 @@ describe('DatosBlancoBola', () => {
       ],
       imports: [TranslateModule.forRoot()],
     });
+    // Se parchea el estado directamente para no disparar GETs pendientes.
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();

@@ -80,6 +80,13 @@ function createMockStore(overrides?: {
     isSavingReadiness: signal(false),
     fireTrialId: signal<string | null>('trial-123'),
     isTrialReadOnly: vi.fn().mockReturnValue(false),
+    executionCapabilities: vi.fn().mockReturnValue({
+      canEditSetup: true,
+      canUpdateParticipatingEquipment: true,
+      canRegisterNewShots: true,
+      canEditExecutedShots: true,
+      isReadOnly: false,
+    }),
     saveProfileReadiness: vi.fn().mockResolvedValue({ updatedSeries: [], failures: [] }),
   };
 }

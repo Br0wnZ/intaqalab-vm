@@ -37,7 +37,9 @@ export interface ShotFormLock {
  * 1. Disparo en curso (`EN_CURSO`): editable por defecto (`readOnly = false`).
  * 2. Disparo ejecutado (`EJECUTADA` / `FIRED`): bloqueado (`readOnly = true`) pero habilita botón de edición.
  * 3. Disparo pendiente (`PENDIENTE`): bloqueado (`readOnly = true`) sin posibilidad de edición.
- * 4. Prueba en solo lectura (`isTrialReadOnly`): bloqueado sin posibilidad de edición.
+ * 4. Estado de la prueba sin permiso de edición (`executionCapabilities`): se aplica la
+ *    política por estado — sin registro de disparos, no se edita el disparo en curso;
+ *    sin edición de disparos ejecutados, no se habilita el botón de edición histórica.
  *
  * Reseteos automáticos:
  * - Al cambiar de serie o disparo seleccionado -> vuelve a modo bloqueado.
@@ -86,18 +88,17 @@ export function injectShotFormLock(
   const isUnexecutedShot = computed(() => !isCurrentShot() && selectedShotProgress()?.status !== 'FIRED');
 
   const canEnableHistoricalEdit = computed(
-    () => !(store?.isTrialReadOnly() ?? false) && isHistoricalFiredShot() && !historicalEditEnabled(),
+    () => !!store?.executionCapabilities().canEditExecutedShots && isHistoricalFiredShot() && !historicalEditEnabled(),
   );
 
   const readOnly = computed(() => {
     const { serie, disparo } = getSelection();
-    return (
-      !serie ||
-      !disparo ||
-      (store?.isTrialReadOnly() ?? false) ||
-      isUnexecutedShot() ||
-      (isHistoricalFiredShot() && !historicalEditEnabled())
-    );
+    const capabilities = store?.executionCapabilities();
+    if (!capabilities) return !serie || !disparo || isUnexecutedShot() || (isHistoricalFiredShot() && !historicalEditEnabled());
+    if (!serie || !disparo) return true;
+    if (isCurrentShot()) return !capabilities.canRegisterNewShots;
+    if (isHistoricalFiredShot()) return !capabilities.canEditExecutedShots || !historicalEditEnabled();
+    return true;
   });
 
   const shotStatus = computed<SelectedShotState>(() => {

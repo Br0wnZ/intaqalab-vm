@@ -248,7 +248,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
     selectedSerieId: () => this.formModel().serie,
     selectedShotId: () => this.formModel().disparo,
   });
-  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
+  protected readonly readOnly = computed(() => !this.#store.executionCapabilities().canEditSetup);
 
   // ── Snapshot for numeric dirty tracking ───────────────────────────────────
   readonly #savedSnapshot = signal<{

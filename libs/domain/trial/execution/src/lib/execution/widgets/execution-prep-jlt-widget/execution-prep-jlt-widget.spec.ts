@@ -55,6 +55,13 @@ function createMockStore(overrides?: {
     fireTrialId: signal('trial-123'),
     isLoadingJltPreparation: signal(false),
     isTrialReadOnly: vi.fn().mockReturnValue(false),
+    executionCapabilities: vi.fn().mockReturnValue({
+      canEditSetup: true,
+      canUpdateParticipatingEquipment: true,
+      canRegisterNewShots: true,
+      canEditExecutedShots: true,
+      isReadOnly: false,
+    }),
     setOptimisticActiveShot: vi.fn(),
     selectJltShot: vi.fn(),
     fireJltShot: vi.fn(),

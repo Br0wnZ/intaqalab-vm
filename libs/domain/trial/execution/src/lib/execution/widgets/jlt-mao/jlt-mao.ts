@@ -326,6 +326,7 @@ export class JltMao extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
+  readonly #canEditSetup = computed(() => this.#store.executionCapabilities().canEditSetup);
   readonly #executionService = inject(ExecutionService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
@@ -450,26 +451,26 @@ export class JltMao extends BaseFormWidgetComponent {
 
   protected readonly hasManualOlt = computed(() => this.#parseNum(this.oltField()) !== null);
   protected readonly distanciaPiqueReadOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedRange() !== null,
+    () => !this.#canEditSetup() || this.plannedRange() !== null,
   );
   protected readonly alturaFuncionamientoReadOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedFunctioningHeight() !== null,
+    () => !this.#canEditSetup() || this.plannedFunctioningHeight() !== null,
   );
   protected readonly oltReadOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.formModel().piqueta !== null,
+    () => !this.#canEditSetup() || this.plannedOlt() !== null || this.formModel().piqueta !== null,
   );
   protected readonly piquetaDisabled = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.hasManualOlt(),
+    () => !this.#canEditSetup() || this.plannedOlt() !== null || this.hasManualOlt(),
   );
   protected readonly angularDifferenceReadOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedOlt() !== null || this.hasManualOlt(),
+    () => !this.#canEditSetup() || this.plannedOlt() !== null || this.hasManualOlt(),
   );
   protected readonly anguloTiroReadOnly = computed(
-    () => this.#store.isTrialReadOnly() || this.plannedShootingAngle() !== null,
+    () => !this.#canEditSetup() || this.plannedShootingAngle() !== null,
   );
   protected readonly graduacionEspoletaReadOnly = computed(
     () =>
-      this.#store.isTrialReadOnly() ||
+      !this.#canEditSetup() ||
       this.plannedFuseGraduation() !== null ||
       this.conditionsFuseGraduation() !== null ||
       this.remoteFuseGraduation() !== null,

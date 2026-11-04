@@ -36,7 +36,8 @@ export class ReadonlyContentDirective {
   /**
    * Permite override explícito (p.ej. [intaReadonlyContent]="shotLock.readOnly()").
    * Si no se provee (o es string vacío como atributo puro `intaReadonlyContent`),
-   * consulta `store.isTrialReadOnly()`.
+   * consulta el estado de solo lectura derivado de la política de la prueba
+   * (`store.isTrialReadOnly()`, calculado desde `executionCapabilities`).
    */
   readonly readonlyInput = input<boolean | string | undefined>(undefined, { alias: 'intaReadonlyContent' });
 
@@ -47,7 +48,7 @@ export class ReadonlyContentDirective {
    */
   readonly #store = inject(ExecutionStore, { skipSelf: true, optional: true });
 
-  /** `true` si el input explícito es true, o si falta el input y la prueba es de solo lectura. */
+  /** `true` si el input explícito es true, o si falta el input y la política de la prueba es de solo lectura. */
   protected readonly isReadOnly = computed(() => {
     const inputVal = this.readonlyInput();
     if (typeof inputVal === 'boolean') {

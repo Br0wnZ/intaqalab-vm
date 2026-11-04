@@ -246,7 +246,7 @@ export class DatosBlancoBola extends BaseFormWidgetComponent {
   );
 
   // ── ReadOnly State ─────────────────────────────────────────────────────────
-  protected readonly readOnly = computed(() => this.#store.isTrialReadOnly());
+  protected readonly readOnly = computed(() => !this.#store.executionCapabilities().canEditSetup);
 
   // ── Estado del disparo ────────────────────────────────────────────────────
   protected readonly estadoDisparo = computed(() =>

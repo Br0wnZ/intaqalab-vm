@@ -7,6 +7,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
+import { TrialStatus, type TrialCreateModifyForm } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -26,9 +28,26 @@ const mockWidgetStateService = {
   saveSuccessCount: signal(0),
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('MaoTopography', () => {
-  const renderWidget = (widgetId = 'test-mao-topo') =>
-    render(MaoTopography, {
+  const renderWidget = async (widgetId = 'test-mao-topo') => {
+    const result = await render(MaoTopography, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -40,6 +59,10 @@ describe('MaoTopography', () => {
       ],
       imports: [TranslateModule.forRoot()],
     });
+    // Se parchea el estado directamente para no disparar GETs pendientes.
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();

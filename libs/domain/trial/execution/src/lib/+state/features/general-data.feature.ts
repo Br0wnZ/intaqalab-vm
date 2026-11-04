@@ -9,6 +9,7 @@ import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, w
 import type { WidgetPreferenceId } from '../../execution/models';
 import { WidgetId } from '../../execution/models';
 import { ExecutionService } from '../../services/execution.service';
+import { resolveTrialExecutionCapabilities } from '../policies/trial-execution-policy';
 
 export const DEFAULT_AUTONOMOUS_WIDGETS: readonly WidgetId[] = [WidgetId.SEGUIMIENTO];
 
@@ -93,16 +94,16 @@ export function withGeneralData() {
          * (Ejecutada, Finalizando, Cerrada o Cancelada).
          * Cuando es `true`, todos los widgets de entrada deben ser no editables.
          */
-        isTrialReadOnly: computed(() => {
-          const status = store.fireTrial()?.status;
-          const READONLY_STATUSES: TrialStatus[] = [
-            TrialStatus.EXECUTED,
-            TrialStatus.FINALIZING,
-            TrialStatus.CLOSED,
-            TrialStatus.CANCELLED,
-          ];
-          return status !== null && READONLY_STATUSES.includes(status as TrialStatus);
-        }),
+        /** Capacidades de edición derivadas del estado de la prueba y de la ejecución activa. */
+        executionCapabilities: computed(() =>
+          resolveTrialExecutionCapabilities(store.fireTrial()?.status, {
+            executionActive: !!store.activeSerieId() && !!store.activeShotId(),
+          }),
+        ),
+
+        isTrialReadOnly: computed(() => resolveTrialExecutionCapabilities(store.fireTrial()?.status, {
+          executionActive: !!store.activeSerieId() && !!store.activeShotId(),
+        }).isReadOnly),
 
         /**
          * Indica si la ejecución del ensayo ha sido iniciada.

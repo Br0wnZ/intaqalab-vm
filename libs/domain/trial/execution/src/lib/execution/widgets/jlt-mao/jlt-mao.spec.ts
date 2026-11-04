@@ -9,7 +9,8 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
-import { AngleUnitEnum } from '@intaqalab/models';
+import { AngleUnitEnum, TrialStatus, type TrialCreateModifyForm } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -29,9 +30,26 @@ const mockWidgetStateService = {
   saveSuccessCount: signal(0),
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('JltMao', () => {
-  const renderWidget = (widgetId = 'test-jlt-mao') =>
-    render(JltMao, {
+  const renderWidget = async (widgetId = 'test-jlt-mao') => {
+    const result = await render(JltMao, {
       componentInputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -43,6 +61,11 @@ describe('JltMao', () => {
       ],
       imports: [TranslateModule.forRoot()],
     });
+    // Se parchea el estado directamente para no disparar GETs que dejarían
+    // peticiones pendientes y bloquearían la estabilización de los harness.
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();

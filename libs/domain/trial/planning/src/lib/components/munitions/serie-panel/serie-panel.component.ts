@@ -2,21 +2,26 @@ import type { WritableSignal } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
+  ViewContainerRef,
   ViewEncapsulation,
   computed,
+  inject,
   input,
   linkedSignal,
   output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
-import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { IntaIconComponent, StopClick } from '@intaqalab/ui';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import type { Configuration, Serie } from '../../../utils-models/munitions.model';
 import { createEmptyConfiguration } from '../../../utils-models/munitions.model';
 import type { Shot } from '../../../utils-models/series-and-shots.model';
+import { ConfirmDeleteConfigurationDialog } from '../../confirm-delete-configuration-dialog/confirm-delete-configuration-dialog';
 import { ConfigurationFormComponent } from '../configuration-form/configuration-form.component';
 
 @Component({
@@ -28,6 +33,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
     ConfigurationFormComponent,
     TranslateModule,
     IntaIconComponent,
+    StopClick,
   ],
   template: `
     <mat-expansion-panel
@@ -45,10 +51,11 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
             }}
           </span>
           <button
+            uiStopClick
             mat-flat-button
             class="!h-7 !min-h-0 !px-2 !text-xs flex items-center gap-1"
             [disabled]="readonly() || allShotsAssigned()"
-            (click)="onAddMunition(); $event.stopPropagation()"
+            (click)="onAddMunition()"
           >
             <ui-inta-icon name="plus" size="xs" />
             {{ 'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.add_munition' | translate }}
@@ -78,12 +85,13 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
                 </button> -->
                 <div class="flex items-center mr-4 mt-2">
                   <button
+                    uiStopClick
                     mat-icon-button
                     type="button"
                     class="!text-gray-500 hover:!text-red-500"
                     [disabled]="readonly()"
                     [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
-                    (click)="onDeleteConfiguration(configIdx); $event.stopPropagation()"
+                    (click)="onDeleteConfiguration(configIdx)"
                   >
                     <mat-icon>delete</mat-icon>
                   </button>
@@ -130,6 +138,10 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriePanelComponent {
+  readonly #dialog = inject(MatDialog);
+  readonly #translate = inject(TranslateService);
+  readonly #viewContainerRef = inject(ViewContainerRef);
+
   readonly serie = input.required<Serie>();
 
   readonly serieIndex = input.required<number>();
@@ -192,10 +204,38 @@ export class SeriePanelComponent {
     );
   }
 
-  onDeleteConfiguration(configIndex: number): void {
+  async onDeleteConfiguration(configIndex: number): Promise<void> {
     if (this.readonly()) {
       return;
     }
-    this.deleteConfiguration.emit(configIndex);
+
+    const config = this.configurations()[configIndex];
+    const rawConfigName = (config as { name?: string } | undefined)?.name || String(configIndex + 1);
+    const configName = this.#toTitleCase(rawConfigName);
+
+    const dialogRef = this.#dialog.open(ConfirmDeleteConfigurationDialog, {
+      viewContainerRef: this.#viewContainerRef,
+      data: {
+        title: this.#translate.instant('TRIAL_PLANNING.DELETE_CONFIGURATION_DIALOG.TITLE'),
+        message: this.#translate.instant('TRIAL_PLANNING.DELETE_CONFIGURATION_DIALOG.MESSAGE', {
+          name: configName,
+          serieName: this.serieName(),
+        }),
+        confirmText: this.#translate.instant('TRIAL_PLANNING.DELETE_CONFIGURATION_DIALOG.CONFIRM'),
+        cancelText: this.#translate.instant('TRIAL_PLANNING.DELETE_CONFIGURATION_DIALOG.CANCEL'),
+      },
+    });
+
+    const confirmed = await firstValueFrom(dialogRef.afterClosed());
+    if (confirmed) {
+      this.deleteConfiguration.emit(configIndex);
+    }
+  }
+
+  #toTitleCase(value: string): string {
+    if (!value) {
+      return '';
+    }
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 }

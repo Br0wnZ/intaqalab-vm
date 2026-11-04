@@ -2125,6 +2125,12 @@
         "WEAPON_PLACEHOLDER": "Select weapon"
       }
     },
+    "DELETE_CONFIGURATION_DIALOG": {
+      "CANCEL": "Back",
+      "CONFIRM": "Delete",
+      "MESSAGE": "Do you want to delete configuration {{name}} for series {{serieName}}?",
+      "TITLE": "Delete configuration"
+    },
     "DELETE_SERIE_DIALOG": {
       "CANCEL": "Back",
       "CONFIRM": "Delete",
@@ -2317,6 +2323,7 @@
       },
       "SERIE_PANEL": {
         "CONFIG_TITLE": "Configuration {{index}}",
+        "CONFIRM_DELETE_MESSAGE": "Do you want to delete configuration {{name}} for series {{serieName}}?",
         "DELETE_CONFIG": "Delete settings",
         "EMPTY_CONFIGS": "No ammunition configurations. Click \"Add ammunition\" to start.",
         "TITLE": "Serie {{index}} - {{name}}",

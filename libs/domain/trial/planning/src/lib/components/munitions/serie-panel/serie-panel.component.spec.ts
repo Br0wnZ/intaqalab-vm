@@ -2,21 +2,26 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { WritableSignal } from '@angular/core';
 import { signal } from '@angular/core';
-import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import type { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { createMockMatDialog } from '@intaqalab/utils';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
+import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
-import type { Serie } from '../../../utils-models/munitions.model';
+import type { Configuration, Serie } from '../../../utils-models/munitions.model';
 import { createEmptyConfiguration, createEmptySerie } from '../../../utils-models/munitions.model';
+import { ConfirmDeleteConfigurationDialog } from '../../confirm-delete-configuration-dialog/confirm-delete-configuration-dialog';
 import { SeriePanelComponent } from './serie-panel.component';
 
 const defaultImports = [TranslateModule.forRoot()];
-const defaultProviders = [
+const baseProviders = [
   provideHttpClient(),
   provideHttpClientTesting(),
   provideTestingEnvironment(),
@@ -25,13 +30,15 @@ const defaultProviders = [
 ];
 
 describe('SeriePanelComponent', () => {
-  let fixture: ComponentFixture<SeriePanelComponent>;
   let seriesSignal: WritableSignal<Serie[]>;
+  let mockDialog: ReturnType<typeof createMockMatDialog>;
 
   const defaultSerie: Serie = createEmptySerie('Test Serie');
+  const getProviders = () => [...baseProviders, { provide: MatDialog, useValue: mockDialog }];
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    mockDialog = createMockMatDialog({ defaultResult: null });
     seriesSignal = signal([defaultSerie]);
   });
 
@@ -43,7 +50,7 @@ describe('SeriePanelComponent', () => {
     it('should render serie panel with its name', async () => {
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -57,7 +64,7 @@ describe('SeriePanelComponent', () => {
     it('should render the add munition button', async () => {
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -77,7 +84,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: { ...defaultSerie, configurations: [] },
           serieIndex: 0,
@@ -96,7 +103,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: serieWithConfigs,
           serieIndex: 0,
@@ -111,11 +118,9 @@ describe('SeriePanelComponent', () => {
 
   describe('Adding munition', () => {
     it('should add a new configuration when button is clicked', async () => {
-      const user = userEvent.setup();
-
-      const renderResult = await render(SeriePanelComponent, {
+      const { fixture } = await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -123,7 +128,6 @@ describe('SeriePanelComponent', () => {
         },
       });
 
-      fixture = renderResult.fixture;
       const component = fixture.componentInstance;
 
       const initialConfigCount = seriesSignal()[0].configurations.length;
@@ -134,11 +138,9 @@ describe('SeriePanelComponent', () => {
     });
 
     it('should add multiple configurations', async () => {
-      const user = userEvent.setup();
-
-      const renderResult = await render(SeriePanelComponent, {
+      const { fixture } = await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -146,7 +148,6 @@ describe('SeriePanelComponent', () => {
         },
       });
 
-      fixture = renderResult.fixture;
       const component = fixture.componentInstance;
 
       component.onAddMunition();
@@ -171,7 +172,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: serieWithAllShotsAssigned,
           serieIndex: 0,
@@ -200,7 +201,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: serieWithSomeShotsAssigned,
           serieIndex: 0,
@@ -220,9 +221,9 @@ describe('SeriePanelComponent', () => {
 
   describe('Configuration updates', () => {
     it('should update seriesSignal when a configuration changes', async () => {
-      const renderResult = await render(SeriePanelComponent, {
+      const { fixture } = await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -230,7 +231,6 @@ describe('SeriePanelComponent', () => {
         },
       });
 
-      fixture = renderResult.fixture;
       const component = fixture.componentInstance;
 
       const updatedConfig = { ...defaultSerie.configurations[0], batch: 'NEW-LOT' };
@@ -246,9 +246,9 @@ describe('SeriePanelComponent', () => {
       };
       const localSeriesSignal = signal([serieWithConfigs]);
 
-      const renderResult = await render(SeriePanelComponent, {
+      const { fixture } = await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: serieWithConfigs,
           serieIndex: 0,
@@ -256,7 +256,6 @@ describe('SeriePanelComponent', () => {
         },
       });
 
-      fixture = renderResult.fixture;
       const component = fixture.componentInstance;
 
       const updatedConfig = { ...serieWithConfigs.configurations[1], batch: 'SECOND-LOT' };
@@ -273,7 +272,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -292,7 +291,7 @@ describe('SeriePanelComponent', () => {
 
       await render(SeriePanelComponent, {
         imports: defaultImports,
-        providers: defaultProviders,
+        providers: getProviders(),
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -306,6 +305,221 @@ describe('SeriePanelComponent', () => {
       await user.click(panelHeader);
 
       expect(screen.getByText(/TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.TITLE/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Delete configuration', () => {
+    const serieWithConfig: Serie = {
+      ...defaultSerie,
+      configurations: [createEmptyConfiguration()],
+    };
+
+    const setupTranslations = () => {
+      const translate = TestBed.inject(TranslateService);
+      translate.setTranslation('es', {
+        TRIAL_PLANNING: {
+          DELETE_CONFIGURATION_DIALOG: {
+            TITLE: 'Eliminar configuración',
+            MESSAGE: '¿Deseas eliminar la configuración {{name}} para la serie {{serieName}}?',
+            CONFIRM: 'Eliminar',
+            CANCEL: 'Volver',
+          },
+          MUNITIONS: {
+            SERIE_PANEL: {
+              DELETE_CONFIG: 'Eliminar configuración',
+            },
+          },
+        },
+      });
+      translate.use('es');
+    };
+
+    it('should open confirm delete dialog with correct data when delete button is clicked and emit on confirmation', async () => {
+      const user = userEvent.setup();
+      const deleteConfigSpy = vi.fn();
+
+      mockDialog.open.mockReturnValueOnce({
+        afterClosed: () => of(true),
+        close: vi.fn(),
+      } as unknown as MatDialogRef<unknown>);
+
+      const view = await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: getProviders(),
+        componentInputs: {
+          serie: serieWithConfig,
+          serieIndex: 0,
+          seriesSignal: signal([serieWithConfig]),
+          expanded: true,
+        },
+      });
+
+      setupTranslations();
+      view.fixture.componentInstance.deleteConfiguration.subscribe(deleteConfigSpy);
+
+      const deleteButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG|Eliminar configuración/i,
+      });
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(mockDialog.open).toHaveBeenCalledWith(
+          ConfirmDeleteConfigurationDialog,
+          expect.objectContaining({
+            data: expect.objectContaining({
+              title: 'Eliminar configuración',
+              message: '¿Deseas eliminar la configuración 1 para la serie Test Serie?',
+              confirmText: 'Eliminar',
+              cancelText: 'Volver',
+            }),
+          }),
+        );
+        expect(deleteConfigSpy).toHaveBeenCalledWith(0);
+      });
+    });
+
+    it('should not emit deleteConfiguration when dialog is cancelled', async () => {
+      const user = userEvent.setup();
+      const deleteConfigSpy = vi.fn();
+
+      mockDialog.open.mockReturnValueOnce({
+        afterClosed: () => of(false),
+        close: vi.fn(),
+      } as unknown as MatDialogRef<unknown>);
+
+      const view = await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: getProviders(),
+        componentInputs: {
+          serie: serieWithConfig,
+          serieIndex: 0,
+          seriesSignal: signal([serieWithConfig]),
+          expanded: true,
+        },
+      });
+
+      setupTranslations();
+      view.fixture.componentInstance.deleteConfiguration.subscribe(deleteConfigSpy);
+
+      const deleteButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG|Eliminar configuración/i,
+      });
+      await user.click(deleteButton);
+
+      await waitFor(() => {
+        expect(mockDialog.open).toHaveBeenCalledWith(ConfirmDeleteConfigurationDialog, expect.anything());
+        expect(deleteConfigSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should not open dialog when readonly is true', async () => {
+      const view = await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: getProviders(),
+        componentInputs: {
+          serie: serieWithConfig,
+          serieIndex: 0,
+          seriesSignal: signal([serieWithConfig]),
+          expanded: true,
+          readonly: true,
+        },
+      });
+
+      setupTranslations();
+
+      const deleteButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG|Eliminar configuración/i,
+      });
+      expect(deleteButton).toBeDisabled();
+
+      const component = view.fixture.componentInstance;
+      await component.onDeleteConfiguration(0);
+
+      expect(mockDialog.open).not.toHaveBeenCalled();
+    });
+
+    it('should pass custom configuration name if present on configuration', async () => {
+      mockDialog.open.mockReturnValueOnce({
+        afterClosed: () => of(false),
+        close: vi.fn(),
+      } as unknown as MatDialogRef<unknown>);
+
+      const customSerie: Serie = {
+        ...defaultSerie,
+        configurations: [
+          {
+            ...createEmptyConfiguration(),
+            name: 'CustomConfigAlpha',
+          } as unknown as Configuration,
+        ],
+      };
+
+      const view = await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: getProviders(),
+        componentInputs: {
+          serie: customSerie,
+          serieIndex: 0,
+          seriesSignal: signal([customSerie]),
+          expanded: true,
+        },
+      });
+
+      setupTranslations();
+
+      const component = view.fixture.componentInstance;
+      await component.onDeleteConfiguration(0);
+
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        ConfirmDeleteConfigurationDialog,
+        expect.objectContaining({
+          data: expect.objectContaining({
+            message: '¿Deseas eliminar la configuración CustomConfigAlpha para la serie Test Serie?',
+          }),
+        }),
+      );
+    });
+
+    it('should format configuration name in titlecase with first letter capitalized', async () => {
+      mockDialog.open.mockReturnValueOnce({
+        afterClosed: () => of(false),
+        close: vi.fn(),
+      } as unknown as MatDialogRef<unknown>);
+
+      const lowercaseSerie: Serie = {
+        ...defaultSerie,
+        configurations: [
+          {
+            ...createEmptyConfiguration(),
+            name: 'configuración especial',
+          } as unknown as Configuration,
+        ],
+      };
+
+      const view = await render(SeriePanelComponent, {
+        imports: defaultImports,
+        providers: getProviders(),
+        componentInputs: {
+          serie: lowercaseSerie,
+          serieIndex: 0,
+          seriesSignal: signal([lowercaseSerie]),
+          expanded: true,
+        },
+      });
+
+      setupTranslations();
+
+      const component = view.fixture.componentInstance;
+      await component.onDeleteConfiguration(0);
+
+      expect(mockDialog.open).toHaveBeenCalledWith(
+        ConfirmDeleteConfigurationDialog,
+        expect.objectContaining({
+          data: expect.objectContaining({
+            message: '¿Deseas eliminar la configuración Configuración especial para la serie Test Serie?',
+          }),
+        }),
+      );
     });
   });
 });

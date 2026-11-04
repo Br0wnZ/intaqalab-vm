@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -47,10 +47,21 @@ describe('injectShotFormLock', () => {
       },
     );
 
+    const executionCapabilities = computed(() => {
+      const readOnly = isTrialReadOnly();
+      return {
+        canEditSetup: !readOnly,
+        canUpdateParticipatingEquipment: !readOnly,
+        canRegisterNewShots: !readOnly,
+        canEditExecutedShots: !readOnly,
+        isReadOnly: readOnly,
+      };
+    });
+
     const mockStore = {
       activeSerieId: activeSerieId.asReadonly(),
       activeShotId: activeShotId.asReadonly(),
-      isTrialReadOnly: isTrialReadOnly.asReadonly(),
+      executionCapabilities,
       isExecutionStarted: isExecutionStarted.asReadonly(),
       executionProgress: executionProgress.asReadonly(),
     };
