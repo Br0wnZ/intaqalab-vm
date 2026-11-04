@@ -1439,6 +1439,7 @@
           "VELOCIDADES": "Geschwindigkeiten",
           "VIDEO": "Video"
         },
+        "SAVE_SERIES_FAILED": "{{profile}} für Serie {{series}} ({{seriesId}}) konnte nicht gespeichert werden.",
         "SELECT_ALL": "Alle Serien auswählen",
         "TITLE": "Vorbereitung der Ausführung"
       },

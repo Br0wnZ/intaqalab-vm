@@ -5,6 +5,7 @@ type TrialStatus =
   | 'PLANNED'
   | 'PREPARED'
   | 'IN_PROGRESS'
+  | 'PAUSED'
   | 'INTERRUPTED'
   | 'STARTED'
   | 'EXECUTED'

@@ -2,12 +2,18 @@
 
 Los stores son la fuente de verdad para los componentes. Usan `signalStore` de `@ngrx/signals` y NUNCA hacen peticiones HTTP directamente — siempre delegan al servicio correspondiente.
 
-## Patrón Arquitectónico
+## Patrón Arquitectónico (CQS)
 
 ```
-Component → Store.method() → Service.method() → signal.set() → httpResource fetch
-                ↑                                                        |
-                └────── Store.computed ← Service.resource.value() ←──────┘
+[QUERIES - GET]
+Component → Store.load() → Service.load() → signal.set() → httpResource fetch
+    ↑                                                            │
+    └────────── Store.computed ← Service.resource.value() ───────┘
+
+[MUTATIONS - POST / PUT / PATCH / DELETE]
+Component → Store.save() → await Service.save() → HttpClient.put/post()
+    │                                                     │
+    └─ (await completa) → Store recarga queries (GET) ────┘
 ```
 
 ## Estructura Base

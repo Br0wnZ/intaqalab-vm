@@ -558,7 +558,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
         observations: observaciones,
       });
       try {
-        await this.#executionService.setShotVelocity(fireTrialId, serie, disparo, payload);
+        await this.#executionService.updateShotVelocity(fireTrialId, serie, disparo, payload);
         this.#syncSnapshot();
       } catch (error) {
         console.error('Failed to save shot velocity', error);

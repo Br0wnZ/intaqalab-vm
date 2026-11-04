@@ -7,7 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ToastrService } from 'ngx-toastr';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { TECH_PROFILE_TO_API } from '../../../+state/features/readiness.feature';
@@ -267,6 +268,8 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  readonly #translate = inject(TranslateService);
+  readonly #toastr = inject(ToastrService);
 
   /**
    * ⚙️ Computed: Configuración visual del perfil activo
@@ -409,15 +412,26 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
     if (!fireTrialId) return;
 
     const apiProfile = TECH_PROFILE_TO_API[this.profile()];
+    const storedItem = this.#store.profilesReadiness()?.find((item) => item.profile === apiProfile);
+    const storedBySeriesId = new Map(storedItem?.seriesReadiness.map((serie) => [serie.seriesId, serie]));
+    const changedSeries = this.seriesReadiness().flatMap((serie) => {
+      const stored = storedBySeriesId.get(serie.serieId);
+      const hasChanges =
+        serie.ready !== (stored?.isReady ?? false) || serie.observations !== (stored?.observations ?? '');
 
-    await this.#store.saveProfileReadiness(
-      fireTrialId,
-      apiProfile,
-      this.seriesReadiness().map((s) => ({
-        seriesId: s.serieId,
-        isReady: s.ready,
-        observations: s.observations || undefined,
-      })),
-    );
+      return hasChanges ? [{ seriesId: serie.serieId, isReady: serie.ready, observations: serie.observations }] : [];
+    });
+
+    if (changedSeries.length === 0) return;
+
+    const result = await this.#store.saveProfileReadiness(fireTrialId, apiProfile, changedSeries);
+    for (const failure of result.failures) {
+      const seriesName = this.seriesReadiness().find((serie) => serie.serieId === failure.seriesId)?.serieName;
+      const message = this.#translate.instant('TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.SAVE_SERIES_FAILED', {
+        profile: this.#translate.instant(this.profileConfig().titleKey),
+        series: seriesName ?? failure.seriesId,
+      });
+      this.#toastr.error(message, this.#translate.instant('HTTP_ERRORS.TITLE'));
+    }
   }
 }

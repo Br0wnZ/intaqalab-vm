@@ -1439,6 +1439,7 @@
           "VELOCIDADES": "Speeds",
           "VIDEO": "Video"
         },
+        "SAVE_SERIES_FAILED": "Could not save {{profile}} for series {{series}} ({{seriesId}}).",
         "SELECT_ALL": "Select all series",
         "TITLE": "Execution preparation"
       },

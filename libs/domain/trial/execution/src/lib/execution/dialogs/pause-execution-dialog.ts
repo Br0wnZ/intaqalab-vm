@@ -1,14 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { ExecutionStore } from '../../+state/execution.store';
-
 export type PauseExecutionDialogData = {
   trialName: string;
-  trialId: string;
 };
 
 export type PauseExecutionDialogResult = { action: 'pause' } | { action: 'back' };
@@ -16,7 +13,6 @@ export type PauseExecutionDialogResult = { action: 'pause' } | { action: 'back' 
 @Component({
   selector: 'inta-pause-execution-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule, TranslateModule],
-  providers: [ExecutionStore],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title class="flex items-center justify-center gap-2 text-lg font-bold text-gray-900 m-0">
@@ -64,19 +60,8 @@ export class PauseExecutionDialog {
   readonly #dialogRef = inject<MatDialogRef<PauseExecutionDialog, PauseExecutionDialogResult>>(MatDialogRef);
 
   readonly data = inject<PauseExecutionDialogData>(MAT_DIALOG_DATA);
-  readonly #store = inject(ExecutionStore);
-
-  constructor() {
-    effect(() => {
-      const status = this.#store.pauseExecutionStatus();
-      console.log('Pause status:', status);
-      if (status === 'resolved') {
-        this.#dialogRef.close({ action: 'pause' });
-      }
-    });
-  }
 
   pause(): void {
-    this.#store.pauseExecution(this.data.trialId);
+    this.#dialogRef.close({ action: 'pause' });
   }
 }

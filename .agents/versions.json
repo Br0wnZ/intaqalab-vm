@@ -6,24 +6,24 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.2.0",
-      "lastUpdated": "2026-10-20",
-      "checksum": "4ed43a20b1ea159d",
+      "version": "1.3.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "17b9b90ee9a43bb8",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
   "skills": {
     "angular-architect": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-09-29",
-      "checksum": "25f036457f0bada2",
+      "version": "1.0.2",
+      "lastUpdated": "2026-11-03",
+      "checksum": "c7ce4df8529b5582",
       "path": ".agents/skills/angular-architect/SKILL.md",
       "description": "Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns."
     },
     "angular-developer": {
-      "version": "1.0.1",
-      "lastUpdated": "2026-10-24",
-      "checksum": "16bd1d91a1e79cf5",
+      "version": "1.0.2",
+      "lastUpdated": "2026-11-03",
+      "checksum": "c75ff84b11021433",
       "path": ".agents/skills/angular-developer/SKILL.md",
       "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
     },
@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.2.0",
-      "lastUpdated": "2026-10-20",
-      "checksum": "0cebd01ce7503520",
+      "version": "1.3.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "b1c676226540b688",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
@@ -133,30 +133,30 @@
       "description": "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
     },
     "planning-specialist": {
-      "version": "1.1.1",
-      "lastUpdated": "2026-10-20",
-      "checksum": "2b65ab3963e76cb0",
+      "version": "1.1.2",
+      "lastUpdated": "2026-11-03",
+      "checksum": "c135f51f9bf8c724",
       "path": ".agents/skills/planning-specialist/SKILL.md",
       "description": ">"
     },
     "signal-trigger-pattern": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "9b99c6be1c1c2ed2",
+      "version": "1.1.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "d4f4af9457e3caa7",
       "path": ".agents/skills/signal-trigger-pattern/SKILL.md",
-      "description": "Implements the Signal Trigger Pattern — the mandatory httpResource + private trigger signal pattern for all data fetching in the Intaqalab project. USE WHEN creating or modifying data-access services, stores that fetch remote data, or any component that needs to load data from an API."
+      "description": "Implements the Signal Trigger Pattern — mandatory httpResource + private trigger signal pattern for GET queries, and HttpClient + firstValueFrom for mutations in Intaqalab. USE WHEN creating or modifying data-access services, stores that fetch remote data or execute mutations, or any component that interacts with APIs."
     },
     "signalstore-expert": {
-      "version": "1.0.0",
-      "lastUpdated": "2026-09-29",
-      "checksum": "eada0141157095eb",
+      "version": "1.1.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "7702e6ade97f4aec",
       "path": ".agents/skills/signalstore-expert/SKILL.md",
       "description": "NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities."
     },
     "swagger-api-architect": {
-      "version": "1.1.1",
-      "lastUpdated": "2026-10-24",
-      "checksum": "c5c966d28de22500",
+      "version": "1.2.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "2e085f944438fd52",
       "path": ".agents/skills/swagger-api-architect/SKILL.md",
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
@@ -175,9 +175,9 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.2.0",
-      "lastUpdated": "2026-10-20",
-      "checksum": "c8d3fd831c778b58",
+      "version": "1.3.0",
+      "lastUpdated": "2026-11-03",
+      "checksum": "215c5c22a2b02b45",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
       "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     }

@@ -1,5 +1,5 @@
 import { getFixture } from '../../utils';
-import { getTrialById } from '../trials/trial-transitions-store';
+import { getTrialById, setTrialStatus } from '../trials/trial-transitions-store';
 
 type ExecutionStatus =
   | 'ACTIVE'
@@ -149,6 +149,7 @@ export interface ShotPressuresResponse {
 export type ShotPressuresData = ShotPiezoPressureItem;
 
 const executionStateMap = new Map<string, ExecutionState>();
+const executionStatusOverrideMap = new Map<string, ExecutionStatus>();
 const countdownStateMap = new Map<string, SecurityCountdownState>();
 const planningStateMap = new Map<string, PlanningState>();
 const readinessStateMap = new Map<string, ProfilesReadinessState>();
@@ -232,6 +233,8 @@ function resolveExecutionStatusForTrial(fireTrialId: string): ExecutionStatus {
       return 'STARTED';
     case 'IN_PROGRESS':
       return 'ACTIVE';
+    case 'PAUSED':
+      return 'PAUSED';
     case 'INTERRUPTED':
       return 'INTERRUPTED';
     case 'EXECUTED':
@@ -282,11 +285,13 @@ function resolveActiveShotState(): Pick<ExecutionState, 'activeSeriesId' | 'acti
 }
 
 export function getExecutionState(fireTrialId: string): ExecutionState {
+  const status = executionStatusOverrideMap.get(fireTrialId) ?? resolveExecutionStatusForTrial(fireTrialId);
+
   if (!executionStateMap.has(fireTrialId)) {
     const initial = {
       ...defaultExecutionState(),
       ...resolveActiveShotState(),
-      status: resolveExecutionStatusForTrial(fireTrialId),
+      status,
     };
     executionStateMap.set(fireTrialId, {
       ...initial,
@@ -296,11 +301,11 @@ export function getExecutionState(fireTrialId: string): ExecutionState {
 
   const persisted = executionStateMap.get(fireTrialId);
   const state = persisted
-    ? { ...persisted, status: resolveExecutionStatusForTrial(fireTrialId) }
+    ? { ...persisted, status }
     : {
         ...defaultExecutionState(),
         ...resolveActiveShotState(),
-        status: resolveExecutionStatusForTrial(fireTrialId),
+      status,
       };
 
   executionStateMap.set(fireTrialId, state);
@@ -311,10 +316,35 @@ export function getExecutionState(fireTrialId: string): ExecutionState {
   };
 }
 
-export function setExecutionStatus(fireTrialId: string, status: ExecutionStatus): ExecutionState {
+export function setExecutionStatus(fireTrialId: string, status: ExecutionStatus, reason?: string): ExecutionState {
   const current = getExecutionState(fireTrialId);
   const updated: ExecutionState = { ...current, status, updatedAt: new Date().toISOString() };
   executionStateMap.set(fireTrialId, updated);
+  executionStatusOverrideMap.set(fireTrialId, status);
+
+  switch (status) {
+    case 'STARTED':
+      setTrialStatus(fireTrialId, 'STARTED');
+      break;
+    case 'ACTIVE':
+    case 'IN_PROGRESS':
+      setTrialStatus(fireTrialId, 'IN_PROGRESS');
+      break;
+    case 'PAUSED':
+      setTrialStatus(fireTrialId, 'PAUSED');
+      break;
+    case 'INTERRUPTED':
+      setTrialStatus(fireTrialId, 'INTERRUPTED', reason);
+      break;
+    case 'CANCELED':
+      setTrialStatus(fireTrialId, 'CANCELLED', reason);
+      break;
+    case 'EXECUTED':
+    case 'FINISHED':
+      setTrialStatus(fireTrialId, 'EXECUTED');
+      break;
+  }
+
   return updated;
 }
 

@@ -145,6 +145,7 @@ describe('JltShotData', () => {
       return Promise.resolve(shotResponses[`${serieId}|${shotId}`] ?? currentShotResponse);
     }),
     setJltShotData: vi.fn(),
+    updateJltShotData: vi.fn().mockResolvedValue(currentShotResponse),
   };
 
   beforeEach(() => {
@@ -324,7 +325,7 @@ describe('JltShotData', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+    expect(mockExecutionService.updateJltShotData).toHaveBeenCalledWith(
       'trial-123',
       ACTIVE_SERIE_ID,
       ACTIVE_SHOT_ID,
@@ -341,7 +342,7 @@ describe('JltShotData', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+    expect(mockExecutionService.updateJltShotData).toHaveBeenCalledWith(
       'trial-123',
       ACTIVE_SERIE_ID,
       ACTIVE_SHOT_ID,
@@ -385,7 +386,7 @@ describe('JltShotData', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setJltShotData).toHaveBeenCalledWith(
+    expect(mockExecutionService.updateJltShotData).toHaveBeenCalledWith(
       'trial-123',
       ACTIVE_SERIE_ID,
       'shot-1',

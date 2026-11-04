@@ -8,37 +8,37 @@ import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  EquipmentTypeEnum,
-  type JltMaoBulkConfigurationRequest,
-  type JltMaoBulkConfigurationResponse,
-  type MaoTopographyBulkConfigurationRequest,
-  type MaoTopographyBulkConfigurationResponse,
-  type MunitionConditioningBulkConfigurationRequest,
-  type MunitionConditioningBulkConfigurationResponse,
-  type PropellantChargeAdjustmentConfiguration,
-  type PropellantChargeAdjustmentResponse,
-  type ShotCameraOrientationResponse,
-  type ShotManometerPressuresRequest,
-  type ShotManometerPressuresResponse,
-  type ShotMunitionRequest,
-  type ShotMunitionResponse,
-  type ShotVideoDataRequest,
-  type ShotVideoDataResponse,
-  type TrajectographyRadarOrientationResponse,
-  type VelocityUniformityResponse,
-  WidgetId,
+    EquipmentTypeEnum,
+    type JltMaoBulkConfigurationRequest,
+    type JltMaoBulkConfigurationResponse,
+    type MaoTopographyBulkConfigurationRequest,
+    type MaoTopographyBulkConfigurationResponse,
+    type MunitionConditioningBulkConfigurationRequest,
+    type MunitionConditioningBulkConfigurationResponse,
+    type PropellantChargeAdjustmentConfiguration,
+    type PropellantChargeAdjustmentResponse,
+    type ShotCameraOrientationResponse,
+    type ShotManometerPressuresRequest,
+    type ShotManometerPressuresResponse,
+    type ShotMunitionRequest,
+    type ShotMunitionResponse,
+    type ShotVideoDataRequest,
+    type ShotVideoDataResponse,
+    type TrajectographyRadarOrientationResponse,
+    type VelocityUniformityResponse,
+    WidgetId,
 } from '../execution/models';
 import {
-  type ArmamentBulkConfigurationRequest,
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
-  type PlanningResponse,
-  type ProfilesReadinessResponse,
-  type SecurityCountdownResponse,
-  type ShotArmamentResponse,
-  type ShotPressuresResponse,
-  type ShotVelocitiesResponse,
+    type ArmamentBulkConfigurationRequest,
+    type ArmamentEquipmentItem,
+    ExecutionService,
+    type PlanningArmamentResponse,
+    type PlanningResponse,
+    type ProfilesReadinessResponse,
+    type SecurityCountdownResponse,
+    type ShotArmamentResponse,
+    type ShotPressuresResponse,
+    type ShotVelocitiesResponse,
 } from './execution.service';
 
 const DEMO_TRIAL_ID = 'trial-456';
@@ -378,75 +378,60 @@ describe('ExecutionService', () => {
 
     // PUT
     const requestBody = { action: 'START' as const, durationSeconds: 300 };
-    service.updateSecurityCountdown(DEMO_TRIAL_ID, requestBody);
-    TestBed.tick();
+    const updatePromise = service.updateSecurityCountdown(DEMO_TRIAL_ID, requestBody);
 
     const putReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/security-countdown`);
     expect(putReq.request.method).toBe('PUT');
     expect(putReq.request.body).toEqual(requestBody);
     putReq.flush(mockState);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.updateSecurityCountdownResource.value()).toEqual(mockState);
-    });
+    await expect(updatePromise).resolves.toEqual(mockState);
   });
 
   it('should handle transitions start/pause/interrupt/resume/cancel/finish', async () => {
     // Start
-    service.startExecution(DEMO_TRIAL_ID);
-    TestBed.tick();
+    const startPromise = service.startExecution(DEMO_TRIAL_ID);
     const startReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/start`));
     expect(startReq.request.method).toBe('POST');
     startReq.flush(null, { status: 200, statusText: 'OK' });
-    TestBed.tick();
+    await startPromise;
 
     // Pause
-    service.pauseExecution(DEMO_TRIAL_ID);
-    TestBed.tick();
+    const pausePromise = service.pauseExecution(DEMO_TRIAL_ID);
     const pauseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/pause`);
     expect(pauseReq.request.method).toBe('POST');
     pauseReq.flush(null, { status: 204, statusText: 'No Content' });
-    TestBed.tick();
+    await pausePromise;
 
     // Interrupt
-    service.interruptExecution(DEMO_TRIAL_ID, 'anomaly');
-    TestBed.tick();
+    const interruptPromise = service.interruptExecution(DEMO_TRIAL_ID, 'anomaly');
     const interruptReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/interrupt`);
     expect(interruptReq.request.method).toBe('POST');
     expect(interruptReq.request.body).toEqual({ reason: 'anomaly' });
     interruptReq.flush(null, { status: 204, statusText: 'No Content' });
-    TestBed.tick();
+    await interruptPromise;
 
     // Resume
-    service.resumeExecution(DEMO_TRIAL_ID);
-    TestBed.tick();
+    const resumePromise = service.resumeExecution(DEMO_TRIAL_ID);
     const resumeReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/resume`);
     expect(resumeReq.request.method).toBe('POST');
     resumeReq.flush(null, { status: 204, statusText: 'No Content' });
-    TestBed.tick();
+    await resumePromise;
 
     // Cancel
-    service.cancelExecution(DEMO_TRIAL_ID, 'abort');
-    TestBed.tick();
-    const cancelReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/cancel`));
+    const cancelPromise = service.cancelExecution(DEMO_TRIAL_ID, 'abort');
+    const cancelReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/cancel`);
     expect(cancelReq.request.method).toBe('POST');
     expect(cancelReq.request.body).toEqual({ reason: 'abort' });
-    cancelReq.flush(null, { status: 200, statusText: 'OK' });
-    TestBed.tick();
+    cancelReq.flush(null, { status: 204, statusText: 'No Content' });
+    await cancelPromise;
 
     // Finish
     const finishResponse = { executionFinishedAt: '2026-03-03T12:00:00Z' };
-    service.finishExecution(DEMO_TRIAL_ID);
-    TestBed.tick();
+    const finishPromise = service.finishExecution(DEMO_TRIAL_ID);
     const finishReq = httpMock.expectOne((r) => r.url.endsWith(`/fire-trials/${DEMO_TRIAL_ID}/finish`));
     expect(finishReq.request.method).toBe('POST');
     finishReq.flush(finishResponse);
-
-    await waitFor(() => {
-      TestBed.tick();
-      expect(service.finishResource.value()).toEqual(finishResponse);
-    });
+    await expect(finishPromise).resolves.toEqual(finishResponse);
   });
 
   it('should PUT planning options', async () => {
@@ -604,6 +589,7 @@ describe('ExecutionService', () => {
       expect(matches.length).toBe(1);
       req1 = matches[0];
     });
+    expect(req1.request.body).toEqual({ isReady: true, observations: 'ok 1' });
     req1.flush(batchItems[0]);
 
     let req2!: TestRequest;
@@ -613,6 +599,7 @@ describe('ExecutionService', () => {
       expect(matches.length).toBe(1);
       req2 = matches[0];
     });
+    expect(req2.request.body).toEqual({ isReady: false, observations: 'pending' });
     req2.flush(batchItems[1]);
 
     let reloadReq!: TestRequest;
@@ -625,10 +612,78 @@ describe('ExecutionService', () => {
     reloadReq.flush(mockReadiness);
 
     const batchResult = await batchPromise;
-    expect(batchResult).toEqual(batchItems);
+    expect(batchResult).toEqual({ updatedSeries: batchItems, failures: [] });
 
     service.resetSetProfileReadiness();
     TestBed.tick();
+  });
+
+  it('should start all three PRESSURES updates before receiving the first response', async () => {
+    const items = [
+      { seriesId: 'ed1d366e-c50f-42b8-8a34-d971a68b379d', isReady: true, observations: 'Presiones - OK' },
+      { seriesId: '03d42240-b0cf-4036-a1b3-548867838cc0', isReady: true, observations: 'Coemtnario' },
+      { seriesId: '4f025fb3-93f5-4801-846b-c20e9f0eb5a3', isReady: true, observations: '' },
+    ];
+    const reload = vi.spyOn(service, 'getProfilesReadiness').mockImplementation(() => undefined);
+
+    const saving = service.setProfileReadiness(DEMO_TRIAL_ID, 'PRESSURES', items);
+    const requests = items.map((item) =>
+      httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness/profiles/PRESSURES/series/${item.seriesId}`),
+    );
+
+    requests.forEach((request, index) => {
+      const item = items[index];
+      expect(request.request.method).toBe('PUT');
+      expect(request.request.body).toEqual({
+        isReady: item.isReady,
+        observations: item.observations,
+      });
+      request.flush(item);
+    });
+
+    await expect(saving).resolves.toEqual({ updatedSeries: items, failures: [] });
+    expect(reload).toHaveBeenCalledOnce();
+    reload.mockRestore();
+  });
+
+  it('should await every series update and propagate failure without skipping remaining series', async () => {
+    const items = ['s-1', 's-2', 's-3'].map((seriesId) => ({ seriesId, isReady: true, observations: '' }));
+    const reload = vi.spyOn(service, 'getProfilesReadiness').mockImplementation(() => undefined);
+    const settled = vi.fn();
+    const saving = service.setProfileReadiness(DEMO_TRIAL_ID, 'PRESSURES', items).then(
+      (value) => {
+        settled();
+        return value;
+      },
+      (error: unknown) => {
+        settled();
+        return error;
+      },
+    );
+    const requests = items.map((item) =>
+      httpMock.expectOne(`${EXECUTION_BASE_URL}/readiness/profiles/PRESSURES/series/${item.seriesId}`),
+    );
+
+    requests[0].flush({ detail: 'Cannot update readiness' }, { status: 500, statusText: 'Server Error' });
+    await Promise.resolve();
+    expect(settled).not.toHaveBeenCalled();
+
+    requests[1].flush(items[1]);
+    requests[2].flush(items[2]);
+
+    await expect(saving).resolves.toMatchObject({
+      updatedSeries: items.slice(1),
+      failures: [
+        {
+          profile: 'PRESSURES',
+          seriesId: 's-1',
+          error: expect.objectContaining({ status: 500 }),
+        },
+      ],
+    });
+    expect(settled).toHaveBeenCalledOnce();
+    expect(reload).toHaveBeenCalledOnce();
+    reload.mockRestore();
   });
 
   it('should GET and mutate JLT preparation for widget 2', async () => {

@@ -25,7 +25,7 @@
 
 <!-- nx configuration end-->
 
-<!-- AGENTS_VERSION: 1.2.0 | UPDATED: 2026-10-20 -->
+<!-- AGENTS_VERSION: 1.3.0 | UPDATED: 2026-11-03 -->
 
 ---
 
@@ -72,7 +72,7 @@ Route tasks to specialized skills in `.agents/skills/`:
 - **Express Mock Server & Fixtures:** `mock-server-expert`
 - **NgRx SignalStore:** `signalstore-expert`
 - **Nx Scaffolding & CLI (`nx generate`):** `nx-generator-expert`
-- **Data Fetching (`httpResource`):** `signal-trigger-pattern`
+- **Data Fetching (`httpResource`) & Mutations (`HttpClient`):** `signal-trigger-pattern`
 - **Numeric Constraints & Directives:** `numeric-input-constraints`
 - **3-State Views (Skeleton):** `view-state-pattern`
 - **Trial Planning Domain:** `planning-specialist`
@@ -104,7 +104,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 
 ## Technology Stack 🛠️
 
-- **Angular 21:** `signals`, `httpResource`, `signal-forms`. Standalone by default (omit `standalone: true`).
+- **Angular 21:** `signals`, `httpResource` (queries/reads ONLY), `HttpClient` (mutations/writes), `signal-forms`. Standalone by default (omit `standalone: true`).
 - **Nx Monorepo:** Layered modular libraries (`data-access`, `feature`, `ui`, `util`). Keep business logic in `data-access`.
 - **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
 - **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
@@ -120,11 +120,14 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
   - **Types & Enums:** MUST be declared under the `models` or `utils-models` directory of the respective library. Never inline in components or services.
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All models, service payloads, stores, mappers, fixtures, and tests MUST use explicit TypeScript types, interfaces, or domain enums (`DistanceUnitEnum`, `TimeUnitEnum`, etc.).
 - **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`) anywhere in code, store features, services, mappers, or tests (e.g. `resource.value()!`, `d.batch!`, `fixture.componentInstance.identTab()!`).
-  - **httpResource resolution in services:** NEVER return `resource.value()!`. In imperative async methods, use typed helper `return this.#awaitResourceValue(resource)` which safely awaits, verifies `value !== undefined`, and throws on error/empty.
   - **Collections / Optional properties:** Use `flatMap()` or explicit TypeScript type predicates (`filter((x): x is ... => Boolean(...))`).
   - **Tests:** Use explicit guards (`if (!tab) throw new Error(...)`) or semantic assertions (`expect(...).toBeDefined()`) instead of `!`. Never add `/* eslint-disable @typescript-eslint/no-non-null-assertion */`.
+- **Command-Query Separation in HTTP Layer (ADR-020):** ⚡ **MANDATORY.**
+  - **Queries (GET):** MUST use Angular 21 `httpResource` coupled with private trigger signals (`Signal Trigger Pattern`). `httpResource` is strictly query-only (reading data). Use `resource.hasValue()` or safely check `resource.value() !== undefined`.
+  - **Mutations (POST, PUT, PATCH, DELETE):** 🚫 **PROHIBITED using `httpResource` for mutations.** All state mutations, form submissions, and persistence operations MUST use `HttpClient` directly via `firstValueFrom(this.#http.post/put/delete(...))`, returning native `Promise<T>`.
+  - **Architectural Rationale:** `httpResource` operates reactively with `switchMap` / `AbortController` cancellation semantics. Rapid sequential writes (e.g., saving multiple dirty widgets or rapid triggers) abort in-flight requests, and trigger signals lack Promise return values, breaking imperative `await` control flow. `HttpClient` + `firstValueFrom` ensures isolated, non-abortable, sequentially awaitable calls with deterministic error handling.
 - **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim.
-- **Save/Submit Button (`ui-save-button`):** ⚡ **MANDATORY.** For form mutations, submissions, and save actions, use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) with `[isSaving]="resource.isLoading()"`. Never use raw `mat-flat-button` for form submissions.
+- **Save/Submit Button (`ui-save-button`):** ⚡ **MANDATORY.** For form mutations, submissions, and save actions, use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) with `[isSaving]="isSaving()"` (or `resource.isLoading()` for GET-triggered views). Never use raw `mat-flat-button` for form submissions.
 - **Event Isolation (`uiStopClick`):** ⚡ **MANDATORY.** When handling clicks on interactive child elements inside clickable parent containers (`mat-option`, accordion headers, table rows, cards), use `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`) instead of manually calling `event.stopPropagation()` and `event.preventDefault()` in component methods. E.g.: `<button type="button" uiStopClick (click)="toggleStar(id)">`. Keeps component methods pure and DOM-event agnostic.
 - **Inputs & Selects:** ⚡ **MANDATORY.** All `matInput` and `mat-select` controls MUST have floating labels via `<mat-label>{{ '...' | translate }}</mat-label>` inside `<mat-form-field>` and placeholder i18n (`[placeholder]="'...' | translate"`).
 - **Store Injection in Components:** 🚫 **PROHIBITED accessing stores in templates (`store.prop()`).** Stores are injected privately (`readonly #store = inject(Store)`). Templates access data exclusively through exposed computed signals.
@@ -141,12 +144,12 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **Project Utilities (`@intaqalab/utils`):** It is **MANDATORY** to use utilities from `@intaqalab/utils` (see [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)) for debounce, throttle, query parameters as signals, storage persistence, countdowns, and idle tracking.
 - **Derived Writable State:** Use `linkedSignal()` instead of signal+effect. E.g.: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
 - **RxJS (Restricted Interop Only):**
-  - ✅ Permitted: `toSignal(observable$)`, `firstValueFrom(observable$)`.
+  - ✅ Permitted: `toSignal(observable$)`, `firstValueFrom(observable$)` (exclusively for `HttpClient` mutations, `MatDialog.afterClosed()`, and testing).
   - ❌ **PROHIBITED:** `.subscribe()` in components without `takeUntilDestroyed()`.
 - **Signal Forms:** Use modern `form()` API. **ELIMINATE** `ReactiveFormsModule` and `FormBuilder`. The model (`signal`) is the source of truth. Read and reset state via the model (`this.model()`, `this.model.set(initial)`), never via `form().reset()`.
 - **Signal Forms Template Directives (No `[disabled]` / `[readonly]` / `[value]` / `min` / `max` with `[formField]`):** 🚫 **PROHIBITED:** Binding `[disabled]`, `[readonly]`, `[value]`, `min`, `max`, or `required` attributes on elements using the `[formField]` directive. Angular Signal Forms throws: `"Setting the 'min' attribute is not allowed on nodes using the '[formField]' directive"` / `"Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive"`. All state, constraints, and validation logic MUST be configured exclusively in the form schema callback (`form(model, (f) => { disabled(f.field, () => condition); min(f.field, 0); })`).
 - **Safe Effects:** Read all signals before the first `await`. Use `untracked()` for non-reactive reads. For DOM manipulation, use `afterRenderEffect()`.
-- **httpResource:** Use `resource.hasValue()` as type guard.
+- **httpResource:** Strictly query-only (GET). Use `resource.hasValue()` as type guard.
 - **Control Flow:** Use native `@if`, `@for` (with mandatory `track`), `@switch`, `@empty`. Use `@defer` (`@placeholder`, `@loading`) for lazy rendering.
 
 ## 🏛️ Architecture Decision Records (ADRs)

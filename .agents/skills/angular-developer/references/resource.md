@@ -74,4 +74,8 @@ this.userResource.value.set({ name: 'Optimistic Update' });
 
 ## Reactive Data Fetching with `httpResource`
 
-If you are using Angular's `HttpClient`, prefer using `httpResource`. It is a specialized wrapper that leverages the Angular HTTP stack (including interceptors) while providing the same signal-based resource API.
+If you are using Angular's `HttpClient`, prefer using `httpResource` for reactive data fetching (`GET` queries). It is a specialized wrapper that leverages the Angular HTTP stack (including interceptors) while providing the same signal-based resource API.
+
+> [!IMPORTANT]
+> **Query-Only Constraint (ADR-020):**
+> `httpResource` is strictly designed for reading data (`GET`). For mutations (`POST`, `PUT`, `PATCH`, `DELETE`), use `HttpClient` with `firstValueFrom` returning a `Promise<T>`. `httpResource`'s internal `switchMap` / `AbortController` cancellation causes race conditions and aborts concurrent/sequential writes.

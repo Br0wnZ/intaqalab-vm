@@ -29,15 +29,17 @@ Guía para extraer y mapear la información del Swagger/OpenAPI 3.x a los artefa
 }
 ```
 
-## Mapeo: Swagger Path → Service Method
+## Mapeo: Swagger Path → Service Method (CQS / ADR-020)
 
-| Swagger             | Service                                                               |
-| ------------------- | --------------------------------------------------------------------- |
-| `GET /path`         | `httpResource<Response>` + `getXxx()` method                          |
-| `POST /path`        | `httpResource<Response>` + `createXxx(body)` method + `resetCreate()` |
-| `PUT /path/{id}`    | `httpResource<void>` + `updateXxx(id, body)` method + `resetUpdate()` |
-| `DELETE /path/{id}` | `httpResource<void>` + `deleteXxx(id)` method + `resetDelete()`       |
-| `PUT /path` (bulk)  | `httpResource<void>` + `updateXxx(body)` method + `resetUpdate()`     |
+> **Regla CQS Obligatoria (ADR-020):** `httpResource` se reserva ÚNICAMENTE para operaciones `GET` (queries/lecturas). Todas las operaciones de mutación (`POST`, `PUT`, `PATCH`, `DELETE`) deben usar `HttpClient` imperativo con `firstValueFrom` retornando `Promise<T>`.
+
+| Swagger             | Service Implementation Pattern                                       |
+| ------------------- | -------------------------------------------------------------------- |
+| `GET /path`         | `httpResource<Response>` + `loadXxx()` / `getXxx()` method (trigger) |
+| `POST /path`        | `HttpClient.post()` + `async createXxx(body): Promise<Response>`     |
+| `PUT /path/{id}`    | `HttpClient.put()` + `async updateXxx(id, body): Promise<Response>`  |
+| `DELETE /path/{id}` | `HttpClient.delete()` + `async deleteXxx(id): Promise<void>`         |
+| `PUT /path` (bulk)  | `HttpClient.put()` + `async updateXxx(body): Promise<Response>`      |
 
 ## Mapeo: Path Parameters → Signal Shape
 
@@ -129,27 +131,24 @@ export type CatalogQueryParams = {
 }
 ```
 
-### Resultado:
+### Resultado (Mutación con HttpClient según ADR-020):
 
 ```typescript
-readonly #updateParams = signal<{ trialId: string; body: ArmamentBulkUpdateRequest } | null>(null);
+readonly #http = inject(HttpClient);
 
-readonly updateResource = httpResource<void>(() => {
-  const params = this.#updateParams();
-  if (!params) return undefined;
-  return {
-    url: `${this.#apiUrl}/fire-trials/${params.trialId}/planning/armament`,
-    method: 'PUT',
-    body: params.body,
-  };
-});
-
-updateEntity(trialId: string, body: ArmamentBulkUpdateRequest) {
-  this.#updateParams.set({ trialId, body });
+async updateEntity(trialId: string, body: ArmamentBulkUpdateRequest): Promise<void> {
+  return firstValueFrom(
+    this.#http.put<void>(
+      `${this.#apiUrl}/fire-trials/${trialId}/planning/armament`,
+      body,
+    ),
+  );
 }
 ```
 
-## Mapeo: Response Schema → httpResource Generic
+## Mapeo: Response Schema (GET) → httpResource Generic
+
+> Para operaciones `GET`, el response schema define el genérico de `httpResource<T>`. Para mutaciones (`POST`/`PUT`), define el genérico del retorno de `HttpClient` (`Promise<T>`).
 
 | Swagger Response                                                     | httpResource Type    |
 | -------------------------------------------------------------------- | -------------------- |

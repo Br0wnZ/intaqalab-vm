@@ -205,16 +205,28 @@ export class ExecutionPageFacade {
     );
   }
 
-  startExecution(): void {
-    this.#withTrialId((fireTrialId) => this.#store.startExecution(fireTrialId));
+  async startExecution(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+    await this.#runTransition(() => this.#store.startExecution(fireTrialId));
   }
 
-  resumeExecution(): void {
-    this.#withTrialId((fireTrialId) => this.#store.resumeExecution(fireTrialId));
+  async resumeExecution(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+    await this.#runTransition(() => this.#store.resumeExecution(fireTrialId));
   }
 
-  finishExecution(): void {
-    this.#withTrialId((fireTrialId) => this.#store.finishExecution(fireTrialId));
+  async finishExecution(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+    await this.#runTransition(() => this.#store.finishExecution(fireTrialId));
   }
 
   async pauseExecution(): Promise<void> {
@@ -227,7 +239,7 @@ export class ExecutionPageFacade {
       this.#dialog
         .open(PauseExecutionDialog, {
           width: '600px',
-          data: { trialName: this.executionData().code, trialId: fireTrialId },
+          data: { trialName: this.executionData().code },
         })
         .afterClosed(),
     );
@@ -235,6 +247,7 @@ export class ExecutionPageFacade {
     if (!result || result.action === 'back') {
       return;
     }
+    await this.#runTransition(() => this.#store.pauseExecution(fireTrialId));
   }
 
   async interruptExecution(): Promise<void> {
@@ -252,10 +265,10 @@ export class ExecutionPageFacade {
         .afterClosed(),
     );
 
-    if (!result || result.action === 'back') {
+    if (!result || result.action !== 'interrupt') {
       return;
     }
-    this.#store.interruptExecution(fireTrialId, result.reason);
+    await this.#runTransition(() => this.#store.interruptExecution(fireTrialId, result.reason));
   }
 
   async cancelExecution(): Promise<void> {
@@ -276,7 +289,11 @@ export class ExecutionPageFacade {
     if (!result || result.action === 'back') {
       return;
     }
-    this.#store.cancelExecution(fireTrialId, result.reason);
+    await this.#runTransition(() => this.#store.cancelExecution(fireTrialId, result.reason));
+  }
+
+  #runTransition(transition: () => Promise<void>): Promise<void> {
+    return transition().catch(() => undefined);
   }
 
   async openEquipmentSelector(): Promise<void> {
@@ -378,13 +395,6 @@ export class ExecutionPageFacade {
     return `prep-tech-${placedWidget.techProfile}`;
   }
 
-  #withTrialId(action: (fireTrialId: string) => void): void {
-    const fireTrialId = this.#fireTrialId();
-    if (fireTrialId) {
-      action(fireTrialId);
-    }
-  }
-
   #mapShotStatus(status: string): string {
     switch (status) {
       case 'FIRED':
@@ -402,6 +412,7 @@ export class ExecutionPageFacade {
       PLANNED: 'Planificada',
       STARTED: 'Iniciada',
       IN_PROGRESS: 'En curso',
+      PAUSED: 'Pausada',
       INTERRUPTED: 'Interrumpida',
       EXECUTED: 'Ejecutada',
       FINALIZING: 'Finalizando',

@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.2.0
-last-updated: 2026-10-20
+version: 1.3.0
+last-updated: 2026-11-03
 description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
@@ -20,7 +20,8 @@ description: Expert in the INTAQALAB execution domain, widgets, shot selectors, 
 - Hardcoded unit strings (`'g'`, `'kg'`, `'MPa'`, `'bar'`, etc.) are prohibited in components, stores, and services.
 - For unit labels and selectors, use `MEASURE_UNIT_LABELS` and specific subtypes (`WeightUnitEnum`, `PressureUnitEnum`, `DistanceUnitEnum`, `TimeUnitEnum`, etc.) from the shared models package.
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All payload types, response types, store slices, mappers, and unit transformations MUST use explicit TypeScript types and enums from `@intaqalab/models` or local models.
-- **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`). All methods in `ExecutionService` MUST use `#awaitResourceValue(resource)` instead of `resource.value()!`. In data mapping or store features, use `flatMap()` or explicit type guards.
+- **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`). In data mapping or store features, use `flatMap()` or explicit type guards. Never use `resource.value()!`.
+- **CQS & Mutations (ADR-020):** ⚡ **MANDATORY.** All mutations in `ExecutionService` (e.g. `updateShotArmament`, `updateShotVelocity`, `updateJltShotData`, etc.) MUST use `HttpClient` with `firstValueFrom(this.#http.put(...))` returning native `Promise<T>`. Prohibited using `httpResource` for mutations. Rapid sequential saves in `saveAllDirtyForms()` require isolated Promises to prevent request cancellations.
 
 ### Root Directory Structure
 
@@ -176,7 +177,7 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 - Planned data (series/shots, conditions, measures, munitions, armament, propelling-charge-parameters) is **read-only here** and MUST come from `@intaqalab/data-access-planning`. NEVER declare `/planning/...` GET URLs in `libs/domain/trial/execution` (`npm run check:planning-urls`, enforced in pre-commit).
 - Query services: `PlanningSeriesService`, `PlanningConditionsService`, `PlanningMeasuresService`, `PlanningMunitionsService`, `PlanningArmamentService`, `PropellantChargeParametersService` (`httpResource`, `providedIn: 'root'`). `PlanningTrialContextService` is set once by the `Execution` shell; widgets never pass trial params for planning reads.
 - Pure helpers: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`, `flattenSeriesShots`. Shot option labels: `formatShotLabel(globalNumber, index, 'plain' | 'padded')` — do not hand-build `` `Disparo ${...}` ``. Series/shots handle: `injectTrialShots()`.
-- `ExecutionService` keeps only execution endpoints and writes; planning types come from the data-access lib (no duplicated models).
+- `ExecutionService` keeps only execution endpoints (GET via `httpResource`, mutations/writes via `HttpClient` + `firstValueFrom` per ADR-020); planning types come from the data-access lib (no duplicated models).
 - Widget system doc: `docs/WIDGET_SYSTEM.md`.
 
 ## 🎯 Shot-Scoped Planning & Warehouse Read Helpers (ADR-019) — Mandatory Pattern

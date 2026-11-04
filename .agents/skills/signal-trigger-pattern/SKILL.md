@@ -1,20 +1,20 @@
 ---
 name: signal-trigger-pattern
-version: 1.0.0
-last-updated: 2026-09-29
-description: Implements the Signal Trigger Pattern — the mandatory httpResource + private trigger signal pattern for all data fetching in the Intaqalab project. USE WHEN creating or modifying data-access services, stores that fetch remote data, or any component that needs to load data from an API.
+version: 1.1.0
+last-updated: 2026-11-03
+description: Implements the Signal Trigger Pattern — mandatory httpResource + private trigger signal pattern for GET queries, and HttpClient + firstValueFrom for mutations in Intaqalab. USE WHEN creating or modifying data-access services, stores that fetch remote data or execute mutations, or any component that interacts with APIs.
 ---
 
 # Signal Trigger Pattern — Intaqalab Standard
 
-El patrón canónico para data-fetching en el proyecto. Toda carga de datos remota usa este patrón. Sin excepciones.
+El patrón canónico para data-fetching (GET) en el proyecto. Toda carga de datos remota usa este patrón. Las mutaciones (POST/PUT/PATCH/DELETE) usan `HttpClient` imperativo con `firstValueFrom` bajo el principio CQS (ADR-020).
 
-## Por Qué Este Patrón
+## Por Qué Este Patrón (Separación CQS)
 
-- Sin suscripciones manuales `.subscribe()`.
-- Sin `ngOnInit` con lógica HTTP.
-- El servicio es un signal reactivo puro.
-- El Store controla cuándo se dispara la carga.
+- **GET (Queries):** `httpResource` reactivo con trigger signal privado. Sin suscripciones manuales, auto-cancelación limpia al cambiar parámetros.
+- **POST/PUT/PATCH/DELETE (Mutaciones):** `HttpClient` imperativo con `firstValueFrom` retornando `Promise<T>`. Evita cancelaciones accidentales por `AbortController`, permite composición secuencial `await` y control determinista de errores.
+- Sin `ngOnInit` con lógica HTTP ni suscripciones sin cleanup.
+- El Store controla cuándo se dispara la carga y orquesta mutaciones.
 - La vista recibe computed signals, nunca observables.
 
 ---
@@ -29,17 +29,23 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/core';
 import { AppConfigService } from '@intaqalab/config';
-import { EntityListResponse, EntityParams } from '@intaqalab/models/<domain>';
-import { actionTrigger } from '@intaqalab/utils';
+import {
+  CreateEntityDto,
+  EntityListResponse,
+  EntityParams,
+  EntityResponse,
+  UpdateEntityDto,
+} from '@intaqalab/models/<domain>';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
+  readonly #http = inject(HttpClient);
   readonly #config = inject(AppConfigService);
 
-  // 1. Trigger privado — activa el recurso cuando no es null
+  // 1. GET (Queries): Trigger privado + httpResource
   readonly #trigger = signal<EntityParams | null>(null);
 
-  // 2. httpResource — reactivo al trigger
   readonly resource = httpResource<EntityListResponse>(() => {
     const params = this.#trigger();
     if (!params) return undefined; // sin trigger → sin petición
@@ -51,31 +57,23 @@ export class EntityService {
     };
   });
 
-  // 3. Método público — lo llama el Store (nunca el componente directamente)
+  // Método público para disparar la query reactiva
   load(params: EntityParams): void {
     this.#trigger.set(params);
   }
 
-  // Para operaciones POST/PUT/DELETE usar actionTrigger en lugar de signal
-  // para evitar caché si se repite el mismo payload y facilitar el reset a Idle
-  readonly #createTrigger = actionTrigger<CreateEntityDto>();
-
-  readonly createResource = httpResource<EntityResponse>(() => {
-    const body = this.#createTrigger.value();
-    if (!body) return undefined;
-    return {
-      url: `${this.#config.apiUrl}/entities`,
-      method: 'POST',
-      body,
-    };
-  });
-
-  create(dto: CreateEntityDto): void {
-    this.#createTrigger.fire(dto);
+  // 2. MUTACIONES (Commands - POST/PUT/PATCH/DELETE): HttpClient + firstValueFrom (ADR-020)
+  // PROHIBIDO usar httpResource para mutaciones
+  create(dto: CreateEntityDto): Promise<EntityResponse> {
+    return firstValueFrom(this.#http.post<EntityResponse>(`${this.#config.apiUrl}/entities`, dto));
   }
 
-  resetCreate(): void {
-    this.#createTrigger.reset();
+  update(id: string, dto: UpdateEntityDto): Promise<EntityResponse> {
+    return firstValueFrom(this.#http.put<EntityResponse>(`${this.#config.apiUrl}/entities/${id}`, dto));
+  }
+
+  delete(id: string): Promise<void> {
+    return firstValueFrom(this.#http.delete<void>(`${this.#config.apiUrl}/entities/${id}`));
   }
 }
 ```
@@ -87,7 +85,7 @@ export class EntityService {
 import { computed } from '@angular/core';
 import { inject } from '@angular/core';
 import { EntityService } from '@intaqalab/data-access/<domain>';
-import { signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 
 export const EntityStore = signalStore(
   { providedIn: 'root' }, // o en el componente Shell
@@ -95,6 +93,7 @@ export const EntityStore = signalStore(
   withState({
     selectedId: null as string | null,
     filters: {} as EntityParams,
+    isSaving: false,
   }),
 
   withComputed((_, entityService = inject(EntityService)) => ({
@@ -107,10 +106,18 @@ export const EntityStore = signalStore(
 
   withMethods((store, entityService = inject(EntityService)) => ({
     load(params: EntityParams): void {
+      patchState(store, { filters: params });
       entityService.load(params);
     },
-    create(dto: CreateEntityDto): void {
-      entityService.create(dto);
+    async create(dto: CreateEntityDto): Promise<void> {
+      patchState(store, { isSaving: true });
+      try {
+        await entityService.create(dto);
+        // Tras mutación exitosa: recarga queries usando los últimos filtros
+        entityService.load(store.filters());
+      } finally {
+        patchState(store, { isSaving: false });
+      }
     },
     selectItem(id: string): void {
       patchState(store, { selectedId: id });
@@ -198,19 +205,14 @@ withMethods((store, service = inject(EntityService)) => ({
 }));
 ```
 
-### Refresco tras mutación
+### Refresco tras mutación (CQS)
 
 ```typescript
-// Tras create/update/delete, recarga la lista
+// Tras create/update/delete con HttpClient, recarga la lista limpiamente con await
 withMethods((store, service = inject(EntityService)) => ({
   async createAndRefresh(dto: CreateEntityDto): Promise<void> {
-    service.create(dto);
-    // Espera a que el resource de creación resuelva, luego recarga
-    effect(() => {
-      if (!service.createResource.isLoading() && service.createResource.value()) {
-        service.load(store.lastParams());
-      }
-    });
+    await service.create(dto);
+    service.load(store.filters()); // Re-dispara el httpResource de GET
   },
 }));
 ```
@@ -255,8 +257,14 @@ Regla: nunca `route.snapshot.params` para triggers (no se actualiza al reusar el
 // ❌ HttpClient directo en el componente
 ngOnInit() { this.http.get('/api/entities').subscribe(d => this.data = d); }
 
-// ❌ Observable expuesto desde el servicio
+// ❌ Observable expuesto desde el servicio a la vista
 entities$ = this.http.get<Entity[]>('/api/entities');
+
+// ❌ Usar httpResource para mutaciones (POST, PUT, PATCH, DELETE) — PROHIBIDO (ADR-020)
+readonly createResource = httpResource(() => ({ method: 'POST', body: ... }));
+
+// ❌ Crear effects o actionTriggers para intentar sincronizar mutaciones con httpResource
+async create(dto) { this.createTrigger.fire(dto); effect(() => { ... }); }
 
 // ❌ Trigger en el componente en lugar del Store
 constructor() { this.service.load(params); } // el componente no llama al service directamente
@@ -265,13 +273,4 @@ constructor() { this.service.load(params); } // el componente no llama al servic
 {{ service.resource.value()?.data }}
 
 // ❌ Non-null assertion on resource.value()! (Forbidden non-null assertion)
-async fetchEntity(): Promise<Entity> {
-  await this.#awaitResource(this.resource);
-  return this.resource.value()!;
-}
-
-// ✅ Safe unwrap helper that awaits, checks for undefined, and throws
-async fetchEntity(): Promise<Entity> {
-  return this.#awaitResourceValue(this.resource);
-}
 ```

@@ -43,7 +43,7 @@ describe('ArmamentIntroductionComponent', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: /ARMAMENT_INTRODUCTION\.TITLE/ })).toBeInTheDocument();
   });
 
   it('waits for real shot IDs before loading armament and uses the active UUIDs', async () => {
@@ -201,7 +201,7 @@ describe('ArmamentIntroductionComponent', () => {
     vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
     vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue(planning);
     vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({ armamentData: { weapon, tube } });
-    const save = vi.spyOn(service, 'setShotArmament').mockResolvedValue({});
+    const save = vi.spyOn(service, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     store.setOptimisticActiveShot('series-1', 'without-tube');
     await vi.waitFor(() => {
@@ -251,11 +251,11 @@ describe('ArmamentIntroductionComponent', () => {
       .mockResolvedValue([{ id: 10, name: 'Weapon 105mm', itemType: 'WEAPON', familyId: 10, active: true }]);
     vi.spyOn(executionService, 'loadArmamentDenominations').mockResolvedValue([]);
     vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
-    const setShotArmament = vi.spyOn(executionService, 'setShotArmament');
+    const updateShotArmament = vi.spyOn(executionService, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     await vi.waitFor(() => {
       expect(loadWeaponDenominations).toHaveBeenCalledOnce();
-      expect(fixture.componentInstance.armaOptions()).toContainEqual({ value: '10', label: 'Weapon 105mm' });
+      expect(fixture.componentInstance['armaOptions']()).toContainEqual({ value: '10', label: 'Weapon 105mm' });
     });
     store.setOptimisticActiveShot('series-id', 'shot-id');
     fixture.componentInstance['formModel'].update((value) => ({
@@ -269,7 +269,7 @@ describe('ArmamentIntroductionComponent', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(setShotArmament).toHaveBeenCalledWith('trial-id', 'series-id', 'shot-id', {
+    expect(updateShotArmament).toHaveBeenCalledWith('trial-id', 'series-id', 'shot-id', {
       weaponId: 21017,
       tubeId: 21099,
       observations: 'Sin incidencias.',
@@ -466,7 +466,7 @@ describe('ArmamentIntroductionComponent', () => {
     store.setFireTrialId('trial-id');
 
     await vi.waitFor(() => {
-      expect(fixture.componentInstance.armaOptions()).toHaveLength(2);
+      expect(fixture.componentInstance['armaOptions']()).toHaveLength(2);
     });
 
     fixture.componentInstance.onSerieSelected('series-id');
@@ -572,8 +572,8 @@ describe('ArmamentIntroductionComponent', () => {
 
   it('renders action buttons (Disparo actual, Aplicar configuración masiva)', async () => {
     await renderWidget();
-    const buttons = document.querySelectorAll('button[mat-flat-button]');
-    expect(buttons.length).toBeGreaterThanOrEqual(2); // Al menos los 2 botones de acción
+    expect(screen.getByRole('button', { name: /CURRENT_SHOT_BTN/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /MASS_CONFIG_BTN/ })).toBeInTheDocument();
   });
 
   it('renders armament details without attack or recoil equipment fields', async () => {
@@ -625,6 +625,7 @@ describe('ArmamentIntroductionComponent', () => {
       series: [
         {
           seriesId: 'series-id',
+          seriesName: 'Series 1',
           shots: [{ shotId: 'shot-id', armament: { weaponExternalId: 10, tubeExternalId: 20 } }],
         },
       ],
@@ -632,7 +633,7 @@ describe('ArmamentIntroductionComponent', () => {
     vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({
       armamentData: { weapon: weapons[3], tube: tubes[1] },
     });
-    const save = vi.spyOn(service, 'setShotArmament').mockResolvedValue({});
+    const save = vi.spyOn(service, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     store.setOptimisticActiveShot('series-id', 'shot-id');
 
@@ -655,19 +656,19 @@ describe('ArmamentIntroductionComponent', () => {
       await serialSelect.open();
       fixture.detectChanges();
       for (const weapon of weapons) {
-        expect(screen.getByRole('option', { name: weapon.serialNumber, exact: true })).toBeInTheDocument();
+        expect(screen.getByRole('option', { name: weapon.serialNumber })).toBeInTheDocument();
       }
-      await user.click(screen.getByRole('option', { name: '14398', exact: true }));
+      await user.click(screen.getByRole('option', { name: '14398' }));
       fixture.detectChanges();
       const tubeSerialSelect = selects[5];
       if (!tubeSerialSelect) throw new Error('Tube serial selector not found');
       expect(await tubeSerialSelect.getValueText()).toBe('SN-T-100');
       await tubeSerialSelect.open();
       fixture.detectChanges();
-      expect(screen.getByRole('option', { name: 'SN-T-99', exact: true })).toBeInTheDocument();
-      expect(screen.getByRole('option', { name: 'SN-T-100', exact: true })).toBeInTheDocument();
-      expect(screen.queryByRole('option', { name: 'SN-T-101', exact: true })).not.toBeInTheDocument();
-      await user.click(screen.getByRole('option', { name: 'SN-T-99', exact: true }));
+      expect(screen.getByRole('option', { name: 'SN-T-99' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'SN-T-100' })).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'SN-T-101' })).not.toBeInTheDocument();
+      await user.click(screen.getByRole('option', { name: 'SN-T-99' }));
       fixture.detectChanges();
     });
     expect(fixture.componentInstance.formState().dirty).toBe(true);

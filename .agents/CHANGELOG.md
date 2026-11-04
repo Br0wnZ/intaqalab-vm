@@ -129,3 +129,39 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [angular-developer - 1.0.1] - 2026-10-24
 
 - Define locale-aware decimal display, full measurement precision and numeric backend payload rules
+
+## [AGENTS.md - 1.3.0] - 2026-11-03
+
+- Enforce CQS: httpResource strictly for GET queries, HttpClient for mutations (ADR-020)
+
+## [signal-trigger-pattern - 1.1.0] - 2026-11-03
+
+- Enforce CQS: httpResource for GET queries, HttpClient for mutations (ADR-020)
+
+## [widget-service-integration - 1.3.0] - 2026-11-03
+
+- Align execution mutations to HttpClient Promises (ADR-020)
+
+## [execution-domain-expert - 1.3.0] - 2026-11-03
+
+- Align ExecutionService mutations with HttpClient per ADR-020
+
+## [swagger-api-architect - 1.2.0] - 2026-11-03
+
+- Enforce CQS: httpResource for GET, HttpClient for POST/PUT/DELETE per ADR-020
+
+## [signalstore-expert - 1.1.0] - 2026-11-03
+
+- Clarify CQS: httpResource for data fetching, HttpClient for mutations per ADR-020
+
+## [angular-architect - 1.0.2] - 2026-11-03
+
+- Document CQS rule: httpResource for GET only, HttpClient for mutations per ADR-020
+
+## [planning-specialist - 1.1.2] - 2026-11-03
+
+- Specify httpResource for GET queries and HttpClient for mutations per ADR-020
+
+## [angular-developer - 1.0.2] - 2026-11-03
+
+- Add query-only constraint for httpResource per ADR-020

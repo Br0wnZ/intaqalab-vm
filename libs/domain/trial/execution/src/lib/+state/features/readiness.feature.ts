@@ -8,6 +8,7 @@ import type {
   JltPreparationResponse,
   ProfileReadinessFlag,
   ProfileReadinessItem,
+  ProfileReadinessSaveResult,
   ProfilesReadinessResponse,
 } from '../../services/execution.service';
 import { ExecutionService } from '../../services/execution.service';
@@ -219,20 +220,25 @@ export function withReadiness() {
         fireTrialId: string,
         profile: ExecutionTechnicalProfile,
         seriesReadiness: Array<{ seriesId: string; isReady: boolean; observations?: string }>,
-      ): Promise<void> {
-        const updatedSeries = await executionService.setProfileReadiness(fireTrialId, profile, seriesReadiness);
-        const item: ProfileReadinessItem = {
-          profile,
-          seriesReadiness: updatedSeries,
-        };
+      ): Promise<ProfileReadinessSaveResult> {
+        const result = await executionService.setProfileReadiness(fireTrialId, profile, seriesReadiness);
+        if (result.updatedSeries.length === 0) return result;
+
         const current = store.profilesReadiness() ?? [];
-        const idx = current.findIndex((p) => p.profile === item.profile);
+        const idx = current.findIndex((p) => p.profile === profile);
+        const currentSeries = idx >= 0 ? current[idx].seriesReadiness : [];
+        const mergedSeriesById = new Map(currentSeries.map((serie) => [serie.seriesId, serie]));
+        for (const updatedSerie of result.updatedSeries) {
+          mergedSeriesById.set(updatedSerie.seriesId, updatedSerie);
+        }
+        const item: ProfileReadinessItem = { profile, seriesReadiness: [...mergedSeriesById.values()] };
         const updated = idx >= 0 ? current.map((p, i) => (i === idx ? item : p)) : [...current, item];
 
         patchState(store, {
           profilesReadiness: updated,
           techUnits: mapProfilesReadinessToTechUnits(updated),
         });
+        return result;
       },
 
       /**

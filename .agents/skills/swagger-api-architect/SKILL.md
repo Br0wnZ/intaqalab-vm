@@ -1,7 +1,7 @@
 ---
 name: swagger-api-architect
-version: 1.1.1
-last-updated: 2026-10-24
+version: 1.2.0
+last-updated: 2026-11-03
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---

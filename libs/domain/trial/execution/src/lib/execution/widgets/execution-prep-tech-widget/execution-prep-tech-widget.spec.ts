@@ -6,8 +6,9 @@ import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
+import { ToastrService } from 'ngx-toastr';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -79,8 +80,12 @@ function createMockStore(overrides?: {
     isSavingReadiness: signal(false),
     fireTrialId: signal<string | null>('trial-123'),
     isTrialReadOnly: vi.fn().mockReturnValue(false),
-    saveProfileReadiness: vi.fn(),
+    saveProfileReadiness: vi.fn().mockResolvedValue({ updatedSeries: [], failures: [] }),
   };
+}
+
+function createMockToastrService() {
+  return { error: vi.fn() };
 }
 
 function createMockWidgetStateService() {
@@ -108,6 +113,7 @@ async function runSetup(options: SetupOptions = {}) {
 
   const mockStore = createMockStore(storeOverrides);
   const mockWidgetStateService = createMockWidgetStateService();
+  const mockToastrService = createMockToastrService();
 
   const view = await render(ExecutionPrepTechWidgetComponent, {
     imports: [TranslateModule.forRoot(), NoopAnimationsModule],
@@ -121,12 +127,13 @@ async function runSetup(options: SetupOptions = {}) {
       provideHttpClientTesting(),
       { provide: ExecutionStore, useValue: mockStore },
       { provide: WidgetStateService, useValue: mockWidgetStateService },
+      { provide: ToastrService, useValue: mockToastrService },
     ],
   });
 
   const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-  return { view, loader, mockStore, mockWidgetStateService };
+  return { view, loader, mockStore, mockWidgetStateService, mockToastrService };
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -331,19 +338,16 @@ describe('ExecutionPrepTechWidgetComponent', () => {
 
   describe('saveForm', () => {
     it('should call store.saveProfileReadiness with the current series state', async () => {
-      const { view, mockStore } = await runSetup();
+      const { view, loader, mockStore } = await runSetup();
       const component = view.fixture.componentInstance;
+      const checkboxes = await loader.getAllHarnesses(MatCheckboxHarness);
+      await checkboxes[1].check();
 
       await component.saveForm();
 
-      expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith(
-        'trial-123',
-        'VELOCITIES',
-        expect.arrayContaining([
-          expect.objectContaining({ seriesId: SERIE_ID_1 }),
-          expect.objectContaining({ seriesId: SERIE_ID_2 }),
-        ]),
-      );
+      expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith('trial-123', 'VELOCITIES', [
+        { seriesId: SERIE_ID_1, isReady: true, observations: '' },
+      ]);
     });
 
     it('should not call store.saveProfileReadiness when fireTrialId is null', async () => {
@@ -371,6 +375,48 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       );
     });
 
+    it('should save edited PRESSURES data through the registered dirty widget', async () => {
+      const widgetStateService = new WidgetStateService();
+      const mockStore = createMockStore({
+        profilesReadiness: [
+          {
+            profile: 'PRESSURES',
+            seriesReadiness: [
+              { seriesId: SERIE_ID_1, isReady: false, observations: '' },
+              { seriesId: SERIE_ID_2, isReady: false, observations: '' },
+            ],
+          },
+        ],
+      });
+
+      const view = await render(ExecutionPrepTechWidgetComponent, {
+        imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+        componentInputs: {
+          widgetId: 'widget-test-1',
+          profile: 'presiones',
+        },
+        providers: [
+          provideTestingEnvironment(),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: ExecutionStore, useValue: mockStore },
+          { provide: WidgetStateService, useValue: widgetStateService },
+          { provide: ToastrService, useValue: createMockToastrService() },
+        ],
+      });
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const checkboxes = await loader.getAllHarnesses(MatCheckboxHarness);
+
+      await checkboxes[2].check();
+      expect(widgetStateService.dirtyWidgets()).toHaveLength(1);
+
+      await widgetStateService.saveAllDirtyForms();
+
+      expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith('trial-123', 'PRESSURES', [
+        { seriesId: SERIE_ID_2, isReady: true, observations: '' },
+      ]);
+    });
+
     it('should pass observations value when saving', async () => {
       const { view, loader, mockStore } = await runSetup();
 
@@ -383,6 +429,68 @@ describe('ExecutionPrepTechWidgetComponent', () => {
         'trial-123',
         'VELOCITIES',
         expect.arrayContaining([expect.objectContaining({ seriesId: SERIE_ID_1, observations: 'obs texto' })]),
+      );
+    });
+
+    it('should send an empty observation when clearing a PRESSURES series observation', async () => {
+      const { view, loader, mockStore } = await runSetup({
+        profile: 'presiones',
+        storeOverrides: {
+          profilesReadiness: [
+            {
+              profile: 'PRESSURES',
+              seriesReadiness: [
+                { seriesId: SERIE_ID_1, isReady: true, observations: 'Previously saved' },
+                { seriesId: SERIE_ID_2, isReady: false, observations: 'Another observation' },
+              ],
+            },
+          ],
+        },
+      });
+
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+      await inputs[0].setValue('');
+      await view.fixture.componentInstance.saveForm();
+
+      expect(mockStore.saveProfileReadiness).toHaveBeenCalledWith('trial-123', 'PRESSURES', [
+        { seriesId: SERIE_ID_1, isReady: true, observations: '' },
+      ]);
+    });
+
+    it('should show a contextual toast when a PRESSURES series update fails', async () => {
+      const { view, loader, mockStore, mockToastrService } = await runSetup({
+        profile: 'presiones',
+        storeOverrides: {
+          profilesReadiness: [
+            {
+              profile: 'PRESSURES',
+              seriesReadiness: [
+                { seriesId: SERIE_ID_1, isReady: false, observations: '' },
+                { seriesId: SERIE_ID_2, isReady: false, observations: '' },
+              ],
+            },
+          ],
+        },
+      });
+      const translate = view.fixture.debugElement.injector.get(TranslateService);
+      const instantSpy = vi.spyOn(translate, 'instant');
+      mockStore.saveProfileReadiness.mockResolvedValue({
+        updatedSeries: [],
+        failures: [{ profile: 'PRESSURES', seriesId: SERIE_ID_2, error: new Error('Request failed') }],
+      });
+
+      const checkboxes = await loader.getAllHarnesses(MatCheckboxHarness);
+      await checkboxes[2].check();
+      await view.fixture.componentInstance.saveForm();
+
+      expect(mockToastrService.error).toHaveBeenCalledOnce();
+      expect(instantSpy).toHaveBeenCalledWith(
+        'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.SAVE_SERIES_FAILED',
+        expect.objectContaining({
+          profile: expect.any(String),
+          series: 'Serie 2',
+          seriesId: SERIE_ID_2,
+        }),
       );
     });
   });

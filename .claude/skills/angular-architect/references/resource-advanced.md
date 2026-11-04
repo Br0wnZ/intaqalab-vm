@@ -45,3 +45,20 @@ loadUser(id: string) {
   this.#activeId.set(id);
 }
 ```
+
+---
+
+## 3. Command-Query Separation (CQS): Query-Only Rule (ADR-020)
+
+`httpResource` is strictly query-only (`GET`). Never use `httpResource` for mutations (`POST`, `PUT`, `PATCH`, `DELETE`).
+
+- **Why:** `httpResource` uses `switchMap` / `AbortController` internally. Rapid sequential writes (e.g. saving multiple form widgets) cancel in-flight requests, and signal triggers return `void` without execution Promises.
+- **Mutations Standard:** Use `HttpClient` directly with `firstValueFrom` returning a `Promise<T>`:
+
+```typescript
+async updateUser(id: string, body: UserUpdateDto): Promise<UserResponse> {
+  return firstValueFrom(
+    this.#http.put<UserResponse>(`/api/v1/users/${id}`, body),
+  );
+}
+```

@@ -1,7 +1,7 @@
 ---
 name: signalstore-expert
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.1.0
+last-updated: 2026-11-03
 description: NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities.
 argument-hint: 'Entity: [name], Endpoints: [GET /api/xxx, POST /api/xxx], Extra properties: [local flags]'
 user-invocable: true
@@ -18,15 +18,19 @@ You are the **NgRx SignalStore Engineer** for the Intaqalab project. Your missio
 - HTTP services NEVER expose Observables to views; they use Angular's native `httpResource` API.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `(state: any)`). All store state slices, methods, arguments, and computed projections must be strictly typed with real TypeScript interfaces.
 
-## ⚙️ The Signal Trigger Pattern (Mandatory)
+## ⚙️ The Signal Trigger Pattern & CQS (Mandatory)
 
-All data fetching in services and stores must follow this pattern:
+All data fetching and state mutation in services and stores must follow Command-Query Separation (ADR-020):
 
-1. **Service**: Defines a private trigger signal: `#trigger = signal<Params | null>(null)`. If the trigger depends on route parameters, use `injectParams` or `injectQueryParams` from `@intaqalab/utils`.
-2. **Service**: Exposes `resource = httpResource(() => { const p = this.#trigger(); if (!p) return undefined; return { url: ..., method: 'GET' } })`.
-3. **Service**: Exposes a synchronous method: `loadData(params) { this.#trigger.set(params); }`.
-4. **Store (`withMethods`)**: Calls `service.loadData(params)`.
-5. **Store (`withComputed`)**: Projections read `value()`, `isLoading()`, and `error()` from the service resource.
+1. **Queries (GET):**
+   - **Service**: Defines a private trigger signal: `#trigger = signal<Params | null>(null)`. If the trigger depends on route parameters, use `injectParams` or `injectQueryParams` from `@intaqalab/utils`.
+   - **Service**: Exposes `resource = httpResource(() => { const p = this.#trigger(); if (!p) return undefined; return { url: ..., method: 'GET' } })`.
+   - **Service**: Exposes a synchronous method: `loadData(params) { this.#trigger.set(params); }`.
+   - **Store (`withMethods`)**: Calls `service.loadData(params)`.
+   - **Store (`withComputed`)**: Projections read `value()`, `isLoading()`, and `error()` from the service resource.
+2. **Mutations (POST, PUT, PATCH, DELETE):**
+   - **Service**: Exposes async methods returning `Promise<T>` using `HttpClient` and `firstValueFrom(this.#http.put/post/delete(...))`. 🚫 **PROHIBITED using `httpResource` for mutations.**
+   - **Store (`withMethods`)**: Executes `await service.updateItem(payload)` and triggers query reload (`service.loadData(...)`).
 
 ## 🧱 Strict Store Composition Template
 

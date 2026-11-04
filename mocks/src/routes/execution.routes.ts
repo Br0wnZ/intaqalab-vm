@@ -1,53 +1,53 @@
 import { Router } from 'express';
 
 import {
-  getEquipmentSelectorState,
-  updateEquipmentSelectorState,
+    getEquipmentSelectorState,
+    updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
 import {
-  applyArmamentBulkConfiguration,
-  applyJltMaoBulkConfiguration,
-  applyMaoTopographyBulkConfiguration,
-  applyMunitionConditioningBulkConfiguration,
-  approvePlanning,
-  bumpPlanningVersion,
-  getCountdownState,
-  getExecutionState,
-  getJltPreparation,
-  getJltShotData,
-  getPlanningState,
-  getReadiness,
-  getShotAcousticLevel,
-  getShotArmament,
-  getShotIpgPressures,
-  getShotJltMao,
-  getShotManometerPressures,
-  getShotMaoTopography,
-  getShotMunition,
-  getShotPressures,
-  getShotTopography,
-  getShotTrajectography,
-  getShotVelocities,
-  getShotVideoData,
-  registerFireShot,
-  selectActiveShot,
-  setExecutionStatus,
-  setJltReadiness,
-  setJltShotData,
-  setSeriesProfileReadiness,
-  setShotAcousticLevel,
-  setShotArmament,
-  setShotIpgPressures,
-  setShotJltMao,
-  setShotManometerPressures,
-  setShotMaoTopography,
-  setShotMunition,
-  setShotPressure,
-  setShotTopography,
-  setShotTrajectography,
-  setShotVelocity,
-  setShotVideoData,
-  updateCountdownState,
+    applyArmamentBulkConfiguration,
+    applyJltMaoBulkConfiguration,
+    applyMaoTopographyBulkConfiguration,
+    applyMunitionConditioningBulkConfiguration,
+    approvePlanning,
+    bumpPlanningVersion,
+    getCountdownState,
+    getExecutionState,
+    getJltPreparation,
+    getJltShotData,
+    getPlanningState,
+    getReadiness,
+    getShotAcousticLevel,
+    getShotArmament,
+    getShotIpgPressures,
+    getShotJltMao,
+    getShotManometerPressures,
+    getShotMaoTopography,
+    getShotMunition,
+    getShotPressures,
+    getShotTopography,
+    getShotTrajectography,
+    getShotVelocities,
+    getShotVideoData,
+    registerFireShot,
+    selectActiveShot,
+    setExecutionStatus,
+    setJltReadiness,
+    setJltShotData,
+    setSeriesProfileReadiness,
+    setShotAcousticLevel,
+    setShotArmament,
+    setShotIpgPressures,
+    setShotJltMao,
+    setShotManometerPressures,
+    setShotMaoTopography,
+    setShotMunition,
+    setShotPressure,
+    setShotTopography,
+    setShotTrajectography,
+    setShotVelocity,
+    setShotVideoData,
+    updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
 
@@ -206,7 +206,7 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/interrupt', 
     res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'reason' es obligatorio" });
     return;
   }
-  setExecutionStatus(req.params['fireTrialId'], 'INTERRUPTED');
+  setExecutionStatus(req.params['fireTrialId'], 'INTERRUPTED', reason);
   res.status(204).send();
 });
 
@@ -223,7 +223,7 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/cancel', (re
     res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'reason' es obligatorio" });
     return;
   }
-  setExecutionStatus(req.params['fireTrialId'], 'CANCELED');
+  setExecutionStatus(req.params['fireTrialId'], 'CANCELED', reason);
   res.status(204).send();
 });
 

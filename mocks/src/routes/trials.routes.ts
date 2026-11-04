@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { setExecutionStatus } from '../fixtures/execution/execution-store';
 import { seriesAndShotsDispatcher } from '../fixtures/trial-planning/series-and-shots-dispatcher';
 import { conditionsDispatcher } from '../fixtures/trial-planning/shooting-conditions-dispatcher';
 import { specimensCreateDispatcher } from '../fixtures/trial-planning/specimens-create-dispatcher';
@@ -8,10 +9,10 @@ import { trialPlanningInfoDispatcher } from '../fixtures/trial-planning/trial-pl
 import { usersDispatcher } from '../fixtures/trial-planning/users-dispatcher';
 import { setTrialSchedule, trialScheduleDispatchById } from '../fixtures/trial-schedule/trial-schedule-dispatcher';
 import {
-  TrialDocsStatus,
-  addMockDocument,
-  detachDocFromTrial,
-  trialsDocumentsDispatch,
+    TrialDocsStatus,
+    addMockDocument,
+    detachDocFromTrial,
+    trialsDocumentsDispatch,
 } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getTrialById, setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';
@@ -387,13 +388,13 @@ trialsRouter.post('/:centerId/fire-trials/:fireTrialId/planning/modify', (req, r
 
 // Iniciar prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/start', (req, res) => {
-  setTrialStatus(req.params['fireTrialId'], 'STARTED');
+  setExecutionStatus(req.params['fireTrialId'], 'STARTED');
   res.status(200).send();
 });
 
 // Finalizar prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/finish', (req, res) => {
-  setTrialStatus(req.params['fireTrialId'], 'EXECUTED');
+  setExecutionStatus(req.params['fireTrialId'], 'EXECUTED');
   res.status(200).json({ executionFinishedAt: new Date().toISOString() });
 });
 
@@ -404,7 +405,7 @@ trialsRouter.post('/:centerId/fire-trials/:fireTrialId/cancel', (req, res) => {
     res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'reason' es obligatorio" });
     return;
   }
-  setTrialStatus(req.params['fireTrialId'], 'CANCELLED', reason);
+  setExecutionStatus(req.params['fireTrialId'], 'CANCELED', reason);
   res.status(204).send();
 });
 

@@ -88,23 +88,6 @@ export function withGeneralData() {
 
         securityCountdownError: computed(() => executionService.securityCountdownResource.error()),
 
-        isUpdatingSecurityCountdown: computed(() => executionService.updateSecurityCountdownResource.isLoading()),
-
-        // Execution Transitions
-        isStarting: computed(() => executionService.startResource.isLoading()),
-
-        isPausing: computed(() => executionService.pauseResource.isLoading()),
-
-        isInterrupting: computed(() => executionService.interruptResource.isLoading()),
-
-        isResuming: computed(() => executionService.resumeResource.isLoading()),
-
-        isCanceling: computed(() => executionService.cancelResource.isLoading()),
-
-        isFinishing: computed(() => executionService.finishResource.isLoading()),
-
-        finishResponse: computed(() => safeResourceValue(executionService.finishResource)),
-
         /**
          * Indica si la prueba está en un estado de solo lectura
          * (Ejecutada, Finalizando, Cerrada o Cancelada).
@@ -142,17 +125,6 @@ export function withGeneralData() {
           }
           return true;
         }),
-
-        // Execution transitions status
-        pauseExecutionStatus: computed(() => executionService.pauseResource.status()),
-
-        interruptExecutionStatus: computed(() => executionService.interruptResource.status()),
-
-        resumingExecutionStatus: computed(() => executionService.resumeResource.status()),
-
-        cancelingExecutionStatus: computed(() => executionService.cancelResource.status()),
-
-        finishingExecutionStatus: computed(() => executionService.finishResource.status()),
 
         // Execution Planning
         isUpdatingPlanning: computed(() => executionService.updatePlanningResource.isLoading()),
@@ -235,32 +207,58 @@ export function withGeneralData() {
         updateSecurityCountdown(
           fireTrialId: string,
           body: Parameters<typeof executionService.updateSecurityCountdown>[1],
-        ): void {
-          executionService.updateSecurityCountdown(fireTrialId, body);
+        ): Promise<void> {
+          return executionService.updateSecurityCountdown(fireTrialId, body).then(() => {
+            executionService.getSecurityCountdownState(fireTrialId);
+          });
         },
 
-        startExecution(fireTrialId: string): void {
-          executionService.startExecution(fireTrialId);
+        startExecution(fireTrialId: string): Promise<void> {
+          return executionService.startExecution(fireTrialId).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
-        pauseExecution(fireTrialId: string): void {
-          executionService.pauseExecution(fireTrialId);
+        pauseExecution(fireTrialId: string): Promise<void> {
+          return executionService.pauseExecution(fireTrialId).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
-        interruptExecution(fireTrialId: string, reason: string): void {
-          executionService.interruptExecution(fireTrialId, reason);
+        interruptExecution(fireTrialId: string, reason: string): Promise<void> {
+          return executionService.interruptExecution(fireTrialId, reason).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
-        resumeExecution(fireTrialId: string): void {
-          executionService.resumeExecution(fireTrialId);
+        resumeExecution(fireTrialId: string): Promise<void> {
+          return executionService.resumeExecution(fireTrialId).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
-        cancelExecution(fireTrialId: string, reason: string): void {
-          executionService.cancelExecution(fireTrialId, reason);
+        cancelExecution(fireTrialId: string, reason: string): Promise<void> {
+          return executionService.cancelExecution(fireTrialId, reason).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
-        finishExecution(fireTrialId: string): void {
-          executionService.finishExecution(fireTrialId);
+        finishExecution(fireTrialId: string): Promise<void> {
+          return executionService.finishExecution(fireTrialId).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
         },
 
         updatePlanning(
@@ -373,28 +371,6 @@ export function withGeneralData() {
             activeShotId,
           });
         });
-
-        // Refresca estado tras cada transición de ciclo de vida de la prueba
-        const lifecycleResources = [
-          executionService.startResource,
-          executionService.pauseResource,
-          executionService.resumeResource,
-          executionService.interruptResource,
-          executionService.cancelResource,
-          executionService.finishResource,
-        ];
-        for (const resource of lifecycleResources) {
-          effect(() => {
-            if (typeof resource?.status === 'function' && resource.status() === 'resolved') {
-              const trialId = store.fireTrialId();
-              if (trialId) {
-                store.loadExecutionState(trialId);
-                store.loadExecutionProgress(trialId);
-                trialsService.loadById(trialId);
-              }
-            }
-          });
-        }
 
         const fireTrialId = store.fireTrialId();
         if (fireTrialId) {

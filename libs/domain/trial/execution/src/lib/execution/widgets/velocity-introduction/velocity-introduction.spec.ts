@@ -122,6 +122,7 @@ describe('VelocityIntroduction', () => {
       return Promise.resolve(defaultRemoteResponse);
     }),
     setShotVelocity: vi.fn(),
+    updateShotVelocity: vi.fn().mockResolvedValue(defaultRemoteResponse),
     loadEquipmentItemsByCategories: vi.fn().mockResolvedValue({}),
     equipmentSelectorResource: {
       hasValue: vi.fn(() => true),
@@ -355,7 +356,7 @@ describe('VelocityIntroduction', () => {
 
     await fixture.componentInstance.saveForm();
 
-    expect(mockExecutionService.setShotVelocity).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID, [
+    expect(mockExecutionService.updateShotVelocity).toHaveBeenCalledWith('trial-123', ACTIVE_SERIE_ID, ACTIVE_SHOT_ID, [
       expect.objectContaining({
         radarDopplerId: 1,
         antennaId: 4,

@@ -495,7 +495,7 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     this.#store.updateJltShotData(updates);
     if (fireTrialId && serie && disparo) {
-      this.#executionService.setJltShotData(fireTrialId, serie, disparo, request);
+      await this.#executionService.updateJltShotData(fireTrialId, serie, disparo, request);
     }
     this.#syncSnapshot();
     this.shotLock.lock();

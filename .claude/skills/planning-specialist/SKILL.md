@@ -1,7 +1,7 @@
 ---
 name: planning-specialist
-version: 1.1.1
-last-updated: 2026-10-20
+version: 1.1.2
+last-updated: 2026-11-03
 description: >
 ---
 
@@ -50,7 +50,7 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 
 ## 🛠️ Implementation Rules
 
-- When developing in `libs/domain/trial/planning`, **NEVER** use `HttpClient.subscribe`. Enforce the Signal Trigger Pattern + `httpResource`.
+- When developing in `libs/domain/trial/planning`, **NEVER** use `HttpClient.subscribe`. Enforce the Signal Trigger Pattern + `httpResource` for GET queries, and `HttpClient` + `firstValueFrom` returning `Promise<T>` for mutations (POST/PUT/PATCH/DELETE) per ADR-020.
 - Ensure mutations are coordinated through feature stores via `patchState` and synchronous service dispatch.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, DTOs, store slices, and service calls must use strict TypeScript interfaces and domain types.
 

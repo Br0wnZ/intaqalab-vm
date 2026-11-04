@@ -359,7 +359,6 @@ export class WidgetStateService {
    */
   async saveAllDirtyForms(): Promise<void> {
     const dirtyWidgets = this.dirtyWidgets();
-    console.log(`Guardando ${dirtyWidgets.length} formularios...`);
 
     for (const widgetState of dirtyWidgets) {
       const instance = this.#widgetInstances.get(widgetState.widgetId);

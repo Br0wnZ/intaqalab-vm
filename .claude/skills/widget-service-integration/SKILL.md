@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.2.0
-last-updated: 2026-10-20
+version: 1.3.0
+last-updated: 2026-11-03
 description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
@@ -155,15 +155,14 @@ export type { <Resource>Response, <Resource>Request } from './<widget-resource>.
 ## Paso 3 — Añadir métodos en ExecutionService
 
 > [!IMPORTANT]
-> `ExecutionService` usa el patrón **trigger privado + `httpResource`** para cada operación.
-> Las operaciones imperativamente iniciadas (al cambiar de disparo, al pulsar Guardar) usan
-> un método `async` que:
+> **Separación CQS (ADR-020):**
 >
-> 1. Actualiza el trigger con `_t: Date.now()` para forzar el re-disparo.
-> 2. Llama y retorna `return this.#awaitResourceValue(resource)`.
+> 1. **GET (Lecturas / Queries):** `ExecutionService` usa el patrón **trigger privado + `httpResource`**.
+> 2. **PUT / POST / DELETE (Mutaciones / Escrituras):** `ExecutionService` usa **`HttpClient` directamente con `firstValueFrom`**, retornando `Promise<T>`.
 >
-> 🚫 **PROHIBIDO EL USO DE NON-NULL ASSERTION (`!`):** NUNCA uses `resource.value()!`. Usa `#awaitResourceValue(resource)`, que valida el valor de forma segura y evita advertencias `Forbidden non-null assertion`.
-> El helper `#awaitResourceValue` ya existe en `ExecutionService` — úsalo directamente.
+> 🚫 **PROHIBIDO USAR `httpResource` PARA MUTACIONES:** `httpResource` usa internamente `AbortController` y `switchMap`. Si se usa para guardar o mutar datos, llamadas secuenciales rápidas (como el guardado multi-widget en `WidgetStateService.saveAllDirtyForms()`) cancelan las peticiones en vuelo, persistiendo solo la última. Las mutaciones deben ser Promises nativas e independientes.
+>
+> 🚫 **PROHIBIDO EL USO DE NON-NULL ASSERTION (`!`):** NUNCA uses `resource.value()!`. Para resolver recursos GET imperativos si fuera necesario, usa `#awaitResourceValue(resource)`.
 
 ```typescript
 // === GET (Widget N) =========================================================
@@ -184,7 +183,7 @@ get<Resource>(fireTrialId: string, seriesId: string, shotId: string): void {
   this.#get<Resource>Params.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
 }
 
-// Trigger dedicado para fetch imperativo (usado desde el widget, espera la respuesta)
+// Trigger dedicado para fetch imperativo (usado desde el widget si requiere sincronización)
 readonly #fetch<Resource>Params = signal<<Resource>Params | null>(null);
 
 readonly #fetch<Resource>Resource = httpResource<<Resource>Response>(() => {
@@ -205,28 +204,8 @@ async fetch<Resource>(
   return this.#awaitResourceValue(this.#fetch<Resource>Resource);
 }
 
-// === PUT (Widget N) =========================================================
-
-readonly #update<Resource>Params = signal<<Resource>UpdateParams | null>(null);
-
-readonly update<Resource>Resource = httpResource<<Resource>Response>(() => {
-  const params = this.#update<Resource>Params();
-  if (!params) return undefined;
-  return {
-    url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/<api-path>/series/${params.seriesId}/shots/${params.shotId}`,
-    method: 'PUT',
-    body: params.body,
-  };
-});
-
-set<Resource>(
-  fireTrialId: string,
-  seriesId: string,
-  shotId: string,
-  body: <Resource>Request,
-): void {
-  this.#update<Resource>Params.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-}
+// === PUT / MUTACIONES (Widget N) =============================================
+// ⚡ MANDATORIO (ADR-020): Mutaciones con HttpClient + firstValueFrom.
 
 async update<Resource>(
   fireTrialId: string,
@@ -234,8 +213,23 @@ async update<Resource>(
   shotId: string,
   body: <Resource>Request,
 ): Promise<<Resource>Response> {
+  return firstValueFrom(
+    this.#http.put<<Resource>Response>(
+      `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/<api-path>/series/${seriesId}/shots/${shotId}`,
+      body,
+    ),
+  );
+}
+
+// Retrocompatibilidad opcional para triggers legacy si alguna vista los observa
+readonly #update<Resource>Params = signal<<Resource>UpdateParams | null>(null);
+set<Resource>(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+  body: <Resource>Request,
+): void {
   this.#update<Resource>Params.set({ fireTrialId, seriesId, shotId, body, _t: Date.now() });
-  return this.#awaitResourceValue(this.update<Resource>Resource);
 }
 ```
 

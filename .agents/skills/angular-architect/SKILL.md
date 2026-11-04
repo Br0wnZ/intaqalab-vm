@@ -1,7 +1,7 @@
 ---
 name: angular-architect
-version: 1.0.1
-last-updated: 2026-09-29
+version: 1.0.2
+last-updated: 2026-11-03
 description: Expert in Angular 21, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns.
 argument-hint: "E.g. 'Migrate this component to Signal Forms and Signal Queries', 'Audit and optimize Signals usage', or 'Refactor this service to httpResource'."
 user-invocable: true
@@ -17,7 +17,7 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 - **Framework:** Angular 21+ (Zoneless execution, standalone components).
 - **Reactivity:** Signals-first (`signal()`, `computed()`, `linkedSignal()`, `effect()`).
-- **Data Fetching:** `httpResource()` with **Signal Trigger Pattern** (stable API).
+- **Data Fetching & Mutations (CQS):** `httpResource()` with **Signal Trigger Pattern** for GET queries only. `HttpClient` + `firstValueFrom` for mutations (POST/PUT/PATCH/DELETE, ADR-020).
 - **Forms:** Modern **Signal Forms** (`form()`, `control()`, `[formField]` directive).
 - **UI & Layout:** Angular Material (Aria/Headless) + inline Tailwind CSS.
 - **Testing:** Vitest + Angular Testing Library (ATL) + Component Harnesses.
@@ -73,18 +73,19 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 When modernizing legacy code:
 
-| Legacy Code (❌ Remove)                        | Angular 21+ Standard (✅ Apply)                 |
-| :--------------------------------------------- | :---------------------------------------------- |
-| `BehaviorSubject`, `Observable`, `async` pipe  | `signal()`, `computed()`, `linkedSignal()`      |
-| `*ngIf`, `*ngFor`, `*ngSwitch`, `CommonModule` | `@if`, `@for (track item.id)`, `@switch`        |
-| `FormBuilder`, `FormGroup`, `[formGroup]`      | `form()`, `control()`, `[formField]` directive  |
-| `constructor(private s: Service)`              | `readonly #s = inject(Service)`                 |
-| `@Injectable({ providedIn: 'root' })`          | `@Service()` from `@angular/core`               |
-| `@ViewChild()`, `@ContentChild()`              | `viewChild()`, `contentChild()`                 |
-| `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern       |
-| `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())` |
-| Massive mapping inside component `.ts`         | Extract to `<feature>-mapper.service.ts`        |
-| `event.stopPropagation()` in component method  | `uiStopClick` directive (`StopClick` from UI)   |
+| Legacy Code (❌ Remove)                        | Angular 21+ Standard (✅ Apply)                      |
+| :--------------------------------------------- | :--------------------------------------------------- |
+| `BehaviorSubject`, `Observable`, `async` pipe  | `signal()`, `computed()`, `linkedSignal()`           |
+| `*ngIf`, `*ngFor`, `*ngSwitch`, `CommonModule` | `@if`, `@for (track item.id)`, `@switch`             |
+| `FormBuilder`, `FormGroup`, `[formGroup]`      | `form()`, `control()`, `[formField]` directive       |
+| `constructor(private s: Service)`              | `readonly #s = inject(Service)`                      |
+| `@Injectable({ providedIn: 'root' })`          | `@Service()` from `@angular/core`                    |
+| `@ViewChild()`, `@ContentChild()`              | `viewChild()`, `contentChild()`                      |
+| `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern (GET only) |
+| `httpResource` used for mutations (POST/PUT)   | `HttpClient` + `firstValueFrom` (Promise, ADR-020)   |
+| `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())`      |
+| Massive mapping inside component `.ts`         | Extract to `<feature>-mapper.service.ts`             |
+| `event.stopPropagation()` in component method  | `uiStopClick` directive (`StopClick` from UI)        |
 
 ---
 

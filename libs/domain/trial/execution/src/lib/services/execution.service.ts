@@ -1,8 +1,14 @@
-import { HttpParams, httpResource } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams, httpResource } from '@angular/common/http';
 import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { injectExecutionEndpoint, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
+import {
+    SKIP_ERROR_TOAST,
+    injectExecutionEndpoint,
+    injectFireTrialsEndpoint,
+    injectPlanningEndpoint,
+    injectWharehouseEndpoint,
+} from '@intaqalab/config';
 import type { BackendMunitionComponent, TrialArmamentResponse } from '@intaqalab/data-access-planning';
 import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
@@ -10,54 +16,53 @@ import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-  ArmamentEquipmentDenomination,
-  ArmamentEquipmentDenominationsResponse,
-  EquipmentMeasurementGroup,
-  EquipmentSelectionItem,
-  EquipmentSelectionList,
-  EquipmentTypeEnum,
-  JltMaoBulkConfigurationRequest,
-  JltMaoBulkConfigurationResponse,
-  MaoTopographyBulkConfigurationRequest,
-  MaoTopographyBulkConfigurationResponse,
-  MunitionConditioningBulkConfigurationRequest,
-  MunitionConditioningBulkConfigurationResponse,
-  PropellantChargeAdjustmentConfiguration,
-  PropellantChargeAdjustmentQuery,
-  PropellantChargeAdjustmentResponse,
-  PropellantChargeParametersResponse,
-  ShotAcousticLevelRequest,
-  ShotAcousticLevelResponse,
-  ShotCameraOrientationResponse,
-  ShotDifferentialPressureData,
-  ShotIpgPressuresRequest,
-  ShotIpgPressuresResponse,
-  ShotJltMaoRequest,
-  ShotJltMaoResponse,
-  ShotManometerPressuresRequest,
-  ShotManometerPressuresResponse,
-  ShotMaoTopographyRequest,
-  ShotMaoTopographyResponse,
-  ShotMunitionRequest,
-  ShotMunitionResponse,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
-  ShotTopographyRequest,
-  ShotTopographyResponse,
-  ShotTrajectographyRequest,
-  ShotTrajectographyResponse,
-  ShotVideoDataRequest,
-  ShotVideoDataResponse,
-  TrajectographyRadarOrientationResponse,
-  VelocityUniformityQuery,
-  VelocityUniformityResponse,
-  WidgetPreferenceId,
+    ArmamentEquipmentDenomination,
+    ArmamentEquipmentDenominationsResponse,
+    EquipmentMeasurementGroup,
+    EquipmentSelectionItem,
+    EquipmentSelectionList,
+    EquipmentTypeEnum,
+    JltMaoBulkConfigurationRequest,
+    JltMaoBulkConfigurationResponse,
+    MaoTopographyBulkConfigurationRequest,
+    MaoTopographyBulkConfigurationResponse,
+    MunitionConditioningBulkConfigurationRequest,
+    MunitionConditioningBulkConfigurationResponse,
+    PropellantChargeAdjustmentConfiguration,
+    PropellantChargeAdjustmentQuery,
+    PropellantChargeAdjustmentResponse,
+    PropellantChargeParametersResponse,
+    ShotAcousticLevelRequest,
+    ShotAcousticLevelResponse,
+    ShotCameraOrientationResponse,
+    ShotDifferentialPressureData,
+    ShotIpgPressuresRequest,
+    ShotIpgPressuresResponse,
+    ShotJltMaoRequest,
+    ShotJltMaoResponse,
+    ShotManometerPressuresRequest,
+    ShotManometerPressuresResponse,
+    ShotMaoTopographyRequest,
+    ShotMaoTopographyResponse,
+    ShotMunitionRequest,
+    ShotMunitionResponse,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData,
+    ShotTopographyRequest,
+    ShotTopographyResponse,
+    ShotTrajectographyRequest,
+    ShotTrajectographyResponse,
+    ShotVideoDataRequest,
+    ShotVideoDataResponse,
+    TrajectographyRadarOrientationResponse,
+    VelocityUniformityQuery,
+    VelocityUniformityResponse,
+    WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
 import { EquipmentCatalogService } from './equipment-catalog.service';
-import { FireTrialLifecycleService } from './fire-trial-lifecycle.service';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -254,19 +259,19 @@ export interface PlanningApprovalRequest {
 
 /** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
 export type {
-  PlanningConditionsResponse,
-  PlanningConditionsSeries,
-  PlanningConditionsShot,
-  PlanningSeriesItem,
-  PlanningSeriesShotItem,
+    PlanningConditionsResponse,
+    PlanningConditionsSeries,
+    PlanningConditionsShot,
+    PlanningSeriesItem,
+    PlanningSeriesShotItem
 } from '@intaqalab/data-access-planning';
 export type {
-  PropellantChargeParametersResponse,
-  ShotDifferentialPressureData,
-  ShotPiezoPressureItem,
-  ShotPressuresRequest,
-  ShotPressuresResponse,
-  ShotTimesData,
+    PropellantChargeParametersResponse,
+    ShotDifferentialPressureData,
+    ShotPiezoPressureItem,
+    ShotPressuresRequest,
+    ShotPressuresResponse,
+    ShotTimesData
 };
 
 export interface JltShotDataPayload {
@@ -482,14 +487,6 @@ interface ArmamentBulkConfigurationParams extends ExecutionParams {
   body: ArmamentBulkConfigurationRequest;
 }
 
-interface ExecutionWithReasonParams extends ExecutionParams {
-  reason: string;
-}
-
-interface SecurityCountdownParams extends ExecutionParams {
-  body: SecurityCountdownRequest;
-}
-
 interface ExecutionPlanningParams extends ExecutionParams {
   body: PlanningRequest | PlanningApprovalRequest;
 }
@@ -523,6 +520,17 @@ export type ProfilesReadinessResponse = {
 
 export type ProfileReadinessRequest = {
   seriesReadiness: SeriesReadinessItem[];
+};
+
+export type ProfileReadinessSaveFailure = {
+  profile: ExecutionTechnicalProfile;
+  seriesId: string;
+  error: unknown;
+};
+
+export type ProfileReadinessSaveResult = {
+  updatedSeries: SeriesReadinessItem[];
+  failures: ProfileReadinessSaveFailure[];
 };
 
 export type JltReadinessRequest = {
@@ -633,12 +641,13 @@ interface LoadEquipmentByTypeParams {
   providedIn: 'root',
 })
 export class ExecutionService {
-  readonly #lifecycleService = inject(FireTrialLifecycleService);
+  readonly #http = inject(HttpClient);
   readonly #equipmentCatalogService = inject(EquipmentCatalogService);
   readonly #planningMunitionsService = inject(PlanningMunitionsService);
   readonly #planningArmamentService = inject(PlanningArmamentService);
   readonly #injector = inject(Injector);
   readonly #executionUrl = injectExecutionEndpoint();
+  readonly #fireTrialsUrl = injectFireTrialsEndpoint();
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #warehouseUrl = injectWharehouseEndpoint();
 
@@ -1257,96 +1266,56 @@ export class ExecutionService {
 
   // ── SECURITY COUNTDOWN UPDATE ───────────────────────────────────────────
 
-  readonly #updateSecurityCountdownParams = signal<SecurityCountdownParams | null>(null);
-
-  readonly updateSecurityCountdownResource = httpResource<SecurityCountdownResponse>(() => {
-    const params = this.#updateSecurityCountdownParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/security-countdown`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  updateSecurityCountdown(fireTrialId: FireTrial['id'], body: SecurityCountdownRequest): void {
-    this.#updateSecurityCountdownParams.set({ fireTrialId, body });
+  updateSecurityCountdown(
+    fireTrialId: FireTrial['id'],
+    body: SecurityCountdownRequest,
+  ): Promise<SecurityCountdownResponse> {
+    return firstValueFrom(
+      this.#http.put<SecurityCountdownResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/security-countdown`,
+        body,
+      ),
+    );
   }
 
-  // ── EXECUTION TRANSITIONS: START ─────────────────────────────────────────
+  // ── EXECUTION TRANSITIONS ────────────────────────────────────────────────
 
-  readonly startResource = this.#lifecycleService.startResource;
-
-  startExecution(fireTrialId: FireTrial['id']): void {
-    this.#lifecycleService.startFireTrial(fireTrialId);
+  startExecution(fireTrialId: FireTrial['id']): Promise<void> {
+    return firstValueFrom(this.#http.post<void>(`${this.#fireTrialsUrl}/${fireTrialId}/start`, null));
   }
 
   // ── EXECUTION TRANSITIONS: PAUSE ─────────────────────────────────────────
 
-  readonly #pauseParams = signal<ExecutionParams | null>(null);
-
-  readonly pauseResource = httpResource<void>(() => {
-    const params = this.#pauseParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/pause`,
-      method: 'POST',
-    };
-  });
-
-  pauseExecution(fireTrialId: FireTrial['id']): void {
-    this.#pauseParams.set({ fireTrialId });
+  pauseExecution(fireTrialId: FireTrial['id']): Promise<void> {
+    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pause`, null));
   }
 
   // ── EXECUTION TRANSITIONS: INTERRUPT ────────────────────────────────────
 
-  readonly #interruptParams = signal<ExecutionWithReasonParams | null>(null);
-
-  readonly interruptResource = httpResource<void>(() => {
-    const params = this.#interruptParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/interrupt`,
-      method: 'POST',
-      body: { reason: params.reason } satisfies TransitionWithReasonRequest,
-    };
-  });
-
-  interruptExecution(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#interruptParams.set({ fireTrialId, reason });
+  interruptExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
+    const body = { reason } satisfies TransitionWithReasonRequest;
+    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/interrupt`, body));
   }
 
   // ── EXECUTION TRANSITIONS: RESUME ───────────────────────────────────────
 
-  readonly #resumeParams = signal<ExecutionParams | null>(null);
-
-  readonly resumeResource = httpResource<void>(() => {
-    const params = this.#resumeParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/resume`,
-      method: 'POST',
-    };
-  });
-
-  resumeExecution(fireTrialId: FireTrial['id']): void {
-    this.#resumeParams.set({ fireTrialId });
+  resumeExecution(fireTrialId: FireTrial['id']): Promise<void> {
+    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/resume`, null));
   }
 
   // ── EXECUTION TRANSITIONS: CANCEL ───────────────────────────────────────
 
-  readonly cancelResource = this.#lifecycleService.cancelResource;
-
-  cancelExecution(fireTrialId: FireTrial['id'], reason: string): void {
-    this.#lifecycleService.cancelFireTrial(fireTrialId, reason);
+  cancelExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
+    const body = { reason } satisfies TransitionWithReasonRequest;
+    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/cancel`, body));
   }
 
   // ── EXECUTION TRANSITIONS: FINISH ────────────────────────────────────────
 
-  readonly finishResource = this.#lifecycleService.finishResource;
-
-  finishExecution(fireTrialId: FireTrial['id']): void {
-    this.#lifecycleService.finishFireTrial(fireTrialId);
+  finishExecution(fireTrialId: FireTrial['id']): Promise<ExecutionFinishResponse> {
+    return firstValueFrom(
+      this.#http.post<ExecutionFinishResponse>(`${this.#fireTrialsUrl}/${fireTrialId}/finish`, null),
+    );
   }
 
   // ── EXECUTION PLANNING: UPDATE ──────────────────────────────────────────
@@ -1492,30 +1461,49 @@ export class ExecutionService {
     seriesId: string,
     body: SeriesReadinessRequest,
   ): Promise<SeriesReadinessItem> {
-    this.#setSeriesReadinessOneParams.set({ fireTrialId, profile, seriesId, body });
-    return this.#awaitResourceValue(this.setSeriesReadinessResource);
+    return firstValueFrom(
+      this.#http.put<SeriesReadinessItem>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/readiness/profiles/${profile}/series/${seriesId}`,
+        body,
+        { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
+      ),
+    );
   }
 
   /**
-   * Registra el readiness de un perfil ejecutando una llamada individual por cada serie de forma secuencial.
+   * Registra el readiness de un perfil ejecutando una llamada independiente por cada serie.
    */
   async setProfileReadiness(
     fireTrialId: FireTrial['id'],
     profile: ExecutionTechnicalProfile,
     bodyOrItems: ProfileReadinessRequest | SeriesReadinessItem[],
-  ): Promise<SeriesReadinessItem[]> {
+  ): Promise<ProfileReadinessSaveResult> {
     const items = Array.isArray(bodyOrItems) ? bodyOrItems : bodyOrItems.seriesReadiness;
-    const results: SeriesReadinessItem[] = [];
-    for (const item of items) {
-      const result = await this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
-        isReady: item.isReady,
-        observations: item.observations,
-      });
-      results.push(result);
+    const results = await Promise.all(
+      items.map(async (item) => {
+        try {
+          const updatedSeries = await this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
+            isReady: item.isReady,
+            observations: item.observations,
+          });
+          return { status: 'fulfilled' as const, updatedSeries };
+        } catch (error) {
+          return {
+            status: 'rejected' as const,
+            failure: { profile, seriesId: item.seriesId, error },
+          };
+        }
+      }),
+    );
+
+    if (items.length > 0) {
+      this.getProfilesReadiness(fireTrialId);
     }
-    // Resincroniza el estado global de readiness tras guardar todas las series del perfil.
-    this.getProfilesReadiness(fireTrialId);
-    return results;
+
+    return {
+      updatedSeries: results.flatMap((result) => (result.status === 'fulfilled' ? [result.updatedSeries] : [])),
+      failures: results.flatMap((result) => (result.status === 'rejected' ? [result.failure] : [])),
+    };
   }
 
   resetSetProfileReadiness(): void {
@@ -1563,8 +1551,12 @@ export class ExecutionService {
     seriesId: string,
     body: JltReadinessRequest,
   ): Promise<JltReadinessItem> {
-    this.#setJltReadinessParams.set({ fireTrialId, seriesId, body });
-    return this.#awaitResourceValue(this.setJltReadinessResource);
+    return firstValueFrom(
+      this.#http.put<JltReadinessItem>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-preparation/series/${seriesId}`,
+        body,
+      ),
+    );
   }
 
   readonly #selectShotParams = signal<SelectShotParams | null>(null);
@@ -1695,6 +1687,20 @@ export class ExecutionService {
     this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
+  async updateJltShotData(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: JltShotDataRequest,
+  ): Promise<JltShotDataResponse> {
+    return firstValueFrom(
+      this.#http.put<JltShotDataResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-shot-data/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
+  }
+
   // ── SHOT VELOCITIES: GET ─────────────────────────────────────────────────
 
   readonly #getShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
@@ -1748,6 +1754,20 @@ export class ExecutionService {
 
   setShotVelocity(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVelocitiesRequest): void {
     this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body });
+  }
+
+  async updateShotVelocity(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotVelocitiesRequest,
+  ): Promise<ShotVelocitiesResponse> {
+    return firstValueFrom(
+      this.#http.put<ShotVelocitiesResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/velocities/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT PRESSURES: GET ──────────────────────────────────────────────────────
@@ -1811,8 +1831,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotPressuresRequest,
   ): Promise<ShotPressuresResponse> {
-    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotPressuresResource);
+    return firstValueFrom(
+      this.#http.put<ShotPressuresResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pressures/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────
@@ -1921,6 +1945,20 @@ export class ExecutionService {
     this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body });
   }
 
+  async updateShotArmament(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotArmamentRequest,
+  ): Promise<ShotArmamentResponse> {
+    return firstValueFrom(
+      this.#http.put<ShotArmamentResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/armament/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
+  }
+
   // ── ARMAMENT BULK CONFIGURATION ──────────────────────────────────────────
 
   readonly #applyArmamentBulkConfigurationParams = actionTrigger<ArmamentBulkConfigurationParams>();
@@ -2000,8 +2038,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotMunitionRequest,
   ): Promise<ShotMunitionResponse> {
-    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotMunitionResource);
+    return firstValueFrom(
+      this.#http.put<ShotMunitionResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/munitions/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
   readonly #applyMunitionConditioningBulkConfigurationParams =
     signal<MunitionConditioningBulkConfigurationParams | null>(null);
@@ -2091,8 +2133,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotManometerPressuresRequest,
   ): Promise<ShotManometerPressuresResponse> {
-    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotManometerPressuresResource);
+    return firstValueFrom(
+      this.#http.put<ShotManometerPressuresResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/manometer-pressures/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT IPG PRESSURES: GET (Widget 32) ───────────────────────────────────
@@ -2161,8 +2207,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotIpgPressuresRequest,
   ): Promise<ShotIpgPressuresResponse> {
-    this.#updateShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotIpgPressuresResource);
+    return firstValueFrom(
+      this.#http.put<ShotIpgPressuresResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/ipg-pressures/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT JLT MAO: GET ────────────────────────────────
@@ -2223,8 +2273,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotJltMaoRequest,
   ): Promise<ShotJltMaoResponse> {
-    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotJltMaoResource);
+    return firstValueFrom(
+      this.#http.put<ShotJltMaoResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-mao/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── JLT MAO BULK CONFIGURATION: POST (Widget 15) ─────────────────────────
@@ -2333,8 +2387,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotMaoTopographyRequest,
   ): Promise<ShotMaoTopographyResponse> {
-    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotMaoTopographyResource);
+    return firstValueFrom(
+      this.#http.put<ShotMaoTopographyResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/mao-topography/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── MAO TOPOGRAPHY BULK CONFIGURATION: POST (Widget 16) ────────────────
@@ -2421,8 +2479,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotTopographyRequest,
   ): Promise<ShotTopographyResponse> {
-    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotTopographyResource);
+    return firstValueFrom(
+      this.#http.put<ShotTopographyResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/topography/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT TRAJECTOGRAPHY: GET ────────────────────────────────
@@ -2492,8 +2554,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotTrajectographyRequest,
   ): Promise<ShotTrajectographyResponse> {
-    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotTrajectographyResource);
+    return firstValueFrom(
+      this.#http.put<ShotTrajectographyResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/trajectography/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT ACOUSTIC LEVEL: GET ────────────────────────────────
@@ -2563,8 +2629,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotAcousticLevelRequest,
   ): Promise<ShotAcousticLevelResponse> {
-    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotAcousticLevelResource);
+    return firstValueFrom(
+      this.#http.put<ShotAcousticLevelResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/acoustic-level/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   // ── SHOT VIDEO DATA: GET ───────────────────────────────────
@@ -2628,8 +2698,12 @@ export class ExecutionService {
     shotId: string,
     body: ShotVideoDataRequest,
   ): Promise<ShotVideoDataResponse> {
-    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body });
-    return this.#awaitResourceValue(this.updateShotVideoDataResource);
+    return firstValueFrom(
+      this.#http.put<ShotVideoDataResponse>(
+        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/video/series/${seriesId}/shots/${shotId}`,
+        body,
+      ),
+    );
   }
 
   /**

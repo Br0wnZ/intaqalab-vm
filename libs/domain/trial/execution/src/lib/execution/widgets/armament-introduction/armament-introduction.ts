@@ -404,7 +404,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const tubeId = this.#numericEquipmentId(tubo);
     if (fireTrialId && serie && disparo && weaponId !== null && (this.tubeDisabled() || tubeId !== null)) {
       try {
-        await this.#executionService.setShotArmament(fireTrialId, serie, disparo, {
+        await this.#executionService.updateShotArmament(fireTrialId, serie, disparo, {
           weaponId,
           tubeId,
           observations: observations || null,

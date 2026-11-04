@@ -125,16 +125,16 @@ export class Execution implements OnDestroy {
     this.isEditMode.update((isEditMode) => !isEditMode);
   }
 
-  startExecution(): void {
-    this.#executionFacade.startExecution();
+  startExecution(): Promise<void> {
+    return this.#executionFacade.startExecution();
   }
 
   pauseExecution(): Promise<void> {
     return this.#executionFacade.pauseExecution();
   }
 
-  resumeExecution(): void {
-    this.#executionFacade.resumeExecution();
+  resumeExecution(): Promise<void> {
+    return this.#executionFacade.resumeExecution();
   }
 
   interruptExecution(): Promise<void> {
@@ -145,8 +145,8 @@ export class Execution implements OnDestroy {
     return this.#executionFacade.cancelExecution();
   }
 
-  finishExecution(): void {
-    this.#executionFacade.finishExecution();
+  finishExecution(): Promise<void> {
+    return this.#executionFacade.finishExecution();
   }
 
   openEquipmentSelector(): Promise<void> {

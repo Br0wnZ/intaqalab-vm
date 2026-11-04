@@ -51,7 +51,6 @@ export class CalendarTrialsDayComponent {
 
   events = computed(() => {
     const data = this.data();
-    console.log('data is...', data);
     if (data) {
       const result = data.trials.map((t) => {
         return {

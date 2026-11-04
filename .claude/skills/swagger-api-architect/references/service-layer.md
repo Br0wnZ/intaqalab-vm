@@ -1,15 +1,30 @@
 # Capa de Servicios (`services/`)
 
-Los servicios encapsulan las llamadas HTTP usando `httpResource` de Angular y `signal` como mecanismo de trigger. Son `@Injectable({ providedIn: 'root' })` y NUNCA contienen lógica de negocio ni estado de UI.
+Los servicios encapsulan las llamadas HTTP siguiendo el principio CQS (**Command-Query Separation**, ADR-020):
 
-## Patrón Arquitectónico
+- **Queries (Lecturas / GET):** Usan `httpResource` de Angular con un `signal` privado como mecanismo de trigger reactivo.
+- **Commands (Mutaciones / POST, PUT, PATCH, DELETE):** Usan `HttpClient` directamente con `firstValueFrom`, retornando un `Promise<T>`. NUNCA usar `httpResource` para mutaciones.
+
+Son `@Injectable({ providedIn: 'root' })` y NUNCA contienen lógica de negocio ni estado de UI.
+
+## Patrón Arquitectónico (CQS)
 
 ```
+[QUERIES - GET]
 signal<Params | null>(null)  →  httpResource<Response>(() => { ... })
        ↑ trigger                        ↑ reactive fetch
        │                                │
    .set(params)                   .value() / .isLoading() / .error()
+
+[MUTATIONS - POST / PUT / PATCH / DELETE]
+HttpClient (injected)        →  async method(): Promise<Response>
+       ↑                                ↑
+firstValueFrom(http.put(...))     await method() (aislado, no cancelable)
 ```
+
+> [!IMPORTANT]
+> **Por qué no usar `httpResource` para mutaciones (ADR-020):**
+> `httpResource` implementa semántica `switchMap` / `AbortController` internamente. Si se usa para guardar o mutar datos, múltiples llamadas secuenciales rápidas (como el guardado de widgets en cascada o múltiples clicks) cancelan las peticiones en vuelo previas. Además, no devuelven una promesa directamente ejecutable con `await`. Usar `HttpClient` + `firstValueFrom` resuelve esto limpiamente.
 
 ## Ejemplo Real: Servicio Simple (GET + PUT)
 
