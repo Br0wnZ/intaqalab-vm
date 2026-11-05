@@ -450,9 +450,7 @@ export class JltMao extends BaseFormWidgetComponent {
   });
 
   protected readonly hasManualOlt = computed(() => this.#parseNum(this.oltField()) !== null);
-  protected readonly distanciaPiqueReadOnly = computed(
-    () => !this.#canEditSetup() || this.plannedRange() !== null,
-  );
+  protected readonly distanciaPiqueReadOnly = computed(() => !this.#canEditSetup() || this.plannedRange() !== null);
   protected readonly alturaFuncionamientoReadOnly = computed(
     () => !this.#canEditSetup() || this.plannedFunctioningHeight() !== null,
   );
@@ -465,9 +463,7 @@ export class JltMao extends BaseFormWidgetComponent {
   protected readonly angularDifferenceReadOnly = computed(
     () => !this.#canEditSetup() || this.plannedOlt() !== null || this.hasManualOlt(),
   );
-  protected readonly anguloTiroReadOnly = computed(
-    () => !this.#canEditSetup() || this.plannedShootingAngle() !== null,
-  );
+  protected readonly anguloTiroReadOnly = computed(() => !this.#canEditSetup() || this.plannedShootingAngle() !== null);
   protected readonly graduacionEspoletaReadOnly = computed(
     () =>
       !this.#canEditSetup() ||

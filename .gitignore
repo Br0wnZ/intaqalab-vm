@@ -65,6 +65,9 @@ skills-lock.json
 # AI Agents
 .agent
 AGENT.md
+.agents/TASK.md
+.agents/TASK.*.md
+!.agents/TASK.template.md
 
 
 # AI Agent Histories

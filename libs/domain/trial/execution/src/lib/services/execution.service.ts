@@ -3,11 +3,11 @@ import type { Signal } from '@angular/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import {
-    SKIP_ERROR_TOAST,
-    injectExecutionEndpoint,
-    injectFireTrialsEndpoint,
-    injectPlanningEndpoint,
-    injectWharehouseEndpoint,
+  SKIP_ERROR_TOAST,
+  injectExecutionEndpoint,
+  injectFireTrialsEndpoint,
+  injectPlanningEndpoint,
+  injectWharehouseEndpoint,
 } from '@intaqalab/config';
 import type { BackendMunitionComponent, TrialArmamentResponse } from '@intaqalab/data-access-planning';
 import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
@@ -16,50 +16,50 @@ import { actionTrigger } from '@intaqalab/utils';
 import { filter, firstValueFrom, take } from 'rxjs';
 
 import type {
-    ArmamentEquipmentDenomination,
-    ArmamentEquipmentDenominationsResponse,
-    EquipmentMeasurementGroup,
-    EquipmentSelectionItem,
-    EquipmentSelectionList,
-    EquipmentTypeEnum,
-    JltMaoBulkConfigurationRequest,
-    JltMaoBulkConfigurationResponse,
-    MaoTopographyBulkConfigurationRequest,
-    MaoTopographyBulkConfigurationResponse,
-    MunitionConditioningBulkConfigurationRequest,
-    MunitionConditioningBulkConfigurationResponse,
-    PropellantChargeAdjustmentConfiguration,
-    PropellantChargeAdjustmentQuery,
-    PropellantChargeAdjustmentResponse,
-    PropellantChargeParametersResponse,
-    ShotAcousticLevelRequest,
-    ShotAcousticLevelResponse,
-    ShotCameraOrientationResponse,
-    ShotDifferentialPressureData,
-    ShotIpgPressuresRequest,
-    ShotIpgPressuresResponse,
-    ShotJltMaoRequest,
-    ShotJltMaoResponse,
-    ShotManometerPressuresRequest,
-    ShotManometerPressuresResponse,
-    ShotMaoTopographyRequest,
-    ShotMaoTopographyResponse,
-    ShotMunitionRequest,
-    ShotMunitionResponse,
-    ShotPiezoPressureItem,
-    ShotPressuresRequest,
-    ShotPressuresResponse,
-    ShotTimesData,
-    ShotTopographyRequest,
-    ShotTopographyResponse,
-    ShotTrajectographyRequest,
-    ShotTrajectographyResponse,
-    ShotVideoDataRequest,
-    ShotVideoDataResponse,
-    TrajectographyRadarOrientationResponse,
-    VelocityUniformityQuery,
-    VelocityUniformityResponse,
-    WidgetPreferenceId,
+  ArmamentEquipmentDenomination,
+  ArmamentEquipmentDenominationsResponse,
+  EquipmentMeasurementGroup,
+  EquipmentSelectionItem,
+  EquipmentSelectionList,
+  EquipmentTypeEnum,
+  JltMaoBulkConfigurationRequest,
+  JltMaoBulkConfigurationResponse,
+  MaoTopographyBulkConfigurationRequest,
+  MaoTopographyBulkConfigurationResponse,
+  MunitionConditioningBulkConfigurationRequest,
+  MunitionConditioningBulkConfigurationResponse,
+  PropellantChargeAdjustmentConfiguration,
+  PropellantChargeAdjustmentQuery,
+  PropellantChargeAdjustmentResponse,
+  PropellantChargeParametersResponse,
+  ShotAcousticLevelRequest,
+  ShotAcousticLevelResponse,
+  ShotCameraOrientationResponse,
+  ShotDifferentialPressureData,
+  ShotIpgPressuresRequest,
+  ShotIpgPressuresResponse,
+  ShotJltMaoRequest,
+  ShotJltMaoResponse,
+  ShotManometerPressuresRequest,
+  ShotManometerPressuresResponse,
+  ShotMaoTopographyRequest,
+  ShotMaoTopographyResponse,
+  ShotMunitionRequest,
+  ShotMunitionResponse,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
+  ShotTopographyRequest,
+  ShotTopographyResponse,
+  ShotTrajectographyRequest,
+  ShotTrajectographyResponse,
+  ShotVideoDataRequest,
+  ShotVideoDataResponse,
+  TrajectographyRadarOrientationResponse,
+  VelocityUniformityQuery,
+  VelocityUniformityResponse,
+  WidgetPreferenceId,
 } from '../execution/models';
 import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
 import { EquipmentCatalogService } from './equipment-catalog.service';
@@ -259,19 +259,19 @@ export interface PlanningApprovalRequest {
 
 /** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
 export type {
-    PlanningConditionsResponse,
-    PlanningConditionsSeries,
-    PlanningConditionsShot,
-    PlanningSeriesItem,
-    PlanningSeriesShotItem
+  PlanningConditionsResponse,
+  PlanningConditionsSeries,
+  PlanningConditionsShot,
+  PlanningSeriesItem,
+  PlanningSeriesShotItem,
 } from '@intaqalab/data-access-planning';
 export type {
-    PropellantChargeParametersResponse,
-    ShotDifferentialPressureData,
-    ShotPiezoPressureItem,
-    ShotPressuresRequest,
-    ShotPressuresResponse,
-    ShotTimesData
+  PropellantChargeParametersResponse,
+  ShotDifferentialPressureData,
+  ShotPiezoPressureItem,
+  ShotPressuresRequest,
+  ShotPressuresResponse,
+  ShotTimesData,
 };
 
 export interface JltShotDataPayload {
@@ -1287,27 +1287,35 @@ export class ExecutionService {
   // ── EXECUTION TRANSITIONS: PAUSE ─────────────────────────────────────────
 
   pauseExecution(fireTrialId: FireTrial['id']): Promise<void> {
-    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pause`, null));
+    return firstValueFrom(
+      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pause`, null),
+    );
   }
 
   // ── EXECUTION TRANSITIONS: INTERRUPT ────────────────────────────────────
 
   interruptExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
     const body = { reason } satisfies TransitionWithReasonRequest;
-    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/interrupt`, body));
+    return firstValueFrom(
+      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/interrupt`, body),
+    );
   }
 
   // ── EXECUTION TRANSITIONS: RESUME ───────────────────────────────────────
 
   resumeExecution(fireTrialId: FireTrial['id']): Promise<void> {
-    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/resume`, null));
+    return firstValueFrom(
+      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/resume`, null),
+    );
   }
 
   // ── EXECUTION TRANSITIONS: CANCEL ───────────────────────────────────────
 
   cancelExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
     const body = { reason } satisfies TransitionWithReasonRequest;
-    return firstValueFrom(this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/cancel`, body));
+    return firstValueFrom(
+      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/cancel`, body),
+    );
   }
 
   // ── EXECUTION TRANSITIONS: FINISH ────────────────────────────────────────

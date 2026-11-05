@@ -26,16 +26,39 @@ const isWin = process.platform === 'win32';
 const npx = isWin ? 'npx.cmd' : 'npx';
 const node = process.execPath; // always the current node binary
 
-run(
-  'Running lint on affected scope...',
-  npx,
-  ['nx', 'affected', '--target=lint', '--parallel'],
-);
+// Parse optional CLI arguments for fast incremental sensing
+const cliArgs = process.argv.slice(2);
+let project = null;
+let skipI18n = false;
 
-run(
-  'Running i18n parity/hardcoded-literal check...',
-  node,
-  [resolve(__dirname, 'check-i18n.mjs')],
-);
+for (let i = 0; i < cliArgs.length; i++) {
+  if (cliArgs[i] === '--project' && cliArgs[i + 1]) {
+    project = cliArgs[++i];
+  } else if (cliArgs[i] === '--no-i18n') {
+    skipI18n = true;
+  }
+}
+
+if (project) {
+  run(
+    `Running lint on project ${project}...`,
+    npx,
+    ['nx', 'run', `${project}:lint`],
+  );
+} else {
+  run(
+    'Running lint on affected scope...',
+    npx,
+    ['nx', 'affected', '--target=lint', '--parallel'],
+  );
+}
+
+if (!skipI18n) {
+  run(
+    'Running i18n parity/hardcoded-literal check...',
+    node,
+    [resolve(__dirname, 'check-i18n.mjs')],
+  );
+}
 
 console.log('\nAll checks passed.');

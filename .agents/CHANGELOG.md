@@ -165,3 +165,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [angular-developer - 1.0.2] - 2026-11-03
 
 - Add query-only constraint for httpResource per ADR-020
+
+## [AGENTS.md - 1.3.1] - 2026-11-04
+
+- ADR-021: Stabilize prompt cache prefix and deduplicate routing
+
+## [widget-service-integration - 1.3.2] - 2026-11-04
+
+- ADR-022: Modularize skill into references (Progressive Disclosure)
+
+## [swagger-api-architect - 1.2.2] - 2026-11-04
+
+- ADR-022: Progressive disclosure and ADR-020 alignment in swagger-api-architect
+
+## [AGENTS.md - 1.3.2] - 2026-11-04
+
+- ADR-023: Add persistent filesystem task memory protocol
+
+## [AGENTS.md - 1.3.3] - 2026-11-04
+
+- ADR-024: Fast sensor feedback and sub-agent context sharding

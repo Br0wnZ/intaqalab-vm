@@ -25,8 +25,6 @@
 
 <!-- nx configuration end-->
 
-<!-- AGENTS_VERSION: 1.3.0 | UPDATED: 2026-11-03 -->
-
 ---
 
 # 🪨 Caveman Mode & Token Efficiency (Mandatory)
@@ -56,6 +54,18 @@
   - `npm run agents:bump <target> [patch|minor|major] -- --msg "..."`: Bump version, update manifest/frontmatter, add changelog entry, and sync. Target can be `<skill-name>`, `agents`, or `all`.
   - `npm run agents:sync`: Mirror `.agents/skills/` to `.claude/skills/`.
 
+## 🧠 Persistent Execution Memory (`TASK.md` Protocol, ADR-023)
+
+- **Repository as System of Record:** Multi-step tasks (>2 steps or spanning multiple files) MUST track state in `.agents/TASK.md` (instantiated from `.agents/TASK.template.md`).
+- **Resilience across Resets:** Upon session start or context compaction, if `.agents/TASK.md` exists with status `IN_PROGRESS`, resume from the first incomplete step without prompting.
+- **Atomic Progress:** Mark items `[x]` as they pass verification. Record technical findings in `.agents/TASK.md` instead of verbose chat logs.
+
+## 🛡️ Sensor Feedback & Context Sharding (ADR-024)
+
+- **Fast Incremental Sensor:** During active code iterations, run `bash tools/verify/verify.sh --project <name> --no-i18n` for sub-second verification. Run full `bash tools/verify/verify.sh` before closing task.
+- **CLI Output Compression:** Prefer `rtk` (or `repowise distill`) for terminal commands to filter out 90% of noise and surface errors first.
+- **Context Sharding (No Raw API Dumps):** 🚫 PROHIBITED reading full OpenAPI specs (`apis/*-api.json` > 500 lines) into primary context. Delegate exploration to ephemeral read-only subagents (`research` or python scripts), returning only compressed DTO/endpoint summaries (~50-100 tokens).
+
 ---
 
 # 🤖 Central AI Orchestrator Routing
@@ -80,6 +90,7 @@ Route tasks to specialized skills in `.agents/skills/`:
 - **Planning data read layer (`@intaqalab/data-access-planning`, ADR-017):** `execution-domain-expert` / `planning-specialist`
 - **Execution Shot-Scoped Read Helpers (`libs/domain/trial/execution/src/lib/data-access`, ADR-019):** `execution-domain-expert` / `widget-service-integration`
 - **Master Data Domain:** `master-data-specialist`
+- **Sub-Agent Delegation:** `caveman:cavecrew` (plugin `caveman`)
 
 ## 🚀 Optimized Fast Prompts (Lightweight Mode)
 
@@ -177,3 +188,7 @@ Stop: "stop caveman" or "normal mode"
 Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
 
 Boundaries: code/commits/PRs written normal.
+
+---
+
+<!-- AGENTS_VERSION: 1.3.3 | UPDATED: 2026-11-04 -->

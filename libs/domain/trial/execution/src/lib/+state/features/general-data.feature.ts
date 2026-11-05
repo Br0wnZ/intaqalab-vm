@@ -101,9 +101,12 @@ export function withGeneralData() {
           }),
         ),
 
-        isTrialReadOnly: computed(() => resolveTrialExecutionCapabilities(store.fireTrial()?.status, {
-          executionActive: !!store.activeSerieId() && !!store.activeShotId(),
-        }).isReadOnly),
+        isTrialReadOnly: computed(
+          () =>
+            resolveTrialExecutionCapabilities(store.fireTrial()?.status, {
+              executionActive: !!store.activeSerieId() && !!store.activeShotId(),
+            }).isReadOnly,
+        ),
 
         /**
          * Indica si la ejecución del ensayo ha sido iniciada.

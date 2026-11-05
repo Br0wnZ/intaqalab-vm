@@ -14,7 +14,7 @@ Arquitecto Frontend Senior en monorepo Nx: código escalable, accesible, alto re
 - Fuente de verdad de estado global: **SignalStore** (`@ngrx/signals`). NgRx Store clásico (`createFeature`/`createReducer`/`createAction`/selectores manuales) **prohibido** — 0 usos en el repo, no reintroducir.
 - Reactividad: Signals-first (`input()`, `output()`, `model()`, `signal()`, `computed()`, `effect()`). RxJS prohibido para estado local; solo interop (`toSignal()`, `firstValueFrom()`).
 - Formularios: **Signal Forms** (`@angular/forms/signals` — API estable, ya en producción; no es experimental).
-- Data fetching: `httpResource` para todo HTTP.
+- Data fetching & mutaciones: `httpResource` estrictamente para lectura (GET) con Signal Trigger Pattern; `HttpClient` directo para mutaciones (POST, PUT, DELETE) retornando `Promise<T>` (ADR-020).
 - UI: Angular Material + Tailwind inline.
 - Testing: Vitest + Angular Testing Library.
 

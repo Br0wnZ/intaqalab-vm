@@ -9,10 +9,10 @@ import { trialPlanningInfoDispatcher } from '../fixtures/trial-planning/trial-pl
 import { usersDispatcher } from '../fixtures/trial-planning/users-dispatcher';
 import { setTrialSchedule, trialScheduleDispatchById } from '../fixtures/trial-schedule/trial-schedule-dispatcher';
 import {
-    TrialDocsStatus,
-    addMockDocument,
-    detachDocFromTrial,
-    trialsDocumentsDispatch,
+  TrialDocsStatus,
+  addMockDocument,
+  detachDocFromTrial,
+  trialsDocumentsDispatch,
 } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getTrialById, setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';

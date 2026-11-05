@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
-import { TrialStatus, type TrialCreateModifyForm } from '@intaqalab/models';
+import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';

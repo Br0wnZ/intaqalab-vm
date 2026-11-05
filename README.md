@@ -147,6 +147,69 @@ npm run format
 
 ---
 
+## 🛡️ Verificación Determinista y Watcher
+
+El repositorio incluye un sensor determinista para validar el linter y la consistencia de i18n de forma homogénea en macOS, Linux y Windows:
+
+### Verificación completa (Pre-commit / CI)
+
+```bash
+npm run verify
+# O directamente:
+bash tools/verify/verify.sh
+```
+
+### Verificación incremental rápida
+
+```bash
+# Linter de un proyecto específico sin verificar i18n (<200ms)
+bash tools/verify/verify.sh --project execution --no-i18n
+```
+
+### Watcher en reposo (Verify on Idle)
+
+Monitorea cambios en `libs/` y `apps/` y ejecuta la verificación automáticamente tras 2.5 segundos de inactividad (por defecto en modo rápido con `--no-i18n`):
+
+```bash
+npm run verify:watch
+```
+
+- **En VS Code:** Disponible como tarea de fondo en `Terminal -> Run Task... -> Verify on Idle (Watch)`.
+- **En Antigravity / Claude Code:** Se puede invocar directamente en la terminal integrada o lanzar como proceso daemon de fondo.
+
+---
+
+## 🤖 AI Agent Harness (SOTA 2026)
+
+Este monorepo está diseñado bajo la arquitectura de **Harness Engineering**:
+
+$$\text{Agent} = \text{Model} + \text{Harness}$$
+
+El arnés proporciona el entorno determinista, guías estáticas, herramientas de análisis de AST (Repowise MCP, RTK) y sensores de retroalimentación para que cualquier LLM (Anthropic Claude, OpenAI, Google Gemini, DeepSeek o modelos locales) opere con máxima autonomía, mínima alucinación y el menor consumo de tokens posible.
+
+### Principios Fundamentales
+
+1. **Agnóstico de LLM y Editor:**
+   Funciona de manera idéntica en **Antigravity**, **Claude Code**, **Cursor**, **GitHub Copilot**, **Codex** y herramientas CLI como **Aider**.
+2. **Estabilidad de Prefijo (KV-Cache Optimization, ADR-021):**
+   `AGENTS.md` mantiene un prefijo 100% inmutable para maximizar la tasa de acierto de caché de contexto entre turnos y versiones.
+3. **Divulgación Progresiva (Progressive Disclosure, ADR-022):**
+   Las skills en `.agents/skills/` se estructuran en orquestadores ligeros (`SKILL.md` < 150 líneas) con plantillas y código de referencia bajo demanda en carpetas `references/`, ahorrando hasta un 90% de tokens de entrada.
+   Consulta el catálogo en [.agents/skills/README.md](.agents/skills/README.md).
+4. **Memoria Persistente en Disco (TASK.md Protocol, ADR-023):**
+   Para tareas multi-paso, los agentes registran su plan y estado en `.agents/TASK.md` (instanciado desde `.agents/TASK.template.md`). Si la sesión se reinicia o el contexto se compacta (`/compact`), el agente reanuda desde la primera tarea incompleta.
+5. **Sensor Feedback & Sharding de Contexto (ADR-024):**
+   Prohibido cargar ficheros OpenAPI gigantescos (>50KB) al contexto principal; la exploración se delega a subagentes efímeros o scripts reductores.
+
+### Comandos de Gestión de Agentes y Skills (SemVer)
+
+- `npm run agents:status`: Consulta el estado de versión, fecha y sincronización de `AGENTS.md` y cada skill.
+- `npm run agents:check`: Valida el cumplimiento de SemVer, schemas de frontmatter y detección de cambios no versionados (ejecutado en CI).
+- `npm run agents:bump <skill|agents|all> [patch|minor|major] -- --msg "..."`: Incrementa la versión, actualiza el manifest central, añade entrada en el changelog y sincroniza con `.claude/skills/`.
+- `npm run agents:sync`: Refleja el directorio canónico `.agents/skills/` hacia `.claude/skills/`.
+
+---
+
 ## 🧩 Estructura del monorepo
 
 El workspace sigue la filosofía de Nx:

@@ -9,7 +9,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
-import { AngleUnitEnum, TrialStatus, type TrialCreateModifyForm } from '@intaqalab/models';
+import { AngleUnitEnum, type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';

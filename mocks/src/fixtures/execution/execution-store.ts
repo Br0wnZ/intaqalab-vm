@@ -305,7 +305,7 @@ export function getExecutionState(fireTrialId: string): ExecutionState {
     : {
         ...defaultExecutionState(),
         ...resolveActiveShotState(),
-      status,
+        status,
       };
 
   executionStateMap.set(fireTrialId, state);

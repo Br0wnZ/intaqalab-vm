@@ -9,6 +9,17 @@
       "isBackground": false,
       "problemMatcher": [],
       "group": "build"
+    },
+    {
+      "label": "Verify on Idle (Watch)",
+      "type": "npm",
+      "script": "verify:watch",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated"
+      }
     }
   ]
 }

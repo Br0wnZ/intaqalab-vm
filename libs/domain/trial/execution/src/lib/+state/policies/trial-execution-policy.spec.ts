@@ -7,16 +7,116 @@ describe('resolveTrialExecutionCapabilities', () => {
   const active = { executionActive: true };
 
   it.each([
-    [TrialStatus.PLANNED, idle, { canEditSetup: true, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: false }],
-    [TrialStatus.PREPARED, idle, { canEditSetup: true, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: false }],
-    [TrialStatus.UNDER_REVIEW, idle, { canEditSetup: true, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: false }],
-    [TrialStatus.IN_PROGRESS, active, { canEditSetup: true, canUpdateParticipatingEquipment: true, canRegisterNewShots: true, canEditExecutedShots: true, isReadOnly: false }],
-    [TrialStatus.INTERRUPTED, active, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: true, isReadOnly: false }],
-    [TrialStatus.EXECUTED, idle, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: true, isReadOnly: false }],
-    [TrialStatus.CANCELLED, idle, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: true, isReadOnly: false }],
-    [TrialStatus.ANALYZING, idle, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: true }],
-    [TrialStatus.FINALIZING, idle, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: true }],
-    [TrialStatus.CLOSED, idle, { canEditSetup: false, canUpdateParticipatingEquipment: false, canRegisterNewShots: false, canEditExecutedShots: false, isReadOnly: true }],
+    [
+      TrialStatus.PLANNED,
+      idle,
+      {
+        canEditSetup: true,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.PREPARED,
+      idle,
+      {
+        canEditSetup: true,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.UNDER_REVIEW,
+      idle,
+      {
+        canEditSetup: true,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.IN_PROGRESS,
+      active,
+      {
+        canEditSetup: true,
+        canUpdateParticipatingEquipment: true,
+        canRegisterNewShots: true,
+        canEditExecutedShots: true,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.INTERRUPTED,
+      active,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: true,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.EXECUTED,
+      idle,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: true,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.CANCELLED,
+      idle,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: true,
+        isReadOnly: false,
+      },
+    ],
+    [
+      TrialStatus.ANALYZING,
+      idle,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: true,
+      },
+    ],
+    [
+      TrialStatus.FINALIZING,
+      idle,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: true,
+      },
+    ],
+    [
+      TrialStatus.CLOSED,
+      idle,
+      {
+        canEditSetup: false,
+        canUpdateParticipatingEquipment: false,
+        canRegisterNewShots: false,
+        canEditExecutedShots: false,
+        isReadOnly: true,
+      },
+    ],
   ])('resolves capabilities for status %s', (status, context, expected) => {
     expect(resolveTrialExecutionCapabilities(status, context)).toEqual(expected);
   });

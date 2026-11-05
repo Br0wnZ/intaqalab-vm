@@ -94,7 +94,8 @@ export function injectShotFormLock(
   const readOnly = computed(() => {
     const { serie, disparo } = getSelection();
     const capabilities = store?.executionCapabilities();
-    if (!capabilities) return !serie || !disparo || isUnexecutedShot() || (isHistoricalFiredShot() && !historicalEditEnabled());
+    if (!capabilities)
+      return !serie || !disparo || isUnexecutedShot() || (isHistoricalFiredShot() && !historicalEditEnabled());
     if (!serie || !disparo) return true;
     if (isCurrentShot()) return !capabilities.canRegisterNewShots;
     if (isHistoricalFiredShot()) return !capabilities.canEditExecutedShots || !historicalEditEnabled();

@@ -67,6 +67,7 @@
     "lint:all": "npx nx run-many --target=lint --outputStyle=stream",
     "lint:quiet": "npx nx run-many --target=lint --outputStyle=stream --quiet",
     "verify": "bash ./tools/verify/verify.sh",
+    "verify:watch": "node ./tools/verify/watch.mjs",
     "i18n:check": "node ./tools/verify/check-i18n.mjs",
     "i18n:check:update-baseline": "node ./tools/verify/check-i18n.mjs --update-baseline",
     "test:coverage": "npx vitest run --coverage",
