@@ -29,8 +29,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
-import { injectShotMunitionComponents } from '../../../data-access';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMunitionService, injectShotMunitionComponents } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotMunitionResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -236,7 +235,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotMunitionService = inject(ShotMunitionService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
   readonly #fuseWorkingModesService = inject(PlanningFuseWorkingModesService);
@@ -627,7 +626,12 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
       });
 
       try {
-        const updatedResponse = await this.#executionService.updateShotMunition(fireTrialId, serie, disparo, payload);
+        const updatedResponse = await this.#shotMunitionService.updateShotMunition(
+          fireTrialId,
+          serie,
+          disparo,
+          payload,
+        );
         this.identTab()?.save();
         this.pesosTab()?.save();
         this.acondTab()?.save();
@@ -656,7 +660,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotMunition(fireTrialId, serie, disparo);
+      const response = await this.#shotMunitionService.fetchShotMunition(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }

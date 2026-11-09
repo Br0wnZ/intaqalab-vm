@@ -24,8 +24,9 @@ import { LocaleDecimalInputDirective, createDirtyTracker } from '@intaqalab/util
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService, type ShotVelocitiesResponse } from '../../../services/execution.service';
+import { EquipmentSelectionService, ShotVelocitiesService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { ShotVelocitiesResponse } from '../../models';
 import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -230,7 +231,8 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotVelocitiesService = inject(ShotVelocitiesService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #trialShots = injectTrialShots();
   readonly #selectionKey = computed(() =>
     shotSelectionKey(this.selectorFormModel().serie, this.selectorFormModel().disparo),
@@ -244,7 +246,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
     super();
 
     // Cargar items de radar y antena desde la API para construir las opciones combinadas
-    this.#executionService
+    this.#equipmentSelectionService
       ?.loadEquipmentItemsByCategories?.([EquipmentTypeEnum.DOPPLER_RADAR, EquipmentTypeEnum.ANTENNA])
       ?.then((result) => this.#itemsByCategory.set(result));
 
@@ -558,7 +560,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
         observations: observaciones,
       });
       try {
-        await this.#executionService.updateShotVelocity(fireTrialId, serie, disparo, payload);
+        await this.#shotVelocitiesService.updateShotVelocity(fireTrialId, serie, disparo, payload);
         this.#syncSnapshot();
       } catch (error) {
         console.error('Failed to save shot velocity', error);
@@ -584,7 +586,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotVelocities(fireTrialId, serie, disparo);
+      const response = await this.#shotVelocitiesService.fetchShotVelocities(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }

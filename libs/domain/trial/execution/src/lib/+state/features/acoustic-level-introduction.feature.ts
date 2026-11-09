@@ -1,8 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotAcousticLevelService } from '../../data-access';
 import type { ShotAcousticLevelRequest } from '../../execution/models/shot-acoustic-level.models';
-import { ExecutionService } from '../../services/execution.service';
 import type { AcousticLevelIntroductionState } from '../execution-state.models';
 
 interface AcousticLevelIntroductionSlice {
@@ -32,14 +32,14 @@ const initialState: AcousticLevelIntroductionSlice = {
 export function withAcousticLevelIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      isLoadingAcousticLevel: computed(() => executionService.shotAcousticLevelResource.isLoading()),
-      isSavingAcousticLevel: computed(() => executionService.updateShotAcousticLevelResource.isLoading()),
+    withComputed((store, shotAcousticLevelService = inject(ShotAcousticLevelService)) => ({
+      isLoadingAcousticLevel: computed(() => shotAcousticLevelService.shotAcousticLevelResource.isLoading()),
+      isSavingAcousticLevel: computed(() => shotAcousticLevelService.updateShotAcousticLevelResource.isLoading()),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotAcousticLevelService = inject(ShotAcousticLevelService)) => ({
       async loadShotAcousticLevel(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {
-          const response = await executionService.fetchShotAcousticLevel(fireTrialId, seriesId, shotId);
+          const response = await shotAcousticLevelService.fetchShotAcousticLevel(fireTrialId, seriesId, shotId);
           if (response?.acousticLevelData) {
             const data = response.acousticLevelData;
             patchState(store, (state) => ({
@@ -66,7 +66,7 @@ export function withAcousticLevelIntroduction() {
         shotId: string,
         requestBody: ShotAcousticLevelRequest,
       ): Promise<void> {
-        await executionService.updateShotAcousticLevel(fireTrialId, seriesId, shotId, requestBody);
+        await shotAcousticLevelService.updateShotAcousticLevel(fireTrialId, seriesId, shotId, requestBody);
       },
       /** Actualiza los campos del widget Introducción datos nivel acústico */
       updateAcousticLevelIntroduction(updates: Partial<AcousticLevelIntroductionState>): void {

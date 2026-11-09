@@ -22,9 +22,13 @@ import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { resolveObservedResultControlConfig, resolvePlannedVideoMagnitudes } from '../../../data-access';
+import {
+  EquipmentSelectionService,
+  ShotVideoService,
+  resolveObservedResultControlConfig,
+  resolvePlannedVideoMagnitudes,
+} from '../../../data-access';
 import { EquipmentPlanningService } from '../../../services/equipment-planning.service';
-import { ExecutionService } from '../../../services/execution.service';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotVideoDataResponse } from '../../models';
 import { EquipmentTypeEnum } from '../../models/equipment.models';
@@ -305,7 +309,8 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
 
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotVideoService = inject(ShotVideoService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #trialShots = injectTrialShots();
   readonly #equipmentPlanningService = inject(EquipmentPlanningService);
 
@@ -539,7 +544,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   constructor() {
     super();
 
-    this.#executionService
+    this.#equipmentSelectionService
       .loadEquipmentItemsByCategories([
         EquipmentTypeEnum.HIGH_SPEED_CAMERA,
         EquipmentTypeEnum.CONVENTIONAL_CAMERA,
@@ -745,7 +750,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     if (!fireTrialId || !serie || !disparo || !payload) return;
 
     try {
-      const response = await this.#executionService.updateShotVideoData(fireTrialId, serie, disparo, payload);
+      const response = await this.#shotVideoService.updateShotVideoData(fireTrialId, serie, disparo, payload);
       this.#remoteVideoData.set(response);
       this.shotLock.lock();
       this.#dirtyTracker.syncSnapshot();
@@ -770,7 +775,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
     const ticket = this.#selectionGuard.begin();
 
     try {
-      const response = await this.#executionService.fetchShotVideoData(fireTrialId, serie, disparo);
+      const response = await this.#shotVideoService.fetchShotVideoData(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) return;
       this.#remoteVideoData.set(response);
       const tipoVideo = resolveVideoType(response, this.selectorModel().tipoVideo);

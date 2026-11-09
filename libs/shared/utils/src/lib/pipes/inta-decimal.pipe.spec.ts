@@ -1,11 +1,15 @@
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { Component, signal } from '@angular/core';
-import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { AppLocale } from '../tokens/locale-signal.token';
 import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
 import { IntaDecimalPipe } from './inta-decimal.pipe';
+
+registerLocaleData(localeEs);
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +33,32 @@ class HostComponent {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('IntaDecimalPipe', () => {
+  describe.each<AppLocale>(['es-ES', 'en-US'])('exact formatting for %s', (locale) => {
+    beforeEach(() => {
+      const { provider } = localeSignalProvider(locale);
+      TestBed.configureTestingModule({ providers: [provider] });
+    });
+
+    it.each([
+      { value: 3.46, es: '3,46', en: '3.46' },
+      { value: 12345.67, es: '12.345,67', en: '12,345.67' },
+      { value: -12345.67, es: '-12.345,67', en: '-12,345.67' },
+      { value: 0.01, es: '0,01', en: '0.01' },
+      { value: 12345, es: '12.345', en: '12,345' },
+      { value: 0, es: '0', en: '0' },
+    ])('formats $value with locale-specific separators', ({ value, es, en }) => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+
+      expect(pipe.transform(value)).toBe(locale === 'es-ES' ? es : en);
+    });
+
+    it('pads decimal zeros with the locale-specific separator', () => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+
+      expect(pipe.transform(3.4, '1.2-2')).toBe(locale === 'es-ES' ? '3,40' : '3.40');
+    });
+  });
+
   describe('ES locale (es-ES)', () => {
     beforeEach(() => {
       const { provider } = localeSignalProvider('es-ES');
@@ -47,14 +77,23 @@ describe('IntaDecimalPipe', () => {
       const result = pipe.transform(3.14159, '1.2-4');
       expect(result).toContain(',');
       expect(result).not.toContain('.'); // no dot as decimal in ES
-      expect(result).toBe('3,14159');
+      expect(result).toBe('3,1416');
     });
 
-    it.each([3.46, -3.456789, 1e-7, 1e-101, Number.MIN_VALUE])('preserves numeric precision for %s', (value) => {
+    it.each([
+      { value: 3.46, expected: '3,5' },
+      { value: -3.456789, expected: '-3,5' },
+      { value: 1e-7, expected: '0' },
+      { value: 1e-101, expected: '0' },
+      { value: Number.MIN_VALUE, expected: '0' },
+    ])('respects digitsInfo for $value', ({ value, expected }) => {
       const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
-      const formatted = pipe.transform(value, '1.0-1');
+      expect(pipe.transform(value, '1.0-1')).toBe(expected);
+    });
 
-      expect(Number(formatted.replace(/\./g, '').replace(',', '.'))).toBe(value);
+    it('limits decimals to two by default', () => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+      expect(pipe.transform(1.6500000000000001)).toBe('1,65');
     });
 
     it('formats negative — comma as decimal sep', () => {
@@ -77,6 +116,11 @@ describe('IntaDecimalPipe', () => {
       const result = pipe.transform(1234.56);
       expect(result).toContain('.56');
       expect(result).not.toContain(',56');
+    });
+
+    it('limits decimals to two by default', () => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+      expect(pipe.transform(1.6500000000000001)).toBe('1.65');
     });
 
     it('formats integer', () => {
@@ -116,25 +160,23 @@ describe('IntaDecimalPipe', () => {
   });
 
   describe('reactive to locale signal', () => {
-    it('re-formats when signal changes', async () => {
+    it('re-formats the same value when switching from Spanish to English and back', async () => {
       const { signal: localeSig, provider } = localeSignalProvider('es-ES');
-
-      await TestBed.configureTestingModule({
-        imports: [HostComponent],
+      const { fixture } = await render(HostComponent, {
+        componentProperties: { value: 12345.67 },
         providers: [provider],
-      }).compileComponents();
+      });
 
-      const fixture: ComponentFixture<HostComponent> = TestBed.createComponent(HostComponent);
-      fixture.componentInstance.value = 1234.56;
-      fixture.detectChanges();
+      expect(screen.getByText('12.345,67')).toBeInTheDocument();
 
-      const span = fixture.nativeElement.querySelector('#val') as HTMLElement;
-      expect(span.textContent?.trim()).toContain(','); // ES decimal
-
-      // Change to EN
       localeSig.set('en-US');
       fixture.detectChanges();
-      expect(span.textContent?.trim()).toContain('.'); // EN decimal
+      expect(screen.getByText('12,345.67')).toBeInTheDocument();
+
+      localeSig.set('es-ES');
+      fixture.detectChanges();
+      expect(screen.getByText('12.345,67')).toBeInTheDocument();
+      expect(fixture.componentInstance.value).toBe(12345.67);
     });
   });
 });

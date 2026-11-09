@@ -1,7 +1,7 @@
 ---
 name: ui-design-engineer
-version: 1.0.3
-last-updated: 2026-10-24
+version: 1.0.4
+last-updated: 2026-11-05
 description: Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.
 argument-hint: "E.g. 'Create the munitions listing screen', 'Generate the card component', or 'Create a new widget for the execution grid'."
 user-invocable: true
@@ -85,7 +85,7 @@ When building a widget for the **Trial Execution Grid**, follow these architectu
 1. **Step A**: In `execution.store.ts`, export the `<WidgetName>State` interface, add it to `ExecutionState` and `initialState`, and implement computed signals and mutation methods.
 2. **Step B**: The component extends `BaseFormWidgetComponent`. **All data comes from `ExecutionStore` via `computed()`**. Never use local `input()` signals for domain state.
 3. **Automatic Registration & Lifecycle:** `BaseFormWidgetComponent` automatically registers and unregisters instances with `WidgetStateService`. This allows the parent shell (`execution.ts`) to execute `WidgetStateService.saveAllDirtyForms()`, triggering `saveForm()` across all dirty widget instances concurrently (`Promise.all`).
-4. **Step C**: The Signal Form initializes with the store value. Implement `formState`, `resetForm()`, and `saveForm()`. In `saveForm()`, update the store and trigger HTTP mutations.
+4. **Step C**: The Signal Form initializes with the store value. Implement `formState`, `resetForm()`, and `saveForm()`. In `saveForm()`, update the store and trigger HTTP mutations using the dedicated domain service (e.g. `Shot<Family>Service`) from `data-access`. **NEVER inject `ExecutionService`** (ADR-025).
 5. The widget **MUST NOT contain its own save button or dirty status badge**; this is handled exclusively by the parent shell (`execution.ts`).
 
 ### Layout & Registration

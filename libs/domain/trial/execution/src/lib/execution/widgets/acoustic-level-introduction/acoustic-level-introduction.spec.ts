@@ -9,6 +9,7 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotAcousticLevelService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -62,9 +63,9 @@ describe('AcousticLevelIntroduction', () => {
 
   it('calls fetchShotAcousticLevel on selection when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const acousticService = TestBed.inject(ShotAcousticLevelService);
     const store = TestBed.inject(ExecutionStore);
-    const fetchSpy = vi.spyOn(execService, 'fetchShotAcousticLevel').mockResolvedValue({
+    const fetchSpy = vi.spyOn(acousticService, 'fetchShotAcousticLevel').mockResolvedValue({
       acousticLevelData: {
         soundLevelMeterId: 'sonometro-1',
         acousticLevel: 110.5,

@@ -36,7 +36,7 @@ readonly activeChamberOptions = computed(() => {
 
 > [!IMPORTANT]
 >
-> - El patrón de `ExecutionService` (trigger privado + `httpResource`) es **exclusivo para `/execution/`**.
+> - El patrón de servicios de ejecución en `data-access/execution/` (trigger privado + `httpResource` para GET; `HttpClient` + `firstValueFrom` para mutaciones) es **exclusivo para `/execution/`** (ADR-020, ADR-025). `ExecutionService` está `@deprecated` (fachada temporal sin consumidores en producción).
 > - Todas las lecturas de `/planning/...` deben provenir de `@intaqalab/data-access-planning`. Está PROHIBIDO declarar endpoints `/planning/` en el dominio de ejecución (`npm run check:planning-urls` en pre-commit fallará).
 > - **ADR-019:** Está PROHIBIDO duplicar llamadas o parsing local en widgets. Deben consumirse los handles reactivos centralizados de `libs/domain/trial/execution/src/lib/data-access/`.
 

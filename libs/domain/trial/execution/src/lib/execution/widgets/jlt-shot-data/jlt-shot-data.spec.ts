@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotJltDataService } from '../../../data-access';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { JltShotData } from './jlt-shot-data';
 
@@ -217,7 +217,7 @@ describe('JltShotData', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
-        { provide: ExecutionService, useValue: mockExecutionService },
+        { provide: ShotJltDataService, useValue: mockExecutionService },
       ],
       imports: [TranslateModule.forRoot()],
     });

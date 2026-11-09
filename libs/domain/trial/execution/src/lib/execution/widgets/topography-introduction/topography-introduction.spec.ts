@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentSelectionService, ShotTopographyService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -44,7 +45,7 @@ describe('TopographyIntroductionWidget', () => {
   });
 
   it('only offers chronometers returned by equipment selection and removes duplicates', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.CHRONOMETER]: [
         { id: '101', label: 'Assigned chronometer' },
         { id: '102', label: 'Unassigned chronometer' },
@@ -67,7 +68,7 @@ describe('TopographyIntroductionWidget', () => {
   });
 
   it('does not offer catalog or stored equipment when equipment selection is empty', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.CHRONOMETER]: [{ id: '101', label: 'Catalog chronometer' }],
     });
     const { fixture } = await renderWidget();
@@ -147,7 +148,7 @@ describe('TopographyIntroductionWidget', () => {
 
   it('calls fetchShotTopography on selection when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotTopographyService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotTopography').mockResolvedValue({
       topographyData: {

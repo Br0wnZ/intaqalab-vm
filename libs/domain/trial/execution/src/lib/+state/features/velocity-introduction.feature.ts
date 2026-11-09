@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
-import { ExecutionService } from '../../services/execution.service';
+import { ShotVelocitiesService } from '../../data-access';
 import type { VelocityIntroductionState } from '../execution-state.models';
 
 interface VelocityIntroductionSlice {
@@ -41,7 +41,7 @@ const initialState: VelocityIntroductionSlice = {
 export function withVelocityIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotVelocitiesService = inject(ShotVelocitiesService)) => ({
       /** Actualiza los campos del widget Introducción datos velocidades */
       updateVelocityIntroduction(updates: Partial<VelocityIntroductionState>): void {
         patchState(store, (state) => ({
@@ -56,7 +56,7 @@ export function withVelocityIntroduction() {
           return;
         }
 
-        executionService.setShotVelocity(fireTrialId, vel.serie, vel.disparo, [
+        shotVelocitiesService.setShotVelocity(fireTrialId, vel.serie, vel.disparo, [
           {
             radarDopplerId: vel.radarDoppler ? Number(vel.radarDoppler) || null : null,
             antennaId: vel.antena ? Number(vel.antena) || null : null,

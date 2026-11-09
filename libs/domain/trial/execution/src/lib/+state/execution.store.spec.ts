@@ -4,9 +4,9 @@ import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EquipmentSelectionService } from '../data-access';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum } from '../execution/models';
 import { WidgetId } from '../execution/models/widget-id.enum';
-import { ExecutionService } from '../services/execution.service';
 import { ExecutionStore } from './execution.store';
 
 /**
@@ -83,7 +83,7 @@ describe('ExecutionStore (composición de features)', () => {
   });
 
   it('does not throw when the equipment selection request fails', () => {
-    TestBed.inject(ExecutionService).getEquipmentSelector('trial-1');
+    TestBed.inject(EquipmentSelectionService).getEquipmentSelector('trial-1');
     TestBed.tick();
     TestBed.inject(HttpTestingController)
       .expectOne((request) => request.url.includes('/equipment-selection'))

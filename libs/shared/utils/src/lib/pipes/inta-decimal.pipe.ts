@@ -1,8 +1,8 @@
+import { formatNumber } from '@angular/common';
 import type { PipeTransform } from '@angular/core';
 import { Pipe, inject } from '@angular/core';
 
 import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
-import { formatPreciseNumber } from './format-precise-number';
 
 /**
  * Locale-aware decimal pipe.
@@ -34,9 +34,6 @@ export class IntaDecimalPipe implements PipeTransform {
     // eslint-disable-next-line eqeqeq
     if (value == null || isNaN(value)) return '';
 
-    const [, fracPart] = digitsInfo.split('.');
-    const [minFrac] = (fracPart ?? '0-2').split('-').map(Number);
-
-    return formatPreciseNumber(value, this.#localeSignal(), minFrac ?? 0);
+    return formatNumber(value, this.#localeSignal(), digitsInfo);
   }
 }

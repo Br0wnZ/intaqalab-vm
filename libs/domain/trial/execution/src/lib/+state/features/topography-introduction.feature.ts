@@ -1,8 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotTopographyService } from '../../data-access';
 import type { ShotTopographyRequest } from '../../execution/models/shot-topography.models';
-import { ExecutionService } from '../../services/execution.service';
 import type { TopographyIntroductionState } from '../execution-state.models';
 
 interface TopographyIntroductionSlice {
@@ -34,14 +34,14 @@ const initialState: TopographyIntroductionSlice = {
 export function withTopographyIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      isLoadingTopography: computed(() => executionService.shotTopographyResource.isLoading()),
-      isSavingTopography: computed(() => executionService.updateShotTopographyResource.isLoading()),
+    withComputed((store, shotTopographyService = inject(ShotTopographyService)) => ({
+      isLoadingTopography: computed(() => shotTopographyService.shotTopographyResource.isLoading()),
+      isSavingTopography: computed(() => shotTopographyService.updateShotTopographyResource.isLoading()),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotTopographyService = inject(ShotTopographyService)) => ({
       async loadShotTopography(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {
-          const response = await executionService.fetchShotTopography(fireTrialId, seriesId, shotId);
+          const response = await shotTopographyService.fetchShotTopography(fireTrialId, seriesId, shotId);
           if (response?.topographyData) {
             const data = response.topographyData;
             patchState(store, (state) => ({
@@ -65,7 +65,7 @@ export function withTopographyIntroduction() {
         shotId: string,
         requestBody: ShotTopographyRequest,
       ): Promise<void> {
-        await executionService.updateShotTopography(fireTrialId, seriesId, shotId, requestBody);
+        await shotTopographyService.updateShotTopography(fireTrialId, seriesId, shotId, requestBody);
       },
       /** Actualiza los campos del widget Introducción datos topografía */
       updateTopographyIntroduction(updates: Partial<TopographyIntroductionState>): void {

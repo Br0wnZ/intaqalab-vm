@@ -10,13 +10,9 @@ import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { type CalibryTubeOption, type CalibryWeaponOption, ExecutionStore } from '../../../+state/execution.store';
-import {
-  type ArmamentBulkConfigurationRequest,
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
-} from '../../../services/execution.service';
+import { ShotArmamentService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { ArmamentBulkConfigurationRequest, ArmamentEquipmentItem, PlanningArmamentResponse } from '../../models';
 import { getBulkCompatibleArmamentSeries } from './armament-bulk-compatibility';
 
 export interface ArmamentIntroductionMassConfigDialogData {
@@ -201,7 +197,7 @@ export class ArmamentIntroductionMassConfigDialog {
       MatDialogRef,
     );
   readonly data = inject<ArmamentIntroductionMassConfigDialogData>(MAT_DIALOG_DATA);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotArmamentService = inject(ShotArmamentService);
   readonly #store = inject(ExecutionStore, { optional: true });
 
   readonly #pendingResult = signal<ArmamentIntroductionMassConfigDialogResult | null>(null);
@@ -209,7 +205,7 @@ export class ArmamentIntroductionMassConfigDialog {
   readonly isSaving = computed(
     () =>
       this.#store?.isApplyingArmamentBulkConfiguration() === true ||
-      this.#executionService.applyArmamentBulkConfigurationResource.isLoading(),
+      this.#shotArmamentService.applyArmamentBulkConfigurationResource.isLoading(),
   );
 
   // ── Modelo del formulario ────────────────────────────────────────────────
@@ -346,8 +342,8 @@ export class ArmamentIntroductionMassConfigDialog {
   constructor() {
     effect(() => {
       const result = this.#pendingResult();
-      const isLoading = this.#executionService.applyArmamentBulkConfigurationResource.isLoading();
-      const status = this.#executionService.applyArmamentBulkConfigurationResource.status();
+      const isLoading = this.#shotArmamentService.applyArmamentBulkConfigurationResource.isLoading();
+      const status = this.#shotArmamentService.applyArmamentBulkConfigurationResource.status();
       if (result && isLoading) {
         this.#requestStarted.set(true);
         return;
@@ -390,7 +386,7 @@ export class ArmamentIntroductionMassConfigDialog {
     if (this.#store) {
       this.#store.applyArmamentBulkConfiguration(fireTrialId, payload);
     } else {
-      this.#executionService.applyArmamentBulkConfiguration(fireTrialId, payload);
+      this.#shotArmamentService.applyArmamentBulkConfiguration(fireTrialId, payload);
     }
   }
 

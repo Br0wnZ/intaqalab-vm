@@ -162,11 +162,14 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
             @for (historicShot of history.shots; track $index) {
               <div
                 class="grid grid-cols-4 px-6 py-4 items-center border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                [class.border-t-2]="$first"
+                [class.border-t-gray-300]="$first"
               >
                 <span
                   uiValueTooltip
                   uiValueTooltipPosition="right"
                   uiValueTooltipAnchor="text"
+                  class="inline-flex max-w-full items-center truncate rounded-md border border-gray-200 bg-gray-100 px-2.5 py-1 text-sm font-semibold text-gray-700"
                   [uiValueTooltipValue]="history.serie"
                 >
                   {{ history.serie }}

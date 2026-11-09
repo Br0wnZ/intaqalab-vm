@@ -2,11 +2,11 @@ import { computed, inject } from '@angular/core';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotRadarOrientationService } from '../../data-access';
 import type {
   TrajectographyRadarOrientationData,
   TrajectographyRadarOrientationResponse,
 } from '../../execution/models';
-import { ExecutionService } from '../../services/execution.service';
 import type { CalibryRadarOption, RadarTrayectographyOrientationState } from '../execution-state.models';
 
 interface RadarTrayectographyOrientationSlice {
@@ -52,13 +52,13 @@ function getSelectedOrientationData(
 export function withRadarTrayectographyOrientation() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
+    withComputed((store, shotRadarOrientationService = inject(ShotRadarOrientationService)) => ({
       radarTrayectographyOrientationResponse: computed(() =>
-        safeResourceValue(executionService.radarTrayectographyOrientationResource),
+        safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
       ),
 
       radarTrayectographyOrientationData: computed(() => {
-        const response = safeResourceValue(executionService.radarTrayectographyOrientationResource);
+        const response = safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource);
         return getSelectedOrientationData(response, store.radarTrayectographyOrientation());
       }),
 
@@ -66,7 +66,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyOltGeografico: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const xPieza = data === null ? s.xPieza : data.pieceX;
@@ -81,7 +81,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyXPCaida: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const xPieza = data === null ? s.xPieza : data.pieceX;
@@ -100,7 +100,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyYPCaida: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const xPieza = data === null ? s.xPieza : data.pieceX;
@@ -128,7 +128,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyITransversal: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const xPieza = data === null ? s.xPieza : data.pieceX;
@@ -147,7 +147,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyILongitudinal: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const xPieza = data === null ? s.xPieza : data.pieceX;
@@ -166,7 +166,7 @@ export function withRadarTrayectographyOrientation() {
       radarTrayectographyAlturaBoca: computed((): number | null => {
         const s = store.radarTrayectographyOrientation();
         const data = getSelectedOrientationData(
-          safeResourceValue(executionService.radarTrayectographyOrientationResource),
+          safeResourceValue(shotRadarOrientationService.radarTrayectographyOrientationResource),
           s,
         );
         const zPieza = data === null ? s.zPieza : data.pieceZ;
@@ -175,9 +175,9 @@ export function withRadarTrayectographyOrientation() {
         return zPieza + Math.sin((anguloTiro * Math.PI) / 180) * s.longitudTubo;
       }),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotRadarOrientationService = inject(ShotRadarOrientationService)) => ({
       loadRadarTrayectographyOrientation(fireTrialId: string, radarId: string | null): void {
-        executionService.getRadarTrayectographyOrientation(fireTrialId, radarId);
+        shotRadarOrientationService.getRadarTrayectographyOrientation(fireTrialId, radarId);
       },
 
       /** Actualiza los filtros de selección del widget (serie, disparo, radar) */

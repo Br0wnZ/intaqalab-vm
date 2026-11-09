@@ -1,6 +1,6 @@
 import { computed, inject, signal } from '@angular/core';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { type EquipmentSelectionItem, EquipmentTypeEnum } from '../../models';
 
 export interface ClimaticChamberOption {
@@ -9,7 +9,7 @@ export interface ClimaticChamberOption {
 }
 
 export function injectClimaticChamberEquipments(seriesFilter?: () => string[] | string | null | undefined) {
-  const executionService = inject(ExecutionService);
+  const executionService = inject(EquipmentSelectionService);
   const itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
 
   executionService

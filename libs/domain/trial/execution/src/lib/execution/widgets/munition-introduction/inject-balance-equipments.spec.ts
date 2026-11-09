@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { type EquipmentSelectionItem, EquipmentTypeEnum } from '../../models';
 import { injectBalanceEquipments } from './inject-balance-equipments';
 
@@ -10,7 +10,7 @@ describe('injectBalanceEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => false,
@@ -50,7 +50,7 @@ describe('injectBalanceEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const helper = TestBed.runInInjectionContext(() => injectBalanceEquipments());
@@ -88,7 +88,7 @@ describe('injectBalanceEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const helper = TestBed.runInInjectionContext(() => injectBalanceEquipments(() => ['serie-1']));
@@ -126,7 +126,7 @@ describe('injectBalanceEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const helper = TestBed.runInInjectionContext(() => injectBalanceEquipments({ shotFilter: () => 'disparo-2' }));
@@ -172,7 +172,7 @@ describe('injectBalanceEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     // Serie 1, Disparo 2 -> Should only match 21032 ('bal-02')

@@ -23,7 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ExecutionStateService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetId } from '../../models/widget-id.enum';
@@ -177,11 +177,11 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   protected override readonly autonomousWidgetType = WidgetId.SEGUIMIENTO;
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #executionStateService = inject(ExecutionStateService);
   readonly #trialShots = injectTrialShots();
 
   protected readonly isLoading = computed(
-    () => this.#executionService.shotMeasurementsResource?.isLoading?.() ?? false,
+    () => this.#executionStateService.shotMeasurementsResource?.isLoading?.() ?? false,
   );
 
   // Tab options for selector
@@ -203,7 +203,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   protected readonly activeTabs = computed(() => this.#store.seguimiento().activeTabs);
   protected readonly activeSerieId = signal<string | null>(this.#store.activeSerieId());
   protected readonly series = computed(() => {
-    const resource = this.#executionService.shotMeasurementsResource;
+    const resource = this.#executionStateService.shotMeasurementsResource;
     if (!resource.hasValue()) {
       return this.#store.seguimiento().series;
     }
@@ -232,7 +232,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
         return;
       }
       lastLoadedTrialId = fireTrialId;
-      this.#executionService.getShotMeasurements(fireTrialId);
+      this.#executionStateService.getShotMeasurements(fireTrialId);
     });
 
     effect(() => {
@@ -373,8 +373,8 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
     if (!fireTrialId) {
       return;
     }
-    this.#executionService.getShotMeasurements(fireTrialId);
-    this.#executionService.shotMeasurementsResource?.reload?.();
+    this.#executionStateService.getShotMeasurements(fireTrialId);
+    this.#executionStateService.shotMeasurementsResource?.reload?.();
   }
 
   protected setActiveTab(tab: SeguimientoTab): void {

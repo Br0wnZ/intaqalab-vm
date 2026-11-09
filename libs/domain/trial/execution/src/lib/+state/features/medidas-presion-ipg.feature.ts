@@ -1,8 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotIpgPressuresService } from '../../data-access';
 import type { ShotIpgPressuresRequest } from '../../execution/models/shot-ipg-pressures.models';
-import { ExecutionService } from '../../services/execution.service';
 import type { MedidasPresionIpgState } from '../execution-state.models';
 
 interface MedidasPresionIpgSlice {
@@ -34,14 +34,14 @@ const initialState: MedidasPresionIpgSlice = {
 export function withIpgPressureMeasurementsState() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((_store, executionService = inject(ExecutionService)) => ({
-      isLoadingShotIpgPressures: computed(() => executionService.shotIpgPressuresResource.isLoading()),
-      isSavingShotIpgPressures: computed(() => executionService.updateShotIpgPressuresResource.isLoading()),
+    withComputed((_store, shotIpgPressuresService = inject(ShotIpgPressuresService)) => ({
+      isLoadingShotIpgPressures: computed(() => shotIpgPressuresService.shotIpgPressuresResource.isLoading()),
+      isSavingShotIpgPressures: computed(() => shotIpgPressuresService.updateShotIpgPressuresResource.isLoading()),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotIpgPressuresService = inject(ShotIpgPressuresService)) => ({
       async loadShotIpgPressures(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {
-          const response = await executionService.fetchShotIpgPressures(fireTrialId, seriesId, shotId);
+          const response = await shotIpgPressuresService.fetchShotIpgPressures(fireTrialId, seriesId, shotId);
           if (response?.ipgPressuresData?.length) {
             const data = response.ipgPressuresData[0];
             patchState(store, (state) => ({
@@ -70,7 +70,7 @@ export function withIpgPressureMeasurementsState() {
         shotId: string,
         requestBody: ShotIpgPressuresRequest,
       ): Promise<void> {
-        await executionService.updateShotIpgPressures(fireTrialId, seriesId, shotId, requestBody);
+        await shotIpgPressuresService.updateShotIpgPressures(fireTrialId, seriesId, shotId, requestBody);
       },
       updateMedidasPresionIpgSelector(updates: Partial<Pick<MedidasPresionIpgState, 'serie' | 'disparo'>>): void {
         patchState(store, (state) => ({

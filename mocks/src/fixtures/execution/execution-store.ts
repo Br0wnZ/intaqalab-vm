@@ -1,5 +1,81 @@
+import type {
+  TrialOverpressureInfoRequest,
+  TrialOverpressureInfoResponse,
+} from '../../models/trial-overpressure-info.models';
 import { getFixture } from '../../utils';
 import { getTrialById, setTrialStatus } from '../trials/trial-transitions-store';
+
+const trialOverpressureInfoMap = new Map<string, TrialOverpressureInfoResponse>();
+let overpressureFixturesLoaded = false;
+
+export function isTrialOverpressureInfoRequest(body: unknown): body is TrialOverpressureInfoRequest {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return false;
+  const data = body as Record<string, unknown>;
+  const fields = ['maximumPressure', 'minimumPressure', 'referencePressure', 'pressureUnit'];
+  if (Object.keys(data).length !== fields.length || Object.keys(data).some((key) => !fields.includes(key)))
+    return false;
+  const maximum = data['maximumPressure'];
+  const minimum = data['minimumPressure'];
+  const reference = data['referencePressure'];
+  return (
+    typeof maximum === 'number' &&
+    Number.isFinite(maximum) &&
+    maximum >= 0 &&
+    typeof minimum === 'number' &&
+    Number.isFinite(minimum) &&
+    minimum >= 0 &&
+    minimum <= maximum &&
+    typeof reference === 'number' &&
+    Number.isFinite(reference) &&
+    reference >= 0 &&
+    typeof data['pressureUnit'] === 'string' &&
+    ['BAR', 'MPA', 'KG_CM2'].includes(data['pressureUnit'])
+  );
+}
+
+function overpressureContextKey(centerId: string, fireTrialId: string): string {
+  const trial = getTrialById(fireTrialId);
+  if (!trial || trial['centerId'] !== centerId) throw new Error('TRIAL_NOT_FOUND');
+  if (!overpressureFixturesLoaded) {
+    const fixtures = getFixture<Record<string, TrialOverpressureInfoResponse>>(
+      'fixtures/execution',
+      'execution-overpressure-info-fixture.json',
+    );
+    for (const [key, value] of Object.entries(fixtures)) trialOverpressureInfoMap.set(key, value);
+    overpressureFixturesLoaded = true;
+  }
+  return `${centerId}/${fireTrialId}`;
+}
+
+export function getTrialOverpressureInfo(centerId: string, fireTrialId: string): TrialOverpressureInfoResponse {
+  const response = trialOverpressureInfoMap.get(overpressureContextKey(centerId, fireTrialId));
+  if (!response) throw new Error('OVERPRESSURE_INFO_NOT_FOUND');
+  return structuredClone(response);
+}
+
+export function setTrialOverpressureInfo(
+  centerId: string,
+  fireTrialId: string,
+  body: TrialOverpressureInfoRequest,
+): TrialOverpressureInfoResponse {
+  if (!isTrialOverpressureInfoRequest(body)) throw new Error('INVALID_OVERPRESSURE_INFO');
+  const key = overpressureContextKey(centerId, fireTrialId);
+  const response: TrialOverpressureInfoResponse = {
+    overpressureInfo: {
+      ...body,
+      targetPressure: body.maximumPressure / 2 + body.minimumPressure / 2,
+      safetyPressure: null,
+    },
+    warnings: [
+      {
+        code: 'SAFETY_PRESSURE_UNAVAILABLE',
+        message: 'Calibry safety pressure is unavailable in the mock server (D13.1).',
+      },
+    ],
+  };
+  trialOverpressureInfoMap.set(key, structuredClone(response));
+  return response;
+}
 
 type ExecutionStatus =
   | 'ACTIVE'

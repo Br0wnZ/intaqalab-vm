@@ -45,3 +45,21 @@ export * from './shot-radar-trayectography-orientation.models';
 
 // Shot IPG pressures models (Widget 32)
 export * from './shot-ipg-pressures.models';
+
+// Execution runtime models (state, progress, measurements, countdown, transitions)
+export * from './execution-runtime.models';
+
+// Execution planning models (document, approval, munition options)
+export * from './execution-planning.models';
+
+// Execution readiness models (technical profiles, JLT preparation)
+export * from './execution-readiness.models';
+
+// Execution preferences models (widget layout, equipment selector)
+export * from './execution-preferences.models';
+
+// Shot data models extracted from ExecutionService
+export * from './shot-velocities.models';
+export * from './jlt-shot-data.models';
+export * from './armament.models';
+export * from './trial-overpressure-info.models';

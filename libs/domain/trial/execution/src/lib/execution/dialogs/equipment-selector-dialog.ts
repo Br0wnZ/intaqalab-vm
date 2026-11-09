@@ -12,8 +12,8 @@ import { ErrorState, SaveButton, Skeleton } from '@intaqalab/ui';
 import { RangePipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { EquipmentSelectionService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
-import { ExecutionService } from '../../services/execution.service';
 import { ReadonlyContentDirective } from '../directives/readonly-content.directive';
 import type {
   EquipmentItemSelection,
@@ -301,7 +301,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
 export class EquipmentSelectorDialog {
   readonly #dialogRef = inject<MatDialogRef<EquipmentSelectorDialog, EquipmentSelectorDialogResult>>(MatDialogRef);
   readonly data = inject<EquipmentSelectorDialogData>(MAT_DIALOG_DATA);
-  readonly #executionService = inject(ExecutionService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #store = inject(EquipmentSelectorStore);
 
   readonly selectAllSeriesValue = SELECT_ALL_SERIES_VALUE;
@@ -309,7 +309,7 @@ export class EquipmentSelectorDialog {
 
   // ── View State Signals ────────────────────────────────────────────────────────
   readonly isLoading = computed(() => this.#store.isLoading());
-  readonly isSaving = computed(() => this.#executionService.updateEquipmentSelectorResource.isLoading());
+  readonly isSaving = computed(() => this.#equipmentSelectionService.updateEquipmentSelectorResource.isLoading());
   readonly error = computed(() => this.#store.error());
 
   readonly visibleTags = computed(() => this.#store.visibleTags());

@@ -3,6 +3,7 @@ export * from './lib/dates/dates-utils.functions';
 export * from './lib/directives/locale-decimal-input.directive';
 export * from './lib/directives/no-leading-zeros.directive';
 export * from './lib/directives/no-negative-values.directive';
+export * from './lib/i18n/resolve-localized-text';
 export * from './lib/master-data/magnitude-measure-resolver';
 export * from './lib/pipes/format-precise-number';
 export * from './lib/pipes/inta-date-pipe';

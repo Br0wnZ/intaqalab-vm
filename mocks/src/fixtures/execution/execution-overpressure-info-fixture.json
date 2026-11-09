@@ -1,0 +1,18 @@
+{
+  "center-001/e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f": {
+    "overpressureInfo": {
+      "maximumPressure": 273.75,
+      "minimumPressure": 262.05,
+      "referencePressure": 233.97,
+      "pressureUnit": "MPA",
+      "safetyPressure": null,
+      "targetPressure": 267.9
+    },
+    "warnings": [
+      {
+        "code": "SAFETY_PRESSURE_UNAVAILABLE",
+        "message": "Calibry safety pressure is unavailable in the mock server (D13.1)."
+      }
+    ]
+  }
+}

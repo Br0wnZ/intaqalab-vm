@@ -1,7 +1,7 @@
 ---
 name: swagger-api-architect
-version: 1.2.2
-last-updated: 2026-11-04
+version: 1.2.3
+last-updated: 2026-11-05
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---
@@ -263,6 +263,7 @@ SALIDA ESPERADA:
    Genera directamente el código de las tres partes, sin teoría ni adornos.
 ```
 
-## 🔗 Planning API reads (ADR-017)
+## 🔗 Planning API reads (ADR-017) & Execution API Services (ADR-025)
 
-For GET endpoints of `apis/planning-api.json` consumed by execution, generate models and `httpResource` query services in `libs/domain/trial/data-access-planning` (export via its `index.ts`, add spec), NOT in `ExecutionService`. Run `npm run check:planning-urls` afterwards.
+- **Planning reads (ADR-017):** For GET endpoints of `apis/planning-api.json` consumed by execution, generate models and `httpResource` query services in `libs/domain/trial/data-access-planning` (export via its `index.ts`, add spec), NOT in `ExecutionService` or execution domain services. Run `npm run check:planning-urls` afterwards.
+- **Execution services (ADR-025):** For endpoints in `apis/execution-api.json`, DO NOT add methods to `ExecutionService` (deprecated facade). Implement dedicated, granular services under `libs/domain/trial/execution/src/lib/data-access/execution/` (`shot/`, `state/`, `readiness/`, `equipment/`, `preferences/`, `analytics/`, `planning/`), using `executionTrialUrl` from `shared/execution-endpoints.ts`, `awaitResourceValue` from `shared/resource-await.ts`, and exporting through `data-access/index.ts`. All DTOs belong in `execution/models/*.models.ts`.

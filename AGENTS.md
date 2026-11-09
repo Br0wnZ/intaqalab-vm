@@ -89,6 +89,7 @@ Route tasks to specialized skills in `.agents/skills/`:
 - **Trial Execution Domain:** `execution-domain-expert`
 - **Planning data read layer (`@intaqalab/data-access-planning`, ADR-017):** `execution-domain-expert` / `planning-specialist`
 - **Execution Shot-Scoped Read Helpers (`libs/domain/trial/execution/src/lib/data-access`, ADR-019):** `execution-domain-expert` / `widget-service-integration`
+- **Execution Service Decomposition & Widget Data Access (`libs/domain/trial/execution/src/lib/data-access/execution`, ADR-025):** `execution-domain-expert` / `widget-service-integration`
 - **Master Data Domain:** `master-data-specialist`
 - **Sub-Agent Delegation:** `caveman:cavecrew` (plugin `caveman`)
 
@@ -142,6 +143,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **Event Isolation (`uiStopClick`):** ⚡ **MANDATORY.** When handling clicks on interactive child elements inside clickable parent containers (`mat-option`, accordion headers, table rows, cards), use `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`) instead of manually calling `event.stopPropagation()` and `event.preventDefault()` in component methods. E.g.: `<button type="button" uiStopClick (click)="toggleStar(id)">`. Keeps component methods pure and DOM-event agnostic.
 - **Inputs & Selects:** ⚡ **MANDATORY.** All `matInput` and `mat-select` controls MUST have floating labels via `<mat-label>{{ '...' | translate }}</mat-label>` inside `<mat-form-field>` and placeholder i18n (`[placeholder]="'...' | translate"`).
 - **Store Injection in Components:** 🚫 **PROHIBITED accessing stores in templates (`store.prop()`).** Stores are injected privately (`readonly #store = inject(Store)`). Templates access data exclusively through exposed computed signals.
+- **Execution Service Decomposition (ADR-025):** ⚡ **MANDATORY.** `ExecutionService` is `@deprecated` and acts strictly as a temporary compatibility facade (0 production consumers in execution lib). Adding new methods or injecting `ExecutionService` in new widgets, stores, or dialogs is 🚫 **PROHIBITED**. All execution data access MUST be organized by domain under `libs/domain/trial/execution/src/lib/data-access/execution/` (`shot/`, `state/`, `readiness/`, `equipment/`, `preferences/`, `analytics/`, `planning/`). URLs must use pure URL builders in `shared/execution-endpoints.ts` (`executionTrialUrl`), imperative fetches must use `awaitResourceValue` from `shared/resource-await.ts`, and models must reside in `execution/models/*.models.ts`. Widgets and tests MUST inject and mock the granular domain service directly (`ShotVelocitiesService`, `ShotMunitionService`, `ShotAcousticLevelService`, etc.).
 - **Shot-Scoped Planning Data in Execution Widgets:** ⚡ **MANDATORY.** Any execution widget needing shot-specific planned configurations or warehouse stocks MUST consume shared reactive handles (`inject*` from `@intaqalab/domain-trial-execution` or internal data-access). Widgets must pass down derived option signals via `input()` to child tabs (e.g. `[componenteOptions]="componenteOptions()"`). Never invoke `/planning/...` directly (ADR-017) and never write duplicate state/parsing logic inside widget classes (ADR-019).
 - **State Decision Hierarchy:**
   1. `readonly #store = inject(Store)` — Private store injection; component exposes computed signals for template.
@@ -191,4 +193,4 @@ Boundaries: code/commits/PRs written normal.
 
 ---
 
-<!-- AGENTS_VERSION: 1.3.3 | UPDATED: 2026-11-04 -->
+<!-- AGENTS_VERSION: 1.4.0 | UPDATED: 2026-11-05 -->

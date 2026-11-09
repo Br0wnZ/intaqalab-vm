@@ -16,6 +16,7 @@ import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotMaoTopographyService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MaoTopography } from './mao-topography';
@@ -81,7 +82,7 @@ describe('MaoTopography', () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
-    vi.spyOn(TestBed.inject(ExecutionService), 'fetchShotMaoTopography').mockResolvedValue({});
+    vi.spyOn(TestBed.inject(ShotMaoTopographyService), 'fetchShotMaoTopography').mockResolvedValue({});
     const conditions = {
       series: [
         {
@@ -180,7 +181,7 @@ describe('MaoTopography', () => {
   it('sends the entered comma decimal to the backend without rounding after blur', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotMaoTopographyService);
     const fetchSpy = vi.spyOn(service, 'fetchShotMaoTopography').mockResolvedValue({
       maoTopographyData: { pieceX: 1.23456789 },
     });
@@ -242,7 +243,7 @@ describe('MaoTopography', () => {
 
   it('calls fetchShotMaoTopography on selection when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMaoTopographyService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotMaoTopography').mockResolvedValue({
       maoTopographyData: {
@@ -267,7 +268,7 @@ describe('MaoTopography', () => {
   ])('selects $expectedShot when switching to $selectedSerie', async ({ selectedSerie, expectedShot }) => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMaoTopographyService);
     const httpMock = TestBed.inject(HttpTestingController);
     const fetchSpy = vi.spyOn(execService, 'fetchShotMaoTopography').mockResolvedValue({
       maoTopographyData: { pieceX: 10, pieceY: 20, pieceZ: 30 },
@@ -319,7 +320,7 @@ describe('MaoTopography', () => {
       imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(ShotMaoTopographyService);
     const httpMock = TestBed.inject(HttpTestingController);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureMaoTopography');
     vi.spyOn(executionService, 'fetchShotMaoTopography').mockResolvedValue({});
@@ -347,7 +348,7 @@ describe('MaoTopography', () => {
 
   it('clears fields when the selected shot has no topography data', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMaoTopographyService);
     const store = TestBed.inject(ExecutionStore);
     const component = fixture.componentInstance as unknown as {
       formModel: () => { observador: string | null };
@@ -395,7 +396,7 @@ describe('MaoTopography', () => {
 
   it('clears previous shot values when the selected shot GET has no response', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMaoTopographyService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotMaoTopography').mockRejectedValue(new Error('No response'));
     const component = fixture.componentInstance as unknown as {

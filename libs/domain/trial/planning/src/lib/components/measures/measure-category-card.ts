@@ -3,7 +3,12 @@ import type { FieldTree } from '@angular/forms/signals';
 import { MatIconModule } from '@angular/material/icon';
 
 import type { MasterDataMeasureItem, SelectOption } from '../../utils-models/catalog.model';
-import type { MeasureCategoryDef, MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import type {
+  MeasureCategoryDef,
+  MeasureLimitChange,
+  MeasureSelectionData,
+  MeasureUnitOptions,
+} from '../../utils-models/measure-serie.model';
 import { MeasureLimitCard } from './measure-limit-card';
 import { MultiSelectSearchableComponent } from './multi-select-searchable';
 
@@ -134,6 +139,8 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
               [measureForm]="measureFields()[measureIndex]"
               [isQuantitative]="isQuantitative(measure.id)"
               [readonly]="readonly()"
+              [unitOptions]="measureUnitOptions()[measure.id] ?? []"
+              [measureUnit]="measure.measureUnit ?? getMeasureUnit(measure.id)"
               (remove)="removeMeasure.emit(measure.id)"
               (toggleExpanded)="onToggleMeasureExpanded(measure.id)"
               (limitChange)="onLimitChange(measure.id, $event)"
@@ -155,17 +162,18 @@ export class MeasureCategoryCard {
   readonly measureFields = input.required<FieldTree<MeasureSelectionData[]>>();
   readonly readonly = input<boolean>(false);
   readonly measuresCatalog = input<MasterDataMeasureItem[]>([]);
+  readonly measureUnitOptions = input<MeasureUnitOptions>({});
 
   readonly toggleOpen = output<void>();
   readonly selectedValuesChange = output<MeasureSelectionData[]>();
   readonly toggleFavorite = output<{ id: string; isFavorite: boolean }>();
   readonly removeMeasure = output<string>();
   readonly toggleMeasureExpanded = output<string>();
-  readonly updateLimit = output<{
-    measureId: string;
-    field: 'minLimit' | 'maxLimit' | 'deviation';
-    value: number | null;
-  }>();
+  readonly updateLimit = output<MeasureLimitChange & { measureId: string }>();
+
+  getMeasureUnit(measureId: string): string {
+    return this.measuresCatalog().find((item) => item.id === measureId)?.measureUnit ?? '';
+  }
 
   isQuantitative(measureId: string): boolean {
     const item = this.measuresCatalog().find((cat) => cat.id === measureId);
@@ -181,15 +189,13 @@ export class MeasureCategoryCard {
     this.toggleMeasureExpanded.emit(measureId);
   }
 
-  onLimitChange(
-    measureId: string,
-    event: { field: 'minLimit' | 'maxLimit' | 'deviation'; value: number | null },
-  ): void {
+  onLimitChange(measureId: string, event: MeasureLimitChange): void {
     if (this.readonly()) return;
     this.updateLimit.emit({
       measureId,
       field: event.field,
       value: event.value,
+      ...(event.measureUnit ? { measureUnit: event.measureUnit } : {}),
     });
   }
 }

@@ -37,6 +37,12 @@ const MOCK_EDIT_DATA: MasterDataDefault = {
   active: true,
 };
 
+const MOCK_EDIT_DATA_WITHOUT_EN: MasterDataDefault = {
+  ...MOCK_EDIT_DATA,
+  name: { es: 'Nombre ES', en: '' },
+  label: null,
+};
+
 async function setup(data: MasterDataDefault | null = null) {
   const closeFn = vi.fn();
   const events = userEvent.setup();
@@ -122,6 +128,14 @@ describe('MasterDataDefaultUpsertDialogComponent', () => {
 
       expect(await inputs[0].getValue()).toBe('Nombre ES');
       expect(await inputs[1].getValue()).toBe('Name EN');
+    });
+
+    it('should fall back to Spanish when the English name is empty', async () => {
+      const { loader } = await setup(MOCK_EDIT_DATA_WITHOUT_EN);
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+
+      expect(await inputs[0].getValue()).toBe('Nombre ES');
+      expect(await inputs[1].getValue()).toBe('Nombre ES');
     });
   });
 

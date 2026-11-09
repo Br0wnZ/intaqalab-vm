@@ -3,7 +3,7 @@ import { PlanningSeriesService, formatShotLabel } from '@intaqalab/data-access-p
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
-import { ExecutionService } from '../../services/execution.service';
+import { PropellantChargeService, VelocityUniformityService } from '../../data-access';
 import type { UniformidadChartState } from '../execution-state.models';
 
 interface UniformidadChartSlice {
@@ -26,14 +26,19 @@ export function withUniformidadChart() {
   return signalStoreFeature(
     withState(initialState),
     withComputed(
-      (store, executionService = inject(ExecutionService), seriesService = inject(PlanningSeriesService)) => ({
+      (
+        store,
+        velocityUniformityService = inject(VelocityUniformityService),
+        propellantChargeService = inject(PropellantChargeService),
+        seriesService = inject(PlanningSeriesService),
+      ) => ({
         uniformidadChartView: computed(() => {
           const chart = store.uniformidadChart();
           const configurations =
-            safeResourceValue(executionService.propellantChargeAdjustmentConfigurationsResource) ?? [];
-          const response = executionService.velocityUniformityResource.isLoading()
+            safeResourceValue(propellantChargeService.propellantChargeAdjustmentConfigurationsResource) ?? [];
+          const response = velocityUniformityService.velocityUniformityResource.isLoading()
             ? null
-            : safeResourceValue(executionService.velocityUniformityResource);
+            : safeResourceValue(velocityUniformityService.velocityUniformityResource);
           const planningSeries = safeResourceValue(seriesService.seriesResource) ?? [];
           const shotLookup = new Map(
             planningSeries.flatMap((serie) =>
@@ -86,7 +91,12 @@ export function withUniformidadChart() {
       }),
     ),
     withMethods(
-      (store, executionService = inject(ExecutionService), seriesService = inject(PlanningSeriesService)) => ({
+      (
+        store,
+        velocityUniformityService = inject(VelocityUniformityService),
+        propellantChargeService = inject(PropellantChargeService),
+        seriesService = inject(PlanningSeriesService),
+      ) => ({
         /** Actualiza los campos del widget Gráfica Uniformidad */
         updateUniformidadChart(updates: Partial<UniformidadChartState>): void {
           patchState(store, (state) => ({
@@ -95,7 +105,7 @@ export function withUniformidadChart() {
         },
 
         loadUniformidadChart(fireTrialId: string): void {
-          executionService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
+          propellantChargeService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
         },
 
         calculateUniformidadChart(fireTrialId: string): void {
@@ -115,14 +125,14 @@ export function withUniformidadChart() {
           const uniqueShotIds = [...new Set(shotIds)];
           if (uniqueShotIds.length === 0) return;
 
-          executionService.getVelocityUniformity(fireTrialId, {
+          velocityUniformityService.getVelocityUniformity(fireTrialId, {
             configurationId: chart.selectedConfig,
             shotIds: uniqueShotIds,
           });
         },
 
         clearUniformidadChartCalculation(): void {
-          executionService.clearVelocityUniformity();
+          velocityUniformityService.clearVelocityUniformity();
         },
       }),
     ),

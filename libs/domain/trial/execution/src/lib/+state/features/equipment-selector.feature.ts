@@ -2,6 +2,7 @@ import { computed, effect, inject, untracked } from '@angular/core';
 import { type PlanningSeriesItem, PlanningSeriesService, formatShotLabel } from '@intaqalab/data-access-planning';
 import { patchState, signalStoreFeature, type, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import { EquipmentSelectionService } from '../../data-access';
 import type {
   EquipmentItemSelection,
   EquipmentMagnitudeSelectionGroup,
@@ -9,7 +10,6 @@ import type {
   EquipmentSelectionApiList,
 } from '../../execution/models';
 import { EquipmentMagnitudeTagEnum, EquipmentTypeEnum, isEquipmentTypeEnum } from '../../execution/models';
-import { ExecutionService } from '../../services/execution.service';
 import type { EquipmentSelectorState } from '../execution-state.models';
 
 function flattenGroupedEquipments(equipments: EquipmentMagnitudeSelectionGroup[]): EquipmentItemSelection[] {
@@ -392,24 +392,26 @@ export function withEquipmentSelector() {
   return signalStoreFeature(
     { state: type<{ fireTrialId: string | null }>() },
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
+    withComputed((store, equipmentSelectionService = inject(EquipmentSelectionService)) => ({
       // Equipment Selector
       equipmentSelectorRemote: computed(() => {
-        const resource = executionService.equipmentSelectorResource;
+        const resource = equipmentSelectionService.equipmentSelectorResource;
         return resource.hasValue() ? resource.value() : undefined;
       }),
 
-      isLoadingEquipmentSelector: computed(() => executionService.equipmentSelectorResource.isLoading()),
+      isLoadingEquipmentSelector: computed(() => equipmentSelectionService.equipmentSelectorResource.isLoading()),
 
-      isUpdatingEquipmentSelector: computed(() => executionService.updateEquipmentSelectorResource.isLoading()),
+      isUpdatingEquipmentSelector: computed(() =>
+        equipmentSelectionService.updateEquipmentSelectorResource.isLoading(),
+      ),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, equipmentSelectionService = inject(EquipmentSelectionService)) => ({
       /** Persiste las selecciones del diálogo selector de equipos */
       updateEquipmentSelections(equipments: EquipmentMagnitudeSelectionGroup[]): void {
         const fireTrialId = store.fireTrialId();
         const flattenedSelections = flattenGroupedEquipments(equipments);
         if (fireTrialId) {
-          executionService.updateEquipmentSelector(fireTrialId, toEquipmentSelectionApi(equipments));
+          equipmentSelectionService.updateEquipmentSelector(fireTrialId, toEquipmentSelectionApi(equipments));
         }
         patchState(store, (state) => ({
           equipmentSelector: {
@@ -422,12 +424,12 @@ export function withEquipmentSelector() {
     })),
     withHooks({
       onInit(store) {
-        const executionService = inject(ExecutionService);
+        const equipmentSelectionService = inject(EquipmentSelectionService);
 
         effect(() => {
           const fireTrialId = store.fireTrialId();
           if (fireTrialId) {
-            executionService.getEquipmentSelector(fireTrialId);
+            equipmentSelectionService.getEquipmentSelector(fireTrialId);
           }
         });
 
@@ -451,14 +453,14 @@ export function withEquipmentSelector() {
 
         const seriesService = inject(PlanningSeriesService);
 
-        let lastUpdateStatus = executionService.updateEquipmentSelectorResource.status();
+        let lastUpdateStatus = equipmentSelectionService.updateEquipmentSelectorResource.status();
 
         effect(() => {
-          const updateStatus = executionService.updateEquipmentSelectorResource.status();
+          const updateStatus = equipmentSelectionService.updateEquipmentSelectorResource.status();
           const fireTrialId = store.fireTrialId();
 
           if (updateStatus === 'resolved' && lastUpdateStatus !== 'resolved' && fireTrialId) {
-            executionService.getEquipmentSelector(fireTrialId);
+            equipmentSelectionService.getEquipmentSelector(fireTrialId);
           }
 
           lastUpdateStatus = updateStatus;

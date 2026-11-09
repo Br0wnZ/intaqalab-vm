@@ -4,7 +4,7 @@ import { SpeedUnitEnum } from '@intaqalab/models';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
-import { ExecutionService } from '../../services/execution.service';
+import { PropellantChargeService } from '../../data-access';
 import type { TaradoPresionChartState, TaradoVelocidadChartState } from '../execution-state.models';
 
 interface TaradoChartsSlice {
@@ -61,7 +61,7 @@ export function withTaradoCharts() {
     withComputed(
       (
         store,
-        executionService = inject(ExecutionService),
+        propellantChargeService = inject(PropellantChargeService),
         seriesService = inject(PlanningSeriesService),
         conditionsService = inject(PlanningConditionsService),
       ) => ({
@@ -69,8 +69,10 @@ export function withTaradoCharts() {
           const chart = store.taradoVelocidadChart();
           const planningSeries = safeResourceValue(seriesService.seriesResource) ?? [];
           const planningConditions = safeResourceValue(conditionsService.conditionsResource);
-          const response = safeResourceValue(executionService.propellantChargeAdjustmentResource);
-          const configurations = safeResourceValue(executionService.propellantChargeAdjustmentConfigurationsResource);
+          const response = safeResourceValue(propellantChargeService.propellantChargeAdjustmentResource);
+          const configurations = safeResourceValue(
+            propellantChargeService.propellantChargeAdjustmentConfigurationsResource,
+          );
           const seriesByShotId = new Map<string, { serieId: string; globalNumber: number | undefined }>();
 
           planningSeries.forEach((serie) => {
@@ -146,7 +148,7 @@ export function withTaradoCharts() {
     withMethods(
       (
         store,
-        executionService = inject(ExecutionService),
+        propellantChargeService = inject(PropellantChargeService),
         seriesService = inject(PlanningSeriesService),
         conditionsService = inject(PlanningConditionsService),
       ) => ({
@@ -158,7 +160,7 @@ export function withTaradoCharts() {
         },
 
         loadTaradoVelocidadChart(fireTrialId: string): void {
-          executionService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
+          propellantChargeService.listPropellantChargeAdjustmentConfigurations(fireTrialId);
           this.calculateTaradoVelocidadChart(fireTrialId);
         },
 
@@ -201,7 +203,7 @@ export function withTaradoCharts() {
               ? [...nominalSpeeds][0]
               : undefined;
           if (nominalSpeed === undefined || !Number.isFinite(nominalSpeed)) return;
-          executionService.getPropellantChargeAdjustment(fireTrialId, {
+          propellantChargeService.getPropellantChargeAdjustment(fireTrialId, {
             shotIds: [...new Set(shotIds)],
             nominalSpeed,
             nominalSpeedUnit: planningConditions.units?.nominalSpeed ?? SpeedUnitEnum.M_S,

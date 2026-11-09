@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotManometerPressuresService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import type { ShotManometerPressuresResponse } from '../../models/shot-manometer-pressures.models';
@@ -156,7 +157,7 @@ describe('ManometerIntroduction', () => {
   it('saveForm persists data to the store and calls ExecutionService', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotManometerPressuresService);
     const updateSpy = vi.spyOn(execService, 'updateShotManometerPressures').mockResolvedValue(mockManometerResponse);
 
     store.setFireTrialId('trial-123');
@@ -174,7 +175,7 @@ describe('ManometerIntroduction', () => {
   it('saveForm handles errors gracefully when executionService throws', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotManometerPressuresService);
     vi.spyOn(execService, 'updateShotManometerPressures').mockRejectedValue(new Error('Network error'));
 
     store.setFireTrialId('trial-123');
@@ -211,7 +212,7 @@ describe('ManometerIntroduction', () => {
 
   it('fetches shot manometer pressures data and applies to form and store', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotManometerPressuresService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotManometerPressures').mockResolvedValue(mockManometerResponse);
@@ -235,7 +236,7 @@ describe('ManometerIntroduction', () => {
   it('setCurrentShot selects active shot from store and triggers load', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotManometerPressuresService);
 
     vi.spyOn(execService, 'fetchShotManometerPressures').mockResolvedValue(mockManometerResponse);
     store.setFireTrialId('trial-123');

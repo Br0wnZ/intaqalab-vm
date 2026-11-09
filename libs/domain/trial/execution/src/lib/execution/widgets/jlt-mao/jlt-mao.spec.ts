@@ -18,6 +18,7 @@ import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { PlanningFuseService, ShotJltMaoService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import type { ShotJltMaoResponse } from '../../models/shot-jlt-mao.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -95,7 +96,7 @@ describe('JltMao', () => {
 
   it('calls fetchShotJltMao on load when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotJltMaoService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotJltMao').mockResolvedValue({
       jltMaoData: {
@@ -115,10 +116,11 @@ describe('JltMao', () => {
 
   it('does not load shot data before series and shot IDs are available, then loads the active shot', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({});
-    const plannedFuseGraduationSpy = vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(12);
+    const plannedFuseGraduationSpy = vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(12);
 
     store.setFireTrialId('trial-123');
     TestBed.tick();
@@ -160,7 +162,8 @@ describe('JltMao', () => {
       imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
     const conditionsService = TestBed.inject(PlanningConditionsService);
     const munitionsService = TestBed.inject(PlanningMunitionsService);
@@ -171,7 +174,7 @@ describe('JltMao', () => {
       ],
     });
     vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
-    vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+    vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
       updatedShotIds: ['shot-1', 'shot-2'],
     });
@@ -307,7 +310,8 @@ describe('JltMao', () => {
       imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
     const conditionsService = TestBed.inject(PlanningConditionsService);
     const munitionsService = TestBed.inject(PlanningMunitionsService);
@@ -318,7 +322,7 @@ describe('JltMao', () => {
       ],
     });
     vi.spyOn(executionService, 'fetchShotJltMao').mockResolvedValue(null as unknown as ShotJltMaoResponse);
-    vi.spyOn(executionService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+    vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
     const bulkSpy = vi.spyOn(executionService, 'bulkConfigureJltMao').mockResolvedValue({
       updatedShotIds: ['shot-1', 'shot-2', 'shot-3'],
     });
@@ -482,12 +486,13 @@ describe('JltMao', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
     vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
       jltMaoData: { shootingAngle: null, fuseGraduation: null },
     });
-    const plannedFuseGraduationSpy = vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(7.25);
+    const plannedFuseGraduationSpy = vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(7.25);
 
     store.setFireTrialId('trial-123');
     TestBed.tick();
@@ -519,12 +524,13 @@ describe('JltMao', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
     vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
       jltMaoData: { fuseGraduation: 9.5 },
     });
-    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+    vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
 
     store.setFireTrialId('trial-123');
     TestBed.tick();
@@ -543,10 +549,11 @@ describe('JltMao', () => {
   it('disables fuse graduation when it is returned by planning conditions', async () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
     vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({ jltMaoData: null });
-    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
+    vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(null);
 
     TestBed.inject(ExecutionStore).setFireTrialId('trial-123');
     TestBed.tick();
@@ -569,13 +576,14 @@ describe('JltMao', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
 
     vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
       jltMaoData: null,
     });
-    vi.spyOn(service, 'fetchPlanningFuseGraduation').mockResolvedValue(10.5);
+    vi.spyOn(fuseService, 'fetchPlanningFuseGraduation').mockResolvedValue(10.5);
 
     store.setFireTrialId('trial-123');
     TestBed.tick();
@@ -610,14 +618,15 @@ describe('JltMao', () => {
     const { fixture } = await renderWidget();
     const component = fixture.componentInstance;
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotJltMaoService);
+    const fuseService = TestBed.inject(PlanningFuseService);
     const httpMock = TestBed.inject(HttpTestingController);
 
     vi.spyOn(service, 'fetchShotJltMao').mockResolvedValue({
       jltMaoData: null,
     });
     const fuseSpy = vi
-      .spyOn(service, 'fetchPlanningFuseGraduation')
+      .spyOn(fuseService, 'fetchPlanningFuseGraduation')
       .mockImplementation(async (_trialId, _serieId, shotId) => (shotId === 'shot-1' ? 8 : null));
 
     store.setFireTrialId('trial-123');

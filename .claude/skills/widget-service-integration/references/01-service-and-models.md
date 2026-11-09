@@ -1,6 +1,10 @@
 # 01 — Service and Models (Execution Domain)
 
-Guía detallada para identificar endpoints en Swagger, modelar DTOs TypeScript y añadir métodos en `ExecutionService`.
+Guía detallada para identificar endpoints en Swagger, modelar DTOs TypeScript y crear/extender el servicio de dominio correspondiente bajo `libs/domain/trial/execution/src/lib/data-access/execution/shot/` cumpliendo con ADR-020 y ADR-025.
+
+> [!WARNING]
+> `ExecutionService` está `@deprecated` (fachada de compatibilidad con 0 consumidores en producción).
+> **PROHIBIDO** añadir métodos a `ExecutionService` o inyectarlo en nuevos widgets o features. Toda lógica de acceso a datos pertenece a servicios modulares en `data-access/execution/`.
 
 ---
 
@@ -96,67 +100,129 @@ export type { <Resource>Response, <Resource>Request } from './<widget-resource>.
 
 ---
 
-## 3. Implementación en `ExecutionService`
+## 3. Implementación del Servicio de Dominio (`data-access/execution/shot/shot-<resource>.service.ts`)
 
 > [!IMPORTANT]
-> **Separación CQS (ADR-020):**
+> **Separación CQS (ADR-020) y Descomposición de Servicios (ADR-025):**
 >
-> 1. **GET (Lecturas / Queries):** Usa `httpResource` + trigger de señal privado.
-> 2. **PUT / POST / DELETE (Mutaciones / Escrituras):** Usa `HttpClient` directamente con `firstValueFrom()`, retornando `Promise<T>`.
+> 1. **Ubicación Canónica:** `libs/domain/trial/execution/src/lib/data-access/execution/shot/shot-<resource>.service.ts`.
+> 2. **GET (Lecturas / Queries):** Usa `httpResource` + trigger de señal privado.
+> 3. **Fetch Imperativo:** Usa `awaitResourceValue(resource, this.#injector)` de `../shared/resource-await`.
+> 4. **PUT / POST / DELETE (Mutaciones / Escrituras):** Usa `HttpClient` directamente con `firstValueFrom()`, retornando `Promise<T>`.
 >    🚫 **PROHIBIDO USAR `httpResource` PARA MUTACIONES:** Evita cancelaciones automáticas con `AbortController` al guardar múltiples widgets.
->    🚫 **PROHIBIDO EL USO DE NON-NULL ASSERTION (`!`):** Usa `#awaitResourceValue(resource)`.
+>    🚫 **PROHIBIDO EL USO DE NON-NULL ASSERTION (`!`):** Usa `awaitResourceValue`.
+> 5. **Constructores Puros de URL:** Usa `executionTrialUrl(...)` importado de `../shared/execution-endpoints`.
+> 6. **Re-exportación:** Exporta la clase en `libs/domain/trial/execution/src/lib/data-access/index.ts`.
 
 ```typescript
-// === GET (Consultas de Lectura) ==============================================
-readonly #get<Resource>Params = signal<<Resource>Params | null>(null);
+import { HttpClient, httpResource } from '@angular/common/http';
+import { Injectable, Injector, inject, signal } from '@angular/core';
+import { injectExecutionEndpoint } from '@intaqalab/config';
+import type { FireTrial } from '@intaqalab/models';
+import { firstValueFrom } from 'rxjs';
 
-readonly <resource>Resource = httpResource<<Resource>Response>(() => {
-  const p = this.#get<Resource>Params();
-  if (!p) return undefined;
-  return {
-    url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/<api-path>/series/${p.seriesId}/shots/${p.shotId}`,
-    method: 'GET',
-  };
-});
+import type { <Resource>Request, <Resource>Response } from '../../../execution/models';
+import { executionTrialUrl } from '../shared/execution-endpoints';
+import { awaitResourceValue } from '../shared/resource-await';
 
-get<Resource>(fireTrialId: string, seriesId: string, shotId: string): void {
-  this.#get<Resource>Params.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
+interface Shot<Resource>Params {
+  fireTrialId: FireTrial['id'];
+  seriesId: string;
+  shotId: string;
 }
 
-// Trigger para fetch imperativo sincronizado
-readonly #fetch<Resource>Params = signal<<Resource>Params | null>(null);
+@Injectable({
+  providedIn: 'root',
+})
+export class Shot<Resource>Service {
+  readonly #http = inject(HttpClient);
+  readonly #injector = inject(Injector);
+  readonly #executionUrl = injectExecutionEndpoint();
 
-readonly #fetch<Resource>Resource = httpResource<<Resource>Response>(() => {
-  const p = this.#fetch<Resource>Params();
-  if (!p) return undefined;
-  return {
-    url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/<api-path>/series/${p.seriesId}/shots/${p.shotId}`,
-    method: 'GET',
-  };
-});
+  // === GET Reactivo (Queries de UI) =========================================
+  readonly #getShot<Resource>Params = signal<Shot<Resource>Params | null>(null);
 
-async fetch<Resource>(
-  fireTrialId: string,
-  seriesId: string,
-  shotId: string,
-): Promise<<Resource>Response> {
-  this.#fetch<Resource>Params.set({ fireTrialId, seriesId, shotId, _t: Date.now() });
-  return this.#awaitResourceValue(this.#fetch<Resource>Resource);
+  readonly shot<Resource>Resource = httpResource<<Resource>Response>(() => {
+    const params = this.#getShot<Resource>Params();
+    if (!params) return undefined;
+    return {
+      url: executionTrialUrl(
+        this.#executionUrl,
+        params.fireTrialId,
+        '<resource-path>',
+        'series',
+        params.seriesId,
+        'shots',
+        params.shotId,
+      ),
+      method: 'GET',
+    };
+  });
+
+  getShot<Resource>(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#getShot<Resource>Params.set({ fireTrialId, seriesId, shotId });
+  }
+
+  // === Fetch Imperativo (Sincronizado al cambiar serie/disparo) =============
+  readonly #fetchShot<Resource>Params = signal<Shot<Resource>Params | null>(null);
+
+  readonly #fetchShot<Resource>Resource = httpResource<<Resource>Response>(() => {
+    const p = this.#fetchShot<Resource>Params();
+    if (!p) return undefined;
+    return {
+      url: executionTrialUrl(
+        this.#executionUrl,
+        p.fireTrialId,
+        '<resource-path>',
+        'series',
+        p.seriesId,
+        'shots',
+        p.shotId,
+      ),
+      method: 'GET',
+    };
+  });
+
+  async fetchShot<Resource>(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<<Resource>Response> {
+    this.#fetchShot<Resource>Params.set({ fireTrialId, seriesId, shotId });
+    return awaitResourceValue(this.#fetchShot<Resource>Resource, this.#injector);
+  }
+
+  // === PUT / Mutaciones de Escritura (ADR-020: HttpClient + firstValueFrom) ==
+  async updateShot<Resource>(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: <Resource>Request,
+  ): Promise<<Resource>Response> {
+    return firstValueFrom(
+      this.#http.put<<Resource>Response>(
+        executionTrialUrl(
+          this.#executionUrl,
+          fireTrialId,
+          '<resource-path>',
+          'series',
+          seriesId,
+          'shots',
+          shotId,
+        ),
+        body,
+      ),
+    );
+  }
 }
+```
 
-// === PUT (Mutaciones de Escritura) ===========================================
-// ⚡ MANDATORIO (ADR-020): HttpClient + firstValueFrom
-async update<Resource>(
-  fireTrialId: string,
-  seriesId: string,
-  shotId: string,
-  body: <Resource>Request,
-): Promise<<Resource>Response> {
-  return firstValueFrom(
-    this.#http.put<<Resource>Response>(
-      `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/<api-path>/series/${seriesId}/shots/${shotId}`,
-      body,
-    ),
-  );
-}
+---
+
+## 4. Re-exportar en `data-access/index.ts`
+
+En `libs/domain/trial/execution/src/lib/data-access/index.ts`:
+
+```typescript
+export * from './execution/shot/shot-<resource>.service';
 ```

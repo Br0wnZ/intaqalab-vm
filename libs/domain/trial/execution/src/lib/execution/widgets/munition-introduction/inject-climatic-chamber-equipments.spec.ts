@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { type EquipmentSelectionItem, EquipmentTypeEnum } from '../../models';
 import { injectClimaticChamberEquipments } from './inject-climatic-chamber-equipments';
 
@@ -10,7 +10,7 @@ describe('injectClimaticChamberEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => false,
@@ -50,7 +50,7 @@ describe('injectClimaticChamberEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const helper = TestBed.runInInjectionContext(() => injectClimaticChamberEquipments());
@@ -89,7 +89,7 @@ describe('injectClimaticChamberEquipments', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const helper = TestBed.runInInjectionContext(() => injectClimaticChamberEquipments(() => ['serie-1']));

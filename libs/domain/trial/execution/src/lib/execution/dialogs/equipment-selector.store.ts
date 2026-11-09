@@ -3,8 +3,8 @@ import { computed, effect, inject, untracked } from '@angular/core';
 import { injectCurrentUserRole } from '@intaqalab/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import { EquipmentSelectionService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
-import { ExecutionService } from '../../services/execution.service';
 import type {
   EquipmentMagnitudeSelectionGroup,
   EquipmentSelectorDialogData,
@@ -73,7 +73,7 @@ export const EquipmentSelectorStore = signalStore(
     (
       store,
       planningService = inject(EquipmentPlanningService),
-      executionService = inject(ExecutionService),
+      equipmentSelectionService = inject(EquipmentSelectionService),
       userRoles = injectCurrentUserRole(),
     ) => {
       const roleVisibleTags = computed<readonly TagConfig[]>(() =>
@@ -143,7 +143,7 @@ export const EquipmentSelectorStore = signalStore(
 
       const error = computed(() => {
         if (planningService.error() || store.itemsError()) return true;
-        const resource = executionService.equipmentSelectorResource;
+        const resource = equipmentSelectionService.equipmentSelectorResource;
         return resource.status() === 'error' && !isNotFoundError(resource.error());
       });
 
@@ -161,7 +161,7 @@ export const EquipmentSelectorStore = signalStore(
         if (error()) return false;
         return (
           planningService.isLoading() ||
-          executionService.equipmentSelectorResource.isLoading() ||
+          equipmentSelectionService.equipmentSelectorResource.isLoading() ||
           store.itemsLoading() ||
           !store.isInitialized()
         );
@@ -189,7 +189,11 @@ export const EquipmentSelectorStore = signalStore(
     },
   ),
   withMethods(
-    (store, executionService = inject(ExecutionService), planningService = inject(EquipmentPlanningService)) => {
+    (
+      store,
+      equipmentSelectionService = inject(EquipmentSelectionService),
+      planningService = inject(EquipmentPlanningService),
+    ) => {
       function updateTag(tagId: string, updater: (s: TagTableState) => TagTableState): void {
         patchState(store, (state) => ({
           tagStates: {
@@ -227,7 +231,7 @@ export const EquipmentSelectorStore = signalStore(
         if (isInitial) patchState(store, { itemsLoading: true });
 
         untracked(() => {
-          executionService
+          equipmentSelectionService
             .loadEquipmentItemsByCategories(missing)
             .then((items) => {
               patchState(store, (state) => ({
@@ -400,19 +404,23 @@ export const EquipmentSelectorStore = signalStore(
     },
   ),
   withHooks({
-    onInit(store, planningService = inject(EquipmentPlanningService), executionService = inject(ExecutionService)) {
+    onInit(
+      store,
+      planningService = inject(EquipmentPlanningService),
+      equipmentSelectionService = inject(EquipmentSelectionService),
+    ) {
       // Dispara la carga remota cuando cambia fireTrialId
       effect(() => {
         const trialId = store.fireTrialId();
         if (trialId) {
           planningService.load(trialId);
-          executionService.getEquipmentSelector(trialId);
+          equipmentSelectionService.getEquipmentSelector(trialId);
         }
       });
 
       // Hidrata y carga categorías de equipos cuando los recursos de planificación y selección resuelven
       effect(() => {
-        const equipmentResource = executionService.equipmentSelectorResource;
+        const equipmentResource = equipmentSelectionService.equipmentSelectorResource;
         const equipmentStatus = equipmentResource.status();
         const equipmentNotFound = equipmentStatus === 'error' && isNotFoundError(equipmentResource.error());
         if (store.isInitialized() || store.itemsLoading() || planningService.isLoading()) return;

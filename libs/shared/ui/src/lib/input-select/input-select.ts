@@ -115,7 +115,7 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
             [style.color]="textColor() ?? null"
             [readonly]="readOnly()"
             [disabled]="readOnly()"
-            [placeholder]="!showLabel() || labelFloating() ? placeholder() : ''"
+            [placeholder]="!showLabel() || labelFloating() ? displayPlaceholder() : ''"
             [attr.aria-label]="label()"
             (decimalValueChange)="onNumericChange($event)"
             (focus)="focused.set(true)"
@@ -178,7 +178,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
   readonly label = input<string>('');
   readonly opciones = input<{ value: string; label: string }[]>([]);
   readonly textColor = input<string | null>(null);
-  readonly placeholder = input<string>('0,00');
+  readonly placeholder = input<string>();
   readonly readOnly = input(false);
   readonly unitDisabled = input<boolean | null>(null);
   readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
@@ -224,6 +224,9 @@ export class InputSelect<T extends number | string | null = number | string | nu
   readonly #renderer = inject(Renderer2);
   readonly #destroyRef = inject(DestroyRef);
   readonly #localeSignal = inject(LOCALE_SIGNAL);
+  protected readonly displayPlaceholder = computed(
+    () => this.placeholder() ?? formatPreciseNumber(0, this.#localeSignal(), 2),
+  );
   readonly panelWidth = signal<number | null>(null);
 
   // ── Content projection ───────────────────────────────────────────────────
@@ -272,7 +275,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
     let nextVal: T;
 
     if (typeof currentVal === 'string') {
-      nextVal = (num !== null ? formatDisplayNumber(num, this.#localeSignal(), this.minDecimals()) : '') as T;
+      nextVal = (num !== null ? String(num) : '') as T;
     } else {
       nextVal = num as T;
     }
@@ -291,9 +294,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
 
     if (typeof currentVal === 'string') {
       const num = this.numericValue();
-      nextVal = (
-        num !== null ? formatDisplayNumber(num, this.#localeSignal(), this.minDecimals()) : (currentVal ?? '')
-      ) as T;
+      nextVal = (num !== null ? String(num) : currentVal) as T;
     } else {
       nextVal = (this.numericValue() ?? null) as T;
     }
@@ -318,6 +319,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
     const el = projected.el.nativeElement;
     this.#renderer.setProperty(el, 'readOnly', this.readOnly());
     this.#renderer.setProperty(el, 'disabled', this.readOnly());
+    this.#renderer.setAttribute(el, 'placeholder', this.displayPlaceholder());
 
     if (this.#projectedWired) return;
     this.#projectedWired = true;
@@ -330,7 +332,6 @@ export class InputSelect<T extends number | string | null = number | string | nu
     );
     this.#renderer.setAttribute(el, 'type', 'text');
     this.#renderer.setAttribute(el, 'inputmode', 'decimal');
-    this.#renderer.setAttribute(el, 'placeholder', this.placeholder());
 
     const dir = projected.decimalDirective;
     if (dir) {

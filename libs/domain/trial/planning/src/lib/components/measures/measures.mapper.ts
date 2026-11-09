@@ -1,6 +1,13 @@
-import type { MagnitudesOptions, SerieData } from '../../utils-models/measure-serie.model';
+import { MeasureUnitEnum } from '@intaqalab/models';
+
+import type { MagnitudesOptions, MeasureSelectionData, SerieData } from '../../utils-models/measure-serie.model';
 import type { MasterDataMeasureItem } from '../../utils-models/measures-catalog.model';
-import type { MeasureData, MeasuresBulkUpdateRequest, SeriesMeasuresData } from '../../utils-models/measures.model';
+import type {
+  MeasureData,
+  MeasureSelection,
+  MeasuresBulkUpdateRequest,
+  SeriesMeasuresData,
+} from '../../utils-models/measures.model';
 import type { Serie } from '../../utils-models/series-and-shots.model';
 
 export function formatMeasureOptionName(name: string): string {
@@ -54,6 +61,7 @@ export function mapResponseToLocal(planningSeries: Serie[], measuresSeries?: Ser
       topografia:
         config?.measures?.topographyMeasures?.map((m: MeasureData) => ({
           id: m.id,
+          ...(m.measureUnit ? { measureUnit: m.measureUnit } : {}),
           minLimit: m.minLimit ?? null,
           maxLimit: m.maxLimit ?? null,
           deviation: m.deviation ?? null,
@@ -62,6 +70,7 @@ export function mapResponseToLocal(planningSeries: Serie[], measuresSeries?: Ser
       municiones:
         config?.measures?.munitionsMeasures?.map((m: MeasureData) => ({
           id: m.id,
+          ...(m.measureUnit ? { measureUnit: m.measureUnit } : {}),
           minLimit: m.minLimit ?? null,
           maxLimit: m.maxLimit ?? null,
           deviation: m.deviation ?? null,
@@ -70,6 +79,7 @@ export function mapResponseToLocal(planningSeries: Serie[], measuresSeries?: Ser
       armamento:
         config?.measures?.armamentMeasures?.map((m: MeasureData) => ({
           id: m.id,
+          ...(m.measureUnit ? { measureUnit: m.measureUnit } : {}),
           minLimit: m.minLimit ?? null,
           maxLimit: m.maxLimit ?? null,
           deviation: m.deviation ?? null,
@@ -78,6 +88,7 @@ export function mapResponseToLocal(planningSeries: Serie[], measuresSeries?: Ser
       balistica:
         config?.measures?.ballisticsMeasures?.map((m: MeasureData) => ({
           id: m.id,
+          ...(m.measureUnit ? { measureUnit: m.measureUnit } : {}),
           minLimit: m.minLimit ?? null,
           maxLimit: m.maxLimit ?? null,
           deviation: m.deviation ?? null,
@@ -87,9 +98,24 @@ export function mapResponseToLocal(planningSeries: Serie[], measuresSeries?: Ser
   });
 }
 
-export function mapLocalToRequest(data: SerieData[], seriesConfiguration: boolean): MeasuresBulkUpdateRequest {
+export function mapLocalToRequest(
+  data: SerieData[],
+  seriesConfiguration: boolean,
+  catalog: MasterDataMeasureItem[] = [],
+): MeasuresBulkUpdateRequest {
   const useCommonConfig = !seriesConfiguration;
   const commonSource = useCommonConfig && data.length > 0 ? data[0] : null;
+  const mapMeasure = (measure: MeasureSelectionData): MeasureSelection => {
+    const unit = measure.measureUnit ?? catalog.find((item) => item.id === measure.id)?.measureUnit;
+    const measureUnit = Object.values(MeasureUnitEnum).find((value) => value === unit);
+    return {
+      id: measure.id,
+      ...(measureUnit ? { measureUnit } : {}),
+      minLimit: measure.minLimit,
+      maxLimit: measure.maxLimit,
+      deviation: measure.deviation,
+    };
+  };
 
   return {
     series: data.map((item) => {
@@ -97,30 +123,10 @@ export function mapLocalToRequest(data: SerieData[], seriesConfiguration: boolea
       return {
         seriesId: item.id,
         measures: {
-          topographyMeasures: source.topografia.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          munitionsMeasures: source.municiones.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          armamentMeasures: source.armamento.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
-          ballisticsMeasures: source.balistica.map((m) => ({
-            id: m.id,
-            minLimit: m.minLimit,
-            maxLimit: m.maxLimit,
-            deviation: m.deviation,
-          })),
+          topographyMeasures: source.topografia.map(mapMeasure),
+          munitionsMeasures: source.municiones.map(mapMeasure),
+          armamentMeasures: source.armamento.map(mapMeasure),
+          ballisticsMeasures: source.balistica.map(mapMeasure),
         },
       };
     }),

@@ -1,17 +1,34 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
-import { FormField } from '@angular/forms/signals';
 import type { FieldTree } from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MeasureUnitEnum } from '@intaqalab/models';
+import { InputSelect, InputSelectInput, type InputSelectValue } from '@intaqalab/ui';
+import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import type { MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import type {
+  MeasureLimitChange,
+  MeasureSelectionData,
+  MeasureUnitOptions,
+} from '../../utils-models/measure-serie.model';
 
 @Component({
   selector: 'inta-measure-limit-card',
-  imports: [FormField, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, TranslatePipe],
+  imports: [
+    FormField,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    TranslatePipe,
+    InputSelect,
+    InputSelectInput,
+    LocaleDecimalInputDirective,
+  ],
   template: `
     @if (isQuantitative() && measure().expanded) {
       <!-- Expanded State with Purple Accent -->
@@ -38,68 +55,46 @@ import type { MeasureSelectionData } from '../../utils-models/measure-serie.mode
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 px-4 pb-4 pt-1">
-          <div class="min-w-0">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT' | translate }}</mat-label>
-              <input
-                matInput
-                type="number"
-                [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
-                [formField]="measureForm().minLimit"
-                [attr.aria-describedby]="
-                  measureForm().minLimit().touched() && measureForm().minLimit().errors().length > 0
-                    ? minLimitInput.id + '-error'
-                    : null
-                "
-                (input)="onInputChange('minLimit', $event)"
-                #minLimitInput="matInput"
-              />
-            </mat-form-field>
-            @if (measureForm().minLimit().touched() && measureForm().minLimit().errors(); as errors) {
-              @for (error of errors; track error.kind) {
-                <mat-error class="mt-1" [id]="minLimitInput.id + '-error'">
-                  {{ error.message | translate }}
-                </mat-error>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-4 pb-4 pt-1">
+          @for (field of limitFields; track field) {
+            <div class="min-w-0">
+              @if (unitOptions().length > 0) {
+                <ui-input-select
+                  floatLabel="always"
+                  [label]="limitLabels[field] | translate"
+                  [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
+                  [opciones]="unitOptions()"
+                  [readOnly]="readonly()"
+                  [value]="{ value: measureForm()[field]().value(), unit: measure().measureUnit ?? measureUnit() }"
+                  (valueChange)="onUnitValueChange(field, $event)"
+                >
+                  <input
+                    matInput
+                    inputSelectInput
+                    libLocalDecimal
+                    [attr.aria-label]="limitLabels[field] | translate"
+                    [formField]="measureForm()[field]"
+                  />
+                </ui-input-select>
+              } @else {
+                <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                  <mat-label>{{ limitLabels[field] | translate }}</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
+                    [formField]="measureForm()[field]"
+                    (input)="onInputChange(field, $event)"
+                  />
+                </mat-form-field>
               }
-            }
-          </div>
-          <div class="min-w-0">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT' | translate }}</mat-label>
-              <input
-                matInput
-                type="number"
-                [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
-                [formField]="measureForm().maxLimit"
-                [attr.aria-describedby]="
-                  measureForm().maxLimit().touched() && measureForm().maxLimit().errors().length > 0
-                    ? maxLimitInput.id + '-error'
-                    : null
-                "
-                (input)="onInputChange('maxLimit', $event)"
-                #maxLimitInput="matInput"
-              />
-            </mat-form-field>
-            @if (measureForm().maxLimit().touched() && measureForm().maxLimit().errors(); as errors) {
-              @for (error of errors; track error.kind) {
-                <mat-error class="mt-1" [id]="maxLimitInput.id + '-error'">
-                  {{ error.message | translate }}
-                </mat-error>
+              @if (measureForm()[field]().touched()) {
+                @for (error of measureForm()[field]().errors(); track error.kind) {
+                  <mat-error role="alert" class="mt-1">{{ error.message | translate }}</mat-error>
+                }
               }
-            }
-          </div>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.DEVIATION' | translate }}</mat-label>
-            <input
-              matInput
-              type="number"
-              [placeholder]="'TRIAL_PLANNING.MEASURES.LIMIT_CARD.ENTER_VALUE' | translate"
-              [value]="measure().deviation ?? ''"
-              [disabled]="readonly()"
-              (input)="onInputChange('deviation', $event)"
-            />
-          </mat-form-field>
+            </div>
+          }
         </div>
       </div>
     } @else {
@@ -154,10 +149,19 @@ export class MeasureLimitCard {
   readonly measureForm = input.required<FieldTree<MeasureSelectionData>>();
   readonly isQuantitative = input<boolean>(false);
   readonly readonly = input<boolean>(false);
+  readonly unitOptions = input<MeasureUnitOptions[string]>([]);
+  readonly measureUnit = input<string>('');
+
+  protected readonly limitFields = ['minLimit', 'maxLimit', 'deviation'] as const;
+  protected readonly limitLabels = {
+    minLimit: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT',
+    maxLimit: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT',
+    deviation: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.DEVIATION',
+  };
 
   readonly remove = output<void>();
   readonly toggleExpanded = output<void>();
-  readonly limitChange = output<{ field: 'minLimit' | 'maxLimit' | 'deviation'; value: number | null }>();
+  readonly limitChange = output<MeasureLimitChange>();
 
   onInputChange(field: 'minLimit' | 'maxLimit' | 'deviation', event: Event): void {
     if (this.readonly()) return;
@@ -173,6 +177,18 @@ export class MeasureLimitCard {
 
   onLimitChange(field: 'minLimit' | 'maxLimit' | 'deviation', value: number | null): void {
     if (this.readonly()) return;
-    this.limitChange.emit({ field, value });
+    const measureUnit = Object.values(MeasureUnitEnum).find(
+      (unit) => unit === (this.measure().measureUnit ?? this.measureUnit()),
+    );
+    this.limitChange.emit({ field, value, ...(measureUnit ? { measureUnit } : {}) });
+  }
+
+  onUnitValueChange(field: MeasureLimitChange['field'], selection: InputSelectValue<number | null> | null): void {
+    if (this.readonly() || !selection) return;
+    const measureUnit = Object.values(MeasureUnitEnum).find((unit) => unit === selection.unit);
+    if (!measureUnit || !this.unitOptions().some((option) => option.value === measureUnit)) return;
+    if (selection.value === this.measure()[field] && measureUnit === (this.measure().measureUnit ?? this.measureUnit()))
+      return;
+    this.limitChange.emit({ field, value: selection.value, measureUnit });
   }
 }

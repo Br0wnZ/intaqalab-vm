@@ -1,6 +1,6 @@
 import { computed, inject } from '@angular/core';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import {
   EquipmentMagnitudeTagEnum,
   EquipmentMeasurementGroupEnum,
@@ -9,7 +9,7 @@ import {
 } from '../../models';
 
 export function injectInitialVideoEquipments(tipoVideoFn?: () => 'AV' | 'C' | null) {
-  const executionService = inject(ExecutionService);
+  const executionService = inject(EquipmentSelectionService);
 
   return computed<readonly EquipmentSelectionItem[]>(() => {
     const resource = executionService.equipmentSelectorResource;

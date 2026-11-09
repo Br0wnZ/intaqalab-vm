@@ -22,15 +22,15 @@ import { createDirtyTracker } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentSelectionService, ShotPressuresService } from '../../../data-access';
+import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import {
-  ExecutionService,
+  EquipmentTypeEnum,
   type ShotDifferentialPressureData,
   type ShotPiezoPressureItem,
   type ShotPressuresResponse,
   type ShotTimesData,
-} from '../../../services/execution.service';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import { EquipmentTypeEnum } from '../../models';
+} from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -226,7 +226,8 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotPressuresService = inject(ShotPressuresService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #trialShots = injectTrialShots();
 
   // ── Opciones de unidad ──────────────────────────────────────────────────────
@@ -421,7 +422,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     super();
 
     // Cargar catálogo de equipos desde la API
-    this.#executionService
+    this.#equipmentSelectionService
       ?.loadEquipmentItemsByCategories?.([
         EquipmentTypeEnum.PIEZOELECTRIC_SENSOR,
         EquipmentTypeEnum.AMPLIFIER,
@@ -563,7 +564,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
 
     // PUT remoto si hay IDs válidos
     if (fireTrialId && serie && disparo) {
-      const response = await this.#executionService.updateShotPressures(fireTrialId, serie, disparo, payload);
+      const response = await this.#shotPressuresService.updateShotPressures(fireTrialId, serie, disparo, payload);
       this.applyRemoteShotData(response);
     }
 
@@ -584,7 +585,7 @@ export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotPressures(fireTrialId, serie, disparo);
+      const response = await this.#shotPressuresService.fetchShotPressures(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }

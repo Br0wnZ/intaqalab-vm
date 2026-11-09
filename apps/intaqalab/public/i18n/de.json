@@ -1674,6 +1674,10 @@
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Spezifische Druckwerte für den Versuch",
+        "INVALID_CONFIGURATION": "Geben Sie drei endliche, nicht negative Druckwerte ein. Der Mindestdruck darf den Maximaldruck nicht überschreiten.",
+        "WARNING_SAFETY_PRESSURE_UNAVAILABLE": "Der Sicherheitsdruck konnte nicht ermittelt werden.",
+        "WARNING_TUBE_UNAVAILABLE": "Das ausgewählte Rohr ist im Planning-TUBE-Katalog nicht verfügbar.",
+        "UNIT_LABEL": "Einheit",
         "PRESION_BUSCADA_LABEL": "Zielwert Druck",
         "PRESION_MAXIMA_LABEL": "Maximaldruck",
         "PRESION_MINIMA_LABEL": "Mindestdruck",

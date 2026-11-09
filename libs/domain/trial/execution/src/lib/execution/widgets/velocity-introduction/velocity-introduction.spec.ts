@@ -10,8 +10,8 @@ import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService, type ShotVelocitiesResponse } from '../../../services/execution.service';
-import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
+import { EquipmentSelectionService, ShotVelocitiesService } from '../../../data-access';
+import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum, type ShotVelocitiesResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { VelocityIntroduction } from './velocity-introduction';
 
@@ -230,7 +230,8 @@ describe('VelocityIntroduction', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
-        { provide: ExecutionService, useValue: mockExecutionService },
+        { provide: ShotVelocitiesService, useValue: mockExecutionService },
+        { provide: EquipmentSelectionService, useValue: mockExecutionService },
       ],
       imports: [TranslateModule.forRoot()],
     });

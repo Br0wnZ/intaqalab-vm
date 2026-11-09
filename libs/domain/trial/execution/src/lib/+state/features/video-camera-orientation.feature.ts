@@ -2,7 +2,7 @@ import { computed, inject } from '@angular/core';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
-import { ExecutionService } from '../../services/execution.service';
+import { ShotCameraOrientationService } from '../../data-access';
 import type { CalibryCameraOption, VideoCameraOrientationState } from '../execution-state.models';
 
 interface VideoCameraOrientationSlice {
@@ -28,10 +28,14 @@ const initialState: VideoCameraOrientationSlice = {
 export function withVideoCameraOrientation() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      videoCameraOrientationResponse: computed(() => safeResourceValue(executionService.shotCameraOrientationResource)),
-      isLoadingVideoCameraOrientation: computed(() => executionService.shotCameraOrientationResource.isLoading()),
-      videoCameraOrientationError: computed(() => executionService.shotCameraOrientationResource.error()),
+    withComputed((store, shotCameraOrientationService = inject(ShotCameraOrientationService)) => ({
+      videoCameraOrientationResponse: computed(() =>
+        safeResourceValue(shotCameraOrientationService.shotCameraOrientationResource),
+      ),
+      isLoadingVideoCameraOrientation: computed(() =>
+        shotCameraOrientationService.shotCameraOrientationResource.isLoading(),
+      ),
+      videoCameraOrientationError: computed(() => shotCameraOrientationService.shotCameraOrientationResource.error()),
       // Video Camera Orientation — diferencia angular calculada
       videoCameraAngularDifference: computed((): number | null => {
         const vco = store.videoCameraOrientation();
@@ -54,9 +58,9 @@ export function withVideoCameraOrientation() {
         return (angleCameraRad - angleRangeRad) * (180 / Math.PI);
       }),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotCameraOrientationService = inject(ShotCameraOrientationService)) => ({
       loadVideoCameraOrientation(fireTrialId: string, cameraId: number): void {
-        executionService.getShotCameraOrientation(fireTrialId, cameraId);
+        shotCameraOrientationService.getShotCameraOrientation(fireTrialId, cameraId);
       },
 
       /** Actualiza la selección de cámara, serie y/o disparo del widget */

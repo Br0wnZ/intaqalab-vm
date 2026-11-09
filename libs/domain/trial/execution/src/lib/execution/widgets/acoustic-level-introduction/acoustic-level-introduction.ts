@@ -21,7 +21,7 @@ import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMe
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotAcousticLevelService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { ShotAcousticLevelResponse } from '../../models/shot-acoustic-level.models';
@@ -197,7 +197,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #acousticLevelService = inject(ShotAcousticLevelService);
 
   readonly #trialShots = injectTrialShots();
 
@@ -377,7 +377,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotAcousticLevel(fireTrialId, serie, disparo);
+      const response = await this.#acousticLevelService.fetchShotAcousticLevel(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
@@ -473,7 +473,7 @@ export class AcousticLevelIntroduction extends BaseFormWidgetComponent {
 
     const fireTrialId = this.#store.fireTrialId();
     if (fireTrialId && serie && disparo) {
-      await this.#executionService.updateShotAcousticLevel(fireTrialId, serie, disparo, {
+      await this.#acousticLevelService.updateShotAcousticLevel(fireTrialId, serie, disparo, {
         soundLevelMeterId: equipo,
         soundLevelMeterX: position?.x ?? null,
         soundLevelMeterY: position?.y ?? null,

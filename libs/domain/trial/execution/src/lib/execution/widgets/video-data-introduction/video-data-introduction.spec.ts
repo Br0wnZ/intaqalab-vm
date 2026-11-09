@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentSelectionService, ShotVideoService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import {
   EquipmentMeasurementGroupEnum,
@@ -73,7 +74,7 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('uses global shot numbers without a hash in shot options', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -150,7 +151,7 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('equipmentOptions returns empty array when GET of equipment returns nothing (no hardcoded data)', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
     const executionService = TestBed.inject(ExecutionService);
 
@@ -174,7 +175,7 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('equipmentOptions builds combined options for camera, recorder, and channel based on tag (AV or C)', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.HIGH_SPEED_CAMERA]: [{ id: 'cam-av-1', label: 'Photron SA-X2 / CAM-AV-001' }],
       [EquipmentTypeEnum.CONVENTIONAL_CAMERA]: [{ id: 'cam-c-1', label: 'Sony PXW-Z280 / CAM-C-001' }],
       [EquipmentTypeEnum.RECORDER]: [{ id: 'rec-1', label: 'Fastcam R1 / REC-001' }],
@@ -269,9 +270,9 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('loads initial shot data and preserves the other video block when saving', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
-    const executionService = TestBed.inject(ExecutionService);
+    const shotVideoService = TestBed.inject(ShotVideoService);
     const store = TestBed.inject(ExecutionStore);
     const response = {
       highSpeedVideoData: {
@@ -291,8 +292,8 @@ describe('VideoDataIntroduction', () => {
       },
       observations: 'Shared observations',
     };
-    const fetchSpy = vi.spyOn(executionService, 'fetchShotVideoData').mockResolvedValue(response);
-    const updateSpy = vi.spyOn(executionService, 'updateShotVideoData').mockResolvedValue(response);
+    const fetchSpy = vi.spyOn(shotVideoService, 'fetchShotVideoData').mockResolvedValue(response);
+    const updateSpy = vi.spyOn(shotVideoService, 'updateShotVideoData').mockResolvedValue(response);
 
     store.setFireTrialId('trial-123');
     store.setOptimisticActiveShot('series-1', 'shot-1');
@@ -317,7 +318,7 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('resolves magnitudOptions from planned measures according to video type and selected series', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -404,7 +405,7 @@ describe('VideoDataIntroduction', () => {
   });
 
   it('switches resultadoObservado between number input with min/max, select, and text depending on magnitude qualificationType', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);

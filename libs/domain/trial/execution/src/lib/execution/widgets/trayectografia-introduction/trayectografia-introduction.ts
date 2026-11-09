@@ -21,7 +21,7 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotTrajectographyService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { ShotTrajectographyResponse } from '../../models/shot-trajectography.models';
@@ -191,7 +191,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotTrajectographyService = inject(ShotTrajectographyService);
   readonly #trialShots = injectTrialShots();
 
   readonly #selectionKey = computed(() =>
@@ -350,7 +350,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotTrajectography(fireTrialId, serie, disparo);
+      const response = await this.#shotTrajectographyService.fetchShotTrajectography(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
@@ -427,7 +427,7 @@ export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
         funcionamientos: state.funcionamientos,
         trazas: state.trazas,
       });
-      await this.#executionService.updateShotTrajectography(fireTrialId, serie, disparo, payload);
+      await this.#shotTrajectographyService.updateShotTrajectography(fireTrialId, serie, disparo, payload);
     }
     this.shotLock.lock();
   }

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import {
   EquipmentMagnitudeTagEnum,
   EquipmentMeasurementGroupEnum,
@@ -19,7 +19,7 @@ describe('injectAcousticLevelEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => false,
@@ -53,7 +53,7 @@ describe('injectAcousticLevelEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => true,
@@ -84,7 +84,7 @@ describe('injectAcousticLevelEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => true,
@@ -133,7 +133,7 @@ describe('injectAcousticLevelEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => true,
@@ -185,7 +185,7 @@ describe('injectAcousticLevelEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => true,

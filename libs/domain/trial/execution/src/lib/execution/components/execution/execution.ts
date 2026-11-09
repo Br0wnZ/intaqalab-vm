@@ -9,7 +9,7 @@ import { explicitEffect, injectParams } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import type { TrialSelectorDialogResult } from '../../dialogs/trial-selector-dialog';
 import { TrialSelectorDialog } from '../../dialogs/trial-selector-dialog';
 import { ExecutionPageFacade } from '../../services/execution-page-facade.service';
@@ -81,7 +81,7 @@ export class Execution implements OnDestroy {
   readonly #location = inject(Location);
   readonly #router = inject(Router);
   readonly #executionFacade = inject(ExecutionPageFacade);
-  readonly #executionService = inject(ExecutionService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #planningTrialContext = inject(PlanningTrialContextService);
   readonly #fireTrialId = injectParams('fireTrialId');
   #trialSelectorOpen = false;
@@ -103,7 +103,7 @@ export class Execution implements OnDestroy {
     if (fireTrialId) {
       this.#planningTrialContext.setTrial({ fireTrialId });
       this.#executionFacade.initialize(fireTrialId);
-      this.#executionService.getEquipmentSelector(fireTrialId);
+      this.#equipmentSelectionService.getEquipmentSelector(fireTrialId);
       return;
     }
     void this.#openTrialSelectorDialog();

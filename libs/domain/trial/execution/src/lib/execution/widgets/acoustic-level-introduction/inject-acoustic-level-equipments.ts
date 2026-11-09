@@ -1,6 +1,6 @@
 import { computed, inject, signal } from '@angular/core';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import {
   EquipmentMagnitudeTagEnum,
   EquipmentMeasurementGroupEnum,
@@ -35,7 +35,7 @@ export function injectAcousticLevelEquipments(
   const seriesFilter = optionsConfig.seriesFilter;
   const shotFilter = optionsConfig.shotFilter;
 
-  const executionService = inject(ExecutionService);
+  const executionService = inject(EquipmentSelectionService);
   const itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
 
   executionService

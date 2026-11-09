@@ -23,7 +23,7 @@ import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTrac
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotManometerPressuresService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -348,7 +348,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotManometerPressuresService = inject(ShotManometerPressuresService);
   readonly #trialShots = injectTrialShots();
 
   // ── Unit options ───────────────────────────────────────────────────────────
@@ -662,7 +662,7 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
       const payload = buildShotManometerPressuresRequest(this.#store.manometerIntroduction().manometerPressures);
 
       try {
-        await this.#executionService.updateShotManometerPressures(fireTrialId, serie, disparo, payload);
+        await this.#shotManometerPressuresService.updateShotManometerPressures(fireTrialId, serie, disparo, payload);
         this.#syncSnapshot();
         this.shotLock.lock();
       } catch (error) {
@@ -686,7 +686,11 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotManometerPressures(fireTrialId, serie, disparo);
+      const response = await this.#shotManometerPressuresService.fetchShotManometerPressures(
+        fireTrialId,
+        serie,
+        disparo,
+      );
       if (!ticket.isFresh(selectionKey)) {
         return;
       }

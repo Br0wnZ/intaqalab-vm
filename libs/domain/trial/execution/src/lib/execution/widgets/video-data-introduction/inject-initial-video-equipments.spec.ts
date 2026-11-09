@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import {
   injectInitialConventionalVideoEquipments,
@@ -21,7 +21,7 @@ describe('injectInitialVideoEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => false,
@@ -59,7 +59,7 @@ describe('injectInitialVideoEquipments', () => {
     ]);
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const selections = TestBed.runInInjectionContext(() => injectInitialHighSpeedVideoEquipments());
@@ -94,7 +94,7 @@ describe('injectInitialVideoEquipments', () => {
     ]);
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const selections = TestBed.runInInjectionContext(() => injectInitialConventionalVideoEquipments());
@@ -129,7 +129,7 @@ describe('injectInitialVideoEquipments', () => {
     ]);
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const selections = TestBed.runInInjectionContext(() => injectInitialVideoEquipments());

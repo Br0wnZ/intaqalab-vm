@@ -23,7 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService, ShotTopographyService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { EquipmentTypeEnum } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -202,7 +202,8 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotTopographyService = inject(ShotTopographyService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #trialShots = injectTrialShots();
   readonly #chronometerOptions = signal<Array<{ value: string; label: string }>>([]);
 
@@ -316,10 +317,12 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   constructor() {
     super();
 
-    this.#executionService.loadEquipmentItemsByCategories([EquipmentTypeEnum.CHRONOMETER]).then((itemsByCategory) => {
-      const items = itemsByCategory[EquipmentTypeEnum.CHRONOMETER] ?? [];
-      this.#chronometerOptions.set(items.map((item) => ({ value: item.id, label: item.label })));
-    });
+    this.#equipmentSelectionService
+      .loadEquipmentItemsByCategories([EquipmentTypeEnum.CHRONOMETER])
+      .then((itemsByCategory) => {
+        const items = itemsByCategory[EquipmentTypeEnum.CHRONOMETER] ?? [];
+        this.#chronometerOptions.set(items.map((item) => ({ value: item.id, label: item.label })));
+      });
 
     effect(() => {
       const fireTrialId = this.#store.fireTrialId();
@@ -394,7 +397,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
     }
 
     try {
-      const response = await this.#executionService.fetchShotTopography(fireTrialId, serie, disparo);
+      const response = await this.#shotTopographyService.fetchShotTopography(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
@@ -478,7 +481,7 @@ export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
     const fireTrialId = this.#store.fireTrialId();
     if (fireTrialId && serie && disparo) {
       const payload = mapTopographyStateToRequest(updates);
-      await this.#executionService.updateShotTopography(fireTrialId, serie, disparo, payload);
+      await this.#shotTopographyService.updateShotTopography(fireTrialId, serie, disparo, payload);
     }
 
     this.#syncSnapshot();

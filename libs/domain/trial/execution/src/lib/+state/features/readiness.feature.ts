@@ -2,16 +2,19 @@ import { computed, effect, inject } from '@angular/core';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import {
+  ExecutionReadinessService,
+  type ExecutionTechnicalProfile,
+  JltPreparationService,
+  type ProfileReadinessSaveResult,
+} from '../../data-access';
 import type {
-  ExecutionTechnicalProfile,
   JltPreparationData,
   JltPreparationResponse,
   ProfileReadinessFlag,
   ProfileReadinessItem,
-  ProfileReadinessSaveResult,
   ProfilesReadinessResponse,
-} from '../../services/execution.service';
-import { ExecutionService } from '../../services/execution.service';
+} from '../../execution/models';
 import type { JltStatus, TechUnitStatus } from '../execution-state.models';
 
 // ─── Mapeo TechProfile (UI) → ExecutionTechnicalProfile (API) ─────────────────
@@ -132,139 +135,152 @@ export function withReadiness() {
   return signalStoreFeature(
     withState(initialState),
 
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      // ── Global Readiness (JLT + Tech) ────────────────────────────────────────
-      isReadyForExecution: computed(() => {
-        const jlt = store.jltStatus();
-        const techReady = store.techUnits().every((u) => u.ready);
-        return jlt.sanitary && jlt.security && jlt.boat && techReady;
+    withComputed(
+      (
+        store,
+        readinessService = inject(ExecutionReadinessService),
+        jltPreparationService = inject(JltPreparationService),
+      ) => ({
+        // ── Global Readiness (JLT + Tech) ────────────────────────────────────────
+        isReadyForExecution: computed(() => {
+          const jlt = store.jltStatus();
+          const techReady = store.techUnits().every((u) => u.ready);
+          return jlt.sanitary && jlt.security && jlt.boat && techReady;
+        }),
+
+        // ── Loading / Saving states expuestos desde los resources ─────────────────
+        isLoadingReadiness: computed(() => readinessService.profilesReadinessResource.isLoading()),
+
+        isLoadingJltPreparation: computed(() => jltPreparationService.jltPreparationResource.isLoading()),
+
+        isSavingReadiness: computed(() => readinessService.setSeriesReadinessResource.isLoading()),
+
+        isSavingJltPreparation: computed(() => jltPreparationService.setJltReadinessResource.isLoading()),
+
+        isSelectingJltShot: computed(() => jltPreparationService.selectShotResource.isLoading()),
+
+        isFiringJltShot: computed(() => jltPreparationService.fireShotResource.isLoading()),
+
+        readinessLoadError: computed(() => readinessService.profilesReadinessResource.error()),
+
+        readinessSaveError: computed(() => readinessService.setSeriesReadinessResource.error()),
       }),
+    ),
 
-      // ── Loading / Saving states expuestos desde los resources ─────────────────
-      isLoadingReadiness: computed(() => executionService.profilesReadinessResource.isLoading()),
+    withMethods(
+      (
+        store,
+        readinessService = inject(ExecutionReadinessService),
+        jltPreparationService = inject(JltPreparationService),
+      ) => ({
+        // ── Widgets Local State Methods ───────────────────────────────────────────
 
-      isLoadingJltPreparation: computed(() => executionService.jltPreparationResource.isLoading()),
+        updateTechUnit(id: string, updates: Partial<TechUnitStatus>): void {
+          patchState(store, (state) => ({
+            techUnits: state.techUnits.map((u) => (u.id === id ? { ...u, ...updates } : u)),
+          }));
+        },
 
-      isSavingReadiness: computed(() => executionService.setSeriesReadinessResource.isLoading()),
+        updateJltStatus(updates: Partial<JltStatus>): void {
+          patchState(store, (state) => ({
+            jltStatus: { ...state.jltStatus, ...updates },
+          }));
+        },
 
-      isSavingJltPreparation: computed(() => executionService.setJltReadinessResource.isLoading()),
+        // ── API Methods ───────────────────────────────────────────────────────────
 
-      isSelectingJltShot: computed(() => executionService.selectShotResource.isLoading()),
+        /** Carga el readiness de todos los perfiles desde la API. */
+        loadProfilesReadiness(fireTrialId: string): void {
+          if (typeof readinessService?.getProfilesReadiness === 'function') {
+            readinessService.getProfilesReadiness(fireTrialId);
+          }
+        },
 
-      isFiringJltShot: computed(() => executionService.fireShotResource.isLoading()),
+        loadJltPreparation(fireTrialId: string, seriesId: string): void {
+          jltPreparationService.getJltPreparation(fireTrialId, seriesId);
+          jltPreparationService.jltPreparationResource?.reload?.();
+        },
 
-      readinessLoadError: computed(() => executionService.profilesReadinessResource.error()),
+        async saveJltReadiness(fireTrialId: string, seriesId: string): Promise<void> {
+          const jlt = store.jltStatus();
+          const body = {
+            sanitaryServicesReady: jlt.sanitary,
+            securityReady: jlt.security,
+            vesselReady: jlt.boat,
+            observations: jlt.observations || null,
+          };
+          if (typeof jltPreparationService?.updateJltReadiness === 'function') {
+            await jltPreparationService.updateJltReadiness(fireTrialId, seriesId, body);
+          } else {
+            jltPreparationService.setJltReadiness(fireTrialId, seriesId, body);
+          }
+        },
 
-      readinessSaveError: computed(() => executionService.setSeriesReadinessResource.error()),
-    })),
+        selectJltShot(fireTrialId: string, shotId: string): void {
+          jltPreparationService.selectShot(fireTrialId, shotId);
+        },
 
-    withMethods((store, executionService = inject(ExecutionService)) => ({
-      // ── Widgets Local State Methods ───────────────────────────────────────────
+        fireJltShot(fireTrialId: string): void {
+          jltPreparationService.fireShot(fireTrialId);
+        },
 
-      updateTechUnit(id: string, updates: Partial<TechUnitStatus>): void {
-        patchState(store, (state) => ({
-          techUnits: state.techUnits.map((u) => (u.id === id ? { ...u, ...updates } : u)),
-        }));
-      },
+        /**
+         * Envía peticiones PUT por cada serie para actualizar el readiness de un perfil concreto.
+         * @param fireTrialId UUID del ensayo
+         * @param profile Perfil técnico en formato API (VELOCITIES, PRESSURES, etc.)
+         * @param seriesReadiness Array con el estado de preparación por serie
+         */
+        async saveProfileReadiness(
+          fireTrialId: string,
+          profile: ExecutionTechnicalProfile,
+          seriesReadiness: Array<{ seriesId: string; isReady: boolean; observations?: string }>,
+        ): Promise<ProfileReadinessSaveResult> {
+          const result = await readinessService.setProfileReadiness(fireTrialId, profile, seriesReadiness);
+          if (result.updatedSeries.length === 0) return result;
 
-      updateJltStatus(updates: Partial<JltStatus>): void {
-        patchState(store, (state) => ({
-          jltStatus: { ...state.jltStatus, ...updates },
-        }));
-      },
+          const current = store.profilesReadiness() ?? [];
+          const idx = current.findIndex((p) => p.profile === profile);
+          const currentSeries = idx >= 0 ? current[idx].seriesReadiness : [];
+          const mergedSeriesById = new Map(currentSeries.map((serie) => [serie.seriesId, serie]));
+          for (const updatedSerie of result.updatedSeries) {
+            mergedSeriesById.set(updatedSerie.seriesId, updatedSerie);
+          }
+          const item: ProfileReadinessItem = { profile, seriesReadiness: [...mergedSeriesById.values()] };
+          const updated = idx >= 0 ? current.map((p, i) => (i === idx ? item : p)) : [...current, item];
 
-      // ── API Methods ───────────────────────────────────────────────────────────
+          patchState(store, {
+            profilesReadiness: updated,
+            techUnits: mapProfilesReadinessToTechUnits(updated),
+          });
+          return result;
+        },
 
-      /** Carga el readiness de todos los perfiles desde la API. */
-      loadProfilesReadiness(fireTrialId: string): void {
-        if (typeof executionService?.getProfilesReadiness === 'function') {
-          executionService.getProfilesReadiness(fireTrialId);
-        }
-      },
+        /**
+         * Resetea el estado del PUT para permitir sucesivos guardados.
+         */
+        resetSaveProfileReadiness(): void {
+          readinessService.resetSetProfileReadiness();
+        },
 
-      loadJltPreparation(fireTrialId: string, seriesId: string): void {
-        executionService.getJltPreparation(fireTrialId, seriesId);
-        executionService.jltPreparationResource?.reload?.();
-      },
-
-      async saveJltReadiness(fireTrialId: string, seriesId: string): Promise<void> {
-        const jlt = store.jltStatus();
-        const body = {
-          sanitaryServicesReady: jlt.sanitary,
-          securityReady: jlt.security,
-          vesselReady: jlt.boat,
-          observations: jlt.observations || null,
-        };
-        if (typeof executionService?.updateJltReadiness === 'function') {
-          await executionService.updateJltReadiness(fireTrialId, seriesId, body);
-        } else {
-          executionService.setJltReadiness(fireTrialId, seriesId, body);
-        }
-      },
-
-      selectJltShot(fireTrialId: string, shotId: string): void {
-        executionService.selectShot(fireTrialId, shotId);
-      },
-
-      fireJltShot(fireTrialId: string): void {
-        executionService.fireShot(fireTrialId);
-      },
-
-      /**
-       * Envía peticiones PUT por cada serie para actualizar el readiness de un perfil concreto.
-       * @param fireTrialId UUID del ensayo
-       * @param profile Perfil técnico en formato API (VELOCITIES, PRESSURES, etc.)
-       * @param seriesReadiness Array con el estado de preparación por serie
-       */
-      async saveProfileReadiness(
-        fireTrialId: string,
-        profile: ExecutionTechnicalProfile,
-        seriesReadiness: Array<{ seriesId: string; isReady: boolean; observations?: string }>,
-      ): Promise<ProfileReadinessSaveResult> {
-        const result = await executionService.setProfileReadiness(fireTrialId, profile, seriesReadiness);
-        if (result.updatedSeries.length === 0) return result;
-
-        const current = store.profilesReadiness() ?? [];
-        const idx = current.findIndex((p) => p.profile === profile);
-        const currentSeries = idx >= 0 ? current[idx].seriesReadiness : [];
-        const mergedSeriesById = new Map(currentSeries.map((serie) => [serie.seriesId, serie]));
-        for (const updatedSerie of result.updatedSeries) {
-          mergedSeriesById.set(updatedSerie.seriesId, updatedSerie);
-        }
-        const item: ProfileReadinessItem = { profile, seriesReadiness: [...mergedSeriesById.values()] };
-        const updated = idx >= 0 ? current.map((p, i) => (i === idx ? item : p)) : [...current, item];
-
-        patchState(store, {
-          profilesReadiness: updated,
-          techUnits: mapProfilesReadinessToTechUnits(updated),
-        });
-        return result;
-      },
-
-      /**
-       * Resetea el estado del PUT para permitir sucesivos guardados.
-       */
-      resetSaveProfileReadiness(): void {
-        executionService.resetSetProfileReadiness();
-      },
-
-      /** Sincroniza profilesReadiness en el store a partir de la respuesta API. */
-      _patchProfilesReadiness(data: ProfilesReadinessResponse): void {
-        const items = data?.profilesReadiness ?? [];
-        patchState(store, {
-          profilesReadiness: items,
-          techUnits: mapProfilesReadinessToTechUnits(items),
-        });
-      },
-    })),
+        /** Sincroniza profilesReadiness en el store a partir de la respuesta API. */
+        _patchProfilesReadiness(data: ProfilesReadinessResponse): void {
+          const items = data?.profilesReadiness ?? [];
+          patchState(store, {
+            profilesReadiness: items,
+            techUnits: mapProfilesReadinessToTechUnits(items),
+          });
+        },
+      }),
+    ),
 
     withHooks({
       onInit(store) {
-        const executionService = inject(ExecutionService);
+        const readinessService = inject(ExecutionReadinessService);
+        const jltPreparationService = inject(JltPreparationService);
 
         // ── GET: Sincronizar profilesReadiness cuando llega la respuesta ─────────
         effect(() => {
-          const data = safeResourceValue(executionService.profilesReadinessResource);
+          const data = safeResourceValue(readinessService.profilesReadinessResource);
           if (data) {
             store._patchProfilesReadiness(data);
           }
@@ -272,7 +288,7 @@ export function withReadiness() {
 
         // ── W2 GET: Sincronizar estado JLT + unidades técnicas ──────────────────
         effect(() => {
-          const data = safeResourceValue(executionService.jltPreparationResource);
+          const data = safeResourceValue(jltPreparationService.jltPreparationResource);
           const storeAny = store as unknown as { activeSerieId?: () => string | null };
           const preparation = data ? selectJltPreparation(data, storeAny.activeSerieId?.() ?? null) : null;
           if (preparation) {
@@ -290,9 +306,9 @@ export function withReadiness() {
 
         // ── W2 PUT/POST: recargar estado dinámico tras acciones exitosas ───────
         effect(() => {
-          const jltSaveResolved = executionService.setJltReadinessResource.status() === 'resolved';
-          const selectShotResolved = executionService.selectShotResource.status() === 'resolved';
-          const fireShotResolved = executionService.fireShotResource.status() === 'resolved';
+          const jltSaveResolved = jltPreparationService.setJltReadinessResource.status() === 'resolved';
+          const selectShotResolved = jltPreparationService.selectShotResource.status() === 'resolved';
+          const fireShotResolved = jltPreparationService.fireShotResource.status() === 'resolved';
           if (!jltSaveResolved && !selectShotResolved && !fireShotResolved) {
             return;
           }

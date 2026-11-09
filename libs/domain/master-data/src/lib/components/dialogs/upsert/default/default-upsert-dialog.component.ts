@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
+import { resolveLocalizedText } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
@@ -97,8 +98,8 @@ export class MasterDataDefaultUpsertDialogComponent {
   constructor() {
     if (this.data !== null) {
       this.formModel.set({
-        nameEs: this.data.name.es,
-        nameEn: this.data.name.en,
+        nameEs: resolveLocalizedText(this.data.name, 'es-ES'),
+        nameEn: resolveLocalizedText(this.data.name, 'en-US'),
       });
     }
 

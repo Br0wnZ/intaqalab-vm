@@ -131,6 +131,21 @@ export function toUnitOptions(units: MeasureUnitEnum[]): { value: string; label:
   return units.map((u) => ({ value: u, label: MEASURE_UNIT_LABELS[u] }));
 }
 
+/** Opciones de todas las unidades agrupadas por magnitud. */
+export const MEASURE_UNIT_OPTIONS_BY_CATEGORY = {
+  speed: toUnitOptions([MeasureUnitEnum.M_S, MeasureUnitEnum.KM_H]),
+  rotationalSpeed: toUnitOptions([MeasureUnitEnum.RPS, MeasureUnitEnum.RPM]),
+  pressure: toUnitOptions([MeasureUnitEnum.BAR, MeasureUnitEnum.MPA, MeasureUnitEnum.KG_CM2]),
+  temperature: toUnitOptions([MeasureUnitEnum.CELSIUS, MeasureUnitEnum.KELVIN]),
+  time: toUnitOptions([MeasureUnitEnum.MS, MeasureUnitEnum.S]),
+  weight: toUnitOptions([MeasureUnitEnum.G, MeasureUnitEnum.KG]),
+  angle: toUnitOptions([MeasureUnitEnum.DEGREES, MeasureUnitEnum.MILS, MeasureUnitEnum.RAD]),
+  distance: toUnitOptions([MeasureUnitEnum.UM, MeasureUnitEnum.MM, MeasureUnitEnum.M, MeasureUnitEnum.KM]),
+  acousticLevel: toUnitOptions([MeasureUnitEnum.DB]),
+  cadence: toUnitOptions([MeasureUnitEnum.SPM]),
+  quantity: toUnitOptions([MeasureUnitEnum.QUANTITY]),
+} as const;
+
 // ── Mapa magnitud → opciones de unidad (≡ ShotConditionsUnits del swagger) ──
 
 /**

@@ -43,6 +43,7 @@ testem.log
 sync.ffs_db
 apis/*
 docs/presentations/*
+docs/plans/*
 functionals/*
 openwiki/*
 start-headroom.sh

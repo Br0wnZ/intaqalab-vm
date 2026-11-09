@@ -6,6 +6,10 @@ Guía para construir suites de tests unitarios e integrados con Vitest + Angular
 
 ## 1. Setup y Providers de Prueba
 
+> [!WARNING]
+> **NUNCA proveer ni inyectar `ExecutionService` en tests unitarios.**
+> `ExecutionService` está `@deprecated`. Proveer y mockear siempre el servicio de dominio específico (`Shot<Resource>Service`, `EquipmentSelectionService`, etc.) de `data-access` (ADR-025).
+
 ```typescript
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
@@ -13,7 +17,9 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { provideTestingEnvironment } from '@intaqalab/utils/testing';
+import { provideTestingEnvironment } from '@intaqalab/config';
+
+import { Shot<Resource>Service } from '../../../data-access';
 
 const mockWidgetStateService = {
   updateWidgetFormState: () => { /* noop */ },
@@ -34,7 +40,7 @@ describe('<Widget>', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
-        ExecutionService,
+        Shot<Resource>Service,
         { provide: TrialsDataService, useClass: MockTrialsDataService },
         ...customProviders,
       ],
@@ -52,10 +58,10 @@ describe('<Widget>', () => {
     expect(fixture.componentInstance.formState().widgetId).toBe('test-widget');
   });
 
-  it('saveForm calls ExecutionService with correct params', async () => {
+  it('saveForm calls Shot<Resource>Service with correct params', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
-    const updateSpy = vi.spyOn(execService, 'update<Resource>').mockResolvedValue(mockResponse);
+    const domainService = TestBed.inject(Shot<Resource>Service);
+    const updateSpy = vi.spyOn(domainService, 'updateShot<Resource>').mockResolvedValue(mockResponse);
 
     TestBed.inject(ExecutionStore).setFireTrialId('trial-123');
     fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'disparo-1' });
@@ -67,8 +73,8 @@ describe('<Widget>', () => {
 
   it('saveForm handles network errors gracefully', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
-    vi.spyOn(execService, 'update<Resource>').mockRejectedValue(new Error('Network error'));
+    const domainService = TestBed.inject(Shot<Resource>Service);
+    vi.spyOn(domainService, 'updateShot<Resource>').mockRejectedValue(new Error('Network error'));
 
     TestBed.inject(ExecutionStore).setFireTrialId('trial-123');
     fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'disparo-1' });
@@ -78,15 +84,15 @@ describe('<Widget>', () => {
 
   it('fetches data on disparo change and applies to tabs and store', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
-    vi.spyOn(execService, 'fetch<Resource>').mockResolvedValue(mockResponse);
+    const domainService = TestBed.inject(Shot<Resource>Service);
+    vi.spyOn(domainService, 'fetchShot<Resource>').mockResolvedValue(mockResponse);
 
     TestBed.inject(ExecutionStore).setFireTrialId('trial-123');
     fixture.componentInstance.onSerieSelected('serie-1');
     fixture.componentInstance.onDisparoSelected('disparo-1');
 
     await vi.waitFor(() => {
-      expect(execService.fetch<Resource>).toHaveBeenCalledWith('trial-123', 'serie-1', 'disparo-1');
+      expect(domainService.fetchShot<Resource>).toHaveBeenCalledWith('trial-123', 'serie-1', 'disparo-1');
     });
 
     expect(TestBed.inject(ExecutionStore).<widgetCamelName>().identificacion.componente).toBe('granada-01');
@@ -94,8 +100,8 @@ describe('<Widget>', () => {
 
   it('saveForm delegates save() to child tabs after successful PUT', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
-    vi.spyOn(execService, 'update<Resource>').mockResolvedValue(mockResponse);
+    const domainService = TestBed.inject(Shot<Resource>Service);
+    vi.spyOn(domainService, 'updateShot<Resource>').mockResolvedValue(mockResponse);
 
     const identTab = fixture.componentInstance.identTab();
     const pesosTab = fixture.componentInstance.pesosTab();

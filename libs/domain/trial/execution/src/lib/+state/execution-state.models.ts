@@ -1,4 +1,4 @@
-import type { CadenceUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+import type { CadenceUnitEnum, PressureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 
 import type {
   EquipmentItemSelection,
@@ -608,8 +608,8 @@ export interface OverpressureInfoState {
   presionMinima: number | null;
   /** Presión de referencia introducida por el ingeniero de ensayos */
   presionRef: number | null;
-  /** Unidad de presión global del widget (MPa, bar, kPa, psi) */
-  unidadPresion: string;
+  /** Unidad de presión común del contrato API. */
+  unidadPresion: PressureUnitEnum;
   /** Presión de seguridad procedente de Calibry (tubo seleccionado) */
   presionSeguridad: number | null;
 }

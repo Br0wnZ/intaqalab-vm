@@ -8,8 +8,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
+import { EquipmentSelectionService, type EquipmentSelectorResponse } from '../../data-access';
 import { EquipmentSelectorPlanningService } from '../../services/equipment-selector-planning.service';
-import { type EquipmentSelectorResponse, ExecutionService } from '../../services/execution.service';
 import { EquipmentMagnitudeTagEnum, type EquipmentSelectorDialogData, EquipmentTypeEnum } from '../models';
 import { EquipmentSelectorDialog } from './equipment-selector-dialog';
 
@@ -123,7 +123,7 @@ describe('EquipmentSelectorDialog', () => {
             return auth;
           },
         },
-        { provide: ExecutionService, useValue: executionService },
+        { provide: EquipmentSelectionService, useValue: executionService },
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
@@ -525,7 +525,7 @@ describe('EquipmentSelectorDialog', () => {
             return auth;
           },
         },
-        { provide: ExecutionService, useValue: mockService },
+        { provide: EquipmentSelectionService, useValue: mockService },
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
         { provide: MAT_DIALOG_DATA, useValue: mockData },
       ],

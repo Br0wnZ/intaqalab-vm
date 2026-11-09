@@ -26,13 +26,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import {
-  type ArmamentEquipmentItem,
-  ExecutionService,
-  type PlanningArmamentResponse,
-} from '../../../services/execution.service';
+import { ArmamentCatalogService, ShotArmamentService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
-import type { ArmamentEquipmentDenomination } from '../../models';
+import type { ArmamentEquipmentDenomination, ArmamentEquipmentItem, PlanningArmamentResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -236,7 +232,8 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #dialog = inject(MatDialog);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotArmamentService = inject(ShotArmamentService);
+  readonly #armamentCatalogService = inject(ArmamentCatalogService);
   readonly #trialShots = injectTrialShots();
   readonly #weaponItems = signal<ArmamentEquipmentItem[]>([]);
   readonly #weaponDenominations = signal<ArmamentEquipmentDenomination[]>([]);
@@ -404,7 +401,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const tubeId = this.#numericEquipmentId(tubo);
     if (fireTrialId && serie && disparo && weaponId !== null && (this.tubeDisabled() || tubeId !== null)) {
       try {
-        await this.#executionService.updateShotArmament(fireTrialId, serie, disparo, {
+        await this.#shotArmamentService.updateShotArmament(fireTrialId, serie, disparo, {
           weaponId,
           tubeId,
           observations: observations || null,
@@ -489,17 +486,17 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   }
 
   async #loadInitialData(fireTrialId: string): Promise<void> {
-    const weapons = await this.#executionService.loadArmamentEquipmentItems('WEAPON');
+    const weapons = await this.#armamentCatalogService.loadArmamentEquipmentItems('WEAPON');
     const [tubes, planningArmament, weaponDenominations, mortarDenominations] = await Promise.all([
-      this.#executionService.loadArmamentEquipmentItems('TUBE'),
-      this.#executionService.fetchPlanningArmament(fireTrialId),
-      this.#executionService.loadArmamentWeaponDenominations(),
-      this.#executionService.loadArmamentDenominations('MORTAR'),
+      this.#armamentCatalogService.loadArmamentEquipmentItems('TUBE'),
+      this.#shotArmamentService.fetchPlanningArmament(fireTrialId),
+      this.#armamentCatalogService.loadArmamentWeaponDenominations(),
+      this.#armamentCatalogService.loadArmamentDenominations('MORTAR'),
     ]);
     const hasMortars = planningArmament.series?.some((serie) =>
       serie.shots?.some((shot) => (shot.armament?.itemType ?? shot.armament?.weaponType)?.toUpperCase() === 'MORTAR'),
     );
-    const mortars = hasMortars ? await this.#executionService.loadArmamentEquipmentItems('MORTAR') : [];
+    const mortars = hasMortars ? await this.#armamentCatalogService.loadArmamentEquipmentItems('MORTAR') : [];
     this.#weaponItems.set([...weapons, ...mortars]);
     this.#weaponDenominations.set(weaponDenominations);
     this.#mortarDenominations.set(mortarDenominations);
@@ -540,7 +537,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     const ticket = this.#selectionGuard.begin();
 
     try {
-      const response = await this.#executionService.fetchShotArmament(fireTrialId, serie, disparo);
+      const response = await this.#shotArmamentService.fetchShotArmament(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) return;
       const armament = response.armamentData;
       this.formModel.update((formValue) => ({
@@ -659,7 +656,7 @@ export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
     if (familyId === undefined || this.tubeDisabled()) return;
 
     try {
-      const denominations = await this.#executionService.loadArmamentDenominations('TUBE', familyId);
+      const denominations = await this.#armamentCatalogService.loadArmamentDenominations('TUBE', familyId);
       if (this.#tubeDenominationRequestKey() !== requestKey) return;
       this.#tubeDenominations.set(denominations);
     } catch {

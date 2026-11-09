@@ -1674,6 +1674,10 @@
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Test pressure management: maximum, minimum, reference and safety pressure",
+        "INVALID_CONFIGURATION": "Enter three finite non-negative pressures, with minimum pressure not exceeding maximum pressure.",
+        "WARNING_SAFETY_PRESSURE_UNAVAILABLE": "Safety pressure could not be determined.",
+        "WARNING_TUBE_UNAVAILABLE": "The selected tube is not available in the Planning TUBE catalog",
+        "UNIT_LABEL": "Unit",
         "PRESION_BUSCADA_LABEL": "Wanted Pres.",
         "PRESION_MAXIMA_LABEL": "Maximum Pressure",
         "PRESION_MINIMA_LABEL": "Minimum Pressure",

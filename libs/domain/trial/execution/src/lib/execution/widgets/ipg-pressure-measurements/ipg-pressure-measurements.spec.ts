@@ -11,6 +11,7 @@ import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotIpgPressuresService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { IpgPressureMeasurements } from './ipg-pressure-measurements';
@@ -70,7 +71,7 @@ describe('IpgPressureMeasurements', () => {
   it('saveForm persists data to the store and calls updateShotIpgPressures', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotIpgPressuresService);
 
     store.setFireTrialId('trial-123');
     fixture.componentInstance['selectorFormModel'].set({ serie: 'serie-1', disparo: 'shot-1' });
@@ -136,7 +137,7 @@ describe('IpgPressureMeasurements', () => {
 
   it('calls fetchShotIpgPressures on selection when fireTrialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotIpgPressuresService);
     const store = TestBed.inject(ExecutionStore);
 
     const fetchSpy = vi.spyOn(execService, 'fetchShotIpgPressures').mockResolvedValue({

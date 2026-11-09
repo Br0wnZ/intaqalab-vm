@@ -10,7 +10,7 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotTrajectographyService } from '../../../data-access';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { TrayectografiaIntroductionWidget } from './trayectografia-introduction';
 
@@ -92,7 +92,7 @@ describe('TrayectografiaIntroductionWidget', () => {
 
   it('calls fetchShotTrajectography on selection when trialId, serie and shot are present', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotTrajectographyService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotTrajectography').mockResolvedValue({
       trajectographyData: {

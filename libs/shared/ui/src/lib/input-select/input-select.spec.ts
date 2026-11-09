@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { LocaleDecimalInputDirective } from '@intaqalab/utils';
+import type { AppLocale } from '@intaqalab/utils';
+import { LOCALE_SIGNAL, LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,7 +11,7 @@ import { InputSelectInput } from './input-select-input.directive';
 @Component({
   imports: [InputSelect, InputSelectInput],
   template: `
-    <ui-input-select label="Velocidad" [opciones]="opciones" [value]="value()" [readOnly]="readOnly()">
+    <ui-input-select label="Velocidad" [opciones]="opciones" [readOnly]="readOnly()" [(value)]="value">
       <input inputSelectInput />
     </ui-input-select>
   `,
@@ -46,7 +47,7 @@ class ReadonlyValueWithSelectableUnitHost {
 @Component({
   imports: [InputSelect, InputSelectInput, LocaleDecimalInputDirective],
   template: `
-    <ui-input-select label="Velocidad" [opciones]="opciones" [value]="value()">
+    <ui-input-select label="Velocidad" [opciones]="opciones" [(value)]="value">
       <input inputSelectInput libLocalDecimal [decimals]="2" />
     </ui-input-select>
   `,
@@ -82,6 +83,31 @@ describe('InputSelect', () => {
   });
 
   describe('Initial rendering', () => {
+    it('should update the default placeholder when the locale changes', async () => {
+      const locale = signal<AppLocale>('es-ES');
+      const { fixture } = await render(InputSelect, {
+        componentInputs: { label: 'Peso', floatLabel: 'always' },
+        providers: [{ provide: LOCALE_SIGNAL, useValue: locale }],
+      });
+
+      expect(screen.getByRole('textbox')).toHaveAttribute('placeholder', '0,00');
+      locale.set('en-US');
+      await fixture.whenStable();
+      expect(screen.getByRole('textbox')).toHaveAttribute('placeholder', '0.00');
+    });
+
+    it('should update the projected default placeholder when the locale changes', async () => {
+      const locale = signal<AppLocale>('es-ES');
+      const { fixture } = await render(ProjectedInputHost, {
+        providers: [{ provide: LOCALE_SIGNAL, useValue: locale }],
+      });
+
+      expect(screen.getByRole('textbox')).toHaveAttribute('placeholder', '0,00');
+      locale.set('en-US');
+      await fixture.whenStable();
+      expect(screen.getByRole('textbox')).toHaveAttribute('placeholder', '0.00');
+    });
+
     it('should create the component', async () => {
       const { fixture } = await render(InputSelect, {
         componentInputs: defaultInputs,
@@ -212,6 +238,44 @@ describe('InputSelect', () => {
   });
 
   describe('Two-way binding with model', () => {
+    it.each(['es-ES', 'en-US'] as const)(
+      'should emit ungrouped canonical strings while displaying %s decimals',
+      async (locale) => {
+        const { fixture } = await render(InputSelect, {
+          componentInputs: { ...defaultInputs, value: { value: '', unit: 'kg' } },
+          providers: [{ provide: LOCALE_SIGNAL, useValue: signal<AppLocale>(locale) }],
+        });
+        const user = userEvent.setup();
+        await user.type(screen.getByRole('textbox'), locale === 'es-ES' ? '1234,56789' : '1234.56789');
+        await user.tab();
+
+        expect(fixture.componentInstance.value()).toEqual({ value: '1234.56789', unit: 'kg' });
+        fixture.componentInstance.onUnitChange('g');
+        expect(fixture.componentInstance.value()).toEqual({ value: '1234.56789', unit: 'g' });
+        expect(screen.getByRole('textbox')).toHaveValue(locale === 'es-ES' ? '1234,56789' : '1,234.56789');
+
+        await user.clear(screen.getByRole('textbox'));
+        expect(fixture.componentInstance.value()).toEqual({ value: '', unit: 'g' });
+      },
+    );
+
+    it.each([ProjectedInputHost, ProjectedInputWithDirectiveHost])(
+      'should emit canonical strings from projected inputs in $name',
+      async (host) => {
+        const { fixture } = await render(host);
+        const component = fixture.componentInstance;
+        if (component instanceof ProjectedInputHost) component.readOnly.set(false);
+        component.value.set({ value: '', unit: 'm/s' });
+        await fixture.whenStable();
+        const user = userEvent.setup();
+        await user.type(screen.getByRole('textbox'), '3,456789');
+        await user.tab();
+
+        expect(component.value()).toEqual({ value: '3.456789', unit: 'm/s' });
+        expect(screen.getByRole('textbox')).toHaveValue('3,456789');
+      },
+    );
+
     it('should reflect initial model value in input', async () => {
       const { fixture } = await render(InputSelect, {
         componentInputs: { ...defaultInputs, value: { value: '10', unit: 'kg' } },

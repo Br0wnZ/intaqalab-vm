@@ -8,7 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMaoTopographyService } from '../../../data-access';
 import type { MaoTopographyMassConfigDialogData } from './mao-topography-mass-config-dialog';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
 
@@ -59,7 +59,7 @@ describe('MaoTopographyMassConfigDialog', () => {
         provideHttpClientTesting(),
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: ExecutionService, useValue: mockExecutionService },
+        { provide: ShotMaoTopographyService, useValue: mockExecutionService },
       ],
       imports: [TranslateModule.forRoot()],
     });

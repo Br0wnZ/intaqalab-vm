@@ -6,9 +6,9 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.3.3",
-      "lastUpdated": "2026-11-04",
-      "checksum": "22df4a7cb19ab25c",
+      "version": "1.4.0",
+      "lastUpdated": "2026-11-05",
+      "checksum": "244dbadae6840ce6",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
@@ -63,9 +63,9 @@
       "description": "Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern."
     },
     "execution-domain-expert": {
-      "version": "1.3.0",
-      "lastUpdated": "2026-11-03",
-      "checksum": "b1c676226540b688",
+      "version": "1.4.0",
+      "lastUpdated": "2026-11-05",
+      "checksum": "d5750d69cf6113e1",
       "path": ".agents/skills/execution-domain-expert/SKILL.md",
       "description": "Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle."
     },
@@ -154,16 +154,16 @@
       "description": "NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities."
     },
     "swagger-api-architect": {
-      "version": "1.2.2",
-      "lastUpdated": "2026-11-04",
-      "checksum": "6f2b1ee5630e82a5",
+      "version": "1.2.3",
+      "lastUpdated": "2026-11-05",
+      "checksum": "30add4ad163185b8",
       "path": ".agents/skills/swagger-api-architect/SKILL.md",
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
     "ui-design-engineer": {
-      "version": "1.0.3",
-      "lastUpdated": "2026-10-24",
-      "checksum": "e74062abd19816ef",
+      "version": "1.0.4",
+      "lastUpdated": "2026-11-05",
+      "checksum": "9a1ec890b6dde74c",
       "path": ".agents/skills/ui-design-engineer/SKILL.md",
       "description": "Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards."
     },
@@ -175,9 +175,9 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.3.2",
-      "lastUpdated": "2026-11-04",
-      "checksum": "f815cdab87b9f562",
+      "version": "1.4.0",
+      "lastUpdated": "2026-11-05",
+      "checksum": "26139e9956adfcb1",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
       "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     }

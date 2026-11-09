@@ -23,7 +23,7 @@ import { firstValueFrom } from 'rxjs';
 
 import type { MaoTopographyState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMaoTopographyService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { ShotMaoTopographyResponse } from '../../models/shot-mao-topography.models';
@@ -192,7 +192,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotMaoTopographyService = inject(ShotMaoTopographyService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
   readonly #conditionsService = inject(PlanningConditionsService);
@@ -349,7 +349,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
     this.#conditionsService.reload();
 
     try {
-      const response = await this.#executionService.fetchShotMaoTopography(fireTrialId, serie, disparo);
+      const response = await this.#shotMaoTopographyService.fetchShotMaoTopography(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
@@ -451,7 +451,7 @@ export class MaoTopography extends BaseFormWidgetComponent {
 
     const fireTrialId = this.#store.fireTrialId();
     if (fireTrialId && serie && disparo) {
-      await this.#executionService.updateShotMaoTopography(fireTrialId, serie, disparo, {
+      await this.#shotMaoTopographyService.updateShotMaoTopography(fireTrialId, serie, disparo, {
         pieceX: xPieza,
         pieceY: yPieza,
         pieceZ: zPieza,

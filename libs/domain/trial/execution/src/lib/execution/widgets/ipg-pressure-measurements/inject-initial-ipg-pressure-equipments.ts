@@ -1,10 +1,10 @@
 import { computed, inject } from '@angular/core';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { EquipmentMeasurementGroupEnum, type EquipmentSelectionItem } from '../../models';
 
 export function injectInitialIpgPressureEquipments() {
-  const executionService = inject(ExecutionService);
+  const executionService = inject(EquipmentSelectionService);
 
   return computed<readonly EquipmentSelectionItem[]>(() => {
     const resource = executionService.equipmentSelectorResource;

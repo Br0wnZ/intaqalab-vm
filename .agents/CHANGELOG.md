@@ -185,3 +185,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.3.3] - 2026-11-04
 
 - ADR-024: Fast sensor feedback and sub-agent context sharding
+
+## [execution-domain-expert - 1.4.0] - 2026-11-05
+
+- Add ADR-025 execution service decomposition guidelines and canonical structure
+
+## [widget-service-integration - 1.4.0] - 2026-11-05
+
+- Update widget integration guides and references to use ADR-025 decomposed domain services
+
+## [swagger-api-architect - 1.2.3] - 2026-11-05
+
+- Add ADR-025 guidance for execution API endpoints decomposition
+
+## [ui-design-engineer - 1.0.4] - 2026-11-05
+
+- Add ADR-025 note on dedicated domain services for widget HTTP mutations
+
+## [AGENTS.md - 1.4.0] - 2026-11-05
+
+- Add ADR-025 Execution Service Decomposition architecture rule and routing

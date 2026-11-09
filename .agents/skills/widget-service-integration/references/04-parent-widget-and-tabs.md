@@ -62,7 +62,7 @@ Guía de arquitectura e implementación para widgets de ejecución (`BaseFormWid
               [class]="activeTab() === tab
                 ? 'bg-[var(--inta-button)] text-white'
                 : 'border border-violet-300 text-violet-700 hover:bg-violet-50'"
-              (click)="activeTab.set($any(tab))">
+              (click)="activeTab.set(tab as TabType)">
               {{ 'TRIAL_EXECUTION.WIDGETS.<WIDGET_KEY>.TAB_' + tab.toUpperCase() | translate }}
             </button>
           }
@@ -84,7 +84,7 @@ export class <Widget> extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shot<Resource>Service = inject(Shot<Resource>Service);
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
 
   protected readonly activeTab = signal<TabType>('identificacion');
@@ -213,7 +213,7 @@ export class <Widget> extends BaseFormWidgetComponent {
       });
 
       try {
-        await this.#executionService.update<Resource>(fireTrialId, serie, disparo, payload);
+        await this.#shot<Resource>Service.updateShot<Resource>(fireTrialId, serie, disparo, payload);
         this.identTab()?.save();
         this.pesosTab()?.save();
         this.acondTab()?.save();
@@ -251,7 +251,7 @@ export class <Widget> extends BaseFormWidgetComponent {
     if (!fireTrialId || !serie || !disparo) return;
 
     try {
-      const response = await this.#executionService.fetch<Resource>(fireTrialId, serie, disparo);
+      const response = await this.#shot<Resource>Service.fetchShot<Resource>(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) return;
       this.#applyRemoteShotData(response);
     } catch {

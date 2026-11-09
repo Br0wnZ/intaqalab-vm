@@ -3,8 +3,8 @@ import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotJltMaoService } from '../../data-access';
 import type { ShotJltMaoRequest } from '../../execution/models/shot-jlt-mao.models';
-import { ExecutionService } from '../../services/execution.service';
 import type { CalibryPiquetaOption, JltMaoState, MaoTopographyState } from '../execution-state.models';
 
 interface JltMaoSlice {
@@ -42,9 +42,13 @@ export function withJltMao() {
   return signalStoreFeature(
     withState(initialState),
     withComputed(
-      (store, executionService = inject(ExecutionService), conditionsService = inject(PlanningConditionsService)) => ({
-        isLoadingJltMao: computed(() => executionService.shotJltMaoResource.isLoading()),
-        isSavingJltMao: computed(() => executionService.updateShotJltMaoResource.isLoading()),
+      (
+        store,
+        shotJltMaoService = inject(ShotJltMaoService),
+        conditionsService = inject(PlanningConditionsService),
+      ) => ({
+        isLoadingJltMao: computed(() => shotJltMaoService.shotJltMaoResource.isLoading()),
+        isSavingJltMao: computed(() => shotJltMaoService.updateShotJltMaoResource.isLoading()),
         jltMaoPlannedOlt: computed((): number | null => {
           const s = store.jltMao();
           if (!s.serie || !s.disparo) {
@@ -85,10 +89,10 @@ export function withJltMao() {
         }),
       }),
     ),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotJltMaoService = inject(ShotJltMaoService)) => ({
       async loadShotJltMao(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {
-          const response = await executionService.fetchShotJltMao(fireTrialId, seriesId, shotId);
+          const response = await shotJltMaoService.fetchShotJltMao(fireTrialId, seriesId, shotId);
           if (response?.jltMaoData) {
             const data = response.jltMaoData;
             patchState(store, (state) => ({
@@ -119,7 +123,7 @@ export function withJltMao() {
         shotId: string,
         requestBody: ShotJltMaoRequest,
       ): Promise<void> {
-        await executionService.updateShotJltMao(fireTrialId, seriesId, shotId, requestBody);
+        await shotJltMaoService.updateShotJltMao(fireTrialId, seriesId, shotId, requestBody);
       },
       /** Actualiza los campos del widget JLT MAO */
       updateJltMao(updates: Partial<JltMaoState>): void {

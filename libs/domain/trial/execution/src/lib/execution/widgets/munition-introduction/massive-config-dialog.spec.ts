@@ -11,7 +11,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMunitionService } from '../../../data-access';
 import type { MunitionConditioningBulkConfigurationResponse } from '../../models';
 import { MassiveConfigDialog, type MassiveConfigDialogData } from './massive-config-dialog';
 
@@ -66,7 +66,7 @@ describe('MassiveConfigDialog', () => {
         provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: ExecutionService, useValue: serviceMock },
+        { provide: ShotMunitionService, useValue: serviceMock },
       ],
       imports: [TranslateModule.forRoot()],
     });
@@ -160,7 +160,7 @@ describe('MassiveConfigDialog', () => {
         provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: ExecutionService, useValue: serviceMock },
+        { provide: ShotMunitionService, useValue: serviceMock },
       ],
       imports: [TranslateModule.forRoot()],
     });

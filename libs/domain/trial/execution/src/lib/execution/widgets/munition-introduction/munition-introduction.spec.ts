@@ -15,6 +15,7 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotMunitionService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -208,7 +209,7 @@ describe('MunitionIntroduction', () => {
   it('updates displayed status when selected shot changes', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(ShotMunitionService);
 
     store.setOptimisticActiveShot('active-serie', 'active-shot');
     executionService.executionProgressResource.set({
@@ -235,7 +236,7 @@ describe('MunitionIntroduction', () => {
 
   it('selects the first shot regardless of status when changing series', async () => {
     const { fixture } = await renderWidget();
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(ShotMunitionService);
 
     executionService.executionProgressResource.set({
       series: [
@@ -275,7 +276,7 @@ describe('MunitionIntroduction', () => {
   it('saveForm persists selection to the store and calls ExecutionService', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const updateSpy = vi.spyOn(execService, 'updateShotMunition').mockResolvedValue(mockMunitionResponse);
 
     store.setFireTrialId('trial-123');
@@ -291,7 +292,7 @@ describe('MunitionIntroduction', () => {
   it('saveForm handles errors gracefully when executionService throws', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     vi.spyOn(execService, 'updateShotMunition').mockRejectedValue(new Error('Network error'));
 
     store.setFireTrialId('trial-123');
@@ -352,7 +353,7 @@ describe('MunitionIntroduction', () => {
 
   it('fetches shot munition data and applies to tabs and store', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
@@ -371,7 +372,7 @@ describe('MunitionIntroduction', () => {
 
   it('fetches shot munition data for every newly selected shot', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
 
@@ -388,7 +389,7 @@ describe('MunitionIntroduction', () => {
 
   it('fills missing batch from available warehouse stock matching denomination', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
     const responseWithoutBatch: ShotMunitionResponse = {
       munitionData: [
@@ -437,7 +438,7 @@ describe('MunitionIntroduction', () => {
   it('setCurrentShot selects active shot from store and triggers load', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
     store.setFireTrialId('trial-123');
@@ -450,7 +451,7 @@ describe('MunitionIntroduction', () => {
 
   it('switches component and resets balance and unsaved edits', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
@@ -493,7 +494,7 @@ describe('MunitionIntroduction', () => {
 
   it('keeps balance options empty across components when no balance equipment is selected', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
@@ -534,7 +535,7 @@ describe('MunitionIntroduction', () => {
 
   it('does not mark form as dirty or touched when merely selecting a different balance', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
@@ -566,7 +567,7 @@ describe('MunitionIntroduction', () => {
 
   it('keeps edits in memory across balance switches but resets and clears dirty and touched on component change', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
 
     vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
@@ -614,7 +615,7 @@ describe('MunitionIntroduction', () => {
 
   it('updates component and denomination options based on selected series planning configurations', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
 
@@ -750,7 +751,7 @@ describe('MunitionIntroduction', () => {
 
   it('loads and displays all denominations for component when planning specifies component without denomination', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
 
@@ -949,7 +950,7 @@ describe('MunitionIntroduction', () => {
 
   it('waits for real shot UUIDs before loading munition and does not call with mocked shot ID', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotMunitionService);
     const store = TestBed.inject(ExecutionStore);
     const fetchSpy = vi.spyOn(execService, 'fetchShotMunition').mockResolvedValue(mockMunitionResponse);
 

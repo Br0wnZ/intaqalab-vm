@@ -9,7 +9,7 @@ import { IntaIconComponent, SaveButton, SoundLevelMeterInput, type SoundLevelMet
 import { TranslateModule } from '@ngx-translate/core';
 
 import type { CalibryObserverOption } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMaoTopographyService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { MaoTopographyMassConfigValues } from './mao-topography.mapper';
 import { fromPosition, mapMaoTopographyMassConfigToRequest, toPosition } from './mao-topography.mapper';
@@ -146,7 +146,7 @@ export class MaoTopographyMassConfigDialog {
   readonly #dialogRef =
     inject<MatDialogRef<MaoTopographyMassConfigDialog, MaoTopographyMassConfigDialogResult>>(MatDialogRef);
   readonly data = inject<MaoTopographyMassConfigDialogData>(MAT_DIALOG_DATA);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotMaoTopographyService = inject(ShotMaoTopographyService);
   readonly isSaving = signal(false);
   readonly errorKey = signal<string | null>(null);
 
@@ -187,7 +187,7 @@ export class MaoTopographyMassConfigDialog {
     this.errorKey.set(null);
     this.isSaving.set(true);
     try {
-      const response = await this.#executionService.bulkConfigureMaoTopography(this.data.fireTrialId, request);
+      const response = await this.#shotMaoTopographyService.bulkConfigureMaoTopography(this.data.fireTrialId, request);
       this.#dialogRef.close({
         action: 'apply',
         updatedShotIds: response.updatedShotIds,

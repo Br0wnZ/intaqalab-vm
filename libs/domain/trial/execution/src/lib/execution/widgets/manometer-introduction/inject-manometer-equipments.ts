@@ -1,10 +1,10 @@
 import { computed, inject, signal } from '@angular/core';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { EquipmentMeasurementGroupEnum, type EquipmentSelectionItem, EquipmentTypeEnum } from '../../models';
 
 export function injectManometerEquipments() {
-  const executionService = inject(ExecutionService);
+  const executionService = inject(EquipmentSelectionService);
   const itemsByCategory = signal<Record<string, Array<{ id: string; label: string }>>>({});
 
   executionService

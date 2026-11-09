@@ -1,3 +1,5 @@
+import type { MeasureUnitEnum, SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
+
 import type { SelectOption } from './catalog.model';
 
 export type MeasureSerie = {
@@ -20,10 +22,19 @@ export type TopographyMeasure = {
 
 export type MeasureSelectionData = {
   id: string;
+  measureUnit?: MeasureUnitEnum;
   minLimit: number | null;
   maxLimit: number | null;
   deviation: number | null;
   expanded: boolean;
+};
+
+export type MeasureUnitOptions = Record<string, (typeof SHOT_CONDITIONS_UNIT_OPTIONS)['distance']>;
+
+export type MeasureLimitChange = {
+  field: 'minLimit' | 'maxLimit' | 'deviation';
+  value: number | null;
+  measureUnit?: MeasureUnitEnum;
 };
 
 export type SerieData = {

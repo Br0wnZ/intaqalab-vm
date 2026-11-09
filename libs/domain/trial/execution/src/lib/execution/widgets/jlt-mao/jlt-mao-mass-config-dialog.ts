@@ -22,7 +22,7 @@ import { LocaleDecimalInputDirective } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotJltMaoService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { ShotJltMao } from '../../models/shot-jlt-mao.models';
 import type { JltMaoMassConfigFields, JltMaoMassConfigInputField } from './jlt-mao-mass-config.mapper';
@@ -307,7 +307,7 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
 export class JltMaoMassConfigDialog {
   readonly #dialogRef = inject<MatDialogRef<JltMaoMassConfigDialog, JltMaoMassConfigDialogResult>>(MatDialogRef);
   protected readonly data = inject<JltMaoMassConfigDialogData>(MAT_DIALOG_DATA);
-  readonly #executionService = inject(ExecutionService, { optional: true });
+  readonly #shotJltMaoService = inject(ShotJltMaoService, { optional: true });
   readonly #store = inject(ExecutionStore, { optional: true });
 
   #lastLoadedSeriesId: string | null = null;
@@ -743,9 +743,9 @@ export class JltMaoMassConfigDialog {
 
     const fireTrialId = this.data.fireTrialId ?? this.#store?.fireTrialId?.();
     const shotId = this.data.shotIdsBySeries?.[seriesId]?.[0] ?? this.#findShotIdForSeries(seriesId);
-    if (fireTrialId && shotId && this.#executionService) {
+    if (fireTrialId && shotId && this.#shotJltMaoService) {
       try {
-        const response = await this.#executionService.fetchShotJltMao(fireTrialId, seriesId, shotId);
+        const response = await this.#shotJltMaoService.fetchShotJltMao(fireTrialId, seriesId, shotId);
         if (ticket !== this.#loadExecutionTicket) return;
         if (response?.jltMaoData) {
           this.#applyExecutionData(response.jltMaoData);

@@ -15,6 +15,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ArmamentCatalogService, ShotArmamentService } from '../../../data-access';
 import type { ArmamentEquipmentItem, PlanningArmamentResponse } from '../../../services/execution.service';
 import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -48,13 +49,14 @@ describe('ArmamentIntroductionComponent', () => {
 
   it('waits for real shot IDs before loading armament and uses the active UUIDs', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const store = TestBed.inject(ExecutionStore);
-    vi.spyOn(service, 'loadArmamentEquipmentItems').mockResolvedValue([]);
-    vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
-    const loadDenominations = vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
-    vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
-    const fetchShot = vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({});
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockResolvedValue([]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+    const loadDenominations = vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
+    const fetchShot = vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({});
 
     store.setFireTrialId('39a1ad65-f27c-4629-af94-5dbd711197ed');
     await vi.waitFor(() => expect(loadDenominations).toHaveBeenCalled());
@@ -76,7 +78,8 @@ describe('ArmamentIntroductionComponent', () => {
     'updates the bulk configuration button and tooltip for %s planning',
     async (scenario) => {
       const { fixture } = await renderWidget();
-      const service = TestBed.inject(ExecutionService);
+      const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+      const shotArmamentService = TestBed.inject(ShotArmamentService);
       const store = TestBed.inject(ExecutionStore);
       const planning: PlanningArmamentResponse = {
         series:
@@ -96,11 +99,11 @@ describe('ArmamentIntroductionComponent', () => {
                 },
               ],
       };
-      vi.spyOn(service, 'loadArmamentEquipmentItems').mockResolvedValue([]);
-      vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
-      vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
-      const fetchPlanning = vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue(planning);
-      vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({});
+      vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockResolvedValue([]);
+      vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+      vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+      const fetchPlanning = vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue(planning);
+      vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({});
       store.setFireTrialId('trial-id');
       await vi.waitFor(() => expect(fetchPlanning).toHaveBeenCalled());
       for (const request of TestBed.inject(HttpTestingController).match(() => true)) {
@@ -170,7 +173,8 @@ describe('ArmamentIntroductionComponent', () => {
 
   it('disables tube selectors for a null planned tube and enables them when switching shots', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const store = TestBed.inject(ExecutionStore);
     const weapon: ArmamentEquipmentItem = {
       id: 21,
@@ -194,14 +198,14 @@ describe('ArmamentIntroductionComponent', () => {
         { "shotId": "with-tube", "armament": { "weaponExternalId": 1, "tubeExternalId": 5 } }
       ] }]
     }`);
-    vi.spyOn(service, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
       type === 'WEAPON' ? [weapon] : [tube],
     );
-    vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
-    vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
-    vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue(planning);
-    vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({ armamentData: { weapon, tube } });
-    const save = vi.spyOn(service, 'updateShotArmament').mockResolvedValue({} as never);
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue(planning);
+    vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({ armamentData: { weapon, tube } });
+    const save = vi.spyOn(shotArmamentService, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     store.setOptimisticActiveShot('series-1', 'without-tube');
     await vi.waitFor(() => {
@@ -236,7 +240,8 @@ describe('ArmamentIntroductionComponent', () => {
   it('dispatches the armament PUT using the active shot selection', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const weapon: ArmamentEquipmentItem = {
       id: 21017,
       tag: 'ARM-17',
@@ -245,13 +250,13 @@ describe('ArmamentIntroductionComponent', () => {
       denominationName: 'Weapon 105mm',
       modelName: 'M1',
     };
-    vi.spyOn(executionService, 'loadArmamentEquipmentItems').mockResolvedValue([weapon]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockResolvedValue([weapon]);
     const loadWeaponDenominations = vi
-      .spyOn(executionService, 'loadArmamentWeaponDenominations')
+      .spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations')
       .mockResolvedValue([{ id: 10, name: 'Weapon 105mm', itemType: 'WEAPON', familyId: 10, active: true }]);
-    vi.spyOn(executionService, 'loadArmamentDenominations').mockResolvedValue([]);
-    vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
-    const updateShotArmament = vi.spyOn(executionService, 'updateShotArmament').mockResolvedValue({} as never);
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
+    const updateShotArmament = vi.spyOn(shotArmamentService, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     await vi.waitFor(() => {
       expect(loadWeaponDenominations).toHaveBeenCalledOnce();
@@ -278,7 +283,8 @@ describe('ArmamentIntroductionComponent', () => {
 
   it('should display the planned mortar on first load without confusing denomination and item IDs', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const store = TestBed.inject(ExecutionStore);
     const foreignItem: ArmamentEquipmentItem = {
       id: 449,
@@ -311,15 +317,15 @@ describe('ArmamentIntroductionComponent', () => {
         ]}
       ]
     }`);
-    vi.spyOn(service, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
       type === 'MORTAR' ? [foreignItem, mortar] : [],
     );
-    vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
-    vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([
       { id: 449, name: 'MORTERO PROBETA 81 mm', itemType: 'MORTAR', familyId: 1, active: true },
     ]);
-    vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue(planning);
-    const fetchShot = vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({});
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue(planning);
+    const fetchShot = vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({});
     store.setFireTrialId('trial-id');
     store.setOptimisticActiveShot('series-1', 'shot-1');
 
@@ -350,7 +356,8 @@ describe('ArmamentIntroductionComponent', () => {
   it('applies the planned armament assigned to each selected shot', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const weapons: ArmamentEquipmentItem[] = [
       {
         id: 21017,
@@ -445,14 +452,14 @@ describe('ArmamentIntroductionComponent', () => {
         },
       ],
     };
-    vi.spyOn(executionService, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
       type === 'WEAPON' ? weapons : type === 'TUBE' ? tubes : [mortar],
     );
-    vi.spyOn(executionService, 'loadArmamentWeaponDenominations').mockResolvedValue([
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([
       { id: 10, name: 'Weapon 105mm', itemType: 'WEAPON', familyId: 10676, active: true },
       { id: 11, name: 'Weapon 120mm', itemType: 'WEAPON', familyId: 10677, active: true },
     ]);
-    vi.spyOn(executionService, 'loadArmamentDenominations').mockImplementation(async (type, familyId) =>
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockImplementation(async (type, familyId) =>
       type === 'MORTAR'
         ? [{ id: 30, name: 'Mortar 81mm', itemType: 'MORTAR', familyId: 10678, active: true }]
         : type === 'TUBE' && familyId === 10676
@@ -461,8 +468,8 @@ describe('ArmamentIntroductionComponent', () => {
             ? [{ id: 21, name: 'Tube 120mm', itemType: 'TUBE', familyId, active: true }]
             : [],
     );
-    vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue(plannedArmament);
-    vi.spyOn(executionService, 'fetchShotArmament').mockResolvedValue({});
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue(plannedArmament);
+    vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({});
     store.setFireTrialId('trial-id');
 
     await vi.waitFor(() => {
@@ -519,12 +526,14 @@ describe('ArmamentIntroductionComponent', () => {
   it('selects the first shot regardless of status and fetches data for each shot selection', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const executionService = TestBed.inject(ExecutionService);
-    vi.spyOn(executionService, 'loadArmamentEquipmentItems').mockResolvedValue([]);
-    vi.spyOn(executionService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
-    vi.spyOn(executionService, 'loadArmamentDenominations').mockResolvedValue([]);
-    vi.spyOn(executionService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
-    const fetchSpy = vi.spyOn(executionService, 'fetchShotArmament').mockResolvedValue({});
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockResolvedValue([]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([]);
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue({ series: [] });
+    const fetchSpy = vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({});
 
     store.setFireTrialId('trial-id');
     executionService.executionProgressResource.set({
@@ -592,7 +601,8 @@ describe('ArmamentIntroductionComponent', () => {
     const { fixture } = await renderWidget();
     const user = userEvent.setup();
     const store = TestBed.inject(ExecutionStore);
-    const service = TestBed.inject(ExecutionService);
+    const armamentCatalogService = TestBed.inject(ArmamentCatalogService);
+    const shotArmamentService = TestBed.inject(ShotArmamentService);
     const weapons: ArmamentEquipmentItem[] = ['14491', '14398', '16143', '7323'].map((serialNumber, index) => ({
       id: 21017 + index,
       tag: `ARM-${index}`,
@@ -614,14 +624,14 @@ describe('ArmamentIntroductionComponent', () => {
       { ...tube, id: 21100, tag: 'TUBE-100', serialNumber: 'SN-T-100' },
       { ...tube, id: 21101, tag: 'TUBE-101', serialNumber: 'SN-T-101', denominationId: 21 },
     ];
-    vi.spyOn(service, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
+    vi.spyOn(armamentCatalogService, 'loadArmamentEquipmentItems').mockImplementation(async (type) =>
       type === 'WEAPON' ? weapons : tubes,
     );
-    vi.spyOn(service, 'loadArmamentWeaponDenominations').mockResolvedValue([
+    vi.spyOn(armamentCatalogService, 'loadArmamentWeaponDenominations').mockResolvedValue([
       { id: 10, name: 'Cañon C.C. M-60', itemType: 'WEAPON', familyId: 1, active: true },
     ]);
-    vi.spyOn(service, 'loadArmamentDenominations').mockResolvedValue([]);
-    vi.spyOn(service, 'fetchPlanningArmament').mockResolvedValue({
+    vi.spyOn(armamentCatalogService, 'loadArmamentDenominations').mockResolvedValue([]);
+    vi.spyOn(shotArmamentService, 'fetchPlanningArmament').mockResolvedValue({
       series: [
         {
           seriesId: 'series-id',
@@ -630,10 +640,10 @@ describe('ArmamentIntroductionComponent', () => {
         },
       ],
     });
-    vi.spyOn(service, 'fetchShotArmament').mockResolvedValue({
+    vi.spyOn(shotArmamentService, 'fetchShotArmament').mockResolvedValue({
       armamentData: { weapon: weapons[3], tube: tubes[1] },
     });
-    const save = vi.spyOn(service, 'updateShotArmament').mockResolvedValue({} as never);
+    const save = vi.spyOn(shotArmamentService, 'updateShotArmament').mockResolvedValue({} as never);
     store.setFireTrialId('trial-id');
     store.setOptimisticActiveShot('series-id', 'shot-id');
 

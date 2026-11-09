@@ -29,6 +29,8 @@ import {
   getShotTrajectography,
   getShotVelocities,
   getShotVideoData,
+  getTrialOverpressureInfo,
+  isTrialOverpressureInfoRequest,
   registerFireShot,
   selectActiveShot,
   setExecutionStatus,
@@ -47,11 +49,37 @@ import {
   setShotTrajectography,
   setShotVelocity,
   setShotVideoData,
+  setTrialOverpressureInfo,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
 import { getFixture } from '../utils';
 
 export const executionRouter = Router();
+
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/overpressure-info', (req, res) => {
+  try {
+    res.status(200).json(getTrialOverpressureInfo(req.params['centerId'], req.params['fireTrialId']));
+  } catch (error) {
+    res
+      .status(404)
+      .json({ title: 'Not Found', status: 404, detail: error instanceof Error ? error.message : 'Not found' });
+  }
+});
+
+executionRouter.put('/:centerId/fire-trials/:fireTrialId/execution/overpressure-info', (req, res) => {
+  const body: unknown = req.body;
+  if (!isTrialOverpressureInfoRequest(body)) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'INVALID_OVERPRESSURE_INFO' });
+    return;
+  }
+  try {
+    res.status(200).json(setTrialOverpressureInfo(req.params['centerId'], req.params['fireTrialId'], body));
+  } catch (error) {
+    res
+      .status(404)
+      .json({ title: 'Not Found', status: 404, detail: error instanceof Error ? error.message : 'Not found' });
+  }
+});
 
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/trajectography-radar/orientation', (_req, res) => {
   const response = getFixture('fixtures/execution', 'execution-trajectography-radar-orientation-fixture.json');

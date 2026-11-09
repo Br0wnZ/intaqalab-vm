@@ -15,7 +15,7 @@ import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotArmamentService } from '../../../data-access';
 import {
   ArmamentIntroductionMassConfigDialog,
   type ArmamentIntroductionMassConfigDialogData,
@@ -394,7 +394,7 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
     view.fixture.detectChanges();
     await vi.waitFor(() => {
       expect(
-        view.fixture.debugElement.injector.get(ExecutionService).applyArmamentBulkConfigurationResource.status(),
+        view.fixture.debugElement.injector.get(ShotArmamentService).applyArmamentBulkConfigurationResource.status(),
       ).toBe('resolved');
     });
 

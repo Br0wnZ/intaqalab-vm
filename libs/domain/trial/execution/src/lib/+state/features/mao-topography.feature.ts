@@ -1,8 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { ShotMaoTopographyService } from '../../data-access';
 import type { ShotMaoTopographyRequest } from '../../execution/models/shot-mao-topography.models';
-import { ExecutionService } from '../../services/execution.service';
 import type { CalibryObserverOption, MaoTopographyState } from '../execution-state.models';
 
 interface MaoTopographySlice {
@@ -32,9 +32,9 @@ const initialState: MaoTopographySlice = {
 export function withMaoTopography() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
-      isLoadingMaoTopography: computed(() => executionService.shotMaoTopographyResource.isLoading()),
-      isSavingMaoTopography: computed(() => executionService.updateShotMaoTopographyResource.isLoading()),
+    withComputed((store, shotMaoTopographyService = inject(ShotMaoTopographyService)) => ({
+      isLoadingMaoTopography: computed(() => shotMaoTopographyService.shotMaoTopographyResource.isLoading()),
+      isSavingMaoTopography: computed(() => shotMaoTopographyService.updateShotMaoTopographyResource.isLoading()),
       /** Distancia boca-blanco = sqrt((xB−xP)² + (yB−yP)² + (zB−zP)²) — salida de topografía */
       maoTopographyDistanciaBocaBlanco: computed((): number | null => {
         const s = store.maoTopography();
@@ -52,10 +52,10 @@ export function withMaoTopography() {
         );
       }),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotMaoTopographyService = inject(ShotMaoTopographyService)) => ({
       async loadShotMaoTopography(fireTrialId: string, seriesId: string, shotId: string): Promise<void> {
         try {
-          const response = await executionService.fetchShotMaoTopography(fireTrialId, seriesId, shotId);
+          const response = await shotMaoTopographyService.fetchShotMaoTopography(fireTrialId, seriesId, shotId);
           if (response?.maoTopographyData) {
             const data = response.maoTopographyData;
             patchState(store, (state) => ({
@@ -80,7 +80,7 @@ export function withMaoTopography() {
         shotId: string,
         requestBody: ShotMaoTopographyRequest,
       ): Promise<void> {
-        await executionService.updateShotMaoTopography(fireTrialId, seriesId, shotId, requestBody);
+        await shotMaoTopographyService.updateShotMaoTopography(fireTrialId, seriesId, shotId, requestBody);
       },
       /** Actualiza los campos de entrada del widget MAO Topografía */
       updateMaoTopography(updates: Partial<MaoTopographyState>): void {

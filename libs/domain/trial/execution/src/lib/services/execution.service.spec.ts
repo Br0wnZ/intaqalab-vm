@@ -3,7 +3,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, type TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { AngleUnitEnum, CadenceUnitEnum, DistanceUnitEnum, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
+import {
+  AngleUnitEnum,
+  CadenceUnitEnum,
+  DistanceUnitEnum,
+  PressureUnitEnum,
+  SpeedUnitEnum,
+  WeightUnitEnum,
+} from '@intaqalab/models';
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -78,6 +85,48 @@ describe('ExecutionService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  describe('trial overpressure info', () => {
+    const body = {
+      maximumPressure: 273.751234567,
+      minimumPressure: 262.05,
+      referencePressure: 233.97,
+      pressureUnit: PressureUnitEnum.MPA,
+    };
+    const response = {
+      overpressureInfo: { ...body, targetPressure: 267.9006172835, safetyPressure: null },
+      warnings: [],
+    };
+
+    it('fetches configuration at trial scope', async () => {
+      const pending = service.fetchTrialOverpressureInfo(DEMO_TRIAL_ID);
+      TestBed.tick();
+      const request = httpMock.expectOne(`${EXECUTION_BASE_URL}/overpressure-info`);
+      expect(request.request.method).toBe('GET');
+      request.flush(response);
+      await expect(pending).resolves.toEqual(response);
+    });
+
+    it('repeats identical PUT requests and sends no derived fields', async () => {
+      for (const attempt of [1, 2]) {
+        const pending = service.updateTrialOverpressureInfo(DEMO_TRIAL_ID, body);
+        TestBed.tick();
+        const request = httpMock.expectOne(`${EXECUTION_BASE_URL}/overpressure-info`);
+        expect(request.request.method).toBe('PUT');
+        expect(request.request.body).toEqual(body);
+        request.flush(response);
+        await expect(pending, `attempt ${attempt}`).resolves.toEqual(response);
+      }
+    });
+
+    it('propagates HTTP errors', async () => {
+      const pending = service.updateTrialOverpressureInfo(DEMO_TRIAL_ID, body);
+      const failure = pending.catch((error: unknown) => error);
+      TestBed.tick();
+      httpMock.expectOne(`${EXECUTION_BASE_URL}/overpressure-info`).flush({}, { status: 403, statusText: 'Forbidden' });
+      await expect(failure).resolves.toMatchObject({ status: 403 });
+    });
   });
 
   it('should GET propellant charge adjustment with repeated shotIds query parameters', async () => {
@@ -643,6 +692,43 @@ describe('ExecutionService', () => {
 
     await expect(saving).resolves.toEqual({ updatedSeries: items, failures: [] });
     expect(reload).toHaveBeenCalledOnce();
+    reload.mockRestore();
+  });
+
+  it('should keep readiness mutations for different profiles in flight simultaneously', async () => {
+    const velocityItem = { seriesId: 'velocity-series', isReady: true, observations: 'Velocities ready' };
+    const pressureItem = { seriesId: 'pressure-series', isReady: false, observations: 'Pressure pending' };
+    const reload = vi.spyOn(service, 'getProfilesReadiness').mockImplementation(() => undefined);
+
+    const velocitySaving = service.setProfileReadiness(DEMO_TRIAL_ID, 'VELOCITIES', [velocityItem]);
+    const pressureSaving = service.setProfileReadiness(DEMO_TRIAL_ID, 'PRESSURES', [pressureItem]);
+
+    const velocityRequest = httpMock.expectOne(
+      `${EXECUTION_BASE_URL}/readiness/profiles/VELOCITIES/series/${velocityItem.seriesId}`,
+    );
+    const pressureRequest = httpMock.expectOne(
+      `${EXECUTION_BASE_URL}/readiness/profiles/PRESSURES/series/${pressureItem.seriesId}`,
+    );
+
+    expect(velocityRequest.request.method).toBe('PUT');
+    expect(velocityRequest.request.body).toEqual({
+      isReady: velocityItem.isReady,
+      observations: velocityItem.observations,
+    });
+    expect(pressureRequest.request.method).toBe('PUT');
+    expect(pressureRequest.request.body).toEqual({
+      isReady: pressureItem.isReady,
+      observations: pressureItem.observations,
+    });
+
+    velocityRequest.flush(velocityItem);
+    pressureRequest.flush(pressureItem);
+
+    await expect(Promise.all([velocitySaving, pressureSaving])).resolves.toEqual([
+      { updatedSeries: [velocityItem], failures: [] },
+      { updatedSeries: [pressureItem], failures: [] },
+    ]);
+    expect(reload).toHaveBeenCalledTimes(2);
     reload.mockRestore();
   });
 

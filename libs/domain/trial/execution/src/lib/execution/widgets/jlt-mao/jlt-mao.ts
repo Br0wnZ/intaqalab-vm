@@ -35,7 +35,7 @@ import { firstValueFrom } from 'rxjs';
 
 import type { JltMaoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { PlanningFuseService, ShotJltMaoService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import type { ShotJltMaoResponse } from '../../models/shot-jlt-mao.models';
@@ -327,7 +327,8 @@ export class JltMao extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #canEditSetup = computed(() => this.#store.executionCapabilities().canEditSetup);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotJltMaoService = inject(ShotJltMaoService);
+  readonly #planningFuseService = inject(PlanningFuseService);
   readonly #dialog = inject(MatDialog);
   readonly #trialShots = injectTrialShots();
   readonly #planningMunitions = inject(PlanningMunitionsService);
@@ -785,13 +786,17 @@ export class JltMao extends BaseFormWidgetComponent {
     this.remoteFuseGraduation.set(null);
 
     try {
-      const response = await this.#executionService.fetchShotJltMao(fireTrialId, serie, disparo);
+      const response = await this.#shotJltMaoService.fetchShotJltMao(fireTrialId, serie, disparo);
       if (!ticket.isFresh(selectionKey)) {
         return;
       }
       let plannedFuseGraduation: number | null = null;
       try {
-        plannedFuseGraduation = await this.#executionService.fetchPlanningFuseGraduation(fireTrialId, serie, disparo);
+        plannedFuseGraduation = await this.#planningFuseService.fetchPlanningFuseGraduation(
+          fireTrialId,
+          serie,
+          disparo,
+        );
       } catch {
         plannedFuseGraduation = null;
       }
@@ -940,7 +945,7 @@ export class JltMao extends BaseFormWidgetComponent {
 
     const fireTrialId = this.#store.fireTrialId();
     if (fireTrialId && serie && disparo) {
-      await this.#executionService.updateShotJltMao(fireTrialId, serie, disparo, {
+      await this.#shotJltMaoService.updateShotJltMao(fireTrialId, serie, disparo, {
         numericFiringTable: ttn,
         lineOfFireOrientation: olt,
         stakeId: piqueta,
@@ -1081,7 +1086,7 @@ export class JltMao extends BaseFormWidgetComponent {
         group.orientation?.lineOfFireOrientation,
       );
       if (!request) continue;
-      await this.#executionService.bulkConfigureJltMao(fireTrialId, request);
+      await this.#shotJltMaoService.bulkConfigureJltMao(fireTrialId, request);
     }
 
     await this.#loadSelectedShotData();

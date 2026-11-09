@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.3.0
-last-updated: 2026-11-03
+version: 1.4.0
+last-updated: 2026-11-05
 description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
@@ -21,19 +21,35 @@ description: Expert in the INTAQALAB execution domain, widgets, shot selectors, 
 - For unit labels and selectors, use `MEASURE_UNIT_LABELS` and specific subtypes (`WeightUnitEnum`, `PressureUnitEnum`, `DistanceUnitEnum`, `TimeUnitEnum`, etc.) from the shared models package.
 - **Strict Typing (Zero `any`):** 🚫 **PROHIBITED:** using `any` (e.g. `as any`, `: any`, `any[]`). All payload types, response types, store slices, mappers, and unit transformations MUST use explicit TypeScript types and enums from `@intaqalab/models` or local models.
 - **Forbidden Non-Null Assertions (Zero `!`):** 🚫 **PROHIBITED:** using non-null assertions (`!`, `@typescript-eslint/no-non-null-assertion`). In data mapping or store features, use `flatMap()` or explicit type guards. Never use `resource.value()!`.
-- **CQS & Mutations (ADR-020):** ⚡ **MANDATORY.** All mutations in `ExecutionService` (e.g. `updateShotArmament`, `updateShotVelocity`, `updateJltShotData`, etc.) MUST use `HttpClient` with `firstValueFrom(this.#http.put(...))` returning native `Promise<T>`. Prohibited using `httpResource` for mutations. Rapid sequential saves in `saveAllDirtyForms()` require isolated Promises to prevent request cancellations.
+- **CQS, Mutations & Service Decomposition (ADR-020, ADR-025):** ⚡ **MANDATORY.** All mutations in domain data-access services (e.g. `ShotArmamentService`, `ShotVelocitiesService`, `ShotMunitionService`, `ShotJltDataService`, etc.) MUST use `HttpClient` with `firstValueFrom(this.#http.put(...))` returning native `Promise<T>`. Prohibited using `httpResource` for mutations. Rapid sequential saves in `saveAllDirtyForms()` require isolated Promises to prevent request cancellations. `ExecutionService` is `@deprecated` (0 production consumers in execution lib); injecting it or adding new methods to it is 🚫 **PROHIBITED**.
 
 ### Root Directory Structure
 
 ```
 libs/domain/trial/execution/src/lib/
 ├── +state/
-│   └── execution.store.ts        ← Central store
+│   ├── execution.store.ts        ← Central store
+│   └── features/                 ← Feature stores per widget/domain
+├── data-access/
+│   ├── execution/                ← Decomposed execution data-access services (ADR-025)
+│   │   ├── shared/               ← execution-endpoints.ts, resource-await.ts
+│   │   ├── shot/                 ← Shot-family services (shot-velocities, shot-munition, etc.)
+│   │   ├── state/                ← execution-state, execution-transition, security-countdown
+│   │   ├── readiness/            ← execution-readiness, jlt-preparation
+│   │   ├── equipment/            ← equipment-selection, armament-catalog
+│   │   ├── preferences/          ← widget-preferences
+│   │   ├── analytics/            ← propellant-charge, velocity-uniformity
+│   │   └── planning/             ← planning-munition-options, planning-fuse, warehouse-catalog
+│   ├── munitions/                ← Shot-scoped planning munition helpers (ADR-019)
+│   ├── warehouse/                ← Warehouse catalog handles (ADR-019)
+│   └── index.ts                  ← Exports all data-access services & helpers
 ├── execution/
-│   └── models/                   ← Local domain types
+│   ├── models/                   ← Local domain types (execution-runtime, shot-velocities, etc.)
+│   ├── services/
+│   │   └── widget-state.service.ts
+│   └── widgets/                  ← Execution grid widgets
 ├── services/
-│   └── execution.service.ts      ← HTTP data-access service
-├── stores/                       ← Feature stores per widget
+│   └── execution.service.ts      ← DEPRECATED compatibility facade only
 └── execution.routes.ts
 ```
 
@@ -177,7 +193,7 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 - Planned data (series/shots, conditions, measures, munitions, armament, propelling-charge-parameters) is **read-only here** and MUST come from `@intaqalab/data-access-planning`. NEVER declare `/planning/...` GET URLs in `libs/domain/trial/execution` (`npm run check:planning-urls`, enforced in pre-commit).
 - Query services: `PlanningSeriesService`, `PlanningConditionsService`, `PlanningMeasuresService`, `PlanningMunitionsService`, `PlanningArmamentService`, `PropellantChargeParametersService` (`httpResource`, `providedIn: 'root'`). `PlanningTrialContextService` is set once by the `Execution` shell; widgets never pass trial params for planning reads.
 - Pure helpers: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`, `flattenSeriesShots`. Shot option labels: `formatShotLabel(globalNumber, index, 'plain' | 'padded')` — do not hand-build `` `Disparo ${...}` ``. Series/shots handle: `injectTrialShots()`.
-- `ExecutionService` keeps only execution endpoints (GET via `httpResource`, mutations/writes via `HttpClient` + `firstValueFrom` per ADR-020); planning types come from the data-access lib (no duplicated models).
+- Domain data-access services under `libs/domain/trial/execution/src/lib/data-access/execution/` keep only execution endpoints (GET via `httpResource`, mutations/writes via `HttpClient` + `firstValueFrom` per ADR-020); planning types come from `@intaqalab/data-access-planning` (no duplicated models). `ExecutionService` is `@deprecated` and facade-only (0 production consumers).
 - Widget system doc: `docs/WIDGET_SYSTEM.md`.
 
 ## 🎯 Shot-Scoped Planning & Warehouse Read Helpers (ADR-019) — Mandatory Pattern
@@ -216,3 +232,50 @@ Exportado desde la raíz de la librería en `libs/domain/trial/execution/src/ind
   2. Implementa el normalizador defensivo con `unknown-readers.ts` y tests unitarios exhaustivos.
   3. Crea la función reactiva `inject*` usando `httpResource` y signals.
   4. Exporta en `data-access/index.ts`.
+
+---
+
+## 🏛️ Descomposición de Servicios de Ejecución (ADR-025) — Mandatory
+
+Bajo el ADR-025, `ExecutionService` ha sido descompuesto y queda como fachada `@deprecated` sin consumidores en producción.
+
+### 1. Estructura Canónica de Servicios (`libs/domain/trial/execution/src/lib/data-access/execution/`)
+
+| Familia            | Ubicación      | Responsabilidad y Servicios Principales                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Disparo (Shot)** | `shot/`        | `ShotVelocitiesService`, `ShotPressuresService`, `ShotManometerPressuresService`, `ShotIpgPressuresService`, `ShotMunitionService`, `ShotArmamentService`, `ShotTopographyService`, `ShotMaoTopographyService`, `ShotTrajectographyService`, `ShotAcousticLevelService`, `ShotVideoService`, `ShotJltMaoService`, `ShotJltDataService`, `ShotCameraOrientationService`, `ShotRadarOrientationService` |
+| **Estado (State)** | `state/`       | `ExecutionStateService` (state, progress, measurements), `ExecutionTransitionService`, `SecurityCountdownService`, `commands/ExecutionPlanningService`                                                                                                                                                                                                                                                |
+| **Readiness**      | `readiness/`   | `ExecutionReadinessService` (perfiles técnicos), `JltPreparationService`                                                                                                                                                                                                                                                                                                                              |
+| **Equipos**        | `equipment/`   | `EquipmentSelectionService`, `ArmamentCatalogService`                                                                                                                                                                                                                                                                                                                                                 |
+| **Preferencias**   | `preferences/` | `WidgetPreferencesService` (rol y usuario)                                                                                                                                                                                                                                                                                                                                                            |
+| **Analítica**      | `analytics/`   | `PropellantChargeService`, `VelocityUniformityService`                                                                                                                                                                                                                                                                                                                                                |
+| **Planificación**  | `planning/`    | `PlanningMunitionOptionsService`, `PlanningFuseService`, `WarehouseCatalogService`                                                                                                                                                                                                                                                                                                                    |
+| **Shared**         | `shared/`      | `execution-endpoints.ts` (constructores puros de URL), `resource-await.ts` (`awaitResourceValue`)                                                                                                                                                                                                                                                                                                     |
+
+### 2. Reglas Mandatorias para Nuevos Widgets y Servicios
+
+1. **PROHIBIDO Inyectar `ExecutionService`:**
+   Todo nuevo widget, diálogo o feature store DEBE inyectar directamente el servicio de dominio específico:
+   ```typescript
+   // ✅ CORRECTO
+   readonly #velocityService = inject(ShotVelocitiesService);
+   readonly #equipmentService = inject(EquipmentSelectionService);
+
+   // ❌ PROHIBIDO
+   readonly #executionService = inject(ExecutionService);
+   ```
+2. **PROHIBIDO Añadir Métodos a `ExecutionService`:**
+   Toda nueva funcionalidad de acceso a datos de ejecución debe crearse en su propio servicio bajo `data-access/execution/<familia>/`.
+3. **Constructores Puros de URL:**
+   Usar `executionTrialUrl` de `data-access/execution/shared/execution-endpoints.ts` en lugar de templates de string manuales `${executionUrl}/...`.
+4. **Fetch Imperativo con `awaitResourceValue`:**
+   Para resolver carreras y sincronizar datos de disparo en `onDisparoSelected`, usar `awaitResourceValue(this.#fetchResource, this.#injector)`.
+5. **CQS Estricto (ADR-020):**
+   - Lecturas (GET): `httpResource` reactivo + trigger signal privado.
+   - Mutaciones (PUT/POST): `HttpClient` + `firstValueFrom` retornando `Promise<T>`.
+6. **Modelos en `execution/models/`:**
+   Los DTOs y tipos de datos se declaran en `libs/domain/trial/execution/src/lib/execution/models/*.models.ts` y se exportan por `models/index.ts`.
+7. **Exportación Canónica:**
+   Todo servicio debe ser exportado en `libs/domain/trial/execution/src/lib/data-access/index.ts` y en `libs/domain/trial/execution/src/index.ts`.
+8. **Pruebas (Vitest + ATL):**
+   En los tests unitarios (`.spec.ts`), proveer y mockear el servicio específico (`Shot*Service`, `EquipmentSelectionService`), NUNCA `ExecutionService`.

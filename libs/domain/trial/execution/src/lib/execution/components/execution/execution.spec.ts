@@ -23,6 +23,16 @@ import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import {
+  EquipmentSelectionService,
+  ExecutionPlanningService,
+  ExecutionReadinessService,
+  ExecutionStateService,
+  ExecutionTransitionService,
+  JltPreparationService,
+  SecurityCountdownService,
+  WidgetPreferencesService,
+} from '../../../data-access';
 import { EquipmentPlanningService } from '../../../services/equipment-planning.service';
 import type {
   EquipmentSelectorResponse,
@@ -234,6 +244,38 @@ describe('Execution', () => {
         },
         {
           provide: ExecutionService,
+          useValue: executionService,
+        },
+        {
+          provide: EquipmentSelectionService,
+          useValue: executionService,
+        },
+        {
+          provide: ExecutionStateService,
+          useValue: executionService,
+        },
+        {
+          provide: ExecutionReadinessService,
+          useValue: executionService,
+        },
+        {
+          provide: JltPreparationService,
+          useValue: executionService,
+        },
+        {
+          provide: WidgetPreferencesService,
+          useValue: executionService,
+        },
+        {
+          provide: SecurityCountdownService,
+          useValue: executionService,
+        },
+        {
+          provide: ExecutionPlanningService,
+          useValue: executionService,
+        },
+        {
+          provide: ExecutionTransitionService,
           useValue: executionService,
         },
         {
@@ -621,7 +663,7 @@ describe('Execution', () => {
     expect(executionService.setJltShotData).not.toHaveBeenCalled();
   });
 
-  it('saves multiple dirty widget forms sequentially', async () => {
+  it('starts saving all dirty widget forms before awaiting their completion', async () => {
     const executionService = createMockExecutionService();
     const { view } = await setup({ executionService });
     const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
@@ -661,8 +703,9 @@ describe('Execution', () => {
       hasChanges: true,
     });
 
-    await view.fixture.componentInstance.saveAllChanges();
+    const saving = view.fixture.componentInstance.saveAllChanges();
 
     expect(callOrder).toEqual(['widget1', 'widget2']);
+    await saving;
   });
 });

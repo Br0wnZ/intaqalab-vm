@@ -1,3 +1,5 @@
+import type { MeasureUnitEnum } from '@intaqalab/models';
+
 export type TrialMeasuresResponse = {
   series: SeriesMeasuresData[];
 };
@@ -11,6 +13,7 @@ export type SeriesMeasuresData = {
 export type MeasureData = {
   id: string;
   name: string;
+  measureUnit?: MeasureUnitEnum;
   minLimit?: number | null;
   maxLimit?: number | null;
   deviation?: number | null;
@@ -25,6 +28,7 @@ export type MeasuresData = {
 
 export type MeasureSelection = {
   id: string;
+  measureUnit?: MeasureUnitEnum;
   minLimit?: number | null;
   maxLimit?: number | null;
   deviation?: number | null;

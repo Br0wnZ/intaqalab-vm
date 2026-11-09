@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ExecutionStateService } from '../../../data-access';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguimientoWidget } from './seguimiento';
@@ -149,7 +149,7 @@ describe('SeguimientoWidget', () => {
 
   it('calls getShotMeasurements and reloads shotMeasurementsResource when reload is invoked or reload button clicked', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ExecutionStateService);
     const store = TestBed.inject(ExecutionStore);
     const httpTesting = TestBed.inject(HttpTestingController);
 

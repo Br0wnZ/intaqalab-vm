@@ -3,6 +3,8 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import {
   createMockMeasuresService,
   createMockPlanningGeneralDataStore,
@@ -20,7 +22,12 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 import { MeasuresService } from '../../services/measures-service';
 import { SeriesAndShotsService } from '../../services/series-and-shots-service';
 import { Measures } from './measures';
-import { formatMeasureOptionName, mapCatalogToMagnitudesOptions } from './measures.mapper';
+import {
+  formatMeasureOptionName,
+  mapCatalogToMagnitudesOptions,
+  mapLocalToRequest,
+  mapResponseToLocal,
+} from './measures.mapper';
 
 const defaultImports = [TranslateModule.forRoot()];
 
@@ -222,6 +229,149 @@ describe('Measures', () => {
   });
 
   describe('Data Interactions', () => {
+    it.each([false, true].flatMap((bySeries) => [0, 1, 2].map((selectorIndex) => ({ bySeries, selectorIndex }))))(
+      'should reset all limits when selector $selectorIndex changes unit with series configuration $bySeries',
+      async ({ bySeries, selectorIndex }) => {
+        const { view, loader, user } = await runSetup({
+          catalogData: defaultCatalogData.map((item) => ({ ...item, measureUnit: MeasureUnitEnum.M })),
+        });
+        const component = view.fixture.componentInstance;
+        if (bySeries) component.toggleConfigBySerie();
+        component.onCategoryChange('series-1', 'topografia', [
+          { id: 'cat-1', minLimit: 3.456789, maxLimit: 50, deviation: 0, expanded: true },
+        ]);
+        component.toggleCategory('topografia', bySeries ? 'series-1' : undefined);
+        view.fixture.detectChanges();
+        if (bySeries) {
+          const panels = await loader.getAllHarnesses(MatExpansionPanelHarness);
+          await panels[0].expand();
+        }
+        const selects = await loader.getAllHarnesses(MatSelectHarness);
+        const unitSelects: MatSelectHarness[] = [];
+        for (const select of selects) {
+          if (!(await select.isMultiple())) unitSelects.push(select);
+        }
+        expect(unitSelects).toHaveLength(3);
+        expect(await unitSelects[0].getValueText()).toBe('m');
+        await unitSelects[selectorIndex].open();
+        await user.click(screen.getByRole('option', { name: 'km', exact: true }));
+        expect(await Promise.all(unitSelects.map((select) => select.getValueText()))).toEqual(['km', 'km', 'km']);
+        for (const input of screen.getAllByRole('textbox')) expect(input).toHaveValue('');
+        component.save();
+
+        expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith('trial-123', {
+          series: [
+            {
+              seriesId: 'series-1',
+              measures: {
+                topographyMeasures: [
+                  { id: 'cat-1', measureUnit: MeasureUnitEnum.KM, minLimit: null, maxLimit: null, deviation: null },
+                ],
+                munitionsMeasures: [],
+                armamentMeasures: [],
+                ballisticsMeasures: [],
+              },
+            },
+            {
+              seriesId: 'series-2',
+              measures: {
+                topographyMeasures: bySeries
+                  ? []
+                  : [{ id: 'cat-1', measureUnit: MeasureUnitEnum.KM, minLimit: null, maxLimit: null, deviation: null }],
+                munitionsMeasures: [],
+                armamentMeasures: [],
+                ballisticsMeasures: [],
+              },
+            },
+          ],
+        });
+      },
+    );
+
+    it.each([undefined, MeasureUnitEnum.M])(
+      'should preserve other limits when editing a value with unchanged unit %s',
+      async (measureUnit) => {
+        const { view } = await runSetup({
+          catalogData: defaultCatalogData.map((item) => ({ ...item, measureUnit: MeasureUnitEnum.M })),
+        });
+        const component = view.fixture.componentInstance;
+        component.onCategoryChange('series-1', 'topografia', [
+          { id: 'cat-1', measureUnit, minLimit: 1, maxLimit: 50, deviation: 0, expanded: true },
+        ]);
+
+        component.updateLimit('series-1', 'topografia', 'cat-1', 'minLimit', 3.456789, MeasureUnitEnum.M);
+        component.save();
+
+        expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith(
+          'trial-123',
+          expect.objectContaining({
+            series: expect.arrayContaining([
+              expect.objectContaining({
+                seriesId: 'series-1',
+                measures: expect.objectContaining({
+                  topographyMeasures: [
+                    { id: 'cat-1', measureUnit: MeasureUnitEnum.M, minLimit: 3.456789, maxLimit: 50, deviation: 0 },
+                  ],
+                }),
+              }),
+            ]),
+          }),
+        );
+      },
+    );
+
+    it('should preserve API units and exact numbers through loading and saving every category', () => {
+      const measure = {
+        id: 'cat-1',
+        name: 'Distance',
+        measureUnit: MeasureUnitEnum.KM,
+        minLimit: 3.456789,
+        maxLimit: 50,
+        deviation: 0,
+      };
+      const measures = {
+        topographyMeasures: [measure],
+        munitionsMeasures: [measure],
+        armamentMeasures: [measure],
+        ballisticsMeasures: [measure],
+      };
+      const data = mapResponseToLocal(
+        [{ id: 'series-1', name: 'Serie A' }],
+        [{ seriesId: 'series-1', seriesName: 'Serie A', measures }],
+      );
+      const saved = mapLocalToRequest(data, true);
+      for (const group of Object.values(saved.series[0].measures)) {
+        expect(group).toEqual([
+          { id: 'cat-1', measureUnit: MeasureUnitEnum.KM, minLimit: 3.456789, maxLimit: 50, deviation: 0 },
+        ]);
+      }
+    });
+
+    it('should save catalog units for newly selected measures without requiring a unit change', async () => {
+      const { view } = await runSetup({
+        catalogData: defaultCatalogData.map((item) => ({ ...item, measureUnit: MeasureUnitEnum.M })),
+      });
+      const component = view.fixture.componentInstance;
+      component.onCategoryChange('series-1', 'topografia', [
+        { id: 'cat-1', minLimit: null, maxLimit: null, deviation: null, expanded: false },
+      ]);
+      component.save();
+      expect(mockMeasuresService.updateMeasures).toHaveBeenCalledWith(
+        'trial-123',
+        expect.objectContaining({
+          series: expect.arrayContaining([
+            expect.objectContaining({
+              measures: expect.objectContaining({
+                topographyMeasures: [
+                  { id: 'cat-1', measureUnit: MeasureUnitEnum.M, minLimit: null, maxLimit: null, deviation: null },
+                ],
+              }),
+            }),
+          ]),
+        }),
+      );
+    });
+
     it('should call updateMeasures on save with valid data', async () => {
       const { user, view } = await runSetup();
 

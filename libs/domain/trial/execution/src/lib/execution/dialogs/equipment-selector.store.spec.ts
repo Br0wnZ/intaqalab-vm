@@ -7,8 +7,8 @@ import { AuthService, Role } from '@intaqalab/core';
 import { QualificationTypeEnum } from '@intaqalab/models';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EquipmentSelectionService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
-import { ExecutionService } from '../../services/execution.service';
 import { EquipmentMagnitudeTagEnum, type EquipmentSelectorDialogData, EquipmentTypeEnum } from '../models';
 import { EquipmentSelectorStore } from './equipment-selector.store';
 
@@ -93,7 +93,7 @@ describe('EquipmentSelectorStore', () => {
           },
         },
         { provide: EquipmentPlanningService, useValue: mockPlanningService },
-        { provide: ExecutionService, useValue: mockExecutionService },
+        { provide: EquipmentSelectionService, useValue: mockExecutionService },
         EquipmentSelectorStore,
       ],
     });

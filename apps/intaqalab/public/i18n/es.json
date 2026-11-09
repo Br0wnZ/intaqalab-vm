@@ -1674,6 +1674,10 @@
       },
       "OVERPRESSURE_INFO": {
         "DESCRIPTION": "Gestión de presiones del ensayo: máxima, mínima, referencia y presión de seguridad",
+        "INVALID_CONFIGURATION": "Informe las tres presiones con valores finitos no negativos y una mínima no superior a la máxima.",
+        "WARNING_SAFETY_PRESSURE_UNAVAILABLE": "No se ha podido determinar la presión de seguridad.",
+        "WARNING_TUBE_UNAVAILABLE": "El tubo seleccionado no está disponible en el catálogo de tubos de planificación.",
+        "UNIT_LABEL": "Unidad",
         "PRESION_BUSCADA_LABEL": "Pres. Buscada",
         "PRESION_MAXIMA_LABEL": "Pres. Máxima",
         "PRESION_MINIMA_LABEL": "Pres. Mínima",

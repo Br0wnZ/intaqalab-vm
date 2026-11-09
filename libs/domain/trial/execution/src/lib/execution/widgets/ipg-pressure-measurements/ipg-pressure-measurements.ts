@@ -23,7 +23,7 @@ import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTrac
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService, ShotIpgPressuresService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import { EquipmentTypeEnum, type ShotIpgPressuresRequest, type WidgetFormState } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -194,7 +194,8 @@ export class IpgPressureMeasurements extends BaseFormWidgetComponent {
   readonly widgetId = input<string>('medidas-presion-ipg');
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotIpgPressuresService = inject(ShotIpgPressuresService);
+  readonly #equipmentSelectionService = inject(EquipmentSelectionService);
   readonly #trialShots = injectTrialShots();
 
   readonly #lastLoadedActiveSelection = signal<string | null>(null);
@@ -330,7 +331,7 @@ export class IpgPressureMeasurements extends BaseFormWidgetComponent {
   constructor() {
     super();
 
-    this.#executionService
+    this.#equipmentSelectionService
       .loadEquipmentItemsByCategories([EquipmentTypeEnum.IPG_SENSOR, EquipmentTypeEnum.MICROMODULE])
       .then((items) => this.#itemsByCategory.set(items))
       .catch((error: unknown) => {
@@ -402,7 +403,7 @@ export class IpgPressureMeasurements extends BaseFormWidgetComponent {
     const key = this.#selectionKey();
     const ticket = this.#selectionGuard.begin();
     try {
-      const response = await this.#executionService.fetchShotIpgPressures(fireTrialId, serie, disparo);
+      const response = await this.#shotIpgPressuresService.fetchShotIpgPressures(fireTrialId, serie, disparo);
       if (!ticket.isFresh(key)) return;
 
       const item = response?.ipgPressuresData?.[0];
@@ -465,7 +466,7 @@ export class IpgPressureMeasurements extends BaseFormWidgetComponent {
       ],
     };
 
-    await this.#executionService.updateShotIpgPressures(fireTrialId, serie, disparo, request);
+    await this.#shotIpgPressuresService.updateShotIpgPressures(fireTrialId, serie, disparo, request);
     this.#store.updateMedidasPresionIpg({
       sensorIpg,
       micromodulo,

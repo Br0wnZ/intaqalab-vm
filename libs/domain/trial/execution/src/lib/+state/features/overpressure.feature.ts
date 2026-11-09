@@ -1,21 +1,34 @@
-import { computed } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { computed, inject } from '@angular/core';
+import { PressureUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { OverpressureService } from '../../data-access';
+import type { TrialOverpressureInfoRequest, TrialOverpressureWarning } from '../../execution/models';
+import { mapRemoteToOverpressureState } from '../../execution/widgets/overpressure-info/overpressure-info.mapper';
 import type { OverpressureChartState, OverpressureInfoState } from '../execution-state.models';
 
 interface OverpressureSlice {
   overpressureInfo: OverpressureInfoState;
   overpressureChart: OverpressureChartState;
+  overpressureInfoLoading: boolean;
+  overpressureInfoSaving: boolean;
+  overpressureInfoError: unknown;
+  overpressureInfoWarnings: TrialOverpressureWarning[];
 }
 
 const initialState: OverpressureSlice = {
   overpressureInfo: {
-    presionMaxima: 273.75,
-    presionMinima: 262.05,
-    presionRef: 233.97,
-    unidadPresion: 'MPa',
-    presionSeguridad: 379.0,
+    presionMaxima: null,
+    presionMinima: null,
+    presionRef: null,
+    unidadPresion: PressureUnitEnum.MPA,
+    presionSeguridad: null,
   },
+  overpressureInfoLoading: false,
+  overpressureInfoSaving: false,
+  overpressureInfoError: null,
+  overpressureInfoWarnings: [],
   overpressureChart: {
     selectedSerie: null,
     presionSeguridad: 379.0,
@@ -158,20 +171,69 @@ export function withOverpressure() {
         return (s.presionMaxima + s.presionMinima) / 2;
       }),
     })),
-    withMethods((store) => ({
-      /** Actualiza el estado del widget Información Sobrepresión */
-      updateOverpressureInfo(updates: Partial<OverpressureInfoState>): void {
-        patchState(store, (state) => ({
-          overpressureInfo: { ...state.overpressureInfo, ...updates },
-        }));
-      },
+    withMethods((store, service = inject(OverpressureService)) => {
+      let context: string | null = null;
+      let revision = 0;
+      return {
+        async loadTrialOverpressureInfo(fireTrialId: string | null): Promise<void> {
+          context = fireTrialId;
+          const ticket = ++revision;
+          patchState(store, {
+            overpressureInfo: { ...initialState.overpressureInfo },
+            overpressureInfoWarnings: [],
+            overpressureInfoError: null,
+            overpressureInfoLoading: !!fireTrialId,
+            overpressureInfoSaving: false,
+          });
+          if (!fireTrialId) return;
+          try {
+            const response = await service.fetchTrialOverpressureInfo(fireTrialId);
+            if (ticket !== revision) return;
+            patchState(store, {
+              overpressureInfo: mapRemoteToOverpressureState(response),
+              overpressureInfoWarnings: response.warnings,
+            });
+          } catch (error) {
+            if (ticket !== revision) return;
+            if (!(error instanceof HttpErrorResponse && error.status === 404)) {
+              patchState(store, { overpressureInfoError: error });
+            }
+          } finally {
+            if (ticket === revision) patchState(store, { overpressureInfoLoading: false });
+          }
+        },
 
-      /** Actualiza el estado del widget Gráfica Sobrepresión */
-      updateOverpressureChart(updates: Partial<OverpressureChartState>): void {
-        patchState(store, (state) => ({
-          overpressureChart: { ...state.overpressureChart, ...updates },
-        }));
-      },
-    })),
+        async saveTrialOverpressureInfo(fireTrialId: string, body: TrialOverpressureInfoRequest): Promise<void> {
+          if (context !== fireTrialId || store.overpressureInfoLoading())
+            throw new Error('Overpressure context not ready');
+          const ticket = ++revision;
+          patchState(store, { overpressureInfoSaving: true });
+          try {
+            const response = await service.updateTrialOverpressureInfo(fireTrialId, body);
+            if (ticket !== revision) throw new Error('Overpressure context changed');
+            patchState(store, {
+              overpressureInfo: mapRemoteToOverpressureState(response),
+              overpressureInfoWarnings: response.warnings,
+            });
+          } finally {
+            if (ticket === revision) patchState(store, { overpressureInfoSaving: false });
+          }
+        },
+
+        /** Actualiza el estado del widget Información Sobrepresión */
+        updateOverpressureInfo(updates: Partial<OverpressureInfoState>): void {
+          patchState(store, (state) => ({
+            overpressureInfo: { ...state.overpressureInfo, ...updates },
+          }));
+        },
+
+        /** Actualiza el estado del widget Gráfica Sobrepresión */
+        updateOverpressureChart(updates: Partial<OverpressureChartState>): void {
+          patchState(store, (state) => ({
+            overpressureChart: { ...state.overpressureChart, ...updates },
+          }));
+        },
+      };
+    }),
   );
 }

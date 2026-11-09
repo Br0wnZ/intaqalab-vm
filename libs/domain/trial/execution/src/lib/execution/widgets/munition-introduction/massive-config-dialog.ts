@@ -17,7 +17,7 @@ import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotMunitionService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type {
   MunitionConditioningBulkConfigurationRequest,
@@ -146,14 +146,15 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
 export class MassiveConfigDialog {
   readonly #dialogRef = inject<MatDialogRef<MassiveConfigDialog, MassiveConfigDialogResult>>(MatDialogRef);
   readonly data = inject<MassiveConfigDialogData>(MAT_DIALOG_DATA);
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotMunitionService = inject(ShotMunitionService);
   readonly #store = inject(ExecutionStore, { optional: true });
   readonly #isSavingInternal = signal(false);
   readonly #climaticChambers = injectClimaticChamberEquipments(() => this.selectedSeries());
 
   protected readonly isSaving = computed(
     () =>
-      this.#isSavingInternal() || this.#executionService.applyMunitionConditioningBulkConfigurationResource.isLoading(),
+      this.#isSavingInternal() ||
+      this.#shotMunitionService.applyMunitionConditioningBulkConfigurationResource.isLoading(),
   );
   protected readonly selectedSeries = signal<string[]>(this.data.initialSeries ?? []);
   protected readonly componenteOptions = computed(() => {
@@ -213,9 +214,9 @@ export class MassiveConfigDialog {
     try {
       const response = this.#store
         ? await this.#store.applyMunitionConditioningBulkConfiguration(this.data.fireTrialId, request)
-        : await this.#executionService.applyMunitionConditioningBulkConfiguration(this.data.fireTrialId, request);
+        : await this.#shotMunitionService.applyMunitionConditioningBulkConfiguration(this.data.fireTrialId, request);
 
-      if (this.#executionService.applyMunitionConditioningBulkConfigurationResource.status() === 'resolved') {
+      if (this.#shotMunitionService.applyMunitionConditioningBulkConfigurationResource.status() === 'resolved') {
         this.#dialogRef.close(response);
       }
     } catch (error) {

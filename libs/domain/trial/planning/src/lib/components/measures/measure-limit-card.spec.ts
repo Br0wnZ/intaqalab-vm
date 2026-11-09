@@ -1,12 +1,16 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { Component, type OnInit, signal } from '@angular/core';
 import { disabled, form, validate } from '@angular/forms/signals';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { MeasureUnitEnum, SHOT_CONDITIONS_UNIT_OPTIONS } from '@intaqalab/models';
+import { LOCALE_SIGNAL } from '@intaqalab/utils';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import type { MeasureLimitChange, MeasureSelectionData } from '../../utils-models/measure-serie.model';
 import { MeasureLimitCard } from './measure-limit-card';
 
 @Component({
@@ -17,6 +21,8 @@ import { MeasureLimitCard } from './measure-limit-card';
       [measureForm]="measureForm"
       [isQuantitative]="isQuantitative"
       [readonly]="readonly"
+      [unitOptions]="unitOptions"
+      [measureUnit]="measureUnit"
       (remove)="onRemove()"
       (toggleExpanded)="onToggleExpanded()"
       (limitChange)="onLimitChange($event)"
@@ -50,6 +56,8 @@ class TestHostComponent implements OnInit {
   measureName = 'Presión';
   isQuantitative = true;
   readonly = false;
+  unitOptions: { value: string; label: string }[] = [];
+  measureUnit = '';
 
   readonly onRemove = vi.fn();
   readonly onToggleExpanded = vi.fn();
@@ -66,11 +74,15 @@ class TestHostComponent implements OnInit {
 }
 
 describe('MeasureLimitCard', () => {
-  const runSetup = async (initialState?: Partial<TestHostComponent>) => {
+  const runSetup = async (initialState?: Partial<TestHostComponent>, locale: 'es-ES' | 'en-US' = 'es-ES') => {
     const user = userEvent.setup();
     const view = await render(TestHostComponent, {
       componentProperties: initialState,
-      providers: [provideAnimationsAsync(), provideTestingEnvironment()],
+      providers: [
+        provideAnimationsAsync(),
+        provideTestingEnvironment(),
+        { provide: LOCALE_SIGNAL, useValue: signal(locale) },
+      ],
     });
     const host = view.fixture.componentInstance;
     return { view, user, host };
@@ -78,6 +90,83 @@ describe('MeasureLimitCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('Unit selectors', () => {
+    it('should synchronize all selectors and emit the shared measure unit without converting values', async () => {
+      const { view, host, user } = await runSetup({
+        unitOptions: SHOT_CONDITIONS_UNIT_OPTIONS.distance,
+        measureUnit: MeasureUnitEnum.M,
+        measure: { id: 'm-1', expanded: true, minLimit: 3.456789, maxLimit: 50, deviation: 0 },
+      });
+      host.onLimitChange.mockImplementation((event: MeasureLimitChange) => {
+        host.measure = { ...host.measure, [event.field]: event.value, measureUnit: event.measureUnit };
+        host.measureModel.set(host.measure);
+      });
+      const loader = TestbedHarnessEnvironment.loader(view.fixture);
+      const selects = await loader.getAllHarnesses(MatSelectHarness);
+      expect(selects).toHaveLength(3);
+      await selects[0].open();
+      await user.click(screen.getByRole('option', { name: 'km', exact: true }));
+
+      expect(host.onLimitChange).toHaveBeenCalledWith({
+        field: 'minLimit',
+        value: 3.456789,
+        measureUnit: MeasureUnitEnum.KM,
+      });
+      expect(await Promise.all(selects.map((select) => select.getValueText()))).toEqual(['km', 'km', 'km']);
+      expect(host.measureModel()).toMatchObject({ minLimit: 3.456789, maxLimit: 50, deviation: 0 });
+    });
+
+    it.each([
+      { locale: 'es-ES', text: '3,456789' },
+      { locale: 'en-US', text: '3.456789' },
+    ] as const)('should preserve numeric precision when editing in $locale', async ({ locale, text }) => {
+      const { host, user } = await runSetup(
+        {
+          unitOptions: SHOT_CONDITIONS_UNIT_OPTIONS.distance,
+          measureUnit: MeasureUnitEnum.M,
+          measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: 50, deviation: 2 },
+        },
+        locale,
+      );
+      const input = screen.getByRole('textbox', { name: /MIN_LIMIT/ });
+      await user.type(input, text);
+      await user.tab();
+      expect(host.onLimitChange).toHaveBeenLastCalledWith({
+        field: 'minLimit',
+        value: 3.456789,
+        measureUnit: MeasureUnitEnum.M,
+      });
+      expect(host.measureModel().minLimit).toBe(3.456789);
+    });
+
+    it('should preserve loaded numbers and emit nothing after repeated focus and blur', async () => {
+      const { host, user } = await runSetup({
+        unitOptions: SHOT_CONDITIONS_UNIT_OPTIONS.distance,
+        measureUnit: MeasureUnitEnum.M,
+        measure: { id: 'm-1', expanded: true, minLimit: 3.456789, maxLimit: 50, deviation: 0 },
+      });
+      const input = screen.getByRole('textbox', { name: /MIN_LIMIT/ });
+      await user.click(input);
+      await user.tab();
+      await user.click(input);
+      await user.tab();
+      expect(host.measureModel().minLimit).toBe(3.456789);
+      expect(host.onLimitChange).not.toHaveBeenCalled();
+    });
+
+    it('should disable unit selectors and numeric inputs in readonly mode', async () => {
+      const { view } = await runSetup({
+        readonly: true,
+        unitOptions: SHOT_CONDITIONS_UNIT_OPTIONS.distance,
+        measureUnit: MeasureUnitEnum.M,
+        measure: { id: 'm-1', expanded: true, minLimit: 10, maxLimit: 50, deviation: 2 },
+      });
+      const selects = await TestbedHarnessEnvironment.loader(view.fixture).getAllHarnesses(MatSelectHarness);
+      expect(await Promise.all(selects.map((select) => select.isDisabled()))).toEqual([true, true, true]);
+      for (const input of screen.getAllByRole('textbox')) expect(input).toBeDisabled();
+    });
   });
 
   describe('Collapsed State', () => {

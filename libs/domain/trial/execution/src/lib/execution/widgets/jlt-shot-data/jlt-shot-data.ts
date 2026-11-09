@@ -25,9 +25,9 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import type { JltShotDataRequest, JltShotDataResponse } from '../../../services/execution.service';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotJltDataService } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
+import type { JltShotDataRequest, JltShotDataResponse } from '../../models';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -232,7 +232,7 @@ export class JltShotData extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore, { skipSelf: true });
-  readonly #executionService = inject(ExecutionService);
+  readonly #shotJltDataService = inject(ShotJltDataService);
   readonly #trialShots = injectTrialShots();
   readonly #locale = inject(LOCALE_SIGNAL);
   readonly #selectionKey = computed(() => shotSelectionKey(this.formModel().serie, this.formModel().disparo));
@@ -495,7 +495,7 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     this.#store.updateJltShotData(updates);
     if (fireTrialId && serie && disparo) {
-      await this.#executionService.updateJltShotData(fireTrialId, serie, disparo, request);
+      await this.#shotJltDataService.updateJltShotData(fireTrialId, serie, disparo, request);
     }
     this.#syncSnapshot();
     this.shotLock.lock();
@@ -519,10 +519,10 @@ export class JltShotData extends BaseFormWidgetComponent {
 
     const lastShotId = findLastShotId(this.#store.executionProgress()?.series, serie);
     const [currentShotResult] = await Promise.allSettled([
-      this.#executionService.fetchJltShotData(fireTrialId, serie, disparo),
+      this.#shotJltDataService.fetchJltShotData(fireTrialId, serie, disparo),
     ]);
     const [lastShotResult] = await Promise.allSettled([
-      lastShotId ? this.#executionService.fetchJltShotData(fireTrialId, serie, lastShotId) : Promise.resolve(null),
+      lastShotId ? this.#shotJltDataService.fetchJltShotData(fireTrialId, serie, lastShotId) : Promise.resolve(null),
     ]);
 
     if (!ticket.isFresh(selectionKey)) {

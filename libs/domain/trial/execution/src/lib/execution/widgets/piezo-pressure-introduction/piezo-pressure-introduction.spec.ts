@@ -9,6 +9,7 @@ import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { EquipmentSelectionService, ShotPressuresService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -180,7 +181,7 @@ describe('PiezoPressureIntroduction', () => {
 
   it('refreshes data by fetching shot pressures when changing serie', async () => {
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(ShotPressuresService);
     const store = TestBed.inject(ExecutionStore);
 
     store.setFireTrialId('trial-123');
@@ -223,7 +224,7 @@ describe('PiezoPressureIntroduction', () => {
   });
 
   it('builds combined equipment options for active serie and shot from equipment selector resource', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.PIEZOELECTRIC_SENSOR]: [{ id: '1', label: 'Sensor Kistler 6215' }],
       [EquipmentTypeEnum.DATA_ACQUISITION_SYSTEM]: [{ id: '2', label: 'Registrador Yokogawa DL850' }],
       [EquipmentTypeEnum.AMPLIFIER]: [{ id: '3', label: 'Amplificador Kistler 5018' }],

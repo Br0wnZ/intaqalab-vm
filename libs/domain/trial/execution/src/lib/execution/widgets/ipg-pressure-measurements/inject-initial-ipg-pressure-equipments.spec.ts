@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService } from '../../../data-access';
 import { EquipmentMeasurementGroupEnum, type EquipmentSelectionItem, EquipmentTypeEnum } from '../../models';
 import { injectInitialIpgPressureEquipments } from './inject-initial-ipg-pressure-equipments';
 
@@ -17,7 +17,7 @@ describe('injectInitialIpgPressureEquipments', () => {
     TestBed.configureTestingModule({
       providers: [
         {
-          provide: ExecutionService,
+          provide: EquipmentSelectionService,
           useValue: {
             equipmentSelectorResource: {
               hasValue: () => false,
@@ -54,7 +54,7 @@ describe('injectInitialIpgPressureEquipments', () => {
     ]);
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockService }],
     });
 
     const selections = TestBed.runInInjectionContext(() => injectInitialIpgPressureEquipments());

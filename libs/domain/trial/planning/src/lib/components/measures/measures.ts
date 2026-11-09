@@ -14,6 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
+import { MEASURE_UNIT_OPTIONS_BY_CATEGORY, type MeasureUnitEnum } from '@intaqalab/models';
 import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
@@ -21,7 +22,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type { MagnitudesOptions, MeasureSelectionData } from '../../utils-models/measure-serie.model';
+import type {
+  MagnitudesOptions,
+  MeasureSelectionData,
+  MeasureUnitOptions,
+} from '../../utils-models/measure-serie.model';
 import { MeasureCategoryCard } from './measure-category-card';
 import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } from './measures.mapper';
 
@@ -136,12 +141,22 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
                 [measureFields]="seriesForm[0][cat.key]"
                 [readonly]="readonly()"
                 [measuresCatalog]="measuresCatalog()"
+                [measureUnitOptions]="measureUnitOptions()"
                 (toggleOpen)="toggleCategory(cat.key)"
                 (selectedValuesChange)="onCategoryChange(seriesSignal()[0].id, cat.key, $event)"
                 (toggleFavorite)="onToggleFavorite($event)"
                 (removeMeasure)="removeMeasure(seriesSignal()[0].id, cat.key, $event)"
                 (toggleMeasureExpanded)="toggleMeasureExpanded(seriesSignal()[0].id, cat.key, $event)"
-                (updateLimit)="updateLimit(seriesSignal()[0].id, cat.key, $event.measureId, $event.field, $event.value)"
+                (updateLimit)="
+                  updateLimit(
+                    seriesSignal()[0].id,
+                    cat.key,
+                    $event.measureId,
+                    $event.field,
+                    $event.value,
+                    $event.measureUnit
+                  )
+                "
               />
             }
           </div>
@@ -171,12 +186,15 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
                       [measureFields]="seriesForm[serieIndex][cat.key]"
                       [readonly]="readonly()"
                       [measuresCatalog]="measuresCatalog()"
+                      [measureUnitOptions]="measureUnitOptions()"
                       (toggleOpen)="toggleCategory(cat.key, serie.id)"
                       (selectedValuesChange)="onCategoryChange(serie.id, cat.key, $event)"
                       (toggleFavorite)="onToggleFavorite($event)"
                       (removeMeasure)="removeMeasure(serie.id, cat.key, $event)"
                       (toggleMeasureExpanded)="toggleMeasureExpanded(serie.id, cat.key, $event)"
-                      (updateLimit)="updateLimit(serie.id, cat.key, $event.measureId, $event.field, $event.value)"
+                      (updateLimit)="
+                        updateLimit(serie.id, cat.key, $event.measureId, $event.field, $event.value, $event.measureUnit)
+                      "
                     />
                   }
                 </div>
@@ -219,6 +237,16 @@ export class Measures {
   readonly #seriesStore = inject(SeriesAndShotsStore);
 
   readonly measuresCatalog = computed(() => this.#measuresStore.measuresCatalog());
+
+  protected readonly measureUnitOptions = computed<MeasureUnitOptions>(() => {
+    const unitGroups = Object.values(MEASURE_UNIT_OPTIONS_BY_CATEGORY);
+    return Object.fromEntries(
+      this.measuresCatalog().map((measure) => [
+        measure.id,
+        unitGroups.find((options) => options.some((option) => option.value === measure.measureUnit)) ?? [],
+      ]),
+    );
+  });
 
   readonly isLoadingView = computed(
     () =>
@@ -292,8 +320,8 @@ export class Measures {
   });
 
   readonly hasToBeDisabled = computed(() => {
-    const currentRequest = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration());
-    const initialRequest = mapLocalToRequest(this.#initialSeriesData(), false);
+    const currentRequest = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration(), this.measuresCatalog());
+    const initialRequest = mapLocalToRequest(this.#initialSeriesData(), false, this.measuresCatalog());
     const hasUnchangedData = JSON.stringify(currentRequest) === JSON.stringify(initialRequest);
 
     return this.isSaving() || this.seriesForm().invalid() || hasUnchangedData;
@@ -464,6 +492,7 @@ export class Measures {
     measureId: string,
     field: 'minLimit' | 'maxLimit' | 'deviation',
     value: number | null,
+    measureUnit?: MeasureUnitEnum,
   ): void {
     if (this.readonly()) {
       return;
@@ -473,9 +502,15 @@ export class Measures {
         if (s.id !== serieId) return s;
         return {
           ...s,
-          [category]: (s[category] as MeasureSelectionData[]).map((m) =>
-            m.id === measureId ? { ...m, [field]: value } : m,
-          ),
+          [category]: (s[category] as MeasureSelectionData[]).map((measure) => {
+            if (measure.id !== measureId) return measure;
+            const currentUnit =
+              measure.measureUnit ?? this.measuresCatalog().find((item) => item.id === measureId)?.measureUnit;
+            if (measureUnit && measureUnit !== currentUnit) {
+              return { ...measure, measureUnit, minLimit: null, maxLimit: null, deviation: null };
+            }
+            return { ...measure, [field]: value, ...(measureUnit ? { measureUnit } : {}) };
+          }),
         };
       }),
     );
@@ -507,7 +542,7 @@ export class Measures {
     if (!this.seriesForm().valid()) {
       return;
     }
-    const request = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration());
+    const request = mapLocalToRequest(this.seriesSignal(), this.seriesConfiguration(), this.measuresCatalog());
     this.#measuresStore.updateMeasures(request);
   }
 

@@ -1,41 +1,71 @@
-import { HttpClient, HttpContext, HttpParams, httpResource } from '@angular/common/http';
-import type { Signal } from '@angular/core';
-import { Injectable, Injector, inject, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
-import {
-  SKIP_ERROR_TOAST,
-  injectExecutionEndpoint,
-  injectFireTrialsEndpoint,
-  injectPlanningEndpoint,
-  injectWharehouseEndpoint,
-} from '@intaqalab/config';
-import type { BackendMunitionComponent, TrialArmamentResponse } from '@intaqalab/data-access-planning';
-import { PlanningArmamentService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
-import type { CadenceUnitEnum, DistanceUnitEnum, FireTrial, SpeedUnitEnum } from '@intaqalab/models';
-import { actionTrigger } from '@intaqalab/utils';
-import { filter, firstValueFrom, take } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import type { FireTrial } from '@intaqalab/models';
 
+import { OverpressureService } from '../data-access/execution/analytics/overpressure.service';
+import { PropellantChargeService } from '../data-access/execution/analytics/propellant-charge.service';
+import { VelocityUniformityService } from '../data-access/execution/analytics/velocity-uniformity.service';
+import { ArmamentCatalogService } from '../data-access/execution/equipment/armament-catalog.service';
+import { EquipmentSelectionService } from '../data-access/execution/equipment/equipment-selection.service';
+import { PlanningFuseService } from '../data-access/execution/planning/planning-fuse.service';
+import { PlanningMunitionOptionsService } from '../data-access/execution/planning/planning-munition-options.service';
+import { WarehouseCatalogService } from '../data-access/execution/planning/warehouse-catalog.service';
+import { WidgetPreferencesService } from '../data-access/execution/preferences/widget-preferences.service';
+import { ExecutionReadinessService } from '../data-access/execution/readiness/execution-readiness.service';
+import { JltPreparationService } from '../data-access/execution/readiness/jlt-preparation.service';
+import { ShotAcousticLevelService } from '../data-access/execution/shot/shot-acoustic-level.service';
+import { ShotArmamentService } from '../data-access/execution/shot/shot-armament.service';
+import { ShotCameraOrientationService } from '../data-access/execution/shot/shot-camera-orientation.service';
+import { ShotIpgPressuresService } from '../data-access/execution/shot/shot-ipg-pressures.service';
+import { ShotJltDataService } from '../data-access/execution/shot/shot-jlt-data.service';
+import { ShotJltMaoService } from '../data-access/execution/shot/shot-jlt-mao.service';
+import { ShotManometerPressuresService } from '../data-access/execution/shot/shot-manometer-pressures.service';
+import { ShotMaoTopographyService } from '../data-access/execution/shot/shot-mao-topography.service';
+import { ShotMunitionService } from '../data-access/execution/shot/shot-munition.service';
+import { ShotPressuresService } from '../data-access/execution/shot/shot-pressures.service';
+import { ShotRadarOrientationService } from '../data-access/execution/shot/shot-radar-orientation.service';
+import { ShotTopographyService } from '../data-access/execution/shot/shot-topography.service';
+import { ShotTrajectographyService } from '../data-access/execution/shot/shot-trajectography.service';
+import { ShotVelocitiesService } from '../data-access/execution/shot/shot-velocities.service';
+import { ShotVideoService } from '../data-access/execution/shot/shot-video.service';
+import { ExecutionPlanningService } from '../data-access/execution/state/commands/execution-planning.service';
+import { ExecutionStateService } from '../data-access/execution/state/execution-state.service';
+import { ExecutionTransitionService } from '../data-access/execution/state/execution-transition.service';
+import { SecurityCountdownService } from '../data-access/execution/state/security-countdown.service';
 import type {
+  ArmamentBulkConfigurationRequest,
   ArmamentEquipmentDenomination,
-  ArmamentEquipmentDenominationsResponse,
-  EquipmentMeasurementGroup,
-  EquipmentSelectionItem,
-  EquipmentSelectionList,
+  ArmamentEquipmentItem,
+  EquipmentSelectorUpdateRequest,
   EquipmentTypeEnum,
+  ExecutionFinishResponse,
+  ExecutionTechnicalProfile,
   JltMaoBulkConfigurationRequest,
   JltMaoBulkConfigurationResponse,
+  JltReadinessItem,
+  JltReadinessRequest,
+  JltShotDataRequest,
+  JltShotDataResponse,
+  LoadEquipmentByTypeParams,
   MaoTopographyBulkConfigurationRequest,
   MaoTopographyBulkConfigurationResponse,
   MunitionConditioningBulkConfigurationRequest,
   MunitionConditioningBulkConfigurationResponse,
-  PropellantChargeAdjustmentConfiguration,
+  PlanningApprovalRequest,
+  PlanningArmamentResponse,
+  PlanningDenominationOption,
+  PlanningMunitionOptionData,
+  PlanningRequest,
+  ProfileReadinessRequest,
+  ProfileReadinessSaveResult,
   PropellantChargeAdjustmentQuery,
-  PropellantChargeAdjustmentResponse,
-  PropellantChargeParametersResponse,
+  SecurityCountdownRequest,
+  SecurityCountdownResponse,
+  SeriesReadinessItem,
+  SeriesReadinessRequest,
   ShotAcousticLevelRequest,
   ShotAcousticLevelResponse,
-  ShotCameraOrientationResponse,
-  ShotDifferentialPressureData,
+  ShotArmamentRequest,
+  ShotArmamentResponse,
   ShotIpgPressuresRequest,
   ShotIpgPressuresResponse,
   ShotJltMaoRequest,
@@ -46,225 +76,25 @@ import type {
   ShotMaoTopographyResponse,
   ShotMunitionRequest,
   ShotMunitionResponse,
-  ShotPiezoPressureItem,
   ShotPressuresRequest,
   ShotPressuresResponse,
-  ShotTimesData,
   ShotTopographyRequest,
   ShotTopographyResponse,
   ShotTrajectographyRequest,
   ShotTrajectographyResponse,
+  ShotVelocitiesRequest,
+  ShotVelocitiesResponse,
   ShotVideoDataRequest,
   ShotVideoDataResponse,
-  TrajectographyRadarOrientationResponse,
+  TrialOverpressureInfoParams,
+  TrialOverpressureInfoRequest,
+  TrialOverpressureInfoResponse,
   VelocityUniformityQuery,
-  VelocityUniformityResponse,
+  WarehouseStockBatch,
   WidgetPreferenceId,
 } from '../execution/models';
-import type { PiezoPosition } from '../execution/models/shot-piezo-pressures.models';
-import { EquipmentCatalogService } from './equipment-catalog.service';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-// ============= Types =============
-
-export type ExecutionStatus =
-  | 'ACTIVE'
-  | 'PAUSED'
-  | 'INTERRUPTED'
-  | 'CANCELED'
-  // Legacy statuses still present in some mock/UI flows.
-  | 'PLANNED'
-  | 'IN_PROGRESS'
-  | 'STARTED'
-  | 'EXECUTED'
-  | 'FINISHED'
-  | 'ANALYZING'
-  | 'CLOSED';
-
-export interface PlanningComponentType {
-  id: string;
-  label: string;
-  category: string;
-}
-
-export interface PlanningDenominationOption {
-  id: string;
-  name: string;
-  componentTypeId: string;
-  batch?: string | null;
-  clientNumber?: string | null;
-}
-
-export interface WarehouseStockBatch {
-  denominationId: string;
-  batch: string;
-}
-
-export interface PlanningComponentData {
-  componentTypeId: string;
-  denominationId: string | null;
-  batch: string | null;
-  clientNumber: string | null;
-}
-
-export interface PlanningOptionsGroup {
-  componentTypes: PlanningComponentType[];
-  denominations: PlanningDenominationOption[];
-  componentData: Record<string, PlanningComponentData>;
-  denominationData: Record<string, PlanningComponentData>;
-}
-
-export interface PlanningMunitionOptionData {
-  configurationIds: string[];
-  componentTypes: PlanningComponentType[];
-  denominations: PlanningDenominationOption[];
-  optionsBySelection: Record<string, PlanningOptionsGroup>;
-  optionsByShot: Record<string, PlanningOptionsGroup>;
-  optionsBySeries: Record<string, PlanningOptionsGroup>;
-}
-
-export interface ExecutionStateResponse {
-  status: ExecutionStatus;
-  activeSeriesId: string | null;
-  activeShotId: string | null;
-  // Backward compatibility with legacy payloads still sending this field.
-  activeShootId?: string | null;
-  updatedAt: string;
-}
-
-export interface ExecutionSeriesProgress {
-  seriesId: string;
-  shots: ExecutionShotProgress[];
-}
-
-export interface ExecutionShotProgress {
-  shotId: string;
-  status: 'PENDING' | 'ACTIVE' | 'FIRED';
-  updatedAt: string;
-}
-
-export interface ExecutionProgressResponse {
-  series: ExecutionSeriesProgress[];
-}
-
-export interface ShotMeasurementWeight {
-  balanceId: number | null;
-  weight: number | null;
-  weightUnit: string | null;
-}
-
-export interface ShotMeasurementVelocity {
-  radarDopplerId: number;
-  antennaId: number;
-  initialVelocity: number | null;
-  initialVelocityUnit: string | null;
-}
-
-export interface ShotMeasurementPiezoPressure {
-  position: PiezoPosition;
-  piezoelectricSensorId?: number | null;
-  amplifierId?: number | null;
-  dataAcquisitionSystemId?: number | null;
-  maxPressure?: number | null;
-  maxPressureUnit?: string | null;
-}
-
-export interface ShotMeasurementShot {
-  shotId: string;
-  powderWeights: ShotMeasurementWeight[];
-  projectileWeights: ShotMeasurementWeight[];
-  velocities: ShotMeasurementVelocity[];
-  piezoPressures: ShotMeasurementPiezoPressure[];
-}
-
-export interface ShotMeasurementSeries {
-  seriesId: string;
-  shots: ShotMeasurementShot[];
-}
-
-export interface ShotMeasurementsResponse {
-  series: ShotMeasurementSeries[];
-}
-
-export type SecurityCountdownStatus = 'INACTIVE' | 'ACTIVE' | 'PAUSED';
-
-export interface SecurityCountdownResponse {
-  status: SecurityCountdownStatus;
-  targetEndTime: string | null;
-  remainingSeconds: number | null;
-}
-
-export type SecurityCountdownAction = 'START' | 'PAUSE' | 'RESUME' | 'UPDATE_DURATION';
-
-export interface SecurityCountdownRequest {
-  action: SecurityCountdownAction;
-  durationSeconds?: number;
-}
-
-export interface TransitionWithReasonRequest {
-  reason: string;
-}
-
-export interface ExecutionFinishResponse {
-  finishedAt: string;
-}
-
-export interface PlanningSpecimen {
-  specimenId: string;
-  batch?: string;
-}
-
-export interface PlanningUser {
-  id: string;
-  name: string;
-}
-
-export interface DateControlParameters {
-  maxEmissionDates: number;
-  percentageTechnicalUnits: number;
-  percentageEndTrial: number;
-  daysSignReport: number;
-  reportDeadlineDate: string;
-}
-
-export interface PlanningResponse {
-  goal: string;
-  specimens: PlanningSpecimen[];
-  planningUser: PlanningUser;
-  executionDate: string;
-  observations?: string;
-  requirements?: string;
-  additionalInfo?: string;
-  dateControl?: DateControlParameters;
-}
-
-export interface PlanningRequest {
-  goal: string;
-  specimens: PlanningSpecimen[];
-  planningUserId: string;
-  executionDate: string;
-  observations?: string;
-  requirements?: string;
-  additionalInfo?: string;
-  dateControl?: DateControlParameters;
-}
-
-export interface PlanningApprovalRequest {
-  approved: boolean;
-  comments?: string | null;
-}
-
-/** Modelos de planning/series y planning/conditions: fuente única en @intaqalab/data-access-planning. */
-export type {
-  PlanningConditionsResponse,
-  PlanningConditionsSeries,
-  PlanningConditionsShot,
-  PlanningSeriesItem,
-  PlanningSeriesShotItem,
-} from '@intaqalab/data-access-planning';
+// Superficie de tipos compatible: los modelos se movieron a `execution/models` (ADR-025).
 export type {
   PropellantChargeParametersResponse,
   ShotDifferentialPressureData,
@@ -272,2113 +102,450 @@ export type {
   ShotPressuresRequest,
   ShotPressuresResponse,
   ShotTimesData,
-};
-
-export interface JltShotDataPayload {
-  jet: string;
-  pieceOperator: string;
-  attackDistance: number | null;
-  attackDistanceUnit?: DistanceUnitEnum;
-  recoilDistance: number | null;
-  recoilDistanceUnit?: DistanceUnitEnum;
-  observations?: string | null;
-}
-
-export type JltShotDataRequest = JltShotDataPayload;
-
-export type JltShotDataResponse = JltShotDataPayload | { jltData: JltShotDataPayload };
-
-export interface ShotVelocityItem {
-  radarDopplerId?: number | null;
-  antennaId?: number | null;
-  initialVelocity?: number | null;
-  initialVelocityUnit?: SpeedUnitEnum;
-  softwareUncertainty?: number | null;
-  softwareUncertaintyUnit?: SpeedUnitEnum;
-  cadence?: number | null;
-  cadenceUnit?: CadenceUnitEnum;
-  velocityLoss?: number | null;
-  velocityLossUnit?: SpeedUnitEnum;
-  observations?: string | null;
-}
-
-export type ShotVelocitiesRequest = ShotVelocityItem[];
-
-export interface ShotVelocitiesResponse {
-  velocities: ShotVelocityItem[];
-}
-
-// ============= Params Signals =============
-
-interface ExecutionParams {
-  fireTrialId: FireTrial['id'];
-}
-
-interface ShotVelocitiesParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotVelocitiesUpdateParams extends ShotVelocitiesParams {
-  body: ShotVelocitiesRequest;
-}
-
-interface ShotMunitionParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotMunitionUpdateParams extends ShotMunitionParams {
-  body: ShotMunitionRequest;
-}
-interface MunitionConditioningBulkConfigurationParams extends ExecutionParams {
-  body: MunitionConditioningBulkConfigurationRequest;
-}
-
-interface ShotManometerPressuresParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotManometerPressuresUpdateParams extends ShotManometerPressuresParams {
-  body: ShotManometerPressuresRequest;
-}
-
-interface ShotIpgPressuresParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotIpgPressuresUpdateParams extends ShotIpgPressuresParams {
-  body: ShotIpgPressuresRequest;
-}
-
-interface ShotJltMaoParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotCameraOrientationParams {
-  fireTrialId: FireTrial['id'];
-  cameraId: number;
-}
-
-interface ShotJltMaoUpdateParams extends ShotJltMaoParams {
-  body: ShotJltMaoRequest;
-}
-
-interface JltMaoBulkConfigurationParams extends ExecutionParams {
-  body: JltMaoBulkConfigurationRequest;
-}
-
-interface MaoTopographyBulkConfigurationParams extends ExecutionParams {
-  body: MaoTopographyBulkConfigurationRequest;
-}
-
-interface ShotMaoTopographyParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotMaoTopographyUpdateParams extends ShotMaoTopographyParams {
-  body: ShotMaoTopographyRequest;
-}
-
-interface ShotTopographyParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotTopographyUpdateParams extends ShotTopographyParams {
-  body: ShotTopographyRequest;
-}
-
-interface ShotTrajectographyParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotTrajectographyUpdateParams extends ShotTrajectographyParams {
-  body: ShotTrajectographyRequest;
-}
-
-interface ShotAcousticLevelParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotAcousticLevelUpdateParams extends ShotAcousticLevelParams {
-  body: ShotAcousticLevelRequest;
-}
-
-interface ShotVideoDataParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotVideoDataUpdateParams extends ShotVideoDataParams {
-  body: ShotVideoDataRequest;
-}
-
-// ── SHOT PRESSURES interfaces ────────────────────────────────────────────────
-
-export type ShotPressuresData = ShotPiezoPressureItem;
-
-export interface ArmamentEquipmentItem {
-  id: number | string;
-  tag: string;
-  serialNumber: string;
-  denominationId: number;
-  denominationName: string;
-  modelName: string;
-}
-
-/** Modelos de planning/armament: fuente única en @intaqalab/data-access-planning. */
-export type PlanningArmamentResponse = TrialArmamentResponse;
-/** Modelos de planning/munitions (shape raw del backend): fuente única en @intaqalab/data-access-planning. */
-export type { TrialMunitionsRawItem } from '@intaqalab/data-access-planning';
-
-export interface ShotArmamentRequest {
-  weaponId: number | null;
-  tubeId: number | null;
-  observations: string | null;
-}
-
-export interface ArmamentBulkConfigurationRequest {
-  assignedSeriesIds: string[];
-  weaponId?: number | null;
-  tubeId?: number | null;
-  observations?: string | null;
-}
-
-export interface ShotArmamentResponse {
-  armamentData?: {
-    weapon?: ArmamentEquipmentItem | null;
-    tube?: ArmamentEquipmentItem | null;
-    observations?: string | null;
-  };
-}
-
-interface ShotPressuresParams {
-  fireTrialId: FireTrial['id'];
-  seriesId: string;
-  shotId: string;
-}
-
-interface ShotPressuresUpdateParams extends ShotPressuresParams {
-  body: ShotPressuresRequest;
-}
-
-interface ShotArmamentUpdateParams extends ShotPressuresParams {
-  body: ShotArmamentRequest;
-}
-
-interface ArmamentBulkConfigurationParams extends ExecutionParams {
-  body: ArmamentBulkConfigurationRequest;
-}
-
-interface ExecutionPlanningParams extends ExecutionParams {
-  body: PlanningRequest | PlanningApprovalRequest;
-}
-
-export type ExecutionTechnicalProfile =
-  'VELOCITIES' | 'PRESSURES' | 'VIDEO' | 'TRAJECTOGRAPHY' | 'MUNITIONS' | 'ARMAMENT';
-
-export type ExecutionWidgetLayout = {
-  widgetsLayout: WidgetPreferenceId[];
-};
-
-export type SeriesReadinessRequest = {
-  isReady: boolean;
-  observations?: string;
-};
-
-export type SeriesReadinessItem = {
-  seriesId: string;
-  isReady: boolean;
-  observations?: string;
-};
-
-export type ProfileReadinessItem = {
-  profile: ExecutionTechnicalProfile;
-  seriesReadiness: SeriesReadinessItem[];
-};
-
-export type ProfilesReadinessResponse = {
-  profilesReadiness: ProfileReadinessItem[];
-};
-
-export type ProfileReadinessRequest = {
-  seriesReadiness: SeriesReadinessItem[];
-};
-
-export type ProfileReadinessSaveFailure = {
-  profile: ExecutionTechnicalProfile;
-  seriesId: string;
-  error: unknown;
-};
-
-export type ProfileReadinessSaveResult = {
-  updatedSeries: SeriesReadinessItem[];
-  failures: ProfileReadinessSaveFailure[];
-};
-
-export type JltReadinessRequest = {
-  sanitaryServicesReady: boolean;
-  securityReady: boolean;
-  vesselReady: boolean;
-  observations?: string | null;
-};
-
-export type JltReadinessItem = {
-  sanitaryServicesReady: boolean;
-  securityReady: boolean;
-  vesselReady: boolean;
-  observations?: string | null;
-};
-
-export type ProfileReadinessFlag = {
-  isReady: boolean;
-  observations?: string | null;
-};
-
-export type TechnicalUnitsReadinessItem = {
-  velocities?: ProfileReadinessFlag;
-  pressures?: ProfileReadinessFlag;
-  video?: ProfileReadinessFlag;
-  trajectography?: ProfileReadinessFlag;
-  munitions?: ProfileReadinessFlag;
-  armament?: ProfileReadinessFlag;
-};
-
-export type JltPreparationData = {
-  jltReadiness?: JltReadinessItem;
-  technicalUnitsReadiness?: TechnicalUnitsReadinessItem;
-  seriesIsReadyForExecution: boolean;
-};
-
-export type JltPreparationResponse = JltPreparationData | { series: Array<JltPreparationData & { seriesId: string }> };
-
-export type EquipmentSelectorCategory = {
-  id: string;
-  label: string;
-  maxSelection: number;
-  equipmentType?: string;
-};
-
-export type EquipmentSelectorItem = {
-  id: string;
-  label: string;
-  categoryId?: string;
-  equipmentType?: string;
-};
-
-export type EquipmentSelectorSelection = EquipmentSelectionItem;
-
-export type EquipmentSelectorMagnitudeGroup = EquipmentMeasurementGroup;
-
-export type EquipmentSelectorResponse = EquipmentSelectionList;
-
-export type EquipmentSelectorUpdateRequest = EquipmentSelectionList;
-
-export type EquipmentSelectorUpdateResponse = void;
-
-interface PreferencesParams extends ExecutionParams {
-  roleName?: string;
-  username?: string;
-  widgetsLayout?: WidgetPreferenceId[];
-}
-
-interface EquipmentSelectorUpdateParams extends ExecutionParams {
-  body: EquipmentSelectorUpdateRequest;
-}
-
-interface JltShotDataParams extends ExecutionParams {
-  seriesId: string;
-  shotId: string;
-}
-
-interface JltShotDataUpdateParams extends JltShotDataParams {
-  body: JltShotDataRequest;
-}
-
-interface JltPreparationParams extends ExecutionParams {
-  seriesId: string;
-}
-
-interface JltReadinessParams extends JltPreparationParams {
-  body: JltReadinessRequest;
-}
-
-interface SelectShotParams extends ExecutionParams {
-  shotId: string;
-}
-
-interface SeriesReadinessOneParams {
-  fireTrialId: FireTrial['id'];
-  profile: ExecutionTechnicalProfile;
-  seriesId: string;
-  body: SeriesReadinessRequest;
-}
-
-interface LoadEquipmentByTypeParams {
-  itemType: 'WEAPON' | 'MORTAR' | 'TUBE';
-}
-
-// ============= Service =============
-
+} from '../execution/models';
+export type * from '../execution/models/armament.models';
+export type * from '../execution/models/execution-planning.models';
+export type * from '../execution/models/execution-preferences.models';
+export type * from '../execution/models/execution-readiness.models';
+export type * from '../execution/models/execution-runtime.models';
+export type * from '../execution/models/jlt-shot-data.models';
+export type * from '../execution/models/shot-velocities.models';
+export type * from '../execution/models/trial-overpressure-info.models';
+
+/**
+ * @deprecated Use specific domain services from `@intaqalab/domain-trial-execution` (data-access/execution/*)
+ * instead of this monolithic facade. Will be removed in future version.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class ExecutionService {
-  readonly #http = inject(HttpClient);
-  readonly #equipmentCatalogService = inject(EquipmentCatalogService);
-  readonly #planningMunitionsService = inject(PlanningMunitionsService);
-  readonly #planningArmamentService = inject(PlanningArmamentService);
-  readonly #injector = inject(Injector);
-  readonly #executionUrl = injectExecutionEndpoint();
-  readonly #fireTrialsUrl = injectFireTrialsEndpoint();
-  readonly #planningUrl = injectPlanningEndpoint();
-  readonly #warehouseUrl = injectWharehouseEndpoint();
+  // ── Inyecciones de servicios descompuestos ─────────────────────────────────
+  readonly #shotAcousticLevel = inject(ShotAcousticLevelService);
+  readonly #shotArmament = inject(ShotArmamentService);
+  readonly #shotCameraOrientation = inject(ShotCameraOrientationService);
+  readonly #shotIpgPressures = inject(ShotIpgPressuresService);
+  readonly #shotJltData = inject(ShotJltDataService);
+  readonly #shotJltMao = inject(ShotJltMaoService);
+  readonly #shotManometerPressures = inject(ShotManometerPressuresService);
+  readonly #shotMaoTopography = inject(ShotMaoTopographyService);
+  readonly #shotMunition = inject(ShotMunitionService);
+  readonly #shotPressures = inject(ShotPressuresService);
+  readonly #shotRadarOrientation = inject(ShotRadarOrientationService);
+  readonly #shotTopography = inject(ShotTopographyService);
+  readonly #shotTrajectography = inject(ShotTrajectographyService);
+  readonly #shotVelocities = inject(ShotVelocitiesService);
+  readonly #shotVideo = inject(ShotVideoService);
 
-  readonly #componentTypesParams = signal<{ pageSize: number; active: boolean } | null>(null);
-  readonly #warehouseDenominationsParams = signal<{
-    pageSize: number;
-    active: boolean;
-    munitionTypeId?: string;
-  } | null>(null);
-  readonly #availableStockParams = signal<string[] | null>(null);
+  readonly #executionState = inject(ExecutionStateService);
+  readonly #securityCountdown = inject(SecurityCountdownService);
+  readonly #executionTransition = inject(ExecutionTransitionService);
+  readonly #executionPlanning = inject(ExecutionPlanningService);
+  readonly #readiness = inject(ExecutionReadinessService);
+  readonly #jltPreparation = inject(JltPreparationService);
+  readonly #preferences = inject(WidgetPreferencesService);
+  readonly #equipmentSelection = inject(EquipmentSelectionService);
+  readonly #propellantCharge = inject(PropellantChargeService);
+  readonly #velocityUniformity = inject(VelocityUniformityService);
+  readonly #overpressure = inject(OverpressureService);
+  readonly #planningFuse = inject(PlanningFuseService);
+  readonly #warehouseCatalog = inject(WarehouseCatalogService);
+  readonly #planningMunitionOptions = inject(PlanningMunitionOptionsService);
+  readonly #armamentCatalog = inject(ArmamentCatalogService);
 
-  readonly #componentTypesResource = httpResource<unknown>(() => {
-    const params = this.#componentTypesParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#warehouseUrl}/munition-types`,
-      params: { pageSize: params.pageSize, active: params.active },
-      method: 'GET',
-    };
-  });
+  // ── Warehouse & Planning Munitions ─────────────────────────────────────────
+  readonly warehouseDenominationsResource = this.#warehouseCatalog.warehouseDenominationsResource;
 
-  readonly warehouseDenominationsResource = httpResource<unknown>(() => {
-    const params = this.#warehouseDenominationsParams();
-    if (!params) return undefined;
-    const queryParams: Record<string, string | number | boolean> = {
-      pageSize: params.pageSize,
-      active: params.active,
-    };
-    if (params.munitionTypeId) {
-      queryParams['munitionTypeId'] = params.munitionTypeId;
-    }
-    return {
-      url: `${this.#warehouseUrl}/denominations`,
-      params: queryParams,
-      method: 'GET',
-    };
-  });
-
-  readonly #availableStockResource = httpResource<unknown>(() => {
-    const denominationIds = this.#availableStockParams();
-    if (!denominationIds?.length) return undefined;
-
-    let params = new HttpParams().set('page', 1).set('pageSize', 200).set('sort', 'createdAt;desc');
-    denominationIds.forEach((denominationId) => {
-      params = params.append('denominationIds', denominationId);
-    });
-
-    return {
-      url: `${this.#warehouseUrl}/stock`,
-      params,
-      method: 'GET',
-    };
-  });
-
-  async fetchAvailableStockBatches(denominationIds: string[]): Promise<WarehouseStockBatch[]> {
-    const uniqueDenominationIds = [...new Set(denominationIds.filter(Boolean))];
-    if (uniqueDenominationIds.length === 0) return [];
-
-    this.#availableStockParams.set(uniqueDenominationIds);
-    await this.#awaitResource(this.#availableStockResource);
-    return this.#catalogItems(this.#availableStockResource.value()).flatMap((item) => {
-      const denomination = item['denomination'];
-      const batch = item['batch'];
-      if (!isRecord(denomination) || typeof denomination['id'] !== 'string' || typeof batch !== 'string' || !batch) {
-        return [];
-      }
-      return [{ denominationId: denomination['id'], batch }];
-    });
+  fetchAvailableStockBatches(denominationIds: string[]): Promise<WarehouseStockBatch[]> {
+    return this.#warehouseCatalog.fetchAvailableStockBatches(denominationIds);
   }
 
-  async fetchWarehouseDenominations(munitionTypeId?: string): Promise<PlanningDenominationOption[]> {
-    this.#warehouseDenominationsParams.set({
-      pageSize: 100,
-      active: true,
-      munitionTypeId: munitionTypeId?.trim() || undefined,
-    });
-    await this.#awaitResource(this.warehouseDenominationsResource);
-    const catalog = this.#catalogItems(this.warehouseDenominationsResource.value());
-    const denominations: PlanningDenominationOption[] = [];
-
-    catalog.forEach((item) => {
-      if (!isRecord(item) || typeof item['id'] !== 'string') return;
-      const name =
-        typeof item['name'] === 'string'
-          ? item['name']
-          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
-            ? item['name']['es']
-            : item['id'];
-      const compTypeId =
-        isRecord(item['munitionType']) && typeof item['munitionType']['id'] === 'string'
-          ? item['munitionType']['id']
-          : (munitionTypeId ?? '');
-
-      if (!munitionTypeId || compTypeId === munitionTypeId) {
-        denominations.push({
-          id: item['id'],
-          name,
-          componentTypeId: compTypeId,
-          batch: null,
-          clientNumber: null,
-        });
-      }
-    });
-
-    return denominations;
+  fetchWarehouseDenominations(munitionTypeId?: string): Promise<PlanningDenominationOption[]> {
+    return this.#warehouseCatalog.fetchWarehouseDenominations(munitionTypeId);
   }
 
-  async fetchPlanningMunitionOptions(fireTrialId: FireTrial['id']): Promise<PlanningMunitionOptionData> {
-    this.#componentTypesParams.set({ pageSize: 100, active: true });
-    this.#warehouseDenominationsParams.set({ pageSize: 100, active: true });
-    this.#planningMunitionsService.load(fireTrialId);
-    await Promise.all([
-      this.#awaitResource(this.#componentTypesResource),
-      this.#awaitResource(this.warehouseDenominationsResource),
-      this.#awaitResource(this.#planningMunitionsService.munitionsResource),
-    ]);
-
-    // Shape raw del backend: mismo parsing defensivo que antes, alimentado por la nueva capa.
-    const response: unknown = this.#planningMunitionsService.munitionsResource.value();
-    const root = isRecord(response) ? response : {};
-    const seriesList = Array.isArray(root['series']) ? root['series'] : [];
-    const componentTypeCatalog = this.#catalogItems(this.#componentTypesResource.value());
-    const componentTypeMap = new Map<string, { label: string; category: string }>();
-    componentTypeCatalog.forEach((item) => {
-      if (!isRecord(item) || typeof item['id'] !== 'string') return;
-      const label =
-        typeof item['label'] === 'string' && item['label']
-          ? item['label']
-          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
-            ? item['name']['es']
-            : typeof item['name'] === 'string'
-              ? item['name']
-              : item['id'];
-      const category = typeof item['category'] === 'string' ? item['category'] : '';
-      componentTypeMap.set(item['id'], { label, category });
-    });
-
-    const warehouseDenominationsByType = new Map<string, PlanningDenominationOption[]>();
-    const warehouseDenominationsCatalog = this.#catalogItems(this.warehouseDenominationsResource.value());
-    warehouseDenominationsCatalog.forEach((item) => {
-      if (!isRecord(item) || typeof item['id'] !== 'string') return;
-      const name =
-        typeof item['name'] === 'string'
-          ? item['name']
-          : isRecord(item['name']) && typeof item['name']['es'] === 'string'
-            ? item['name']['es']
-            : item['id'];
-      const compTypeId =
-        isRecord(item['munitionType']) && typeof item['munitionType']['id'] === 'string'
-          ? item['munitionType']['id']
-          : '';
-      if (compTypeId) {
-        const list = warehouseDenominationsByType.get(compTypeId) ?? [];
-        list.push({
-          id: item['id'],
-          name,
-          componentTypeId: compTypeId,
-          batch: null,
-          clientNumber: null,
-        });
-        warehouseDenominationsByType.set(compTypeId, list);
-      }
-    });
-
-    const configurationIds: string[] = [];
-    const globalComponentTypes = new Map<string, PlanningComponentType>();
-    const globalDenominations = new Map<string, PlanningDenominationOption>();
-    const optionsBySelection: PlanningMunitionOptionData['optionsBySelection'] = {};
-    const optionsByShot: PlanningMunitionOptionData['optionsByShot'] = {};
-    const optionsBySeries: PlanningMunitionOptionData['optionsBySeries'] = {};
-
-    seriesList.forEach((serieItem) => {
-      if (!isRecord(serieItem)) return;
-      const seriesId = typeof serieItem['seriesId'] === 'string' ? serieItem['seriesId'] : '';
-      const configurations = Array.isArray(serieItem['configurations']) ? serieItem['configurations'] : [];
-      const serieComponentTypes = new Map<string, PlanningComponentType>();
-      const serieDenominations = new Map<string, PlanningDenominationOption>();
-      const serieComponentData: Record<string, PlanningComponentData> = {};
-      const serieDenomData: Record<string, PlanningComponentData> = {};
-
-      configurations.forEach((configuration) => {
-        if (!isRecord(configuration)) return;
-        if (typeof configuration['id'] === 'string') {
-          configurationIds.push(configuration['id']);
-        }
-        const localTypes = new Map<string, PlanningComponentType>();
-        const localDenominations = new Map<string, PlanningDenominationOption>();
-        const localComponentData: Record<string, PlanningComponentData> = {};
-        const localDenomData: Record<string, PlanningComponentData> = {};
-
-        const configDenom = configuration['denomination'];
-        const configBatch = this.#extractBatch(configDenom, configuration);
-        const configClient = this.#extractClient(configDenom, configuration);
-        const configMunitionTypeId =
-          typeof configuration['munitionTypeId'] === 'string' && configuration['munitionTypeId'].trim() !== ''
-            ? configuration['munitionTypeId'].trim()
-            : isRecord(configDenom) &&
-                typeof configDenom['munitionTypeId'] === 'string' &&
-                configDenom['munitionTypeId'].trim() !== ''
-              ? configDenom['munitionTypeId'].trim()
-              : '';
-        const configDenomId =
-          isRecord(configDenom) && typeof configDenom['id'] === 'string' && configDenom['id'].trim() !== ''
-            ? configDenom['id'].trim()
-            : typeof configDenom === 'string' && configDenom.trim() !== ''
-              ? configDenom.trim()
-              : null;
-
-        if (configMunitionTypeId) {
-          const catalogInfo = componentTypeMap.get(configMunitionTypeId);
-          const label = catalogInfo?.label ?? configMunitionTypeId;
-          const category = catalogInfo?.category ?? 'MUNITION';
-          const entry: PlanningComponentType = { id: configMunitionTypeId, label, category };
-          localTypes.set(configMunitionTypeId, entry);
-          serieComponentTypes.set(configMunitionTypeId, entry);
-          globalComponentTypes.set(configMunitionTypeId, entry);
-
-          if (configDenomId) {
-            const denomName =
-              isRecord(configDenom) && typeof configDenom['name'] === 'string' ? configDenom['name'] : configDenomId;
-            const denomItem: PlanningDenominationOption = {
-              id: configDenomId,
-              name: denomName,
-              componentTypeId: configMunitionTypeId,
-              batch: configBatch,
-              clientNumber: configClient,
-            };
-            localDenominations.set(denomItem.id, denomItem);
-            serieDenominations.set(denomItem.id, denomItem);
-            globalDenominations.set(denomItem.id, denomItem);
-
-            const compData: PlanningComponentData = {
-              componentTypeId: configMunitionTypeId,
-              denominationId: denomItem.id,
-              batch: configBatch,
-              clientNumber: configClient,
-            };
-            localComponentData[configMunitionTypeId] = compData;
-            localDenomData[denomItem.id] = compData;
-            serieComponentData[configMunitionTypeId] = compData;
-            serieDenomData[denomItem.id] = compData;
-          } else {
-            const matchingDenoms = warehouseDenominationsByType.get(configMunitionTypeId) ?? [];
-            matchingDenoms.forEach((denom) => {
-              localDenominations.set(denom.id, denom);
-              serieDenominations.set(denom.id, denom);
-              globalDenominations.set(denom.id, denom);
-            });
-
-            const compData: PlanningComponentData = {
-              componentTypeId: configMunitionTypeId,
-              denominationId: null,
-              batch: configBatch,
-              clientNumber: configClient,
-            };
-            localComponentData[configMunitionTypeId] = compData;
-            serieComponentData[configMunitionTypeId] = compData;
-          }
-        }
-
-        if (Array.isArray(configuration['components'])) {
-          configuration['components'].forEach((component) => {
-            if (!isRecord(component)) return;
-            const type = isRecord(component['type']) ? component['type'] : undefined;
-            const compTypeId =
-              type && typeof type['id'] === 'string' && type['id'].trim() !== ''
-                ? type['id'].trim()
-                : typeof component['munitionTypeId'] === 'string' && component['munitionTypeId'].trim() !== ''
-                  ? component['munitionTypeId'].trim()
-                  : null;
-            if (!compTypeId) return;
-
-            const catalogInfo = componentTypeMap.get(compTypeId);
-            const compLabel =
-              type && typeof type['label'] === 'string' && type['label']
-                ? type['label']
-                : (catalogInfo?.label ?? compTypeId);
-            const compCategory =
-              catalogInfo?.category || (type && typeof type['type'] === 'string' ? type['type'] : 'MUNITION_COMPONENT');
-            const entry: PlanningComponentType = { id: compTypeId, label: compLabel, category: compCategory };
-
-            localTypes.set(compTypeId, entry);
-            serieComponentTypes.set(compTypeId, entry);
-            globalComponentTypes.set(compTypeId, entry);
-
-            const denomination = component['denomination'];
-            const compBatch = this.#extractBatch(denomination, component);
-            const compClient = this.#extractClient(denomination, component);
-            const compDenomId =
-              isRecord(denomination) && typeof denomination['id'] === 'string' && denomination['id'].trim() !== ''
-                ? denomination['id'].trim()
-                : typeof denomination === 'string' && denomination.trim() !== ''
-                  ? denomination.trim()
-                  : null;
-
-            if (compDenomId) {
-              const denomName =
-                isRecord(denomination) && typeof denomination['name'] === 'string' ? denomination['name'] : compDenomId;
-              const item: PlanningDenominationOption = {
-                id: compDenomId,
-                name: denomName,
-                componentTypeId: compTypeId,
-                batch: compBatch,
-                clientNumber: compClient,
-              };
-              localDenominations.set(item.id, item);
-              serieDenominations.set(item.id, item);
-              globalDenominations.set(item.id, item);
-            } else {
-              const matchingDenoms = warehouseDenominationsByType.get(compTypeId) ?? [];
-              matchingDenoms.forEach((denom) => {
-                localDenominations.set(denom.id, denom);
-                serieDenominations.set(denom.id, denom);
-                globalDenominations.set(denom.id, denom);
-              });
-            }
-
-            const compData: PlanningComponentData = {
-              componentTypeId: compTypeId,
-              denominationId: compDenomId,
-              batch: compBatch,
-              clientNumber: compClient,
-            };
-            localComponentData[compTypeId] = compData;
-            if (compDenomId) {
-              localDenomData[compDenomId] = compData;
-              serieDenomData[compDenomId] = compData;
-            }
-            serieComponentData[compTypeId] = compData;
-          });
-        }
-
-        const configSeriesId =
-          typeof configuration['seriesId'] === 'string' && configuration['seriesId']
-            ? configuration['seriesId']
-            : seriesId;
-        const shotIds = Array.isArray(configuration['assignedShotIds']) ? configuration['assignedShotIds'] : [];
-        shotIds
-          .filter((shotId): shotId is string => typeof shotId === 'string')
-          .forEach((shotId) => {
-            const shotOptions: PlanningOptionsGroup = {
-              componentTypes: [...localTypes.values()],
-              denominations: [...localDenominations.values()],
-              componentData: { ...localComponentData },
-              denominationData: { ...localDenomData },
-            };
-            if (configSeriesId) {
-              optionsBySelection[`${configSeriesId}|${shotId}`] = shotOptions;
-            }
-            optionsByShot[shotId] = shotOptions;
-          });
-      });
-
-      if (seriesId) {
-        optionsBySeries[seriesId] = {
-          componentTypes: [...serieComponentTypes.values()],
-          denominations: [...serieDenominations.values()],
-          componentData: { ...serieComponentData },
-          denominationData: { ...serieDenomData },
-        };
-      }
-    });
-
-    return {
-      configurationIds,
-      componentTypes: [...globalComponentTypes.values()],
-      denominations: [...globalDenominations.values()],
-      optionsBySelection,
-      optionsByShot,
-      optionsBySeries,
-    };
+  fetchPlanningMunitionOptions(fireTrialId: FireTrial['id']): Promise<PlanningMunitionOptionData> {
+    return this.#planningMunitionOptions.fetchPlanningMunitionOptions(fireTrialId);
   }
 
-  #extractBatch(...sources: unknown[]): string | null {
-    for (const src of sources) {
-      if (isRecord(src)) {
-        if (typeof src['batch'] === 'string' && src['batch'].trim()) return src['batch'].trim();
-        if (typeof src['lote'] === 'string' && src['lote'].trim()) return src['lote'].trim();
-        if (typeof src['lotNumber'] === 'string' && src['lotNumber'].trim()) return src['lotNumber'].trim();
-      }
-    }
-    return null;
+  fetchPlanningFuseGraduation(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<number | null> {
+    return this.#planningFuse.fetchPlanningFuseGraduation(fireTrialId, seriesId, shotId);
   }
 
-  #extractClient(...sources: unknown[]): string | null {
-    for (const src of sources) {
-      if (isRecord(src)) {
-        if (typeof src['clientNumber'] === 'string' && src['clientNumber'].trim()) return src['clientNumber'].trim();
-        if (typeof src['clientNumber'] === 'number') return String(src['clientNumber']);
-        if (typeof src['client'] === 'string' && src['client'].trim()) return src['client'].trim();
-        if (typeof src['client'] === 'number') return String(src['client']);
-        if (isRecord(src['client'])) {
-          if (typeof src['client']['name'] === 'string' && src['client']['name'].trim())
-            return src['client']['name'].trim();
-          if (typeof src['client']['id'] === 'string' && src['client']['id'].trim()) return src['client']['id'].trim();
-        }
-        if (typeof src['numeroCliente'] === 'string' && src['numeroCliente'].trim()) return src['numeroCliente'].trim();
-        if (typeof src['numeroCliente'] === 'number') return String(src['numeroCliente']);
-        if (typeof src['customer'] === 'string' && src['customer'].trim()) return src['customer'].trim();
-      }
-    }
-    return null;
-  }
-
-  #catalogItems(value: unknown): Record<string, unknown>[] {
-    if (Array.isArray(value)) return value.filter(isRecord);
-    if (!isRecord(value) || !Array.isArray(value['items'])) return [];
-    return value['items'].filter(isRecord);
-  }
-
-  // ── PLANNING SERIES / CONDITIONS ─────────────────────────────────────────
-  // series y conditions migradas a PlanningSeriesService/PlanningConditionsService;
-  // munitions y armament migradas a PlanningMunitionsService/PlanningArmamentService.
-  // Quedan aquí las mutaciones (PUT/POST) y las familias de execution.
-
-  async fetchPlanningFuseGraduation(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<number | null> {
-    const response = await this.#planningMunitionsService.fetchMunitions(fireTrialId);
-
-    const series = response.series.find((item) => item.seriesId === seriesId);
-    if (!series) return null;
-
-    for (const configuration of series.configurations) {
-      const assignedShotIds = configuration.assignedShotIds ?? [];
-      if (assignedShotIds.length > 0 && !assignedShotIds.includes(shotId)) {
-        continue;
-      }
-
-      for (const component of configuration.components) {
-        if (this.#isEspoletaComponent(component) && typeof component.fuseMeasurement === 'number') {
-          return component.fuseMeasurement;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  #isEspoletaComponent(component: BackendMunitionComponent): boolean {
-    const typeStr = (component.type?.type ?? component.typeId?.type ?? '').toUpperCase();
-    const label = (component.type?.label ?? component.typeId?.label ?? '').toLowerCase();
-    if (typeStr) {
-      return typeStr === 'FUZE' || typeStr === 'FUSE' || typeStr === 'ESPOLETA';
-    }
-    if (label) {
-      return label.includes('espoleta') || label.includes('fuze') || label.includes('fuse');
-    }
-    return typeof component.fuseMeasurement === 'number' || Boolean(component.fuseWorkingModeId);
-  }
-
-  // ── RADAR TRAYECTOGRAPHY ORIENTATION (Widget 7) ─────────────────────────
-
-  readonly #getRadarTrayectographyOrientationParams = signal<{
-    fireTrialId: FireTrial['id'];
-    radarId: string | null;
-  } | null>(null);
-
-  readonly radarTrayectographyOrientationResource = httpResource<TrajectographyRadarOrientationResponse>(() => {
-    const params = this.#getRadarTrayectographyOrientationParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography-radar/orientation`,
-      method: 'GET',
-    };
-  });
+  // ── Orientation ────────────────────────────────────────────────────────────
+  readonly radarTrayectographyOrientationResource = this.#shotRadarOrientation.radarTrayectographyOrientationResource;
 
   getRadarTrayectographyOrientation(fireTrialId: FireTrial['id'], radarId: string | null): void {
-    this.#getRadarTrayectographyOrientationParams.set({ fireTrialId, radarId });
+    this.#shotRadarOrientation.getRadarTrayectographyOrientation(fireTrialId, radarId);
   }
 
-  // ── PROPELLANT CHARGE ADJUSTMENT (Widget 10) ────────────────────────────
+  readonly shotCameraOrientationResource = this.#shotCameraOrientation.shotCameraOrientationResource;
 
-  readonly #getPropellantChargeAdjustmentParams = signal<{
-    fireTrialId: FireTrial['id'];
-    query: PropellantChargeAdjustmentQuery;
-  } | null>(null);
+  getShotCameraOrientation(fireTrialId: FireTrial['id'], cameraId: number): void {
+    this.#shotCameraOrientation.getShotCameraOrientation(fireTrialId, cameraId);
+  }
 
-  readonly propellantChargeAdjustmentResource = httpResource<PropellantChargeAdjustmentResponse>(() => {
-    const params = this.#getPropellantChargeAdjustmentParams();
-    if (!params || params.query.shotIds.length === 0) return undefined;
-
-    let queryParams = new HttpParams()
-      .set('nominalSpeed', params.query.nominalSpeed)
-      .set('nominalSpeedUnit', params.query.nominalSpeedUnit ?? 'M_S');
-    params.query.shotIds.forEach((shotId) => {
-      queryParams = queryParams.append('shotIds', shotId);
-    });
-
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/propellant-charge-adjustment`,
-      params: queryParams,
-      method: 'GET',
-    };
-  });
+  // ── Analytics ──────────────────────────────────────────────────────────────
+  readonly propellantChargeAdjustmentResource = this.#propellantCharge.propellantChargeAdjustmentResource;
 
   getPropellantChargeAdjustment(fireTrialId: FireTrial['id'], query: PropellantChargeAdjustmentQuery): void {
-    this.#getPropellantChargeAdjustmentParams.set({ fireTrialId, query });
+    this.#propellantCharge.getPropellantChargeAdjustment(fireTrialId, query);
   }
 
-  readonly #getVelocityUniformityParams = signal<{
-    fireTrialId: FireTrial['id'];
-    query: VelocityUniformityQuery;
-  } | null>(null);
+  readonly propellantChargeAdjustmentConfigurationsResource =
+    this.#propellantCharge.propellantChargeAdjustmentConfigurationsResource;
 
-  readonly velocityUniformityResource = httpResource<VelocityUniformityResponse>(() => {
-    const params = this.#getVelocityUniformityParams();
-    if (!params || params.query.shotIds.length === 0 || !params.query.configurationId) return undefined;
+  listPropellantChargeAdjustmentConfigurations(fireTrialId: FireTrial['id']): void {
+    this.#propellantCharge.listPropellantChargeAdjustmentConfigurations(fireTrialId);
+  }
 
-    let queryParams = new HttpParams().set('configurationId', params.query.configurationId);
-    [...new Set(params.query.shotIds)].forEach((shotId) => {
-      queryParams = queryParams.append('shotIds', shotId);
-    });
-
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocity-uniformity`,
-      params: queryParams,
-      method: 'GET',
-    };
-  });
+  readonly velocityUniformityResource = this.#velocityUniformity.velocityUniformityResource;
 
   getVelocityUniformity(fireTrialId: FireTrial['id'], query: VelocityUniformityQuery): void {
-    this.#getVelocityUniformityParams.set({ fireTrialId, query });
+    this.#velocityUniformity.getVelocityUniformity(fireTrialId, query);
   }
 
   clearVelocityUniformity(): void {
-    this.#getVelocityUniformityParams.set(null);
+    this.#velocityUniformity.clearVelocityUniformity();
   }
 
-  readonly #listPropellantChargeAdjustmentConfigurationsFireTrialId = signal<FireTrial['id'] | null>(null);
-
-  readonly propellantChargeAdjustmentConfigurationsResource = httpResource<PropellantChargeAdjustmentConfiguration[]>(
-    () => {
-      const fireTrialId = this.#listPropellantChargeAdjustmentConfigurationsFireTrialId();
-      if (!fireTrialId) return undefined;
-      return {
-        url: `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/propellant-charge-adjustment/configurations`,
-        method: 'GET',
-      };
-    },
-  );
-
-  listPropellantChargeAdjustmentConfigurations(fireTrialId: FireTrial['id']): void {
-    this.#listPropellantChargeAdjustmentConfigurationsFireTrialId.set(fireTrialId);
-  }
-
-  // ── EXECUTION STATE ENDPOINTS ───────────────────────────────────────────
-
-  readonly #getExecutionStateParams = signal<ExecutionParams | null>(null);
-
-  readonly executionStateResource = httpResource<ExecutionStateResponse>(() => {
-    const params = this.#getExecutionStateParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/state`,
-      method: 'GET',
-    };
-  });
+  // ── State, Progress & Countdown ───────────────────────────────────────────
+  readonly executionStateResource = this.#executionState.executionStateResource;
 
   getExecutionState(fireTrialId: FireTrial['id']): void {
-    this.#getExecutionStateParams.set({ fireTrialId });
+    this.#executionState.getExecutionState(fireTrialId);
   }
 
-  // ── EXECUTION PROGRESS ───────────────────────────────────────────────────
-
-  readonly #getExecutionProgressParams = signal<ExecutionParams | null>(null);
-
-  readonly executionProgressResource = httpResource<ExecutionProgressResponse>(() => {
-    const params = this.#getExecutionProgressParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/progress`,
-      method: 'GET',
-    };
-  });
+  readonly executionProgressResource = this.#executionState.executionProgressResource;
 
   getExecutionProgress(fireTrialId: FireTrial['id']): void {
-    this.#getExecutionProgressParams.set({ fireTrialId });
+    this.#executionState.getExecutionProgress(fireTrialId);
   }
 
-  // ── SHOT MEASUREMENTS (Widget 8) ────────────────────────────────────────
-
-  readonly #getShotMeasurementsParams = signal<ExecutionParams | null>(null);
-
-  readonly shotMeasurementsResource = httpResource<ShotMeasurementsResponse>(() => {
-    const params = this.#getShotMeasurementsParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/shot-measurements`,
-      method: 'GET',
-    };
-  });
+  readonly shotMeasurementsResource = this.#executionState.shotMeasurementsResource;
 
   getShotMeasurements(fireTrialId: FireTrial['id']): void {
-    this.#getShotMeasurementsParams.set({ fireTrialId });
+    this.#executionState.getShotMeasurements(fireTrialId);
   }
 
-  // ── SECURITY COUNTDOWN STATE ────────────────────────────────────────────
-
-  readonly #getSecurityCountdownParams = signal<ExecutionParams | null>(null);
-
-  readonly securityCountdownResource = httpResource<SecurityCountdownResponse>(() => {
-    const params = this.#getSecurityCountdownParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/security-countdown`,
-      method: 'GET',
-    };
-  });
+  readonly securityCountdownResource = this.#securityCountdown.securityCountdownResource;
 
   getSecurityCountdownState(fireTrialId: FireTrial['id']): void {
-    this.#getSecurityCountdownParams.set({ fireTrialId });
+    this.#securityCountdown.getSecurityCountdownState(fireTrialId);
   }
-
-  // ── SECURITY COUNTDOWN UPDATE ───────────────────────────────────────────
 
   updateSecurityCountdown(
     fireTrialId: FireTrial['id'],
     body: SecurityCountdownRequest,
   ): Promise<SecurityCountdownResponse> {
-    return firstValueFrom(
-      this.#http.put<SecurityCountdownResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/security-countdown`,
-        body,
-      ),
-    );
+    return this.#securityCountdown.updateSecurityCountdown(fireTrialId, body);
   }
 
-  // ── EXECUTION TRANSITIONS ────────────────────────────────────────────────
-
+  // ── Transitions ────────────────────────────────────────────────────────────
   startExecution(fireTrialId: FireTrial['id']): Promise<void> {
-    return firstValueFrom(this.#http.post<void>(`${this.#fireTrialsUrl}/${fireTrialId}/start`, null));
+    return this.#executionTransition.startExecution(fireTrialId);
   }
-
-  // ── EXECUTION TRANSITIONS: PAUSE ─────────────────────────────────────────
 
   pauseExecution(fireTrialId: FireTrial['id']): Promise<void> {
-    return firstValueFrom(
-      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pause`, null),
-    );
+    return this.#executionTransition.pauseExecution(fireTrialId);
   }
-
-  // ── EXECUTION TRANSITIONS: INTERRUPT ────────────────────────────────────
 
   interruptExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
-    const body = { reason } satisfies TransitionWithReasonRequest;
-    return firstValueFrom(
-      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/interrupt`, body),
-    );
+    return this.#executionTransition.interruptExecution(fireTrialId, reason);
   }
-
-  // ── EXECUTION TRANSITIONS: RESUME ───────────────────────────────────────
 
   resumeExecution(fireTrialId: FireTrial['id']): Promise<void> {
-    return firstValueFrom(
-      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/resume`, null),
-    );
+    return this.#executionTransition.resumeExecution(fireTrialId);
   }
-
-  // ── EXECUTION TRANSITIONS: CANCEL ───────────────────────────────────────
 
   cancelExecution(fireTrialId: FireTrial['id'], reason: string): Promise<void> {
-    const body = { reason } satisfies TransitionWithReasonRequest;
-    return firstValueFrom(
-      this.#http.post<void>(`${this.#executionUrl}/fire-trials/${fireTrialId}/execution/cancel`, body),
-    );
+    return this.#executionTransition.cancelExecution(fireTrialId, reason);
   }
-
-  // ── EXECUTION TRANSITIONS: FINISH ────────────────────────────────────────
 
   finishExecution(fireTrialId: FireTrial['id']): Promise<ExecutionFinishResponse> {
-    return firstValueFrom(
-      this.#http.post<ExecutionFinishResponse>(`${this.#fireTrialsUrl}/${fireTrialId}/finish`, null),
-    );
+    return this.#executionTransition.finishExecution(fireTrialId);
   }
 
-  // ── EXECUTION PLANNING: UPDATE ──────────────────────────────────────────
-
-  readonly #updatePlanningParams = signal<ExecutionPlanningParams | null>(null);
-
-  readonly updatePlanningResource = httpResource<PlanningResponse>(() => {
-    const params = this.#updatePlanningParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/planning`,
-      method: 'PUT',
-      body: params.body as PlanningRequest,
-    };
-  });
+  // ── Planning Commands ──────────────────────────────────────────────────────
+  readonly updatePlanningResource = this.#executionPlanning.updatePlanningResource;
 
   updateExecutionPlanning(fireTrialId: FireTrial['id'], body: PlanningRequest): void {
-    this.#updatePlanningParams.set({ fireTrialId, body });
+    this.#executionPlanning.updateExecutionPlanning(fireTrialId, body);
   }
 
-  // ── EXECUTION PLANNING: APPROVE ─────────────────────────────────────────
-
-  readonly #approvePlanningParams = signal<ExecutionPlanningParams | null>(null);
-
-  readonly approvePlanningResource = httpResource<void>(() => {
-    const params = this.#approvePlanningParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/planning/approve`,
-      method: 'POST',
-      body: params.body as PlanningApprovalRequest,
-    };
-  });
+  readonly approvePlanningResource = this.#executionPlanning.approvePlanningResource;
 
   approveExecutionPlanning(fireTrialId: FireTrial['id'], body: PlanningApprovalRequest): void {
-    this.#approvePlanningParams.set({ fireTrialId, body });
+    this.#executionPlanning.approveExecutionPlanning(fireTrialId, body);
   }
 
-  // ── WIDGET PREFERENCES: BY ROLE ─────────────────────────────────────────
-
-  readonly #getPreferencesByRoleParams = signal<PreferencesParams | null>(null);
-
-  readonly preferencesByRoleResource = httpResource<ExecutionWidgetLayout>(() => {
-    const params = this.#getPreferencesByRoleParams();
-    if (!params || !params.roleName) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/roles/${params.roleName}`,
-      method: 'GET',
-    };
-  });
+  // ── Widget Preferences ─────────────────────────────────────────────────────
+  readonly preferencesByRoleResource = this.#preferences.preferencesByRoleResource;
 
   getPreferencesByRole(fireTrialId: FireTrial['id'], roleName: string): void {
-    this.#getPreferencesByRoleParams.set({ fireTrialId, roleName });
+    this.#preferences.getPreferencesByRole(fireTrialId, roleName);
   }
 
-  readonly #updatePreferencesByRoleParams = signal<PreferencesParams | null>(null);
-
-  readonly updatePreferencesByRoleResource = httpResource<ExecutionWidgetLayout>(() => {
-    const params = this.#updatePreferencesByRoleParams();
-    if (!params || !params.roleName || !params.widgetsLayout) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/roles/${params.roleName}`,
-      method: 'PUT',
-      body: { widgetsLayout: params.widgetsLayout } satisfies ExecutionWidgetLayout,
-    };
-  });
+  readonly updatePreferencesByRoleResource = this.#preferences.updatePreferencesByRoleResource;
 
   updatePreferencesByRole(fireTrialId: FireTrial['id'], roleName: string, widgetsLayout: WidgetPreferenceId[]): void {
-    this.#updatePreferencesByRoleParams.set({ fireTrialId, roleName, widgetsLayout });
+    this.#preferences.updatePreferencesByRole(fireTrialId, roleName, widgetsLayout);
   }
 
-  // ── WIDGET PREFERENCES: BY USER ─────────────────────────────────────────
-
-  readonly #getPreferencesByUserParams = signal<PreferencesParams | null>(null);
-
-  readonly preferencesByUserResource = httpResource<ExecutionWidgetLayout>(() => {
-    const params = this.#getPreferencesByUserParams();
-    if (!params || !params.username) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/users/${params.username}`,
-      method: 'GET',
-    };
-  });
+  readonly preferencesByUserResource = this.#preferences.preferencesByUserResource;
 
   getPreferencesByUser(fireTrialId: FireTrial['id'], username: string): void {
-    this.#getPreferencesByUserParams.set({ fireTrialId, username });
+    this.#preferences.getPreferencesByUser(fireTrialId, username);
   }
 
-  readonly #updatePreferencesByUserParams = signal<PreferencesParams | null>(null);
-
-  readonly updatePreferencesByUserResource = httpResource<ExecutionWidgetLayout>(() => {
-    const params = this.#updatePreferencesByUserParams();
-    if (!params || !params.username || !params.widgetsLayout) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/preferences/users/${params.username}`,
-      method: 'PUT',
-      body: { widgetsLayout: params.widgetsLayout } satisfies ExecutionWidgetLayout,
-    };
-  });
+  readonly updatePreferencesByUserResource = this.#preferences.updatePreferencesByUserResource;
 
   updatePreferencesByUser(fireTrialId: FireTrial['id'], username: string, widgetsLayout: WidgetPreferenceId[]): void {
-    this.#updatePreferencesByUserParams.set({ fireTrialId, username, widgetsLayout });
+    this.#preferences.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
   }
 
-  // ── EXECUTION READINESS: GET ALL ────────────────────────────────────────
-
-  readonly #getReadinessParams = signal<ExecutionParams | null>(null);
-
-  readonly profilesReadinessResource = httpResource<ProfilesReadinessResponse>(() => {
-    const params = this.#getReadinessParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/readiness`,
-      method: 'GET',
-    };
-  });
+  // ── Execution Readiness ────────────────────────────────────────────────────
+  readonly profilesReadinessResource = this.#readiness.profilesReadinessResource;
 
   getProfilesReadiness(fireTrialId: FireTrial['id']): void {
-    this.#getReadinessParams.set({ fireTrialId });
+    this.#readiness.getProfilesReadiness(fireTrialId);
   }
 
-  // ── EXECUTION READINESS: SET BY PROFILE & SERIES ────────────────────────
+  readonly setSeriesReadinessResource = this.#readiness.setSeriesReadinessResource;
 
-  readonly #setSeriesReadinessOneParams = signal<SeriesReadinessOneParams | null>(null);
-
-  // Única llamada real de guardado: PUT por perfil + serie (una petición por serie).
-  readonly setSeriesReadinessResource = httpResource<SeriesReadinessItem>(() => {
-    const p = this.#setSeriesReadinessOneParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/readiness/profiles/${p.profile}/series/${p.seriesId}`,
-      method: 'PUT',
-      body: p.body,
-    };
-  });
-
-  /**
-   * Registra el readiness de un perfil para una serie individual en la API.
-   */
-  async setSeriesProfileReadiness(
+  setSeriesProfileReadiness(
     fireTrialId: FireTrial['id'],
     profile: ExecutionTechnicalProfile,
     seriesId: string,
     body: SeriesReadinessRequest,
   ): Promise<SeriesReadinessItem> {
-    return firstValueFrom(
-      this.#http.put<SeriesReadinessItem>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/readiness/profiles/${profile}/series/${seriesId}`,
-        body,
-        { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
-      ),
-    );
+    return this.#readiness.setSeriesProfileReadiness(fireTrialId, profile, seriesId, body);
   }
 
-  /**
-   * Registra el readiness de un perfil ejecutando una llamada independiente por cada serie.
-   */
   async setProfileReadiness(
     fireTrialId: FireTrial['id'],
     profile: ExecutionTechnicalProfile,
     bodyOrItems: ProfileReadinessRequest | SeriesReadinessItem[],
   ): Promise<ProfileReadinessSaveResult> {
     const items = Array.isArray(bodyOrItems) ? bodyOrItems : bodyOrItems.seriesReadiness;
-    const results = await Promise.all(
-      items.map(async (item) => {
-        try {
-          const updatedSeries = await this.setSeriesProfileReadiness(fireTrialId, profile, item.seriesId, {
-            isReady: item.isReady,
-            observations: item.observations,
-          });
-          return { status: 'fulfilled' as const, updatedSeries };
-        } catch (error) {
-          return {
-            status: 'rejected' as const,
-            failure: { profile, seriesId: item.seriesId, error },
-          };
-        }
-      }),
-    );
-
+    const result = await this.#readiness.setProfileReadiness(fireTrialId, profile, bodyOrItems);
     if (items.length > 0) {
       this.getProfilesReadiness(fireTrialId);
     }
-
-    return {
-      updatedSeries: results.flatMap((result) => (result.status === 'fulfilled' ? [result.updatedSeries] : [])),
-      failures: results.flatMap((result) => (result.status === 'rejected' ? [result.failure] : [])),
-    };
+    return result;
   }
 
   resetSetProfileReadiness(): void {
-    this.#setSeriesReadinessOneParams.set(null);
+    this.#readiness.resetSetProfileReadiness();
   }
 
-  // ── EXECUTION READINESS: WIDGET 2 JLT PREPARATION ─────────────────────
-
-  readonly #getJltPreparationParams = signal<JltPreparationParams | null>(null);
-
-  readonly jltPreparationResource = httpResource<JltPreparationResponse>(() => {
-    const params = this.#getJltPreparationParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation`,
-      method: 'GET',
-      params: {
-        seriesId: params.seriesId,
-      },
-    };
-  });
+  // ── JLT Preparation ────────────────────────────────────────────────────────
+  readonly jltPreparationResource = this.#jltPreparation.jltPreparationResource;
 
   getJltPreparation(fireTrialId: FireTrial['id'], seriesId: string): void {
-    this.#getJltPreparationParams.set({ fireTrialId, seriesId });
+    this.#jltPreparation.getJltPreparation(fireTrialId, seriesId);
   }
 
-  readonly #setJltReadinessParams = signal<JltReadinessParams | null>(null);
-
-  readonly setJltReadinessResource = httpResource<JltReadinessItem>(() => {
-    const params = this.#setJltReadinessParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/series/${params.seriesId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly setJltReadinessResource = this.#jltPreparation.setJltReadinessResource;
 
   setJltReadiness(fireTrialId: FireTrial['id'], seriesId: string, body: JltReadinessRequest): void {
-    this.#setJltReadinessParams.set({ fireTrialId, seriesId, body });
+    this.#jltPreparation.setJltReadiness(fireTrialId, seriesId, body);
   }
 
-  async updateJltReadiness(
+  updateJltReadiness(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     body: JltReadinessRequest,
   ): Promise<JltReadinessItem> {
-    return firstValueFrom(
-      this.#http.put<JltReadinessItem>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-preparation/series/${seriesId}`,
-        body,
-      ),
-    );
+    return this.#jltPreparation.updateJltReadiness(fireTrialId, seriesId, body);
   }
 
-  readonly #selectShotParams = signal<SelectShotParams | null>(null);
-
-  readonly selectShotResource = httpResource<void>(() => {
-    const params = this.#selectShotParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/shots/${params.shotId}/active`,
-      method: 'POST',
-    };
-  });
+  readonly selectShotResource = this.#jltPreparation.selectShotResource;
 
   selectShot(fireTrialId: FireTrial['id'], shotId: string): void {
-    this.#selectShotParams.set({ fireTrialId, shotId });
+    this.#jltPreparation.selectShot(fireTrialId, shotId);
   }
 
-  readonly #fireShotParams = signal<ExecutionParams | null>(null);
-
-  readonly fireShotResource = httpResource<void>(() => {
-    const params = this.#fireShotParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-preparation/fire`,
-      method: 'POST',
-    };
-  });
+  readonly fireShotResource = this.#jltPreparation.fireShotResource;
 
   fireShot(fireTrialId: FireTrial['id']): void {
-    this.#fireShotParams.set({ fireTrialId });
+    this.#jltPreparation.fireShot(fireTrialId);
   }
 
-  // ── EQUIPMENT SELECTOR: GET ─────────────────────────────────────────────
-
-  readonly #getEquipmentSelectorParams = signal<ExecutionParams | null>(null);
-
-  readonly equipmentSelectorResource = httpResource<EquipmentSelectorResponse>(() => {
-    const params = this.#getEquipmentSelectorParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selection`,
-      method: 'GET',
-    };
-  });
+  // ── Equipment Selection & Armament Catalog ─────────────────────────────────
+  readonly equipmentSelectorResource = this.#equipmentSelection.equipmentSelectorResource;
 
   getEquipmentSelector(fireTrialId: FireTrial['id']): void {
-    this.#getEquipmentSelectorParams.set({ fireTrialId });
+    this.#equipmentSelection.getEquipmentSelector(fireTrialId);
   }
 
-  // ── EQUIPMENT ITEMS BY CATEGORY ──────────────────────────────────────────
-
-  /**
-   * Carga items de equipo para múltiples categorías de Calibry a través de EquipmentCatalogService.
-   * Devuelve un map categoryId → opciones de select { id: equipmentItemId, label }.
-   */
   loadEquipmentItemsByCategories(
     categories: readonly EquipmentTypeEnum[],
   ): Promise<Record<string, Array<{ id: string; label: string }>>> {
-    return this.#equipmentCatalogService.loadEquipmentItemsByCategories(categories);
+    return this.#equipmentSelection.loadEquipmentItemsByCategories(categories);
   }
 
-  // ── EQUIPMENT SELECTOR: PUT ─────────────────────────────────────────────
-
-  readonly #updateEquipmentSelectorParams = signal<EquipmentSelectorUpdateParams | null>(null);
-
-  readonly updateEquipmentSelectorResource = httpResource<EquipmentSelectorUpdateResponse>(() => {
-    const params = this.#updateEquipmentSelectorParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/equipment-selection`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateEquipmentSelectorResource = this.#equipmentSelection.updateEquipmentSelectorResource;
 
   updateEquipmentSelector(fireTrialId: FireTrial['id'], body: EquipmentSelectorUpdateRequest): void {
-    this.#updateEquipmentSelectorParams.set({ fireTrialId, body });
+    this.#equipmentSelection.updateEquipmentSelector(fireTrialId, body);
   }
 
-  // ── JLT SHOT DATA: GET ───────────────────────────────────────────────────
-
-  readonly #getJltShotDataParams = signal<JltShotDataParams | null>(null);
-
-  readonly jltShotDataResource = httpResource<JltShotDataResponse>(() => {
-    const params = this.#getJltShotDataParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-shot-data/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  getJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getJltShotDataParams.set({ fireTrialId, seriesId, shotId });
+  loadArmamentEquipmentItems(itemType: LoadEquipmentByTypeParams['itemType']): Promise<ArmamentEquipmentItem[]> {
+    return this.#armamentCatalog.loadArmamentEquipmentItems(itemType);
   }
 
-  readonly #fetchJltShotDataParams = signal<JltShotDataParams | null>(null);
-
-  readonly #fetchJltShotDataResource = httpResource<JltShotDataResponse>(() => {
-    const p = this.#fetchJltShotDataParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/jlt-shot-data/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
-    this.#fetchJltShotDataParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchJltShotDataResource);
+  loadArmamentWeaponDenominations(): Promise<ArmamentEquipmentDenomination[]> {
+    return this.#armamentCatalog.loadArmamentWeaponDenominations();
   }
 
-  // ── JLT SHOT DATA: PUT ───────────────────────────────────────────────────
-
-  readonly #updateJltShotDataParams = signal<JltShotDataUpdateParams | null>(null);
-
-  readonly updateJltShotDataResource = httpResource<JltShotDataResponse>(() => {
-    const params = this.#updateJltShotDataParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-shot-data/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  setJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: JltShotDataRequest): void {
-    this.#updateJltShotDataParams.set({ fireTrialId, seriesId, shotId, body });
+  loadArmamentDenominations(itemType: 'MORTAR' | 'TUBE', familyId?: number): Promise<ArmamentEquipmentDenomination[]> {
+    return this.#armamentCatalog.loadArmamentDenominations(itemType, familyId);
   }
 
-  async updateJltShotData(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: JltShotDataRequest,
-  ): Promise<JltShotDataResponse> {
-    return firstValueFrom(
-      this.#http.put<JltShotDataResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-shot-data/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
-  }
-
-  // ── SHOT VELOCITIES: GET ─────────────────────────────────────────────────
-
-  readonly #getShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
-
-  readonly shotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
-    const params = this.#getShotVelocitiesParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocities/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  getShotVelocities(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotVelocitiesParams.set({ fireTrialId, seriesId, shotId });
-  }
-
-  readonly #fetchShotVelocitiesParams = signal<ShotVelocitiesParams | null>(null);
-
-  readonly #fetchShotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
-    const p = this.#fetchShotVelocitiesParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/velocities/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotVelocities(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotVelocitiesResponse> {
-    this.#fetchShotVelocitiesParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotVelocitiesResource);
-  }
-
-  // ── SHOT VELOCITIES: PUT ─────────────────────────────────────────────────
-
-  readonly #updateShotVelocitiesParams = signal<ShotVelocitiesUpdateParams | null>(null);
-
-  readonly updateShotVelocitiesResource = httpResource<ShotVelocitiesResponse>(() => {
-    const params = this.#updateShotVelocitiesParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/velocities/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  setShotVelocity(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVelocitiesRequest): void {
-    this.#updateShotVelocitiesParams.set({ fireTrialId, seriesId, shotId, body });
-  }
-
-  async updateShotVelocity(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotVelocitiesRequest,
-  ): Promise<ShotVelocitiesResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotVelocitiesResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/velocities/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
-  }
-
-  // ── SHOT PRESSURES: GET ──────────────────────────────────────────────────────
-
-  readonly #getShotPressuresParams = signal<ShotPressuresParams | null>(null);
-
-  readonly shotPressuresResource = httpResource<ShotPressuresResponse>(() => {
-    const params = this.#getShotPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Pressures ─────────────────────────────────────────────────────────
+  readonly shotPressuresResource = this.#shotPressures.shotPressuresResource;
 
   getShotPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotPressuresParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotPressures.getShotPressures(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotPressuresParams = signal<ShotPressuresParams | null>(null);
-
-  readonly #fetchShotPressuresResource = httpResource<ShotPressuresResponse>(() => {
-    const p = this.#fetchShotPressuresParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/pressures/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotPressuresResponse> {
-    this.#fetchShotPressuresParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotPressuresResource);
+  fetchShotPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotPressuresResponse> {
+    return this.#shotPressures.fetchShotPressures(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT PRESSURES: PUT ──────────────────────────────────────────────────────
-
-  readonly #updateShotPressuresParams = signal<ShotPressuresUpdateParams | null>(null);
-
-  readonly updateShotPressuresResource = httpResource<ShotPressuresResponse>(() => {
-    const params = this.#updateShotPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotPressuresResource = this.#shotPressures.updateShotPressuresResource;
 
   setShotPressure(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotPressuresRequest): void {
-    this.#updateShotPressuresParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotPressures.setShotPressure(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotPressures(
+  updateShotPressures(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotPressuresRequest,
   ): Promise<ShotPressuresResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotPressuresResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/pressures/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotPressures.updateShotPressures(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── SHOT ARMAMENT ───────────────────────────────────────────────────────────
-
-  readonly #loadArmamentItemsParams = signal<LoadEquipmentByTypeParams | null>(null);
-
-  readonly #loadArmamentItemsResource = httpResource<{ items: ArmamentEquipmentItem[] }>(() => {
-    const p = this.#loadArmamentItemsParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#planningUrl}/equipment/items`,
-      method: 'GET',
-      params: { itemType: p.itemType },
-    };
-  });
-
-  async loadArmamentEquipmentItems(itemType: LoadEquipmentByTypeParams['itemType']): Promise<ArmamentEquipmentItem[]> {
-    this.#loadArmamentItemsParams.set({ itemType });
-    const response = await this.#awaitResourceValue(this.#loadArmamentItemsResource);
-    return response.items;
-  }
-
-  readonly #loadArmamentWeaponDenominationsRequest = signal(0);
-
-  readonly #loadArmamentWeaponDenominationsResource = httpResource<ArmamentEquipmentDenominationsResponse>(() => {
-    if (!this.#loadArmamentWeaponDenominationsRequest()) return undefined;
-    return {
-      url: `${this.#planningUrl}/equipment/denominations`,
-      method: 'GET',
-      params: { itemType: 'WEAPON' },
-    };
-  });
-
-  async loadArmamentWeaponDenominations(): Promise<ArmamentEquipmentDenomination[]> {
-    this.#loadArmamentWeaponDenominationsRequest.update((requestId) => requestId + 1);
-    const response = await this.#awaitResourceValue(this.#loadArmamentWeaponDenominationsResource);
-    return response.items;
-  }
-
-  readonly #loadArmamentDenominationsParams = signal<{
-    itemType: 'MORTAR' | 'TUBE';
-    familyId?: number;
-  } | null>(null);
-
-  readonly #loadArmamentDenominationsResource = httpResource<ArmamentEquipmentDenominationsResponse>(() => {
-    const params = this.#loadArmamentDenominationsParams();
-    if (!params || (params.itemType === 'TUBE' && params.familyId === undefined)) return undefined;
-    return {
-      url: `${this.#planningUrl}/equipment/denominations`,
-      method: 'GET',
-      params: {
-        itemType: params.itemType,
-        ...(params.familyId === undefined ? {} : { familyId: params.familyId }),
-      },
-    };
-  });
-
-  async loadArmamentDenominations(
-    itemType: 'MORTAR' | 'TUBE',
-    familyId?: number,
-  ): Promise<ArmamentEquipmentDenomination[]> {
-    if (itemType === 'TUBE' && familyId === undefined) return [];
-    this.#loadArmamentDenominationsParams.set({ itemType, familyId });
-    const response = await this.#awaitResourceValue(this.#loadArmamentDenominationsResource);
-    return response.items;
-  }
-
+  // ── Shot Armament ──────────────────────────────────────────────────────────
   async fetchPlanningArmament(fireTrialId: FireTrial['id']): Promise<PlanningArmamentResponse> {
-    // planning/armament migrado a PlanningArmamentService (@intaqalab/data-access-planning).
-    return this.#planningArmamentService.fetchArmament(fireTrialId);
+    return this.#shotArmament.fetchPlanningArmament(fireTrialId);
   }
 
-  readonly #fetchShotArmamentParams = signal<ShotPressuresParams | null>(null);
-
-  readonly #fetchShotArmamentResource = httpResource<ShotArmamentResponse>(() => {
-    const p = this.#fetchShotArmamentParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/armament/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotArmament(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotArmamentResponse> {
-    this.#fetchShotArmamentParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotArmamentResource);
+  fetchShotArmament(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotArmamentResponse> {
+    return this.#shotArmament.fetchShotArmament(fireTrialId, seriesId, shotId);
   }
 
-  readonly #updateShotArmamentParams = signal<ShotArmamentUpdateParams | null>(null);
-
-  readonly updateShotArmamentResource = httpResource<ShotArmamentResponse>(() => {
-    const params = this.#updateShotArmamentParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/armament/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotArmamentResource = this.#shotArmament.updateShotArmamentResource;
 
   setShotArmament(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotArmamentRequest): void {
-    this.#updateShotArmamentParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotArmament.setShotArmament(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotArmament(
+  updateShotArmament(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotArmamentRequest,
   ): Promise<ShotArmamentResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotArmamentResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/armament/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotArmament.updateShotArmament(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── ARMAMENT BULK CONFIGURATION ──────────────────────────────────────────
-
-  readonly #applyArmamentBulkConfigurationParams = actionTrigger<ArmamentBulkConfigurationParams>();
-
-  readonly applyArmamentBulkConfigurationResource = httpResource<void>(() => {
-    const params = this.#applyArmamentBulkConfigurationParams.value();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/armament/bulk-configuration`,
-      method: 'POST',
-      body: params.body,
-    };
-  });
+  readonly applyArmamentBulkConfigurationResource = this.#shotArmament.applyArmamentBulkConfigurationResource;
 
   applyArmamentBulkConfiguration(fireTrialId: FireTrial['id'], body: ArmamentBulkConfigurationRequest): void {
-    this.#applyArmamentBulkConfigurationParams.fire({ fireTrialId, body });
+    this.#shotArmament.applyArmamentBulkConfiguration(fireTrialId, body);
   }
 
-  // ── SHOT MUNITIONS: GET (Widget 20) ──────────────────────────────────────────
-
-  readonly #getShotMunitionParams = signal<ShotMunitionParams | null>(null);
-
-  readonly shotMunitionResource = httpResource<ShotMunitionResponse>(() => {
-    const params = this.#getShotMunitionParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Munitions ─────────────────────────────────────────────────────────
+  readonly shotMunitionResource = this.#shotMunition.shotMunitionResource;
 
   getShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotMunitionParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotMunition.getShotMunition(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotMunitionParams = signal<ShotMunitionParams | null>(null);
-
-  readonly #fetchShotMunitionResource = httpResource<ShotMunitionResponse>(() => {
-    const p = this.#fetchShotMunitionParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/munitions/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotMunition(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotMunitionResponse> {
-    this.#fetchShotMunitionParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotMunitionResource);
+  fetchShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotMunitionResponse> {
+    return this.#shotMunition.fetchShotMunition(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT MUNITIONS: PUT (Widget 20) ──────────────────────────────────────────
-
-  readonly #updateShotMunitionParams = signal<ShotMunitionUpdateParams | null>(null);
-
-  readonly updateShotMunitionResource = httpResource<ShotMunitionResponse>(() => {
-    const params = this.#updateShotMunitionParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotMunitionResource = this.#shotMunition.updateShotMunitionResource;
 
   setShotMunition(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotMunitionRequest): void {
-    this.#updateShotMunitionParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotMunition.setShotMunition(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotMunition(
+  updateShotMunition(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotMunitionRequest,
   ): Promise<ShotMunitionResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotMunitionResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/munitions/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotMunition.updateShotMunition(fireTrialId, seriesId, shotId, body);
   }
-  readonly #applyMunitionConditioningBulkConfigurationParams =
-    signal<MunitionConditioningBulkConfigurationParams | null>(null);
 
   readonly applyMunitionConditioningBulkConfigurationResource =
-    httpResource<MunitionConditioningBulkConfigurationResponse>(() => {
-      const params = this.#applyMunitionConditioningBulkConfigurationParams();
-      if (!params) return undefined;
-      return {
-        url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/munitions/bulk-configuration`,
-        method: 'POST',
-        body: params.body,
-      };
-    });
+    this.#shotMunition.applyMunitionConditioningBulkConfigurationResource;
 
-  async applyMunitionConditioningBulkConfiguration(
+  applyMunitionConditioningBulkConfiguration(
     fireTrialId: FireTrial['id'],
     body: MunitionConditioningBulkConfigurationRequest,
   ): Promise<MunitionConditioningBulkConfigurationResponse> {
-    this.#applyMunitionConditioningBulkConfigurationParams.set({ fireTrialId, body });
-    return this.#awaitResourceValue(this.applyMunitionConditioningBulkConfigurationResource);
+    return this.#shotMunition.applyMunitionConditioningBulkConfiguration(fireTrialId, body);
   }
 
-  // ── SHOT MANOMETER PRESSURES: GET (Widget 21) ────────────────────────────────
-
-  readonly #getShotManometerPressuresParams = signal<ShotManometerPressuresParams | null>(null);
-
-  readonly shotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
-    const params = this.#getShotManometerPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/manometer-pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  getShotManometerPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId });
-  }
-
-  readonly #fetchShotManometerPressuresParams = signal<ShotManometerPressuresParams | null>(null);
-
-  readonly #fetchShotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
-    const p = this.#fetchShotManometerPressuresParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/manometer-pressures/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotManometerPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotManometerPressuresResponse> {
-    this.#fetchShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotManometerPressuresResource);
-  }
-
-  // ── SHOT MANOMETER PRESSURES: PUT (Widget 21) ────────────────────────────────
-
-  readonly #updateShotManometerPressuresParams = signal<ShotManometerPressuresUpdateParams | null>(null);
-
-  readonly updateShotManometerPressuresResource = httpResource<ShotManometerPressuresResponse>(() => {
-    const params = this.#updateShotManometerPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/manometer-pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  setShotManometerPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotManometerPressuresRequest,
-  ): void {
-    this.#updateShotManometerPressuresParams.set({ fireTrialId, seriesId, shotId, body });
-  }
-
-  async updateShotManometerPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotManometerPressuresRequest,
-  ): Promise<ShotManometerPressuresResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotManometerPressuresResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/manometer-pressures/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
-  }
-
-  // ── SHOT IPG PRESSURES: GET (Widget 32) ───────────────────────────────────
-
-  readonly #getShotIpgPressuresParams = signal<ShotIpgPressuresParams | null>(null);
-
-  readonly shotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
-    const params = this.#getShotIpgPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/ipg-pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  getShotIpgPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId });
-  }
-
-  readonly #fetchShotIpgPressuresParams = signal<ShotIpgPressuresParams | null>(null);
-
-  readonly #fetchShotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
-    const p = this.#fetchShotIpgPressuresParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/ipg-pressures/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotIpgPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotIpgPressuresResponse> {
-    this.#fetchShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotIpgPressuresResource);
-  }
-
-  // ── SHOT IPG PRESSURES: PUT (Widget 32) ───────────────────────────────────
-
-  readonly #updateShotIpgPressuresParams = signal<ShotIpgPressuresUpdateParams | null>(null);
-
-  readonly updateShotIpgPressuresResource = httpResource<ShotIpgPressuresResponse>(() => {
-    const params = this.#updateShotIpgPressuresParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/ipg-pressures/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
-
-  setShotIpgPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotIpgPressuresRequest,
-  ): void {
-    this.#updateShotIpgPressuresParams.set({ fireTrialId, seriesId, shotId, body });
-  }
-
-  async updateShotIpgPressures(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-    body: ShotIpgPressuresRequest,
-  ): Promise<ShotIpgPressuresResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotIpgPressuresResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/ipg-pressures/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
-  }
-
-  // ── SHOT JLT MAO: GET ────────────────────────────────
-
-  readonly #getShotJltMaoParams = signal<ShotJltMaoParams | null>(null);
-
-  readonly shotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
-    const params = this.#getShotJltMaoParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot JLT MAO ───────────────────────────────────────────────────────────
+  readonly shotJltMaoResource = this.#shotJltMao.shotJltMaoResource;
   readonly shotShotJltMaoResource = this.shotJltMaoResource;
 
   getShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotJltMaoParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotJltMao.getShotJltMao(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotJltMaoParams = signal<ShotJltMaoParams | null>(null);
-
-  readonly #fetchShotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
-    const p = this.#fetchShotJltMaoParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/jlt-mao/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotJltMaoResponse> {
-    this.#fetchShotJltMaoParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotJltMaoResource);
+  fetchShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotJltMaoResponse> {
+    return this.#shotJltMao.fetchShotJltMao(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT JLT MAO: PUT ────────────────────────────────
-
-  readonly #updateShotJltMaoParams = signal<ShotJltMaoUpdateParams | null>(null);
-
-  readonly updateShotJltMaoResource = httpResource<ShotJltMaoResponse>(() => {
-    const params = this.#updateShotJltMaoParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotJltMaoResource = this.#shotJltMao.updateShotJltMaoResource;
 
   setShotJltMao(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotJltMaoRequest): void {
-    this.#updateShotJltMaoParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotJltMao.setShotJltMao(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotJltMao(
+  updateShotJltMao(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotJltMaoRequest,
   ): Promise<ShotJltMaoResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotJltMaoResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/jlt-mao/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotJltMao.updateShotJltMao(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── JLT MAO BULK CONFIGURATION: POST (Widget 15) ─────────────────────────
-
-  readonly #bulkConfigureJltMaoParams = signal<JltMaoBulkConfigurationParams | null>(null);
-
-  readonly #bulkConfigureJltMaoResource = httpResource<JltMaoBulkConfigurationResponse>(() => {
-    const params = this.#bulkConfigureJltMaoParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/jlt-mao/bulk-configuration`,
-      method: 'POST',
-      body: params.body,
-    };
-  });
-
-  async bulkConfigureJltMao(
+  bulkConfigureJltMao(
     fireTrialId: FireTrial['id'],
     body: JltMaoBulkConfigurationRequest,
   ): Promise<JltMaoBulkConfigurationResponse> {
-    this.#bulkConfigureJltMaoParams.set({ fireTrialId, body });
-    return this.#awaitResourceValue(this.#bulkConfigureJltMaoResource);
+    return this.#shotJltMao.bulkConfigureJltMao(fireTrialId, body);
   }
 
-  // ── SHOT CAMERA ORIENTATION: GET (Widget 6) ─────────────────────────────
-
-  readonly #getShotCameraOrientationParams = signal<ShotCameraOrientationParams | null>(null);
-
-  readonly shotCameraOrientationResource = httpResource<ShotCameraOrientationResponse>(() => {
-    const params = this.#getShotCameraOrientationParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/cameras/${params.cameraId}/orientation`,
-      method: 'GET',
-    };
-  });
-
-  getShotCameraOrientation(fireTrialId: FireTrial['id'], cameraId: number): void {
-    this.#getShotCameraOrientationParams.set({ fireTrialId, cameraId });
-  }
-
-  // ── SHOT MAO TOPOGRAPHY: GET ────────────────────────────────
-
-  readonly #getShotMaoTopographyParams = signal<ShotMaoTopographyParams | null>(null);
-
-  readonly shotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
-    const params = this.#getShotMaoTopographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot MAO Topography ────────────────────────────────────────────────────
+  readonly shotMaoTopographyResource = this.#shotMaoTopography.shotMaoTopographyResource;
   readonly shotShotMaoTopographyResource = this.shotMaoTopographyResource;
 
   getShotMaoTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotMaoTopography.getShotMaoTopography(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotMaoTopographyParams = signal<ShotMaoTopographyParams | null>(null);
-
-  readonly #fetchShotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
-    const p = this.#fetchShotMaoTopographyParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/mao-topography/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotMaoTopography(
+  fetchShotMaoTopography(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotMaoTopographyResponse> {
-    this.#fetchShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotMaoTopographyResource);
+    return this.#shotMaoTopography.fetchShotMaoTopography(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT MAO TOPOGRAPHY: PUT ────────────────────────────────
-
-  readonly #updateShotMaoTopographyParams = signal<ShotMaoTopographyUpdateParams | null>(null);
-
-  readonly updateShotMaoTopographyResource = httpResource<ShotMaoTopographyResponse>(() => {
-    const params = this.#updateShotMaoTopographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotMaoTopographyResource = this.#shotMaoTopography.updateShotMaoTopographyResource;
 
   setShotMaoTopography(
     fireTrialId: FireTrial['id'],
@@ -2386,166 +553,69 @@ export class ExecutionService {
     shotId: string,
     body: ShotMaoTopographyRequest,
   ): void {
-    this.#updateShotMaoTopographyParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotMaoTopography.setShotMaoTopography(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotMaoTopography(
+  updateShotMaoTopography(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotMaoTopographyRequest,
   ): Promise<ShotMaoTopographyResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotMaoTopographyResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/mao-topography/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotMaoTopography.updateShotMaoTopography(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── MAO TOPOGRAPHY BULK CONFIGURATION: POST (Widget 16) ────────────────
-
-  readonly #bulkConfigureMaoTopographyParams = signal<MaoTopographyBulkConfigurationParams | null>(null);
-
-  readonly #bulkConfigureMaoTopographyResource = httpResource<MaoTopographyBulkConfigurationResponse>(() => {
-    const params = this.#bulkConfigureMaoTopographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/mao-topography/bulk-configuration`,
-      method: 'POST',
-      body: params.body,
-    };
-  });
-
-  async bulkConfigureMaoTopography(
+  bulkConfigureMaoTopography(
     fireTrialId: FireTrial['id'],
     body: MaoTopographyBulkConfigurationRequest,
   ): Promise<MaoTopographyBulkConfigurationResponse> {
-    this.#bulkConfigureMaoTopographyParams.set({ fireTrialId, body });
-    return this.#awaitResourceValue(this.#bulkConfigureMaoTopographyResource);
+    return this.#shotMaoTopography.bulkConfigureMaoTopography(fireTrialId, body);
   }
 
-  // ── SHOT TOPOGRAPHY: GET ────────────────────────────────
-
-  readonly #getShotTopographyParams = signal<ShotTopographyParams | null>(null);
-
-  readonly shotTopographyResource = httpResource<ShotTopographyResponse>(() => {
-    const params = this.#getShotTopographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/topography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Topography ────────────────────────────────────────────────────────
+  readonly shotTopographyResource = this.#shotTopography.shotTopographyResource;
   readonly shotShotTopographyResource = this.shotTopographyResource;
 
   getShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotTopographyParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotTopography.getShotTopography(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotTopographyParams = signal<ShotTopographyParams | null>(null);
-
-  readonly #fetchShotTopographyResource = httpResource<ShotTopographyResponse>(() => {
-    const p = this.#fetchShotTopographyParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/topography/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotTopography(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotTopographyResponse> {
-    this.#fetchShotTopographyParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotTopographyResource);
+  fetchShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotTopographyResponse> {
+    return this.#shotTopography.fetchShotTopography(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT TOPOGRAPHY: PUT ────────────────────────────────
-
-  readonly #updateShotTopographyParams = signal<ShotTopographyUpdateParams | null>(null);
-
-  readonly updateShotTopographyResource = httpResource<ShotTopographyResponse>(() => {
-    const params = this.#updateShotTopographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/topography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotTopographyResource = this.#shotTopography.updateShotTopographyResource;
 
   setShotTopography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotTopographyRequest): void {
-    this.#updateShotTopographyParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotTopography.setShotTopography(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotTopography(
+  updateShotTopography(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotTopographyRequest,
   ): Promise<ShotTopographyResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotTopographyResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/topography/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotTopography.updateShotTopography(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── SHOT TRAJECTOGRAPHY: GET ────────────────────────────────
-
-  readonly #getShotTrajectographyParams = signal<ShotTrajectographyParams | null>(null);
-
-  readonly shotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
-    const params = this.#getShotTrajectographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Trajectography ────────────────────────────────────────────────────
+  readonly shotTrajectographyResource = this.#shotTrajectography.shotTrajectographyResource;
   readonly shotShotTrajectographyResource = this.shotTrajectographyResource;
 
   getShotTrajectography(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotTrajectographyParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotTrajectography.getShotTrajectography(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotTrajectographyParams = signal<ShotTrajectographyParams | null>(null);
-
-  readonly #fetchShotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
-    const p = this.#fetchShotTrajectographyParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/trajectography/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotTrajectography(
+  fetchShotTrajectography(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotTrajectographyResponse> {
-    this.#fetchShotTrajectographyParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotTrajectographyResource);
+    return this.#shotTrajectography.fetchShotTrajectography(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT TRAJECTOGRAPHY: PUT ────────────────────────────────
-
-  readonly #updateShotTrajectographyParams = signal<ShotTrajectographyUpdateParams | null>(null);
-
-  readonly updateShotTrajectographyResource = httpResource<ShotTrajectographyResponse>(() => {
-    const params = this.#updateShotTrajectographyParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/trajectography/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotTrajectographyResource = this.#shotTrajectography.updateShotTrajectographyResource;
 
   setShotTrajectography(
     fireTrialId: FireTrial['id'],
@@ -2553,74 +623,35 @@ export class ExecutionService {
     shotId: string,
     body: ShotTrajectographyRequest,
   ): void {
-    this.#updateShotTrajectographyParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotTrajectography.setShotTrajectography(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotTrajectography(
+  updateShotTrajectography(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotTrajectographyRequest,
   ): Promise<ShotTrajectographyResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotTrajectographyResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/trajectography/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotTrajectography.updateShotTrajectography(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── SHOT ACOUSTIC LEVEL: GET ────────────────────────────────
-
-  readonly #getShotAcousticLevelParams = signal<ShotAcousticLevelParams | null>(null);
-
-  readonly shotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
-    const params = this.#getShotAcousticLevelParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/acoustic-level/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Acoustic Level ────────────────────────────────────────────────────
+  readonly shotAcousticLevelResource = this.#shotAcousticLevel.shotAcousticLevelResource;
   readonly shotShotAcousticLevelResource = this.shotAcousticLevelResource;
 
   getShotAcousticLevel(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotAcousticLevel.getShotAcousticLevel(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotAcousticLevelParams = signal<ShotAcousticLevelParams | null>(null);
-
-  readonly #fetchShotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
-    const p = this.#fetchShotAcousticLevelParams();
-    if (!p) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${p.fireTrialId}/execution/acoustic-level/series/${p.seriesId}/shots/${p.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotAcousticLevel(
+  fetchShotAcousticLevel(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
   ): Promise<ShotAcousticLevelResponse> {
-    this.#fetchShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotAcousticLevelResource);
+    return this.#shotAcousticLevel.fetchShotAcousticLevel(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT ACOUSTIC LEVEL: PUT ────────────────────────────────
-
-  readonly #updateShotAcousticLevelParams = signal<ShotAcousticLevelUpdateParams | null>(null);
-
-  readonly updateShotAcousticLevelResource = httpResource<ShotAcousticLevelResponse>(() => {
-    const params = this.#updateShotAcousticLevelParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/acoustic-level/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotAcousticLevelResource = this.#shotAcousticLevel.updateShotAcousticLevelResource;
 
   setShotAcousticLevel(
     fireTrialId: FireTrial['id'],
@@ -2628,123 +659,181 @@ export class ExecutionService {
     shotId: string,
     body: ShotAcousticLevelRequest,
   ): void {
-    this.#updateShotAcousticLevelParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotAcousticLevel.setShotAcousticLevel(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotAcousticLevel(
+  updateShotAcousticLevel(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotAcousticLevelRequest,
   ): Promise<ShotAcousticLevelResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotAcousticLevelResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/acoustic-level/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotAcousticLevel.updateShotAcousticLevel(fireTrialId, seriesId, shotId, body);
   }
 
-  // ── SHOT VIDEO DATA: GET ───────────────────────────────────
-
-  readonly #getShotVideoDataParams = signal<ShotVideoDataParams | null>(null);
-
-  readonly shotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
-    const params = this.#getShotVideoDataParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
+  // ── Shot Video Data ────────────────────────────────────────────────────────
+  readonly shotVideoDataResource = this.#shotVideo.shotVideoDataResource;
 
   getShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
-    this.#getShotVideoDataParams.set({ fireTrialId, seriesId, shotId });
+    this.#shotVideo.getShotVideoData(fireTrialId, seriesId, shotId);
   }
 
-  readonly #fetchShotVideoDataParams = signal<ShotVideoDataParams | null>(null);
-
-  readonly #fetchShotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
-    const params = this.#fetchShotVideoDataParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'GET',
-    };
-  });
-
-  async fetchShotVideoData(
-    fireTrialId: FireTrial['id'],
-    seriesId: string,
-    shotId: string,
-  ): Promise<ShotVideoDataResponse> {
-    this.#fetchShotVideoDataParams.set({ fireTrialId, seriesId, shotId });
-    return this.#awaitResourceValue(this.#fetchShotVideoDataResource);
+  fetchShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotVideoDataResponse> {
+    return this.#shotVideo.fetchShotVideoData(fireTrialId, seriesId, shotId);
   }
 
-  // ── SHOT VIDEO DATA: PUT ───────────────────────────────────
-
-  readonly #updateShotVideoDataParams = signal<ShotVideoDataUpdateParams | null>(null);
-
-  readonly updateShotVideoDataResource = httpResource<ShotVideoDataResponse>(() => {
-    const params = this.#updateShotVideoDataParams();
-    if (!params) return undefined;
-    return {
-      url: `${this.#executionUrl}/fire-trials/${params.fireTrialId}/execution/video/series/${params.seriesId}/shots/${params.shotId}`,
-      method: 'PUT',
-      body: params.body,
-    };
-  });
+  readonly updateShotVideoDataResource = this.#shotVideo.updateShotVideoDataResource;
 
   setShotVideoData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVideoDataRequest): void {
-    this.#updateShotVideoDataParams.set({ fireTrialId, seriesId, shotId, body });
+    this.#shotVideo.setShotVideoData(fireTrialId, seriesId, shotId, body);
   }
 
-  async updateShotVideoData(
+  updateShotVideoData(
     fireTrialId: FireTrial['id'],
     seriesId: string,
     shotId: string,
     body: ShotVideoDataRequest,
   ): Promise<ShotVideoDataResponse> {
-    return firstValueFrom(
-      this.#http.put<ShotVideoDataResponse>(
-        `${this.#executionUrl}/fire-trials/${fireTrialId}/execution/video/series/${seriesId}/shots/${shotId}`,
-        body,
-      ),
-    );
+    return this.#shotVideo.updateShotVideoData(fireTrialId, seriesId, shotId, body);
   }
 
-  /**
-   * Espera a que un httpResource complete su carga actual.
-   * Detecta la transición de carga y lanza si hay error.
-   */
-  async #awaitResource(resource: { isLoading: Signal<boolean>; error: Signal<unknown> }): Promise<void> {
-    await firstValueFrom(
-      toObservable(resource.isLoading, { injector: this.#injector }).pipe(
-        filter((_, index) => index > 0 || resource.isLoading()),
-        filter((loading) => !loading),
-        take(1),
-      ),
-    );
-    if (resource.error()) {
-      throw resource.error();
-    }
+  // ── JLT Shot Data ──────────────────────────────────────────────────────────
+  readonly jltShotDataResource = this.#shotJltData.jltShotDataResource;
+
+  getJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#shotJltData.getJltShotData(fireTrialId, seriesId, shotId);
   }
 
-  /**
-   * Espera a que un httpResource complete y devuelve su valor de forma segura.
-   * Lanza si el recurso reporta error o si el valor resultante es undefined.
-   */
-  async #awaitResourceValue<T>(resource: {
-    isLoading: Signal<boolean>;
-    error: Signal<unknown>;
-    value: Signal<T | undefined>;
-  }): Promise<T> {
-    await this.#awaitResource(resource);
-    const value = resource.value();
-    if (value === undefined) {
-      throw new Error('Resource response is undefined');
-    }
-    return value;
+  fetchJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<JltShotDataResponse> {
+    return this.#shotJltData.fetchJltShotData(fireTrialId, seriesId, shotId);
+  }
+
+  readonly updateJltShotDataResource = this.#shotJltData.updateJltShotDataResource;
+
+  setJltShotData(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: JltShotDataRequest): void {
+    this.#shotJltData.setJltShotData(fireTrialId, seriesId, shotId, body);
+  }
+
+  updateJltShotData(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: JltShotDataRequest,
+  ): Promise<JltShotDataResponse> {
+    return this.#shotJltData.updateJltShotData(fireTrialId, seriesId, shotId, body);
+  }
+
+  // ── Shot Velocities ────────────────────────────────────────────────────────
+  readonly shotVelocitiesResource = this.#shotVelocities.shotVelocitiesResource;
+
+  getShotVelocities(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#shotVelocities.getShotVelocities(fireTrialId, seriesId, shotId);
+  }
+
+  fetchShotVelocities(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): Promise<ShotVelocitiesResponse> {
+    return this.#shotVelocities.fetchShotVelocities(fireTrialId, seriesId, shotId);
+  }
+
+  readonly updateShotVelocitiesResource = this.#shotVelocities.updateShotVelocitiesResource;
+
+  setShotVelocity(fireTrialId: FireTrial['id'], seriesId: string, shotId: string, body: ShotVelocitiesRequest): void {
+    this.#shotVelocities.setShotVelocity(fireTrialId, seriesId, shotId, body);
+  }
+
+  updateShotVelocity(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotVelocitiesRequest,
+  ): Promise<ShotVelocitiesResponse> {
+    return this.#shotVelocities.updateShotVelocity(fireTrialId, seriesId, shotId, body);
+  }
+
+  // ── Shot Manometer Pressures ───────────────────────────────────────────────
+  readonly shotManometerPressuresResource = this.#shotManometerPressures.shotManometerPressuresResource;
+
+  getShotManometerPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#shotManometerPressures.getShotManometerPressures(fireTrialId, seriesId, shotId);
+  }
+
+  fetchShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotManometerPressuresResponse> {
+    return this.#shotManometerPressures.fetchShotManometerPressures(fireTrialId, seriesId, shotId);
+  }
+
+  readonly updateShotManometerPressuresResource = this.#shotManometerPressures.updateShotManometerPressuresResource;
+
+  setShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotManometerPressuresRequest,
+  ): void {
+    this.#shotManometerPressures.setShotManometerPressures(fireTrialId, seriesId, shotId, body);
+  }
+
+  updateShotManometerPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotManometerPressuresRequest,
+  ): Promise<ShotManometerPressuresResponse> {
+    return this.#shotManometerPressures.updateShotManometerPressures(fireTrialId, seriesId, shotId, body);
+  }
+
+  // ── Shot IPG Pressures ─────────────────────────────────────────────────────
+  readonly shotIpgPressuresResource = this.#shotIpgPressures.shotIpgPressuresResource;
+
+  getShotIpgPressures(fireTrialId: FireTrial['id'], seriesId: string, shotId: string): void {
+    this.#shotIpgPressures.getShotIpgPressures(fireTrialId, seriesId, shotId);
+  }
+
+  fetchShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+  ): Promise<ShotIpgPressuresResponse> {
+    return this.#shotIpgPressures.fetchShotIpgPressures(fireTrialId, seriesId, shotId);
+  }
+
+  readonly updateShotIpgPressuresResource = this.#shotIpgPressures.updateShotIpgPressuresResource;
+
+  setShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotIpgPressuresRequest,
+  ): void {
+    this.#shotIpgPressures.setShotIpgPressures(fireTrialId, seriesId, shotId, body);
+  }
+
+  updateShotIpgPressures(
+    fireTrialId: FireTrial['id'],
+    seriesId: string,
+    shotId: string,
+    body: ShotIpgPressuresRequest,
+  ): Promise<ShotIpgPressuresResponse> {
+    return this.#shotIpgPressures.updateShotIpgPressures(fireTrialId, seriesId, shotId, body);
+  }
+
+  // ── Trial Overpressure Info ────────────────────────────────────────────────
+  readonly trialOverpressureInfoResource = this.#overpressure.trialOverpressureInfoResource;
+
+  getTrialOverpressureInfo(fireTrialId: FireTrial['id']): void {
+    this.#overpressure.getTrialOverpressureInfo(fireTrialId);
+  }
+
+  fetchTrialOverpressureInfo(fireTrialId: FireTrial['id']): Promise<TrialOverpressureInfoResponse> {
+    return this.#overpressure.fetchTrialOverpressureInfo(fireTrialId);
+  }
+
+  updateTrialOverpressureInfo(
+    fireTrialId: FireTrial['id'],
+    body: TrialOverpressureInfoRequest,
+  ): Promise<TrialOverpressureInfoResponse> {
+    return this.#overpressure.updateTrialOverpressureInfo(fireTrialId, body);
   }
 }

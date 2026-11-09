@@ -47,8 +47,8 @@ Para evitar saturar la ventana de contexto del LLM y reducir el consumo de token
 12. **`i18n-expert`**: Gestión de claves de traducción en `es/en/de` vía `@ngx-translate`, namespaces y auditoría de sincronización.
 13. **`master-data-specialist`**: Especialista en catálogos de Datos Maestros y cascarón genérico (`libs/domain/master-data`, Golden Path del repositorio).
 14. **`planning-specialist`**: Especialista en el dominio de Planificación de Ensayos (series, disparos, armamento y municiones en `libs/domain/trial/planning`).
-15. **`execution-domain-expert`**: Especialista en el dominio de Ejecución de Ensayos (máquinas de estado, readiness, secuencias de tiro).
-16. **`widget-service-integration`**: Integración completa GET+PUT para widgets del Execution Grid con `ExecutionStore`, mappers y mock APIs. Modularizado bajo ADR-022.
+15. **`execution-domain-expert`**: Especialista en el dominio de Ejecución de Ensayos (máquinas de estado, readiness, secuencias de tiro, servicios descompuestos ADR-025).
+16. **`widget-service-integration`**: Integración completa GET+PUT para widgets del Execution Grid con servicios de dominio descompuestos (`Shot*Service`, ADR-025), `ExecutionStore`, mappers y mock APIs. Modularizado bajo ADR-022.
 
 ### 🔌 Backend Mocks & APIs
 

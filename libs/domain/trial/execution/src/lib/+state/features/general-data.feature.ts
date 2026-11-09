@@ -6,9 +6,16 @@ import { TrialStatus } from '@intaqalab/models';
 import { safeResourceValue } from '@intaqalab/utils';
 import { patchState, signalStoreFeature, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 
+import {
+  ExecutionPlanningService,
+  ExecutionReadinessService,
+  ExecutionStateService,
+  ExecutionTransitionService,
+  SecurityCountdownService,
+  WidgetPreferencesService,
+} from '../../data-access';
 import type { WidgetPreferenceId } from '../../execution/models';
 import { WidgetId } from '../../execution/models';
-import { ExecutionService } from '../../services/execution.service';
 import { resolveTrialExecutionCapabilities } from '../policies/trial-execution-policy';
 
 export const DEFAULT_AUTONOMOUS_WIDGETS: readonly WidgetId[] = [WidgetId.SEGUIMIENTO];
@@ -54,7 +61,10 @@ export function withGeneralData() {
     withComputed(
       (
         store,
-        executionService = inject(ExecutionService),
+        executionStateService = inject(ExecutionStateService),
+        securityCountdownService = inject(SecurityCountdownService),
+        planningCommandService = inject(ExecutionPlanningService),
+        widgetPreferencesService = inject(WidgetPreferencesService),
         trialsService = inject(TrialsDataService),
         seriesService = inject(PlanningSeriesService),
         conditionsService = inject(PlanningConditionsService),
@@ -67,27 +77,27 @@ export function withGeneralData() {
         // Comparador por updatedAt: aunque httpResource siempre devuelve un objeto
         // nuevo, el computed solo propaga el cambio cuando updatedAt difiere,
         // evitando re-renders en widgets que lean este computed durante el polling.
-        executionState: computed(() => safeResourceValue(executionService.executionStateResource), {
+        executionState: computed(() => safeResourceValue(executionStateService.executionStateResource), {
           equal: (a, b) => (a?.updatedAt ?? null) === (b?.updatedAt ?? null),
         }),
 
-        isLoadingExecutionState: computed(() => executionService.executionStateResource.isLoading()),
+        isLoadingExecutionState: computed(() => executionStateService.executionStateResource.isLoading()),
 
-        executionStateError: computed(() => executionService.executionStateResource.error()),
+        executionStateError: computed(() => executionStateService.executionStateResource.error()),
 
         // Execution Progress
-        executionProgress: computed(() => safeResourceValue(executionService.executionProgressResource)),
+        executionProgress: computed(() => safeResourceValue(executionStateService.executionProgressResource)),
 
-        isLoadingExecutionProgress: computed(() => executionService.executionProgressResource.isLoading()),
+        isLoadingExecutionProgress: computed(() => executionStateService.executionProgressResource.isLoading()),
 
-        executionProgressError: computed(() => executionService.executionProgressResource.error()),
+        executionProgressError: computed(() => executionStateService.executionProgressResource.error()),
 
         // Security Countdown State
-        securityCountdown: computed(() => safeResourceValue(executionService.securityCountdownResource)),
+        securityCountdown: computed(() => safeResourceValue(securityCountdownService.securityCountdownResource)),
 
-        isLoadingSecurityCountdown: computed(() => executionService.securityCountdownResource.isLoading()),
+        isLoadingSecurityCountdown: computed(() => securityCountdownService.securityCountdownResource.isLoading()),
 
-        securityCountdownError: computed(() => executionService.securityCountdownResource.error()),
+        securityCountdownError: computed(() => securityCountdownService.securityCountdownResource.error()),
 
         /**
          * Indica si la prueba está en un estado de solo lectura
@@ -114,7 +124,7 @@ export function withGeneralData() {
          * o si el estado de ejecución reportado por la API es 'PLANNED'.
          */
         isExecutionStarted: computed(() => {
-          const execState = safeResourceValue(executionService.executionStateResource);
+          const execState = safeResourceValue(executionStateService.executionStateResource);
           if (execState?.status) {
             return execState.status !== 'PLANNED';
           }
@@ -131,9 +141,9 @@ export function withGeneralData() {
         }),
 
         // Execution Planning
-        isUpdatingPlanning: computed(() => executionService.updatePlanningResource.isLoading()),
+        isUpdatingPlanning: computed(() => planningCommandService.updatePlanningResource.isLoading()),
 
-        isApprovingPlanning: computed(() => executionService.approvePlanningResource.isLoading()),
+        isApprovingPlanning: computed(() => planningCommandService.approvePlanningResource.isLoading()),
 
         // Planning Series (capa data-access de planning)
         planningSeries: computed(() => safeResourceValue(seriesService.seriesResource)),
@@ -145,23 +155,32 @@ export function withGeneralData() {
         isLoadingPlanningConditions: computed(() => conditionsService.conditionsResource.isLoading()),
 
         // Widget Preferences
-        preferencesByRole: computed(() => safeResourceValue(executionService.preferencesByRoleResource)),
+        preferencesByRole: computed(() => safeResourceValue(widgetPreferencesService.preferencesByRoleResource)),
 
-        isLoadingPreferencesByRole: computed(() => executionService.preferencesByRoleResource.isLoading()),
+        isLoadingPreferencesByRole: computed(() => widgetPreferencesService.preferencesByRoleResource.isLoading()),
 
-        isUpdatingPreferencesByRole: computed(() => executionService.updatePreferencesByRoleResource.isLoading()),
+        isUpdatingPreferencesByRole: computed(() =>
+          widgetPreferencesService.updatePreferencesByRoleResource.isLoading(),
+        ),
 
-        preferencesByUser: computed(() => safeResourceValue(executionService.preferencesByUserResource)),
+        preferencesByUser: computed(() => safeResourceValue(widgetPreferencesService.preferencesByUserResource)),
 
-        isLoadingPreferencesByUser: computed(() => executionService.preferencesByUserResource.isLoading()),
+        isLoadingPreferencesByUser: computed(() => widgetPreferencesService.preferencesByUserResource.isLoading()),
 
-        isUpdatingPreferencesByUser: computed(() => executionService.updatePreferencesByUserResource.isLoading()),
+        isUpdatingPreferencesByUser: computed(() =>
+          widgetPreferencesService.updatePreferencesByUserResource.isLoading(),
+        ),
       }),
     ),
     withMethods(
       (
         store,
-        executionService = inject(ExecutionService),
+        executionStateService = inject(ExecutionStateService),
+        securityCountdownService = inject(SecurityCountdownService),
+        executionTransitionService = inject(ExecutionTransitionService),
+        planningCommandService = inject(ExecutionPlanningService),
+        widgetPreferencesService = inject(WidgetPreferencesService),
+        readinessService = inject(ExecutionReadinessService),
         trialsService = inject(TrialsDataService),
         seriesService = inject(PlanningSeriesService),
         conditionsService = inject(PlanningConditionsService),
@@ -170,7 +189,7 @@ export function withGeneralData() {
           patchState(store, { fireTrialId, fireTrial });
           this.loadExecutionState(fireTrialId);
           this.loadExecutionProgress(fireTrialId);
-          executionService.getProfilesReadiness(fireTrialId);
+          readinessService.getProfilesReadiness(fireTrialId);
           this.loadPlanningSeries(fireTrialId);
           this.loadPlanningConditions(fireTrialId);
         },
@@ -181,14 +200,14 @@ export function withGeneralData() {
             trialsService.loadById(fireTrialId);
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
-            executionService.getProfilesReadiness(fireTrialId);
+            readinessService.getProfilesReadiness(fireTrialId);
             this.loadPlanningSeries(fireTrialId);
             this.loadPlanningConditions(fireTrialId);
           }
         },
 
         loadExecutionState(fireTrialId: string): void {
-          executionService.getExecutionState(fireTrialId);
+          executionStateService.getExecutionState(fireTrialId);
         },
 
         /**
@@ -201,24 +220,24 @@ export function withGeneralData() {
         },
 
         loadExecutionProgress(fireTrialId: string): void {
-          executionService.getExecutionProgress(fireTrialId);
+          executionStateService.getExecutionProgress(fireTrialId);
         },
 
         loadSecurityCountdown(fireTrialId: string): void {
-          executionService.getSecurityCountdownState(fireTrialId);
+          securityCountdownService.getSecurityCountdownState(fireTrialId);
         },
 
         updateSecurityCountdown(
           fireTrialId: string,
-          body: Parameters<typeof executionService.updateSecurityCountdown>[1],
+          body: Parameters<typeof securityCountdownService.updateSecurityCountdown>[1],
         ): Promise<void> {
-          return executionService.updateSecurityCountdown(fireTrialId, body).then(() => {
-            executionService.getSecurityCountdownState(fireTrialId);
+          return securityCountdownService.updateSecurityCountdown(fireTrialId, body).then(() => {
+            securityCountdownService.getSecurityCountdownState(fireTrialId);
           });
         },
 
         startExecution(fireTrialId: string): Promise<void> {
-          return executionService.startExecution(fireTrialId).then(() => {
+          return executionTransitionService.startExecution(fireTrialId).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -226,7 +245,7 @@ export function withGeneralData() {
         },
 
         pauseExecution(fireTrialId: string): Promise<void> {
-          return executionService.pauseExecution(fireTrialId).then(() => {
+          return executionTransitionService.pauseExecution(fireTrialId).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -234,7 +253,7 @@ export function withGeneralData() {
         },
 
         interruptExecution(fireTrialId: string, reason: string): Promise<void> {
-          return executionService.interruptExecution(fireTrialId, reason).then(() => {
+          return executionTransitionService.interruptExecution(fireTrialId, reason).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -242,7 +261,7 @@ export function withGeneralData() {
         },
 
         resumeExecution(fireTrialId: string): Promise<void> {
-          return executionService.resumeExecution(fireTrialId).then(() => {
+          return executionTransitionService.resumeExecution(fireTrialId).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -250,7 +269,7 @@ export function withGeneralData() {
         },
 
         cancelExecution(fireTrialId: string, reason: string): Promise<void> {
-          return executionService.cancelExecution(fireTrialId, reason).then(() => {
+          return executionTransitionService.cancelExecution(fireTrialId, reason).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -258,7 +277,7 @@ export function withGeneralData() {
         },
 
         finishExecution(fireTrialId: string): Promise<void> {
-          return executionService.finishExecution(fireTrialId).then(() => {
+          return executionTransitionService.finishExecution(fireTrialId).then(() => {
             this.loadExecutionState(fireTrialId);
             this.loadExecutionProgress(fireTrialId);
             trialsService.loadById(fireTrialId);
@@ -267,16 +286,16 @@ export function withGeneralData() {
 
         updatePlanning(
           fireTrialId: string,
-          body: Parameters<typeof executionService.updateExecutionPlanning>[1],
+          body: Parameters<typeof planningCommandService.updateExecutionPlanning>[1],
         ): void {
-          executionService.updateExecutionPlanning(fireTrialId, body);
+          planningCommandService.updateExecutionPlanning(fireTrialId, body);
         },
 
         approvePlanning(
           fireTrialId: string,
-          body: Parameters<typeof executionService.approveExecutionPlanning>[1],
+          body: Parameters<typeof planningCommandService.approveExecutionPlanning>[1],
         ): void {
-          executionService.approveExecutionPlanning(fireTrialId, body);
+          planningCommandService.approveExecutionPlanning(fireTrialId, body);
         },
 
         loadPlanningSeries(fireTrialId: string): void {
@@ -288,19 +307,19 @@ export function withGeneralData() {
         },
 
         loadPreferencesByRole(fireTrialId: string, roleName: string): void {
-          executionService.getPreferencesByRole(fireTrialId, roleName);
+          widgetPreferencesService.getPreferencesByRole(fireTrialId, roleName);
         },
 
         updatePreferencesByRole(fireTrialId: string, roleName: string, widgetsLayout: WidgetId[]): void {
-          executionService.updatePreferencesByRole(fireTrialId, roleName, widgetsLayout);
+          widgetPreferencesService.updatePreferencesByRole(fireTrialId, roleName, widgetsLayout);
         },
 
         loadPreferencesByUser(fireTrialId: string, username: string): void {
-          executionService.getPreferencesByUser(fireTrialId, username);
+          widgetPreferencesService.getPreferencesByUser(fireTrialId, username);
         },
 
         updatePreferencesByUser(fireTrialId: string, username: string, widgetsLayout: WidgetPreferenceId[]): void {
-          executionService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
+          widgetPreferencesService.updatePreferencesByUser(fireTrialId, username, widgetsLayout);
         },
 
         registerAutonomousWidget(widgetId: WidgetId): void {
@@ -331,7 +350,8 @@ export function withGeneralData() {
     withHooks({
       onInit(store) {
         const trialsService = inject(TrialsDataService);
-        const executionService = inject(ExecutionService);
+        const executionStateService = inject(ExecutionStateService);
+        const readinessService = inject(ExecutionReadinessService);
 
         // Sincroniza FireTrial del resource → estado del store para isTrialReadOnly y planning compat
         effect(() => {
@@ -346,7 +366,7 @@ export function withGeneralData() {
         // estado más reciente, evitando re-renders del grid en cada ciclo de polling.
         let lastProcessedUpdatedAt: string | null = null;
         effect(() => {
-          const state = safeResourceValue(executionService.executionStateResource);
+          const state = safeResourceValue(executionStateService.executionStateResource);
           if (!state) {
             return;
           }
@@ -361,7 +381,7 @@ export function withGeneralData() {
           if (trialId) {
             store.loadExecutionProgress(trialId);
             if (!untracked(() => store.isWidgetAutonomous(WidgetId.SEGUIMIENTO))) {
-              executionService.getShotMeasurements(trialId);
+              executionStateService.getShotMeasurements(trialId);
             }
           }
 
@@ -381,7 +401,7 @@ export function withGeneralData() {
           trialsService.loadById(fireTrialId);
           store.loadExecutionState(fireTrialId);
           store.loadExecutionProgress(fireTrialId);
-          executionService.getProfilesReadiness(fireTrialId);
+          readinessService.getProfilesReadiness(fireTrialId);
           store.loadPlanningSeries(fireTrialId);
           store.loadPlanningConditions(fireTrialId);
         }

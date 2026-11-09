@@ -1,7 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
-import { type ArmamentBulkConfigurationRequest, ExecutionService } from '../../services/execution.service';
+import { ShotArmamentService } from '../../data-access';
+import type { ArmamentBulkConfigurationRequest } from '../../execution/models';
 import type {
   ArmamentIntroductionState,
   CalibryEquipmentOption,
@@ -58,14 +59,14 @@ const initialState: ArmamentIntroductionSlice = {
 export function withArmamentIntroduction() {
   return signalStoreFeature(
     withState(initialState),
-    withComputed((store, executionService = inject(ExecutionService)) => ({
+    withComputed((store, shotArmamentService = inject(ShotArmamentService)) => ({
       isApplyingArmamentBulkConfiguration: computed(() =>
-        executionService.applyArmamentBulkConfigurationResource.isLoading(),
+        shotArmamentService.applyArmamentBulkConfigurationResource.isLoading(),
       ),
     })),
-    withMethods((store, executionService = inject(ExecutionService)) => ({
+    withMethods((store, shotArmamentService = inject(ShotArmamentService)) => ({
       applyArmamentBulkConfiguration(fireTrialId: string, request: ArmamentBulkConfigurationRequest): void {
-        executionService.applyArmamentBulkConfiguration(fireTrialId, request);
+        shotArmamentService.applyArmamentBulkConfiguration(fireTrialId, request);
       },
     })),
     withMethods((store) => ({
