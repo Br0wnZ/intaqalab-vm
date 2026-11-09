@@ -8,6 +8,7 @@ export * from './warehouse/warehouse.normalizers';
 export * from './warehouse/inject-munition-types';
 export * from './warehouse/inject-component-denominations';
 export * from './warehouse/inject-denomination-batches';
+export * from './warehouse/inject-trial-stock-denominations';
 export * from './video/video-measures.normalizer';
 export * from './execution/shared/execution-endpoints';
 export * from './execution/shared/resource-await';

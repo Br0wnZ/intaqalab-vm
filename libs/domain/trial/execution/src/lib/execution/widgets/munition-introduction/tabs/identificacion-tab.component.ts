@@ -20,9 +20,11 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
 import {
+  type DenominationOption,
   type ShotMunitionComponentOption,
   injectComponentDenominations,
   injectDenominationBatches,
+  injectTrialStockDenominations,
 } from '../../../../data-access';
 import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 
@@ -177,6 +179,8 @@ export class MunitionIdentificacionTabComponent {
   readonly #loadingZonesService = inject(PlanningLoadingZonesService);
 
   readonly componenteOptions = input<ShotMunitionComponentOption[]>([]);
+  readonly hasShotSelection = input(false);
+  readonly trialNumber = input<string | null>(null);
   readonly modoFuncionamientoOptions = input<Array<{ value: string; label: string }>>([]);
   readonly shotConditions = input<PlanningConditionsShot | null>(null);
   readonly componentChange = output<string>();
@@ -242,38 +246,46 @@ export class MunitionIdentificacionTabComponent {
     munitionTypeId: computed(() => this.identFormModel().componente),
     planned: computed(() => this.selectedComponent()?.planned ?? null),
   });
+  readonly #trialStockHandle = injectTrialStockDenominations({
+    fireTrialId: computed(() => this.#store.fireTrialId()),
+    trialNumber: this.trialNumber,
+    enabled: computed(() => Boolean(this.hasShotSelection()) && !this.selectedComponent()?.planned.denominationId),
+  });
 
   readonly #batchesHandle = injectDenominationBatches({
     denominationId: computed(() => this.identFormModel().denominacion),
     plannedBatch: computed(() => this.selectedComponent()?.planned.batch ?? null),
   });
 
-  readonly filteredDenominacionOptions = computed(() => {
-    const warehouseOptions = this.#denominationsHandle.options();
-    const currentDenomination = this.identFormModel().denominacion;
+  readonly filteredDenominacionOptions = computed<DenominationOption[]>(() => {
+    const plannedDenomination = this.selectedComponent()?.planned;
+    if (plannedDenomination?.denominationId) {
+      return this.#denominationsHandle.options().filter((option) => option.planned);
+    }
+
     const componente = this.identFormModel().componente;
+    const stockDenominations = this.#trialStockHandle.options().filter((option) => option.munitionTypeId === componente);
+    const currentDenomination = this.identFormModel().denominacion;
     const storedIdentification = this.#store.munitionIntroduction().identificacion;
 
-    if (
+    if (this.#trialStockHandle.isLoading()) return [];
+
+    const storedOption =
       componente &&
       currentDenomination &&
       storedIdentification.componente === componente &&
       storedIdentification.denominacion === currentDenomination &&
-      !warehouseOptions.some((d) => d.value === currentDenomination)
-    ) {
-      return [
-        ...warehouseOptions,
-        {
+      !stockDenominations.some((denomination) => denomination.value === currentDenomination)
+        ? {
           value: currentDenomination,
           label: currentDenomination,
           munitionTypeId: componente,
           inStock: true,
           planned: false,
-        },
-      ];
-    }
+        }
+        : null;
 
-    return warehouseOptions;
+    return storedOption ? [...stockDenominations, storedOption] : stockDenominations;
   });
 
   readonly filteredLoteOptions = computed(() => {

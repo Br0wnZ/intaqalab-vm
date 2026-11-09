@@ -28,6 +28,8 @@ import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
+import { TrialsDataService } from '@intaqalab/data-access';
+
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
 import { ShotMunitionService, injectShotMunitionComponents } from '../../../data-access';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -209,6 +211,8 @@ export interface AcondFormModel {
         <inta-munition-identificacion-tab
           [class.hidden]="activeTab() !== 'identificacion'"
           [componenteOptions]="componenteOptions()"
+          [hasShotSelection]="!!selectorFormModel().serie && !!selectorFormModel().disparo"
+          [trialNumber]="trialNumber()"
           [modoFuncionamientoOptions]="modoFuncionamientoOptions()"
           [shotConditions]="currentShotConditions()"
           (componentChange)="onComponentChange($event)"
@@ -237,6 +241,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore, { skipSelf: true });
   readonly #shotMunitionService = inject(ShotMunitionService);
   readonly #dialog = inject(MatDialog);
+  readonly #trialsDataService = inject(TrialsDataService);
   readonly #trialShots = injectTrialShots();
   readonly #fuseWorkingModesService = inject(PlanningFuseWorkingModesService);
   readonly #conditionsService = inject(PlanningConditionsService, { optional: true });
@@ -268,6 +273,7 @@ export class MunitionIntroduction extends BaseFormWidgetComponent {
 
   // ── UI state (local) ───────────────────────────────────────────────────────
   protected readonly activeTab = signal<TabType>('identificacion');
+  protected readonly trialNumber = computed(() => this.#trialsDataService.byIdResource.value()?.trialNumber ?? null);
 
   // ── ViewChildren para delegar estado ────────────────────────────────────────
   readonly identTab = viewChild(MunitionIdentificacionTabComponent);

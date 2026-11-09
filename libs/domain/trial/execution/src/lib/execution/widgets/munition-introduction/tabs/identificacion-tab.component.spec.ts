@@ -4,6 +4,7 @@ import { ɵSIGNAL as SIGNAL } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { TrialStatus } from '@intaqalab/models';
 import type { PlanningConditionsShot } from '@intaqalab/data-access-planning';
 import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
@@ -55,6 +56,8 @@ const createPlannedComponent = (overrides?: Partial<PlannedComponentData>): Plan
 describe('MunitionIdentificacionTabComponent', () => {
   const runSetup = async (inputs?: {
     componenteOptions?: ShotMunitionComponentOption[];
+    hasShotSelection?: boolean;
+    trialNumber?: string | null;
     modoFuncionamientoOptions?: Array<{ value: string; label: string }>;
     shotConditions?: PlanningConditionsShot | null;
   }) => {
@@ -73,12 +76,20 @@ describe('MunitionIdentificacionTabComponent', () => {
     if (inputs?.componenteOptions) {
       setSignalInput(component.componenteOptions, inputs.componenteOptions);
     }
+    if (inputs?.hasShotSelection !== undefined) {
+      setSignalInput(component.hasShotSelection, inputs.hasShotSelection);
+    }
+    if (inputs?.trialNumber !== undefined) {
+      setSignalInput(component.trialNumber, inputs.trialNumber);
+    }
     if (inputs?.modoFuncionamientoOptions) {
       setSignalInput(component.modoFuncionamientoOptions, inputs.modoFuncionamientoOptions);
     }
     if (inputs?.shotConditions !== undefined) {
       setSignalInput(component.shotConditions, inputs.shotConditions);
     }
+    await Promise.resolve();
+    TestBed.tick();
     view.fixture.detectChanges();
 
     const store = TestBed.inject(ExecutionStore);
@@ -637,5 +648,121 @@ describe('MunitionIdentificacionTabComponent', () => {
     component.identFormModel.update((m) => ({ ...m, cantidad: 0 }));
     view.fixture.detectChanges();
     expect(component.isValid()).toBe(true);
+  });
+
+  it('uses the planned denomination instead of trial stock denominations', async () => {
+    const plannedOptions: ShotMunitionComponentOption[] = [
+      {
+        value: 'type-fuse',
+        label: 'Espoleta',
+        category: 'espoleta',
+        rawCategory: 'MUNITION_COMPONENT',
+        source: 'COMPONENT',
+        configurationId: 'config-1',
+        isFuse: true,
+        planned: createPlannedComponent({ denominationId: 'planned-denomination', denominationName: 'Planned' }),
+      },
+    ];
+    const { view } = await runSetup({ componenteOptions: plannedOptions });
+    const component = view.fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+    component.identFormModel.update((model) => ({ ...model, componente: 'type-fuse' }));
+    view.fixture.detectChanges();
+    await Promise.resolve();
+    TestBed.tick();
+
+    httpMock
+      .expectOne(
+        (request) => request.url.includes('/denominations') && request.params.get('munitionTypeId') === 'type-fuse',
+      )
+      .flush({ items: [{ id: 'planned-denomination', name: 'Planned', componentTypeId: 'type-fuse' }] });
+    TestBed.tick();
+
+    expect(component.filteredDenominacionOptions().map((option) => option.value)).toEqual(['planned-denomination']);
+    httpMock.expectNone((request) => request.url.endsWith('/fire-trials'));
+  });
+
+  it('uses trial stock denominations when planning has no denomination', async () => {
+    const plannedOptions: ShotMunitionComponentOption[] = [
+      {
+        value: 'type-fuse',
+        label: 'Espoleta',
+        category: 'espoleta',
+        rawCategory: 'MUNITION_COMPONENT',
+        source: 'COMPONENT',
+        configurationId: 'config-1',
+        isFuse: true,
+        planned: createPlannedComponent(),
+      },
+    ];
+    const { view, store } = await runSetup({
+      componenteOptions: plannedOptions,
+      hasShotSelection: true,
+      trialNumber: '034A/25',
+    });
+    const component = view.fixture.componentInstance;
+    const httpMock = TestBed.inject(HttpTestingController);
+    store.setFireTrialData('trial-id', {
+      status: TrialStatus.STARTED,
+      hasAssociatedTrial: false,
+      hasLinkedTrial: false,
+      associatedTrial: '',
+      associatedTrialView: '',
+      linkedTrial: '',
+      linkedTrialView: '',
+      description: '',
+      type: '',
+      client: '',
+      clientReference: '',
+      requestedDate: '',
+      observations: '',
+    });
+    component.identFormModel.update((model) => ({ ...model, componente: 'type-fuse' }));
+    view.fixture.detectChanges();
+    TestBed.tick();
+
+    httpMock
+      .expectOne((request) => request.url.endsWith('/fire-trials') && request.params.get('trialNumber') === '034A/25')
+      .flush({ page: 1, pageSize: 200, totalElements: 1, items: [{ id: 'resolved-trial-id', trialNumber: '034A/25' }] });
+    let stockRequest = httpMock.match((request) => request.url.endsWith('/warehouse/stock'))[0];
+    await vi.waitFor(async () => {
+      await Promise.resolve();
+      TestBed.tick();
+      stockRequest ??= httpMock.match((request) => request.url.endsWith('/warehouse/stock'))[0];
+      expect(stockRequest).toBeDefined();
+    });
+
+    if (!stockRequest) throw new Error('Warehouse stock request was not queued');
+    expect(stockRequest.request.params.get('plannedFireTrialIds')).toBe('resolved-trial-id');
+    stockRequest.flush({
+        page: 1,
+        pageSize: 200,
+        totalElements: 1,
+        items: [
+          {
+            id: 'stock-1',
+            category: 'MUNITION_COMPONENT',
+            batch: 'LOT-A',
+            status: 'AVAILABLE',
+            quantity: 1,
+            munitionType: { id: 'type-fuse', name: 'Espoleta' },
+            denomination: { id: 'stock-denomination', name: 'Denominación almacén' },
+          },
+        ],
+      });
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(component.filteredDenominacionOptions()).toHaveLength(1);
+    });
+
+    expect(component.filteredDenominacionOptions()).toEqual([
+      {
+        value: 'stock-denomination',
+        label: 'Denominación almacén',
+        munitionTypeId: 'type-fuse',
+        planned: false,
+        inStock: true,
+      },
+    ]);
   });
 });

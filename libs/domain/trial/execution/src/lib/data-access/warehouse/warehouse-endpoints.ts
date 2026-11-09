@@ -56,6 +56,16 @@ export function buildWarehouseStockUrl(
   };
 }
 
+export function buildWarehouseTrialStockUrl(
+  warehouseBaseUrl: string,
+  fireTrialId: string,
+): { url: string; params: HttpParams } {
+  return {
+    url: `${warehouseBaseUrl}/stock`,
+    params: new HttpParams().set('plannedFireTrialIds', fireTrialId).set('page', 1).set('pageSize', 200),
+  };
+}
+
 export function injectWarehouseUrl(): string {
   return injectWharehouseEndpoint();
 }
