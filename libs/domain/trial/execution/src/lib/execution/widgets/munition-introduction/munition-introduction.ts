@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { TrialsDataService } from '@intaqalab/data-access';
 import {
   PlanningConditionsService,
   type PlanningConditionsShot,
@@ -27,8 +28,6 @@ import {
 import { IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
-
-import { TrialsDataService } from '@intaqalab/data-access';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
 import { ShotMunitionService, injectShotMunitionComponents } from '../../../data-access';

@@ -1,23 +1,29 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
+import { Role, injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../+state/execution.store';
+import { EquipmentPlanningService } from '../../services/equipment-planning.service';
 import { CancelExecutionDialog } from '../dialogs/cancel-execution-dialog';
 import { EquipmentSelectorDialog } from '../dialogs/equipment-selector-dialog';
 import { TAG_CONFIGS } from '../dialogs/equipment-selector-dialog.mapper';
 import { InterruptExecutionDialog } from '../dialogs/interrupt-execution-dialog';
 import { PauseExecutionDialog } from '../dialogs/pause-execution-dialog';
-import type { EquipmentSelectorDialogResult } from '../models';
+import { type EquipmentSelectorDialogResult, type TrialPlanningMeasuresResponse } from '../models';
 import type { PlacedWidget, Widget, WidgetPreferenceId } from '../models/execution-grid.models';
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../models/execution-page.models';
 import { WidgetId } from '../models/widget-id.enum';
-import { resolveVisibleEquipmentTags } from '../utils/equipment-planning.utils';
+import {
+  collectPlannedMeasureIds,
+  resolvePlannedEquipmentTags,
+  resolveVisibleEquipmentTags,
+} from '../utils/equipment-planning.utils';
 import { injectWidgets } from '../utils/inject-widgets';
+import { resolveWidgetsByMeasurements } from '../utils/widget-measures-filter';
 import { WidgetGridFullError, WidgetStateService } from './widget-state.service';
 
 const EXECUTION_STATE_POLLING_MS = 5_000;
@@ -26,6 +32,7 @@ const EXECUTION_STATE_POLLING_MS = 5_000;
 export class ExecutionPageFacade {
   readonly #dialog = inject(MatDialog);
   readonly #store = inject(ExecutionStore);
+  readonly #equipmentPlanning = inject(EquipmentPlanningService);
   readonly #widgetState = inject(WidgetStateService);
   readonly #translate = inject(TranslateService);
   readonly #toastr = inject(ToastrService);
@@ -52,7 +59,34 @@ export class ExecutionPageFacade {
     },
   );
 
-  readonly widgets = signal<Widget[]>(injectWidgets()).asReadonly();
+  readonly #allWidgets = injectWidgets();
+  readonly #showAllWidgets = signal(false);
+  readonly showAllWidgets = this.#showAllWidgets.asReadonly();
+  readonly isAdmin = computed(() => this.#userRoles().includes(Role.INTAQALAB_ADMIN));
+  readonly isWidgetCatalogLoading = computed(() => this.#equipmentPlanning.isLoading());
+  readonly widgets = computed<Widget[]>(() => {
+    if (this.#equipmentPlanning.isLoading()) {
+      return [];
+    }
+
+    const userRoles = this.#userRoles();
+    const roleVisibleTags = resolveVisibleEquipmentTags(userRoles, TAG_CONFIGS);
+    const visibleTagIds = new Set(roleVisibleTags.map((tag) => tag.id));
+
+    if (this.isAdmin() && this.#showAllWidgets()) {
+      return this.#allWidgets.filter((widget) => widget.requiredMeasurementTags.some((tag) => visibleTagIds.has(tag)));
+    }
+
+    const trialMeasures = this.#equipmentPlanning.trialMeasuresResource.value();
+    if (!trialMeasures) {
+      return [];
+    }
+
+    const plannedIds = collectPlannedMeasureIds(trialMeasures as TrialPlanningMeasuresResponse);
+    const activeTags = resolvePlannedEquipmentTags(plannedIds, this.#equipmentPlanning.catalog());
+    const activeVisibleTagIds = new Set(activeTags.filter((tag) => visibleTagIds.has(tag)));
+    return resolveWidgetsByMeasurements(this.#allWidgets, activeVisibleTagIds);
+  });
   readonly hasUnsavedChanges = this.#widgetState.hasUnsavedChanges;
   readonly isSaving = this.#isSaving.asReadonly();
   readonly placedWidgets = this.#widgetState.placedWidgets;
@@ -190,6 +224,11 @@ export class ExecutionPageFacade {
     this.#fireTrialId.set(fireTrialId);
     this.#store.setFireTrialId(fireTrialId);
     this.#store.loadPreferencesByUser(fireTrialId, this.#currentUser.preferred_username);
+    this.#equipmentPlanning.load(fireTrialId);
+  }
+
+  toggleShowAllWidgets(): void {
+    this.#showAllWidgets.update((showAll) => !showAll);
   }
 
   persistPreferences(): void {
@@ -367,8 +406,8 @@ export class ExecutionPageFacade {
     this.#widgetState.clearWidgets();
     for (const widgetId of layout) {
       const widget =
-        this.widgets().find((item) => item.id === widgetId) ??
-        this.widgets().find((item) => item.widgetId === widgetId);
+        this.#allWidgets.find((item) => item.id === widgetId) ??
+        this.#allWidgets.find((item) => item.widgetId === widgetId);
       if (!widget) {
         continue;
       }

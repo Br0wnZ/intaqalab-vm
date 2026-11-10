@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, isDevMode, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { IntaIconComponent, Skeleton } from '@intaqalab/ui';
+import { RangePipe } from '@intaqalab/utils';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import type { PlacedWidget, Widget } from '../../models/execution-grid.models';
@@ -11,7 +13,17 @@ import { WidgetId } from '../../models/widget-id.enum';
 
 @Component({
   selector: 'inta-widget-library',
-  imports: [MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, TranslateModule, IntaIconComponent],
+  imports: [
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    TranslateModule,
+    IntaIconComponent,
+    Skeleton,
+    RangePipe,
+  ],
   template: `
     <div
       class="fixed top-0 right-0 w-full md:w-[400px] h-screen bg-white shadow-xl z-[1001] flex flex-col transition-transform duration-300 ease-in-out"
@@ -38,54 +50,67 @@ import { WidgetId } from '../../models/widget-id.enum';
             />
           </mat-form-field>
         </div>
+        @if (isAdmin() && isDevMode) {
+          <mat-slide-toggle [checked]="showAllWidgets()" (change)="showAllWidgetsChange.emit($event.checked)">
+            {{ 'TRIAL_EXECUTION.WIDGET_LIBRARY.SHOW_ALL' | translate }}
+          </mat-slide-toggle>
+        }
       </div>
 
       <div class="flex-1 overflow-y-auto overflow-x-hidden p-6">
-        <div class="flex flex-col gap-6">
-          @for (category of categories(); track category) {
-            <div class="flex flex-col gap-3">
-              <h3 class="text-xs font-semibold text-gray-600 tracking-wide mb-1">{{ category | translate }}</h3>
-              @for (widget of groupedWidgets()[category]; track widget.id) {
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
-                >
-                  <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-sm text-gray-900 m-0 flex-1">{{ widget.title | translate }}</h4>
-                    <div class="flex items-center gap-2">
-                      @if (widget.badge) {
-                        <span
-                          class="inline-flex items-center justify-center w-6 h-6 rounded-md font-medium shrink-0"
-                          [class]="getBadgeColorClass(widget.badgeColor)"
-                        >
-                          {{ widget.badge }}
-                        </span>
-                      }
-                      <span class="text-[10px] font-bold bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded uppercase">
-                        W: {{ widget.defaultWidth }}
-                      </span>
-                    </div>
-                  </div>
-                  <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ widget.description | translate }}</p>
-                  <button
-                    mat-flat-button
-                    color="primary"
-                    class="w-full"
-                    [disabled]="disabledWidgetIds().has(widget.id)"
-                    (click)="selectWidget(widget.id)"
+        @if (isLoading()) {
+          <div class="flex flex-col gap-4">
+            @for (i of 6 | range; track i) {
+              <ui-skeleton variant="rectangle" width="100%" height="80px" animation="wave" />
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col gap-6">
+            @for (category of categories(); track category) {
+              <div class="flex flex-col gap-3">
+                <h3 class="text-xs font-semibold text-gray-600 tracking-wide mb-1">{{ category | translate }}</h3>
+                @for (widget of groupedWidgets()[category]; track widget.id) {
+                  <div
+                    class="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-gray-300 hover:shadow-sm"
                   >
-                    {{ 'TRIAL_EXECUTION.ADD' | translate }}
-                  </button>
-                </div>
-              }
-            </div>
-          }
+                    <div class="flex items-center justify-between mb-2">
+                      <h4 class="text-sm text-gray-900 m-0 flex-1">{{ widget.title | translate }}</h4>
+                      <div class="flex items-center gap-2">
+                        @if (widget.badge) {
+                          <span
+                            class="inline-flex items-center justify-center w-6 h-6 rounded-md font-medium shrink-0"
+                            [class]="getBadgeColorClass(widget.badgeColor)"
+                          >
+                            {{ widget.badge }}
+                          </span>
+                        }
+                        <span class="text-[10px] font-bold bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded uppercase">
+                          W: {{ widget.defaultWidth }}
+                        </span>
+                      </div>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-4">{{ widget.description | translate }}</p>
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      class="w-full"
+                      [disabled]="disabledWidgetIds().has(widget.id)"
+                      (click)="selectWidget(widget.id)"
+                    >
+                      {{ 'TRIAL_EXECUTION.ADD' | translate }}
+                    </button>
+                  </div>
+                }
+              </div>
+            }
 
-          @if (!filteredWidgets().length) {
-            <div class="py-10 px-5">
-              <p class="text-gray-500 text-center">{{ 'TRIAL_EXECUTION.NO_WIDGETS_FOUND' | translate }}</p>
-            </div>
-          }
-        </div>
+            @if (!filteredWidgets().length) {
+              <div class="py-10 px-5">
+                <p class="text-gray-500 text-center">{{ 'TRIAL_EXECUTION.NO_WIDGETS_FOUND' | translate }}</p>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
 
@@ -106,13 +131,18 @@ import { WidgetId } from '../../models/widget-id.enum';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetLibrary {
+  readonly isDevMode = isDevMode();
   readonly #translate = inject(TranslateService);
 
   readonly widgets = input.required<readonly Widget[]>();
+  readonly isLoading = input<boolean>(false);
+  readonly isAdmin = input<boolean>(false);
+  readonly showAllWidgets = input<boolean>(false);
   readonly isOpen = input.required<boolean>();
   readonly placedWidgets = input<PlacedWidget[]>([]);
   readonly selected = output<string>();
   readonly closed = output<void>();
+  readonly showAllWidgetsChange = output<boolean>();
   readonly searchTerm = signal('');
 
   /**

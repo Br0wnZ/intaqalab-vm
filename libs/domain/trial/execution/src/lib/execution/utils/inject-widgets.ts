@@ -1,6 +1,6 @@
 import type { Type } from '@angular/core';
 
-import { WidgetId } from '../models';
+import { EquipmentMagnitudeTagEnum, WidgetId } from '../models';
 import type { Widget } from '../models/execution-grid.models';
 import { AcousticLevelIntroduction } from '../widgets/acoustic-level-introduction/acoustic-level-introduction';
 import { ArmamentIntroductionComponent } from '../widgets/armament-introduction/armament-introduction';
@@ -39,6 +39,7 @@ export const injectWidgets = (): Widget[] => [
   // 🛡️ Preparación ejecución – Unidades técnicas (6 perfiles)
   {
     id: 'prep-tech-velocidades',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'velocidades',
@@ -51,6 +52,10 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-tech-presiones',
+    requiredMeasurementTags: [
+      EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS,
+      EquipmentMagnitudeTagEnum.PRESION_MANOMETROS,
+    ],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'presiones',
@@ -63,6 +68,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-tech-video',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VIDEO_AV, EquipmentMagnitudeTagEnum.VIDEO_C],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'video',
@@ -75,6 +81,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-tech-trayectografia',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'trayectografia',
@@ -87,6 +94,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-tech-municiones',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PESOS, EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'municiones',
@@ -99,6 +107,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-tech-armamento',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.LONGITUD],
     widgetId: WidgetId.EXECUTION_PREP_TECH,
     widgetComponent: ExecutionPrepTechWidgetComponent,
     techProfile: 'armamento',
@@ -111,6 +120,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'prep-jlt',
+    requiredMeasurementTags: Object.values(EquipmentMagnitudeTagEnum),
     widgetId: WidgetId.EXECUTION_PREP_JLT,
     widgetComponent: ExecutionPrepJltWidgetComponent,
     title: 'Preparación ejecución – JLT',
@@ -121,6 +131,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'orientacion-camaras-video',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VIDEO_AV, EquipmentMagnitudeTagEnum.VIDEO_C],
     widgetId: WidgetId.VIDEO_CAMERA_ORIENTATION,
     widgetComponent: VideoCameraOrientation,
     title: 'Orientación cámaras de vídeo',
@@ -133,6 +144,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-video',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VIDEO_AV, EquipmentMagnitudeTagEnum.VIDEO_C],
     widgetId: WidgetId.VIDEO_DATA_INTRODUCTION,
     widgetComponent: VideoDataIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.VIDEO_DATA_INTRODUCTION.TITLE',
@@ -145,6 +157,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'orientacion-radar-trayectografia',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA],
     widgetId: WidgetId.RADAR_TRAYECTOGRAPHY_ORIENTATION,
     widgetComponent: RadarTrayectographyOrientation,
     title: 'Orientación radar de trayectografía',
@@ -157,6 +170,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-topografia-mao',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TIEMPO],
     widgetId: WidgetId.MAO_TOPOGRAPHY,
     widgetComponent: MaoTopography,
     title: 'Introducción de datos Topografía MAO',
@@ -169,6 +183,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-jlt-mao',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TIEMPO],
     widgetId: WidgetId.JLT_MAO,
     widgetComponent: JltMao,
     title: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TITLE',
@@ -181,6 +196,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-armamento',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.LONGITUD],
     widgetId: WidgetId.ARMAMENT_INTRODUCTION,
     widgetComponent: ArmamentIntroductionComponent,
     title: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TITLE',
@@ -193,6 +209,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-municion',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PESOS, EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO],
     widgetId: WidgetId.MUNITION_INTRODUCTION,
     widgetComponent: MunitionIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.MUNITION_INTRODUCTION.TITLE',
@@ -205,6 +222,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'radar-trayectografia-metcmq',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA],
     widgetId: WidgetId.RADAR_METCMQ,
     widgetComponent: RadarMetcmq,
     title: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE',
@@ -217,6 +235,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-jlt',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TIEMPO],
     widgetId: WidgetId.JLT_SHOT_DATA,
     widgetComponent: JltShotData,
     title: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE',
@@ -229,6 +248,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-presion-manometros',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_MANOMETROS],
     widgetId: WidgetId.MANOMETER_INTRODUCTION,
     widgetComponent: ManometerIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE',
@@ -241,6 +261,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-presion-piezo',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS],
     widgetId: WidgetId.PIEZO_PRESSURE_INTRODUCTION,
     widgetComponent: PiezoPressureIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE',
@@ -253,6 +274,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'medidas-presion-ipg',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_IPG],
     widgetId: WidgetId.MEDIDAS_PRESION_IPG,
     widgetComponent: IpgPressureMeasurements,
     title: 'TRIAL_EXECUTION.WIDGETS.MEDIDAS_PRESION_IPG.TITLE',
@@ -265,6 +287,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-velocidades',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.VELOCITY_INTRODUCTION,
     widgetComponent: VelocityIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE',
@@ -277,6 +300,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'tarado-velocidad-chart',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.TARADO_VELOCIDAD_CHART,
     widgetComponent: TaradoVelocidadChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE',
@@ -289,6 +313,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'tarado-presion-chart',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_PIEZOELECTRICOS],
     widgetId: WidgetId.TARADO_PRESION_CHART,
     widgetComponent: TaradoPresionChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE',
@@ -301,6 +326,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'trayectografia-introduction',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA],
     widgetId: WidgetId.TRAYECTOGRAFIA_INTRODUCTION,
     widgetComponent: TrayectografiaIntroductionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE',
@@ -313,6 +339,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'stanag-criterios',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.STANAG_CRITERIOS,
     widgetComponent: StanagCriteriosWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.STANAG_CRITERIOS.TITLE',
@@ -325,6 +352,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'uniformidad-chart',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.UNIFORMIDAD_CHART,
     widgetComponent: UniformidadChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.UNIFORMIDAD.TITLE',
@@ -337,6 +365,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'seguimiento',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.SEGUIMIENTO,
     widgetComponent: SeguimientoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE',
@@ -349,6 +378,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'informacion-tarado',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.INFORMACION_TARADO,
     widgetComponent: InformacionTaradoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE',
@@ -361,6 +391,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'overpressure-info',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_MANOMETROS],
     widgetId: WidgetId.OVERPRESSURE_INFO,
     widgetComponent: OverpressureInfoWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_INFO.TITLE',
@@ -373,6 +404,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'overpressure-chart',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_MANOMETROS],
     widgetId: WidgetId.OVERPRESSURE_CHART,
     widgetComponent: OverpressureChartWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE',
@@ -385,6 +417,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'calculo-coordenadas-paso',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA],
     widgetId: WidgetId.PASS_COORDS,
     widgetComponent: PassCoordsWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE',
@@ -397,6 +430,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'criterio-grubbs',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.GRUBBS_CRITERION,
     widgetComponent: GrubbsCriterionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.GRUBBS_CRITERION.TITLE',
@@ -409,6 +443,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-topografia',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TIEMPO],
     widgetId: WidgetId.TOPOGRAPHY_INTRODUCTION,
     widgetComponent: TopographyIntroductionWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.TITLE',
@@ -421,6 +456,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'datos-del-blanco',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.LONGITUD],
     widgetId: WidgetId.TARGET_DATA,
     widgetComponent: TargetDataWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.TITLE',
@@ -433,6 +469,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'introduccion-datos-nivel-acustico',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.SONIDO],
     widgetId: WidgetId.ACOUSTIC_LEVEL_INTRODUCTION,
     widgetComponent: AcousticLevelIntroduction,
     title: 'TRIAL_EXECUTION.WIDGETS.ACOUSTIC_LEVEL_INTRODUCTION.TITLE',
@@ -445,6 +482,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'vigilancia',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL],
     widgetId: WidgetId.VIGILANCIA,
     widgetComponent: VigilanciaWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.VIGILANCIA.TITLE',
@@ -457,6 +495,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'datos-blanco-bola',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.TIEMPO],
     widgetId: WidgetId.DATOS_BLANCO_BOLA,
     widgetComponent: DatosBlancoBola,
     title: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE',
@@ -469,6 +508,7 @@ export const injectWidgets = (): Widget[] => [
   },
   {
     id: 'seguridad',
+    requiredMeasurementTags: [EquipmentMagnitudeTagEnum.PRESION_MANOMETROS],
     widgetId: WidgetId.SEGURIDAD,
     widgetComponent: SeguridadWidget,
     title: 'TRIAL_EXECUTION.WIDGETS.SEGURIDAD.TITLE',

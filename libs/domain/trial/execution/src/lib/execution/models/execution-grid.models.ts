@@ -1,5 +1,6 @@
 import type { Signal, Type } from '@angular/core';
 
+import type { EquipmentMagnitudeTagEnum } from './equipment.models';
 import type { WidgetId } from './widget-id.enum';
 
 /**
@@ -98,4 +99,6 @@ export interface Widget {
   defaultHeight?: WidgetHeight;
   /** 🎭 Perfil técnico (sólo para type 'execution-prep-tech') */
   techProfile?: TechProfile;
+  /** Tags de medida requeridos para mostrar este widget en el catálogo. */
+  requiredMeasurementTags: readonly EquipmentMagnitudeTagEnum[];
 }

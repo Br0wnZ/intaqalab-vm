@@ -1,4 +1,6 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import type { ComponentFixture } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import {
@@ -8,7 +10,8 @@ import {
   createTrial,
 } from '@intaqalab/utils';
 import { TranslateModule } from '@ngx-translate/core';
-import { render, screen, waitFor } from '@testing-library/angular';
+import { render, screen, waitFor, within } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import type { Shot } from '../../models/shooting-conditions.model';
@@ -312,7 +315,7 @@ describe('ShootingConditionsComponent', () => {
 
   describe('Table Columns', () => {
     it('should have all columns defined when target is selected with target columns at the end before observations', () => {
-      const cols = component.displayedColumns();
+      const cols = component.displayedColumns()[0];
       expect(cols).toContain('globalNumber');
       expect(cols).toContain('date');
       expect(cols).toContain('targetTypeId');
@@ -349,7 +352,7 @@ describe('ShootingConditionsComponent', () => {
       );
       fixture.detectChanges();
 
-      const cols = component.displayedColumns();
+      const cols = component.displayedColumns()[0];
       expect(cols).toContain('targetTypeId');
       expect(cols).not.toContain('targetMaterialId');
       expect(cols).not.toContain('targetDimensionsId');
@@ -361,6 +364,178 @@ describe('ShootingConditionsComponent', () => {
       const targetTypeIdx = cols.indexOf('targetTypeId');
       expect(targetTypeIdx).toEqual(nominalSpeedIdx + 1);
       expect(cols[cols.length - 1]).toBe('observations');
+    });
+
+    function expectTargetControls(row: HTMLElement, visible: boolean) {
+      const cells = within(row).getAllByRole('cell');
+      for (const column of [
+        'targetMaterialId',
+        'targetDimensionsId',
+        'targetThicknessId',
+        'distance',
+        'targetInclination',
+      ]) {
+        const cell = cells[component.displayedColumns()[0].indexOf(column)];
+        if (!cell) throw new Error(`Missing cell for ${column}`);
+        const role = column === 'distance' || column === 'targetInclination' ? 'textbox' : 'combobox';
+        if (visible) {
+          expect(within(cell).getByRole(role)).toBeInTheDocument();
+        } else {
+          expect(within(cell).queryByRole(role)).not.toBeInTheDocument();
+        }
+      }
+    }
+
+    it('should show target controls only for the selected shot and columns only for its series', () => {
+      component.seriesSignal.update((series) =>
+        series.map((serie, serieIdx) => ({
+          ...serie,
+          shots: serie.shots.map((shot, shotIdx) => ({
+            ...shot,
+            targetTypeId: serieIdx === 0 && shotIdx === 0 ? 'target-1' : '',
+          })),
+        })),
+      );
+      fixture.detectChanges();
+
+      const tables = screen.getAllByRole('table');
+      const rows = within(tables[0]).getAllByRole('row');
+      expectTargetControls(rows[1], true);
+      expectTargetControls(rows[2], false);
+      expect(
+        within(tables[1]).queryByRole('columnheader', {
+          name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_MATERIAL',
+        }),
+      ).not.toBeInTheDocument();
+      expect(component.displayedColumns()[1]).not.toContain('distance');
+    });
+
+    it('should hide controls when a target is cleared without changing other shots or stored values', () => {
+      const originalValues = structuredClone(component.getFormValues());
+      component.seriesSignal.update((series) =>
+        series.map((serie) => ({
+          ...serie,
+          shots: serie.shots.map((shot) => ({ ...shot, targetTypeId: 'target-1' })),
+        })),
+      );
+      fixture.detectChanges();
+
+      component.seriesSignal.update((series) =>
+        series.map((serie, serieIdx) => ({
+          ...serie,
+          shots: serie.shots.map((shot, shotIdx) => ({
+            ...shot,
+            targetTypeId: serieIdx === 0 && shotIdx === 0 ? '' : shot.targetTypeId,
+          })),
+        })),
+      );
+      fixture.detectChanges();
+
+      const rows = within(screen.getAllByRole('table')[0]).getAllByRole('row');
+      expectTargetControls(rows[1], false);
+      expectTargetControls(rows[2], true);
+      expect(structuredClone(component.getFormValues()[0].shots[0])).toEqual({
+        ...originalValues[0].shots[0],
+        targetTypeId: '',
+      });
+    });
+  });
+
+  describe('Target Changes', () => {
+    it.each(['replacement-target', null])(
+      'should reset only related fields of the edited shot when target changes to %s',
+      async (targetTypeId) => {
+        const user = userEvent.setup();
+        component.targetTypes.set([
+          { id: 'original-target', label: 'Original target', name: { es: 'Original', en: 'Original' } },
+          { id: 'replacement-target', label: 'Replacement target', name: { es: 'Replacement', en: 'Replacement' } },
+        ]);
+        component.seriesSignal.update((series) =>
+          series.map((serie, serieIdx) => ({
+            ...serie,
+            shots: serie.shots.map((shot, shotIdx) =>
+              serieIdx === 0 && shotIdx === 0
+                ? {
+                    ...shot,
+                    targetTypeId: 'original-target',
+                    targetMaterialId: 'material-1',
+                    targetDimensionsId: 'dimensions-1',
+                    targetThicknessId: 'thickness-1',
+                    distance: 3.456789,
+                    targetInclination: 12.345678,
+                  }
+                : shot,
+            ),
+          })),
+        );
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const originalValues = structuredClone(component.getFormValues());
+
+        if (targetTypeId === null) {
+          const row = within(screen.getAllByRole('table')[0]).getAllByRole('row')[1];
+          const targetCell = within(row).getAllByRole('cell')[component.displayedColumns()[0].indexOf('targetTypeId')];
+          await user.click(within(targetCell).getByRole('button', { name: 'Limpiar selección' }));
+        } else {
+          const loader = TestbedHarnessEnvironment.loader(fixture);
+          const selects = await loader.getAllHarnesses(MatSelectHarness);
+          for (const select of selects) {
+            if ((await select.getValueText()) === 'Original target') {
+              await select.open();
+              await user.click(screen.getByRole('option', { name: 'Replacement target' }));
+              break;
+            }
+          }
+        }
+        fixture.detectChanges();
+
+        const expectedShot = {
+          ...originalValues[0].shots[0],
+          targetTypeId: targetTypeId ?? '',
+          targetMaterialId: '',
+          targetDimensionsId: '',
+          targetThicknessId: '',
+          distance: 0,
+          targetInclination: 0,
+        };
+        expect(structuredClone(component.getFormValues())).toEqual(
+          originalValues.map((serie, serieIdx) => ({
+            ...serie,
+            shots: serie.shots.map((shot, shotIdx) => (serieIdx === 0 && shotIdx === 0 ? expectedShot : shot)),
+          })),
+        );
+        component.saveForm();
+        expect(mockStore.updateShootingConditions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            shots: expect.arrayContaining([
+              expect.objectContaining({
+                shotId: expectedShot.shotId,
+                targetTypeId: targetTypeId ?? '',
+                targetMaterialId: '',
+                targetDimensionsId: '',
+                targetThicknessId: '',
+                distance: 0,
+                targetInclination: 0,
+              }),
+            ]),
+          }),
+        );
+      },
+    );
+
+    it('should preserve target details when loading conditions', () => {
+      expect(component.getFormValues()[0].shots[0]).toMatchObject(mockStore.shootingConditions()[0].shots[0]);
+    });
+
+    it('should not reset target details in readonly mode', () => {
+      const originalValues = structuredClone(component.getFormValues());
+      fixture.componentRef.setInput('readonly', true);
+      fixture.detectChanges();
+
+      component.onTargetTypeChange(0, 0, 'replacement-target');
+
+      expect(structuredClone(component.getFormValues())).toEqual(originalValues);
     });
   });
 

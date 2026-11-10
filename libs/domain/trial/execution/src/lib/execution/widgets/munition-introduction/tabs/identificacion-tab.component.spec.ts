@@ -4,8 +4,8 @@ import { ɵSIGNAL as SIGNAL } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TrialStatus } from '@intaqalab/models';
 import type { PlanningConditionsShot } from '@intaqalab/data-access-planning';
+import { TrialStatus } from '@intaqalab/models';
 import { InputSelect } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -723,7 +723,12 @@ describe('MunitionIdentificacionTabComponent', () => {
 
     httpMock
       .expectOne((request) => request.url.endsWith('/fire-trials') && request.params.get('trialNumber') === '034A/25')
-      .flush({ page: 1, pageSize: 200, totalElements: 1, items: [{ id: 'resolved-trial-id', trialNumber: '034A/25' }] });
+      .flush({
+        page: 1,
+        pageSize: 200,
+        totalElements: 1,
+        items: [{ id: 'resolved-trial-id', trialNumber: '034A/25' }],
+      });
     let stockRequest = httpMock.match((request) => request.url.endsWith('/warehouse/stock'))[0];
     await vi.waitFor(async () => {
       await Promise.resolve();
@@ -735,21 +740,21 @@ describe('MunitionIdentificacionTabComponent', () => {
     if (!stockRequest) throw new Error('Warehouse stock request was not queued');
     expect(stockRequest.request.params.get('plannedFireTrialIds')).toBe('resolved-trial-id');
     stockRequest.flush({
-        page: 1,
-        pageSize: 200,
-        totalElements: 1,
-        items: [
-          {
-            id: 'stock-1',
-            category: 'MUNITION_COMPONENT',
-            batch: 'LOT-A',
-            status: 'AVAILABLE',
-            quantity: 1,
-            munitionType: { id: 'type-fuse', name: 'Espoleta' },
-            denomination: { id: 'stock-denomination', name: 'Denominación almacén' },
-          },
-        ],
-      });
+      page: 1,
+      pageSize: 200,
+      totalElements: 1,
+      items: [
+        {
+          id: 'stock-1',
+          category: 'MUNITION_COMPONENT',
+          batch: 'LOT-A',
+          status: 'AVAILABLE',
+          quantity: 1,
+          munitionType: { id: 'type-fuse', name: 'Espoleta' },
+          denomination: { id: 'stock-denomination', name: 'Denominación almacén' },
+        },
+      ],
+    });
     await vi.waitFor(() => {
       TestBed.tick();
       expect(component.filteredDenominacionOptions()).toHaveLength(1);

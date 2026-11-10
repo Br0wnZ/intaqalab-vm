@@ -12,8 +12,12 @@ import { ActivatedRoute } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
-import { PlanningConditionsService, PlanningSeriesService } from '@intaqalab/data-access-planning';
-import type { FireTrial } from '@intaqalab/models';
+import {
+  PlanningConditionsService,
+  PlanningMeasuresService,
+  PlanningSeriesService,
+} from '@intaqalab/data-access-planning';
+import { type FireTrial, QualificationTypeEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -56,6 +60,7 @@ import type {
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentSelectorDialog } from '../../dialogs/equipment-selector-dialog';
 import { EquipmentSelectorStore } from '../../dialogs/equipment-selector.store';
+import { EquipmentMagnitudeTagEnum, type PlanningMagnitudeSelection } from '../../models';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { Execution } from './execution';
@@ -196,14 +201,44 @@ describe('Execution', () => {
     fireTrialId = 'b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c',
     executionService = createMockExecutionService(),
     roles = [Role.INTAQALAB_ADMIN],
+    isPlanningLoading = false,
   }: {
     fireTrialId?: string;
     executionService?: MockExecutionService;
     roles?: Role[];
+    isPlanningLoading?: boolean;
   } = {}) => {
     const user = userEvent.setup();
     const trialsDataService = createTrialsDataServiceMock();
     const toastrService = { warning: vi.fn() };
+    const plannedMeasures = Object.values(EquipmentMagnitudeTagEnum).map((tag, index) => ({
+      id: `measure-${index}`,
+      tag,
+    }));
+    const equipmentPlanningService = {
+      load: vi.fn(),
+      trialMeasuresResource: {
+        value: () => ({
+          series: [
+            {
+              seriesId: 'serie-1',
+              measures: { ballisticsMeasures: plannedMeasures.map(({ id }) => ({ id })) },
+            },
+          ],
+        }),
+      },
+      catalog: () =>
+        plannedMeasures.map(
+          ({ id, tag }) =>
+            ({
+              id,
+              magnitudeCode: id,
+              qualificationType: QualificationTypeEnum.QUANTITATIVE,
+              measurements: [tag],
+            }) satisfies PlanningMagnitudeSelection,
+        ),
+      isLoading: () => isPlanningLoading,
+    };
 
     const view = await render(Execution, {
       imports: [TranslateModule.forRoot()],
@@ -226,6 +261,18 @@ describe('Execution', () => {
                 ],
               },
             ]),
+            load: vi.fn(),
+            reload: vi.fn(),
+          },
+        },
+        {
+          provide: EquipmentPlanningService,
+          useValue: equipmentPlanningService,
+        },
+        {
+          provide: PlanningMeasuresService,
+          useValue: {
+            measuresResource: createMockResource({ series: [] }),
             load: vi.fn(),
             reload: vi.fn(),
           },
@@ -313,7 +360,16 @@ describe('Execution', () => {
     const rootLoader = TestbedHarnessEnvironment.documentRootLoader(view.fixture);
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { user, view, rootLoader, loader, executionService, trialsDataService, toastrService };
+    return {
+      user,
+      view,
+      rootLoader,
+      loader,
+      executionService,
+      trialsDataService,
+      toastrService,
+      equipmentPlanningService,
+    };
   };
 
   beforeEach(() => {
@@ -328,6 +384,19 @@ describe('Execution', () => {
   it('requests equipment selector data when initialized with an active fire trial', async () => {
     const { executionService } = await setup({ fireTrialId: 'trial-abc' });
     expect(executionService.getEquipmentSelector).toHaveBeenCalledWith('trial-abc');
+  });
+
+  it('loads planned measures for the active trial', async () => {
+    const { equipmentPlanningService } = await setup({ fireTrialId: 'trial-abc' });
+
+    expect(equipmentPlanningService.load).toHaveBeenCalledWith('trial-abc');
+  });
+
+  it('keeps the widget catalog empty while planned measures are loading', async () => {
+    const { view } = await setup({ isPlanningLoading: true });
+
+    expect(view.fixture.componentInstance.isWidgetCatalogLoading()).toBe(true);
+    expect(view.fixture.componentInstance.widgets()).toEqual([]);
   });
 
   it('renders the execution basic details', async () => {
@@ -433,6 +502,30 @@ describe('Execution', () => {
 
     expect(widgetStateService.placedWidgets().length).toBeGreaterThan(0);
   }, 15000);
+
+  it('shows all role-visible widgets when admin enables the catalog bypass', async () => {
+    const { user, view } = await setup();
+    const panelButton = screen.getByRole('button', { name: /TRIAL_EXECUTION\.WIDGETS_BTN/i });
+    await user.click(panelButton);
+
+    const showAllToggle = await TestbedHarnessEnvironment.loader(view.fixture).getHarness(
+      MatSlideToggleHarness.with({ label: /TRIAL_EXECUTION\.WIDGET_LIBRARY\.SHOW_ALL/i }),
+    );
+    await showAllToggle.toggle();
+
+    expect(view.fixture.componentInstance.showAllWidgets()).toBe(true);
+    expect(view.fixture.componentInstance.widgets().length).toBeGreaterThan(0);
+  });
+
+  it('does not render admin catalog bypass for non-admin users', async () => {
+    const { user } = await setup({ roles: [Role.INTAQALAB_BALLISTICS_UNIT_TECHNICIAN] });
+    const panelButton = screen.getByRole('button', { name: /TRIAL_EXECUTION\.WIDGETS_BTN/i });
+    await user.click(panelButton);
+
+    expect(
+      screen.queryByRole('switch', { name: /TRIAL_EXECUTION\.WIDGET_LIBRARY\.SHOW_ALL/i }),
+    ).not.toBeInTheDocument();
+  });
 
   it('allows toggling the edit mode via slide toggle', async () => {
     const { loader } = await setup();

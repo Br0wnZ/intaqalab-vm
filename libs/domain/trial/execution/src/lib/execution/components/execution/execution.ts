@@ -66,10 +66,14 @@ import { ExecutionHeader } from './execution-header/execution-header';
 
       <inta-widget-library
         [widgets]="widgets()"
+        [isLoading]="isWidgetCatalogLoading()"
+        [isAdmin]="isAdmin()"
+        [showAllWidgets]="showAllWidgets()"
         [isOpen]="isWidgetsPanelOpen()"
         [placedWidgets]="placedWidgets()"
         (selected)="addWidget($event)"
         (closed)="closeWidgetsPanel()"
+        (showAllWidgetsChange)="toggleShowAllWidgets()"
       />
     </div>
   `,
@@ -89,6 +93,9 @@ export class Execution implements OnDestroy {
   readonly executionData = this.#executionFacade.executionData;
   readonly shotInfo = this.#executionFacade.shotInfo;
   readonly widgets = this.#executionFacade.widgets;
+  readonly isWidgetCatalogLoading = this.#executionFacade.isWidgetCatalogLoading;
+  readonly showAllWidgets = this.#executionFacade.showAllWidgets;
+  readonly isAdmin = this.#executionFacade.isAdmin;
   readonly hasUnsavedChanges = this.#executionFacade.hasUnsavedChanges;
   readonly isSaving = this.#executionFacade.isSaving;
   readonly isLoading = this.#executionFacade.isLoading;
@@ -157,6 +164,10 @@ export class Execution implements OnDestroy {
     if (this.#executionFacade.addWidget(widgetId)) {
       this.closeWidgetsPanel();
     }
+  }
+
+  toggleShowAllWidgets(): void {
+    this.#executionFacade.toggleShowAllWidgets();
   }
 
   saveAllChanges(): Promise<void> {

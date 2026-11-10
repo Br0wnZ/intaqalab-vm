@@ -264,7 +264,9 @@ export class MunitionIdentificacionTabComponent {
     }
 
     const componente = this.identFormModel().componente;
-    const stockDenominations = this.#trialStockHandle.options().filter((option) => option.munitionTypeId === componente);
+    const stockDenominations = this.#trialStockHandle
+      .options()
+      .filter((option) => option.munitionTypeId === componente);
     const currentDenomination = this.identFormModel().denominacion;
     const storedIdentification = this.#store.munitionIntroduction().identificacion;
 
@@ -277,12 +279,12 @@ export class MunitionIdentificacionTabComponent {
       storedIdentification.denominacion === currentDenomination &&
       !stockDenominations.some((denomination) => denomination.value === currentDenomination)
         ? {
-          value: currentDenomination,
-          label: currentDenomination,
-          munitionTypeId: componente,
-          inStock: true,
-          planned: false,
-        }
+            value: currentDenomination,
+            label: currentDenomination,
+            munitionTypeId: componente,
+            inStock: true,
+            planned: false,
+          }
         : null;
 
     return storedOption ? [...stockDenominations, storedOption] : stockDenominations;

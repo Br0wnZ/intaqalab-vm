@@ -2047,6 +2047,9 @@
     },
     "WIDGETS_BTN": "Widgets",
     "WIDGET_LIBRARY_TITLE": "Widget Library",
+    "WIDGET_LIBRARY": {
+      "SHOW_ALL": "Show all widgets"
+    },
     "WIDGET_NO_SPACE_MESSAGE": "Free up some space or remove another widget before trying again.",
     "WIDGET_NO_SPACE_TITLE": "This widget does not fit on the panel"
   },

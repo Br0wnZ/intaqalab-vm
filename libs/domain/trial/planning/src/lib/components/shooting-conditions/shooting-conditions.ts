@@ -244,7 +244,11 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           class="w-full"
                           [subscriptSizing]="'dynamic'"
                         >
-                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetTypeId">
+                          <mat-select
+                            clearable
+                            [formField]="getShotField(serieIdx, i).targetTypeId"
+                            (valueChange)="onTargetTypeChange(serieIdx, i, $event)"
+                          >
                             @for (target of targetTypes(); track target.id) {
                               <mat-option class="truncate" [value]="target.id">
                                 <span class="truncate">{{ target.label }}</span>
@@ -268,20 +272,22 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field
-                          uiValueTooltip
-                          appearance="outline"
-                          class="w-full"
-                          [subscriptSizing]="'dynamic'"
-                        >
-                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
-                            @for (material of targetMaterials(); track material.id) {
-                              <mat-option class="truncate" [value]="material.id">
-                                <span class="truncate">{{ material.label }}</span>
-                              </mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
+                        @if (shot.targetTypeId) {
+                          <mat-form-field
+                            uiValueTooltip
+                            appearance="outline"
+                            class="w-full"
+                            [subscriptSizing]="'dynamic'"
+                          >
+                            <mat-select clearable [formField]="getShotField(serieIdx, i).targetMaterialId">
+                              @for (material of targetMaterials(); track material.id) {
+                                <mat-option class="truncate" [value]="material.id">
+                                  <span class="truncate">{{ material.label }}</span>
+                                </mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                        }
                       </td>
                     </ng-container>
 
@@ -298,24 +304,26 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field
-                          uiValueTooltip
-                          appearance="outline"
-                          class="w-full"
-                          [subscriptSizing]="'dynamic'"
-                        >
-                          <mat-select
-                            clearable
-                            matNativeControl
-                            [formField]="getShotField(serieIdx, i).targetDimensionsId"
+                        @if (shot.targetTypeId) {
+                          <mat-form-field
+                            uiValueTooltip
+                            appearance="outline"
+                            class="w-full"
+                            [subscriptSizing]="'dynamic'"
                           >
-                            @for (dimension of targetDimensions(); track dimension.id) {
-                              <mat-option class="truncate" [value]="dimension.id">
-                                <span class="truncate">{{ dimension.label }}</span>
-                              </mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
+                            <mat-select
+                              clearable
+                              matNativeControl
+                              [formField]="getShotField(serieIdx, i).targetDimensionsId"
+                            >
+                              @for (dimension of targetDimensions(); track dimension.id) {
+                                <mat-option class="truncate" [value]="dimension.id">
+                                  <span class="truncate">{{ dimension.label }}</span>
+                                </mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                        }
                       </td>
                     </ng-container>
 
@@ -332,20 +340,22 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-6 py-4 text-sm text-gray-900 !bg-white"
                       >
-                        <mat-form-field
-                          uiValueTooltip
-                          appearance="outline"
-                          class="w-full"
-                          [subscriptSizing]="'dynamic'"
-                        >
-                          <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
-                            @for (thickness of targetThicknesses(); track thickness.id) {
-                              <mat-option class="truncate" [value]="thickness.id">
-                                <span class="truncate">{{ thickness.name }}</span>
-                              </mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
+                        @if (shot.targetTypeId) {
+                          <mat-form-field
+                            uiValueTooltip
+                            appearance="outline"
+                            class="w-full"
+                            [subscriptSizing]="'dynamic'"
+                          >
+                            <mat-select clearable [formField]="getShotField(serieIdx, i).targetThicknessId">
+                              @for (thickness of targetThicknesses(); track thickness.id) {
+                                <mat-option class="truncate" [value]="thickness.id">
+                                  <span class="truncate">{{ thickness.name }}</span>
+                                </mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                        }
                       </td>
                     </ng-container>
 
@@ -364,21 +374,23 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                       >
-                        <ui-input-select
-                          placeholder="0"
-                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
-                          [opciones]="unitOptions.distance"
-                          [showLabel]="false"
-                          [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
-                          (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
-                        >
-                          <input
-                            inputSelectInput
-                            libNoNegativeValues
-                            libLocalDecimal
-                            [formField]="getShotField(serieIdx, i).distance"
-                          />
-                        </ui-input-select>
+                        @if (shot.targetTypeId) {
+                          <ui-input-select
+                            placeholder="0"
+                            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
+                            [opciones]="unitOptions.distance"
+                            [showLabel]="false"
+                            [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
+                            (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
+                          >
+                            <input
+                              inputSelectInput
+                              libNoNegativeValues
+                              libLocalDecimal
+                              [formField]="getShotField(serieIdx, i).distance"
+                            />
+                          </ui-input-select>
+                        }
                       </td>
                     </ng-container>
 
@@ -395,24 +407,26 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                         mat-cell
                         class="px-3 py-2 text-sm text-gray-900 !bg-white min-w-[160px]"
                       >
-                        <ui-input-select
-                          placeholder="0"
-                          label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
-                          [opciones]="unitOptions.targetInclination"
-                          [showLabel]="false"
-                          [value]="{
-                            value: shot.targetInclination?.toString() ?? '',
-                            unit: shot.targetInclinationUnit,
-                          }"
-                          (valueChange)="onShotFieldChange(serieIdx, i, 'targetInclination', $event)"
-                        >
-                          <input
-                            inputSelectInput
-                            libNoNegativeValues
-                            libLocalDecimal
-                            [formField]="getShotField(serieIdx, i).targetInclination"
-                          />
-                        </ui-input-select>
+                        @if (shot.targetTypeId) {
+                          <ui-input-select
+                            placeholder="0"
+                            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
+                            [opciones]="unitOptions.targetInclination"
+                            [showLabel]="false"
+                            [value]="{
+                              value: shot.targetInclination?.toString() ?? '',
+                              unit: shot.targetInclinationUnit,
+                            }"
+                            (valueChange)="onShotFieldChange(serieIdx, i, 'targetInclination', $event)"
+                          >
+                            <input
+                              inputSelectInput
+                              libNoNegativeValues
+                              libLocalDecimal
+                              [formField]="getShotField(serieIdx, i).targetInclination"
+                            />
+                          </ui-input-select>
+                        }
                       </td>
                     </ng-container>
 
@@ -684,9 +698,9 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                       </td>
                     </ng-container>
 
-                    <tr *matHeaderRowDef="displayedColumns()" mat-header-row class="!bg-slate-50"></tr>
+                    <tr *matHeaderRowDef="displayedColumns()[serieIdx]" mat-header-row class="!bg-slate-50"></tr>
                     <tr
-                      *matRowDef="let row; columns: displayedColumns()"
+                      *matRowDef="let row; columns: displayedColumns()[serieIdx]"
                       mat-row
                       class="hover:bg-slate-50/50 transition-colors"
                     ></tr>
@@ -753,40 +767,38 @@ export class ShootingConditionsComponent implements OnInit {
   /** Opciones de unidad por campo — inmutables, vienen del enum del swagger. */
   readonly unitOptions = SHOT_CONDITIONS_UNIT_OPTIONS;
 
-  readonly hasTargetSelected = computed(() =>
-    this.seriesSignal().some((serie) => serie.shots.some((shot) => !!shot.targetTypeId)),
-  );
-
-  readonly displayedColumns = computed(() => {
-    const baseColumns = [
-      'globalNumber',
-      'date',
-      'impactZoneId',
-      'orientation',
-      'elevation',
-      'angle',
-      'range',
-      'functioningHeight',
-      'powderWeight',
-      'projectileWeight',
-      'nominalSpeed',
-    ];
-
-    if (this.hasTargetSelected()) {
-      return [
-        ...baseColumns,
-        'targetTypeId',
-        'targetMaterialId',
-        'targetDimensionsId',
-        'targetThicknessId',
-        'distance',
-        'targetInclination',
-        'observations',
+  readonly displayedColumns = computed(() =>
+    this.seriesSignal().map((serie) => {
+      const baseColumns = [
+        'globalNumber',
+        'date',
+        'impactZoneId',
+        'orientation',
+        'elevation',
+        'angle',
+        'range',
+        'functioningHeight',
+        'powderWeight',
+        'projectileWeight',
+        'nominalSpeed',
       ];
-    }
 
-    return [...baseColumns, 'targetTypeId', 'observations'];
-  });
+      if (serie.shots.some((shot) => !!shot.targetTypeId)) {
+        return [
+          ...baseColumns,
+          'targetTypeId',
+          'targetMaterialId',
+          'targetDimensionsId',
+          'targetThicknessId',
+          'distance',
+          'targetInclination',
+          'observations',
+        ];
+      }
+
+      return [...baseColumns, 'targetTypeId', 'observations'];
+    }),
+  );
 
   readonly hasToBeDisabled = computed(() => {
     const isUpdating = this.isUpdating();
@@ -947,6 +959,32 @@ export class ShootingConditionsComponent implements OnInit {
 
       return updated;
     });
+  }
+
+  onTargetTypeChange(serieIdx: number, shotIdx: number, targetTypeId: string | null): void {
+    if (this.readonly()) return;
+    this.seriesSignal.update((series) =>
+      series.map((serie, currentSerieIdx) =>
+        currentSerieIdx === serieIdx
+          ? {
+              ...serie,
+              shots: serie.shots.map((shot, currentShotIdx) =>
+                currentShotIdx === shotIdx
+                  ? {
+                      ...shot,
+                      targetTypeId: targetTypeId ?? '',
+                      targetMaterialId: '',
+                      targetDimensionsId: '',
+                      targetThicknessId: '',
+                      distance: 0,
+                      targetInclination: 0,
+                    }
+                  : shot,
+              ),
+            }
+          : serie,
+      ),
+    );
   }
 
   getFormValues(): Serie[] {
