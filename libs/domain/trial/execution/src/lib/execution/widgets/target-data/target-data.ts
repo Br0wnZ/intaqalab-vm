@@ -10,17 +10,22 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import { PlanningTargetConditionsService, injectTrialShots } from '@intaqalab/data-access-planning';
+import {
+  AngleUnitEnum,
+  DistanceUnitEnum,
+  MEASURE_UNIT_LABELS,
+  MeasureUnitEnum,
+  SHOT_CONDITIONS_UNIT_OPTIONS,
+} from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { TranslateModule } from '@ngx-translate/core';
 
-import type { TargetDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
 import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
@@ -29,8 +34,6 @@ import {
   mapPlanningSeriesToOptions,
   resolveInitialShotSelection,
 } from '../utils/selection-options';
-import { ShotEditButton } from '../utils/shot-edit-button';
-import { injectShotFormLock } from '../utils/shot-form-lock';
 
 type InputFieldValue = { value: string; unit: string } | null;
 
@@ -43,11 +46,9 @@ interface TargetDataFormModel {
 @Component({
   selector: 'inta-target-data',
   imports: [
-    FormField,
-    ReadonlyContentDirective,
-    ShotEditButton,
     MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatSelectModule,
     TranslateModule,
     InputSelect,
@@ -66,82 +67,78 @@ interface TargetDataFormModel {
         </div>
 
         <!-- Serie -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.SERIE_PLACEHOLDER' | translate"
-            [value]="serieModel()"
-            [disabled]="serieDisabled()"
-            (selectionChange)="onSerieSelected($event.value)"
-          >
-            @for (opt of serieOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        @if (!sameForAllSeries()) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-40">
+            <mat-select
+              id="target-data-series-selector"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.SERIE_PLACEHOLDER' | translate"
+              [value]="serieModel()"
+              (selectionChange)="onSerieSelected($event.value)"
+            >
+              @for (opt of serieOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
 
         <!-- Disparo -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DISPARO_PLACEHOLDER' | translate"
-            [value]="disparoModel()"
-            [disabled]="disparoDisabled()"
-            (selectionChange)="onDisparoSelected($event.value)"
-          >
-            @for (opt of disparoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        @if (!sameForAllShots()) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+            <mat-select
+              id="target-data-shot-selector"
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DISPARO_PLACEHOLDER' | translate"
+              [value]="disparoModel()"
+              (selectionChange)="onDisparoSelected($event.value)"
+            >
+              @for (opt of disparoOptions(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
 
         <div class="flex-1"></div>
-
-        <inta-shot-edit-button [lock]="shotLock" />
       </div>
 
       <!-- Divider -->
       <div class=""></div>
 
       <!-- ── Fields ───────────────────────────────────────────────────────── -->
-      <div class="flex-1 grid grid-cols-3 gap-4 min-h-0 content-start" [intaReadonlyContent]="shotLock.readOnly()">
+      <div class="flex-1 grid grid-cols-3 gap-8 mt-4 min-h-0 content-start">
         <!-- Row 1 -->
 
         <!-- Blanco -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.BLANCO_LABEL' | translate }}</mat-label>
-          <mat-select
+          <input
+            matInput
+            disabled
+            [value]="blancoLabel()"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.BLANCO_PLACEHOLDER' | translate"
-            [formField]="selectForm.blanco"
-          >
-            @for (opt of blancoOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
+          />
         </mat-form-field>
 
         <!-- Material -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.MATERIAL_LABEL' | translate }}</mat-label>
-          <mat-select
+          <input
+            matInput
+            disabled
+            [value]="materialLabel()"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.MATERIAL_PLACEHOLDER' | translate"
-            [formField]="selectForm.material"
-          >
-            @for (opt of materialOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
+          />
         </mat-form-field>
 
         <!-- Dimensiones -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
           <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DIMENSIONES_LABEL' | translate }}</mat-label>
-          <mat-select
+          <input
+            matInput
+            disabled
+            [value]="dimensionesLabel()"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DIMENSIONES_PLACEHOLDER' | translate"
-            [formField]="selectForm.dimensiones"
-          >
-            @for (opt of dimensionesOptions(); track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
+          />
         </mat-form-field>
 
         <!-- Row 2 -->
@@ -151,23 +148,23 @@ interface TargetDataFormModel {
           [label]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.ESPESOR_LABEL' | translate"
           [opciones]="mmOptions"
           [value]="espesorField()"
-          (valueChange)="espesorField.set($event)"
+          [disabled]="true"
         />
 
         <!-- Distancia -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.DISTANCIA_LABEL' | translate"
-          [opciones]="mOptions"
+          [opciones]="mOptions()"
           [value]="distanciaField()"
-          (valueChange)="distanciaField.set($event)"
+          [disabled]="true"
         />
 
         <!-- Inclinación -->
         <ui-input-select
           [label]="'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.INCLINACION_LABEL' | translate"
-          [opciones]="degOptions"
+          [opciones]="degOptions()"
           [value]="inclinacionField()"
-          (valueChange)="inclinacionField.set($event)"
+          [disabled]="true"
         />
       </div>
     </div>
@@ -180,11 +177,18 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
   override readonly widgetStateService = inject(WidgetStateService);
   readonly #store = inject(ExecutionStore);
   readonly #trialShots = injectTrialShots();
+  readonly #targetConditions = inject(PlanningTargetConditionsService);
   #hasManualSelection = false;
 
-  protected readonly mmOptions = [{ value: 'mm', label: 'mm' }];
-  protected readonly mOptions = [{ value: 'm', label: 'm' }];
-  protected readonly degOptions = [{ value: 'º', label: 'º' }];
+  protected readonly mmOptions = [{ value: MeasureUnitEnum.MM, label: MEASURE_UNIT_LABELS[MeasureUnitEnum.MM] }];
+  protected readonly mOptions = computed(() => {
+    const unit = this.distanciaField()?.unit ?? MeasureUnitEnum.M;
+    return SHOT_CONDITIONS_UNIT_OPTIONS.distance.filter((option) => option.value === unit);
+  });
+  protected readonly degOptions = computed(() => {
+    const unit = this.inclinacionField()?.unit ?? MeasureUnitEnum.DEGREES;
+    return SHOT_CONDITIONS_UNIT_OPTIONS.targetInclination.filter((option) => option.value === unit);
+  });
 
   // ── Options from store ─────────────────────────────────────────────────────
   protected readonly serieOptions = computed(() =>
@@ -197,31 +201,42 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
       planningSeries: this.#trialShots.series() ?? this.#store.planningSeries(),
     }),
   );
+  protected readonly sameForAllSeries = computed(() => {
+    const resource = this.#targetConditions.targetConditionsResource;
+    return resource.hasValue() ? (resource.value()?.sameForAllSeries ?? false) : false;
+  });
+  protected readonly sameForAllShots = computed(() => {
+    const resource = this.#targetConditions.targetConditionsResource;
+    if (!resource.hasValue()) return false;
+    const response = resource.value();
+    if (!response) return false;
+    if (response.sameForAllSeries) return true;
+    const selectedSeries = response.series.find((item) => item.seriesId === this.serieModel());
+    return selectedSeries?.sameForAllShots ?? false;
+  });
   protected readonly blancoOptions = computed(() => this.#store.targetData().blancoOptions);
   protected readonly materialOptions = computed(() => this.#store.targetData().materialOptions);
   protected readonly dimensionesOptions = computed(() => this.#store.targetData().dimensionesOptions);
-
-  protected readonly serieDisabled = computed(() => this.#store.targetData().sameDataAcrossSeries);
-  protected readonly disparoDisabled = computed(
-    () => this.#store.targetData().sameDataAcrossSeries || this.#store.targetData().sameDataAcrossDisparos,
+  protected readonly blancoLabel = computed(
+    () => this.blancoOptions().find((item) => item.value === this.formModel().blanco)?.label ?? '',
+  );
+  protected readonly materialLabel = computed(
+    () => this.materialOptions().find((item) => item.value === this.formModel().material)?.label ?? '',
+  );
+  protected readonly dimensionesLabel = computed(
+    () => this.dimensionesOptions().find((item) => item.value === this.formModel().dimensiones)?.label ?? '',
   );
 
-  // ── Serie / Disparo plain signals (support [disabled]) ───────────────────
+  // ── Serie / Disparo selection signals ────────────────────────────────────
   protected readonly serieModel = signal<string | null>(this.#store.targetData().serie);
   protected readonly disparoModel = signal<string | null>(this.#store.targetData().disparo);
 
-  // ── Select form (Signal Forms — content fields only) ──────────────────────
+  // ── Planning values, shown as read-only output fields ─────────────────────
   protected readonly formModel = signal<TargetDataFormModel>({
     blanco: this.#store.targetData().blanco,
     material: this.#store.targetData().material,
     dimensiones: this.#store.targetData().dimensiones,
   });
-  protected readonly selectForm = form(this.formModel);
-  protected readonly shotLock = injectShotFormLock(() => ({
-    serie: this.serieModel(),
-    disparo: this.disparoModel(),
-  }));
-
   // ── Field signals ──────────────────────────────────────────────────────────
   protected readonly espesorField = signal<InputFieldValue>(
     this.#numToField(this.#store.targetData().espesor, this.#store.targetData().espesorUnit),
@@ -233,33 +248,13 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     this.#numToField(this.#store.targetData().inclinacion, this.#store.targetData().inclinacionUnit),
   );
 
-  readonly #savedSnapshot = signal({
-    serie: this.serieModel(),
-    disparo: this.disparoModel(),
-    espesor: this.espesorField(),
-    distancia: this.distanciaField(),
-    inclinacion: this.inclinacionField(),
-  });
-
-  protected readonly isDirty = computed(() => {
-    if (this.selectForm().dirty()) return true;
-    const snap = this.#savedSnapshot();
-    return (
-      this.serieModel() !== snap.serie ||
-      this.disparoModel() !== snap.disparo ||
-      JSON.stringify(this.espesorField()) !== JSON.stringify(snap.espesor) ||
-      JSON.stringify(this.distanciaField()) !== JSON.stringify(snap.distancia) ||
-      JSON.stringify(this.inclinacionField()) !== JSON.stringify(snap.inclinacion)
-    );
-  });
-
   // ── FormWidget implementation ──────────────────────────────────────────────
   readonly formState: Signal<WidgetFormState> = computed(() => ({
     widgetId: this.widgetId(),
-    dirty: this.isDirty(),
-    touched: this.isDirty(),
-    valid: this.selectForm().valid(),
-    hasChanges: this.isDirty(),
+    dirty: false,
+    touched: false,
+    valid: true,
+    hasChanges: false,
   }));
 
   constructor() {
@@ -280,7 +275,73 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
       untracked(() => {
         this.serieModel.set(selection.serie);
         this.disparoModel.set(selection.disparo);
-        this.#syncSnapshot();
+      });
+    });
+    effect(() => {
+      const targetConditionsResource = this.#targetConditions.targetConditionsResource;
+      if (!targetConditionsResource.hasValue()) return;
+      const response = targetConditionsResource.value();
+      const serie = this.serieModel();
+      const disparo = this.disparoModel();
+      if (!response) return;
+      const selectedSeries = response.sameForAllSeries
+        ? response.series[0]
+        : response.series.find((item) => item.seriesId === serie);
+      const selectedShot =
+        response.sameForAllSeries || selectedSeries?.sameForAllShots
+          ? selectedSeries?.shots[0]
+          : selectedSeries?.shots.find((item) => item.shotId === disparo);
+      if (!selectedSeries || !selectedShot) return;
+      const selectedSerieId = selectedSeries.seriesId;
+      const selectedShotId = selectedShot.shotId;
+      const targetData = selectedShot.targetConditionsData;
+      const espesorField = this.#parseThickness(targetData.targetThicknessName);
+      const blancoOptions = [{ value: targetData.targetTypeId, label: targetData.targetTypeLabel }];
+      const materialOptions =
+        targetData.targetMaterialId !== null && targetData.targetMaterialLabel !== null
+          ? [{ value: targetData.targetMaterialId, label: targetData.targetMaterialLabel }]
+          : [];
+      const dimensionesOptions =
+        targetData.targetDimensionsId !== null && targetData.targetDimensionsLabel !== null
+          ? [{ value: targetData.targetDimensionsId, label: targetData.targetDimensionsLabel }]
+          : [];
+      const distanceUnit = targetData.distanceUnit ?? DistanceUnitEnum.M;
+      const targetInclinationUnit = targetData.targetInclinationUnit ?? AngleUnitEnum.DEGREES;
+      untracked(() => {
+        this.serieModel.set(selectedSerieId);
+        this.disparoModel.set(selectedShotId);
+        this.formModel.set({
+          blanco: targetData.targetTypeId,
+          material: targetData.targetMaterialId,
+          dimensiones: targetData.targetDimensionsId,
+        });
+        this.espesorField.set(espesorField);
+        this.distanciaField.set(
+          targetData.distance === null ? null : { value: String(targetData.distance), unit: distanceUnit },
+        );
+        this.inclinacionField.set(
+          targetData.targetInclination === null
+            ? null
+            : { value: String(targetData.targetInclination), unit: targetInclinationUnit },
+        );
+        this.#store.updateTargetData({
+          serie: selectedSerieId,
+          disparo: selectedShotId,
+          blanco: targetData.targetTypeId,
+          material: targetData.targetMaterialId,
+          dimensiones: targetData.targetDimensionsId,
+          espesor: espesorField ? Number(espesorField.value) : null,
+          espesorUnit: espesorField?.unit ?? MeasureUnitEnum.MM,
+          distancia: targetData.distance,
+          distanciaUnit: distanceUnit,
+          inclinacion: targetData.targetInclination,
+          inclinacionUnit: targetInclinationUnit,
+          blancoOptions,
+          materialOptions,
+          dimensionesOptions,
+          sameDataAcrossDisparos: selectedSeries.sameForAllShots,
+          sameDataAcrossSeries: response.sameForAllSeries,
+        });
       });
     });
   }
@@ -308,31 +369,10 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     this.espesorField.set(this.#numToField(stored.espesor, stored.espesorUnit));
     this.distanciaField.set(this.#numToField(stored.distancia, stored.distanciaUnit));
     this.inclinacionField.set(this.#numToField(stored.inclinacion, stored.inclinacionUnit));
-    this.#syncSnapshot();
-    this.shotLock.lock();
   }
 
-  async saveForm(): Promise<void> {
-    if (this.shotLock.readOnly()) {
-      return;
-    }
-    const { blanco, material, dimensiones } = this.formModel();
-    const updates: Partial<TargetDataState> = {
-      serie: this.serieModel(),
-      disparo: this.disparoModel(),
-      blanco,
-      material,
-      dimensiones,
-      espesor: this.#parseNum(this.espesorField()),
-      espesorUnit: this.espesorField()?.unit ?? 'mm',
-      distancia: this.#parseNum(this.distanciaField()),
-      distanciaUnit: this.distanciaField()?.unit ?? 'm',
-      inclinacion: this.#parseNum(this.inclinacionField()),
-      inclinacionUnit: this.inclinacionField()?.unit ?? 'º',
-    };
-    this.#store.updateTargetData(updates);
-    this.#syncSnapshot();
-    this.shotLock.lock();
+  saveForm(): Promise<void> {
+    return Promise.resolve();
   }
 
   #numToField(num: number | null, unit: string): InputFieldValue {
@@ -340,19 +380,10 @@ export class TargetDataWidget extends BaseFormWidgetComponent {
     return { value: num.toString(), unit };
   }
 
-  #parseNum(field: InputFieldValue): number | null {
-    if (!field?.value) return null;
-    const parsed = Number(field.value);
-    return isNaN(parsed) ? null : parsed;
-  }
-
-  #syncSnapshot(): void {
-    this.#savedSnapshot.set({
-      serie: this.serieModel(),
-      disparo: this.disparoModel(),
-      espesor: this.espesorField(),
-      distancia: this.distanciaField(),
-      inclinacion: this.inclinacionField(),
-    });
+  #parseThickness(name: string | null): InputFieldValue {
+    if (!name) return null;
+    const match = name.trim().match(/^([+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+))\s*(.*)$/);
+    if (!match) return { value: name, unit: MeasureUnitEnum.MM };
+    return { value: match[1]?.replace(',', '.') ?? '', unit: MeasureUnitEnum.MM };
   }
 }

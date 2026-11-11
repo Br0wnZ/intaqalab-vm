@@ -1,0 +1,102 @@
+{
+  "sameForAllSeries": false,
+  "series": [
+    {
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
+      "sameForAllShots": false,
+      "shots": [
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
+          "targetConditionsData": {
+            "targetTypeId": "a3dcb6a0-8d3b-4f2e-9c6d-1b2c3d4e5f60",
+            "targetTypeLabel": "Blanco Fijo",
+            "targetMaterialId": "550e8400-e29b-41d4-a716-446655440001",
+            "targetMaterialLabel": "Acero",
+            "targetDimensionsId": "660e8400-e29b-41d4-a716-446655440001",
+            "targetDimensionsLabel": "50 x 100 cm",
+            "targetThicknessId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "targetThicknessName": "5 mm",
+            "distance": 100,
+            "distanceUnit": "M",
+            "targetInclination": 0,
+            "targetInclinationUnit": "DEGREES"
+          }
+        },
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
+          "targetConditionsData": {
+            "targetTypeId": "b4e7f9a1-2c3d-4e5f-9a0b-1c2d3e4f5a6b",
+            "targetTypeLabel": "Blanco Móvil",
+            "targetMaterialId": "550e8400-e29b-41d4-a716-446655440002",
+            "targetMaterialLabel": "Hormigón",
+            "targetDimensionsId": "660e8400-e29b-41d4-a716-446655440002",
+            "targetDimensionsLabel": "75 x 150 cm",
+            "targetThicknessId": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+            "targetThicknessName": "10 mm",
+            "distance": 150,
+            "distanceUnit": "M",
+            "targetInclination": 0,
+            "targetInclinationUnit": "DEGREES"
+          }
+        }
+      ]
+    },
+    {
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2",
+      "sameForAllShots": false,
+      "shots": [
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa3",
+          "targetConditionsData": {
+            "targetTypeId": "c6d7e8f9-0a1b-2c3d-4e5f-6a7b8c9d0e1f",
+            "targetTypeLabel": "Blanco Aéreo",
+            "targetMaterialId": "550e8400-e29b-41d4-a716-446655440003",
+            "targetMaterialLabel": "Madera",
+            "targetDimensionsId": "660e8400-e29b-41d4-a716-446655440003",
+            "targetDimensionsLabel": "100 x 200 cm",
+            "targetThicknessId": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
+            "targetThicknessName": "15 mm",
+            "distance": 200,
+            "distanceUnit": "M",
+            "targetInclination": 0,
+            "targetInclinationUnit": "DEGREES"
+          }
+        },
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa4",
+          "targetConditionsData": {
+            "targetTypeId": "a3dcb6a0-8d3b-4f2e-9c6d-1b2c3d4e5f60",
+            "targetTypeLabel": "Blanco Fijo",
+            "targetMaterialId": "550e8400-e29b-41d4-a716-446655440001",
+            "targetMaterialLabel": "Acero",
+            "targetDimensionsId": "660e8400-e29b-41d4-a716-446655440004",
+            "targetDimensionsLabel": "20 cm",
+            "targetThicknessId": "3fa85f64-5717-4562-b3fc-2c963f66afa9",
+            "targetThicknessName": "20 mm",
+            "distance": 250,
+            "distanceUnit": "M",
+            "targetInclination": 0,
+            "targetInclinationUnit": "DEGREES"
+          }
+        },
+        {
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa5",
+          "targetConditionsData": {
+            "targetTypeId": "b4e7f9a1-2c3d-4e5f-9a0b-1c2d3e4f5a6b",
+            "targetTypeLabel": "Blanco Móvil",
+            "targetMaterialId": "550e8400-e29b-41d4-a716-446655440002",
+            "targetMaterialLabel": "Hormigón",
+            "targetDimensionsId": "660e8400-e29b-41d4-a716-446655440001",
+            "targetDimensionsLabel": "50 x 100 cm",
+            "targetThicknessId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "targetThicknessName": "5 mm",
+            "distance": 300,
+            "distanceUnit": "M",
+            "targetInclination": 0,
+            "targetInclinationUnit": "DEGREES"
+          }
+        }
+      ]
+    }
+  ]
+}

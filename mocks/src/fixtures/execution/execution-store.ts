@@ -583,6 +583,19 @@ export function registerFireShot(fireTrialId: string): void {
   });
 }
 
+export function getShotMetcmExecutionState(
+  fireTrialId: string,
+  seriesId: string,
+  shotId: string,
+): { status: string; updatedAt: string } | null {
+  const trial = getTrialById(fireTrialId);
+  if (!trial) return null;
+
+  const progress = getExecutionProgressFixture();
+  const series = progress.series.find((item) => item.seriesId === seriesId);
+  return series?.shots.find((shot) => shot.shotId === shotId) ?? null;
+}
+
 export function getJltShotData(fireTrialId: string, seriesId: string, shotId: string): JltShotDataResponse {
   const state = getOrCreateJltShotDataMap(fireTrialId);
   const key = `${seriesId}|${shotId}`;

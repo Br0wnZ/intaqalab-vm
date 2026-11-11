@@ -201,6 +201,25 @@ describe('InputSelect', () => {
     expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
+  it('should disable the value and unit controls when disabled', async () => {
+    const { fixture } = await render(InputSelect, {
+      componentInputs: { ...defaultInputs, disabled: true },
+    });
+
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByRole('textbox')).toHaveClass('cursor-default');
+    expect(fixture.componentInstance.containerClass()).toBe('bg-gray-100 border-slate-200');
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('should show a default cursor on the read-only numeric input', async () => {
+    await render(InputSelect, {
+      componentInputs: { ...defaultInputs, readOnly: true },
+    });
+
+    expect(screen.getByRole('textbox')).toHaveClass('cursor-default');
+  });
+
   it('should allow changing units while the numeric input is read-only', async () => {
     await render(ReadonlyValueWithSelectableUnitHost);
 

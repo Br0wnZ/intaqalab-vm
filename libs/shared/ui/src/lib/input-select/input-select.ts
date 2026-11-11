@@ -112,9 +112,10 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
             [minDecimals]="minDecimals()"
             [decimalValue]="numericValue()"
             [class]="isComputed() ? 'font-medium text-violet-800' : 'text-slate-700'"
+            [class.cursor-default]="isDisabled()"
             [style.color]="textColor() ?? null"
-            [readonly]="readOnly()"
-            [disabled]="readOnly()"
+            [readonly]="isDisabled()"
+            [disabled]="isDisabled()"
             [placeholder]="!showLabel() || labelFloating() ? displayPlaceholder() : ''"
             [attr.aria-label]="label()"
             (decimalValueChange)="onNumericChange($event)"
@@ -135,7 +136,7 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
           [value]="selectedUnit()"
           [attr.aria-label]="label() + ' unidad'"
           [panelWidth]="panelWidth()"
-          [disabled]="unitDisabled() ?? readOnly()"
+          [disabled]="isUnitDisabled()"
           (selectionChange)="onUnitChange($event.value)"
         >
           @for (opt of opciones(); track opt.value) {
@@ -180,6 +181,7 @@ export class InputSelect<T extends number | string | null = number | string | nu
   readonly textColor = input<string | null>(null);
   readonly placeholder = input<string>();
   readonly readOnly = input(false);
+  readonly disabled = input(false);
   readonly unitDisabled = input<boolean | null>(null);
   readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
   readonly decimals = input<number>(2);
@@ -209,12 +211,14 @@ export class InputSelect<T extends number | string | null = number | string | nu
 
   // ── Label flotante ────────────────────────────────────────────────────────
   readonly focused = signal(false);
+  readonly isDisabled = computed(() => this.readOnly() || this.disabled());
+  readonly isUnitDisabled = computed(() => this.disabled() || (this.unitDisabled() ?? this.readOnly()));
   readonly labelFloating = computed(
-    () => this.floatLabel() === 'always' || this.readOnly() || !!this.inputValue() || this.focused(),
+    () => this.floatLabel() === 'always' || this.isDisabled() || !!this.inputValue() || this.focused(),
   );
   readonly isComputed = computed(() => this.variant() === 'computed');
   readonly containerClass = computed(() => {
-    if (this.readOnly()) return 'bg-gray-100 border-slate-200';
+    if (this.isDisabled()) return 'bg-gray-100 border-slate-200';
     if (this.isComputed()) return 'bg-violet-50/40 border-violet-200';
     return this.focused() ? 'border-[2px] bg-white border-violet-500' : 'bg-white border-slate-200';
   });
@@ -317,19 +321,20 @@ export class InputSelect<T extends number | string | null = number | string | nu
     if (!projected) return;
 
     const el = projected.el.nativeElement;
-    this.#renderer.setProperty(el, 'readOnly', this.readOnly());
-    this.#renderer.setProperty(el, 'disabled', this.readOnly());
+    this.#renderer.setProperty(el, 'readOnly', this.isDisabled());
+    this.#renderer.setProperty(el, 'disabled', this.isDisabled());
     this.#renderer.setAttribute(el, 'placeholder', this.displayPlaceholder());
+
+    this.#renderer.setAttribute(
+      el,
+      'class',
+      `flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 text-slate-700 placeholder:text-gray-500${this.isDisabled() ? ' cursor-default' : ''}`,
+    );
 
     if (this.#projectedWired) return;
     this.#projectedWired = true;
 
     // Estilos del input interno replicados sobre el elemento proyectado
-    this.#renderer.setAttribute(
-      el,
-      'class',
-      'flex-1 min-w-0 truncate px-4 h-full text-md outline-none bg-transparent w-0 text-slate-700 placeholder:text-gray-500',
-    );
     this.#renderer.setAttribute(el, 'type', 'text');
     this.#renderer.setAttribute(el, 'inputmode', 'decimal');
 

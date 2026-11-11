@@ -98,9 +98,9 @@ interface RadarMetcmqForm {
       <!-- Text output + Copy + Generar -->
       <div class="flex-1 flex items-center gap-1.5 min-h-0" [intaReadonlyContent]="shotLock.readOnly()">
         <div
-          class="flex-1 flex items-center border border-slate-200 rounded-lg bg-slate-50 h-10 px-3 min-w-0 overflow-hidden"
+          class="flex-1 flex items-start border border-slate-200 rounded-lg bg-slate-50 min-h-10 max-h-32 px-3 py-2 min-w-0 overflow-auto"
         >
-          <span class="flex-1 text-sm text-slate-700 truncate">
+          <span class="flex-1 text-sm text-slate-700 whitespace-pre-wrap">
             @if (texto()) {
               {{ texto() }}
             } @else {
@@ -176,6 +176,15 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
       if (this.#hasManualSelection || !selection.serie || !selection.disparo) return;
       untracked(() => this.formModel.set(selection));
     });
+    effect(() => {
+      const { serie, disparo } = this.formModel();
+      const fireTrialId = this.#store.fireTrialId();
+      if (!serie || !disparo) {
+        untracked(() => this.#store.loadRadarMetcm(null, null, null));
+        return;
+      }
+      untracked(() => void this.#store.loadRadarMetcm(fireTrialId, serie, disparo));
+    });
   }
 
   onSerieSelected(serie: string | null): void {
@@ -212,21 +221,9 @@ export class RadarMetcmq extends BaseFormWidgetComponent {
   }
 
   generateBulletin(): void {
-    if (this.shotLock.readOnly()) return;
     const { serie, disparo } = this.formModel();
     this.#store.updateRadarMetcmq({ serie, disparo });
-
-    // Generate mock bulletin text for the selected shot's time block
-    const serieLabel = this.serieOptions().find((o) => o.value === serie)?.label ?? serie ?? '—';
-    const disparoLabel = this.disparoOptions().find((o) => o.value === disparo)?.label ?? disparo ?? '—';
-    const now = new Date();
-    const hhmm = now.toTimeString().slice(0, 5);
-    const mockTexto =
-      serie && disparo
-        ? `METCMQ ${hhmm}Z — ${serieLabel} / ${disparoLabel}: VIENTO 270/08KT, QNH 1013, T+22°C, VIS >10KM`
-        : null;
-
-    this.#store.updateRadarMetcmq({ texto: mockTexto });
+    void this.#store.loadRadarMetcm(this.#store.fireTrialId(), serie, disparo);
   }
 
   copyTexto(): void {

@@ -1,10 +1,11 @@
 {
-  "page": 0,
-  "pageSize": 5,
-  "totalElements": 5,
+  "page": 1,
+  "pageSize": 6,
+  "totalElements": 6,
   "items": [
     {
-      "id": "doc-001",
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd0101",
+      "versionId": "019a2ad8-f9cc-7c55-b18b-f075b2dd0201",
       "name": "FT-1105 IAT 0019_22",
       "fileName": "FT-1105 IAT 0019_22_V_M_CÑ_3_50_DIS.pdf",
       "status": "ACTIVE",
@@ -12,10 +13,12 @@
       "category": "SPECIFIC",
       "type": { "id": "a6j6j2j5-6f7a-9b8c-3d4e-6f7a8b9c0d1e", "name": "Informe de actividad técnica" },
       "createdAt": "2025-07-15T10:00:00Z",
-      "updatedAt": "2025-07-15T10:00:00Z"
+      "updatedAt": "2025-07-15T10:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
     },
     {
-      "id": "doc-002",
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd0102",
+      "versionId": "019a2ad8-f9cc-7c55-b18b-f075b2dd0202",
       "name": "Autorizacion",
       "fileName": "Autorizacion.pdf",
       "status": "OBSOLETE",
@@ -23,10 +26,12 @@
       "category": "SPECIFIC",
       "type": { "id": "b1e1e7e0-1a2b-4c3d-8e9f-1a2b3c4d5e6f", "name": "Autorización" },
       "createdAt": "2025-07-15T10:00:00Z",
-      "updatedAt": "2025-07-15T10:00:00Z"
+      "updatedAt": "2025-07-15T10:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
     },
     {
-      "id": "doc-003",
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd0103",
+      "versionId": "019a2ad8-f9cc-7c55-b18b-f075b2dd0203",
       "name": "Plan de Ensayo",
       "fileName": "Plan de Ensayo.pdf",
       "status": "ACTIVE",
@@ -34,10 +39,12 @@
       "category": "SPECIFIC",
       "type": { "id": "c8l8l4l7-8b9c-1d0e-5f6a-8b9c0d1e2f3a", "name": "Plan de Ensayo" },
       "createdAt": "2025-07-15T10:00:00Z",
-      "updatedAt": "2025-07-15T10:00:00Z"
+      "updatedAt": "2025-07-15T10:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
     },
     {
-      "id": "doc-004",
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd0102",
+      "versionId": "019a2ad8-f9cc-7c55-b18b-f075b2dd0204",
       "name": "Autorizacion 2",
       "fileName": "Autorizacion.pdf",
       "status": "ACTIVE",
@@ -45,10 +52,12 @@
       "category": "SPECIFIC",
       "type": { "id": "b1e1e7e0-1a2b-4c3d-8e9f-1a2b3c4d5e6f", "name": "Autorización" },
       "createdAt": "2025-07-15T10:00:00Z",
-      "updatedAt": "2025-07-15T10:00:00Z"
+      "updatedAt": "2025-07-15T10:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
     },
     {
-      "id": "doc-005",
+      "id": "019a2ad8-f9cc-7c55-b18b-f075b2dd0105",
+      "versionId": "019a2ad8-f9cc-7c55-b18b-f075b2dd0205",
       "name": "UX Guidelines",
       "fileName": "UX Design Guidelines.docx",
       "status": "OBSOLETE",
@@ -56,7 +65,21 @@
       "category": "SPECIFIC",
       "type": { "id": "a6j6j2j5-6f7a-9b8c-3d4e-6f7a8b9c0d1e", "name": "Informe de actividad técnica" },
       "createdAt": "2025-07-15T10:00:00Z",
-      "updatedAt": "2025-07-15T10:00:00Z"
+      "updatedAt": "2025-07-15T10:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
+    },
+    {
+      "id": "7c2d1a90-4b3e-4f21-9a8c-1d5e6f7a8b90",
+      "versionId": "7c2d1a90-4b3e-4f21-9a8c-1d5e6f7a8b91",
+      "name": "Boletín METCM operativo",
+      "fileName": "boletin-metcm.txt",
+      "status": "ACTIVE",
+      "version": "v1",
+      "category": "GENERAL",
+      "type": { "id": "d8869239-caee-4c21-a462-ad538b9d84cd", "name": "METCM" },
+      "createdAt": "2026-03-10T00:00:00Z",
+      "updatedAt": "2026-03-10T00:00:00Z",
+      "associatedFireTrialIds": ["e2e1c7e2-1b2a-4c3d-8e1f-1a2b3c4d5e6f"]
     }
   ]
 }

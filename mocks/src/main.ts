@@ -46,8 +46,8 @@ app.use((req: any, _res: any, next: any) => {
   req.url = req.url.replace(/^(\/api\/centers\/[^/]+\/)fire-trials-api\/[^/]+\/(.*)/, '$1$2');
   // /api/fire-trials-api/1.0.0/Y/... → /api/Y/... (endpoints sin center)
   req.url = req.url.replace(/^(\/api\/)fire-trials-api\/[^/]+\/(.*)/, '$1$2');
-  // /api/centers/X/fire-trials-documents-api/1.0.0/Y/... → /api/centers/X/documents/Y/...
-  req.url = req.url.replace(/^(\/api\/centers\/[^/]+\/)fire-trials-documents-api\/[^/]+\/(.*)/, '$1documents/$2');
+  // /api/centers/X/fire-trials-documents-api/1.0.0/Y/... → /api/centers/X/Y/...
+  req.url = req.url.replace(/^(\/api\/centers\/[^/]+\/)fire-trials-documents-api\/[^/]+\/(.*)/, '$1$2');
   // /api/fire-trials-documents-api/1.0.0/Y/... → /api/Y/... (endpoints sin center, ej: document-types)
   req.url = req.url.replace(/^(\/api\/)fire-trials-documents-api\/[^/]+\/(.*)/, '$1$2');
   // /api/centers/X/planning-api/1.0.0/fire-trials/Y/... → /api/centers/X/fire-trials/Y/...

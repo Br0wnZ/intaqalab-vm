@@ -23,6 +23,7 @@ import {
   getShotJltMao,
   getShotManometerPressures,
   getShotMaoTopography,
+  getShotMetcmExecutionState,
   getShotMunition,
   getShotPressures,
   getShotTopography,
@@ -52,6 +53,7 @@ import {
   setTrialOverpressureInfo,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
+import { getActiveTrialMetcmDocumentId } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getFixture } from '../utils';
 
 export const executionRouter = Router();
@@ -85,6 +87,51 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/trajectograph
   const response = getFixture('fixtures/execution', 'execution-trajectography-radar-orientation-fixture.json');
   res.status(200).json(response);
 });
+
+// [Widget 24] Obtener bloque METCM original del disparo
+executionRouter.get(
+  '/:centerId/fire-trials/:fireTrialId/execution/metcm/series/:seriesId/shots/:shotId',
+  (req, res) => {
+    const { fireTrialId, seriesId, shotId } = req.params as {
+      fireTrialId: string;
+      seriesId: string;
+      shotId: string;
+    };
+    const documentId = req.query['documentId'];
+
+    if (
+      typeof documentId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(documentId)
+    ) {
+      res.status(400).json({ title: 'Bad Request', status: 400, detail: 'Invalid documentId UUID' });
+      return;
+    }
+
+    if (getActiveTrialMetcmDocumentId(fireTrialId) !== documentId) {
+      res
+        .status(404)
+        .json({ title: 'Not Found', status: 404, detail: 'Active METCM document not found for fire trial' });
+      return;
+    }
+
+    const shot = getShotMetcmExecutionState(fireTrialId, seriesId, shotId);
+    if (!shot) {
+      res.status(404).json({ title: 'Not Found', status: 404, detail: 'Shot not found' });
+      return;
+    }
+    if (shot.status !== 'FIRED' || !shot.updatedAt) {
+      res.status(409).json({
+        title: 'Conflict',
+        status: 409,
+        detail: 'Shot must be FIRED and have an execution timestamp',
+      });
+      return;
+    }
+
+    const response = getFixture('fixtures/execution', 'execution-metcm-fixture.json');
+    res.status(200).json(response);
+  },
+);
 
 // ==========================================
 // EXECUTION STATE

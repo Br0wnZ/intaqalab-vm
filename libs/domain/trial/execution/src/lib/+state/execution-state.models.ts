@@ -555,9 +555,9 @@ export interface TargetDataState {
   blancoOptions: { value: string; label: string }[];
   materialOptions: { value: string; label: string }[];
   dimensionesOptions: { value: string; label: string }[];
-  /** true si los datos son iguales en todos los disparos de la serie → deshabilita selector disparo */
+  /** true si los datos son iguales en todos los disparos de la serie. */
   sameDataAcrossDisparos: boolean;
-  /** true si los datos son iguales en toda la prueba → deshabilita selector serie */
+  /** true si los datos son iguales en toda la prueba. */
   sameDataAcrossSeries: boolean;
 }
 
@@ -897,6 +897,10 @@ export interface RadarMetcmqState {
   disparo: string | null;
   /** Texto del boletín para el bloque horario del disparo seleccionado */
   texto: string | null;
+  /** Indica que se está resolviendo el documento METCM y el bloque horario. */
+  isLoading: boolean;
+  /** Error de carga del boletín METCM. */
+  error: string | null;
   /** Lista de series disponibles */
   serieOptions: { value: string; label: string }[];
   /** Lista de disparos disponibles */

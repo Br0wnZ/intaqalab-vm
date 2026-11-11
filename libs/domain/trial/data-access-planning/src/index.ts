@@ -10,5 +10,7 @@ export * from './lib/queries/planning-loading-zones.service';
 export * from './lib/queries/planning-measures.service';
 export * from './lib/queries/planning-munitions.service';
 export * from './lib/queries/planning-series.service';
+export * from './lib/queries/planning-target-catalogs.service';
+export * from './lib/queries/planning-target-conditions.service';
 export * from './lib/queries/propellant-charge-parameters.service';
 export * from './lib/queries/trial-resource-url';

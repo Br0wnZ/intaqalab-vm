@@ -5,4 +5,6 @@ export * from './planning-loading-zones.model';
 export * from './planning-measures.model';
 export * from './planning-munitions.model';
 export * from './planning-series.model';
+export * from './planning-target-catalogs.model';
+export * from './planning-target-conditions.model';
 export * from './propellant-charge-parameters.model';

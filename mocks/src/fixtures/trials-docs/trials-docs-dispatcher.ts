@@ -1,6 +1,7 @@
 import type { Request } from 'express';
 
 import { getFixture, getPagination, paginate } from '../../utils';
+import { getTrialById } from '../trials/trial-transitions-store';
 
 type DocumentType = {
   id: string;
@@ -28,6 +29,7 @@ type DocumentsResponse = {
 
 type FireTrialDocument = {
   id: string;
+  versionId: string;
   name: string;
   fileName?: string;
   category: 'SPECIFIC' | 'GENERAL';
@@ -36,6 +38,7 @@ type FireTrialDocument = {
   status: TrialDocsStatus;
   createdAt: string;
   updatedAt: string;
+  associatedFireTrialIds?: string[];
 };
 
 let trialsDocsStore: FireTrialDocument[] | null = null;
@@ -50,8 +53,18 @@ export function getDocsStore(): FireTrialDocument[] {
 
 export function addMockDocument(doc: FireTrialDocument) {
   const store = getDocsStore();
+  if (doc.associatedFireTrialIds) {
+    associationsStore[doc.id] = [...doc.associatedFireTrialIds];
+  }
   store.unshift(doc);
   return doc;
+}
+
+export function associateMockDocumentWithTrial(documentId: string, fireTrialId: string): void {
+  const associations = getDocAssociations(documentId);
+  if (!associations.includes(fireTrialId)) {
+    setDocAssociations(documentId, [...associations, fireTrialId]);
+  }
 }
 
 export function deleteMockDocument(id: string) {
@@ -71,17 +84,45 @@ export function updateMockDocument(id: string, updateData: Partial<FireTrialDocu
 
 export function trialsDocumentsDispatch(req: Request) {
   const allDocs = getDocsStore();
+  const fireTrialId = req.params['fireTrialId'];
+  if (!fireTrialId || !getTrialById(fireTrialId)) {
+    throw new Error('FIRE_TRIAL_NOT_FOUND');
+  }
   const filters: TrialDocsFilter = {
     category: req.query.category?.toString() || '',
     status: req.query.status ? (req.query.status.toString() as TrialDocsStatus) : TrialDocsStatus.ALL,
     type: req.query.typeId?.toString() || req.query.type?.toString() || '',
   };
 
+  if (
+    filters.status !== TrialDocsStatus.ALL &&
+    filters.status !== TrialDocsStatus.ACTIVE &&
+    filters.status !== TrialDocsStatus.OBSOLETE
+  ) {
+    throw new Error('Invalid document status filter');
+  }
+
+  if (filters.category && filters.category !== 'GENERAL' && filters.category !== 'SPECIFIC') {
+    throw new Error('Invalid document category filter');
+  }
+  if (filters.type && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(filters.type)) {
+    throw new Error('Invalid document type UUID');
+  }
+
+  const rawPage = req.query['page'];
+  const rawPageSize = req.query['pageSize'];
+  const page = rawPage === undefined ? 1 : Number(rawPage);
+  const pageSize = rawPageSize === undefined ? 25 : Number(rawPageSize);
+  if (!Number.isInteger(page) || page < 1 || !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 200) {
+    throw new Error('Invalid pagination parameters');
+  }
+
   const shouldFilterCategory = filters.category && filters.category !== 'ALL';
   const shouldFilterStatus = filters.status && filters.status !== TrialDocsStatus.ALL;
   const shouldFilterType = filters.type && filters.type !== 'ALL';
 
   const filteredDocuments = allDocs.filter((doc: FireTrialDocument) => {
+    const associatedWithTrial = fireTrialId ? getDocAssociations(doc.id).includes(fireTrialId) : false;
     let categoryMatch = true;
     let statusMatch = true;
     let typeMatch = true;
@@ -95,15 +136,62 @@ export function trialsDocumentsDispatch(req: Request) {
     if (shouldFilterType) {
       typeMatch = doc.type && doc.type.id === filters.type;
     }
-    return categoryMatch && statusMatch && typeMatch;
+    return associatedWithTrial && categoryMatch && statusMatch && typeMatch;
   });
 
-  return {
-    page: 1,
-    pageSize: filteredDocuments.length,
-    totalElements: filteredDocuments.length,
-    items: filteredDocuments,
-  };
+  const selectedDocuments = filteredDocuments.filter((doc) => {
+    const isActive = doc.status === TrialDocsStatus.ACTIVE;
+    if (filters.status === TrialDocsStatus.ACTIVE) return isActive;
+    if (filters.status === TrialDocsStatus.OBSOLETE) return !isActive;
+    return true;
+  });
+
+  const sortValues = req.query['sort'];
+  const sortCriteria = Array.isArray(sortValues)
+    ? sortValues.filter((value): value is string => typeof value === 'string')
+    : typeof sortValues === 'string'
+      ? [sortValues]
+      : [];
+  const sortCriteriaReversed = [...sortCriteria].reverse();
+  if (sortCriteria.some((criterion) => !/^[A-Za-z][A-Za-z0-9]*;(asc|desc)$/.test(criterion))) {
+    throw new Error('Invalid sort parameter');
+  }
+  const sortedDocuments = [...selectedDocuments];
+  for (const criterion of sortCriteriaReversed) {
+    const [field, direction] = criterion.split(';');
+    if (direction !== 'asc' && direction !== 'desc') continue;
+    sortedDocuments.sort((left, right) => {
+      const leftValue = left[field as keyof FireTrialDocument];
+      const rightValue = right[field as keyof FireTrialDocument];
+      const order = String(leftValue ?? '').localeCompare(String(rightValue ?? ''));
+      return direction === 'asc' ? order : -order;
+    });
+  }
+
+  const items = sortedDocuments.map((doc) => ({
+    id: doc.id,
+    versionId: doc.versionId,
+    name: doc.name,
+    category: doc.category,
+    type: doc.type,
+    version: doc.version,
+    status: doc.status,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  }));
+
+  return paginate(items, { page, pageSize });
+}
+
+export function getActiveTrialMetcmDocumentId(fireTrialId: string): string | null {
+  return (
+    getDocsStore().find(
+      (doc) =>
+        doc.type.id === 'd8869239-caee-4c21-a462-ad538b9d84cd' &&
+        doc.status === TrialDocsStatus.ACTIVE &&
+        getDocAssociations(doc.id).includes(fireTrialId),
+    )?.id ?? null
+  );
 }
 
 export function centerDocumentsDispatch(req: Request) {
@@ -141,7 +229,8 @@ const associationsStore: Record<string, string[]> = {};
 
 export function getDocAssociations(docId: string): string[] {
   if (!associationsStore[docId]) {
-    associationsStore[docId] = ['019a2ad8-f9cc-7c55-b18b-f075b2dd091f', '019a2ad8-f9cc-7c55-b18b-f075b2dd091a'];
+    const document = getDocsStore().find((item) => item.id === docId);
+    associationsStore[docId] = [...(document?.associatedFireTrialIds ?? [])];
   }
   return associationsStore[docId];
 }

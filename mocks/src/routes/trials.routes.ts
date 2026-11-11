@@ -11,8 +11,8 @@ import { setTrialSchedule, trialScheduleDispatchById } from '../fixtures/trial-s
 import {
   TrialDocsStatus,
   addMockDocument,
+  associateMockDocumentWithTrial,
   detachDocFromTrial,
-  trialsDocumentsDispatch,
 } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getTrialById, setTrialStatus } from '../fixtures/trials/trial-transitions-store';
 import { trialsDispatch, trialsDispatchById } from '../fixtures/trials/trials-dispatcher';
@@ -157,17 +157,14 @@ trialsRouter.get('/:centerId/planning-users', (req, res) => {
   res.status(200).send(dataToSend);
 });
 
-// Obtener documentos de una prueba de fuego
-trialsRouter.get('/:centerId/fire-trials/:fireTrialId/documents', (req, res) => {
-  const dataToSend = trialsDocumentsDispatch(req);
-  res.send(dataToSend);
-});
-
 // Subir un documento a una prueba de fuego
 trialsRouter.post('/:centerId/fire-trials/:fireTrialId/documents', (req, res) => {
   const { name, category, documentTypeId } = req.body || {};
   const newDoc = {
     id: `019a2ad8-f9cc-7c55-b18b-f075b2dd${Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0')}`,
+    versionId: `019a2ad8-f9cc-7c55-b18b-f075b2de${Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, '0')}`,
     name: name || 'Mock Uploaded Document',
@@ -182,6 +179,7 @@ trialsRouter.post('/:centerId/fire-trials/:fireTrialId/documents', (req, res) =>
     updatedAt: new Date().toISOString(),
   };
   addMockDocument(newDoc);
+  associateMockDocumentWithTrial(newDoc.id, req.params['fireTrialId']);
 
   res.status(201).send({
     id: newDoc.id,
@@ -215,6 +213,51 @@ trialsRouter.delete('/:centerId/fire-trials/:fireTrialId/documents/:documentId',
 trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/conditions', (req, res) => {
   const dataToSend = conditionsDispatcher(req);
   res.send(dataToSend);
+});
+
+type TargetConditionsLabelsFixture = {
+  series: Array<{
+    shots: Array<{
+      targetConditionsData: {
+        targetTypeId: string;
+        targetTypeLabel: string;
+        targetMaterialId: string | null;
+        targetMaterialLabel: string | null;
+      };
+    }>;
+  }>;
+};
+
+const targetTypeLabels: Record<string, { en: string; es: string }> = {
+  'a3dcb6a0-8d3b-4f2e-9c6d-1b2c3d4e5f60': { es: 'Blanco Fijo', en: 'Fixed Target' },
+  'b4e7f9a1-2c3d-4e5f-9a0b-1c2d3e4f5a6b': { es: 'Blanco Móvil', en: 'Moving Target' },
+  'c6d7e8f9-0a1b-2c3d-4e5f-6a7b8c9d0e1f': { es: 'Blanco Aéreo', en: 'Aerial Target' },
+};
+
+const targetMaterialLabels: Record<string, { en: string; es: string }> = {
+  '550e8400-e29b-41d4-a716-446655440001': { es: 'Acero', en: 'Steel' },
+  '550e8400-e29b-41d4-a716-446655440002': { es: 'Hormigón', en: 'Concrete' },
+  '550e8400-e29b-41d4-a716-446655440003': { es: 'Madera', en: 'Wood' },
+};
+
+trialsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/target-conditions', (req, res) => {
+  const data = getFixture<TargetConditionsLabelsFixture>('fixtures/trial-planning', 'target-conditions-fixture.json');
+  const language = req.get('Accept-Language')?.toLowerCase().startsWith('en') ? 'en' : 'es';
+
+  for (const series of data.series) {
+    for (const shot of series.shots) {
+      const targetData = shot.targetConditionsData;
+      const targetTypeLabel = targetTypeLabels[targetData.targetTypeId];
+      if (targetTypeLabel) targetData.targetTypeLabel = targetTypeLabel[language];
+
+      if (targetData.targetMaterialId !== null) {
+        const targetMaterialLabel = targetMaterialLabels[targetData.targetMaterialId];
+        if (targetMaterialLabel) targetData.targetMaterialLabel = targetMaterialLabel[language];
+      }
+    }
+  }
+
+  res.status(200).json(data);
 });
 
 // Actualizar condiciones de disparos

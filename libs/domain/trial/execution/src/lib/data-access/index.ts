@@ -22,6 +22,7 @@ export * from './execution/shot/shot-ipg-pressures.service';
 export * from './execution/shot/shot-jlt-data.service';
 export * from './execution/shot/shot-jlt-mao.service';
 export * from './execution/shot/shot-manometer-pressures.service';
+export * from './execution/shot/shot-metcm.service';
 export * from './execution/shot/shot-mao-topography.service';
 export * from './execution/shot/shot-munition.service';
 export * from './execution/shot/shot-pressures.service';

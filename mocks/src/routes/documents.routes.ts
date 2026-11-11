@@ -12,11 +12,26 @@ import {
   getDocVersions,
   setActiveDocVersion,
   setDocAssociations,
+  trialsDocumentsDispatch,
   updateDocObservation,
   updateMockDocument,
 } from '../fixtures/trials-docs/trials-docs-dispatcher';
 
 export const documentsRouter = Router();
+
+// GET /centers/{centerId}/fire-trials/{fireTrialId}/documents
+documentsRouter.get('/:centerId/fire-trials/:fireTrialId/documents', (req, res) => {
+  try {
+    res.status(200).json(trialsDocumentsDispatch(req));
+  } catch (error) {
+    const status = error instanceof Error && error.message === 'FIRE_TRIAL_NOT_FOUND' ? 404 : 400;
+    res.status(status).json({
+      title: status === 404 ? 'Not Found' : 'Bad Request',
+      status,
+      detail: error instanceof Error ? error.message : 'Invalid query parameters',
+    });
+  }
+});
 
 // Listar documentos de un centro
 documentsRouter.get('/:centerId/documents', (req, res) => {

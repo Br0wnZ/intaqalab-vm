@@ -1,3 +1,4 @@
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
 
 import type { TargetDataState } from '../execution-state.models';
@@ -14,11 +15,11 @@ const initialState: TargetDataSlice = {
     material: null,
     dimensiones: null,
     espesor: null,
-    espesorUnit: 'mm',
+    espesorUnit: MeasureUnitEnum.MM,
     distancia: null,
-    distanciaUnit: 'm',
+    distanciaUnit: MeasureUnitEnum.M,
     inclinacion: null,
-    inclinacionUnit: 'º',
+    inclinacionUnit: MeasureUnitEnum.DEGREES,
     serieOptions: [],
     disparoOptions: [],
     blancoOptions: [],

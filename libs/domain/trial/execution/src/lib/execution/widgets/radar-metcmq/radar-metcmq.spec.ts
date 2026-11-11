@@ -6,10 +6,11 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateModule } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/angular';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
+import { ShotMetcmService } from '../../../data-access';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { RadarMetcmq } from './radar-metcmq';
 
@@ -18,6 +19,23 @@ const mockWidgetStateService = {
   addWidget: () => {},
   placedWidgets: () => [],
   saveSuccessCount: signal(0),
+};
+
+const mockShotMetcmParams = signal<{ fireTrialId: string; seriesId: string; shotId: string } | null>(null);
+const mockShotMetcmResponse = signal<{ metcmData: { blockText: string } } | undefined>(undefined);
+const mockShotMetcmService = {
+  shotParams: mockShotMetcmParams,
+  shotMetcmResource: { value: mockShotMetcmResponse },
+  isLoading: signal(false),
+  error: signal<Error | null>(null),
+  resetShotMetcm: vi.fn(() => {
+    mockShotMetcmParams.set(null);
+    mockShotMetcmResponse.set(undefined);
+  }),
+  loadShotMetcm: vi.fn((fireTrialId: string, seriesId: string, shotId: string) => {
+    mockShotMetcmParams.set({ fireTrialId, seriesId, shotId });
+    mockShotMetcmResponse.set({ metcmData: { blockText: `METCM ${shotId}` } });
+  }),
 };
 
 describe('RadarMetcmq', () => {
@@ -30,6 +48,7 @@ describe('RadarMetcmq', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: ShotMetcmService, useValue: mockShotMetcmService },
         ExecutionStore,
       ],
       imports: [TranslateModule.forRoot()],
@@ -37,7 +56,7 @@ describe('RadarMetcmq', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'TRIAL_EXECUTION.WIDGETS.RADAR_METCMQ.TITLE' })).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -60,19 +79,24 @@ describe('RadarMetcmq', () => {
     expect(fixture.componentInstance['formModel']().serie).toBe(stored.serie);
   });
 
-  it('generateBulletin sets texto when serie and disparo are selected', async () => {
+  it('loads the METCM block automatically when selected shot changes', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
 
+    store.setFireTrialId('trial-1');
     fixture.componentInstance['formModel'].set({ serie: 'funcionamiento-1', disparo: 'disparo-1' });
-    fixture.componentInstance.generateBulletin();
+    await vi.waitFor(() => expect(store.radarMetcmq().texto).toBe('METCM disparo-1'));
 
-    expect(store.radarMetcmq().texto).toBeTruthy();
+    expect(mockShotMetcmService.loadShotMetcm).toHaveBeenCalledWith('trial-1', 'funcionamiento-1', 'disparo-1');
+    fixture.componentInstance['formModel'].set({ serie: 'funcionamiento-1', disparo: 'disparo-2' });
+    await vi.waitFor(() =>
+      expect(mockShotMetcmService.loadShotMetcm).toHaveBeenLastCalledWith('trial-1', 'funcionamiento-1', 'disparo-2'),
+    );
     expect(store.radarMetcmq().serie).toBe('funcionamiento-1');
-    expect(store.radarMetcmq().disparo).toBe('disparo-1');
+    expect(store.radarMetcmq().disparo).toBe('disparo-2');
   });
 
-  it('generateBulletin sets texto to null when no serie/disparo selected', async () => {
+  it('clears the METCM block when no serie or shot is selected', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
 

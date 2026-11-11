@@ -9,6 +9,8 @@ import { PlanningConditionsService } from './planning-conditions.service';
 import { PlanningMeasuresService } from './planning-measures.service';
 import { PlanningMunitionsService } from './planning-munitions.service';
 import { PlanningSeriesService } from './planning-series.service';
+import { PlanningTargetCatalogsService } from './planning-target-catalogs.service';
+import { PlanningTargetConditionsService } from './planning-target-conditions.service';
 import { PropellantChargeParametersService } from './propellant-charge-parameters.service';
 
 const MOCK_PLANNING_URL = 'http://localhost:3000/api/planning';
@@ -29,6 +31,8 @@ describe('planning query services (shared trial context)', () => {
         PlanningTrialContextService,
         PlanningSeriesService,
         PlanningConditionsService,
+        PlanningTargetConditionsService,
+        PlanningTargetCatalogsService,
         PlanningMeasuresService,
         PlanningMunitionsService,
         PlanningArmamentService,
@@ -73,9 +77,130 @@ describe('planning query services (shared trial context)', () => {
     expect(conditionsService.conditionsResource.value()?.series).toEqual([]);
   });
 
-  it('should not auto-issue other families from the context; they wait for an explicit load()', async () => {
-    const seriesService = TestBed.inject(PlanningSeriesService);
+  it('should include target fields in Planning conditions responses', async () => {
     const conditionsService = TestBed.inject(PlanningConditionsService);
+    contextService.setTrial({ centerId: null, fireTrialId: 'trial-targets' });
+    TestBed.tick();
+    await settle();
+
+    const conditionsReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/fire-trials/trial-targets/planning/conditions`,
+    );
+    const response = {
+      units: {},
+      series: [
+        {
+          seriesId: 'series-1',
+          seriesName: 'Serie 1',
+          shots: [
+            {
+              shotId: 'shot-1',
+              targetTypeId: 'target-1',
+              targetMaterialId: 'material-1',
+              targetDimensionsId: 'dimension-1',
+              targetThicknessId: 'thickness-1',
+              distance: 80,
+              targetInclination: 15,
+            },
+          ],
+        },
+      ],
+    };
+    conditionsReq.flush(response);
+    TestBed.tick();
+    await settle();
+
+    expect(conditionsService.conditionsResource.value()?.series[0]?.shots[0]).toMatchObject({
+      targetTypeId: 'target-1',
+      targetMaterialId: 'material-1',
+      targetDimensionsId: 'dimension-1',
+      targetThicknessId: 'thickness-1',
+      distance: 80,
+      targetInclination: 15,
+    });
+  });
+
+  it('should auto-issue the target conditions GET when the trial context is set', async () => {
+    const targetConditionsService = TestBed.inject(PlanningTargetConditionsService);
+    contextService.setTrial({ centerId: null, fireTrialId: 'trial-target-widget' });
+    TestBed.tick();
+    await settle();
+
+    const targetConditionsReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/fire-trials/trial-target-widget/planning/target-conditions`,
+    );
+    expect(targetConditionsReq.request.method).toBe('GET');
+    targetConditionsReq.flush({
+      sameForAllSeries: false,
+      series: [
+        {
+          seriesId: 'series-1',
+          sameForAllShots: false,
+          shots: [
+            {
+              shotId: 'shot-1',
+              targetConditionsData: {
+                targetTypeId: 'target-1',
+                targetTypeLabel: 'Fixed target',
+                targetMaterialId: null,
+                targetMaterialLabel: null,
+                targetDimensionsId: null,
+                targetDimensionsLabel: null,
+                targetThicknessId: null,
+                targetThicknessName: null,
+                distance: null,
+                distanceUnit: null,
+                targetInclination: null,
+                targetInclinationUnit: null,
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    TestBed.tick();
+    await settle();
+    expect(
+      targetConditionsService.targetConditionsResource.value()?.series[0]?.shots[0]?.targetConditionsData
+        .targetTypeLabel,
+    ).toBe('Fixed target');
+  });
+
+  it('should load target catalogs without duplicating the center path segment', async () => {
+    const catalogsService = TestBed.inject(PlanningTargetCatalogsService);
+    catalogsService.load();
+    TestBed.tick();
+    await settle();
+
+    const targetTypesReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/target-types?pageSize=100&active=true`,
+    );
+    const targetMaterialsReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/target-materials?pageSize=100&active=true`,
+    );
+    const targetDimensionsReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/target-dimensions?pageSize=100&active=true`,
+    );
+    const targetThicknessesReq = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/target-thicknesses?pageSize=100&active=true`,
+    );
+    for (const request of [targetTypesReq, targetMaterialsReq, targetDimensionsReq, targetThicknessesReq]) {
+      expect(request.request.method).toBe('GET');
+      request.flush([]);
+    }
+
+    TestBed.tick();
+    await settle();
+    expect(catalogsService.targetTypesResource.value()).toEqual([]);
+    expect(catalogsService.targetMaterialsResource.value()).toEqual([]);
+    expect(catalogsService.targetDimensionsResource.value()).toEqual([]);
+    expect(catalogsService.targetThicknessesResource.value()).toEqual([]);
+  });
+
+  it('should not auto-issue other families from the context; they wait for an explicit load()', async () => {
+    TestBed.inject(PlanningSeriesService);
+    TestBed.inject(PlanningConditionsService);
     const measuresService = TestBed.inject(PlanningMeasuresService);
     const munitionsService = TestBed.inject(PlanningMunitionsService);
     const armamentService = TestBed.inject(PlanningArmamentService);
