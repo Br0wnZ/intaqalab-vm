@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AngleUnitEnum, DistanceUnitEnum } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -32,9 +32,8 @@ describe('VideoCameraOrientation', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('should create', async () => {

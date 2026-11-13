@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -20,7 +19,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ShotManometerPressuresService } from '../../../data-access';
@@ -90,7 +89,7 @@ export interface DataFormModel {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
@@ -342,7 +341,6 @@ export interface DataFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManometerIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

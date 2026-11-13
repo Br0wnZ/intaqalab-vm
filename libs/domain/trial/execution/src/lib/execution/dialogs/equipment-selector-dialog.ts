@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,7 +10,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { ErrorState, SaveButton, Skeleton } from '@intaqalab/ui';
 import { RangePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EquipmentSelectionService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
@@ -42,13 +42,12 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
     MatSelectModule,
     MatChipsModule,
     MatPaginatorModule,
-    TranslateModule,
+    TranslatePipe,
     Skeleton,
     ErrorState,
     SaveButton,
     RangePipe,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
     <!-- Header -->

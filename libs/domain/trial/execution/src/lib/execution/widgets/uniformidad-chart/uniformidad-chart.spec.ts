@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -28,9 +28,8 @@ describe('UniformidadChartWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

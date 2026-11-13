@@ -1,7 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -25,7 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
 import type { ComponentDetail, Configuration, ReconditioningData } from '../../../utils-models/munitions.model';
@@ -51,7 +50,7 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
     ConditioningFieldsComponent,
     ComponentDetailFormComponent,
     NoLeadingZerosDirective,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -383,7 +382,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigurationFormComponent {
   readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
@@ -827,7 +825,7 @@ export class ConfigurationFormComponent {
     this.formModel.update((current) => {
       const isPowder = component.toLowerCase() === 'pólvora' || component.toLowerCase() === 'polvora';
 
-      let remainingComponents = current.components;
+      let remainingComponents: typeof current.components;
       let remainingSelected = current.selectedComponents ?? [];
 
       if (isPowder) {

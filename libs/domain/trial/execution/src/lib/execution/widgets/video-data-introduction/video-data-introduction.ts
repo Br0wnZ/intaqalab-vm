@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -19,7 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import {
@@ -72,14 +71,13 @@ interface VideoDataIntroductionForm {
 
 @Component({
   selector: 'inta-video-data-introduction',
-  standalone: true,
   imports: [
     FormField,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     FormTouchDirective,
     ReadonlyContentDirective,
@@ -301,7 +299,6 @@ interface VideoDataIntroductionForm {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoDataIntroduction extends BaseFormWidgetComponent {
   /** ID del widget — requerido desde execution-grid */
@@ -428,7 +425,7 @@ export class VideoDataIntroduction extends BaseFormWidgetComponent {
   protected readonly cameraOptions = computed(() => {
     const tipo = this.selectorModel().tipoVideo;
     const items = this.#itemsByCategory();
-    let apiCameras: Array<{ id: string; label: string }> = [];
+    let apiCameras: Array<{ id: string; label: string }>;
 
     if (tipo === 'AV') {
       apiCameras = items[EquipmentTypeEnum.HIGH_SPEED_CAMERA] ?? [];

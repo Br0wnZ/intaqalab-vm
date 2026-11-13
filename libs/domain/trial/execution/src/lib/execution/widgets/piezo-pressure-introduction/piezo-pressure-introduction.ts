@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -19,7 +18,7 @@ import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum, TimeUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { EquipmentSelectionService, ShotPressuresService } from '../../../data-access';
@@ -77,7 +76,7 @@ interface SelectorFormModel {
     MatButtonModule,
     MatFormFieldModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     PiezoPressureSensorTab,
     PiezoPressureDifferentialTab,
@@ -220,7 +219,6 @@ interface SelectorFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PiezoPressureIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

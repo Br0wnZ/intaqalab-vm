@@ -1,13 +1,11 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, effect, signal } from '@angular/core';
+import { effect, signal, Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type { CertificateApiResponse } from '../models/certificates.model';
 import { injectWarehouseResource } from './warehouse-resource.factory';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MunitionsStockCertificatesService {
   #resource = injectWarehouseResource<CertificateApiResponse, CertificateApiResponse>(
     `${injectWharehouseEndpoint()}/stock`,

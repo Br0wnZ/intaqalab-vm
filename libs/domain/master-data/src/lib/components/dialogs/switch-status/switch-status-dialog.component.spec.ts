@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { MasterDataStore } from '../../../+state/master-data.store';
@@ -25,16 +25,14 @@ function createMockMasterDataService() {
 }
 
 describe('MasterDataSwitchStatusDialogComponent', () => {
-  const defaultImports = [TranslateModule.forRoot()];
   const renderDialog = async (data?: Record<string, unknown>, closeFn?: ReturnType<typeof vi.fn>) => {
     return render(MasterDataSwitchStatusDialogComponent, {
       providers: [
         { provide: MasterDataService, useValue: createMockMasterDataService() },
         MasterDataStore,
         { provide: MatDialogRef, useValue: { close: closeFn || vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
-      imports: defaultImports,
     });
   };
 

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,14 +9,14 @@ import type { FireTrial } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { MatButtonModule, MatFormFieldModule, MatIconModule } from '@intaqalab/theme';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../../services/trial-docs-service';
 
 @Component({
   selector: 'inta-associate-doc-trials-dialog',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -120,7 +120,6 @@ import { TrialDocsService } from '../../../services/trial-docs-service';
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssociateDocTrialsDialog {
   readonly #docsService = inject(TrialDocsService);

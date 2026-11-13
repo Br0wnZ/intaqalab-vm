@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import { InputSelect } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ShotTimesData } from '../../../models';
 import { DEFAULT_TIME_UNIT, type InputFieldValue, numToField, parseNum } from '../piezo-pressure-introduction.mapper';
 
 @Component({
   selector: 'inta-piezo-pressure-times-tab',
-  imports: [TranslateModule, InputSelect],
+  imports: [TranslatePipe, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0 items-start">
       <!-- ── Left: Time inputs ─────────────────────────────────────────── -->
@@ -50,7 +50,6 @@ import { DEFAULT_TIME_UNIT, type InputFieldValue, numToField, parseNum } from '.
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PiezoPressureTimesTab {
   readonly model = model.required<ShotTimesData>();

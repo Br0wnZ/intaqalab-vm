@@ -1,6 +1,5 @@
 import type { OnInit } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   ViewEncapsulation,
@@ -18,7 +17,7 @@ import type { MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Badge, ErrorState, Skeleton, SkeletonTable } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -42,7 +41,7 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
   imports: [
     MatExpansionModule,
     MatButtonModule,
-    TranslateModule,
+    TranslatePipe,
     Badge,
     TrialStatusLabelPipe,
     ArmamentRow,
@@ -201,7 +200,6 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
   `,
   styles: [``],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Armament implements OnInit {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */

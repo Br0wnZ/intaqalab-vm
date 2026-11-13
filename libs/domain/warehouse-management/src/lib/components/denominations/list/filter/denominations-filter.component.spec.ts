@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -25,9 +25,8 @@ async function setup() {
   const user = userEvent.setup();
 
   const view = await render(DenominationsFilter, {
-    imports: [TranslateModule.forRoot()],
     on: { filters: filtersSpy },
-    providers: [provideAnimationsAsync(), { provide: MunitionComponentStore, useValue: mockStore }],
+    providers: [provideAnimationsAsync(), { provide: MunitionComponentStore, useValue: mockStore }, provideTranslateService()],
   });
 
   const fixture = view.fixture;

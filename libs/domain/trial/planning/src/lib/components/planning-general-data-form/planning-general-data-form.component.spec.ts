@@ -15,7 +15,7 @@ import {
   createUsers,
   waitForSignal,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -80,14 +80,13 @@ const setup = async (options: SetupOptions = {}) => {
 
   const user = userEvent.setup();
   const view = await render(PlanningGeneralDataFormComponent, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideAnimationsAsync(),
       provideTestingEnvironment(),
       { provide: PlanningGeneralDataStore, useValue: mockStore },
-      { provide: AuthService, useValue: { userRoles: signal(roles) } },
+      { provide: AuthService, useValue: { userRoles: signal(roles) } }, provideTranslateService(),
     ],
   });
 
@@ -162,14 +161,13 @@ describe('PlanningGeneralDataFormComponent', () => {
       });
 
       await render(PlanningGeneralDataFormComponent, {
-        imports: [TranslateModule.forRoot()],
         providers: [
           provideHttpClient(),
           provideHttpClientTesting(),
           provideAnimationsAsync(),
           provideTestingEnvironment(),
           { provide: PlanningGeneralDataStore, useValue: mockStore },
-          { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } },
+          { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } }, provideTranslateService(),
         ],
       });
 

@@ -1,8 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 
 const SHOW_DEBOUNCE_MS = 150;
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class LoaderService {
   readonly #activeRequests = signal(0);
   readonly #isLoading = signal(false);

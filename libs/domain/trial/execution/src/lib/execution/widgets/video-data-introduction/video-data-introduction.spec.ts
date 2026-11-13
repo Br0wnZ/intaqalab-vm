@@ -4,13 +4,14 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { EquipmentSelectionService, ShotVideoService } from '../../../data-access';
-import { ExecutionService } from '../../../services/execution.service';
 import {
   EquipmentMeasurementGroupEnum,
   EquipmentTypeEnum,
@@ -27,9 +28,26 @@ const mockWidgetStateService = {
   saveSuccessCount: signal(0),
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('VideoDataIntroduction', () => {
-  const renderWidget = (widgetId = 'test-video-data-introduction-widget') =>
-    render(VideoDataIntroduction, {
+  const renderWidget = async (widgetId = 'test-video-data-introduction-widget') => {
+    const result = await render(VideoDataIntroduction, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -37,11 +55,12 @@ describe('VideoDataIntroduction', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionService,
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('should create', async () => {
     const { fixture } = await renderWidget();
@@ -130,7 +149,7 @@ describe('VideoDataIntroduction', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockExecutionService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockExecutionService }],
     });
 
     const avSelections = TestBed.runInInjectionContext(() => injectInitialVideoEquipments(() => 'AV'));
@@ -153,7 +172,7 @@ describe('VideoDataIntroduction', () => {
   it('equipmentOptions returns empty array when GET of equipment returns nothing (no hardcoded data)', async () => {
     vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
     const { fixture } = await renderWidget();
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(EquipmentSelectionService);
 
     Object.defineProperty(executionService, 'equipmentSelectorResource', {
       value: {
@@ -183,7 +202,7 @@ describe('VideoDataIntroduction', () => {
     });
 
     const { fixture } = await renderWidget();
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(EquipmentSelectionService);
 
     Object.defineProperty(executionService, 'equipmentSelectorResource', {
       value: {

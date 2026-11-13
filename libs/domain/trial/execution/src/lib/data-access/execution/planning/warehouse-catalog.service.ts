@@ -1,5 +1,5 @@
 import { HttpParams, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type { PlanningDenominationOption, WarehouseStockBatch } from '../../../execution/models';
@@ -7,9 +7,7 @@ import { isRecord } from '../../shared/unknown-readers';
 import { warehouseUrl } from '../shared/execution-endpoints';
 import { awaitResource } from '../shared/resource-await';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class WarehouseCatalogService {
   readonly #injector = inject(Injector);
   readonly #warehouseUrl = injectWharehouseEndpoint();

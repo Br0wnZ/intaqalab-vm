@@ -10,7 +10,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { AngleUnitEnum } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -120,9 +120,8 @@ describe('JltMaoMassConfigDialog', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: MatDialogRef, useValue: { close: closeSpy } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

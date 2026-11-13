@@ -1,11 +1,10 @@
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { Skeleton } from './skeleton';
 
-const withTranslate = {
-  imports: [TranslateModule.forRoot({ defaultLanguage: 'es' })],
+const withTranslate = { providers: [provideTranslateService({ fallbackLang: 'es' })]
 };
 
 describe('Skeleton', () => {
@@ -20,8 +19,8 @@ describe('Skeleton', () => {
   });
 
   it('applies background-color style as base', async () => {
-    const { fixture } = await render(Skeleton, withTranslate);
-    expect(fixture.componentInstance.elementBgColor).toBe('var(--inta-neutral-200, #e5e7eb)');
+    const { container } = await render(Skeleton, withTranslate);
+    expect(container.getAttribute('style')).toContain('background-color: var(--inta-neutral-200, #e5e7eb)');
   });
 
   it('applies pulse animation class by default', async () => {

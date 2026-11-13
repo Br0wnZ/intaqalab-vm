@@ -6,12 +6,12 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ShotMunitionService } from '../../../data-access';
+import { EquipmentSelectionService, ShotMunitionService } from '../../../data-access';
 import type { MunitionConditioningBulkConfigurationResponse } from '../../models';
 import { MassiveConfigDialog, type MassiveConfigDialogData } from './massive-config-dialog';
 
@@ -66,9 +66,8 @@ describe('MassiveConfigDialog', () => {
         provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: ShotMunitionService, useValue: serviceMock },
+        { provide: ShotMunitionService, useValue: serviceMock }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     loader = TestbedHarnessEnvironment.loader(view.fixture);
 
@@ -160,9 +159,9 @@ describe('MassiveConfigDialog', () => {
         provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: ShotMunitionService, useValue: serviceMock },
+        { provide: EquipmentSelectionService, useValue: serviceMock },
+        { provide: ShotMunitionService, useValue: serviceMock }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
     await Promise.resolve();

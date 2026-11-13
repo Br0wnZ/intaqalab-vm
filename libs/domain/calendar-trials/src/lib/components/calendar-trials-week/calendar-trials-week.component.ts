@@ -1,11 +1,11 @@
 import type { TemplateRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, effect, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import type { CalendarEventViewModel } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { CalendarWeekViewBeforeRenderEvent } from 'angular-calendar';
 import { CalendarView, CalendarWeekViewComponent, DateAdapter, provideCalendar } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -23,7 +23,7 @@ import { CalendarWeekHeaderComponent } from '../templates/calendar-week-header.c
     MatIconModule,
     CalendarWeekViewComponent,
     CalendarWeekHeaderComponent,
-    TranslateModule,
+    TranslatePipe,
   ],
   providers: [
     provideCalendar({
@@ -55,7 +55,6 @@ import { CalendarWeekHeaderComponent } from '../templates/calendar-week-header.c
     </div>
   `,
   styleUrl: './calendar-trials-week.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarTrialsWeekComponent {
   eventTemplate = input<TemplateRef<unknown>>();

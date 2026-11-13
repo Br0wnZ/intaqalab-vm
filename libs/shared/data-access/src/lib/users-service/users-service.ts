@@ -1,13 +1,11 @@
 import { HttpContext, httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { SKIP_CENTER_INTERCEPTOR, injectFireTrialsEndpoint, injectUsersEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
 import type { PlanningUsersQueryParams, PlanningUsersResponse } from './users-service.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class UsersService {
   readonly #usersUrl = injectUsersEndpoint();
   readonly #fireTrialUrl = injectFireTrialsEndpoint();

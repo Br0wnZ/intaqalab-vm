@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import type { CalendarViewObservation } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
@@ -10,7 +10,6 @@ import { DayActionsComponent } from './day-actions.component';
 @Component({
   selector: 'lib-week-calendar-header',
   imports: [CommonModule, MatTooltipModule, DayActionsComponent, IntaIconComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div role="row" class="cal-day-headers">
       @for (day of days(); track $index; let idx = $index) {

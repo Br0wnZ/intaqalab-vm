@@ -2,7 +2,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { of } from 'rxjs';
 
@@ -30,16 +30,11 @@ describe('loaderInterceptor (Jest)', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
       providers: [
         provideTestingEnvironment(),
         { provide: ToastrService, useClass: ToasterStub },
         provideHttpClient(withInterceptors([successToastInterceptor])),
-        provideHttpClientTesting(),
+        provideHttpClientTesting(), provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
 

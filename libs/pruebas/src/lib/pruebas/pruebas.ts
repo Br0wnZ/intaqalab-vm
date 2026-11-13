@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 @Component({
   selector: 'inta-pruebas',
@@ -8,6 +8,5 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Pruebas {}

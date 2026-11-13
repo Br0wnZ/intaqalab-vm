@@ -1,6 +1,5 @@
 import type { WritableSignal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewContainerRef,
   ViewEncapsulation,
@@ -15,7 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { IntaIconComponent, StopClick } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { Configuration, Serie } from '../../../utils-models/munitions.model';
@@ -31,7 +30,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
     MatButtonModule,
     MatIconModule,
     ConfigurationFormComponent,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     StopClick,
   ],
@@ -135,7 +134,6 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriePanelComponent {
   readonly #dialog = inject(MatDialog);

@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -17,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -42,7 +41,7 @@ interface RadarTrayectographyFilters {
     MatFormFieldModule,
     MatSelectModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
   ],
@@ -278,7 +277,6 @@ interface RadarTrayectographyFilters {
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RadarTrayectographyOrientation extends BaseFormWidgetComponent {
   /** ID del widget — requerido desde execution-grid */

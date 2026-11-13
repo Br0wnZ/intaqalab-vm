@@ -1,5 +1,5 @@
 import { HttpContext } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { SKIP_CENTER_INTERCEPTOR, injectFireTrialTypesEndpoint } from '@intaqalab/config';
 
 import type { MasterDataDefault } from '../../../models/master-data-default.model';
@@ -7,9 +7,7 @@ import type { MasterDataCreateItemType } from '../../../models/utils.model';
 import { injectMasterDataResource } from '../../master-data-resource.factory';
 import type { MasterDataService } from '../../master-data.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialTypeService implements MasterDataService<MasterDataDefault> {
   readonly #crud = injectMasterDataResource<MasterDataDefault>(
     injectFireTrialTypesEndpoint(),

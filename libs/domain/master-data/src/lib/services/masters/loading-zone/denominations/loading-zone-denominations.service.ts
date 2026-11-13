@@ -1,12 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 type DenominationsType = { id: string; name: string };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class LoadingZoneDenominationsService {
   readonly #apiUrl = injectPlanningEndpoint();
 

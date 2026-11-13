@@ -1,7 +1,6 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewContainerRef,
   ViewEncapsulation,
@@ -20,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Badge, ErrorState, IntaIconComponent, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -33,7 +32,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
 @Component({
   selector: 'inta-series-and-shots',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     DragDropModule,
     MatIconModule,
     MatButtonModule,
@@ -374,7 +373,6 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
   `,
   styleUrls: ['./series-and-shots.scss'],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeriesAndShots {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */

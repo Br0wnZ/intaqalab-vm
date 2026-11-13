@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -16,7 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { type PlanningConditionsShot, PlanningLoadingZonesService } from '@intaqalab/data-access-planning';
 import { InputSelect } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
 import {
@@ -30,7 +29,7 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
 
 @Component({
   selector: 'inta-munition-identificacion-tab',
-  imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslateModule, InputSelect],
+  imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslatePipe, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-4 min-h-0 content-start">
       <!-- Componente -->
@@ -172,7 +171,6 @@ import type { IdentFormModel, InputFieldValue } from '../munition-introduction';
       }
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionIdentificacionTabComponent {
   readonly #store = inject(ExecutionStore);
@@ -614,6 +612,7 @@ export class MunitionIdentificacionTabComponent {
 
     // Cascada: si el componente cambia y la denominación actual no es válida, la limpia
     effect(() => {
+      if (this.#trialStockHandle.isLoading()) return;
       const denOpts = this.filteredDenominacionOptions();
       const currentDen = this.identFormModel().denominacion;
       if (currentDen && !denOpts.some((d) => d.value === currentDen)) {

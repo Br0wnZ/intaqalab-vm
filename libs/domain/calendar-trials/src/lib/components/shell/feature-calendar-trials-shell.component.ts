@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, Injector, inject } from '@angular/core';
+import { Component, Injector, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { CAN_MANAGE_SPECIAL_DAYS_ROLES, HasRoleDirective, Role, injectionTokenTabCommand } from '@intaqalab/core';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CalendarView, DateAdapter, provideCalendar } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
@@ -21,7 +21,7 @@ import { CalendarSharedTemplatesComponent } from '../templates/calendar-shared-t
     CalendarTrialsWeekComponent,
     CalendarTrialsDayComponent,
     MatButtonModule,
-    TranslateModule,
+    TranslatePipe,
     HasRoleDirective,
     CalendarSharedTemplatesComponent,
     IntaIconComponent,
@@ -89,7 +89,6 @@ import { CalendarSharedTemplatesComponent } from '../templates/calendar-shared-t
     </div>
   `,
   styleUrl: './feature-calendar-trials-shell.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureCalendarTrialsShellComponent {
   readonly injector = inject(Injector);

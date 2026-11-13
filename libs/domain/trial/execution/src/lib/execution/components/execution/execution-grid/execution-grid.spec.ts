@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -61,9 +61,8 @@ describe('ExecutionGridComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         ExecutionStore,
-        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: WidgetStateService, useValue: mockWidgetStateService }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
     return { user, view, mockWidgetStateService };

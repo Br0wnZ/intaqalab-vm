@@ -1,23 +1,23 @@
 ---
 name: dialog-patterns
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-11-12
 description: Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern.
 ---
 
 # Material Dialog Patterns — Intaqalab Standard
 
-Canonical pattern for all project dialogs based on `@angular/material/dialog` + Angular 21 Signal Architecture.
+Canonical pattern for all project dialogs based on `@angular/material/dialog` + Angular 22 Signal Architecture.
 
 ## Dialog Component Structure
 
 ```typescript
 // libs/domain/<domain>/feature-<name>/src/lib/dialogs/<action>-dialog.ts
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 // 1. Explicit input data typing
 export type ConfirmDeleteDialogData = {
@@ -30,8 +30,7 @@ export type ConfirmDeleteDialogResult = { action: 'confirm'; id: string } | { ac
 
 @Component({
   selector: 'inta-confirm-delete-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, TranslateModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, TranslatePipe],
   template: `
     <!-- Header -->
     <h2 mat-dialog-title class="flex items-center gap-2 text-lg font-semibold m-0">
@@ -121,7 +120,6 @@ export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto 
 @Component({
   selector: 'inta-create-entity-dialog',
   imports: [MatDialogModule, MatButtonModule, SaveButton /* Signal Forms */],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>{{ 'DOMAIN.DIALOGS.CREATE.TITLE' | translate }}</h2>
 

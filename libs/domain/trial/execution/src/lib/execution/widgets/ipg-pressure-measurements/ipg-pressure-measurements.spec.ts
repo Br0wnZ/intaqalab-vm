@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -52,9 +52,8 @@ describe('IpgPressureMeasurements', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
-        ExecutionService,
+        ExecutionService, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

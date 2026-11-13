@@ -1,11 +1,9 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 export type SupportedLanguage = 'es' | 'en';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class LanguageService {
   currentLanguage = signal<SupportedLanguage>('es');
 
@@ -21,7 +19,7 @@ export class LanguageService {
 
   #initializeLanguage(): Promise<void> {
     this.#translate.addLangs(this.supportedLanguages);
-    this.#translate.setDefaultLang('es');
+    this.#translate.setFallbackLang('es');
 
     const savedLanguage = localStorage.getItem('app-language') as SupportedLanguage;
 

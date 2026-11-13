@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, SaveButton, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { CalibryObserverOption } from '../../../+state/execution.store';
 import { ShotMaoTopographyService } from '../../../data-access';
@@ -51,7 +51,7 @@ type InputFieldValue = { value: string; unit: string } | null;
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     SoundLevelMeterInput,
   ],
@@ -140,7 +140,6 @@ type InputFieldValue = { value: string; unit: string } | null;
     </mat-dialog-actions>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MaoTopographyMassConfigDialog {
   readonly #dialogRef =

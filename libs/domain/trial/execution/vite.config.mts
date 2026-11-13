@@ -1,12 +1,14 @@
 /// <reference types='vitest' />
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
+  resolve: {
+    tsconfigPaths: true,
+  },
   root: import.meta.dirname,
   cacheDir: '../../../../node_modules/.vite/libs/domain/trial/execution',
-  plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
@@ -19,9 +21,6 @@ export default defineConfig(() => ({
     // Suite de 69 archivos con renders Angular: bajo carga paralela los renders
     // superan el 5000ms por defecto y generan flakes de timeout aislables.
     testTimeout: 15000,
-    deps: {
-      inline: ['@angular/compiler', '@angular/common'],
-    },
     server: {
       deps: {
         inline: ['@angular/compiler', '@angular/common'],

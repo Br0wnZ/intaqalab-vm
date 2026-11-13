@@ -5,7 +5,7 @@ import { signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CadenceUnitEnum, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -231,9 +231,8 @@ describe('VelocityIntroduction', () => {
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
         { provide: ShotVelocitiesService, useValue: mockExecutionService },
-        { provide: EquipmentSelectionService, useValue: mockExecutionService },
+        { provide: EquipmentSelectionService, useValue: mockExecutionService }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors and initializes widgetId', async () => {

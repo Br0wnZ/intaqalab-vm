@@ -1,14 +1,14 @@
 /// <reference types='vitest' />
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/domain/calendar-trials',
-  plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       positioning: fileURLToPath(new URL('./src/test-stubs/positioning.ts', import.meta.url)),
     },
@@ -28,9 +28,6 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
-    deps: {
-      inline: ['@angular/compiler', '@angular/common', 'angular-calendar', 'positioning'],
-    },
     server: {
       deps: {
         inline: ['@angular/compiler', '@angular/common', 'angular-calendar', 'positioning'],

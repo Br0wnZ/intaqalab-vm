@@ -1,13 +1,13 @@
 import { Component, inject, isDevMode, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { AuthService } from '../auth-service';
 
 @Component({
   selector: 'lib-header-tools',
-  imports: [MatButtonModule, IntaIconComponent, TranslateModule],
+  imports: [MatButtonModule, IntaIconComponent, TranslatePipe],
   template: `
     @if (isDevMode) {
       <div class="relative">

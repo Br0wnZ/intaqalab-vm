@@ -1,7 +1,7 @@
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { languageInterceptor } from './language-interceptor';
@@ -19,12 +19,7 @@ describe('languageInterceptor', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
-      providers: [provideHttpClient(withInterceptors([languageInterceptor])), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptors([languageInterceptor])), provideHttpClientTesting(), provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })],
     });
 
     http = TestBed.inject(HttpClient);

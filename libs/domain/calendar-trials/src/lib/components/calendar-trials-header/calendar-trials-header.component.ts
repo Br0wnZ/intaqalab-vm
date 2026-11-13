@@ -1,12 +1,12 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, input, model, output } from '@angular/core';
+import { Component, effect, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import type { LinesOfShot } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   CalendarDatePipe,
   CalendarNextViewDirective,
@@ -126,7 +126,7 @@ import {
   `,
   imports: [
     TitleCasePipe,
-    TranslateModule,
+    TranslatePipe,
     CalendarPreviousViewDirective,
     CalendarNextViewDirective,
     CalendarDatePipe,
@@ -137,7 +137,6 @@ import {
     MatSlideToggleModule,
   ],
   styleUrl: './calendar-trials-header.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarTrialsHeaderComponent {
   view = input<CalendarView>(CalendarView.Month);

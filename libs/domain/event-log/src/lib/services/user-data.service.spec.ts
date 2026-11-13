@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { UserDataService } from './user-data.service';
@@ -15,12 +15,7 @@ describe('UserDataService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
-      providers: [provideTestingEnvironment()],
+      providers: [provideTestingEnvironment(), provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })],
     });
     service = TestBed.inject(UserDataService);
   });

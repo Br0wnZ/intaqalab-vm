@@ -7,7 +7,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -107,7 +107,7 @@ describe('TrialListComponent', () => {
   const setup = async (options?: { filters?: Partial<any> }) => {
     const user = userEvent.setup();
     const { fixture } = await render(TrialListComponent, {
-      imports: [NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -116,7 +116,7 @@ describe('TrialListComponent', () => {
         {
           provide: DataTrialCreateModifyService,
           useValue: { getTrialsList: vi.fn().mockReturnValue(() => undefined) },
-        },
+        }, provideTranslateService(),
       ],
       componentProviders: [{ provide: TrialStore, useValue: mockStore }],
       componentInputs: {

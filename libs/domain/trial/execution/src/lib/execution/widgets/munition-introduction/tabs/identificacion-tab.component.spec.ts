@@ -7,7 +7,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PlanningConditionsShot } from '@intaqalab/data-access-planning';
 import { TrialStatus } from '@intaqalab/models';
 import { InputSelect } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -62,13 +62,12 @@ describe('MunitionIdentificacionTabComponent', () => {
     shotConditions?: PlanningConditionsShot | null;
   }) => {
     const view = await render(MunitionIdentificacionTabComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
     });
 

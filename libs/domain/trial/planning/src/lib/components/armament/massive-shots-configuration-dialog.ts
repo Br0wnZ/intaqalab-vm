@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, disabled, form, max, min, required, requiredError, validate } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { FormField, disabled, form, required, requiredError, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,9 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { safeResourceValue } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentService } from '../../services/armament-service';
+import { numericMax, numericMin } from '../../utils/numeric-validators';
 import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 
@@ -27,7 +28,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
     MatButtonModule,
     MatInputModule,
     MatChipsModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -222,7 +223,6 @@ import { SpecimenType } from '../../utils-models/specimen.model';
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MassiveShotsConfigurationDialog {
   readonly dialogRef = inject(MatDialogRef<MassiveShotsConfigurationDialog>);
@@ -312,8 +312,8 @@ export class MassiveShotsConfigurationDialog {
 
     disabled(path.denominacionArma, ({ valueOf }) => !valueOf(path.tipo) || this.isLoadingWeapons());
     disabled(path.denominacionTubo, ({ valueOf }) => !valueOf(path.denominacionArma) || this.isLoadingTubes());
-    min(path.vidaUtil, 0);
-    max(path.vidaUtil, 100);
+    numericMin(path.vidaUtil, 0);
+    numericMax(path.vidaUtil, 100);
   });
 
   readonly weaponsOptions = computed<{ value: string; label: string }[]>(() => {

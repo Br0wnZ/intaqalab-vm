@@ -1,12 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type { MunitionComponentsModel } from '../models/munition-components.model';
 import { injectWarehouseResource } from './warehouse-resource.factory';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MunitionComponentService {
   readonly #crud = injectWarehouseResource<MunitionComponentsModel, Omit<MunitionComponentsModel, 'id' | 'active'>>(
     `${injectWharehouseEndpoint()}/munition-types`,

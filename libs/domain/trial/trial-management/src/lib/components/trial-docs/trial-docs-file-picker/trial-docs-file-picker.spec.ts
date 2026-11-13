@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render } from '@testing-library/angular';
 
 import { TrialDocsService } from '../../../services/trial-docs-service';
@@ -39,7 +39,6 @@ export const createDragEvent = (type: string, files: File[] = []): DragEvent => 
 
 describe('TrialDocsFilePicker', () => {
   let closeMock: ReturnType<typeof vi.fn>;
-  const defaultImports = [TranslateModule.forRoot()];
 
   const mockDialogData = {
     trialId: 'trial-123',
@@ -57,9 +56,8 @@ describe('TrialDocsFilePicker', () => {
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn || vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
-      imports: defaultImports,
     });
   };
 

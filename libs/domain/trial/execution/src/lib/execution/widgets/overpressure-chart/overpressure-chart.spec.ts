@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { MeasureUnitEnum } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -29,9 +29,8 @@ describe('OverpressureChartWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

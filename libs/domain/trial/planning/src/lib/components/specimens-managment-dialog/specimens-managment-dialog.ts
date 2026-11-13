@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -17,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import {
@@ -40,7 +39,7 @@ import {
     MatSelectModule,
     MatSelectClearable,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   providers: [PlanningGeneralDataStore],
@@ -184,7 +183,6 @@ import {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpecimensManagmentDialog {
   readonly autocompleteTrigger = viewChild(MatAutocompleteTrigger);

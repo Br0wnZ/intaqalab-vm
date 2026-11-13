@@ -9,7 +9,9 @@ import { MatTooltipHarness } from '@angular/material/tooltip/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningSeriesService } from '@intaqalab/data-access-planning';
-import { TranslateModule } from '@ngx-translate/core';
+import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -27,9 +29,26 @@ const mockWidgetStateService = {
   placedWidgets: () => [],
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('ArmamentIntroductionComponent', () => {
-  const renderWidget = (widgetId = 'test-widget') =>
-    render(ArmamentIntroductionComponent, {
+  const renderWidget = async (widgetId = 'test-widget') => {
+    const result = await render(ArmamentIntroductionComponent, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -37,10 +56,12 @@ describe('ArmamentIntroductionComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();
@@ -214,8 +235,13 @@ describe('ArmamentIntroductionComponent', () => {
       expect(fixture.componentInstance['formModel']().tubo).toBeNull();
     });
     for (const request of TestBed.inject(HttpTestingController).match(() => true)) {
-      request.flush({ series: [], items: [] });
+      request.flush(
+        request.request.url.endsWith('/fire-trials/trial-id')
+          ? { id: 'trial-id', status: TrialStatus.IN_PROGRESS }
+          : { series: [], items: [] },
+      );
     }
+    patchState(store, { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
@@ -333,8 +359,13 @@ describe('ArmamentIntroductionComponent', () => {
       expect(fixture.componentInstance['formModel']().arma).toBe('900');
     });
     for (const request of TestBed.inject(HttpTestingController).match(() => true)) {
-      request.flush({ series: [], items: [] });
+      request.flush(
+        request.request.url.endsWith('/fire-trials/trial-id')
+          ? { id: 'trial-id', status: TrialStatus.IN_PROGRESS }
+          : { series: [], items: [] },
+      );
     }
+    patchState(store, { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
@@ -655,8 +686,13 @@ describe('ArmamentIntroductionComponent', () => {
     });
     fixture.detectChanges();
     for (const request of TestBed.inject(HttpTestingController).match(() => true)) {
-      request.flush({ series: [], items: [] });
+      request.flush(
+        request.request.url.endsWith('/fire-trials/trial-id')
+          ? { id: 'trial-id', status: TrialStatus.IN_PROGRESS }
+          : { series: [], items: [] },
+      );
     }
+    patchState(store, { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);

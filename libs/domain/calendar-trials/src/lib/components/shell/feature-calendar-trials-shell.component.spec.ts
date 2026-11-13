@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
 import { CalendarEventsDataService, LinesOfShotDataService } from '@intaqalab/data-access';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { ToastrService } from 'ngx-toastr';
 import { of } from 'rxjs';
@@ -29,11 +29,6 @@ class FakeTranslateLoader {
 describe('FeatureCalendarTrialsShellComponent', () => {
   it('should render', async () => {
     await render(FeatureCalendarTrialsShellComponent, {
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -63,7 +58,7 @@ describe('FeatureCalendarTrialsShellComponent', () => {
           provide: CalendarEventsDataService,
           useClass: MockCalendarEventsDataService,
         },
-        { provide: ToastrService, useValue: ToasterStub },
+        { provide: ToastrService, useValue: ToasterStub }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
       componentProviders: [
         {

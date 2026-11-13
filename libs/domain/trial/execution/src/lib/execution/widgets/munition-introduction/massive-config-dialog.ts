@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -14,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ShotMunitionService } from '../../../data-access';
@@ -52,7 +51,7 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
     MatInputModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     SaveButton,
   ],
@@ -141,7 +140,6 @@ export type MassiveConfigDialogResult = MunitionConditioningBulkConfigurationRes
     </mat-dialog-actions>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MassiveConfigDialog {
   readonly #dialogRef = inject<MatDialogRef<MassiveConfigDialog, MassiveConfigDialogResult>>(MatDialogRef);

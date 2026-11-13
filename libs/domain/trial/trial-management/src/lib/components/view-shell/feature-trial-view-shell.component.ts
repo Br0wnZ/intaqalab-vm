@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   InjectionToken,
   Injector,
@@ -21,7 +20,7 @@ import { TrialStatus, injectTrialStatus } from '@intaqalab/models';
 import { FeaturePlanningGeneralDataShellComponent, PlanningPermissionsService } from '@intaqalab/planning';
 import { Badge, UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import { TrialStatusLabelPipe, linkedQueryParam } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../services/trial-docs-service';
 import { TrialTransitionsService } from '../../services/trial-transitions.service';
@@ -41,7 +40,7 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
     MatCardModule,
     MatIconModule,
     ValueTooltip,
-    TranslateModule,
+    TranslatePipe,
     FeatureTrialCreateFormComponent,
     FeaturePlanningGeneralDataShellComponent,
     ButtonTrialActionsImplComponent,
@@ -117,7 +116,6 @@ export const injectionTokenTrialViewComponent = new InjectionToken<ParamsCompone
     </mat-tab-group>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TrialGeneralDataStore],
 })
 export class FeatureTrialViewShellComponent {

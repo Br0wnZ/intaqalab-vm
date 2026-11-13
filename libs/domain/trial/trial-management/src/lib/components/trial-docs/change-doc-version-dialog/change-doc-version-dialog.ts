@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../../services/trial-docs-service';
 import type { DocumentVersion } from '../../../utils-models/documents-service.model';
 
 @Component({
   selector: 'inta-change-doc-version-dialog',
-  imports: [TranslateModule, MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [TranslatePipe, MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <h2 mat-dialog-title>
       <mat-icon class="text-gray-700">warning</mat-icon>
@@ -34,7 +34,6 @@ import type { DocumentVersion } from '../../../utils-models/documents-service.mo
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChangeDocVersionDialog {
   readonly dialogRef = inject(MatDialogRef<ChangeDocVersionDialog>);

@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 
 import { TransferDialogComponent } from './transfer-dialog.component';
@@ -18,12 +18,11 @@ async function setup() {
   });
   const renderResult = await render(TransferDialogComponent, {
     declarations: [],
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: MatDialogRef, useValue: mockDialogRef },
-      provideTestingEnvironment(),
+      provideTestingEnvironment(), provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },

@@ -1,12 +1,14 @@
 /// <reference types='vitest' />
 import angular from '@analogjs/vite-plugin-angular';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
+  resolve: {
+    tsconfigPaths: true,
+  },
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/domain/master-data',
-  plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
@@ -17,9 +19,6 @@ export default defineConfig(() => ({
     globals: true,
     testTimeout: 10000,
     environment: 'jsdom',
-    deps: {
-      inline: ['@angular/compiler', '@angular/common'],
-    },
     server: {
       deps: {
         inline: ['@angular/compiler', '@angular/common'],

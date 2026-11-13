@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -37,7 +37,6 @@ import { filterTrialActions } from './button-trial-actions.utils';
       </mat-menu>
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonTrialActionsComponent {
   readonly config = input.required<ButtonTrialActionsInput>();

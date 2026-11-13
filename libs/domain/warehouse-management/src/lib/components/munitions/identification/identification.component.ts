@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -33,7 +32,7 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
   imports: [
     MatButtonModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     MatFormFieldModule,
@@ -129,7 +128,6 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionIdentificationComponent {
   readonly #denominationStore = inject(DenominationsStore);

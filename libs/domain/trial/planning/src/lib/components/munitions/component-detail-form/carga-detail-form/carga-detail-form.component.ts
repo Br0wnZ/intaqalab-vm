@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -21,7 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ShootingConditionsService } from '../../../../services/shooting-conditions.service';
 import type {
@@ -40,7 +39,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatSelectModule,
     MatSelectClearable,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     NoLeadingZerosDirective,
     NoNegativeValuesDirective,
   ],
@@ -202,7 +201,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CargaDetailFormComponent {
   readonly #shootingConditionsService = inject(ShootingConditionsService);

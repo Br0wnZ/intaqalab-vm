@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { Subject } from 'rxjs';
@@ -50,12 +50,11 @@ describe('DocViewer', () => {
     }
 
     const view = await render(DocViewer, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideTestingEnvironment(),
         { provide: MAT_DIALOG_DATA, useValue: mockDialogData },
         { provide: MatDialogRef, useValue: dialogRefSpy },
-        { provide: DOC_VIEWER_SERVICE, useValue: mockDocsService },
+        { provide: DOC_VIEWER_SERVICE, useValue: mockDocsService }, provideTranslateService(),
       ],
     });
 

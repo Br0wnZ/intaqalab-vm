@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EventLogDocumentsComponent } from '../documents/documents.component';
 import { EventLogGeneralDataComponent } from '../general-data/general-data.component';
@@ -11,7 +11,7 @@ import { EventLogSeriesAndShootsComponent } from '../series-and-shoots/series-an
 
 @Component({
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatIconModule,
     MatButtonModule,
     MatTabsModule,
@@ -44,6 +44,5 @@ import { EventLogSeriesAndShootsComponent } from '../series-and-shoots/series-an
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogShellComponent {}

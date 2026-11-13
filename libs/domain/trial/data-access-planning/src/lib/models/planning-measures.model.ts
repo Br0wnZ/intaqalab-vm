@@ -1,3 +1,5 @@
+import type { MeasureUnitEnum } from '@intaqalab/models';
+
 /**
  * Modelos del GET `/fire-trials/{fireTrialId}/planning/measures`
  * (Swagger planning-api v1.3.0 → TrialMeasuresResponse o TrialMunitionsResponse equivalente).
@@ -17,6 +19,7 @@ export type MeasureData = {
   unit?: string | null;
   measurementArea?: string | null;
   magnitudeCode?: string | null;
+  measureUnit?: MeasureUnitEnum | null;
   minLimit?: number | null;
   maxLimit?: number | null;
   deviation?: number | null;

@@ -6,7 +6,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -55,13 +55,12 @@ describe('CargaDetailFormComponent', () => {
 
   async function renderForm() {
     const view = await render(CargaDetailFormComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideAnimationsAsync(),
         provideTestingEnvironment(),
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
       ],
       componentInputs: {
         detail: createEmptyComponentDetail('carga de proyección'),

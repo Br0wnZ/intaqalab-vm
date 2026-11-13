@@ -6,7 +6,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -47,9 +47,8 @@ describe('DatosBlancoBola', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     // Se parchea el estado directamente para no disparar GETs pendientes.
     patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });

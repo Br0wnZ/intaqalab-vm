@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 
@@ -14,12 +14,7 @@ class FakeTranslateLoader {
 }
 test('SpecialDaysManagerComponent', async () => {
   await render(SpecialDaysManagerComponent, {
-    imports: [
-      TranslateModule.forRoot({
-        loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-      }),
-    ],
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })],
     // componentProviders: [{ provide: MAT_DIALOG_DATA, useValue: valuesInput }],
   });
 });

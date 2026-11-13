@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -11,7 +10,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ReconditioningData } from '../../../utils-models/munitions.model';
 
@@ -19,7 +18,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
 
 @Component({
   selector: 'inta-conditioning-fields',
-  imports: [MatFormFieldModule, MatInputModule, NoLeadingZerosDirective, TranslateModule, NoNegativeValuesDirective],
+  imports: [MatFormFieldModule, MatInputModule, NoLeadingZerosDirective, TranslatePipe, NoNegativeValuesDirective],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <div>
@@ -157,7 +156,6 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConditioningFieldsComponent {
   readonly data = input.required<ReconditioningData>();

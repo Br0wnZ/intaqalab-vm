@@ -1,11 +1,10 @@
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { SkeletonForm } from './skeleton-form';
 
-const withTranslate = {
-  imports: [TranslateModule.forRoot({ defaultLanguage: 'es' })],
+const withTranslate = { providers: [provideTranslateService({ fallbackLang: 'es' })]
 };
 
 describe('SkeletonForm', () => {

@@ -1,7 +1,7 @@
 ---
 name: signal-trigger-pattern
-version: 1.1.0
-last-updated: 2026-11-03
+version: 1.1.1
+last-updated: 2026-11-12
 description: Implements the Signal Trigger Pattern — mandatory httpResource + private trigger signal pattern for GET queries, and HttpClient + firstValueFrom for mutations in Intaqalab. USE WHEN creating or modifying data-access services, stores that fetch remote data or execute mutations, or any component that interacts with APIs.
 ---
 
@@ -25,9 +25,8 @@ El patrón canónico para data-fetching (GET) en el proyecto. Toda carga de dato
 
 ```typescript
 // libs/domain/<domain>/data-access/src/lib/<entity>.service.ts
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
-import { httpResource } from '@angular/core';
+import { HttpClient, httpResource } from '@angular/common/http';
+import { Service, inject, signal } from '@angular/core';
 import { AppConfigService } from '@intaqalab/config';
 import {
   CreateEntityDto,
@@ -38,7 +37,7 @@ import {
 } from '@intaqalab/models/<domain>';
 import { firstValueFrom } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class EntityService {
   readonly #http = inject(HttpClient);
   readonly #config = inject(AppConfigService);
@@ -141,7 +140,7 @@ export const EntityStore = signalStore(
 // El componente Shell provee el Store y expone señales computadas para la vista
 @Component({
   selector: 'inta-entity-shell',
-  imports: [Skeleton, SkeletonCard, TranslateModule, EntityCardComponent],
+  imports: [Skeleton, SkeletonCard, TranslatePipe, EntityCardComponent],
   providers: [EntityStore], // provee aquí si el scope es la feature
   template: `
     @if (isLoading()) {
@@ -168,7 +167,6 @@ export const EntityStore = signalStore(
       </div>
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityShellComponent {
   readonly #store = inject(EntityStore);

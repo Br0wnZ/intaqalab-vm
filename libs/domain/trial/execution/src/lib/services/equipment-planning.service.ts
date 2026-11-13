@@ -1,13 +1,11 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { computed, effect, inject, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import { PlanningMeasuresService, PlanningTrialContextService } from '@intaqalab/data-access-planning';
 
 import type { EquipmentMeasuresCatalogResponse, PlanningMagnitudeSelection } from '../execution/models';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class EquipmentPlanningService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #planningMeasuresService = inject(PlanningMeasuresService);

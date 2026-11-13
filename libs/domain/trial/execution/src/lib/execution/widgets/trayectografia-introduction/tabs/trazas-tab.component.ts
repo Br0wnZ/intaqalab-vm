@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -12,14 +11,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
 import { type InputFieldValue, numToField, parseNum } from '../trayectografia-introduction.mapper';
 
 @Component({
   selector: 'inta-trayectografia-trazas-tab',
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe, InputSelect],
   template: `
     <div class="grid grid-cols-4 gap-x-2 gap-y-1 min-h-0 items-end">
       <!-- Equipo -->
@@ -69,7 +68,6 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrayectografiaTrazasTabComponent {
   readonly #store = inject(ExecutionStore);

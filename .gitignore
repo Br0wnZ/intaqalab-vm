@@ -47,6 +47,7 @@ docs/plans/*
 functionals/*
 openwiki/*
 start-headroom.sh
+.codegraph/
 
 # System Files
 .DS_Store
@@ -85,3 +86,7 @@ AGENT.md
 .nx/polygraph
 .nx/self-healing
 .nx/migrate-runs
+
+# Auto-generated build version metadata
+apps/intaqalab/src/assets/version.json
+.vitest

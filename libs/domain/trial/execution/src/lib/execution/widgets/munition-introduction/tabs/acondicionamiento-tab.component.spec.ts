@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,13 +13,12 @@ import { MunitionAcondicionamientoTabComponent } from './acondicionamiento-tab.c
 describe('MunitionAcondicionamientoTabComponent', () => {
   const runSetup = async () => {
     const view = await render(MunitionAcondicionamientoTabComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
     });
 

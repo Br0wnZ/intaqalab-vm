@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { createMockSeriesAndShotsStore } from '@intaqalab/utils';
 import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -35,12 +35,11 @@ describe('UpsertSerieDialog', () => {
 
   const renderDialog = async (data = defaultData) => {
     const renderResult = await render(UpsertSerieDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideAnimations(),
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: SeriesAndShotsStore, useValue: mockStore },
+        { provide: SeriesAndShotsStore, useValue: mockStore }, provideTranslateService(),
       ],
       componentProviders: [{ provide: SeriesAndShotsStore, useValue: mockStore }],
     });

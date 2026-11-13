@@ -1,25 +1,27 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
   effect,
   inject,
   input,
+  linkedSignal,
   signal,
   untracked,
 } from '@angular/core';
-import { FormField, form } from '@angular/forms/signals';
+import { FormField, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { injectTrialShots } from '@intaqalab/data-access-planning';
+import { PlanningMeasuresService, injectTrialShots } from '@intaqalab/data-access-planning';
+import type { MeasureUnitEnum } from '@intaqalab/models';
+import { MEASURE_UNIT_LABELS } from '@intaqalab/models';
 import { IntaIconComponent, StopClick } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -29,7 +31,7 @@ import type { WidgetFormState } from '../../models/execution-grid.models';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { BaseFormWidgetComponent } from '../base-widget.component';
-import { mapShotMeasurements } from './seguimiento.mapper';
+import { getSeguimientoTabs, getSeguimientoUnits, mapShotMeasurements } from './seguimiento.mapper';
 
 interface SeguimientoFormModel {
   presionVelocidadUnit: string;
@@ -63,7 +65,7 @@ interface ComputedSerie {
     MatIconModule,
     MatSelectModule,
     MatTooltipModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     StopClick,
   ],
@@ -97,7 +99,7 @@ interface ComputedSerie {
         <!-- Tab selector -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36 small-select shrink-0">
           <mat-select [value]="activeTab()" (valueChange)="setActiveTab($event)">
-            @for (tab of tabOptions; track tab) {
+            @for (tab of tabOptions(); track tab) {
               <mat-option [value]="tab">{{ tabLabelKey(tab) | translate }}</mat-option>
             }
           </mat-select>
@@ -106,8 +108,8 @@ interface ComputedSerie {
         <!-- Unit: Presión/Velocidad -->
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-20 small-select shrink-0">
           <mat-select [formField]="seguimientoForm.presionVelocidadUnit">
-            @for (unit of presionUnits; track unit) {
-              <mat-option [value]="unit">{{ unit }}</mat-option>
+            @for (unit of presionUnits(); track unit) {
+              <mat-option [value]="unit">{{ unitLabels[unit] }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -169,7 +171,6 @@ interface ComputedSerie {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeguimientoWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
@@ -179,24 +180,21 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   readonly #store = inject(ExecutionStore);
   readonly #executionStateService = inject(ExecutionStateService);
   readonly #trialShots = injectTrialShots();
+  readonly #planningMeasuresService = inject(PlanningMeasuresService);
 
   protected readonly isLoading = computed(
     () => this.#executionStateService.shotMeasurementsResource?.isLoading?.() ?? false,
   );
 
-  // Tab options for selector
-  readonly tabOptions: readonly SeguimientoTab[] = [
-    'velocidades',
-    'p-manom',
-    'p-pz-cie',
-    'p-pz-int',
-    'p-pz-cul',
-    'p-otro',
-    'p-ipg',
-  ];
+  readonly #measures = computed(() => {
+    const resource = this.#planningMeasuresService.measuresResource;
+    return resource.hasValue() ? resource.value() : undefined;
+  });
+  readonly tabOptions = computed(() => getSeguimientoTabs(this.#measures()));
+  readonly presionUnits = computed(() => getSeguimientoUnits(this.#measures(), this.activeTab()));
+  protected readonly unitLabels = MEASURE_UNIT_LABELS;
 
   // Static unit options
-  readonly presionUnits = ['MPa', 'bar', 'PSI', 'kgf/cm²'];
   readonly pesoUnits = ['g', 'kg', 'mg'];
 
   // Read-only state from store
@@ -212,14 +210,32 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   });
 
   // Local UI signal for active tab
-  protected readonly activeTab = signal<SeguimientoTab>(this.#store.seguimiento().activeTab);
+  protected readonly activeTab = linkedSignal<SeguimientoTab[], SeguimientoTab>({
+    source: this.tabOptions,
+    computation: (tabs, previous) => {
+      const selected = previous?.value ?? this.#store.seguimiento().activeTab;
+      return tabs.includes(selected) ? selected : (tabs[0] ?? selected);
+    },
+  });
 
   // Signal Form — unit preferences
-  protected readonly formModel = signal<SeguimientoFormModel>({
-    presionVelocidadUnit: this.#store.seguimiento().presionVelocidadUnit,
-    pesosUnit: this.#store.seguimiento().pesosUnit,
+  protected readonly formModel = linkedSignal<MeasureUnitEnum[], SeguimientoFormModel>({
+    source: this.presionUnits,
+    computation: (units, previous) => {
+      const model = previous?.value ?? {
+        presionVelocidadUnit: this.#store.seguimiento().presionVelocidadUnit,
+        pesosUnit: this.#store.seguimiento().pesosUnit,
+      };
+      return {
+        ...model,
+        presionVelocidadUnit:
+          units.find((unit) => unit === model.presionVelocidadUnit) ?? units[0] ?? model.presionVelocidadUnit,
+      };
+    },
   });
-  protected readonly seguimientoForm = form(this.formModel);
+  protected readonly seguimientoForm = form(this.formModel, (fields) => {
+    disabled(fields.presionVelocidadUnit, () => this.presionUnits().length <= 1);
+  });
 
   constructor() {
     super();
@@ -233,6 +249,7 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
       }
       lastLoadedTrialId = fireTrialId;
       this.#executionStateService.getShotMeasurements(fireTrialId);
+      this.#planningMeasuresService.load(fireTrialId);
     });
 
     effect(() => {
@@ -349,10 +366,10 @@ export class SeguimientoWidget extends BaseFormWidgetComponent {
   // FormWidget implementation
   readonly formState: Signal<WidgetFormState> = computed(() => ({
     widgetId: this.widgetId(),
-    dirty: this.seguimientoForm().dirty(),
+    dirty: false,
     touched: this.seguimientoForm().touched(),
     valid: this.seguimientoForm().valid(),
-    hasChanges: this.seguimientoForm().dirty(),
+    hasChanges: false,
   }));
 
   resetForm(): void {

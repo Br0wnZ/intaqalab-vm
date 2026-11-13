@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type { TransferMovementsPayload } from '../models/movements.model';
@@ -12,9 +12,7 @@ export interface UpdateAssociatedComponentsPayload {
 }
 export type UpdateAssociatedComponentsData = { denominationId: string; batch: string; munitionTypeId: string };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MunitionsStockDetailService {
   #resource = injectWarehouseResource<
     MunitionDetailResponseModel,

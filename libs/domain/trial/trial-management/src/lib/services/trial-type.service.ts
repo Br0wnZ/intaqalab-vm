@@ -1,11 +1,9 @@
 import { HttpContext, httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { SKIP_CENTER_INTERCEPTOR, injectFireTrialTypesEndpoint } from '@intaqalab/config';
 import type { MasterData, PaginatedApiResponse } from '@intaqalab/models';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialTypeService {
   readonly #url = injectFireTrialTypesEndpoint();
 

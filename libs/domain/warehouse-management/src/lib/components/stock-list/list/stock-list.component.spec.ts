@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, MENU_WAREHOUSE_ROLES, Role } from '@intaqalab/core';
 import { ClientsDataService } from '@intaqalab/data-access';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -121,7 +121,7 @@ async function setup(opts: SetupOptions = {}) {
   const userRoles = signal(opts.userRoles ?? []);
 
   const view = await render(StockListComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -131,7 +131,7 @@ async function setup(opts: SetupOptions = {}) {
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
       { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
       { provide: ClientsDataService, useValue: clientsDataService },
-      { provide: Router, useValue: mockRouter },
+      { provide: Router, useValue: mockRouter }, provideTranslateService(),
     ],
     componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
   });

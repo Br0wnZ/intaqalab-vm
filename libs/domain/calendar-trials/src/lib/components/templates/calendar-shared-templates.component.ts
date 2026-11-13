@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DatePipe } from '@angular/common';
 import type { TemplateRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, inject, output, viewChild } from '@angular/core';
+import { Component, inject, output, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,7 +13,7 @@ import type { CalendarTrialApiResponse } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CalendarDatePipe, CalendarTooltipDirective } from 'angular-calendar';
 
 import { CalendarTrialStore } from '../../+state/calendar-trials.store';
@@ -23,7 +23,7 @@ import { DayActionsComponent } from './day-actions.component';
 @Component({
   selector: 'lib-calendar-shared-templates',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatTooltipModule,
     CalendarTooltipDirective,
     CalendarDatePipe,
@@ -315,7 +315,6 @@ import { DayActionsComponent } from './day-actions.component';
     </ng-template>
   `,
   styleUrl: './calendar-shared-templates.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarSharedTemplatesComponent {
   protected readonly TrialStatus = TrialStatus;

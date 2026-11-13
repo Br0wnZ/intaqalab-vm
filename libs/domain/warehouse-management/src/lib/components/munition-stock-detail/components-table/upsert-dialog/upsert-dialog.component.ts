@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../../+state/denominations.store';
 import type { DenominationModel } from '../../../../models/denominations.model';
@@ -32,7 +32,7 @@ export interface EditFormResult {
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     IntaSignalSelectComponent,
@@ -134,7 +134,6 @@ export interface EditFormResult {
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpsertDialogComponent {
   readonly #denominationsStore = inject(DenominationsStore);

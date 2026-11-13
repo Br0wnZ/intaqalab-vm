@@ -26,8 +26,8 @@ export function wharehouseManagmentDenominationsDispatcher(params: RequestByName
     'denominations-fixture.json',
   );
   let filtered = searchableByName(allData, params);
-  filtered = searchableByExactCategory(allData, params);
-  filtered = searchableByExactMunitionType(allData, params);
+  filtered = searchableByExactCategory(filtered, params);
+  filtered = searchableByExactMunitionType(filtered, params);
   const response = paginate(filtered, params);
   return response;
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import type { UpdateArmamentDialogData, UpdateArmamentDialogResult } from '../../utils-models/armament.model';
@@ -25,7 +25,7 @@ import { SpecimenType } from '../../utils-models/specimen.model';
     MatIconModule,
     MatButtonModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
   ],
   template: `
     <h2 mat-dialog-title class="!m-0 !p-0 text-lg font-semibold">
@@ -142,7 +142,6 @@ import { SpecimenType } from '../../utils-models/specimen.model';
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateArmamentDialog {
   readonly dialogRef = inject(MatDialogRef<UpdateArmamentDialog, UpdateArmamentDialogResult>);

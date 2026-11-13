@@ -1,17 +1,17 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EventLogSeriesAndShootsStore } from '../../+state/series-and-shoots.store';
 import { EventLogSeriesAndShootsFilterComponent } from './series-and-shoots-filter/series-and-shoots-filter.component';
 
 @Component({
   selector: 'inta-event-log-series-and-shoots',
-  imports: [TranslateModule, MatTableModule, MatPaginatorModule, MatSortModule, EventLogSeriesAndShootsFilterComponent],
+  imports: [TranslatePipe, MatTableModule, MatPaginatorModule, MatSortModule, EventLogSeriesAndShootsFilterComponent],
   providers: [EventLogSeriesAndShootsStore],
   template: `
     <div class="overflow-x-auto">
@@ -105,7 +105,6 @@ import { EventLogSeriesAndShootsFilterComponent } from './series-and-shoots-filt
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogSeriesAndShootsComponent {
   readonly store = inject(EventLogSeriesAndShootsStore);

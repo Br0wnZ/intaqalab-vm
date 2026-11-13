@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -18,9 +18,7 @@ interface ShotTopographyUpdateParams extends ShotTopographyParams {
   body: ShotTopographyRequest;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ShotTopographyService {
   readonly #http = inject(HttpClient);
   readonly #injector = inject(Injector);

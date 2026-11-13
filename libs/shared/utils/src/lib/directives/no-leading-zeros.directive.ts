@@ -1,4 +1,4 @@
-import { Directive, HostListener } from '@angular/core';
+import { Directive } from '@angular/core';
 
 /**
  * Prevents leading zeros in integer number inputs (e.g. "01" → "1").
@@ -10,9 +10,11 @@ import { Directive, HostListener } from '@angular/core';
  */
 @Directive({
   selector: 'input[libNoLeadingZeros]',
+  host: {
+    '(input)': 'onInput($event)',
+  },
 })
 export class NoLeadingZerosDirective {
-  @HostListener('input', ['$event'])
   onInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const raw = input.value;

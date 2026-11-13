@@ -9,7 +9,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ActivatedRoute } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -135,9 +135,8 @@ describe('ArmamentIntroductionMassConfigDialog', () => {
             queryParams: of({}),
             snapshot: { params: routeParams, queryParams: {} },
           },
-        },
+        }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
     loader = TestbedHarnessEnvironment.loader(view.fixture);

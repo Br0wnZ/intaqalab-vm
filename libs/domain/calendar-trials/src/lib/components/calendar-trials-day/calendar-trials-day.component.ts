@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import type { TemplateRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import type { CalendarEventViewModel } from '@intaqalab/models';
 import { CalendarDayViewComponent, DateAdapter, provideCalendar } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -21,7 +21,6 @@ import { getObservationByDay } from '../../utils/calendar-trials-utils';
     </div>
   `,
   styleUrl: './calendar-trials-day.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideCalendar({
       provide: DateAdapter,

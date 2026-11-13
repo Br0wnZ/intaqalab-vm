@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ShotFormLock } from './shot-form-lock';
 
@@ -13,7 +13,7 @@ import type { ShotFormLock } from './shot-form-lock';
  */
 @Component({
   selector: 'inta-shot-edit-button',
-  imports: [MatButtonModule, MatTooltipModule, TranslateModule, IntaIconComponent],
+  imports: [MatButtonModule, MatTooltipModule, TranslatePipe, IntaIconComponent],
   template: `
     @if (canEdit()) {
       <button
@@ -28,7 +28,6 @@ import type { ShotFormLock } from './shot-form-lock';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShotEditButton {
   readonly lock = input<ShotFormLock | null>(null);

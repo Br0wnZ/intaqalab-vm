@@ -1,13 +1,12 @@
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { SkeletonTable } from './skeleton-table';
 
 const baseConfig = {
-  imports: [TranslateModule.forRoot()],
-  providers: [provideTestingEnvironment()],
+  providers: [provideTestingEnvironment(), provideTranslateService()],
 };
 
 describe('SkeletonTable', () => {

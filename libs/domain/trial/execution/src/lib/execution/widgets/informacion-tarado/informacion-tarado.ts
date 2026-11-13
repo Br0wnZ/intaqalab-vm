@@ -1,6 +1,5 @@
 import type { ElementRef, Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { PropellantChargeParametersService } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, SpeedUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { InformacionTaradoState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -39,7 +38,7 @@ interface InformacionTaradoForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -135,7 +134,6 @@ interface InformacionTaradoForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InformacionTaradoWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

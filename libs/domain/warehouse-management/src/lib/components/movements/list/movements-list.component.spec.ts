@@ -1,7 +1,7 @@
 ﻿import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -56,12 +56,12 @@ describe('MovementsListComponent', () => {
     mockMunitionsDumpsStore = createMockMunitionsDumpsStore();
 
     const view = await render(MovementsListComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         // Ambos stores se inyectan con { skipSelf: true } en los componentes
         { provide: MovementsListStore, useValue: mockStore },
-        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore },
+        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore }, provideTranslateService(),
       ],
     });
     view.fixture.detectChanges();

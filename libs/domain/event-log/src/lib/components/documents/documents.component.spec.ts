@@ -3,7 +3,7 @@ import { signal } from '@angular/core';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { DocumentTypesService } from '../../services/documents/document-types/document-types.service';
@@ -77,12 +77,11 @@ async function setup(items: EventLogDocumentsResponse[] = MOCKED_RESPONSE) {
   const mockDocumentTypesService = makeMockDocumentTypesService();
 
   const view = await render(EventLogDocumentsComponent, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideTestingEnvironment(),
       { provide: DocumentsService, useValue: mockDocumentsService },
       { provide: UserDataService, useValue: mockUserDataService },
-      { provide: DocumentTypesService, useValue: mockDocumentTypesService },
+      { provide: DocumentTypesService, useValue: mockDocumentTypesService }, provideTranslateService(),
     ],
   });
 

@@ -1,11 +1,18 @@
 import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
+import { of } from 'rxjs';
 
 import { BreadcrumbService } from '../../services/breadcrumb/breadcrumb.service';
 import { BreadcrumbComponent } from './breadcrumb.component';
+
+class FakeTranslateLoader {
+  getTranslation() {
+    return of({ BREADCRUMB: { ARIA_LABEL: 'Ruta de navegación' } });
+  }
+}
 
 type BreadcrumbItem = { label: string; url: string };
 
@@ -13,11 +20,11 @@ async function setup(items: BreadcrumbItem[] = []) {
   const mockBreadcrumbService = { items: signal(items) };
 
   const view = await render(BreadcrumbComponent, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideTestingEnvironment(),
       provideRouter([]),
       { provide: BreadcrumbService, useValue: mockBreadcrumbService },
+      provideTranslateService({ lang: 'es', loader: provideTranslateLoader(FakeTranslateLoader) }),
     ],
   });
 

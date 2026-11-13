@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { FormField, disabled, form, max, min, required, validate } from '@angular/forms/signals';
+import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,11 +11,12 @@ import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { Badge, ErrorState, IntaIconComponent, MatSelectClearable, Skeleton, ValueTooltip } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective, RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
+import { numericMax, numericMin } from '../../utils/numeric-validators';
 import { type SpecimenDialogResult, SpecimenType } from '../../utils-models/specimen.model';
 import type {
   RatingCriteria as RatingCriteriaModel,
@@ -50,7 +51,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
 @Component({
   selector: 'inta-planning-general-data-form',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -610,14 +611,14 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.daysSignReport, () => this.readonly() || false);
     disabled(f.specimen, () => this.readonly() || this.#store.isLoadingTypedSpecimens());
     disabled(f.planningUser, () => this.readonly() || this.#store.isLoadingUsers());
-    min(f.maxEmissionDates, 1);
-    max(f.maxEmissionDates, 120);
-    min(f.percentageTechnicalUnits, 0);
-    max(f.percentageTechnicalUnits, 100);
-    min(f.percentageEndTrial, 0);
-    max(f.percentageEndTrial, 100);
-    min(f.daysSignReport, 0);
-    max(f.daysSignReport, 30);
+    numericMin(f.maxEmissionDates, 1);
+    numericMax(f.maxEmissionDates, 120);
+    numericMin(f.percentageTechnicalUnits, 0);
+    numericMax(f.percentageTechnicalUnits, 100);
+    numericMin(f.percentageEndTrial, 0);
+    numericMax(f.percentageEndTrial, 100);
+    numericMin(f.daysSignReport, 0);
+    numericMax(f.daysSignReport, 30);
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
       const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
       return !isNaN(sum) && sum !== 100

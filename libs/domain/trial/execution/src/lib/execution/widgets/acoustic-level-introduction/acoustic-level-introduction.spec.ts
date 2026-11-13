@@ -4,13 +4,12 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ShotAcousticLevelService } from '../../../data-access';
-import { ExecutionService } from '../../../services/execution.service';
+import { EquipmentSelectionService, ShotAcousticLevelService } from '../../../data-access';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { AcousticLevelIntroduction } from './acoustic-level-introduction';
@@ -31,9 +30,8 @@ describe('AcousticLevelIntroduction', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {
@@ -87,12 +85,12 @@ describe('AcousticLevelIntroduction', () => {
   });
 
   it('equipoOptions reflects SOUND_LEVEL_METER from equipmentSelectorResource', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.SOUND_LEVEL_METER]: [{ id: '5001', label: 'Norsonic 140 / SOM-001' }],
     });
 
     const { fixture } = await renderWidget();
-    TestBed.inject(ExecutionService).equipmentSelectorResource.set([
+    TestBed.inject(EquipmentSelectionService).equipmentSelectorResource.set([
       {
         measurementGroup: EquipmentMeasurementGroupEnum.SOUND,
         selections: [

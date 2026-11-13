@@ -7,7 +7,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -161,8 +161,8 @@ async function setup(options?: {
   uiDialog = mockUiDialogService(options?.confirmed ?? true);
 
   const renderResult = await render(CertificatesComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+    imports: [NoopAnimationsModule],
+    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
       { provide: MunitionsStockCertificatesStore, useValue: store },

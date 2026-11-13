@@ -1,12 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { PlanningLoadingZoneItem } from '../models/planning-loading-zones.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningLoadingZonesService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #loadRequested = signal(false);

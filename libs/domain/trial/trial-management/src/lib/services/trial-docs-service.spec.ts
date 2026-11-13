@@ -162,7 +162,7 @@ describe('TrialDocsService', () => {
       appRef.tick();
 
       const req = httpTesting.expectOne(`${baseUrl}/documents/fire-trials/${fireTrialId}/documents`);
-      expect(req.request.reportProgress).toBe(true);
+      expect(req.request.reportDownloadProgress).toBe(true);
 
       req.flush({ id: 'doc-123' });
       await appRef.whenStable();

@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
-import type { FormValueControl, ValidationError, WithOptionalField } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, input, model, output } from '@angular/core';
+import type { FormValueControl, ValidationError, WithOptionalFieldTree } from '@angular/forms/signals';
 
 export type NumericRangeValue = { min: number | null; max: number | null } | null;
 
@@ -106,7 +106,6 @@ export type NumericRangeValue = { min: number | null; max: number | null } | nul
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NumericRangeInput implements FormValueControl<NumericRangeValue> {
   // Inputs de presentación (uso standalone)
@@ -128,10 +127,11 @@ export class NumericRangeInput implements FormValueControl<NumericRangeValue> {
   readonly readonly = input<boolean>(false);
   readonly required = input<boolean>(false);
   readonly invalid = input<boolean>(false);
-  readonly errors = input<readonly WithOptionalField<ValidationError>[]>([]);
+  readonly errors = input<readonly WithOptionalFieldTree<ValidationError>[]>([]);
 
-  /** Se marca al hacer blur en cualquiera de los dos inputs; la directiva lo propaga al campo. */
+  /** Se marca al hacer blur en cualquiera de los dos inputs; la directiva lo propaga al campo via `touch`. */
   readonly touched = model<boolean>(false);
+  readonly touch = output<void>();
 
   // Derivados para la vista
   protected readonly minValue = computed(() => this.value()?.min ?? null);
@@ -150,6 +150,7 @@ export class NumericRangeInput implements FormValueControl<NumericRangeValue> {
     if (!this.touched()) {
       this.touched.set(true);
     }
+    this.touch.emit();
   }
 
   onMinChange(event: Event): void {

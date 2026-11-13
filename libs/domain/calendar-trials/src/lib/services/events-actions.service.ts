@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import type { CalendarTrialApiResponse, CalendarViewObservation } from '@intaqalab/models';
 import { TrialScheduleService, TrialTableSelectorModalService } from '@intaqalab/trial-management';
@@ -10,9 +10,7 @@ import { lastValueFrom } from 'rxjs';
 import type { LinesOfShotViewState } from '../models/lines-of-shoot.model';
 import { CalendarObservationsDataService } from './data/calendar-observations-data.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class EventsActionsService {
   selectTrialModalService = inject(TrialTableSelectorModalService);
   scheduleService = inject(TrialScheduleService);

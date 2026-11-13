@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type {
@@ -11,9 +11,7 @@ import type {
 import { planningUrl } from '../shared/execution-endpoints';
 import { awaitResourceValue } from '../shared/resource-await';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ArmamentCatalogService {
   readonly #injector = inject(Injector);
   readonly #planningUrl = injectPlanningEndpoint();

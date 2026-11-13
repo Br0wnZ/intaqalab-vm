@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { PlanningConditionsService, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { MaoTopographyState } from '../../../+state/execution.store';
@@ -60,7 +59,7 @@ interface MaoTopographySelectForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     SoundLevelMeterInput,
     ShotEditButton,
@@ -186,7 +185,6 @@ interface MaoTopographySelectForm {
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MaoTopography extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -14,7 +14,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -25,7 +25,7 @@ const DEFAULT_COLUMNS = ['munitionDumpId', 'cellsCount', 'maxNeq', 'maxRiskGroup
 @Component({
   selector: 'inta-whare-house-munitions-dumps-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     ReactiveFormsModule,
     FormsModule,
     MatTableModule,
@@ -135,7 +135,6 @@ const DEFAULT_COLUMNS = ['munitionDumpId', 'cellsCount', 'maxNeq', 'maxRiskGroup
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionsDumpsListComponent {
   readonly store: MunitionsDumpsStoreType = inject(MunitionsDumpsStore);

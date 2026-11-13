@@ -1,15 +1,15 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import type { MunitionsDumpModelCell } from '../../../models/munitions-dumps.model';
 
 @Component({
   selector: 'inta-stock-list-neq-data',
-  imports: [MatButtonModule, MatExpansionModule, TranslateModule, IntaIconComponent],
+  imports: [MatButtonModule, MatExpansionModule, TranslatePipe, IntaIconComponent],
   template: `
     @for (munitionDump of munitionDumpsStore.items(); track munitionDump.id) {
       <mat-expansion-panel hideToggle class="neq-panel" (click)="$event.stopPropagation()" #panel>
@@ -44,7 +44,6 @@ import type { MunitionsDumpModelCell } from '../../../models/munitions-dumps.mod
   `,
   styleUrl: './neq-data.scss',
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NeqDataComponent {
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);

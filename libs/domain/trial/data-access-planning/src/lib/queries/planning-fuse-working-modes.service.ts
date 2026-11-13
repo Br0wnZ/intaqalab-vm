@@ -1,12 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { PlanningFuseWorkingModesResponse } from '../models/fuse-working-modes.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningFuseWorkingModesService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #loadRequested = signal(false);

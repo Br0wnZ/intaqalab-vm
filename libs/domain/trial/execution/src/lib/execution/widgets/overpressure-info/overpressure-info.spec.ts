@@ -9,13 +9,14 @@ import { PressureUnitEnum } from '@intaqalab/models';
 import type { AppLocale } from '@intaqalab/utils';
 import { LOCALE_SIGNAL } from '@intaqalab/utils';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { withOverpressure } from '../../../+state/features/overpressure.feature';
+import { OverpressureService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import type { TrialOverpressureInfoResponse } from '../../models/trial-overpressure-info.models';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -76,12 +77,15 @@ describe('OverpressureInfoWidget', () => {
         OverpressureTestStore,
         { provide: ExecutionStore, useExisting: OverpressureTestStore },
         {
+          provide: OverpressureService,
+          useValue: { fetchTrialOverpressureInfo: fetchInfo, updateTrialOverpressureInfo: updateInfo },
+        },
+        {
           provide: ExecutionService,
           useValue: { fetchTrialOverpressureInfo: fetchInfo, updateTrialOverpressureInfo: updateInfo },
         },
-        { provide: LOCALE_SIGNAL, useValue: signal(locale) },
+        { provide: LOCALE_SIGNAL, useValue: signal(locale) }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     TestBed.inject(ExecutionStore).setFireTrialId('trial-1');
     view.fixture.detectChanges();

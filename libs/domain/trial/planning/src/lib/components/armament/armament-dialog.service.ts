@@ -1,5 +1,5 @@
 import type { Injector } from '@angular/core';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -16,9 +16,7 @@ import type { SpecimenItem } from '../../utils-models/catalog.model';
 import { MassiveShotsConfigurationDialog } from './massive-shots-configuration-dialog';
 import { UpdateArmamentDialog } from './update-armament-dialog';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ArmamentDialogService {
   readonly #dialog = inject(MatDialog);
 

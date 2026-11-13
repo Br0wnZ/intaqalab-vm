@@ -239,12 +239,12 @@ Archivo: `mocks/src/fixtures/armament/trial-armament-fixture.json`
 
 ## Cuándo Usar Cada Patrón
 
-| Necesidad                     | Patrón                                      | Ejemplo                   |
-| ----------------------------- | ------------------------------------------- | ------------------------- |
-| Datos estáticos sin búsqueda  | `getFixture()` directo en la route          | Target types, dimensions  |
-| Datos con paginación/filtrado | Dispatcher con `parseQueryParams`           | Weapons catalog, measures |
+| Necesidad                     | Patrón                                                 | Ejemplo                   |
+| ----------------------------- | ------------------------------------------------------ | ------------------------- |
+| Datos estáticos sin búsqueda  | `getFixture()` directo en la route                     | Target types, dimensions  |
+| Datos con paginación/filtrado | Dispatcher con `parseQueryParams`                      | Weapons catalog, measures |
 | Datos mutables (PUT/POST)     | Map in-memory + structuredClone para clonar | Trial armament            |
-| Datos con lista exportada     | Export de array TS (no JSON)                | `MEASURES_CATALOG`        |
+| Datos con lista exportada     | Export de array TS (no JSON)                           | `MEASURES_CATALOG`        |
 
 ## Reglas Clave
 

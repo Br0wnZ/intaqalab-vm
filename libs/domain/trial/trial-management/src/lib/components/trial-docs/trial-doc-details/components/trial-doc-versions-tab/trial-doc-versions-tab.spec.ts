@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
@@ -38,14 +38,13 @@ describe('TrialDocVersionsTab', () => {
   it('should render the component', async () => {
     const mockService = makeMockDocsService();
     const { fixture } = await render(TrialDocVersionsTab, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         provideAnimationsAsync(),
         { provide: TrialDocsService, useValue: mockService },
-        { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } },
+        { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } }, provideTranslateService(),
       ],
       componentInputs: { documentId: 'doc-001' },
     });
@@ -58,14 +57,13 @@ describe('TrialDocVersionsTab', () => {
     mockService._documentVersionsResource._setValue(mockDocumentVersions);
 
     const { fixture } = await render(TrialDocVersionsTab, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         provideAnimationsAsync(),
         { provide: TrialDocsService, useValue: mockService },
-        { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } },
+        { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } }, provideTranslateService(),
       ],
       componentInputs: { documentId: 'doc-001' },
     });

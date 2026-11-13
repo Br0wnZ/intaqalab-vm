@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -10,14 +10,14 @@ import {
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { SaveButton } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../+state/master-data.store';
 import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-switch-status-dialog.model';
 
 @Component({
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatIconModule,
     MatButtonModule,
     MatDialogTitle,
@@ -48,7 +48,6 @@ import type { MasterDataSwitchStatusDialog } from '../../../models/master-data-s
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MasterDataSwitchStatusDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MasterDataSwitchStatusDialogComponent>);

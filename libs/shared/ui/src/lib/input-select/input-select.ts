@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   ElementRef,
@@ -172,7 +171,6 @@ function formatDisplayNumber(value: number | null, locale: string, minDec: numbe
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InputSelect<T extends number | string | null = number | string | null> {
   // ── Inputs ────────────────────────────────────────────────────────────────

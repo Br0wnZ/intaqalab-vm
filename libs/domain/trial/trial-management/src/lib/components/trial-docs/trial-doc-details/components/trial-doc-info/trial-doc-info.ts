@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   effect,
@@ -20,7 +19,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { TrialDocsService } from '../../../../../services/trial-docs-service';
@@ -32,7 +31,7 @@ import { TrialDocsFilePicker } from '../../../trial-docs-file-picker/trial-docs-
 @Component({
   selector: 'inta-trial-doc-info',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -271,7 +270,6 @@ import { TrialDocsFilePicker } from '../../../trial-docs-file-picker/trial-docs-
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrialDocInfo {
   readonly #translate = inject(TranslateService);

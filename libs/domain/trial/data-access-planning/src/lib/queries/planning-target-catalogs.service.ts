@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { TargetDimension, TargetThickness } from '@intaqalab/models';
 
@@ -14,7 +14,7 @@ function parseItems<T>(raw: unknown): T[] {
   return [];
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class PlanningTargetCatalogsService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #loadVersion = signal<number | null>(null);

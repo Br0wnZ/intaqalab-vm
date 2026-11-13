@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 
 import { MunitionsStockCertificatesService } from '../../../../services/munitions-stock-certificates.service';
@@ -46,13 +46,13 @@ describe('CertificatesFilePicker', () => {
 
   const setup = async (data = mockDialogData, closeFn?: ReturnType<typeof vi.fn>) => {
     const view = await render(CertificatesFilePicker, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn ?? vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
     });
     view.fixture.detectChanges();

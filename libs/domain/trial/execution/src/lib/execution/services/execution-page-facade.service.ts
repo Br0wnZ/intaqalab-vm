@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { computed, inject, signal, Service } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Role, injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
@@ -28,7 +28,7 @@ import { WidgetGridFullError, WidgetStateService } from './widget-state.service'
 
 const EXECUTION_STATE_POLLING_MS = 5_000;
 
-@Injectable()
+@Service({ autoProvided: false })
 export class ExecutionPageFacade {
   readonly #dialog = inject(MatDialog);
   readonly #store = inject(ExecutionStore);

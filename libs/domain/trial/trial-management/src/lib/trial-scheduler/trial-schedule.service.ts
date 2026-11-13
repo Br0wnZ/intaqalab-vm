@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import type {
@@ -13,9 +13,7 @@ import { lastValueFrom, map, of, switchMap } from 'rxjs';
 
 import { TrialSchedulerModalShellComponent } from './components/shell/trial-scheduler-modal-shell.component';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialScheduleService {
   readonly #dialog = inject(MatDialog);
   readonly #calendarTrialScheduleService = inject(CalendarTrialScheduleService);

@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { IntaDecimalPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
 import type { TaradoVelocidadChartState } from '../../../+state/execution.store';
@@ -52,7 +51,7 @@ interface TaradoVelocidadForm {
     MatIconModule,
     MatSelectModule,
     MatTooltipModule,
-    TranslateModule,
+    TranslatePipe,
     ChartDirective,
     IntaIconComponent,
   ],
@@ -199,7 +198,6 @@ interface TaradoVelocidadForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 /**
  * ## Gráfica Tarado - Velocidad

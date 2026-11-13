@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -19,7 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type {
   MasterDataI18nItem,
@@ -39,7 +38,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     FormField,
     NoLeadingZerosDirective,
     NoNegativeValuesDirective,
-    TranslateModule,
+    TranslatePipe,
   ],
   template: `
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -192,7 +191,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SuplementoDetailFormComponent {
   readonly #warehouseUrl = injectWharehouseEndpoint();

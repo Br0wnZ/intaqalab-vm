@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ShotPiezoPressureItem } from '../../../models';
 import {
@@ -18,7 +18,7 @@ import {
 
 @Component({
   selector: 'inta-piezo-pressure-sensor-tab',
-  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslateModule, InputSelect],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0 items-start">
       <!-- ── Left: Equipment & Pressure input ───────────────────────────── -->
@@ -70,7 +70,6 @@ import {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PiezoPressureSensorTab {
   readonly position = input.required<string>();

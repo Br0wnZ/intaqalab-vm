@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -31,11 +31,10 @@ describe('ChangeDocVersionDialog', () => {
     };
 
     const result = await render(ChangeDocVersionDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: { version } },
-        { provide: TrialDocsService, useValue: docsServiceMock },
+        { provide: TrialDocsService, useValue: docsServiceMock }, provideTranslateService(),
       ],
     });
 

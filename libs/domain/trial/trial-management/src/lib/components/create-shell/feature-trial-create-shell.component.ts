@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   InjectionToken,
   Injector,
@@ -14,7 +13,7 @@ import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
 import { TrialsDataService } from '@intaqalab/data-access';
 import type { FireTrial } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TriaUpsertForm } from '../../utils-models/upsert-trial-form.model';
 import { TrialGeneralDataStore } from '../shared/+state/trial-general-data.store';
@@ -25,8 +24,7 @@ type ParamsComponent = { id: string };
 export const injectionTokenComponentCreateModifyShell = new InjectionToken<ParamsComponent>('params');
 
 @Component({
-  imports: [TranslateModule, FeatureTrialCreateFormComponent, MatCardModule, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe, FeatureTrialCreateFormComponent, MatCardModule, MatButtonModule],
   providers: [TrialGeneralDataStore],
   template: `
     <h2 class="text-base font-semibold text-gray-900 my-6">{{ 'MENU_LEFT.GESTION_TRIALS_NEW' | translate }}</h2>

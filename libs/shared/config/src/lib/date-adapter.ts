@@ -1,5 +1,5 @@
 import type { Provider } from '@angular/core';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import type { MatDateFormats } from '@angular/material/core';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 import { isValid, parse } from 'date-fns';
@@ -32,7 +32,7 @@ export const INTA_DATE_FORMATS: MatDateFormats = {
  * Custom date adapter that parses DD/MM/YYYY (Spanish format).
  * Falls back to standard ISO 8601 parsing if DD/MM/YYYY fails.
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class IntaNativeDateAdapter extends NativeDateAdapter {
   override parse(value: unknown, _parseFormat?: unknown): Date | null {
     if (typeof value === 'number') {

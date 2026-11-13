@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 
 import { RetireDialogComponent } from './retire-dialog.component';
@@ -26,12 +26,11 @@ async function setup(data: any /* eslint-disable-line @typescript-eslint/no-expl
   });
   const renderResult = await render(RetireDialogComponent, {
     declarations: [],
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
-      { provide: MatDialogRef, useValue: mockDialogRef },
+      { provide: MatDialogRef, useValue: mockDialogRef }, provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },

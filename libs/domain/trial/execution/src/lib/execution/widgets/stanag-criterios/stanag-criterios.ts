@@ -1,10 +1,10 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import type { Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { StanagCriteriosState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -15,7 +15,7 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
 
 @Component({
   selector: 'inta-stanag-criterios',
-  imports: [DatePipe, MatButtonModule, ReadonlyContentDirective, MatIconModule, TranslateModule, IntaIconComponent],
+  imports: [DatePipe, MatButtonModule, ReadonlyContentDirective, MatIconModule, TranslatePipe, IntaIconComponent],
   template: `
     <div class="h-full rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2 overflow-hidden">
       <!-- Header: icon + title -->
@@ -82,7 +82,6 @@ import { BaseFormWidgetComponent } from '../base-widget.component';
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StanagCriteriosWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

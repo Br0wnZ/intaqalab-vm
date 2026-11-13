@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { FeatureFlagService } from '@intaqalab/config';
 import type { HasStatus, TrialActions } from '@intaqalab/models';
 
@@ -14,7 +14,6 @@ import { config } from './button-trial-actions-imp.constants';
       <inta-trial-actions [config]="config()!" (clicked)="actionClicked($event)" />
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonTrialActionsImplComponent {
   readonly #featureFlags = inject(FeatureFlagService);

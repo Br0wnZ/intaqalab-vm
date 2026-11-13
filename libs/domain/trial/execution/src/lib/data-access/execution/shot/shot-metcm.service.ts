@@ -1,5 +1,5 @@
 import { HttpParams, httpResource } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
+import { computed, signal, Service } from '@angular/core';
 import { injectDocumentsEndpoint, injectExecutionEndpoint } from '@intaqalab/config';
 
 import type { FireTrialMetcmDocumentsResponse, ShotMetcmResponse } from '../../../execution/models';
@@ -12,7 +12,7 @@ interface ShotMetcmParams {
   shotId: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ShotMetcmService {
   readonly #documentsUrl = injectDocumentsEndpoint();
   readonly #executionUrl = injectExecutionEndpoint();

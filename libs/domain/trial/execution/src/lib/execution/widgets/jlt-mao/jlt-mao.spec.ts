@@ -11,7 +11,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum, type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -58,9 +58,8 @@ describe('JltMao', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     // Se parchea el estado directamente para no disparar GETs que dejarían
     // peticiones pendientes y bloquearían la estabilización de los harness.
@@ -157,9 +156,8 @@ describe('JltMao', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ShotJltMaoService);
@@ -222,9 +220,8 @@ describe('JltMao', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ExecutionService);
@@ -305,9 +302,8 @@ describe('JltMao', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ShotJltMaoService);
@@ -692,9 +688,8 @@ describe('JltMao', () => {
             });
             return store;
           },
-        },
+        }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
     expect(fixture.componentInstance['estadoDisparo']()).toBe('PENDIENTE');

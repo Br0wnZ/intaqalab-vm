@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { MasterDataMeasures } from '../../../models/master-data-measures.model';
@@ -6,9 +6,7 @@ import type { MasterDataCreateItemType } from '../../../models/utils.model';
 import { injectMasterDataResource } from '../../master-data-resource.factory';
 import type { MasterDataService } from '../../master-data.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MeasurementsAndRecordsService implements MasterDataService<MasterDataMeasures> {
   readonly #crud = injectMasterDataResource<MasterDataMeasures>(`${injectPlanningEndpoint()}/measures`);
 

@@ -1,7 +1,103 @@
+import type { TrialMeasuresResponse } from '@intaqalab/data-access-planning';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { describe, expect, it } from 'vitest';
 
 import type { PlanningSeriesItem, ShotMeasurementsResponse } from '../../../services/execution.service';
-import { mapShotMeasurements } from './seguimiento.mapper';
+import { getSeguimientoTabs, getSeguimientoUnits, mapShotMeasurements } from './seguimiento.mapper';
+
+describe('seguimiento options', () => {
+  const response: TrialMeasuresResponse = {
+    series: [
+      {
+        seriesId: 'series-1',
+        measures: {
+          topographyMeasures: [],
+          armamentMeasures: [],
+          munitionsMeasures: [
+            {
+              id: 'manometer',
+              name: 'Maximum AP pressure',
+              unit: 'MUNITIONS',
+              measurementArea: 'Manometer pressure',
+              magnitudeCode: 'MUNITION_MANOMETER_AP_MAX',
+              measureUnit: MeasureUnitEnum.BAR,
+            },
+            { id: 'closing', name: '', magnitudeCode: 'MUNITION_PIEZO_CLOSING_MAX', measureUnit: MeasureUnitEnum.BAR },
+            {
+              id: 'closing-2',
+              name: '',
+              magnitudeCode: 'MUNITION_PIEZO_CLOSING_MIN',
+              measureUnit: MeasureUnitEnum.BAR,
+            },
+            { id: 'half', name: '', magnitudeCode: 'MUNITION_PIEZO_HALF_MAX', measureUnit: MeasureUnitEnum.MPA },
+            { id: 'shell', name: '', magnitudeCode: 'MUNITION_PIEZO_SHELL_MAX', measureUnit: null },
+            { id: 'other', name: '', magnitudeCode: 'MUNITION_PIEZO_OTHER_MAX', measureUnit: MeasureUnitEnum.BAR },
+            { id: 'ipg', name: '', magnitudeCode: 'MUNITION_IPG_MAX', measureUnit: MeasureUnitEnum.BAR },
+            { id: 'unrelated', name: '', magnitudeCode: null, measureUnit: MeasureUnitEnum.G },
+          ],
+          ballisticsMeasures: [
+            { id: 'velocity', name: '', magnitudeCode: 'BAL_INITIAL_VELOCITY', measureUnit: MeasureUnitEnum.M_S },
+            {
+              id: 'camera',
+              name: '',
+              magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_ENTRANCE',
+              measureUnit: MeasureUnitEnum.M,
+            },
+          ],
+        },
+      },
+    ],
+  };
+
+  it('derives unique tabs from planned magnitude codes without shot measurements', () => {
+    expect(getSeguimientoTabs(response)).toEqual([
+      'velocidades',
+      'p-manom',
+      'p-pz-cie',
+      'p-pz-int',
+      'p-pz-cul',
+      'p-otro',
+      'p-ipg',
+    ]);
+    expect(getSeguimientoTabs(undefined)).toEqual([]);
+    expect(getSeguimientoTabs({ series: [] })).toEqual([]);
+  });
+
+  it('derives unique units from measureUnit for the selected magnitude', () => {
+    expect(getSeguimientoUnits(response, 'p-manom')).toEqual([MeasureUnitEnum.BAR]);
+    expect(getSeguimientoUnits(response, 'p-pz-cie')).toEqual(['BAR']);
+    expect(getSeguimientoUnits(response, 'p-pz-int')).toEqual(['MPA']);
+    expect(getSeguimientoUnits(response, 'p-pz-cul')).toEqual([]);
+    expect(getSeguimientoUnits(response, 'velocidades')).toEqual(['M_S']);
+    expect(getSeguimientoUnits(undefined, 'p-pz-cie')).toEqual([]);
+  });
+
+  it('ignores camera magnitudes and units belonging to another measurement category', () => {
+    const cameraResponse: TrialMeasuresResponse = {
+      series: [
+        {
+          seriesId: 'camera-series',
+          measures: {
+            topographyMeasures: [],
+            munitionsMeasures: [],
+            armamentMeasures: [],
+            ballisticsMeasures: [
+              {
+                id: 'camera',
+                name: '',
+                magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_ENTRANCE',
+                measureUnit: MeasureUnitEnum.M_S,
+              },
+            ],
+          },
+        },
+      ],
+    };
+    expect(getSeguimientoTabs(cameraResponse)).toEqual([]);
+    expect(getSeguimientoUnits(cameraResponse, 'velocidades')).toEqual([]);
+    expect(getSeguimientoUnits(response, 'p-otro')).toEqual([MeasureUnitEnum.BAR]);
+  });
+});
 
 describe('mapShotMeasurements', () => {
   it('maps measurements by piezo position and resolves planned shot numbers', () => {

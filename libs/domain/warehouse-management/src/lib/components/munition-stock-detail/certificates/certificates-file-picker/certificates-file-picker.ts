@@ -1,5 +1,5 @@
 import type { ElementRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStockCertificatesService } from '../../../../services/munitions-stock-certificates.service';
 
@@ -21,7 +21,7 @@ type CertificatesFilePickerInputData = {
 @Component({
   selector: 'inta-trial-docs-file-picker',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatDialogModule,
     MatIconModule,
     MatButtonModule,
@@ -193,7 +193,6 @@ type CertificatesFilePickerInputData = {
       }
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CertificatesFilePicker {
   public readonly fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');

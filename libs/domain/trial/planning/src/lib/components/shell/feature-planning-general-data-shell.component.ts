@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import type { FireTrial, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
@@ -16,7 +16,7 @@ import { ShootingConditionsComponent } from '../shooting-conditions/shooting-con
 @Component({
   selector: 'inta-feature-planning-general-data-shell',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatTabsModule,
     PlanningGeneralDataFormComponent,
     SeriesAndShots,

@@ -2,7 +2,6 @@
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -21,7 +20,7 @@ import { TrialsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -38,7 +37,7 @@ import { MunitionLocationComponent } from '../location/location.component';
 @Component({
   imports: [
     MatButtonModule,
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatSelectModule,
     IntaSignalSelectComponent,
@@ -143,7 +142,6 @@ import { MunitionLocationComponent } from '../location/location.component';
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionsShellComponent implements OnDestroy {
   readonly #router = inject(Router);

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { AssociatedTrialDialog } from './associated-trial-dialog';
@@ -10,7 +10,6 @@ import { AssociatedTrialDialog } from './associated-trial-dialog';
 // vi.mock hoisted by Vitest
 describe('AssociatedTrialDialog', () => {
   let closeMock: ReturnType<typeof vi.fn>;
-  const defaultImports = [TranslateModule.forRoot()];
 
   const renderDialog = async (data?: { title?: string }, closeFn?: ReturnType<typeof vi.fn>) => {
     return render(AssociatedTrialDialog, {
@@ -19,9 +18,8 @@ describe('AssociatedTrialDialog', () => {
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn || vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data || { title: 'Test Dialog' } },
+        { provide: MAT_DIALOG_DATA, useValue: data || { title: 'Test Dialog' } }, provideTranslateService(),
       ],
-      imports: defaultImports,
     });
   };
 

@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, pattern, schema, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -13,7 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { StockListStore } from '../../../+state/stock-list.store';
@@ -39,7 +39,7 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     IntaSignalSelectComponent,
@@ -181,7 +181,6 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkCertificatesDialogComponent {
   readonly stockListStore = inject(StockListStore);
@@ -215,7 +214,7 @@ export class LinkCertificatesDialogComponent {
         },
         onSuccess: (response: SearchByTrialNumberResponse) => {
           if (response.items.length > 0) {
-            this.filterForm.plannedFireTrialId().setControlValue(response.items[0].id);
+            this.filterForm.plannedFireTrialId().controlValue.set(response.items[0].id);
             return null;
           }
           return {
@@ -248,13 +247,13 @@ export class LinkCertificatesDialogComponent {
     //  TODO: pre select info if general data
 
     // if (this.data.stockDetail.generalData.client) {
-    //   this.filterForm.clientId().setControlValue(this.data.stockDetail.generalData.client.id);
+    //   this.filterForm.clientId().controlValue.set(this.data.stockDetail.generalData.client.id);
     // }
     // if (this.data.stockDetail.generalData.plannedFireTrial) {
-    //   this.filterForm.plannedFireTrialId().setControlValue(this.data.stockDetail.generalData.plannedFireTrial.id);
+    //   this.filterForm.plannedFireTrialId().controlValue.set(this.data.stockDetail.generalData.plannedFireTrial.id);
     // }
     // if (this.data.stockDetail.generalData.plannedFireTrial) {
-    //   this.filterForm.plannedFireTrialId().setControlValue(this.data.stockDetail.generalData.plannedFireTrial.id);
+    //   this.filterForm.plannedFireTrialId().controlValue.set(this.data.stockDetail.generalData.plannedFireTrial.id);
     // }
 
     effect(() => {

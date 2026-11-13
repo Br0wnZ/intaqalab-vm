@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -12,7 +12,7 @@ import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import { MEASUREMENTS_AND_RECORDS_UNITS, MEASUREMENT_AREA_OPTIONS } from '../../../../data/measures.constants';
@@ -29,7 +29,7 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
   imports: [
     IntaSignalSelectComponent,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -359,7 +359,6 @@ import type { MasterDataResponseType } from '../../../../models/utils.model';
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MeasurementsAndRecordsDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MeasurementsAndRecordsDialogComponent>);

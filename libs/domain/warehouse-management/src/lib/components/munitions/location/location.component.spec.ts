@@ -6,7 +6,7 @@ import { form } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -71,7 +71,7 @@ function defaultDumps(): MunitionsDumpModel[] {
 async function setup(dumps: MunitionsDumpModel[] = defaultDumps()) {
   const user = userEvent.setup();
   const view = await render(TestWrapperComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -87,7 +87,7 @@ async function setup(dumps: MunitionsDumpModel[] = defaultDumps()) {
           error: signal(null),
           isInitialized: signal(false),
         },
-      },
+      }, provideTranslateService(),
     ],
   });
 
@@ -143,21 +143,21 @@ describe('MunitionLocationComponent', () => {
 
     it('should return empty array when selected dump id is not found in the list', async () => {
       const { component, componentForm, fixture } = await setup();
-      componentForm.location.munitionDumpId().setControlValue('unknown-id');
+      componentForm.location.munitionDumpId().controlValue.set('unknown-id');
       fixture.detectChanges();
       expect(component.cellOptions()).toEqual([]);
     });
 
     it('should return the cells of the selected dump as { id: name } objects', async () => {
       const { component, componentForm, fixture } = await setup();
-      componentForm.location.munitionDumpId().setControlValue('dump-1');
+      componentForm.location.munitionDumpId().controlValue.set('dump-1');
       fixture.detectChanges();
       expect(component.cellOptions()).toEqual([{ id: 'A-01' }, { id: 'A-02' }]);
     });
 
     it('should update cell options when a different dump is selected', async () => {
       const { component, componentForm, fixture } = await setup();
-      componentForm.location.munitionDumpId().setControlValue('dump-2');
+      componentForm.location.munitionDumpId().controlValue.set('dump-2');
       fixture.detectChanges();
       expect(component.cellOptions()).toEqual([{ id: 'B-01' }, { id: 'B-02' }, { id: 'B-03' }]);
     });
@@ -173,7 +173,7 @@ describe('MunitionLocationComponent', () => {
     it('should use store items to populate cell options', async () => {
       const dumps = [makeDump({ id: 'custom-1', cells: [{ name: 'X-01' }] })];
       const { component, componentForm, fixture } = await setup(dumps);
-      componentForm.location.munitionDumpId().setControlValue('custom-1');
+      componentForm.location.munitionDumpId().controlValue.set('custom-1');
       fixture.detectChanges();
       expect(component.cellOptions()).toEqual([{ id: 'X-01' }]);
     });

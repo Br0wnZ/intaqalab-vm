@@ -1,11 +1,9 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningLifecycleService {
   readonly #validateParams = signal<{ fireTrialId: FireTrial['id'] } | null>(null);
   readonly #unlockParams = signal<{ fireTrialId: FireTrial['id'] } | null>(null);

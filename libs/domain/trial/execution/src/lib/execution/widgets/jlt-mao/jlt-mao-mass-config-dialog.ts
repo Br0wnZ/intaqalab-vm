@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -19,7 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { AngleUnitEnum, MEASURE_UNIT_LABELS } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ShotJltMaoService } from '../../../data-access';
@@ -98,7 +97,7 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     InputSelectInput,
     LocaleDecimalInputDirective,
@@ -302,7 +301,6 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
     </mat-dialog-actions>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JltMaoMassConfigDialog {
   readonly #dialogRef = inject<MatDialogRef<JltMaoMassConfigDialog, JltMaoMassConfigDialogResult>>(MatDialogRef);

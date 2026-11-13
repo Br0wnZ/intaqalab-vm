@@ -5,7 +5,9 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -21,9 +23,26 @@ const mockWidgetStateService = {
   saveSuccessCount: signal(0),
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('TrayectografiaIntroductionWidget', () => {
-  const renderWidget = (widgetId = 'test-trayectografia') =>
-    render(TrayectografiaIntroductionWidget, {
+  const renderWidget = async (widgetId = 'test-trayectografia') => {
+    const result = await render(TrayectografiaIntroductionWidget, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -31,10 +50,12 @@ describe('TrayectografiaIntroductionWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();

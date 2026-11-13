@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import {
   ExecutionStore,
@@ -27,7 +27,7 @@ import type { AcondFormModel } from '../munition-introduction';
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -189,7 +189,6 @@ import type { AcondFormModel } from '../munition-introduction';
       </mat-form-field>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionAcondicionamientoTabComponent {
   readonly #store = inject(ExecutionStore);

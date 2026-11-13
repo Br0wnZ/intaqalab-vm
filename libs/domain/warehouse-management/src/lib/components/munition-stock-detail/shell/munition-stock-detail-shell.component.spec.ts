@@ -10,7 +10,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 
@@ -107,7 +107,7 @@ async function setup(
   mockMunitionDumpsStore = makeMunitionDumpsStore(munitionDumps);
 
   const renderResult = await render(MunitionStockDetailShellComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -122,7 +122,7 @@ async function setup(
       { provide: MunitionsStockDetailService, useValue: makeMunitionsStockDetailService() },
       { provide: MunitionComponentService, useValue: makeMunitionComponentService() },
       { provide: MunitionsStockCertificatesService, useValue: makeMunitionsStockCertificatesService() },
-      { provide: UiDialogService, useValue: { confirm: vi.fn().mockResolvedValue(true) } },
+      { provide: UiDialogService, useValue: { confirm: vi.fn().mockResolvedValue(true) } }, provideTranslateService(),
     ],
     componentInputs: { id: 'stock-1', entity },
   });

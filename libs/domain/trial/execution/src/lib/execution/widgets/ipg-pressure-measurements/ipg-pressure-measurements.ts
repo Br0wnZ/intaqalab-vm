@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -20,7 +19,7 @@ import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { EquipmentSelectionService, ShotIpgPressuresService } from '../../../data-access';
@@ -62,7 +61,7 @@ interface DataFormModel {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
@@ -188,7 +187,6 @@ interface DataFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IpgPressureMeasurements extends BaseFormWidgetComponent {
   readonly widgetId = input<string>('medidas-presion-ipg');

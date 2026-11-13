@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormField, debounce, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -9,7 +9,7 @@ import { ClientsDataService } from '@intaqalab/data-access';
 import type { TrialSearchFilters, TrialStatus } from '@intaqalab/models';
 import { injectTrialStatus } from '@intaqalab/models';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
 
@@ -33,7 +33,7 @@ function toISODateTime(value: string | Date): string | undefined {
 @Component({
   selector: 'inta-trial-list-filter',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatInputModule,
     MatButtonModule,
     IntaSignalSelectComponent,
@@ -161,7 +161,6 @@ function toISODateTime(value: string | Date): string | undefined {
     </div>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrialListFilter {
   protected readonly clientsService = inject(ClientsDataService);

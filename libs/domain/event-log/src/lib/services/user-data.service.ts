@@ -1,12 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectEventLogEndpoint } from '@intaqalab/config';
 
 import type { EventLogUser } from '../utils-models/user.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class UserDataService {
   readonly #apiUrl = injectEventLogEndpoint();
 

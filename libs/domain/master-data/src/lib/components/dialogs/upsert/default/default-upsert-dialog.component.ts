@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { resolveLocalizedText } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDefault } from '../../../../models/master-data-default.model';
@@ -17,7 +17,7 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaIconComponent,
     SaveButton,
@@ -75,7 +75,6 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MasterDataDefaultUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MasterDataDefaultUpsertDialogComponent>);

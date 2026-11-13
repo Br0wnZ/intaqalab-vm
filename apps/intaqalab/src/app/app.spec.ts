@@ -1,6 +1,6 @@
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import type { OidcClientNotification } from 'angular-auth-oidc-client';
 import { EventTypes, OidcSecurityService, PublicEventsService } from 'angular-auth-oidc-client';
@@ -55,16 +55,11 @@ async function setup(
   const mockPublicEventsService = mockEventsService ?? makeMockPublicEventsService();
 
   const view = await render(App, {
-    imports: [
-      TranslateModule.forRoot({
-        loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-      }),
-    ],
     providers: [
       provideTestingEnvironment(),
       { provide: OidcSecurityService, useValue: mockOidcSecurityService },
       { provide: PublicEventsService, useValue: mockPublicEventsService },
-      { provide: AuthService, useValue: mockAuthService },
+      { provide: AuthService, useValue: mockAuthService }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
     ],
   });
 
@@ -127,15 +122,10 @@ describe('App', () => {
       };
 
       await render(App, {
-        imports: [
-          TranslateModule.forRoot({
-            loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-          }),
-        ],
         providers: [
           provideTestingEnvironment(),
           { provide: OidcSecurityService, useValue: mockOidcSecurityService },
-          { provide: AuthService, useValue: makeMockAuthService() },
+          { provide: AuthService, useValue: makeMockAuthService() }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
         ],
       });
 

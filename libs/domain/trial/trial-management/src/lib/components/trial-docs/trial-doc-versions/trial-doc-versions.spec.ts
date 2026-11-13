@@ -1,5 +1,5 @@
 import { MatDialog } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -28,12 +28,11 @@ const mockDocumentVersions: DocumentVersion[] = [
 describe('TrialDocVersions', () => {
   it('should render the document versions', async () => {
     await render(TrialDocVersions, {
-      imports: [TranslateModule.forRoot()],
       componentInputs: {
         documentId: '1',
         documentVersions: mockDocumentVersions,
       },
-      providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }],
+      providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }, provideTranslateService()],
     });
 
     expect(screen.getByText('v1.0')).toBeInTheDocument();
@@ -42,12 +41,11 @@ describe('TrialDocVersions', () => {
 
   it('should have the active version selected by default', async () => {
     await render(TrialDocVersions, {
-      imports: [TranslateModule.forRoot()],
       componentInputs: {
         documentId: '1',
         documentVersions: mockDocumentVersions,
       },
-      providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }],
+      providers: [{ provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } }, provideTranslateService()],
     });
 
     const radioButtons = screen.getAllByRole('radio');
@@ -58,12 +56,11 @@ describe('TrialDocVersions', () => {
   it('should open the dialog when a new version is selected', async () => {
     const openSpy = vi.fn(() => ({ afterClosed: () => of(true) }));
     await render(TrialDocVersions, {
-      imports: [TranslateModule.forRoot()],
       componentInputs: {
         documentId: '1',
         documentVersions: mockDocumentVersions,
       },
-      providers: [{ provide: MatDialog, useValue: { open: openSpy } }],
+      providers: [{ provide: MatDialog, useValue: { open: openSpy } }, provideTranslateService()],
     });
 
     const radioButtons = screen.getAllByRole('radio');
@@ -75,12 +72,11 @@ describe('TrialDocVersions', () => {
   it('should not open the dialog when the active version is selected', async () => {
     const openSpy = vi.fn(() => ({ afterClosed: () => of(true) }));
     await render(TrialDocVersions, {
-      imports: [TranslateModule.forRoot()],
       componentInputs: {
         documentId: '1',
         documentVersions: mockDocumentVersions,
       },
-      providers: [{ provide: MatDialog, useValue: { open: openSpy } }],
+      providers: [{ provide: MatDialog, useValue: { open: openSpy } }, provideTranslateService()],
     });
 
     const radioButtons = screen.getAllByRole('radio');
@@ -92,12 +88,11 @@ describe('TrialDocVersions', () => {
   it('should keep the new version selected when dialog is confirmed', async () => {
     const openSpy = vi.fn(() => ({ afterClosed: () => of(true) }));
     await render(TrialDocVersions, {
-      imports: [TranslateModule.forRoot()],
       componentInputs: {
         documentId: '1',
         documentVersions: mockDocumentVersions,
       },
-      providers: [{ provide: MatDialog, useValue: { open: openSpy } }],
+      providers: [{ provide: MatDialog, useValue: { open: openSpy } }, provideTranslateService()],
     });
 
     const radioButtons = screen.getAllByRole('radio');

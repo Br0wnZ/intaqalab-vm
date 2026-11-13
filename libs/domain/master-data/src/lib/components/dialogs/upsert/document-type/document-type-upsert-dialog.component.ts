@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDocumentType } from '../../../../models/master-data-document-type.model';
@@ -17,7 +17,7 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaIconComponent,
     SaveButton,
@@ -85,7 +85,6 @@ import type { MasterDataDocumentType } from '../../../../models/master-data-docu
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentTypeUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<DocumentTypeUpsertDialogComponent>);

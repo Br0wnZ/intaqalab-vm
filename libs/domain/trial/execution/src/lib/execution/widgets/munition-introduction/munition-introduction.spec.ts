@@ -4,24 +4,24 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Provider } from '@angular/core';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialsDataService } from '@intaqalab/data-access';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ShotMunitionService } from '../../../data-access';
+import { ExecutionStateService, ShotMunitionService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentTypeEnum, type ShotMunitionResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MunitionIntroduction } from './munition-introduction';
 
-@Injectable()
+@Service({ autoProvided: false })
 class MockTrialsDataService {
   readonly byIdResource = {
     value: signal({
@@ -145,9 +145,8 @@ describe('MunitionIntroduction', () => {
         ExecutionStore,
         ExecutionService,
         { provide: TrialsDataService, useClass: MockTrialsDataService },
-        ...customProviders,
+        ...customProviders, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {
@@ -209,7 +208,7 @@ describe('MunitionIntroduction', () => {
   it('updates displayed status when selected shot changes', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    const executionService = TestBed.inject(ShotMunitionService);
+    const executionService = TestBed.inject(ExecutionStateService);
 
     store.setOptimisticActiveShot('active-serie', 'active-shot');
     executionService.executionProgressResource.set({
@@ -236,7 +235,7 @@ describe('MunitionIntroduction', () => {
 
   it('selects the first shot regardless of status when changing series', async () => {
     const { fixture } = await renderWidget();
-    const executionService = TestBed.inject(ShotMunitionService);
+    const executionService = TestBed.inject(ExecutionStateService);
 
     executionService.executionProgressResource.set({
       series: [
@@ -773,15 +772,27 @@ describe('MunitionIntroduction', () => {
           },
         ],
       },
-      denominations: [
-        { id: 'denom-wh-1', name: 'Espoleta M578', componentTypeId: 'type-esp' },
-        { id: 'denom-wh-2', name: 'Espoleta 4AP', componentTypeId: 'type-esp' },
+      stockItems: [
+        {
+          id: 'stock-wh-1',
+          munitionType: { id: 'type-esp', name: 'Espoleta' },
+          denomination: { id: 'denom-wh-1', name: 'Espoleta M578' },
+          batch: 'LOT-WH-1',
+        },
+        {
+          id: 'stock-wh-2',
+          munitionType: { id: 'type-esp', name: 'Espoleta' },
+          denomination: { id: 'denom-wh-2', name: 'Espoleta 4AP' },
+          batch: 'LOT-WH-2',
+        },
       ],
     };
 
     store.setFireTrialId('trial-unassigned-denom');
+    fixture.componentInstance.onSerieSelected('serie-unassigned');
+    fixture.componentInstance.onDisparoSelected('shot-unassigned');
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       await Promise.resolve();
       TestBed.tick();
       httpMock
@@ -789,18 +800,25 @@ describe('MunitionIntroduction', () => {
         .forEach((r) => r.flush({ items: flushDataUnassigned.types }));
       httpMock.match((r) => r.url.includes('planning/munitions')).forEach((r) => r.flush(flushDataUnassigned.planning));
       httpMock
-        .match((r) => r.url.includes('/denominations'))
-        .forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
-    }
-
-    fixture.componentInstance.onSerieSelected('serie-unassigned');
-
-    for (let i = 0; i < 4; i++) {
-      await Promise.resolve();
-      TestBed.tick();
+        .match((r) => r.url.endsWith('/fire-trials') && r.params.get('trialNumber') === '034A/25')
+        .forEach((r) =>
+          r.flush({
+            page: 1,
+            pageSize: 200,
+            totalElements: 1,
+            items: [{ id: 'trial-unassigned-denom', trialNumber: '034A/25' }],
+          }),
+        );
       httpMock
-        .match((r) => r.url.includes('/denominations'))
-        .forEach((r) => r.flush({ items: flushDataUnassigned.denominations }));
+        .match((r) => r.url.includes('/warehouse/stock'))
+        .forEach((r) =>
+          r.flush({
+            page: 1,
+            pageSize: 200,
+            totalElements: flushDataUnassigned.stockItems.length,
+            items: flushDataUnassigned.stockItems,
+          }),
+        );
     }
 
     const identTab = fixture.componentInstance.identTab();
@@ -866,18 +884,44 @@ describe('MunitionIntroduction', () => {
     const store = TestBed.inject(ExecutionStore);
     const httpMock = TestBed.inject(HttpTestingController);
 
+    store.setFireTrialId('trial-unmapped');
+    fixture.componentInstance.onSerieSelected('serie-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
     fixture.componentInstance.onComponentChange('type-esp');
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       await Promise.resolve();
       TestBed.tick();
       httpMock
-        .match((r) => r.url.includes('/denominations'))
+        .match((r) => r.url.endsWith('/fire-trials') && r.params.get('trialNumber') === '034A/25')
         .forEach((r) =>
           r.flush({
+            page: 1,
+            pageSize: 200,
+            totalElements: 1,
+            items: [{ id: 'trial-unmapped', trialNumber: '034A/25' }],
+          }),
+        );
+      httpMock
+        .match((r) => r.url.includes('/warehouse/stock'))
+        .forEach((r) =>
+          r.flush({
+            page: 1,
+            pageSize: 200,
+            totalElements: 2,
             items: [
-              { id: 'denom-esp-1', name: 'Espoleta M578', componentTypeId: 'type-esp' },
-              { id: 'denom-gr-1', name: 'Granada M107', componentTypeId: 'type-gr' },
+              {
+                id: 'stock-esp-1',
+                denomination: { id: 'denom-esp-1', name: 'Espoleta M578' },
+                munitionType: { id: 'type-esp', name: 'Espoleta' },
+                batch: 'LOT-ESP-1',
+              },
+              {
+                id: 'stock-gr-1',
+                denomination: { id: 'denom-gr-1', name: 'Granada M107' },
+                munitionType: { id: 'type-gr', name: 'Granada' },
+                batch: 'LOT-GR-1',
+              },
             ],
           }),
         );

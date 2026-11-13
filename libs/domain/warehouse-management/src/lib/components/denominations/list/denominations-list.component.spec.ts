@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { UiDialogService } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -78,7 +78,7 @@ describe('DenominationsListComponent', () => {
 
     TestBed.overrideComponent(DenominationsListComponent, {
       set: {
-        imports: [CommonModule, FormsModule, MatSlideToggleModule, TranslateModule, MockDenominationsFilter],
+        imports: [CommonModule, FormsModule, MatSlideToggleModule, TranslatePipe, MockDenominationsFilter],
         template: `
           <h2>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.TITLE' | translate }}</h2>
           <inta-denominations-filter
@@ -101,12 +101,12 @@ describe('DenominationsListComponent', () => {
     });
 
     const view = await render(DenominationsListComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: DenominationsStore, useValue: mockStore },
-        { provide: UiDialogService, useValue: mockUiDialog },
+        { provide: UiDialogService, useValue: mockUiDialog }, provideTranslateService(),
       ],
       componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
     });

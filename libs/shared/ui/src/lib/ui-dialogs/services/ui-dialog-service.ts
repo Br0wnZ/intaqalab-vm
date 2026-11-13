@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { lastValueFrom, map } from 'rxjs';
 
@@ -6,9 +6,7 @@ import { DialogConfirmComponent } from '../components/dialog-confirm/dialog-conf
 import { DialogInputComponent } from '../components/dialog-input/dialog-input.component';
 import type { UIDialogConfirm, UIDialogInput } from '../ui-dialog.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class UiDialogService {
   readonly #dialog = inject(MatDialog);
 

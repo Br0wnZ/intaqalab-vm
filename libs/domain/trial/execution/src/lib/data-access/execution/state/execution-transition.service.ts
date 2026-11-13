@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { injectExecutionEndpoint, injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -7,9 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import type { ExecutionFinishResponse, TransitionWithReasonRequest } from '../../../execution/models';
 import { executionTrialUrl, fireTrialUrl } from '../shared/execution-endpoints';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ExecutionTransitionService {
   readonly #http = inject(HttpClient);
   readonly #executionUrl = injectExecutionEndpoint();

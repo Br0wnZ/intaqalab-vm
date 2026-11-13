@@ -4,7 +4,7 @@ import { MatTabGroupHarness } from '@angular/material/tabs/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -60,7 +60,7 @@ async function setup() {
   const events = userEvent.setup();
 
   const view = await render(EventLogShellComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: DocumentsService, useValue: makeMockDocumentsService() },
@@ -68,7 +68,7 @@ async function setup() {
       { provide: SeriesAndShootsService, useValue: makeMockSeriesAndShootsService() },
       { provide: MeasuresService, useValue: makeMockMeasuresService() },
       { provide: UserDataService, useValue: makeMockUserDataService() },
-      { provide: DocumentTypesService, useValue: makeMockDocumentTypesService() },
+      { provide: DocumentTypesService, useValue: makeMockDocumentTypesService() }, provideTranslateService(),
     ],
   });
 

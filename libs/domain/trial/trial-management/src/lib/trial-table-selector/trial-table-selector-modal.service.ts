@@ -1,13 +1,11 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import type { FireTrial } from '@intaqalab/models';
 import { lastValueFrom } from 'rxjs';
 
 import { TrialTableSelectorModalShellComponent } from './components/shell/trial-table-selector-modal-shell.component';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialTableSelectorModalService {
   readonly #dialog = inject(MatDialog);
 

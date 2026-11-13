@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import { catchError, firstValueFrom, map, tap } from 'rxjs';
 
@@ -19,9 +19,7 @@ interface EquipmentItemsApiResponse {
   }>;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class EquipmentCatalogService {
   readonly #httpClient = inject(HttpClient);
   readonly #planningUrl = injectPlanningEndpoint();

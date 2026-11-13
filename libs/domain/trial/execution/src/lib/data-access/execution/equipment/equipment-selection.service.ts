@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -20,9 +20,7 @@ interface EquipmentSelectorUpdateParams extends EquipmentSelectorParams {
   body: EquipmentSelectorUpdateRequest;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class EquipmentSelectionService {
   readonly #equipmentCatalogService = inject(EquipmentCatalogService);
   readonly #executionUrl = injectExecutionEndpoint();

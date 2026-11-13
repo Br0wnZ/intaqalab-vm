@@ -1,5 +1,5 @@
 import { HttpParams, httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -11,9 +11,7 @@ interface VelocityUniformityParams {
   query: VelocityUniformityQuery;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class VelocityUniformityService {
   readonly #executionUrl = injectExecutionEndpoint();
 

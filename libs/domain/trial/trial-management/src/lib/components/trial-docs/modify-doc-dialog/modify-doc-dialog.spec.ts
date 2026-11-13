@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -58,14 +58,13 @@ describe('ModifyDocDialog', () => {
     };
 
     const renderResult = await render(ModifyDocDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: { document: MOCK_DOCUMENT } },
         { provide: TrialDocsService, useValue: docsServiceMock },
-        { provide: TrialTypeService, useValue: trialTypeMock },
+        { provide: TrialTypeService, useValue: trialTypeMock }, provideTranslateService(),
       ],
     });
 

@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { AuthService, Role } from '@intaqalab/core';
 import { QualificationTypeEnum } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -125,9 +125,8 @@ describe('EquipmentSelectorDialog', () => {
         },
         { provide: EquipmentSelectionService, useValue: executionService },
         { provide: MatDialogRef, useValue: { close: closeMock } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     return { ...view, component: view.fixture.componentInstance };
   };
@@ -527,9 +526,8 @@ describe('EquipmentSelectorDialog', () => {
         },
         { provide: EquipmentSelectionService, useValue: mockService },
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: mockData },
+        { provide: MAT_DIALOG_DATA, useValue: mockData }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     }).then((v) => ({ ...v, component: v.fixture.componentInstance }));
 
     expect(component.selectedTagId()).toBe(EquipmentMagnitudeTagEnum.VELOCIDAD_INICIAL);

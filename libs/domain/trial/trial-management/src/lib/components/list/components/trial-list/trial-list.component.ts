@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -25,7 +24,7 @@ import type { FireTrial, TrialSearchFilters, TrialStatus } from '@intaqalab/mode
 import { injectTrialStatus } from '@intaqalab/models';
 import { Badge, IntaIconComponent } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialStore } from '../../+state/trial-list.store';
 
@@ -60,7 +59,7 @@ const EXECUTION_SELECTOR_COLUMNS = [
 @Component({
   selector: 'inta-trial-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -274,7 +273,6 @@ const EXECUTION_SELECTOR_COLUMNS = [
     </div>
   `,
   styles: [],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [IntaDatePipe],
 })
 export class TrialListComponent {

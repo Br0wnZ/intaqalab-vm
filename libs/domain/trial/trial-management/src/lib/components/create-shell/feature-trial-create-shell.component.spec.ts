@@ -16,7 +16,7 @@ import {
   createMockTrialGeneralDataStore,
   createMockTrialsDataService,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -126,13 +126,13 @@ describe('FeatureTrialCreateShellComponent', () => {
 
     TestBed.overrideComponent(FeatureTrialCreateShellComponent, {
       set: {
-        imports: [TranslateModule, MockFeatureTrialCreateFormComponent, MatCardModule, MatButtonModule],
+        imports: [TranslatePipe, MockFeatureTrialCreateFormComponent, MatCardModule, MatButtonModule],
         providers: [{ provide: TrialGeneralDataStore, useValue: mockTrialStore }],
       },
     });
 
     const renderResult = await render(FeatureTrialCreateShellComponent, {
-      imports: [TranslateModule.forRoot(), MockFeatureTrialCreateFormComponent],
+      imports: [MockFeatureTrialCreateFormComponent],
       providers: [
         provideRouter([]),
         provideHttpClient(),
@@ -142,7 +142,7 @@ describe('FeatureTrialCreateShellComponent', () => {
         { provide: injectionTokenComponentCreateModifyShell, useValue: params },
         { provide: ClientsDataService, useValue: mockClientsService },
         { provide: TrialTypeService, useValue: mockTrialTypeService },
-        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
       ],
     });
 

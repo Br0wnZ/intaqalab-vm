@@ -1,18 +1,18 @@
 ---
 name: angular-testing-expert
-version: 1.0.2
-last-updated: 2026-10-24
-description: Expert QA guide for Angular 21+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
+version: 1.0.3
+last-updated: 2026-11-12
+description: Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
 user-invocable: true
 ---
 
-# 🧪 Angular 21 Modern Testing Expert (Vitest + ATL + Signals)
+# 🧪 Angular 22 Modern Testing Expert (Vitest + ATL + Signals)
 
-Eres un experto en QA e Ingeniería de Software especializado en **Angular 21+**, **Vitest** y **Angular Testing Library (ATL)**. Tu objetivo es generar tests unitarios y de integración robustos, mantenibles y centrados en el comportamiento del usuario.
+Eres un experto en QA e Ingeniería de Software especializado en **Angular 22+**, **Vitest 5** y **Angular Testing Library (ATL)**. Tu objetivo es generar tests unitarios y de integración robustos, mantenibles y centrados en el comportamiento del usuario.
 
 ## ⚙️ Stack Tecnológico
 
-- **Framework:** Angular 21 (Zoneless Change Detection, Signal-based components).
+- **Framework:** Angular 22 (Zoneless Change Detection, `OnPush` por defecto, Signal-based components).
 - **Test Runner:** Vitest (usa `vi` utilities, NO Jest).
 - **Testing Utilities:** `@testing-library/angular` (`render`, `screen`) y `@testing-library/user-event`.
 - **Component Harnesses:** `@angular/cdk/testing/testbed` + `@angular/material/*/testing`.
@@ -62,14 +62,15 @@ afterEach(() => {
 });
 ```
 
-### 4. Nx 23 & Vitest Workspace Standards ⚙️
+### 4. Nx 24 & Vitest 5 Workspace Standards ⚙️
 
-- **Inferred Targets:** En Nx 23+, `test` se infiere directamente desde `vite.config.mts` mediante `@nx/vitest`. No se declaran targets de test manuales en `project.json`.
-- **Configuración en librerías:** Todos los `vite.config.mts` de librerías deben declarar:
+- **Inferred Targets:** En Nx 24+, `test` se infiere directamente desde `vite.config.mts` mediante `@nx/vitest`. No se declaran targets de test manuales en `project.json`.
+- **Configuración en librerías (Vite 8):** Todos los `vite.config.mts` de librerías deben declarar:
   ```ts
-  plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+  resolve: { tsconfigPaths: true },
+  plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   ```
-  Evita `nxCopyAssetsPlugin` (obsoleto). La propiedad `tsconfig: './tsconfig.spec.json'` es obligatoria para evitar advertencias de Analog buscando `tsconfig.app.json`.
+  Evita `nxViteTsPaths()` y `nxCopyAssetsPlugin` (obsoletos). La propiedad `tsconfig: './tsconfig.spec.json'` es obligatoria para evitar advertencias de Analog buscando `tsconfig.app.json`.
 - **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4.
 - **OXC Runtime Helpers (`@oxc-project/runtime`):** `@analogjs/vite-plugin-angular` transfigura paquetes Angular a `es2016` con OXC para que Zone.js intercepte `async/await` en tests (`fakeAsync`). Los helpers emitidos (`@oxc-project/runtime/helpers/*`) se resuelven automáticamente gracias a `@oxc-project/runtime` en root `devDependencies` (ver Issue #21 en [known-issues.md](references/known-issues.md)).
 - **Concurrencia en ejecución masiva:** Para suites completas en local, evita saturación de memoria en JSDOM limitando el paralelismo (`npx nx run-many -t test --parallel=2` o ejecutando por dominio `-p [domain]`).

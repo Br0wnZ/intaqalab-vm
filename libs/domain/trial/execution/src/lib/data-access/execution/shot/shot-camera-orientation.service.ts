@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -11,9 +11,7 @@ interface ShotCameraOrientationParams {
   cameraId: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ShotCameraOrientationService {
   readonly #executionUrl = injectExecutionEndpoint();
 

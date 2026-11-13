@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import type { FireTrial } from '@intaqalab/models';
 
 import { OverpressureService } from '../data-access/execution/analytics/overpressure.service';
@@ -116,9 +116,7 @@ export type * from '../execution/models/trial-overpressure-info.models';
  * @deprecated Use specific domain services from `@intaqalab/domain-trial-execution` (data-access/execution/*)
  * instead of this monolithic facade. Will be removed in future version.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ExecutionService {
   // ── Inyecciones de servicios descompuestos ─────────────────────────────────
   readonly #shotAcousticLevel = inject(ShotAcousticLevelService);

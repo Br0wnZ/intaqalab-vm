@@ -3,7 +3,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -20,9 +20,8 @@ describe('InterruptExecutionDialog', () => {
     const view = await render(InterruptExecutionDialog, {
       providers: [
         { provide: MatDialogRef, useValue: { close: closeMock } },
-        { provide: MAT_DIALOG_DATA, useValue: mockData },
+        { provide: MAT_DIALOG_DATA, useValue: mockData }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     loader = TestbedHarnessEnvironment.loader(view.fixture);
     return view;

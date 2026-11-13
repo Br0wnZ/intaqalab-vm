@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -26,7 +25,7 @@ import {
   injectTrialShots,
 } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../+state/execution.store';
@@ -93,7 +92,7 @@ export interface AcondFormModel {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     MunitionIdentificacionTabComponent,
     MunitionPesosTabComponent,
     MunitionAcondicionamientoTabComponent,
@@ -232,7 +231,6 @@ export interface AcondFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

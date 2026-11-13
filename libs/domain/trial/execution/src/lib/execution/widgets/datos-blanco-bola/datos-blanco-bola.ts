@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { InputFieldValue } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -56,7 +55,7 @@ interface SelectorFormModel {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
     SoundLevelMeterInput,
@@ -221,7 +220,6 @@ interface SelectorFormModel {
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatosBlancoBola extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

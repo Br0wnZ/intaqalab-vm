@@ -25,6 +25,7 @@ describe('LanguageService', () => {
       use: vi.fn().mockReturnValue(of({})),
       instant: vi.fn().mockImplementation((key: string) => key),
       setDefaultLang: vi.fn().mockReturnValue(of({})),
+      setFallbackLang: vi.fn().mockReturnValue(of({})),
       addLangs: vi.fn(),
     } as unknown as TranslateService;
 

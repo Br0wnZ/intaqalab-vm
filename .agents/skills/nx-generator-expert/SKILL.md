@@ -1,8 +1,8 @@
 ---
 name: nx-generator-expert
-version: 1.0.1
-last-updated: 2026-10-19
-description: Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 21 compatibility.
+version: 1.0.2
+last-updated: 2026-11-12
+description: Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 22 compatibility.
 argument-hint: "E.g. 'Generate feature library for warehouse management', 'Create card component in ui-shared lib', or '/create-feature'."
 user-invocable: true
 ---
@@ -94,19 +94,20 @@ _⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical 
 
 ---
 
-## ⚡ Nx 23.2.1 Standards & Inferred Targets (Project Crystal)
+## ⚡ Nx 24 Standards & Inferred Targets (Project Crystal)
 
 1. **Zero Manual `lint`/`test` in `project.json`**:
    - 🚫 **PROHIBITED:** Manually defining `lint` (`@nx/eslint:lint`) or `test` (`@nx/vitest:test`) targets in `project.json`.
-   - In Nx 23+, targets are inferred automatically by `@nx/eslint/plugin` and `@nx/vitest`.
+   - In Nx 24+, targets are inferred automatically by `@nx/eslint/plugin` and `@nx/vitest`.
    - Inspect full resolved targets using `npx nx show project <name> --json`.
 
-2. **Library `vite.config.mts` Rules**:
+2. **Library `vite.config.mts` Rules (Vite 8)**:
    - All library `vite.config.mts` files MUST use:
      ```ts
-     plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()],
+     resolve: { tsconfigPaths: true },
+     plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
      ```
-   - 🚫 **PROHIBITED:** `nxCopyAssetsPlugin` (deprecated in Nx 23, removed in Nx 24).
+   - 🚫 **PROHIBITED:** `nxViteTsPaths()` and `nxCopyAssetsPlugin` (removed in Vite 8 / Nx 24 migration).
    - 🚫 **PROHIBITED:** Bare `angular()` without `{ tsconfig: './tsconfig.spec.json' }` (causes Analog to fail searching for non-existent `tsconfig.app.json`).
 
 3. **Register New Libraries in Vitest Root Config**:

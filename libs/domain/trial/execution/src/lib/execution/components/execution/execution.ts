@@ -1,12 +1,12 @@
 import { Location } from '@angular/common';
 import type { OnDestroy } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { PlanningTrialContextService } from '@intaqalab/data-access-planning';
 import { ErrorState, Skeleton } from '@intaqalab/ui';
 import { explicitEffect, injectParams } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { EquipmentSelectionService } from '../../../data-access';
@@ -20,7 +20,7 @@ import { ExecutionHeader } from './execution-header/execution-header';
 
 @Component({
   selector: 'inta-execution',
-  imports: [TranslateModule, ErrorState, Skeleton, ExecutionGridComponent, ExecutionHeader, WidgetLibrary],
+  imports: [TranslatePipe, ErrorState, Skeleton, ExecutionGridComponent, ExecutionHeader, WidgetLibrary],
   providers: [WidgetStateService, ExecutionPageFacade],
   template: `
     <div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
@@ -78,7 +78,6 @@ import { ExecutionHeader } from './execution-header/execution-header';
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Execution implements OnDestroy {
   readonly #dialog = inject(MatDialog);

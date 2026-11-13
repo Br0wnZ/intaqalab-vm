@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject } from '@angular/core';
+import { Injector, inject, Service } from '@angular/core';
 import { PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -7,9 +7,7 @@ import { awaitResource } from '../shared/resource-await';
 import { mapPlanningMunitionOptions } from './planning-munition-options.mapper';
 import { WarehouseCatalogService } from './warehouse-catalog.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningMunitionOptionsService {
   readonly #injector = inject(Injector);
   readonly #planningMunitionsService = inject(PlanningMunitionsService);

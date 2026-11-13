@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import { ShotEditButton } from './shot-edit-button';
 import type { ShotFormLock } from './shot-form-lock';
 
 @Component({
-  imports: [ShotEditButton, TranslateModule],
+  imports: [ShotEditButton, TranslatePipe],
   template: `
     <inta-shot-edit-button [canEnable]="canEnable()" (edit)="onEdit()" />
   `,
@@ -24,8 +24,7 @@ class TestHostComponent {
 
 describe('ShotEditButton', () => {
   const renderHost = () =>
-    render(TestHostComponent, {
-      imports: [TranslateModule.forRoot()],
+    render(TestHostComponent, { providers: [provideTranslateService()]
     });
 
   it('renders edit button when canEnable is true', async () => {
@@ -64,7 +63,7 @@ describe('ShotEditButton', () => {
     } as unknown as ShotFormLock;
 
     @Component({
-      imports: [ShotEditButton, TranslateModule],
+      imports: [ShotEditButton, TranslatePipe],
       template: `
         <inta-shot-edit-button [lock]="lock" />
       `,
@@ -74,8 +73,7 @@ describe('ShotEditButton', () => {
     }
 
     const user = userEvent.setup();
-    await render(LockHostComponent, {
-      imports: [TranslateModule.forRoot()],
+    await render(LockHostComponent, { providers: [provideTranslateService()]
     });
 
     const button = screen.getByRole('button');

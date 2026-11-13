@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 
 /**
  * Contexto de la prueba de fuego activa para las queries de planning.
@@ -11,9 +11,7 @@ export type PlanningTrialContext = {
   fireTrialId: string;
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningTrialContextService {
   readonly #context = signal<PlanningTrialContext | null>(null);
 

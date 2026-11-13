@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -141,7 +141,6 @@ import type {
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MeasureLimitCard {
   readonly measure = input.required<MeasureSelectionData>();

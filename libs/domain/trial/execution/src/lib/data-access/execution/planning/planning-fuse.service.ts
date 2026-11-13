@@ -1,12 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 
 import { selectFuseMeasurement } from './planning-fuse.selectors';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningFuseService {
   readonly #planningMunitionsService = inject(PlanningMunitionsService);
 

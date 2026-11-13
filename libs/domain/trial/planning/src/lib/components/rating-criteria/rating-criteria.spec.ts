@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -44,8 +44,7 @@ const setup = async (ratingCriteria = mockRatingCriteria, readonly = false) => {
       criteria: ratingCriteria,
       readonly,
     },
-    imports: [TranslateModule.forRoot()],
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideAnimationsAsync(), provideTestingEnvironment()],
+    providers: [provideHttpClient(), provideHttpClientTesting(), provideAnimationsAsync(), provideTestingEnvironment(), provideTranslateService()],
   });
   const hostInstance = view.fixture.componentInstance;
   return { view, user, ratingCriteriaChangeSpy: hostInstance.onChange, hostInstance };

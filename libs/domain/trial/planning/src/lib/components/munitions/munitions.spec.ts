@@ -11,7 +11,7 @@ import {
   createMunitionsCatalogTestData,
   createTrial,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -31,7 +31,6 @@ import { mapBackendToLocal, mapLocalToRequest } from './munitions.mapper';
 
 // Helpers
 
-const defaultImports = [TranslateModule.forRoot()];
 
 /** Serie con todos los campos requeridos por el formulario cubiertos */
 function createValidSerie(name: string): Serie {
@@ -97,7 +96,7 @@ const runSetup = async (options?: { mockDialog?: Partial<MatDialog>; munitions?:
     ...(options?.mockDialog ? [{ provide: MatDialog, useValue: options.mockDialog }] : []),
   ];
 
-  const view = await render(Munitions, { imports: defaultImports, providers });
+  const view = await render(Munitions, { providers: [...providers, provideTranslateService()] });
   const component = view.fixture.componentInstance;
   const user = userEvent.setup();
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,14 +6,14 @@ import { MatMenuModule } from '@angular/material/menu';
 import { CAN_ADD_CALENDAR_OBSERVATIONS_ROLES, Role, injectCurrentUserRole } from '@intaqalab/core';
 import type { CalendarViewObservation } from '@intaqalab/models';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { LinesOfShotViewState } from '../../models/lines-of-shoot.model';
 import { EventsActionsService } from '../../services/events-actions.service';
 
 @Component({
   selector: 'lib-day-actions',
-  imports: [TranslateModule, MatMenuModule, MatButtonModule, MatDividerModule, MatIconModule],
+  imports: [TranslatePipe, MatMenuModule, MatButtonModule, MatDividerModule, MatIconModule],
   template: `
     <span class="cal-actions">
       <button
@@ -60,7 +60,6 @@ import { EventsActionsService } from '../../services/events-actions.service';
       opacity: 0.35;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DayActionsComponent {
   readonly #roles = injectCurrentUserRole();

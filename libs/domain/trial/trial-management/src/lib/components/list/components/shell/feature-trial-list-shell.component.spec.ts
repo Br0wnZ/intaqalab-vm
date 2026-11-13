@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -56,8 +56,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { container } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -79,8 +78,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -105,8 +103,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -140,8 +137,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { container } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -161,8 +157,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { container } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -183,8 +178,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -204,8 +198,7 @@ describe('FeatureTrialListShellComponent', () => {
 
     await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {

@@ -4,7 +4,7 @@ import { type Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -17,14 +17,13 @@ import { MunitionPesosTabComponent } from './pesos-tab.component';
 describe('MunitionPesosTabComponent', () => {
   const runSetup = async (customProviders: Provider[] = []) => {
     const view = await render(MunitionPesosTabComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         ExecutionStore,
-        ...customProviders,
+        ...customProviders, provideTranslateService(),
       ],
     });
 

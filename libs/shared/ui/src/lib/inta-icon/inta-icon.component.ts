@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import type { SafeHtml } from '@angular/platform-browser';
 import { DomSanitizer } from '@angular/platform-browser';
 
@@ -27,7 +27,14 @@ import { INTA_ICON_SIZES, type IntaIconSize } from './inta-icon.sizes';
       height: 100%;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[style.color]': 'color() ?? null',
+    '[style.width]': 'dimension()',
+    '[style.height]': 'dimension()',
+    '[attr.role]': 'label() ? "img" : null',
+    '[attr.aria-label]': 'label() ?? null',
+    '[attr.aria-hidden]': 'label() ? null : "true"',
+  },
 })
 export class IntaIconComponent {
   readonly name = input.required<string>();
@@ -38,36 +45,7 @@ export class IntaIconComponent {
   readonly #sanitizer = inject(DomSanitizer);
 
   readonly svg = computed<SafeHtml>(() => this.#sanitizer.bypassSecurityTrustHtml(getIntaIconSvg(this.name())));
-
-  @HostBinding('style.color')
-  get hostColor(): string | null {
-    return this.color() ?? null;
-  }
-
-  @HostBinding('style.width')
-  get width(): string {
-    return this.#toCssUnit(this.size());
-  }
-
-  @HostBinding('style.height')
-  get height(): string {
-    return this.#toCssUnit(this.size());
-  }
-
-  @HostBinding('attr.role')
-  get role(): string | null {
-    return this.label() ? 'img' : null;
-  }
-
-  @HostBinding('attr.aria-label')
-  get ariaLabel(): string | null {
-    return this.label() ?? null;
-  }
-
-  @HostBinding('attr.aria-hidden')
-  get ariaHidden(): string | null {
-    return this.label() ? null : 'true';
-  }
+  readonly dimension = computed<string>(() => this.#toCssUnit(this.size()));
 
   #toCssUnit(value: IntaIconSize | string | number): string {
     if (typeof value === 'number') {

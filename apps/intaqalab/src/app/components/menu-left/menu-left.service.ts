@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, computed, inject, signal, Service } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { FeatureFlagService } from '@intaqalab/config';
@@ -9,7 +9,7 @@ import { CommandsTabService } from '../../services/tabs/commands-tab-service';
 import type { MenuAction, MenuNode } from './menu-left.config';
 import { ACTION_ROUTES, MENU_TREE, URL_ACTION_MAP } from './menu-left.config';
 
-@Injectable()
+@Service({ autoProvided: false })
 export class MenuLeftService {
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);

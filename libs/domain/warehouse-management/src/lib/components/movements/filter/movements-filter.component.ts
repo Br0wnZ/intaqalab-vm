@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   effect,
@@ -21,7 +20,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MovementsListStore } from '../../../+state/movements-list.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -49,7 +48,7 @@ type FilterForm = {
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     MatTableModule,
@@ -266,7 +265,6 @@ type FilterForm = {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
 })
 export class MovementsFilterComponent {

@@ -11,7 +11,6 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
@@ -25,17 +24,6 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
-    },
-    "@nx/eslint:lint": {
-      "cache": true,
-      "inputs": [
-        "default",
-        "^default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore",
-        "{workspaceRoot}/eslint.config.mjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*"
-      ]
     },
     "@nx/esbuild:esbuild": {
       "cache": true,
@@ -60,8 +48,6 @@
         "inputs": [
           "default",
           "^default",
-          "{workspaceRoot}/.eslintrc.json",
-          "{workspaceRoot}/.eslintignore",
           "{workspaceRoot}/eslint.config.mjs",
           "{workspaceRoot}/tools/eslint-rules/**/*",
           {
@@ -112,7 +98,6 @@
       "style": "scss",
       "unitTestRunner": "vitest-analog",
       "prefix": "inta",
-      "standalone": true,
       "inlineStyle": true,
       "inlineTemplate": true,
       "routing": true,
@@ -124,8 +109,6 @@
       "unitTestRunner": "vitest-analog",
       "style": "scss",
       "prefix": "inta",
-      "changeDetection": "OnPush",
-      "standalone": true,
       "inlineStyle": true,
       "inlineTemplate": true,
       "viewEncapsulation": "None",
@@ -133,31 +116,15 @@
     },
     "@nx/angular:component": {
       "style": "scss",
-      "changeDetection": "OnPush",
-      "standalone": true,
       "inlineStyle": true,
       "inlineTemplate": true,
       "viewEncapsulation": "None"
     },
     "@schematics/angular:component": {
       "style": "scss",
-      "changeDetection": "OnPush",
-      "standalone": true,
       "inlineStyle": true,
       "inlineTemplate": true,
       "viewEncapsulation": "None"
-    },
-    "@nx/angular:directive": {
-      "standalone": true
-    },
-    "@schematics/angular:directive": {
-      "standalone": true
-    },
-    "@nx/angular:pipe": {
-      "standalone": true
-    },
-    "@schematics/angular:pipe": {
-      "standalone": true
     }
   },
   "defaultProject": "intaqalab"

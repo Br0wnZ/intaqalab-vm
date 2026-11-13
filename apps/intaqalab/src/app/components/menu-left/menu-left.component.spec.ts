@@ -2,7 +2,7 @@ import type { NavigationEnd } from '@angular/router';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Subject } from 'rxjs';
@@ -40,12 +40,11 @@ const setup = async (options: { initialUrl?: string; collapsed?: boolean } = {})
   const collapsedChangeSpy = vi.fn();
 
   const view = await render(MenuLeftComponent, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       { provide: Router, useValue: routerFake },
       { provide: CommandsTabService, useValue: tabsFake },
       { provide: AuthService, useValue: authFake },
-      provideTestingEnvironment(),
+      provideTestingEnvironment(), provideTranslateService(),
     ],
     componentInputs: { collapsed },
     on: { collapsedChange: collapsedChangeSpy },

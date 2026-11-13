@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -22,7 +21,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@intaqalab/theme';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -38,7 +37,7 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
   imports: [
     MatButtonModule,
     MatCardModule,
-    TranslateModule,
+    TranslatePipe,
     IntaSignalSelectComponent,
     FormField,
     MatFormFieldModule,
@@ -162,7 +161,6 @@ type RepositoryDenominations = Record<string, DenominationModel[]>;
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ComponentMunitionComponent {
   readonly #denominationStore = inject(DenominationsStore);
@@ -206,7 +204,7 @@ export class ComponentMunitionComponent {
   }
 
   munitionTypeChangeHandler() {
-    this.form().denominationId().setControlValue('');
+    this.form().denominationId().controlValue.set('');
     const munitionTypeId = this.form().munitionTypeId().value();
 
     this.#denominationStore.search({ munitionTypeId, pageSize: 500, active: true });

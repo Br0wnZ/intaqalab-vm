@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -23,7 +22,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
@@ -60,7 +59,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
     MatCheckboxModule,
     MatChipsModule,
     MatTabsModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     NoLeadingZerosDirective,
     EspoletaDetailFormComponent,
@@ -737,7 +736,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MassiveMunitionsConfigurationDialog {
   readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');

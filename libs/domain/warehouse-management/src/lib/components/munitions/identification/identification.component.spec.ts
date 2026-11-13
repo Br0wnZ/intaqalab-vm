@@ -6,7 +6,7 @@ import { disabled, form } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -115,13 +115,13 @@ async function setup(
   const munitionComponentStore = makeMunitionComponentStore(opts.munitionComponentItems ?? []);
 
   const view = await render(TestWrapperComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: DenominationsStore, useValue: denominationsStore },
-      { provide: MunitionComponentStore, useValue: munitionComponentStore },
+      { provide: MunitionComponentStore, useValue: munitionComponentStore }, provideTranslateService(),
     ],
   });
 
@@ -184,18 +184,18 @@ describe('MunitionIdentificationComponent', () => {
       const { componentForm, fixture } = await setup();
       expect(componentForm.denominationId().disabled()).toBe(true);
 
-      componentForm.munitionTypeId().setControlValue('GRANADA_MORTERO');
+      componentForm.munitionTypeId().controlValue.set('GRANADA_MORTERO');
       fixture.detectChanges();
       expect(componentForm.denominationId().disabled()).toBe(false);
     });
 
     it('should disable denomination again when munitionTypeId is cleared', async () => {
       const { componentForm, fixture } = await setup();
-      componentForm.munitionTypeId().setControlValue('GRANADA_MORTERO');
+      componentForm.munitionTypeId().controlValue.set('GRANADA_MORTERO');
       fixture.detectChanges();
       expect(componentForm.denominationId().disabled()).toBe(false);
 
-      componentForm.munitionTypeId().setControlValue('');
+      componentForm.munitionTypeId().controlValue.set('');
       fixture.detectChanges();
       expect(componentForm.denominationId().disabled()).toBe(true);
     });
@@ -204,8 +204,8 @@ describe('MunitionIdentificationComponent', () => {
   describe('munitionTypeChangeHandler()', () => {
     it('should reset the denomination field to empty string', async () => {
       const { component, componentForm, fixture } = await setup();
-      componentForm.munitionTypeId().setControlValue('GRANADA_MORTERO');
-      componentForm.denominationId().setControlValue(makeDenomination() as any);
+      componentForm.munitionTypeId().controlValue.set('GRANADA_MORTERO');
+      componentForm.denominationId().controlValue.set(makeDenomination() as any);
       fixture.detectChanges();
 
       expect(component.displayFn(null)).toBe('');
@@ -238,16 +238,16 @@ describe('MunitionIdentificationComponent', () => {
         makeDenomination({ id: 'd2', name: 'Vaso 2', munitionType: { id: 'Vaso', name: 'Vaso' } }),
       ];
       const { component, componentForm, fixture } = await setup({ denominationsItems: denominations });
-      componentForm.munitionTypeId().setControlValue('Vaso');
-      componentForm.denominationId().setControlValue('Vas'); // 3+ chars
+      componentForm.munitionTypeId().controlValue.set('Vaso');
+      componentForm.denominationId().controlValue.set('Vas'); // 3+ chars
       fixture.detectChanges();
       expect(component.filteredOptions()).toHaveLength(2);
     });
 
     it('should return empty filteredOptions() when denominationsStore has no items', async () => {
       const { component, componentForm, fixture } = await setup({ denominationsItems: [] });
-      componentForm.munitionTypeId().setControlValue('Vaso');
-      componentForm.denominationId().setControlValue('Vas');
+      componentForm.munitionTypeId().controlValue.set('Vaso');
+      componentForm.denominationId().controlValue.set('Vas');
       fixture.detectChanges();
       expect(component.filteredOptions()).toEqual([]);
     });

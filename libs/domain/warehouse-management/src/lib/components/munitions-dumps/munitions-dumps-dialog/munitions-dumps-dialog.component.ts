@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { MunitionDumpForm, MunitionsDumpDialog, MunitionsDumpModel } from '../../../models/munitions-dumps.model';
 
@@ -16,7 +16,7 @@ import type { MunitionDumpForm, MunitionsDumpDialog, MunitionsDumpModel } from '
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
@@ -146,7 +146,6 @@ import type { MunitionDumpForm, MunitionsDumpDialog, MunitionsDumpModel } from '
   styles: ``,
 
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionsDumpsDialogComponent {
   readonly dialogRef = inject(MatDialogRef);

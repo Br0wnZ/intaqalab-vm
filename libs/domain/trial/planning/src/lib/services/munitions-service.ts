@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import {
   injectMunitionComponentTypesEndpoint,
   injectMunitionDenominationsEndpoint,
@@ -56,9 +56,7 @@ export type {
   WarehousePaginatedResponse,
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MunitionsService {
   readonly #getMunitionsParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateMunitionsParams = signal<{ trialId: FireTrial['id']; body: MunitionBulkUpdateRequest } | null>(null);

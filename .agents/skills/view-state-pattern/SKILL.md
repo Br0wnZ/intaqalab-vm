@@ -1,7 +1,7 @@
 ---
 name: view-state-pattern
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.0.1
+last-updated: 2026-11-12
 description: Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states.
 user-invocable: true
 ---
@@ -130,7 +130,7 @@ export class MyFeatureShellComponent {
 2. **Imports Automáticos en TS:**
    Importa los componentes de esqueleto (`Skeleton`, `SkeletonCard`, `SkeletonTable`, `SkeletonForm`) y el componente de estado de error (`ErrorState`) desde `@intaqalab/ui`.
    Importa `RangePipe` de `@intaqalab/utils` para iteraciones en plantilla.
-   Importa `TranslateModule` de `@ngx-translate/core` para localización del estado de error.
+   Importa `TranslatePipe` de `@ngx-translate/core` para localización del estado de error.
 
 3. **Réplica Estructural Pixel-Perfect:**
    - **Variantes `ui-skeleton`:** `text` (títulos/textos), `button` (acciones), `circle` (avatares/iconos), `rectangle` (inputs/cards/bloques).

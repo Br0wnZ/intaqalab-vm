@@ -1,12 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectEventLogEndpoint } from '@intaqalab/config';
 
 import type { EventLogDocumentsResponse } from '../../utils-models/documents.model';
 import { injectEventLogResource } from '../event-log-resource.factory';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DocumentsService {
   readonly #documentsData = injectEventLogResource<EventLogDocumentsResponse>(`${injectEventLogEndpoint()}/documents`);
 

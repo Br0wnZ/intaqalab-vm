@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { formatShotLabel, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent, StopClick } from '@intaqalab/ui';
 import { deepEqual } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { JltStatus } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -30,7 +30,7 @@ import { mapPlanningSeriesToOptions } from '../utils/selection-options';
 @Component({
   selector: 'inta-execution-prep-jlt-widget',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,

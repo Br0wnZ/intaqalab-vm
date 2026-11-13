@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext, type HttpStatusCode, httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { SKIP_CENTER_INTERCEPTOR, TOAST_FEEDBACK, injectDocumentsEndpoint } from '@intaqalab/config';
 
@@ -32,9 +32,7 @@ import type {
   UploadNewDocumentVersionParams,
 } from '../utils-models/documents-service.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialDocsService {
   readonly #httpClient = inject(HttpClient);
 

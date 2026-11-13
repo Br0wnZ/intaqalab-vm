@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { computed, inject, Service } from '@angular/core';
 import {
   AuthService,
   CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES,
@@ -29,9 +29,7 @@ const PLANNING_VISIBLE_STATUSES: ReadonlyArray<TrialStatus> = [
   TrialStatus.VOIDED,
 ];
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningPermissionsService {
   readonly #authService = inject(AuthService);
   readonly #userRoles = computed(() => this.#authService.userRoles());

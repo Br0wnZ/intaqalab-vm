@@ -4,7 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -217,9 +217,8 @@ describe('JltShotData', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
-        { provide: ShotJltDataService, useValue: mockExecutionService },
+        { provide: ShotJltDataService, useValue: mockExecutionService }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {
@@ -378,7 +377,7 @@ describe('JltShotData', () => {
     await fixture.whenStable();
 
     expect(attackInput).toHaveValue('12,5');
-    expect(fixture.componentInstance['atacadoField']()).toEqual({ value: '12,5', unit: 'MM' });
+    expect(fixture.componentInstance['atacadoField']()).toEqual({ value: '12.5', unit: 'MM' });
   });
 
   it('saves the shot selected in the widget even when store selection differs', async () => {

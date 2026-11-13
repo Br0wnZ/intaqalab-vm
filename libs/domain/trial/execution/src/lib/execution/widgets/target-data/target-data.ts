@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -23,7 +22,7 @@ import {
   SHOT_CONDITIONS_UNIT_OPTIONS,
 } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -50,7 +49,7 @@ interface TargetDataFormModel {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
   ],
@@ -170,7 +169,6 @@ interface TargetDataFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TargetDataWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

@@ -5,7 +5,7 @@ import { inputBinding, outputBinding, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,7 +16,6 @@ import type { Configuration } from '../../../utils-models/munitions.model';
 import { createEmptyComponentDetail, createEmptyConfiguration } from '../../../utils-models/munitions.model';
 import { ConfigurationFormComponent } from './configuration-form.component';
 
-const defaultImports = [TranslateModule.forRoot()];
 
 const mockMunitionTypes = signal([
   { id: 'type-1', label: 'Tipo 1', name: { es: 'Tipo 1', en: 'Tipo 1' }, active: true },
@@ -107,8 +106,7 @@ describe('ConfigurationFormComponent', () => {
   describe('Initial rendering', () => {
     it('should render all main fields', async () => {
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -124,8 +122,7 @@ describe('ConfigurationFormComponent', () => {
 
     it('should render the conditioning checkbox', async () => {
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -136,8 +133,7 @@ describe('ConfigurationFormComponent', () => {
 
     it('should render the component selector', async () => {
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -153,8 +149,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -197,8 +192,7 @@ describe('ConfigurationFormComponent', () => {
       const user = userEvent.setup();
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -227,8 +221,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -256,8 +249,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -283,8 +275,8 @@ describe('ConfigurationFormComponent', () => {
         `<inta-configuration-form [(config)]="configuration" [configIndex]="0" />
          <output aria-label="Current lot">{{ configuration().batch }}</output>`,
         {
-          imports: [...defaultImports, ConfigurationFormComponent],
-          providers: defaultProviders,
+          imports: [ConfigurationFormComponent],
+          providers: [...defaultProviders, provideTranslateService()],
           componentProperties: { configuration },
         },
       );
@@ -310,8 +302,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -336,8 +327,7 @@ describe('ConfigurationFormComponent', () => {
       const user = userEvent.setup();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -354,8 +344,7 @@ describe('ConfigurationFormComponent', () => {
       const user = userEvent.setup();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           config: { ...defaultConfig, reconditioning: { temperature: 25, tolerance: 2, timeMin: 4, timeMax: 8 } },
           configIndex: 0,
@@ -382,8 +371,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -408,8 +396,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -438,8 +425,7 @@ describe('ConfigurationFormComponent', () => {
     it('should filter component options as the user types', async () => {
       const user = userEvent.setup();
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
       const loader = TestbedHarnessEnvironment.loader(fixture);
@@ -463,8 +449,7 @@ describe('ConfigurationFormComponent', () => {
       };
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: configWithComponents, configIndex: 0 },
       });
 
@@ -484,8 +469,7 @@ describe('ConfigurationFormComponent', () => {
       };
 
       const renderResult = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => configWithComponents),
           inputBinding('configIndex', () => 0),
@@ -513,8 +497,7 @@ describe('ConfigurationFormComponent', () => {
       };
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: configWithComponents, configIndex: 0 },
       });
 
@@ -528,8 +511,7 @@ describe('ConfigurationFormComponent', () => {
   describe('Validations', () => {
     it('should require denomination', async () => {
       const renderResult = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
@@ -545,8 +527,7 @@ describe('ConfigurationFormComponent', () => {
 
     it('should require lot', async () => {
       const renderResult = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: { ...defaultConfig, denomination: 'option1' }, configIndex: 0 },
       });
 
@@ -568,8 +549,7 @@ describe('ConfigurationFormComponent', () => {
       };
 
       const renderResult = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: validConfig, configIndex: 0 },
       });
 
@@ -587,8 +567,7 @@ describe('ConfigurationFormComponent', () => {
       const user = userEvent.setup();
 
       const renderResult = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: { ...defaultConfig, denomination: 'option1', batch: 'LOT-001' }, configIndex: 0 },
       });
 
@@ -615,8 +594,7 @@ describe('ConfigurationFormComponent', () => {
       ];
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           config: defaultConfig,
           configIndex: 0,
@@ -646,8 +624,7 @@ describe('ConfigurationFormComponent', () => {
       ];
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -684,8 +661,7 @@ describe('ConfigurationFormComponent', () => {
       ];
 
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -720,8 +696,7 @@ describe('ConfigurationFormComponent', () => {
       };
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: configWithClientNumber, configIndex: 0 },
       });
 
@@ -735,8 +710,7 @@ describe('ConfigurationFormComponent', () => {
       const configChangeSpy = vi.fn();
 
       await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => defaultConfig),
           inputBinding('configIndex', () => 0),
@@ -756,8 +730,7 @@ describe('ConfigurationFormComponent', () => {
 
     it('should validate trailing comma in clientNumber', async () => {
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           config: { ...defaultConfig, assignedShotIds: ['shot-1', 'shot-2'] },
           configIndex: 0,
@@ -774,8 +747,7 @@ describe('ConfigurationFormComponent', () => {
 
     it('should validate clientNumber counts against assignedShotIds count', async () => {
       const { fixture } = await render(ConfigurationFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           config: { ...defaultConfig, assignedShotIds: ['shot-1', 'shot-2'] },
           configIndex: 0,

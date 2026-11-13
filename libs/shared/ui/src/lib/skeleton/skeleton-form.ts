@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@angular/core';
+import { Component, ViewEncapsulation, input } from '@angular/core';
 import { RangePipe } from '@intaqalab/utils';
 
 import { Skeleton, type SkeletonAnimation } from './skeleton';
@@ -56,7 +56,6 @@ const LABEL_WIDTHS = ['30%', '45%', '35%', '50%', '40%', '55%', '38%', '42%'];
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonForm {
   /** Número de campos del formulario */

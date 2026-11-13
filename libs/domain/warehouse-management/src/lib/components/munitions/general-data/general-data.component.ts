@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, inject, input, output } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { FormField } from '@angular/forms/signals';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
 
@@ -19,7 +19,6 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
     FormField,
     MatInputModule,
     TranslatePipe,
-    TranslateModule,
     MatFormFieldModule,
     MatDatepickerModule,
     MatNativeDateModule,
@@ -113,7 +112,6 @@ import type { MunitionStockFormModel } from '../../../models/munition-stock.mode
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionGeneralDataComponent {
   protected readonly clientsService = inject(ClientsDataService);

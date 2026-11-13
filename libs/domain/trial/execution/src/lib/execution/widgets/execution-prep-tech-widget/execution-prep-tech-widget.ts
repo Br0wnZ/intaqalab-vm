@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -89,7 +89,7 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
 @Component({
   selector: 'inta-execution-prep-tech-widget',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,
@@ -430,6 +430,7 @@ export class ExecutionPrepTechWidgetComponent extends BaseFormWidgetComponent {
       const message = this.#translate.instant('TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.SAVE_SERIES_FAILED', {
         profile: this.#translate.instant(this.profileConfig().titleKey),
         series: seriesName ?? failure.seriesId,
+        seriesId: failure.seriesId,
       });
       this.#toastr.error(message, this.#translate.instant('HTTP_ERRORS.TITLE'));
     }

@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EventLogMeasuresStore } from '../../+state/measures.store';
 import { EventLogEventLogMeasuresFiltersComponent } from './measures-filters/measures-filters.component';
@@ -12,7 +12,7 @@ import { EventLogEventLogMeasuresFiltersComponent } from './measures-filters/mea
 @Component({
   selector: 'inta-event-log-measures',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -131,7 +131,6 @@ import { EventLogEventLogMeasuresFiltersComponent } from './measures-filters/mea
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogMeasuresComponent {
   readonly store = inject(EventLogMeasuresStore);

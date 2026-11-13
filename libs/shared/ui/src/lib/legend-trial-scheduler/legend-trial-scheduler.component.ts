@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'ui-legend-trial-scheduler',
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   template: `
     <div role="list" class="legend" [attr.aria-label]="'TRIAL_SCHEDULER.LEGEND.ARIA_LABEL' | translate">
       <div role="listitem" class="legend-item">
@@ -64,6 +64,5 @@ import { TranslateModule } from '@ngx-translate/core';
       line-height: 1;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LegendTrialSchedulerComponent {}

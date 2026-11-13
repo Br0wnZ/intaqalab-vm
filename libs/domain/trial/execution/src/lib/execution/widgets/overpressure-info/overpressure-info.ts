@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -17,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, PressureUnitEnum } from '@intaqalab/models';
 import { ErrorState, IntaIconComponent, Skeleton } from '@intaqalab/ui';
 import { IntaDecimalPipe, LocaleDecimalInputDirective, deepEqual } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -34,7 +33,7 @@ import { mapOverpressureFormToRequest } from './overpressure-info.mapper';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     LocaleDecimalInputDirective,
     IntaDecimalPipe,
@@ -154,7 +153,6 @@ import { mapOverpressureFormToRequest } from './overpressure-info.mapper';
       }
     </section>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OverpressureInfoWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

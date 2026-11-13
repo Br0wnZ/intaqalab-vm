@@ -1,5 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -17,9 +17,8 @@ describe('PauseExecutionDialog', () => {
     const view = await render(PauseExecutionDialog, {
       providers: [
         { provide: MatDialogRef, useValue: { close: closeMock } },
-        { provide: MAT_DIALOG_DATA, useValue: mockData },
+        { provide: MAT_DIALOG_DATA, useValue: mockData }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     return view;
   };

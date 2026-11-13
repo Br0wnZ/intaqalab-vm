@@ -2,7 +2,7 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import type { UserEvent } from '@testing-library/user-event';
 import { userEvent } from '@testing-library/user-event';
@@ -12,7 +12,6 @@ import { MunitionComponentDialogComponent } from './munition-component-dialog.co
 
 describe('MunitionComponentDialogComponent', () => {
   let user: UserEvent;
-  const defaultImports = [TranslateModule.forRoot()];
   let closeMock: ReturnType<typeof vi.fn>;
 
   const renderDialog = async (
@@ -25,9 +24,8 @@ describe('MunitionComponentDialogComponent', () => {
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn || vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data || { document: { id: 'doc-1', name: 'test-document' } } },
+        { provide: MAT_DIALOG_DATA, useValue: data || { document: { id: 'doc-1', name: 'test-document' } } }, provideTranslateService(),
       ],
-      imports: defaultImports,
     });
   };
 

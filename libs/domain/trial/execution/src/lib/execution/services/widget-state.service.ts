@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { computed, signal, Service } from '@angular/core';
 
 import type {
   FormWidget,
@@ -21,7 +21,7 @@ export class WidgetGridFullError extends Error {
 /**
  * 🎯 Servicio para gestionar el estado de los widgets en el grid
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class WidgetStateService {
   // 📦 Widgets colocados en el grid
   readonly #placedWidgets = signal<PlacedWidget[]>([]);

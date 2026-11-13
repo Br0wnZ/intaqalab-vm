@@ -8,7 +8,7 @@ import { MatTableHarness } from '@angular/material/table/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -94,14 +94,14 @@ const setup = async (masterView: MasterView = MOCK_VIEW) => {
   const mockService = makeMockService();
 
   const view = await render(MasterDataListComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     componentInputs: { masterView },
     providers: [
       provideTestingEnvironment(),
       { provide: MasterDataService, useValue: mockService },
       { provide: MODAL_COMPONENT, useValue: MasterDataDefaultUpsertDialogComponent },
       { provide: MatDialog, useValue: mockMatDialog },
-      MasterDataStore,
+      MasterDataStore, provideTranslateService(),
     ],
   });
 
@@ -204,14 +204,14 @@ describe('MasterDataListComponent', () => {
   describe('View States', () => {
     async function renderWithService(mockService: ReturnType<typeof makeMockService>) {
       return render(MasterDataListComponent, {
-        imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+        imports: [NoopAnimationsModule],
         componentInputs: { masterView: MOCK_VIEW },
         providers: [
           provideTestingEnvironment(),
           { provide: MasterDataService, useValue: mockService },
           { provide: MODAL_COMPONENT, useValue: MasterDataDefaultUpsertDialogComponent },
           { provide: MatDialog, useValue: mockMatDialog },
-          MasterDataStore,
+          MasterDataStore, provideTranslateService(),
         ],
       });
     }

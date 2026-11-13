@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   Injector,
   ViewEncapsulation,
@@ -15,7 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { MunitionsStore } from '../../+state/munitions.store';
@@ -33,7 +32,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
     MatExpansionModule,
     MatButtonModule,
     SeriePanelComponent,
-    TranslateModule,
+    TranslatePipe,
     Badge,
     TrialStatusLabelPipe,
     Skeleton,
@@ -163,7 +162,6 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Munitions {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */

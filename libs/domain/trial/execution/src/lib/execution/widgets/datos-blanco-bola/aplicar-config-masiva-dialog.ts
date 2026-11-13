@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect, IntaIconComponent, SoundLevelMeterInput, type SoundLevelMeterValue } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { DatosBlancoBolasState, InputFieldValue } from '../../../+state/execution.store';
 import { ReadonlyContentDirective } from '../../directives/readonly-content.directive';
@@ -52,7 +52,7 @@ export type AplicarConfigMasivaDialogResult =
     ReadonlyContentDirective,
     MatSelectModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
     SoundLevelMeterInput,
@@ -208,7 +208,6 @@ export type AplicarConfigMasivaDialogResult =
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AplicarConfigMasivaDialog {
   readonly #dialogRef = inject(MatDialogRef<AplicarConfigMasivaDialog>);

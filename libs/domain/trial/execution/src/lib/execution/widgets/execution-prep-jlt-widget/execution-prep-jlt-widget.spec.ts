@@ -4,7 +4,7 @@ import { signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PlanningSeriesItem } from '@intaqalab/data-access-planning';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -101,9 +101,8 @@ describe('ExecutionPrepJltWidgetComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ExecutionStore, useValue: mockStore },
-        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        { provide: WidgetStateService, useValue: mockWidgetStateService }, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

@@ -7,7 +7,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen } from '@testing-library/angular';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -70,14 +70,14 @@ async function setup(opts: SetupOptions = {}) {
   const storeMock = makeStoreMock(opts.items ?? twoRows());
 
   const view = await render(MunitionsDumpsListComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: MunitionsDumpsStore, useValue: storeMock },
       { provide: MatDialog, useValue: mockDialog },
-      { provide: UiDialogService, useValue: mockUiDialog },
+      { provide: UiDialogService, useValue: mockUiDialog }, provideTranslateService(),
     ],
   });
 

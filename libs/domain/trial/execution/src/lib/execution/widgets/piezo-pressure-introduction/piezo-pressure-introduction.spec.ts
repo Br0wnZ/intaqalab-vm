@@ -4,13 +4,12 @@ import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { EquipmentSelectionService, ShotPressuresService } from '../../../data-access';
-import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { injectInitialPiezoPressureEquipments } from './inject-initial-piezo-pressure-equipments';
@@ -39,9 +38,8 @@ describe('PiezoPressureIntroduction', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
-        ...extraProviders,
+        ...extraProviders, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors and contains tab buttons and ui-input-select components', async () => {
@@ -231,7 +229,7 @@ describe('PiezoPressureIntroduction', () => {
     });
 
     const { fixture } = await renderWidget();
-    const execService = TestBed.inject(ExecutionService);
+    const execService = TestBed.inject(EquipmentSelectionService);
     Object.defineProperty(execService, 'equipmentSelectorResource', {
       value: {
         hasValue: () => true,
@@ -281,7 +279,7 @@ describe('PiezoPressureIntroduction', () => {
 
   it('returns empty piezoEquipmentOptions when equipmentSelector has no selections for PIEZOELECTRIC_PRESSURE', async () => {
     const { fixture } = await renderWidget('piezo-empty-equipments');
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(EquipmentSelectionService);
 
     Object.defineProperty(executionService, 'equipmentSelectorResource', {
       value: {
@@ -320,7 +318,7 @@ describe('PiezoPressureIntroduction', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ExecutionService, useValue: mockExecutionService }],
+      providers: [{ provide: EquipmentSelectionService, useValue: mockExecutionService }],
     });
 
     const selections = TestBed.runInInjectionContext(() => injectInitialPiezoPressureEquipments());

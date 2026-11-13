@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -18,9 +18,7 @@ interface PreferencesUserParams {
   widgetsLayout?: WidgetPreferenceId[];
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class WidgetPreferencesService {
   readonly #executionUrl = injectExecutionEndpoint();
 

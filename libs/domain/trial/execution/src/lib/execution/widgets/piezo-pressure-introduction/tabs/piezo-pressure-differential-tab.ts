@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import { InputSelect } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ShotDifferentialPressureData } from '../../../models';
 import {
@@ -12,7 +12,7 @@ import {
 
 @Component({
   selector: 'inta-piezo-pressure-differential-tab',
-  imports: [TranslateModule, InputSelect],
+  imports: [TranslatePipe, InputSelect],
   template: `
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0 items-start">
       <!-- ── Left: Differential pressure inputs ──────────────────────────── -->
@@ -57,7 +57,6 @@ import {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PiezoPressureDifferentialTab {
   readonly model = model.required<ShotDifferentialPressureData>();

@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -22,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { getArmamentByShotId, injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -67,7 +66,7 @@ interface ArmamentIntroductionSelectForm {
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -224,7 +223,6 @@ interface ArmamentIntroductionSelectForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArmamentIntroductionComponent extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

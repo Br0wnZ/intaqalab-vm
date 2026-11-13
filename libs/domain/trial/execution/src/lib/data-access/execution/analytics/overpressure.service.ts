@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -12,9 +12,7 @@ import type {
 import { executionTrialUrl } from '../shared/execution-endpoints';
 import { awaitResourceValue } from '../shared/resource-await';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class OverpressureService {
   readonly #http = inject(HttpClient);
   readonly #injector = inject(Injector);

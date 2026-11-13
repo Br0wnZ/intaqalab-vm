@@ -1,5 +1,5 @@
 import type { ComponentFixture } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReconditioningData } from '../../../utils-models/munitions.model';
 import { ConditioningFieldsComponent } from './conditioning-fields.component';
 
-const defaultImports = [TranslateModule.forRoot()];
 
 describe('ConditioningFieldsComponent', () => {
   let fixture: ComponentFixture<ConditioningFieldsComponent>;
@@ -31,8 +30,7 @@ describe('ConditioningFieldsComponent', () => {
   describe('Initial rendering', () => {
     it('should render all form fields', async () => {
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
-        componentInputs: { data: defaultData },
+        componentInputs: { data: defaultData }, providers: [provideTranslateService()]
       });
 
       expect(
@@ -50,8 +48,7 @@ describe('ConditioningFieldsComponent', () => {
 
     it('should display initial values correctly', async () => {
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
-        componentInputs: { data: defaultData },
+        componentInputs: { data: defaultData }, providers: [provideTranslateService()]
       });
 
       const tempInput = screen.getByLabelText(
@@ -85,8 +82,7 @@ describe('ConditioningFieldsComponent', () => {
       };
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
-        componentInputs: { data: dataWithoutTimeMin },
+        componentInputs: { data: dataWithoutTimeMin }, providers: [provideTranslateService()]
       });
 
       const minTimeInput = screen.getByLabelText(
@@ -103,9 +99,8 @@ describe('ConditioningFieldsComponent', () => {
       const dataChangeSpy = vi.fn();
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy },
+        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
       });
 
       const tempInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label/i);
@@ -123,9 +118,8 @@ describe('ConditioningFieldsComponent', () => {
       const dataChangeSpy = vi.fn();
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy },
+        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
       });
 
       const toleranceInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.tolerance_label/i);
@@ -143,9 +137,8 @@ describe('ConditioningFieldsComponent', () => {
       const dataChangeSpy = vi.fn();
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy },
+        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
       });
 
       const minTimeInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.min_time_label/i);
@@ -163,9 +156,8 @@ describe('ConditioningFieldsComponent', () => {
       const dataChangeSpy = vi.fn();
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy },
+        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
       });
 
       const observationsInput = screen.getByLabelText(
@@ -187,9 +179,8 @@ describe('ConditioningFieldsComponent', () => {
       const dataChangeSpy = vi.fn();
 
       await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy },
+        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
       });
 
       const tempInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label/i);
@@ -208,7 +199,6 @@ describe('ConditioningFieldsComponent', () => {
   describe('Validation', () => {
     it('should be valid when timeMax is undefined but other required fields are present', async () => {
       const { fixture } = await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: {
           data: {
             temperature: 25,
@@ -216,7 +206,7 @@ describe('ConditioningFieldsComponent', () => {
             timeMin: 4,
             timeMax: undefined,
           },
-        },
+        }, providers: [provideTranslateService()]
       });
 
       expect(fixture.componentInstance.isValid()).toBe(true);
@@ -226,7 +216,6 @@ describe('ConditioningFieldsComponent', () => {
 
     it('should be invalid when required fields like temperature are missing', async () => {
       const { fixture } = await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: {
           data: {
             temperature: undefined,
@@ -234,7 +223,7 @@ describe('ConditioningFieldsComponent', () => {
             timeMin: 4,
             timeMax: undefined,
           },
-        },
+        }, providers: [provideTranslateService()]
       });
 
       expect(fixture.componentInstance.isValid()).toBe(false);
@@ -243,7 +232,6 @@ describe('ConditioningFieldsComponent', () => {
 
     it('should not show error for timeMax when showErrors is true', async () => {
       const { fixture } = await render(ConditioningFieldsComponent, {
-        imports: defaultImports,
         componentInputs: {
           data: {
             temperature: 25,
@@ -252,7 +240,7 @@ describe('ConditioningFieldsComponent', () => {
             timeMax: undefined,
           },
           showErrors: true,
-        },
+        }, providers: [provideTranslateService()]
       });
 
       expect(fixture.componentInstance.showFieldError('timeMax')).toBe(false);

@@ -1,11 +1,15 @@
 import '@analogjs/vitest-angular/setup-zone';
-import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
+import { registerLocaleData, ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import '@angular/compiler';
 import { getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import '@intaqalab/utils/testing/pdf-mock';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
+import { afterEach } from 'vitest';
+
+registerLocaleData(localeEs);
 
 // Initialize DOM adapter BEFORE TestBed - critical for direct Vitest runs
 BrowserDomAdapter.makeCurrent();
@@ -30,3 +34,7 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     }
   };
 }
+
+afterEach(() => {
+  getTestBed().resetTestingModule();
+});

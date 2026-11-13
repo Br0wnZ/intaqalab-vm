@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { createMockArmamentService, createMockMatDialogRef } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,11 +30,10 @@ describe('MassiveShotsConfigurationDialog', () => {
     const user = userEvent.setup();
 
     const view = await render(MassiveShotsConfigurationDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
-        { provide: ArmamentService, useValue: mockArmamentService },
+        { provide: ArmamentService, useValue: mockArmamentService }, provideTranslateService(),
       ],
     });
 

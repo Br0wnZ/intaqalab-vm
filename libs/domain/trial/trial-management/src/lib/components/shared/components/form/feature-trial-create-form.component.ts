@@ -21,7 +21,7 @@ import {
   Skeleton,
   SkeletonTable,
 } from '@intaqalab/ui';
-import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { TrialTypeService } from '../../../../services/trial-type.service';
@@ -50,7 +50,6 @@ import type { TrialCreateModifyForm } from './trial-create.model';
     MatChipsModule,
     MatIconModule,
     TranslatePipe,
-    TranslateModule,
     TrialSchedulerInlineComponent,
     TrialDocs,
     FormField,

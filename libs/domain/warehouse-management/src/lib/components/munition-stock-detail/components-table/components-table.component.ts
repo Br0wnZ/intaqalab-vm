@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
@@ -33,7 +32,7 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch'];
   selector: 'inta-components-table',
   imports: [
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatButtonModule,
     MatIconModule,
     MatTableModule,
@@ -148,7 +147,6 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch'];
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ComponentsTableComponent {
   readonly munitionStockDetailStore = inject(MunitionsStockDetailStore);

@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { injectCalendarEndpoint } from '@intaqalab/config';
 import type {
   CalendarEventsApiResponse,
@@ -14,9 +14,7 @@ import { map } from 'rxjs';
 
 const SKIP_STATUS: TrialStatus[] = [TrialStatus.CANCELLED, TrialStatus.VOIDED];
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CalendarEventsDataService {
   readonly #httpClient = inject(HttpClient);
 

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { TrialTableSelectorModalShellComponent } from './trial-table-selector-modal-shell.component';
@@ -11,12 +11,11 @@ import { TrialTableSelectorModalShellComponent } from './trial-table-selector-mo
 describe('TrialTableSelectorModalShellComponent', () => {
   beforeEach(async () => {
     await render(TrialTableSelectorModalShellComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: MatDialogRef, useValue: {} },
+        { provide: MatDialogRef, useValue: {} }, provideTranslateService(),
       ],
     });
   });

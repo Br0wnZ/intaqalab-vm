@@ -11,7 +11,7 @@ import {
   createMockSeriesAndShotsService,
   createMockSeriesAndShotsStore,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -29,7 +29,6 @@ import {
   mapResponseToLocal,
 } from './measures.mapper';
 
-const defaultImports = [TranslateModule.forRoot()];
 
 const defaultCatalogData = [
   {
@@ -116,7 +115,6 @@ describe('Measures', () => {
     });
 
     const view = await render(Measures, {
-      imports: defaultImports,
       componentInputs: {
         readonly: options?.readonly ?? false,
       },
@@ -127,7 +125,7 @@ describe('Measures', () => {
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
         { provide: MeasuresService, useValue: mockMeasuresService },
         { provide: SeriesAndShotsService, useValue: mockSeriesService },
-        { provide: SeriesAndShotsStore, useValue: mockSeriesStore },
+        { provide: SeriesAndShotsStore, useValue: mockSeriesStore }, provideTranslateService(),
       ],
     });
 

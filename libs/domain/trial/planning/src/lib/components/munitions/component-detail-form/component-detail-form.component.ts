@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -21,7 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type {
   MasterDataI18nItem,
@@ -48,7 +47,7 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
     FormField,
     ConditioningFieldsComponent,
     NoLeadingZerosDirective,
-    TranslateModule,
+    TranslatePipe,
     EspoletaDetailFormComponent,
     SuplementoDetailFormComponent,
     CargaDetailFormComponent,
@@ -263,7 +262,6 @@ import { SuplementoDetailFormComponent } from './suplemento-detail-form/suplemen
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ComponentDetailFormComponent {
   readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');

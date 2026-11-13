@@ -10,7 +10,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -95,7 +95,7 @@ async function setup() {
   const user = userEvent.setup();
   const trialsDataService = mockTrialsDataService();
   const view = await render(MunitionsShellComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: MunitionComponentStore, useValue: makeMunitionComponentStore() },
@@ -105,7 +105,7 @@ async function setup() {
       { provide: ClientsDataService, useValue: mockClientsDataService() },
       { provide: TrialsDataService, useValue: trialsDataService },
       { provide: UiDialogService, useValue: { confirm: vi.fn(), input: vi.fn() } },
-      { provide: Router, useValue: { navigateByUrl: vi.fn() } },
+      { provide: Router, useValue: { navigateByUrl: vi.fn() } }, provideTranslateService(),
     ],
   });
 

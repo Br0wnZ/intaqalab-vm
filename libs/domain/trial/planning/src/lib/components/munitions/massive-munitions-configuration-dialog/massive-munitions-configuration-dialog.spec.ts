@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
@@ -67,13 +67,12 @@ describe('MassiveMunitionsConfigurationDialog', () => {
 
   const renderDialog = async (dialogRefMock = createFullMockDialogRef(), dialogData = {}) => {
     return render(MassiveMunitionsConfigurationDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: dialogRefMock },
-        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData }, provideTranslateService(),
       ],
       componentInputs: {},
       componentProperties: {},

@@ -9,9 +9,9 @@
 - Nx project names match exact `name` in `project.json` or `nx show projects` output (e.g., `execution` instead of import path `domain-trial-execution`). Run `npx nx show projects` or `npx nx show project <name>` to inspect exact names and configurations.
 - You have access to the Nx MCP server and its tools, use them to help the user
 - NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
-- **Inferred Targets (Nx 23.2.1+ / Project Crystal):** `lint` and `test` targets are inferred by `@nx/eslint/plugin` and `@nx/vitest`. NEVER manually declare `lint` or `test` executors in `project.json`. Always run `npx nx show project <name> --json` to inspect full resolved targets.
-- **Vite & Vitest Standards:** Library `vite.config.mts` must use `plugins: [angular({ tsconfig: './tsconfig.spec.json' }), nxViteTsPaths()]` (no `nxCopyAssetsPlugin`). Workspace test suite is tracked in `vitest.config.ts` (`projects` array; `vitest.workspace.ts` is obsolete). Workspace root `devDependencies` requires `@oxc-project/runtime` for Vitest Analog/OXC runtime helpers.
-- **Execution & Output:** Nx 23 defaults to `static-failures-only` in CI/non-interactive. If unix socket issues occur in sandboxes, use `NX_DAEMON=false`. Granular migrations run with `npx nx migrate --run-migration=<pkg:name>`.
+- **Inferred Targets (Nx 24+ / Project Crystal):** `lint` and `test` targets are inferred by `@nx/eslint/plugin` and `@nx/vitest`. NEVER manually declare `lint` or `test` executors in `project.json`. Always run `npx nx show project <name> --json` to inspect full resolved targets.
+- **Vite 8 & Vitest 5 Standards:** Library `vite.config.mts` must use `resolve: { tsconfigPaths: true }` and `plugins: [angular({ tsconfig: './tsconfig.spec.json' })]` (no `nxViteTsPaths()` or `nxCopyAssetsPlugin`). Workspace test suite is tracked in `vitest.config.ts` (`projects` array; `vitest.workspace.ts` is obsolete). Workspace root `devDependencies` requires `@oxc-project/runtime` for Vitest Analog/OXC runtime helpers.
+- **Execution & Output:** Nx 24 defaults to `static-failures-only` in CI/non-interactive. If unix socket issues occur in sandboxes, use `NX_DAEMON=false`. Granular migrations run with `npx nx migrate --run-migration=<pkg:name>`.
 
 ## Scaffolding & Generators
 
@@ -106,7 +106,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 
 ---
 
-# 🏗️ Architecture & Angular 21 Standards (Zoneless & Signals-first)
+# 🏗️ Architecture & Angular 22 Standards (Zoneless & Signals-first)
 
 ## 🌟 Golden Path Reference
 
@@ -116,7 +116,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 
 ## Technology Stack 🛠️
 
-- **Angular 21:** `signals`, `httpResource` (queries/reads ONLY), `HttpClient` (mutations/writes), `signal-forms`. Standalone by default (omit `standalone: true`).
+- **Angular 22:** `signals`, `@Service()` (instead of `@Injectable({ providedIn: 'root' })`), `httpResource` (queries/reads ONLY), `HttpClient` (mutations/writes), `signal-forms` (`touch = output<void>()`, `controlValue`), `OnPush` by default (omit `changeDetection: ChangeDetectionStrategy.OnPush`), standalone by default (omit `standalone: true`), `TranslatePipe` / `provideTranslateService()` (`@ngx-translate/core` v18).
 - **Nx Monorepo:** Layered modular libraries (`data-access`, `feature`, `ui`, `util`). Keep business logic in `data-access`.
 - **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
 - **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
@@ -135,7 +135,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
   - **Collections / Optional properties:** Use `flatMap()` or explicit TypeScript type predicates (`filter((x): x is ... => Boolean(...))`).
   - **Tests:** Use explicit guards (`if (!tab) throw new Error(...)`) or semantic assertions (`expect(...).toBeDefined()`) instead of `!`. Never add `/* eslint-disable @typescript-eslint/no-non-null-assertion */`.
 - **Command-Query Separation in HTTP Layer (ADR-020):** ⚡ **MANDATORY.**
-  - **Queries (GET):** MUST use Angular 21 `httpResource` coupled with private trigger signals (`Signal Trigger Pattern`). `httpResource` is strictly query-only (reading data). Use `resource.hasValue()` or safely check `resource.value() !== undefined`.
+  - **Queries (GET):** MUST use Angular 22 `httpResource` coupled with private trigger signals (`Signal Trigger Pattern`). `httpResource` is strictly query-only (reading data). Use `resource.hasValue()` or safely check `resource.value() !== undefined`.
   - **Mutations (POST, PUT, PATCH, DELETE):** 🚫 **PROHIBITED using `httpResource` for mutations.** All state mutations, form submissions, and persistence operations MUST use `HttpClient` directly via `firstValueFrom(this.#http.post/put/delete(...))`, returning native `Promise<T>`.
   - **Architectural Rationale:** `httpResource` operates reactively with `switchMap` / `AbortController` cancellation semantics. Rapid sequential writes (e.g., saving multiple dirty widgets or rapid triggers) abort in-flight requests, and trigger signals lack Promise return values, breaking imperative `await` control flow. `HttpClient` + `firstValueFrom` ensures isolated, non-abortable, sequentially awaitable calls with deterministic error handling.
 - **Dedicated Mappers (`<feature>-mapper.service.ts`):** Extract all heavy backend ↔ frontend transformation logic and catalog operations into a dedicated service (e.g. `ArmamentMapperService`). Components must remain slim.
@@ -193,4 +193,4 @@ Boundaries: code/commits/PRs written normal.
 
 ---
 
-<!-- AGENTS_VERSION: 1.4.0 | UPDATED: 2026-11-05 -->
+<!-- AGENTS_VERSION: 1.5.0 | UPDATED: 2026-11-12 -->

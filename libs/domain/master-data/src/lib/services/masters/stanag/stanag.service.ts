@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { MasterDataStanag } from '../../../models/master-data-stanag.model';
@@ -6,9 +6,7 @@ import type { MasterDataCreateItemType } from '../../../models/utils.model';
 import { injectMasterDataResource } from '../../master-data-resource.factory';
 import type { MasterDataService } from '../../master-data.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class StanagService implements MasterDataService<MasterDataStanag> {
   readonly #crud = injectMasterDataResource<MasterDataStanag>(`${injectPlanningEndpoint()}/stanag-criteria`);
 

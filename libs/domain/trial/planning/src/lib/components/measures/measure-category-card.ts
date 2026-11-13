@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -152,7 +152,6 @@ import { MultiSelectSearchableComponent } from './multi-select-searchable';
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MeasureCategoryCard {
   readonly category = input.required<MeasureCategoryDef>();

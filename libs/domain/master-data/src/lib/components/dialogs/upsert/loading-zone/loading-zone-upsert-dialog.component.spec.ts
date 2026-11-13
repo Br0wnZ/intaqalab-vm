@@ -7,7 +7,7 @@ import { MeasureUnitEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
 import { DenominationsStore } from '@intaqalab/warehouse-management';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -84,7 +84,7 @@ describe('LoadingZoneUpsertDialogComponent', () => {
     mockDenominationsStore = createMockDenominationsStore();
 
     const view = await render(LoadingZoneUpsertDialogComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClientTesting(),
         provideTestingEnvironment(),
@@ -92,7 +92,7 @@ describe('LoadingZoneUpsertDialogComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: MasterDataService, useValue: mockService },
         { provide: DenominationsStore, useValue: mockDenominationsStore },
-        MasterDataStore,
+        MasterDataStore, provideTranslateService(),
       ],
     });
 

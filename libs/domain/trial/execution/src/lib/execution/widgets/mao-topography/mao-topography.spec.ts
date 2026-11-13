@@ -9,7 +9,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -56,9 +56,8 @@ describe('MaoTopography', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     // Se parchea el estado directamente para no disparar GETs pendientes.
     patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
@@ -315,9 +314,8 @@ describe('MaoTopography', () => {
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
     const store = TestBed.inject(ExecutionStore);
     const executionService = TestBed.inject(ShotMaoTopographyService);

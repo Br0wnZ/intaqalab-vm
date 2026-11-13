@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -15,7 +14,7 @@ import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaIconComponent, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataStanag } from '../../../../models/master-data-stanag.model';
@@ -25,7 +24,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
   imports: [
     IntaSignalSelectComponent,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -190,7 +189,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StanagUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<StanagUpsertDialogComponent>);

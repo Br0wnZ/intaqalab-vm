@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -16,7 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { VigilanciaRow, VigilanciaState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -64,7 +63,7 @@ interface VigilanciaTableRow {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -205,7 +204,6 @@ interface VigilanciaTableRow {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VigilanciaWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

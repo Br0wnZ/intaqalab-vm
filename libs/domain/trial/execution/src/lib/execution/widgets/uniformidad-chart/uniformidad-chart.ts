@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -16,7 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { IntaDecimalPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
 import type { UniformidadChartState } from '../../../+state/execution.store';
@@ -44,7 +43,7 @@ interface UniformidadForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     ChartDirective,
     IntaIconComponent,
   ],
@@ -179,7 +178,6 @@ interface UniformidadForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UniformidadChartWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

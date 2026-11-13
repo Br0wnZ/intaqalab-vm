@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { Component, input } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'ui-error-state',
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   template: `
     <div class="flex flex-col items-center justify-center p-8 text-center w-full max-w-md mx-auto">
       <div class="mb-6 relative w-32 h-32 flex items-center justify-center text-client-error">
@@ -61,7 +61,6 @@ import { TranslateModule } from '@ngx-translate/core';
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ErrorState {
   /** Título principal del error (si no se provee, usa un genérico i18n) */

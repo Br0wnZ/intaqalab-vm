@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 /**
  * Botón de guardar con feedback visual inline durante mutaciones.
@@ -31,7 +31,7 @@ import { TranslateModule } from '@ngx-translate/core';
  */
 @Component({
   selector: 'ui-save-button',
-  imports: [MatButtonModule, MatProgressSpinnerModule, MatTooltipModule, TranslateModule],
+  imports: [MatButtonModule, MatProgressSpinnerModule, MatTooltipModule, TranslatePipe],
   template: `
     <button
       mat-flat-button
@@ -77,7 +77,6 @@ import { TranslateModule } from '@ngx-translate/core';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SaveButton {
   /** Clave i18n del label. Por defecto 'UI.SAVE_BUTTON.LABEL' */

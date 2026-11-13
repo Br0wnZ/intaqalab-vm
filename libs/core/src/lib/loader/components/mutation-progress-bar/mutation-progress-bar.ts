@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -42,7 +42,6 @@ import { MutationLoaderService } from '../../services/mutation-loader.service';
       --mdc-linear-progress-track-color: transparent;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MutationProgressBar {
   protected readonly mutationLoader = inject(MutationLoaderService);

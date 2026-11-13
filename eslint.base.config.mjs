@@ -124,6 +124,26 @@ const baseConfig = [
           selector: 'MethodDefinition[accessibility="private"]',
           message: 'Hard Privacy: Usa el prefijo # en lugar del modificador "private" de TypeScript.',
         },
+        {
+          selector: 'Decorator[expression.callee.name="Injectable"]',
+          message: 'Angular 22: Usa @Service() (o @Service({ autoProvided: false })) en lugar de @Injectable().',
+        },
+        {
+          selector: 'Decorator[expression.callee.name="HostBinding"]',
+          message: 'Angular 22: Usa el objeto "host" del decorador en lugar de @HostBinding().',
+        },
+        {
+          selector: 'Decorator[expression.callee.name="HostListener"]',
+          message: 'Angular 22: Usa el objeto "host" del decorador en lugar de @HostListener().',
+        },
+        {
+          selector: 'Decorator[expression.callee.name=/^(Component|Directive|Pipe)$/] Property[key.name="standalone"][value.value=true]',
+          message: 'Angular 22: Omite standalone: true (es el comportamiento por defecto).',
+        },
+        {
+          selector: 'Decorator[expression.callee.name="Component"] Property[key.name="changeDetection"][value.object.name="ChangeDetectionStrategy"][value.property.name="OnPush"]',
+          message: 'Angular 22: Omite changeDetection: ChangeDetectionStrategy.OnPush (OnPush es el comportamiento por defecto).',
+        },
       ],
     },
   },

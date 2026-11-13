@@ -1,12 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type { MunitionComponentStockPostModel, MunitionStockPostModel } from '../models/munition-stock.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MunitionsStockService {
   readonly #whareHouseUrl = injectWharehouseEndpoint();
   readonly munition = signal<{ itemToSave: MunitionStockPostModel; force?: true } | null>(null);

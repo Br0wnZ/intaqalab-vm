@@ -1,6 +1,6 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -61,12 +61,11 @@ const renderDialog = async (
   };
 
   return render(UpdateArmamentDialog, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideNoopAnimations(),
       { provide: MatDialogRef, useValue: dialogRefMock },
       { provide: MAT_DIALOG_DATA, useValue: dialogData },
-      { provide: ArmamentStore, useValue: armamentStoreMock },
+      { provide: ArmamentStore, useValue: armamentStoreMock }, provideTranslateService(),
     ],
   });
 };

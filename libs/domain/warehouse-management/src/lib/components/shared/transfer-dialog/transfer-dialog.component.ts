@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TransferMovementsPayload } from '../../../models/movements.model';
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
@@ -21,7 +21,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
@@ -90,7 +90,6 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransferDialogComponent {
   readonly dialogRef = inject(MatDialogRef);

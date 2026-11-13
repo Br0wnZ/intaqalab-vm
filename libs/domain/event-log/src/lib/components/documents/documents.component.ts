@@ -1,17 +1,17 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EventLogDocumentsStore } from '../../+state/documents.store';
 import { EventLogDocumentsFilterComponent } from './documents-filter/documents-filter.component';
 
 @Component({
   selector: 'inta-event-log-documents',
-  imports: [TranslateModule, MatTableModule, MatPaginatorModule, MatSortModule, EventLogDocumentsFilterComponent],
+  imports: [TranslatePipe, MatTableModule, MatPaginatorModule, MatSortModule, EventLogDocumentsFilterComponent],
   providers: [EventLogDocumentsStore],
   template: `
     <div class="overflow-x-auto">
@@ -105,7 +105,6 @@ import { EventLogDocumentsFilterComponent } from './documents-filter/documents-f
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogDocumentsComponent {
   readonly store = inject(EventLogDocumentsStore);

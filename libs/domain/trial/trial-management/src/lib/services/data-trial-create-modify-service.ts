@@ -1,16 +1,14 @@
 import type { HttpResourceRequest } from '@angular/common/http';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import type { Signal } from '@angular/core';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial, PaginatedSortedViewRequest, TrialSearchFilters } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
 import type { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DataTrialCreateModifyService {
   httpClient = inject(HttpClient);
   readonly url = injectFireTrialsEndpoint();

@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, form, max, min, required, submit } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { FormField, form, required, submit } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,9 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import type { FireTrial } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
+import { numericMax, numericMin } from '../../../utils/numeric-validators';
 import type { AddNewSerieRequest } from '../../../utils-models/series-and-shots.model';
 import type { UpsertTrialSerieRequest } from '../../../utils-models/upsert-trial-serie-info.model';
 
@@ -26,7 +27,7 @@ type Upsert = {
 @Component({
   selector: 'inta-new-serie-dialog',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
@@ -122,7 +123,6 @@ type Upsert = {
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpsertSerieDialog {
   readonly #dialogRef = inject(MatDialogRef);
@@ -141,8 +141,8 @@ export class UpsertSerieDialog {
     required(f.name);
     if (!this.data.isEditing) {
       required(f.numberOfShots);
-      min(f.numberOfShots, 1);
-      max(f.numberOfShots, 20);
+      numericMin(f.numberOfShots, 1);
+      numericMax(f.numberOfShots, 20);
     }
   });
 

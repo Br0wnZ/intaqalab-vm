@@ -1,11 +1,9 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { Router } from '@angular/router';
 import { FeatureFlagService } from '@intaqalab/config';
 import type { CommandTab, TabTopProcess } from '@intaqalab/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CommandsTabService {
   readonly #router = inject(Router);
   readonly #featureFlags = inject(FeatureFlagService);

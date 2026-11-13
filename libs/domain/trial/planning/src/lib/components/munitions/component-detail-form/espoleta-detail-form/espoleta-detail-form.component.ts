@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -20,7 +19,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
 import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../../+state/munitions.store';
 import type {
@@ -42,7 +41,7 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     NoLeadingZerosDirective,
     NoNegativeValuesDirective,
     NoNegativeValuesDirective,
-    TranslateModule,
+    TranslatePipe,
     NoNegativeValuesDirective,
   ],
   template: `
@@ -230,7 +229,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EspoletaDetailFormComponent {
   readonly #munitionsStore = inject(MunitionsStore);

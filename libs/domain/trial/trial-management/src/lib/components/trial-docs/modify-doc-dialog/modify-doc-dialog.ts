@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../../services/trial-docs-service';
 import type { DocumentDetail } from '../../../utils-models/documents-service.model';
@@ -17,7 +17,7 @@ import type { DocumentDetail } from '../../../utils-models/documents-service.mod
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     IntaSignalSelectComponent,
     FormField,
     IntaIconComponent,
@@ -72,7 +72,6 @@ import type { DocumentDetail } from '../../../utils-models/documents-service.mod
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModifyDocDialog {
   readonly dialogRef = inject(MatDialogRef<ModifyDocDialog>);

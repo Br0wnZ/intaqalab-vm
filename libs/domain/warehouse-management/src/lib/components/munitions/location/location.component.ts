@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -17,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import type { MunitionStockFormModel } from '../../../models/munition-stock.model';
@@ -28,7 +27,7 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
   imports: [
     MatButtonModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     MatFormFieldModule,
@@ -79,7 +78,6 @@ import type { MunitionsDumpModel } from '../../../models/munitions-dumps.model';
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionLocationComponent {
   readonly #munitionsDumpsStore = inject(MunitionsDumpsStore);

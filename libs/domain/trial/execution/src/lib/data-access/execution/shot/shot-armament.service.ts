@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import { PlanningArmamentService } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
@@ -30,9 +30,7 @@ interface ArmamentBulkConfigurationParams {
   body: ArmamentBulkConfigurationRequest;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ShotArmamentService {
   readonly #http = inject(HttpClient);
   readonly #injector = inject(Injector);

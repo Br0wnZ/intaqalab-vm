@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { TransitionWithReasonRequest, TrialTransitionAction } from '@intaqalab/models';
 
@@ -16,9 +16,7 @@ interface TrialDeleteParams {
   _t: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialTransitionsService {
   readonly #fireTrialsUrl = injectFireTrialsEndpoint();
 

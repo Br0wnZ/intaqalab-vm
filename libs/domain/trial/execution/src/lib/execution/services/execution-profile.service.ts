@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { computed, inject, Service } from '@angular/core';
 import { AuthService, Role } from '@intaqalab/core';
 
 import { EXECUTION_PROFILE_REGISTRY } from '../models/execution-profile-registry';
@@ -77,7 +77,7 @@ export function resolveExecutionProfile(roles: readonly Role[]): ExecutionProfil
  * readonly showChat = this.profileService.hasFeature(ExecutionFeature.TRIAL_CHAT);
  * ```
  */
-@Injectable()
+@Service({ autoProvided: false })
 export class ExecutionProfileService {
   readonly #authService = inject(AuthService);
 

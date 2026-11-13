@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { injectionTokenTabCommand } from '@intaqalab/core';
 import { type TrialSearchFilters, TrialStatus } from '@intaqalab/models';
 import { ErrorState, SkeletonForm, SkeletonTable } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialStore } from '../../+state/trial-list.store';
 import { DataTrialCreateModifyService } from '../../../../services/data-trial-create-modify-service';
@@ -17,7 +17,7 @@ import { TrialListComponent } from '../trial-list/trial-list.component';
   imports: [
     TrialListComponent,
     TrialListFilter,
-    TranslateModule,
+    TranslatePipe,
     SkeletonForm,
     SkeletonTable,
     ErrorState,

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { TrialArmamentResponse } from '../models/planning-armament.model';
@@ -13,9 +13,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
  * Disparo explícito mediante `load(fireTrialId)`; el contexto compartido no
  * auto-dispara esta familia para no generar peticiones no solicitadas.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningArmamentService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #injector = inject(Injector);

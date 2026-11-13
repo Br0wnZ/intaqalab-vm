@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +9,7 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MovementsListStore } from '../../../+state/movements-list.store';
 import { MovementsFilterComponent } from '../filter/movements-filter.component';
@@ -32,7 +32,7 @@ const DEFAULT_COLUMNS = [
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     IntaDatePipe,
     MatTableModule,
     MatPaginatorModule,
@@ -174,7 +174,6 @@ const DEFAULT_COLUMNS = [
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MovementsListComponent {
   readonly store = inject(MovementsListStore, { skipSelf: true });

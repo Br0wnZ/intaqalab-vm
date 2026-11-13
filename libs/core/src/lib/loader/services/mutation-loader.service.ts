@@ -1,9 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 
 const SHOW_DEBOUNCE_MS = 150;
 
 /** Servicio que rastrea peticiones HTTP mutantes activas (PUT/POST/DELETE) */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class MutationLoaderService {
   readonly #activeRequests = signal(0);
   readonly #isMutating = signal(false);

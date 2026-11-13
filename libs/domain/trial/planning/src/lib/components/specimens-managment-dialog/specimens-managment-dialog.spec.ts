@@ -1,7 +1,7 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { createMockPlanningGeneralDataStore, createSpecimens } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -50,10 +50,9 @@ describe('SpecimensManagmentDialog', () => {
     mockDialogRef = { close: vi.fn() };
 
     const renderResult = await render(SpecimensManagmentDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: { specimens: specimensResponse.items } },
+        { provide: MAT_DIALOG_DATA, useValue: { specimens: specimensResponse.items } }, provideTranslateService(),
       ],
       componentProviders: [{ provide: PlanningGeneralDataStore, useValue: mockStore }],
     });

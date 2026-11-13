@@ -9,7 +9,7 @@ import {
   createShootingConditions,
   createTrial,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -78,12 +78,11 @@ describe('ShootingConditionsComponent', () => {
     };
 
     const renderResult = await render(ShootingConditionsComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideAnimationsAsync(),
         provideTestingEnvironment(),
         { provide: PlanningGeneralDataStore, useValue: mockStore },
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
       ],
     });
 

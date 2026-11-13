@@ -1,5 +1,5 @@
 import type { AfterViewInit, OnDestroy } from '@angular/core';
-import { Component, ViewChild, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,14 +26,14 @@ import type {
   TrialSchedulerModalShellInput,
 } from '@intaqalab/models';
 import { IntaIconComponent, LegendTrialSchedulerComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { format } from 'date-fns';
 import { Subject, distinctUntilChanged, of, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'inta-trial-scheduler-modal-shell',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
@@ -116,7 +116,7 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
     activeDate: Date;
   }>();
   readonly data = inject<TrialSchedulerModalShellInput>(MAT_DIALOG_DATA);
-  @ViewChild('calendar') calendar!: MatCalendar<Date>;
+  readonly calendar = viewChild<MatCalendar<Date>>('calendar');
 
   touchedSomeDate = signal(!!this.data.touched);
 
@@ -188,9 +188,7 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
     effect(() => {
       const value = this.searchDatesToHighlightWriteable();
       if (value) {
-        if (this.calendar) {
-          this.calendar.updateTodaysDate();
-        }
+        this.calendar()?.updateTodaysDate();
       }
     });
   }
@@ -199,12 +197,7 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
   readonly #searchDatesToHighlight$ = toObservable(this.selectedLineOfShot).pipe(
     distinctUntilChanged(),
     switchMap((lineSelected) => {
-      let date: Date;
-      if (this.calendar) {
-        date = this.calendar.activeDate;
-      } else {
-        date = new Date();
-      }
+      const date = this.calendar()?.activeDate ?? new Date();
       if (lineSelected === undefined) {
         return of(null);
       } else {
@@ -277,7 +270,7 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
     }
     console.log('selecting values...', values);
     this.selectedDates.set([...values]);
-    this.calendar.updateTodaysDate();
+    this.calendar()?.updateTodaysDate();
   }
 
   disabledDates = computed(() => {
@@ -303,9 +296,11 @@ export class TrialSchedulerModalShellComponent implements AfterViewInit, OnDestr
 
   prevActiveDate = new Date();
   #performMonthlyNavigation() {
-    this.prevActiveDate = new Date(this.calendar.activeDate || new Date());
-    this.calendar.stateChanges.pipe(takeUntil(this.#destroy$)).subscribe(() => {
-      const newDate = this.calendar.activeDate;
+    const cal = this.calendar();
+    if (!cal) return;
+    this.prevActiveDate = new Date(cal.activeDate || new Date());
+    cal.stateChanges.pipe(takeUntil(this.#destroy$)).subscribe(() => {
+      const newDate = cal.activeDate;
       if (!newDate) return;
 
       const prevIndex = this.prevActiveDate.getFullYear() * 12 + this.prevActiveDate.getMonth();

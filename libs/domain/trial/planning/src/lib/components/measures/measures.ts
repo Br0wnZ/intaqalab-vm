@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -17,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MEASURE_UNIT_OPTIONS_BY_CATEGORY, type MeasureUnitEnum } from '@intaqalab/models';
 import { Badge, ErrorState, Skeleton } from '@intaqalab/ui';
 import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
@@ -36,7 +35,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
     MatExpansionModule,
     MatButtonModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     Badge,
     TrialStatusLabelPipe,
     MatCheckbox,
@@ -226,7 +225,6 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Measures {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */

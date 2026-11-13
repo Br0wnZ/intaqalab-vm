@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { injectApiUrl, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
 import type { PaginatedApiResponse } from '@intaqalab/models';
 import type { Observable } from 'rxjs';
@@ -19,9 +19,7 @@ interface PlanningDataApiResponse {
   trialId: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DataPlanningService {
   readonly #httpClient = inject(HttpClient);
   readonly #baseUrl = injectApiUrl();

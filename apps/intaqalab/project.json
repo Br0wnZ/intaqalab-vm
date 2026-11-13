@@ -59,6 +59,27 @@
           ],
           "outputHashing": "all"
         },
+        "pro": {
+          "fileReplacements": [
+            {
+              "replace": "apps/intaqalab/src/environments/environment.ts",
+              "with": "apps/intaqalab/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "3mb",
+              "maximumError": "4mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
         "des": {
           "fileReplacements": [
             {
@@ -118,6 +139,9 @@
         "mocks": {
           "buildTarget": "intaqalab:build:mocks"
         }
+      },
+      "readyWhen": {
+        "signal": true
       }
     },
     "extract-i18n": {
@@ -140,6 +164,10 @@
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"],
       "options": {
         "buildTarget": "intaqalab:build",
         "port": 4200,

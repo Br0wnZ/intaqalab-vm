@@ -9,7 +9,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -34,14 +34,14 @@ describe('MunitionComponentsListComponent', () => {
   async function setup() {
     return await render(MunitionComponentsListComponent, {
       declarations: [],
-      imports: [TranslateModule.forRoot(), MatTableModule, MatPaginatorModule, MatSortModule, NoopAnimationsModule],
+      imports: [MatTableModule, MatPaginatorModule, MatSortModule, NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MunitionComponentService, useValue: mockService },
         { provide: MunitionComponentStore },
-        { provide: UiDialogService, useValue: mockUiDialog },
+        { provide: UiDialogService, useValue: mockUiDialog }, provideTranslateService(),
       ],
       componentProviders: [
         {

@@ -1,4 +1,4 @@
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
@@ -17,8 +17,7 @@ describe('PiezoPressureDifferentialTab', () => {
 
   const renderTab = () =>
     render(PiezoPressureDifferentialTab, {
-      componentInputs: { model: initialModel(), pressureUnitOptions: [] },
-      imports: [TranslateModule.forRoot()],
+      componentInputs: { model: initialModel(), pressureUnitOptions: [] }, providers: [provideTranslateService()]
     });
 
   const getInput = (index: number): HTMLInputElement => {

@@ -12,7 +12,6 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import type { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
 import { provideAppEnvironment, provideIntaDateAdapter } from '@intaqalab/config';
@@ -94,7 +93,6 @@ export const Config: ApplicationConfig = {
       return inject(LanguageService).initializationPromise;
     }),
     provideLocaleSignal(),
-    provideAnimations(),
     provideToastr(),
     ...(!environment.production ? [provideHeaderWidget()] : []),
   ],

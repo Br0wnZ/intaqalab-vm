@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect, IntaIconComponent, StopClick } from '@intaqalab/ui';
 import { deepEqual } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroWeightState } from '../../../../+state/execution.store';
 import { injectBalanceEquipments } from '../inject-balance-equipments';
@@ -36,7 +36,7 @@ interface BalanceFields {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
     StopClick,
@@ -159,7 +159,6 @@ interface BalanceFields {
       }
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionPesosTabComponent {
   readonly #store = inject(ExecutionStore);

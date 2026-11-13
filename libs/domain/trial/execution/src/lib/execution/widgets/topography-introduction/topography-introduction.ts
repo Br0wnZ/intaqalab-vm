@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -19,7 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -63,7 +62,7 @@ interface TopographyFormModel {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
     LocaleDecimalInputDirective,
@@ -196,7 +195,6 @@ interface TopographyFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TopographyIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

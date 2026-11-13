@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext, httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { SKIP_ERROR_TOAST, injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -25,9 +25,7 @@ interface SeriesReadinessOneParams {
   body: SeriesReadinessRequest;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ExecutionReadinessService {
   readonly #http = inject(HttpClient);
   readonly #executionUrl = injectExecutionEndpoint();

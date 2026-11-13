@@ -51,8 +51,13 @@ export function createMockMatDialog(config?: { defaultResult?: any; mockImplemen
   const dialogMock = {
     open: mockFn.mockImplementation(() => ({
       afterClosed: vi.fn(() => ({
-        subscribe: vi.fn((callback: (result: any) => void) => {
-          callback(defaultResult);
+        subscribe: vi.fn((callbackOrObserver: ((result: any) => void) | { next?: (result: any) => void; complete?: () => void }) => {
+          if (typeof callbackOrObserver === 'function') {
+            callbackOrObserver(defaultResult);
+          } else {
+            callbackOrObserver?.next?.(defaultResult);
+            callbackOrObserver?.complete?.();
+          }
           return { unsubscribe: vi.fn() };
         }),
       })),

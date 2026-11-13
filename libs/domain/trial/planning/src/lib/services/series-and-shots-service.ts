@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -14,9 +14,7 @@ import type {
 import type { UpdateShotRequest } from '../utils-models/update-shot-request.model';
 import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie-info.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SeriesAndShotsService {
   readonly #getSeriesParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #addNewSerieParams = signal<AddNewSerieRequest | null>(null);

@@ -1,5 +1,5 @@
 import type { AfterViewInit, OnDestroy } from '@angular/core';
-import { Component, ViewChild, computed, effect, inject, model, signal } from '@angular/core';
+import { Component, computed, effect, inject, model, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CalendarEventsDataService } from '@intaqalab/data-access';
 import type { CalendarParsedModel } from '@intaqalab/models';
 import { IntaIconComponent, LegendTrialSchedulerComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, switchMap, takeUntil } from 'rxjs';
 
 export interface SpecialDayActionToPerform {
@@ -23,7 +23,7 @@ export interface SpecialDayActionToPerform {
 @Component({
   selector: 'lib-special-days-manager',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
@@ -106,7 +106,7 @@ export interface SpecialDayActionToPerform {
   `,
 })
 export class SpecialDaysManagerComponent implements OnDestroy, AfterViewInit {
-  @ViewChild('calendar') calendar!: MatCalendar<Date>;
+  readonly calendar = viewChild<MatCalendar<Date>>('calendar');
   searchDatesToHighlightWriteable = signal<CalendarParsedModel>({
     holidays: [],
     no_notams: [],
@@ -128,16 +128,14 @@ export class SpecialDaysManagerComponent implements OnDestroy, AfterViewInit {
       if (selectedDates.length === 1 && action === undefined) {
         const isSpecialDay = this.#isDateSpecial(selectedDates[0]);
         this.actionToPerform.set(isSpecialDay ? 'REMOVE' : 'ADD');
-        this.calendar.updateTodaysDate();
+        this.calendar()?.updateTodaysDate();
       }
     });
 
     effect(() => {
       const value = this.searchDatesToHighlightWriteable();
       if (value) {
-        if (this.calendar) {
-          this.calendar.updateTodaysDate();
-        }
+        this.calendar()?.updateTodaysDate();
       }
     });
   }
@@ -183,7 +181,7 @@ export class SpecialDaysManagerComponent implements OnDestroy, AfterViewInit {
       selectedDates.push(date); // seleccionar
     }
     this.selectedDates.set([...selectedDates]);
-    this.calendar.updateTodaysDate();
+    this.calendar()?.updateTodaysDate();
   }
 
   #isDateSpecial(date: Date) {
@@ -247,9 +245,11 @@ export class SpecialDaysManagerComponent implements OnDestroy, AfterViewInit {
   }>();
   prevActiveDate = new Date();
   #performMonthlyNavigation() {
-    this.prevActiveDate = new Date(this.calendar.activeDate || new Date());
-    this.calendar.stateChanges.pipe(takeUntil(this.#destroy$)).subscribe(() => {
-      const newDate = this.calendar.activeDate;
+    const cal = this.calendar();
+    if (!cal) return;
+    this.prevActiveDate = new Date(cal.activeDate || new Date());
+    cal.stateChanges.pipe(takeUntil(this.#destroy$)).subscribe(() => {
+      const newDate = cal.activeDate;
       if (!newDate) return;
 
       const prevIndex = this.prevActiveDate.getFullYear() * 12 + this.prevActiveDate.getMonth();

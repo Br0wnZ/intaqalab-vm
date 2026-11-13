@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import type { UserEvent } from '@testing-library/user-event';
 import { userEvent } from '@testing-library/user-event';
@@ -13,7 +13,7 @@ describe('AdminDocsSection', () => {
   beforeEach(async () => {
     user = userEvent.setup();
 
-    await render(AdminDocsSection, { imports: [TranslateModule.forRoot()] });
+    await render(AdminDocsSection, { providers: [provideTranslateService()] });
     const translate = TestBed.inject(TranslateService);
     translate.setTranslation('es', {
       'ADMIN.ADMIN_DOCS_SECTION.SYNC': 'Sincronizando',

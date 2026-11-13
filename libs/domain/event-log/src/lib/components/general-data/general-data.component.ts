@@ -1,17 +1,17 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { EventLogGeneralDataStore } from '../../+state/general-data.store';
 import { EventLogGeneralDataFilterComponent } from './general-data-filter/general-data-filter.component';
 
 @Component({
   selector: 'inta-event-log-general-data',
-  imports: [TranslateModule, MatTableModule, MatPaginatorModule, MatSortModule, EventLogGeneralDataFilterComponent],
+  imports: [TranslatePipe, MatTableModule, MatPaginatorModule, MatSortModule, EventLogGeneralDataFilterComponent],
   providers: [EventLogGeneralDataStore],
   template: `
     <div class="overflow-x-auto">
@@ -85,7 +85,6 @@ import { EventLogGeneralDataFilterComponent } from './general-data-filter/genera
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogGeneralDataComponent {
   readonly store = inject(EventLogGeneralDataStore);

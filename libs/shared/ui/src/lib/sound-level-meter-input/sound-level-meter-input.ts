@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input, model } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { MatSelectModule } from '@angular/material/select';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
@@ -233,7 +233,6 @@ function parseToNumber(raw: number | string | null | undefined): number | null {
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SoundLevelMeterInput<
   T extends number | string | null = number | string | null,

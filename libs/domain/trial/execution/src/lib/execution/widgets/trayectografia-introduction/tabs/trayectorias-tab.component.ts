@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -13,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { InputSelect } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TrayectografiaTrayectoriaState } from '../../../../+state/execution.store';
 import { ExecutionStore } from '../../../../+state/execution.store';
@@ -25,7 +24,7 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     LocaleDecimalInputDirective,
   ],
@@ -153,7 +152,6 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrayectografiasTrayectoriasTabComponent {
   readonly #store = inject(ExecutionStore);

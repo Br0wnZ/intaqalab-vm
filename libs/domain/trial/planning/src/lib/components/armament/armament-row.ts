@@ -1,6 +1,5 @@
 import type { OnInit } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   Injector,
   ViewEncapsulation,
@@ -19,7 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, MatSelectClearable, ValueTooltip } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import type { ArmamentSerieShot, ArmamentSerieShotDetail } from '../../utils-models/armament.model';
@@ -40,7 +39,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     MatFormFieldModule,
     MatInputModule,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     ValueTooltip,
   ],
@@ -196,7 +195,6 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArmamentRow implements OnInit {
   readonly shot = model.required<ArmamentSerieShot>();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormField, disabled, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import type {
@@ -38,7 +38,7 @@ interface DenominationForm {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaIconComponent,
     NoNegativeValuesDirective,
@@ -186,7 +186,6 @@ interface DenominationForm {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DenominationsDialogComponent {
   readonly #dialogRef = inject(MatDialogRef);

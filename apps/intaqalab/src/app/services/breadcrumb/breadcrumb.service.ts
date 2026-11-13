@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import type { ActivatedRouteSnapshot } from '@angular/router';
 import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
 import { injectQueryParams } from '@intaqalab/utils';
@@ -9,7 +9,7 @@ export interface BreadcrumbItem {
   url: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class BreadcrumbService {
   readonly #router = inject(Router);
   readonly #planningQueryParam = injectQueryParams('planning');

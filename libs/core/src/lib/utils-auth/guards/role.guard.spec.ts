@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import type { CanMatchFn, Route, UrlSegment } from '@angular/router';
+import type { CanMatchFn, Route, RouterStateSnapshot, UrlSegment } from '@angular/router';
 import { vi } from 'vitest';
 
 import { AuthService } from '../auth-service';
@@ -34,9 +34,10 @@ describe('RoleGuard', () => {
   it('should allow access if no roles are defined in route data', () => {
     const route: Route = { data: {} };
     const segments: UrlSegment[] = [];
+    const state = {} as RouterStateSnapshot;
     vi.spyOn(authService, 'hasAnyRole').mockReturnValue(true);
 
-    const result = executeGuard(route, segments);
+    const result = executeGuard(route, segments, state);
 
     expect(result).toBe(true);
   });
@@ -45,9 +46,10 @@ describe('RoleGuard', () => {
     const roles = [Role.ADMINISTRATIVE];
     const route: Route = { data: { roles } };
     const segments: UrlSegment[] = [];
+    const state = {} as RouterStateSnapshot;
     vi.spyOn(authService, 'hasAnyRole').mockReturnValue(true);
 
-    executeGuard(route, segments);
+    executeGuard(route, segments, state);
 
     expect(authService.hasAnyRole).toHaveBeenCalledWith(roles);
   });
@@ -56,9 +58,10 @@ describe('RoleGuard', () => {
     const roles = [Role.ADMINISTRATIVE];
     const route: Route = { data: { roles } };
     const segments: UrlSegment[] = [];
+    const state = {} as RouterStateSnapshot;
     vi.spyOn(authService, 'hasAnyRole').mockReturnValue(false);
 
-    const result = executeGuard(route, segments);
+    const result = executeGuard(route, segments, state);
 
     expect(result).toBe(false);
   });

@@ -5,7 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -49,14 +49,14 @@ async function setup(data: Record<string, any> = { munitionTypeList: mockMunitio
   denomService = makeDenominationsService();
 
   const view = await render(UpsertDialogComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: MatDialogRef, useValue: mockDialogRef },
       { provide: MAT_DIALOG_DATA, useValue: data },
-      { provide: DenominationsService, useValue: denomService },
+      { provide: DenominationsService, useValue: denomService }, provideTranslateService(),
     ],
     componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
   });

@@ -1,11 +1,11 @@
 import { DatePipe, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { IntaIconComponent, ValueTooltip, getTrialStatusToneClass } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ExecutionHeaderData, ExecutionShotInfo } from '../../../models/execution-page.models';
 import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../../widgets/utils/selection-options';
@@ -20,7 +20,7 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
     MatMenuModule,
     MatSlideToggleModule,
     ValueTooltip,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
   ],
   template: `
@@ -193,7 +193,6 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
       </div>
     </mat-menu>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExecutionHeader {
   readonly executionData = input.required<ExecutionHeaderData>();

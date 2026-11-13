@@ -13,7 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import type { FireTrial, TrialSearchFilters } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialStore } from '../../../components/list/+state/trial-list.store';
 import { TrialListComponent } from '../../../components/list/components/trial-list/trial-list.component';
@@ -23,7 +23,7 @@ import { TrialListComponent } from '../../../components/list/components/trial-li
   providers: [TrialStore],
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatButtonModule,
     MatInputModule,
     MatDialogTitle,

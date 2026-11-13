@@ -1,5 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 
@@ -14,15 +14,10 @@ describe('DialogInputComponent', () => {
 
   it('should render', async () => {
     await render(DialogInputComponent, {
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
       componentProviders: [
         { provide: MAT_DIALOG_DATA, useValue: {} },
         { provide: MatDialogRef, useValue: {} },
-      ],
+      ], providers: [provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })]
     });
   });
 });

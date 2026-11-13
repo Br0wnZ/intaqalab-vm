@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, input } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { Component, ViewEncapsulation, inject, input } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../../../../services/trial-docs-service';
 import { TrialDocVersions } from '../../../trial-doc-versions/trial-doc-versions';
 
 @Component({
   selector: 'inta-trial-doc-versions-tab',
-  imports: [TranslateModule, TrialDocVersions],
+  imports: [TranslatePipe, TrialDocVersions],
   template: `
     <div class="w-full">
       @if (documentVersionsResource.hasValue() && documentVersionsResource.value().length > 0) {
@@ -20,7 +20,6 @@ import { TrialDocVersions } from '../../../trial-doc-versions/trial-doc-versions
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrialDocVersionsTab {
   readonly #docsService = inject(TrialDocsService);

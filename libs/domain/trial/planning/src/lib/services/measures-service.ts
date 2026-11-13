@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -28,9 +28,7 @@ export type {
   MeasuresCatalogQueryParams,
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MeasuresService {
   readonly #getMeasuresParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateMeasuresParams = signal<{ trialId: FireTrial['id']; body: MeasuresBulkUpdateRequest } | null>(null);

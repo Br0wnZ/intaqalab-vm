@@ -1,10 +1,8 @@
 import { HttpContext, httpResource } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { SKIP_CENTER_INTERCEPTOR, injectCentersEndpoint } from '@intaqalab/config';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CentersDataService {
   readonly #url = injectCentersEndpoint();
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import type { ConfirmDialogData } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
@@ -32,7 +32,6 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDeleteSerieDialog {
   readonly dialogRef = inject(MatDialogRef<ConfirmDeleteSerieDialog>);

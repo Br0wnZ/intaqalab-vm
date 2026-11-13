@@ -1,5 +1,5 @@
 import type { OnInit } from '@angular/core';
-import { Directive, ElementRef, HostListener, inject } from '@angular/core';
+import { Directive, ElementRef, inject } from '@angular/core';
 
 /**
  * Prevents negative values in number inputs.
@@ -10,6 +10,11 @@ import { Directive, ElementRef, HostListener, inject } from '@angular/core';
  */
 @Directive({
   selector: 'input[libNoNegativeValues]',
+  host: {
+    '(keydown)': 'onKeyDown($event)',
+    '(input)': 'onInput($event)',
+    '(paste)': 'onPaste($event)',
+  },
 })
 export class NoNegativeValuesDirective implements OnInit {
   readonly #el = inject(ElementRef<HTMLInputElement>);
@@ -24,14 +29,12 @@ export class NoNegativeValuesDirective implements OnInit {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === '-' || event.key === '+') {
       event.preventDefault();
     }
   }
 
-  @HostListener('input', ['$event'])
   onInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const raw = input.value;
@@ -46,7 +49,6 @@ export class NoNegativeValuesDirective implements OnInit {
     }
   }
 
-  @HostListener('paste', ['$event'])
   onPaste(event: ClipboardEvent): void {
     const clipboardData = event.clipboardData;
     if (!clipboardData) return;

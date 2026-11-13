@@ -1,7 +1,7 @@
 ﻿import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -33,12 +33,12 @@ describe('MovementsFilterComponent', () => {
     mockMunitionsDumpsStore = createMockMunitionsDumpsStore();
 
     const view = await render(MovementsFilterComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         // MovementsListStore se inyecta con { skipSelf: true }, debe estar en el mÃ³dulo padre
         { provide: MovementsListStore, useValue: mockMovementsStore },
-        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore },
+        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore }, provideTranslateService(),
       ],
       componentInputs: { stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d' },
     });
@@ -127,8 +127,8 @@ describe('MovementsFilterComponent', () => {
       const { component } = await setup();
       const dateFrom = '2026-02-01T00:00:00Z';
       const hourFrom = '2025-01-05T12:05:00Z';
-      component.form.dateTimeFrom().setControlValue(new Date(dateFrom));
-      component.form.timeFrom().setControlValue(new Date(hourFrom));
+      component.form.dateTimeFrom().controlValue.set(new Date(dateFrom));
+      component.form.timeFrom().controlValue.set(new Date(hourFrom));
       component.search();
 
       const expectedCriteria: MovementListSearch = {
@@ -142,8 +142,8 @@ describe('MovementsFilterComponent', () => {
       const { component } = await setup();
       const dateTo = '2027-02-01T00:00:00Z';
       const hourTo = '2027-01-05T11:03:00Z';
-      component.form.dateTimeTo().setControlValue(new Date(dateTo));
-      component.form.timeTo().setControlValue(new Date(hourTo));
+      component.form.dateTimeTo().controlValue.set(new Date(dateTo));
+      component.form.timeTo().controlValue.set(new Date(hourTo));
       component.search();
 
       const expectedCriteria: MovementListSearch = {
@@ -158,7 +158,7 @@ describe('MovementsFilterComponent', () => {
     it('should set timeFrom to 00:00 in formModel when dateTimeFrom is selected', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeFrom().setControlValue(new Date('2026-06-15T10:00:00Z'));
+      component.form.dateTimeFrom().controlValue.set(new Date('2026-06-15T10:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -171,7 +171,7 @@ describe('MovementsFilterComponent', () => {
     it('should not update timeFrom in formModel when dateTimeFrom is cleared', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeFrom().setControlValue(null);
+      component.form.dateTimeFrom().controlValue.set(null);
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -181,11 +181,11 @@ describe('MovementsFilterComponent', () => {
     it('should update timeFrom when dateTimeFrom changes to a different date', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeFrom().setControlValue(new Date('2026-06-15T10:00:00Z'));
+      component.form.dateTimeFrom().controlValue.set(new Date('2026-06-15T10:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
-      component.form.dateTimeFrom().setControlValue(new Date('2026-07-20T14:30:00Z'));
+      component.form.dateTimeFrom().controlValue.set(new Date('2026-07-20T14:30:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -197,7 +197,7 @@ describe('MovementsFilterComponent', () => {
     it('should set timeTo to 23:30 in formModel when dateTimeTo is selected', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeTo().setControlValue(new Date('2026-06-15T10:00:00Z'));
+      component.form.dateTimeTo().controlValue.set(new Date('2026-06-15T10:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -210,7 +210,7 @@ describe('MovementsFilterComponent', () => {
     it('should not update timeTo in formModel when dateTimeTo is cleared', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeTo().setControlValue(null);
+      component.form.dateTimeTo().controlValue.set(null);
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -220,11 +220,11 @@ describe('MovementsFilterComponent', () => {
     it('should update timeTo when dateTimeTo changes to a different date', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeTo().setControlValue(new Date('2026-06-15T10:00:00Z'));
+      component.form.dateTimeTo().controlValue.set(new Date('2026-06-15T10:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
-      component.form.dateTimeTo().setControlValue(new Date('2026-08-01T08:00:00Z'));
+      component.form.dateTimeTo().controlValue.set(new Date('2026-08-01T08:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -236,8 +236,8 @@ describe('MovementsFilterComponent', () => {
     it('should set both timeFrom and timeTo independently when both dates are selected', async () => {
       const { component, view } = await setup();
 
-      component.form.dateTimeFrom().setControlValue(new Date('2026-06-01T10:00:00Z'));
-      component.form.dateTimeTo().setControlValue(new Date('2026-06-30T10:00:00Z'));
+      component.form.dateTimeFrom().controlValue.set(new Date('2026-06-01T10:00:00Z'));
+      component.form.dateTimeTo().controlValue.set(new Date('2026-06-30T10:00:00Z'));
       view.fixture.detectChanges();
       await view.fixture.whenStable();
 
@@ -309,8 +309,8 @@ describe('MovementsFilterComponent', () => {
     it('should disable the search button when form is invalid', async () => {
       const { component, view } = await setup();
       // quantityMax < quantityMin makes form invalid
-      component.form.quantityMin().setControlValue(100);
-      component.form.quantityMax().setControlValue(50);
+      component.form.quantityMin().controlValue.set(100);
+      component.form.quantityMax().controlValue.set(50);
       view.fixture.detectChanges();
 
       const searchButton = screen.getByText(/COMMONS\.SEARCH/i).closest('button') as HTMLButtonElement;
@@ -337,7 +337,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should become enabled after dateTimeFrom is set', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-15T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-15T00:00:00Z'));
         view.fixture.detectChanges();
         await view.fixture.whenStable();
 
@@ -346,7 +346,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should keep form valid when dateTimeFrom is set (effect auto-fills timeFrom)', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-15T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-15T00:00:00Z'));
         view.fixture.detectChanges();
         await view.fixture.whenStable();
 
@@ -365,7 +365,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should become enabled after dateTimeTo is set', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeTo().setControlValue(new Date('2026-06-15T00:00:00Z'));
+        component.form.dateTimeTo().controlValue.set(new Date('2026-06-15T00:00:00Z'));
         view.fixture.detectChanges();
         await view.fixture.whenStable();
 
@@ -374,7 +374,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should keep form valid when dateTimeTo is set (effect auto-fills timeTo)', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeTo().setControlValue(new Date('2026-06-15T00:00:00Z'));
+        component.form.dateTimeTo().controlValue.set(new Date('2026-06-15T00:00:00Z'));
         view.fixture.detectChanges();
         await view.fixture.whenStable();
 
@@ -387,8 +387,8 @@ describe('MovementsFilterComponent', () => {
     describe('quantityMax validator', () => {
       it('should return an error when quantityMax is less than quantityMin', async () => {
         const { component, view } = await setup();
-        component.form.quantityMin().setControlValue(100);
-        component.form.quantityMax().setControlValue(50);
+        component.form.quantityMin().controlValue.set(100);
+        component.form.quantityMax().controlValue.set(50);
         view.fixture.detectChanges();
 
         const errors = component.form.quantityMax().errors();
@@ -398,8 +398,8 @@ describe('MovementsFilterComponent', () => {
 
       it('should return no error when quantityMax is greater than quantityMin', async () => {
         const { component, view } = await setup();
-        component.form.quantityMin().setControlValue(50);
-        component.form.quantityMax().setControlValue(100);
+        component.form.quantityMin().controlValue.set(50);
+        component.form.quantityMax().controlValue.set(100);
         view.fixture.detectChanges();
 
         const errors = component.form.quantityMax().errors();
@@ -409,7 +409,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should return no error when quantityMin is null', async () => {
         const { component, view } = await setup();
-        component.form.quantityMax().setControlValue(50);
+        component.form.quantityMax().controlValue.set(50);
         view.fixture.detectChanges();
 
         const errors = component.form.quantityMax().errors();
@@ -419,7 +419,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should return no error when quantityMax is null', async () => {
         const { component, view } = await setup();
-        component.form.quantityMin().setControlValue(50);
+        component.form.quantityMin().controlValue.set(50);
         view.fixture.detectChanges();
 
         const errors = component.form.quantityMax().errors();
@@ -431,8 +431,8 @@ describe('MovementsFilterComponent', () => {
     describe('date interval validator', () => {
       it('should return invalid_date_interval on dateTimeFrom when from > to', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-20T00:00:00Z'));
-        component.form.dateTimeTo().setControlValue(new Date('2026-06-10T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-20T00:00:00Z'));
+        component.form.dateTimeTo().controlValue.set(new Date('2026-06-10T00:00:00Z'));
         view.fixture.detectChanges();
 
         const errors = component.form.dateTimeFrom().errors();
@@ -442,8 +442,8 @@ describe('MovementsFilterComponent', () => {
 
       it('should return invalid_date_interval on dateTimeTo when from > to', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-20T00:00:00Z'));
-        component.form.dateTimeTo().setControlValue(new Date('2026-06-10T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-20T00:00:00Z'));
+        component.form.dateTimeTo().controlValue.set(new Date('2026-06-10T00:00:00Z'));
         view.fixture.detectChanges();
 
         const errors = component.form.dateTimeTo().errors();
@@ -453,8 +453,8 @@ describe('MovementsFilterComponent', () => {
 
       it('should return no date interval error when from <= to', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-01T00:00:00Z'));
-        component.form.dateTimeTo().setControlValue(new Date('2026-06-30T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-01T00:00:00Z'));
+        component.form.dateTimeTo().controlValue.set(new Date('2026-06-30T00:00:00Z'));
         view.fixture.detectChanges();
 
         const fromErrors = component.form.dateTimeFrom().errors();
@@ -468,7 +468,7 @@ describe('MovementsFilterComponent', () => {
 
       it('should return no date interval error when only one date is provided', async () => {
         const { component, view } = await setup();
-        component.form.dateTimeFrom().setControlValue(new Date('2026-06-15T00:00:00Z'));
+        component.form.dateTimeFrom().controlValue.set(new Date('2026-06-15T00:00:00Z'));
         view.fixture.detectChanges();
 
         const errors = component.form.dateTimeFrom().errors();

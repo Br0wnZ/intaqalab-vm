@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -16,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import type { WidgetFormState } from '../../models/execution-grid.models';
@@ -32,7 +31,7 @@ interface CameraSelectionForm {
 
 @Component({
   selector: 'inta-video-camera-orientation',
-  imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslateModule, IntaIconComponent],
+  imports: [FormField, MatFormFieldModule, MatSelectModule, MatIconModule, TranslatePipe, IntaIconComponent],
   template: `
     <div class="h-full overflow-auto rounded-2xl border border-violet-200 bg-white p-3 flex flex-col gap-2">
       <!-- Header -->
@@ -162,7 +161,6 @@ interface CameraSelectionForm {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoCameraOrientation extends BaseFormWidgetComponent {
   /** ID del widget — requerido desde execution-grid */

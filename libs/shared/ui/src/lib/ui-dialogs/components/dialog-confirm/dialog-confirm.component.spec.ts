@@ -1,5 +1,5 @@
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 
@@ -14,12 +14,7 @@ class FakeTranslateLoader {
 describe('DialogConfirmComponent', () => {
   it('should render', async () => {
     await render(DialogConfirmComponent, {
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
-      componentProviders: [{ provide: MAT_DIALOG_DATA, useValue: {} }],
+      componentProviders: [{ provide: MAT_DIALOG_DATA, useValue: {} }], providers: [provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })]
     });
   });
 });

@@ -1,14 +1,12 @@
 import { HttpContext, HttpParams, httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { TOAST_FEEDBACK, injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { FireTrial, PaginatedApiResponse, TrialSearchFilters, UpsertFireTrial } from '@intaqalab/models';
 
 /** Extends TrialSearchFilters with API-level sort param (array of "field;asc|desc") */
 type TrialSearchRequest = Partial<TrialSearchFilters> & { sort?: string[] };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialsDataService {
   readonly #REQUEST_TIMESTAMP = () => Date.now();
 

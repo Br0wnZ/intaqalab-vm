@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { CONFIG, provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { LinesOfShotDataService } from './lines-of-shot-data.service';
@@ -18,11 +18,6 @@ describe('LinesOfShotDataService', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-      ],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -30,7 +25,7 @@ describe('LinesOfShotDataService', () => {
           provide: CONFIG,
           useValue: { apiUrl: '' },
         },
-        provideTestingEnvironment(),
+        provideTestingEnvironment(), provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
     service = TestBed.inject(LinesOfShotDataService);

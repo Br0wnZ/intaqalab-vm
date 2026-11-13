@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, input, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { DocumentVersion } from '../../../utils-models/documents-service.model';
@@ -12,7 +12,7 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
 
 @Component({
   selector: 'inta-trial-doc-versions',
-  imports: [TranslateModule, MatRadioModule, MatTableModule, MatTabsModule, IntaDatePipe],
+  imports: [TranslatePipe, MatRadioModule, MatTableModule, MatTabsModule, IntaDatePipe],
   template: `
     <div class="w-full bg-white rounded-lg border border-gray-200 mt-6">
       <div class="px-6 py-4 border-b border-gray-200">
@@ -142,7 +142,6 @@ import { ChangeDocVersionDialog } from '../change-doc-version-dialog/change-doc-
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrialDocVersions {
   readonly #dialog = inject(MatDialog);

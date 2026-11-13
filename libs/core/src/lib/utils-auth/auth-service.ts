@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core';
+import { DestroyRef, computed, effect, inject, signal, Service } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
@@ -6,9 +6,7 @@ import { filter } from 'rxjs';
 import { Role } from './models/role.model';
 import type { ReadonlyUserData, User, UserData } from './models/user.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class AuthService {
   readonly #router = inject(Router);
   readonly #destroyRef = inject(DestroyRef);

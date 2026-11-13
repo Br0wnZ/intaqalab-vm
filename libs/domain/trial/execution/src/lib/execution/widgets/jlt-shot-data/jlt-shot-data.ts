@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -21,7 +20,7 @@ import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
 import { LOCALE_SIGNAL, createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { JltShotDataState } from '../../../+state/execution.store';
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -67,7 +66,7 @@ interface JltShotDataSelectForm {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     IntaIconComponent,
   ],
@@ -226,7 +225,6 @@ interface JltShotDataSelectForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JltShotData extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import type { Observable } from 'rxjs';
 import { from, of, switchMap } from 'rxjs';
@@ -7,9 +7,7 @@ import type { SpecialDayActionToPerform } from './components/shell/special-days-
 import { SpecialDaysManagerComponent } from './components/shell/special-days-manager-modal-shell.component';
 import { SpecialDaysDataServiceService } from './data/special-days-data-service.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SpecialDaysManagerService {
   #specialDaysDataServiceService = inject(SpecialDaysDataServiceService);
   readonly #dialog = inject(MatDialog);

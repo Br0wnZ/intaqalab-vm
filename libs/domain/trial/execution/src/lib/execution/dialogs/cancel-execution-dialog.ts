@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -84,7 +84,6 @@ export type CancelExecutionDialogResult = { action: 'cancel'; reason: string } |
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CancelExecutionDialog {
   readonly #dialogRef = inject<MatDialogRef<CancelExecutionDialog, CancelExecutionDialogResult>>(MatDialogRef);

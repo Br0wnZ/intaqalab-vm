@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -28,9 +28,7 @@ interface MaoTopographyBulkConfigurationParams {
   body: MaoTopographyBulkConfigurationRequest;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ShotMaoTopographyService {
   readonly #http = inject(HttpClient);
   readonly #injector = inject(Injector);

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import type {
   CalendarTrialScheduleApiResponse,
@@ -116,9 +116,7 @@ export interface LoadingZone {
   active: boolean;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ShootingConditionsService {
   readonly #getConditionsParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #getTrialSchedulesParams = signal<{ trialId: FireTrial['id'] } | null>(null);

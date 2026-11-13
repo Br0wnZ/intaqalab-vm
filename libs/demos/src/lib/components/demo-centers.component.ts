@@ -1,5 +1,5 @@
 import type { OnInit } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { CentersDataService } from '@intaqalab/data-access';
 
 @Component({
@@ -11,7 +11,6 @@ import { CentersDataService } from '@intaqalab/data-access';
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DemoCentersComponent implements OnInit {
   centersData = inject(CentersDataService);

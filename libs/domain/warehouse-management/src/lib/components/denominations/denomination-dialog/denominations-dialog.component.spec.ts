@@ -2,7 +2,7 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -24,11 +24,11 @@ describe('DenominationsDialogComponent', () => {
   ) => {
     const user = userEvent.setup();
     const view = await render(DenominationsDialogComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn ?? vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data },
+        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
       ],
       componentProviders: [{ provide: MunitionComponentStore, useValue: createMockMunitionStore() }],
     });

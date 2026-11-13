@@ -1,16 +1,5 @@
 import type { OnInit } from '@angular/core';
-import {
-  Directive,
-  ElementRef,
-  HostListener,
-  computed,
-  effect,
-  forwardRef,
-  inject,
-  input,
-  output,
-  untracked,
-} from '@angular/core';
+import { Directive, ElementRef, computed, effect, forwardRef, inject, input, output, untracked } from '@angular/core';
 import type { ControlValueAccessor } from '@angular/forms';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -37,6 +26,10 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
   selector: 'input[libLocalDecimal]',
   host: {
     '(input)': 'onInput()',
+    '(focus)': 'onFocus()',
+    '(blur)': 'onBlur()',
+    '(keydown)': 'onKeyDown($event)',
+    '(paste)': 'onPaste($event)',
   },
   providers: [
     {
@@ -140,7 +133,6 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     this.decimalValueChange.emit(parsed);
   }
 
-  @HostListener('focus')
   onFocus(): void {
     const el = this.#el.nativeElement;
     if (el.readOnly || el.disabled) return;
@@ -151,7 +143,6 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     }
   }
 
-  @HostListener('blur')
   onBlur(): void {
     const el = this.#el.nativeElement;
     if (el.readOnly || el.disabled) {
@@ -174,13 +165,11 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     this.#renderDisplayValue();
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (this.#isAllowedKey(event)) return;
     event.preventDefault();
   }
 
-  @HostListener('paste', ['$event'])
   onPaste(event: Event): void {
     event.preventDefault();
     // Access clipboardData dynamically for jsdom/test compatibility

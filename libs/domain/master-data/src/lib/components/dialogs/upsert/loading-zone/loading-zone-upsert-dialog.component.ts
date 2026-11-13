@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,7 +8,7 @@ import { InputSelect, InputSelectInput, IntaSignalSelectComponent, SaveButton } 
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import type { DenominationsStoreType } from '@intaqalab/warehouse-management';
 import { DenominationsStore } from '@intaqalab/warehouse-management';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import { LOADING_ZONE_UPSERT_DENOMINATION_FILTER } from '../../../../data/loading-zone.constants';
@@ -19,7 +19,7 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
   imports: [
     IntaSignalSelectComponent,
     FormField,
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -108,7 +108,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingZoneUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<LoadingZoneUpsertDialogComponent>);

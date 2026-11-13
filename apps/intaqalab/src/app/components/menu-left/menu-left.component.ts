@@ -1,5 +1,5 @@
 import type { AfterViewInit } from '@angular/core';
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -47,7 +47,6 @@ import { MenuLeftService } from './menu-left.service';
       background: transparent;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="relative m-2 h-[68px] overflow-hidden"

@@ -1,7 +1,7 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input, signal } from '@angular/core';
+import { Component, ViewEncapsulation, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -490,7 +490,6 @@ interface Serie {
     `,
   ],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderedTable {
   readonly openSerieId = signal<number | null>(null);

@@ -1,4 +1,4 @@
-import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
@@ -20,15 +20,10 @@ describe('CalendarTrialsHeaderComponent', () => {
     const viewDateChangeSpy = vi.fn();
 
     const { fixture } = await render(CalendarTrialsHeaderComponent, {
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
-        CalendarModule.forRoot({
+      imports: [CalendarModule.forRoot({
           provide: DateAdapter,
           useFactory: adapterFactory,
-        }),
-      ],
+        })],
       componentInputs: {
         viewDate: new Date('2026-06-01T00:00:00Z'),
       },
@@ -37,7 +32,7 @@ describe('CalendarTrialsHeaderComponent', () => {
           emit: viewDateChangeSpy,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
-      },
+      }, providers: [provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) })]
     });
 
     const translate = fixture.debugElement.injector.get(TranslateService);

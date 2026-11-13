@@ -2,7 +2,7 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -74,8 +74,7 @@ describe('IntaMatSelect', () => {
     ];
 
     const { fixture } = await render(IntaSignalSelectComponent, {
-      imports: [TranslateModule.forRoot()],
-      providers: [provideTestingEnvironment()],
+      providers: [provideTestingEnvironment(), provideTranslateService()],
       componentInputs: {
         label: 'Searchable',
         placeholder: 'Buscar...',

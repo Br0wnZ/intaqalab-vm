@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -21,7 +20,7 @@ import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { CadenceUnitEnum, MEASURE_UNIT_LABELS, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, createDirtyTracker } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { EquipmentSelectionService, ShotVelocitiesService } from '../../../data-access';
@@ -76,7 +75,7 @@ interface DataFormModel {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     InputSelectInput,
     IntaIconComponent,
@@ -225,7 +224,6 @@ interface DataFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VelocityIntroduction extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

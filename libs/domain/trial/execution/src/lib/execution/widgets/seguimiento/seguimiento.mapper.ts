@@ -1,5 +1,48 @@
-import type { SeguimientoSerieData, SeguimientoShotRow } from '../../../+state/execution-state.models';
-import type { PlanningSeriesItem, ShotMeasurementsResponse } from '../../../services/execution.service';
+import type { TrialMeasuresResponse } from '@intaqalab/data-access-planning';
+import type { MeasureUnitEnum } from '@intaqalab/models';
+import { PressureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
+
+import type { SeguimientoSerieData, SeguimientoShotRow, SeguimientoTab } from '../../../+state/execution-state.models';
+import type { PlanningSeriesItem } from '../../../services/execution.service';
+import type { ShotMeasurementsResponse } from '../../models/execution-runtime.models';
+
+const MEASURE_TABS = [
+  { value: 'velocidades', code: 'VELOCITY' },
+  { value: 'p-manom', code: 'MANOMETER' },
+  { value: 'p-pz-cie', code: 'CLOSING' },
+  { value: 'p-pz-int', code: 'HALF' },
+  { value: 'p-pz-cul', code: 'SHELL' },
+  { value: 'p-otro', code: 'OTHER' },
+  { value: 'p-ipg', code: 'IPG' },
+] as const satisfies readonly { value: SeguimientoTab; code: string }[];
+
+const getPlannedMeasures = (response: TrialMeasuresResponse | undefined) =>
+  response?.series.flatMap((series) => Object.values(series.measures).flat()) ?? [];
+
+const matchesTab = (magnitudeCode: string | null | undefined, tab: SeguimientoTab): boolean => {
+  const option = MEASURE_TABS.find((item) => item.value === tab);
+  return Boolean(magnitudeCode && option && magnitudeCode.includes(option.code));
+};
+
+export const getSeguimientoTabs = (response: TrialMeasuresResponse | undefined): SeguimientoTab[] => {
+  const measures = getPlannedMeasures(response);
+  return MEASURE_TABS.filter((tab) => measures.some((measure) => measure.magnitudeCode?.includes(tab.code))).map(
+    (tab) => tab.value,
+  );
+};
+
+export const getSeguimientoUnits = (
+  response: TrialMeasuresResponse | undefined,
+  tab: SeguimientoTab,
+): MeasureUnitEnum[] => {
+  const units = new Set(
+    getPlannedMeasures(response)
+      .filter((measure) => matchesTab(measure.magnitudeCode, tab))
+      .map((measure) => measure.measureUnit),
+  );
+  const allowedUnits = tab === 'velocidades' ? Object.values(SpeedUnitEnum) : Object.values(PressureUnitEnum);
+  return allowedUnits.filter((unit) => units.has(unit));
+};
 
 export const mapShotMeasurements = (
   response: ShotMeasurementsResponse,

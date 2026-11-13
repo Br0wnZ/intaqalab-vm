@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +13,7 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { IntaIconComponent, UiDialogService, ValueTooltip } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { MunitionComponentStoreType } from '../../../+state/munition-component.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -28,7 +28,7 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
 
 @Component({
   imports: [
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     MatTableModule,
     MatPaginatorModule,
@@ -147,7 +147,6 @@ const DEFAULT_COLUMNS = ['name', 'category', 'observations', 'actions'] as const
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionComponentsListComponent {
   readonly store: MunitionComponentStoreType = inject(MunitionComponentStore);

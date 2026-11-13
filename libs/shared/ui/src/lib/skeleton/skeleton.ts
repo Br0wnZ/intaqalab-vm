@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation, computed, input } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { cn } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 /** Forma del esqueleto */
 export type SkeletonVariant = 'rectangle' | 'circle' | 'text' | 'button';
@@ -32,13 +32,20 @@ export type SkeletonAnimation = 'pulse' | 'wave' | 'none';
  */
 @Component({
   selector: 'ui-skeleton',
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   template: `
     <span class="sr-only" [attr.aria-label]="'UI.SKELETON.LOADING' | translate"></span>
     <ng-content />
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'elementClass()',
+    '[style.background-color]': '"var(--inta-neutral-200, #e5e7eb)"',
+    '[style.width]': 'width()',
+    '[style.height]': 'elementHeight()',
+    role: 'status',
+    'aria-busy': 'true',
+  },
 })
 export class Skeleton {
   readonly variant = input<SkeletonVariant>('rectangle');
@@ -62,24 +69,13 @@ export class Skeleton {
     return 'animate-pulse'; // pulse default
   });
 
-  @HostBinding('class') get elementClass(): string {
-    return cn('block relative', this.#variantClasses(), this.#animationClasses(), this.class());
-  }
+  readonly elementClass = computed<string>(() =>
+    cn('block relative', this.#variantClasses(), this.#animationClasses(), this.class()),
+  );
 
-  @HostBinding('style.background-color') get elementBgColor(): string {
-    return 'var(--inta-neutral-200, #e5e7eb)';
-  }
-
-  @HostBinding('style.width') get elementWidth(): string | undefined {
-    return this.width();
-  }
-
-  @HostBinding('style.height') get elementHeight(): string | undefined {
+  readonly elementHeight = computed<string | undefined>(() => {
     // Para 'circle', si no hay height, se hereda del width mediante aspect-square
     if (this.variant() === 'circle' && !this.height()) return this.width();
     return this.height();
-  }
-
-  @HostBinding('attr.role') readonly role = 'status';
-  @HostBinding('attr.aria-busy') readonly ariaBusy = 'true';
+  });
 }

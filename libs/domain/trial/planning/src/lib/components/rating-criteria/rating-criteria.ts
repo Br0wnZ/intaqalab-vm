@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -13,7 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent, MatSelectClearable, NumericRangeInput } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type { RatingCriteria as RatingCriteriaModel } from '../../utils-models/trial-planing-info.model';
 
@@ -54,7 +53,7 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
 @Component({
   selector: 'inta-rating-criteria',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatFormFieldModule,
     MatSelectModule,
     MatSelectClearable,
@@ -180,7 +179,6 @@ const createEmptyLocalCriteria = (): LocalRatingCriteria => ({
       background-color: #f8fafc;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RatingCriteria {
   readonly ratingCriteria = model<RatingCriteriaModel | undefined>();

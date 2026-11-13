@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
+import { Component, inject, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -31,7 +31,6 @@ import type { UIDialogInput } from '../../ui-dialog.model';
     TranslatePipe,
     IntaIconComponent,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>
       <ui-inta-icon name="squareEdit" size="xxl" />

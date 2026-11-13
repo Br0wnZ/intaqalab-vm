@@ -1,14 +1,12 @@
 import { HttpClient, HttpContext, httpResource } from '@angular/common/http';
-import { Injectable, effect, inject, signal } from '@angular/core';
+import { effect, inject, signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { SKIP_ERROR_TOAST } from '@intaqalab/config';
 import type { CalendarTrialScheduleApiResponse } from '@intaqalab/models';
 import type { Observable } from 'rxjs';
 import { lastValueFrom, tap } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CalendarTrialScheduleService {
   readonly #httpClient = inject(HttpClient);
   readonly #apiUrl = injectFireTrialsEndpoint();

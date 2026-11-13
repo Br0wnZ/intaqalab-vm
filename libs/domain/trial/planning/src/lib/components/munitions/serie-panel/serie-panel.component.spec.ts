@@ -7,7 +7,7 @@ import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -20,7 +20,6 @@ import { createEmptyConfiguration, createEmptySerie } from '../../../utils-model
 import { ConfirmDeleteConfigurationDialog } from '../../confirm-delete-configuration-dialog/confirm-delete-configuration-dialog';
 import { SeriePanelComponent } from './serie-panel.component';
 
-const defaultImports = [TranslateModule.forRoot()];
 const baseProviders = [
   provideHttpClient(),
   provideHttpClientTesting(),
@@ -49,8 +48,7 @@ describe('SeriePanelComponent', () => {
   describe('Initial rendering', () => {
     it('should render serie panel with its name', async () => {
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -63,8 +61,7 @@ describe('SeriePanelComponent', () => {
 
     it('should render the add munition button', async () => {
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -83,8 +80,7 @@ describe('SeriePanelComponent', () => {
       const emptySeriesSignal = signal([{ ...defaultSerie, configurations: [] }]);
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: { ...defaultSerie, configurations: [] },
           serieIndex: 0,
@@ -102,8 +98,7 @@ describe('SeriePanelComponent', () => {
       };
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithConfigs,
           serieIndex: 0,
@@ -119,8 +114,7 @@ describe('SeriePanelComponent', () => {
   describe('Adding munition', () => {
     it('should add a new configuration when button is clicked', async () => {
       const { fixture } = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -139,8 +133,7 @@ describe('SeriePanelComponent', () => {
 
     it('should add multiple configurations', async () => {
       const { fixture } = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -171,8 +164,7 @@ describe('SeriePanelComponent', () => {
       };
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithAllShotsAssigned,
           serieIndex: 0,
@@ -200,8 +192,7 @@ describe('SeriePanelComponent', () => {
       };
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithSomeShotsAssigned,
           serieIndex: 0,
@@ -222,8 +213,7 @@ describe('SeriePanelComponent', () => {
   describe('Configuration updates', () => {
     it('should update seriesSignal when a configuration changes', async () => {
       const { fixture } = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -247,8 +237,7 @@ describe('SeriePanelComponent', () => {
       const localSeriesSignal = signal([serieWithConfigs]);
 
       const { fixture } = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithConfigs,
           serieIndex: 0,
@@ -271,8 +260,7 @@ describe('SeriePanelComponent', () => {
       const user = userEvent.setup();
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -290,8 +278,7 @@ describe('SeriePanelComponent', () => {
       const user = userEvent.setup();
 
       await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: defaultSerie,
           serieIndex: 0,
@@ -344,8 +331,7 @@ describe('SeriePanelComponent', () => {
       } as unknown as MatDialogRef<unknown>);
 
       const view = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithConfig,
           serieIndex: 0,
@@ -388,8 +374,7 @@ describe('SeriePanelComponent', () => {
       } as unknown as MatDialogRef<unknown>);
 
       const view = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithConfig,
           serieIndex: 0,
@@ -414,8 +399,7 @@ describe('SeriePanelComponent', () => {
 
     it('should not open dialog when readonly is true', async () => {
       const view = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: serieWithConfig,
           serieIndex: 0,
@@ -455,8 +439,7 @@ describe('SeriePanelComponent', () => {
       };
 
       const view = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: customSerie,
           serieIndex: 0,
@@ -497,8 +480,7 @@ describe('SeriePanelComponent', () => {
       };
 
       const view = await render(SeriePanelComponent, {
-        imports: defaultImports,
-        providers: getProviders(),
+        providers: [...getProviders(), provideTranslateService()],
         componentInputs: {
           serie: lowercaseSerie,
           serieIndex: 0,

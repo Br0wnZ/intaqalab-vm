@@ -205,3 +205,51 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.4.0] - 2026-11-05
 
 - Add ADR-025 Execution Service Decomposition architecture rule and routing
+
+## [gitlab-ci-monitor - 1.0.1] - 2026-11-11
+
+- Add GitLab pipeline status monitor
+
+## [AGENTS.md - 1.4.1] - 2026-11-11
+
+- Route GitLab CI monitoring skill
+
+## [angular-architect - 1.0.3] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [angular-testing-expert - 1.0.3] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [create-feature - 1.0.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [dialog-patterns - 1.0.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [nx-generator-expert - 1.0.2] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [nx-run-tasks - 1.0.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [nx-workspace - 1.0.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [signal-trigger-pattern - 1.1.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [view-state-pattern - 1.0.1] - 2026-11-12
+
+- Actualizar estándares y ejemplos a Angular 22.2.6, Nx 24.0.6 y Vite 8
+
+## [AGENTS.md - 1.5.0] - 2026-11-12
+
+- Migrar estándares del monorepo a Angular 22.2.6, Nx 24.0.6, Vite 8, Vitest 5 y ESLint 10 (ADR-026)

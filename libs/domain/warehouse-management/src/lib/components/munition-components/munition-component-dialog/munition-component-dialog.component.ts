@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormField, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type {
   MunitionComponentsModel,
@@ -25,7 +25,7 @@ interface MunitionComponentsDialogForm {
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     IntaIconComponent,
@@ -107,7 +107,6 @@ interface MunitionComponentsDialogForm {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionComponentDialogComponent {
   readonly dialogRef = inject(MatDialogRef);
@@ -140,9 +139,9 @@ export class MunitionComponentDialogComponent {
 
   constructor() {
     if (this.data.item !== null) {
-      this.form.nameEs().setControlValue(this.data.item.name.es);
-      this.form.nameEn().setControlValue(this.data.item.name.en);
-      this.form.observations().setControlValue(this.data.item.observations || '');
+      this.form.nameEs().controlValue.set(this.data.item.name.es);
+      this.form.nameEn().controlValue.set(this.data.item.name.en);
+      this.form.observations().controlValue.set(this.data.item.observations || '');
     }
   }
 

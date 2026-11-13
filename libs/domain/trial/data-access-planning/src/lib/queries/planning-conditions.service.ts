@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import { PlanningTrialContextService } from '../context/trial-context.service';
@@ -10,9 +10,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
  * Query del GET `/fire-trials/{fireTrialId}/planning/conditions`
  * (condiciones físicas de todos los disparos, agrupadas por serie).
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PlanningConditionsService {
   readonly #trialContext = inject(PlanningTrialContextService);
   readonly #planningUrl = injectPlanningEndpoint();

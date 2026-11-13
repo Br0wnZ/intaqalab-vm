@@ -1,11 +1,14 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { PlanningMeasuresService } from '@intaqalab/data-access-planning';
+import { MeasureUnitEnum } from '@intaqalab/models';
+import { provideTranslateService } from '@ngx-translate/core';
+import { render, screen, waitFor } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -13,12 +16,6 @@ import { ExecutionStateService } from '../../../data-access';
 import { WidgetId } from '../../models/widget-id.enum';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguimientoWidget } from './seguimiento';
-
-const mockWidgetStateService = {
-  updateWidgetFormState: () => {},
-  addWidget: () => {},
-  placedWidgets: () => [],
-};
 
 describe('SeguimientoWidget', () => {
   const renderWidget = (widgetId = 'test-seguimiento') =>
@@ -29,10 +26,10 @@ describe('SeguimientoWidget', () => {
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        WidgetStateService,
         ExecutionStore,
+        provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {
@@ -46,13 +43,38 @@ describe('SeguimientoWidget', () => {
     expect(fixture.componentInstance.formState().widgetId).toBe('test-seguimiento');
   });
 
-  it('saveForm persists unit preferences to the store', async () => {
+  it('does not track or save preference changes during general save', async () => {
     const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const widgetState = TestBed.inject(WidgetStateService);
     const store = TestBed.inject(ExecutionStore);
-    await fixture.componentInstance.saveForm();
-    expect(store.seguimiento()).toBeDefined();
-    expect(store.seguimiento().presionVelocidadUnit).toBe('MPa');
-    expect(store.seguimiento().pesosUnit).toBe('g');
+    const saveFormSpy = vi.spyOn(component, 'saveForm');
+
+    component['formModel'].set({ presionVelocidadUnit: 'BAR', pesosUnit: 'kg' });
+    component['setActiveTab']('p-pz-cie');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(store.seguimiento()).toMatchObject({
+      presionVelocidadUnit: 'MPa',
+      pesosUnit: 'g',
+      activeTab: 'p-manom',
+    });
+    expect(component.formState()).toMatchObject({ dirty: false, hasChanges: false });
+    expect(widgetState.dirtyWidgets()).toEqual([]);
+    expect(widgetState.hasUnsavedChanges()).toBe(false);
+
+    widgetState.updateWidgetFormState('other-widget', {
+      widgetId: 'other-widget',
+      dirty: true,
+      touched: true,
+      valid: true,
+      hasChanges: true,
+    });
+    expect(widgetState.hasUnsavedChanges()).toBe(true);
+
+    await widgetState.saveAllDirtyForms();
+    expect(saveFormSpy).not.toHaveBeenCalled();
   });
 
   it('resetForm restores values from the store', async () => {
@@ -111,17 +133,104 @@ describe('SeguimientoWidget', () => {
     expect(cols.some((column) => column.key === 'pmax_other_0')).toBe(true);
   });
 
-  it('tabOptions contains all 7 tab options', async () => {
+  it('has no tab or unit options before measurements are available', async () => {
     const { fixture } = await renderWidget();
-    expect(fixture.componentInstance.tabOptions).toEqual([
-      'velocidades',
-      'p-manom',
-      'p-pz-cie',
-      'p-pz-int',
-      'p-pz-cul',
-      'p-otro',
-      'p-ipg',
-    ]);
+    expect(fixture.componentInstance.tabOptions()).toEqual([]);
+    expect(fixture.componentInstance.presionUnits()).toEqual([]);
+  });
+
+  it('disables the pressure unit selector unless multiple units are available', async () => {
+    const { fixture } = await renderWidget();
+    const resource = TestBed.inject(PlanningMeasuresService).measuresResource;
+    const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
+
+    expect(await selects[1].isDisabled()).toBe(true);
+    for (const units of [[MeasureUnitEnum.BAR], [MeasureUnitEnum.BAR, MeasureUnitEnum.MPA], []]) {
+      resource.set({
+        series: [
+          {
+            seriesId: 'series-1',
+            measures: {
+              topographyMeasures: [],
+              armamentMeasures: [],
+              ballisticsMeasures: [],
+              munitionsMeasures: units.map((measureUnit, index) => ({
+                id: `pressure-${index}`,
+                name: '',
+                magnitudeCode: 'MUNITION_MANOMETER_AP_MAX',
+                measureUnit,
+              })),
+            },
+          },
+        ],
+      });
+      fixture.detectChanges();
+
+      expect(await selects[1].isDisabled()).toBe(units.length <= 1);
+      expect(await selects[2].isDisabled()).toBe(false);
+    }
+  });
+
+  it('updates tabs and selected unit from planned magnitudes and keeps selections valid after reload', async () => {
+    const { fixture } = await renderWidget();
+    const component = fixture.componentInstance;
+    const resource = TestBed.inject(PlanningMeasuresService).measuresResource;
+    resource.set({
+      series: [
+        {
+          seriesId: 'series-1',
+          measures: {
+            topographyMeasures: [],
+            armamentMeasures: [],
+            ballisticsMeasures: [],
+            munitionsMeasures: [
+              {
+                id: 'closing',
+                name: '',
+                magnitudeCode: 'MUNITION_PIEZO_CLOSING_MAX',
+                measureUnit: MeasureUnitEnum.BAR,
+              },
+              { id: 'half', name: '', magnitudeCode: 'MUNITION_PIEZO_HALF_MAX', measureUnit: MeasureUnitEnum.MPA },
+            ],
+          },
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(component.tabOptions()).toEqual(['p-pz-cie', 'p-pz-int']);
+    expect(component['activeTab']()).toBe('p-pz-cie');
+    expect(component.presionUnits()).toEqual(['BAR']);
+    expect(component['formModel']().presionVelocidadUnit).toBe('BAR');
+
+    const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
+    expect(await selects[1].getValueText()).toBe('bar');
+
+    component['setActiveTab']('p-pz-int');
+    fixture.detectChanges();
+    expect(component.presionUnits()).toEqual(['MPA']);
+    expect(component['formModel']().presionVelocidadUnit).toBe('MPA');
+    expect(await selects[1].getValueText()).toBe('MPa');
+
+    resource.set({
+      series: [
+        {
+          seriesId: 'series-2',
+          measures: {
+            topographyMeasures: [],
+            armamentMeasures: [],
+            ballisticsMeasures: [],
+            munitionsMeasures: [
+              { id: 'shell', name: '', magnitudeCode: 'MUNITION_PIEZO_SHELL_MAX', measureUnit: MeasureUnitEnum.BAR },
+            ],
+          },
+        },
+      ],
+    });
+    fixture.detectChanges();
+    expect(component.tabOptions()).toEqual(['p-pz-cul']);
+    expect(component['activeTab']()).toBe('p-pz-cul');
+    expect(component['formModel']().presionVelocidadUnit).toBe('BAR');
   });
 
   it('tabLabelKey returns correct i18n key for each tab', async () => {
@@ -168,7 +277,10 @@ describe('SeguimientoWidget', () => {
       name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD',
     });
     expect(reloadButton).toBeInTheDocument();
-    expect(reloadButton).toBeEnabled();
+    await waitFor(() => {
+      fixture.detectChanges();
+      expect(reloadButton).toBeEnabled();
+    });
 
     reloadButton.click();
     fixture.detectChanges();

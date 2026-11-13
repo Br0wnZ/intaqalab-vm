@@ -6,14 +6,15 @@ import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { MeasureUnitEnum } from '@intaqalab/models';
 import { LOCALE_SIGNAL } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ExecutionService } from '../../../services/execution.service';
+import { ShotRadarOrientationService } from '../../../data-access';
 import type { TrajectographyRadarOrientationResponse } from '../../models';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { RadarTrayectographyOrientation } from './radar-trayectography-orientation';
@@ -37,9 +38,8 @@ describe('RadarTrayectographyOrientation', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {
@@ -49,7 +49,7 @@ describe('RadarTrayectographyOrientation', () => {
 
   it('hides series and shot selectors when response flags indicate shared values', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotRadarOrientationService);
     const http = TestBed.inject(HttpTestingController);
     service.getRadarTrayectographyOrientation('trial-1', null);
     TestBed.tick();
@@ -68,7 +68,7 @@ describe('RadarTrayectographyOrientation', () => {
 
   it('shows selectors and preserves decimal values when readonly fields receive focus', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotRadarOrientationService);
     const http = TestBed.inject(HttpTestingController);
     service.getRadarTrayectographyOrientation('trial-1', null);
     TestBed.tick();
@@ -92,7 +92,7 @@ describe('RadarTrayectographyOrientation', () => {
 
   it('renders backend precision, thousands and measurement units without changing values', async () => {
     const { fixture } = await renderWidget();
-    const service = TestBed.inject(ExecutionService);
+    const service = TestBed.inject(ShotRadarOrientationService);
     const http = TestBed.inject(HttpTestingController);
     const response = createOrientationResponse(false, true);
     const data = response.series[0]?.shots[0]?.orientationData;
@@ -104,7 +104,7 @@ describe('RadarTrayectographyOrientation', () => {
       theoreticalFlightTime: 400.375,
       fuseGraduation: 50.625,
       shootingAngle: 15.875,
-      shootingAngleUnit: 'MILS',
+      shootingAngleUnit: MeasureUnitEnum.MILS,
       nominalProjectileWeight: 47.125,
     });
     const secondSeriesShot = response.series[1]?.shots[0];
@@ -140,7 +140,7 @@ describe('RadarTrayectographyOrientation', () => {
       expect(screen.getByRole('textbox', { name: new RegExp(label) })).toHaveValue(formatter.format(value));
     }
     expect(screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ })).toHaveValue('');
-    expect(screen.getByRole('combobox', { name: 'mil', exact: true })).toHaveTextContent('mil');
+    expect(screen.getByRole('combobox', { name: '°°', exact: true })).toHaveTextContent('°°');
     expect(screen.getByRole('combobox', { name: 'kg', exact: true })).toHaveTextContent('kg');
 
     const loader = TestbedHarnessEnvironment.loader(fixture);

@@ -30,7 +30,7 @@ import {
   RangePipe,
   TrialStatusLabelPipe,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import type { Serie, Shot } from '../../models/shooting-conditions.model';
@@ -42,7 +42,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
 @Component({
   selector: 'inta-shooting-conditions',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     FormsModule,
     MatExpansionModule,
     MatFormFieldModule,

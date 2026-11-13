@@ -4,7 +4,7 @@ import { FeatureFlagService } from '@intaqalab/config';
 import type { Role } from '@intaqalab/core';
 import { AuthService } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { describe, expect, it } from 'vitest';
@@ -43,12 +43,7 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: FeatureFlagService,
           useValue: FeatureFlagServiceMock,
-        },
-      ],
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
+        }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
   });
@@ -68,12 +63,7 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: FeatureFlagService,
           useValue: FeatureFlagServiceMock,
-        },
-      ],
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
+        }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
 
@@ -98,12 +88,7 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: FeatureFlagService,
           useValue: FeatureFlagServiceMock,
-        },
-      ],
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
+        }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
 
@@ -129,12 +114,7 @@ describe('ButtonTrialActionsImplComponent', () => {
         {
           provide: FeatureFlagService,
           useValue: FeatureFlagServiceMock,
-        },
-      ],
-      imports: [
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-        }),
+        }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
       ],
     });
 

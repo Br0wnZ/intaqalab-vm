@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { injectCalendarEndpoint } from '@intaqalab/config';
 import { format } from 'date-fns';
 import { lastValueFrom } from 'rxjs';
@@ -13,9 +13,7 @@ interface GroupedActionsToPerform {
   noNOTamRemove: string[];
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SpecialDaysDataServiceService {
   readonly #httpClient = inject(HttpClient);
   readonly #calendarUrl = injectCalendarEndpoint();

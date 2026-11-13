@@ -1,11 +1,11 @@
 import type { TemplateRef } from '@angular/core';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import type { CalendarEventViewModel } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { CalendarMonthViewDay } from 'angular-calendar';
 import { CalendarMonthViewComponent, CalendarView, DateAdapter, provideCalendar } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -17,7 +17,7 @@ import { contains, getObservationByDay } from '../../utils/calendar-trials-utils
 @Component({
   selector: 'lib-calendar-trials-month',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     CalendarMonthViewComponent,
     MatMenuModule,
     MatButtonModule,
@@ -43,7 +43,6 @@ import { contains, getObservationByDay } from '../../utils/calendar-trials-utils
     />
   `,
   styleUrl: './calendar-trials-month.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarTrialsMonthComponent {
   store = inject(CalendarTrialStore, { skipSelf: true });

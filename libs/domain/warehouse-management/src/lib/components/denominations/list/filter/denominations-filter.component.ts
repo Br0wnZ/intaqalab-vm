@@ -1,18 +1,18 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionComponentStore } from '../../../../+state/munition-component.store';
 
 @Component({
   selector: 'inta-denominations-filter',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     ReactiveFormsModule,
     FormsModule,
     MatInputModule,
@@ -62,7 +62,6 @@ import { MunitionComponentStore } from '../../../../+state/munition-component.st
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DenominationsFilter {
   readonly munitionComponentStore = inject(MunitionComponentStore);

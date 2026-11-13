@@ -60,6 +60,7 @@ export function createMockTranslateService() {
     stream: vi.fn((key: string) => of(key)),
     use: vi.fn(),
     setDefaultLang: vi.fn(),
+    setFallbackLang: vi.fn(),
     addLangs: vi.fn(),
     getLangs: vi.fn(() => ['en', 'es']),
     currentLang: 'en',

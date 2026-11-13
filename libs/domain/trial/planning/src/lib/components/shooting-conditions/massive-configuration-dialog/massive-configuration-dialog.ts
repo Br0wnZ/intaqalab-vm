@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { FormField, form, required, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,11 +12,12 @@ import {
   NoLeadingZerosDirective,
   NoNegativeValuesDirective,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { Serie, ShootingConditionsUnits, UpdateShot } from '../../../models/shooting-conditions.model';
 import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
+import { numericMax, numericMin } from '../../../utils/numeric-validators';
 
 interface BulkConfig {
   series: string[];
@@ -57,7 +58,7 @@ interface DialogData {
     FormField,
     IntaIconComponent,
     IntaDatePipe,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     InputSelectInput,
     NoNegativeValuesDirective,
@@ -436,7 +437,6 @@ interface DialogData {
       }
     `,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MassiveConfigurationDialog {
   readonly shootingConditionsService = inject(ShootingConditionsService);
@@ -470,20 +470,20 @@ export class MassiveConfigurationDialog {
   });
 
   readonly bulkForm = form(this.configModel, (f) => {
-    min(f.orientation.value, 0);
-    max(f.orientation.value, MAX_ANGULAR_VALUE);
-    min(f.elevation.value, 0);
-    max(f.elevation.value, MAX_ANGULAR_VALUE);
-    min(f.angle.value, 0);
-    max(f.angle.value, MAX_ANGULAR_VALUE);
-    min(f.targetInclination.value, 0);
-    max(f.targetInclination.value, MAX_ANGULAR_VALUE);
-    max(f.distance.value, MAX_DISTANCE_VALUE);
-    max(f.range.value, MAX_DISTANCE_VALUE);
-    max(f.functioningHeight.value, MAX_DISTANCE_VALUE);
-    max(f.powderWeight.value, MAX_WEIGHT_VALUE);
-    max(f.projectileWeight.value, MAX_WEIGHT_VALUE);
-    max(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
+    numericMin(f.orientation.value, 0);
+    numericMax(f.orientation.value, MAX_ANGULAR_VALUE);
+    numericMin(f.elevation.value, 0);
+    numericMax(f.elevation.value, MAX_ANGULAR_VALUE);
+    numericMin(f.angle.value, 0);
+    numericMax(f.angle.value, MAX_ANGULAR_VALUE);
+    numericMin(f.targetInclination.value, 0);
+    numericMax(f.targetInclination.value, MAX_ANGULAR_VALUE);
+    numericMax(f.distance.value, MAX_DISTANCE_VALUE);
+    numericMax(f.range.value, MAX_DISTANCE_VALUE);
+    numericMax(f.functioningHeight.value, MAX_DISTANCE_VALUE);
+    numericMax(f.powderWeight.value, MAX_WEIGHT_VALUE);
+    numericMax(f.projectileWeight.value, MAX_WEIGHT_VALUE);
+    numericMax(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
 
     validate(f.series, ({ value }) => {
       const selected = value();

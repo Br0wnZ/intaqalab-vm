@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, resource, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, resource, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface DocumentType {
   id: number;
@@ -17,7 +17,7 @@ interface DocumentType {
 
 @Component({
   selector: 'inta-admin-docs-section',
-  imports: [TranslateModule, MatButtonModule, MatIconModule, MatSlideToggleModule, MatTableModule, MatPaginatorModule],
+  imports: [TranslatePipe, MatButtonModule, MatIconModule, MatSlideToggleModule, MatTableModule, MatPaginatorModule],
   template: `
     <div class="min-h-screen p-8">
       <header class="flex flex-col lg:flex-row justify-between items-center mb-6 gap-4">
@@ -203,7 +203,6 @@ interface DocumentType {
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDocsSection {
   readonly searchQuery = signal('');

@@ -1,7 +1,6 @@
 import type { ComponentType } from '@angular/cdk/portal';
 import { NgComponentOutlet } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Injector,
@@ -46,7 +45,6 @@ interface TabConfig {
     TranslatePipe,
     IntaIconComponent,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (featureFlags.tabsNavigation()) {
       <mat-tab-group

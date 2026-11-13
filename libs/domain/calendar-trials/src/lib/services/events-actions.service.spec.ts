@@ -5,7 +5,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { CalendarTrialScheduleService } from '@intaqalab/data-access';
 import type { CalendarTrialScheduleApiResponse, LinesOfShotViewState } from '@intaqalab/models';
 import { TrialScheduleService } from '@intaqalab/trial-management';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { EventsActionsService } from './events-actions.service';
@@ -22,11 +22,6 @@ function setUp(data: CalendarTrialScheduleApiResponse) {
     selectLinesAndDatesToSchedule: vi.fn().mockReturnValue(Promise.resolve(true)),
   };
   TestBed.configureTestingModule({
-    imports: [
-      TranslateModule.forRoot({
-        loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-      }),
-    ],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -35,7 +30,7 @@ function setUp(data: CalendarTrialScheduleApiResponse) {
       {
         provide: TrialScheduleService,
         useValue: mockTrialScheduleService,
-      },
+      }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
     ],
   });
   const service = TestBed.inject(EventsActionsService);

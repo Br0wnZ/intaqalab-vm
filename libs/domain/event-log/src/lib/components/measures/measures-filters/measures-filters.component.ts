@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormField, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MeasuresService } from '../../../services/measures/measures.service';
 import { UserDataService } from '../../../services/user-data.service';
@@ -28,7 +28,7 @@ import { castEventLogFiltersToEventLogSearch } from '../../../utils-models/utils
     MatInputModule,
     FormsModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatIconModule,
   ],
   providers: [provideNativeDateAdapter()],
@@ -221,7 +221,6 @@ import { castEventLogFiltersToEventLogSearch } from '../../../utils-models/utils
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventLogEventLogMeasuresFiltersComponent {
   readonly #measuresService = inject(MeasuresService);

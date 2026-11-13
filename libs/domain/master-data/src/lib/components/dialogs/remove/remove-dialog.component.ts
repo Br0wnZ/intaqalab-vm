@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -48,7 +48,6 @@ import type { MasterDataRemoveDialog } from '../../../models/master-data-remove-
     </mat-dialog-actions>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MasterDataRemoveDialogComponent {
   readonly dialogRef = inject(MatDialogRef<MasterDataRemoveDialogComponent>);

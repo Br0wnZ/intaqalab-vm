@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
+import { Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
 import { FormField, form, pattern, validate, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -12,7 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaSignalSelectComponent, NumericRangeInput } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { format } from 'date-fns';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -29,7 +29,7 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaSignalSelectComponent,
     MatTableModule,
@@ -230,7 +230,6 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
 })
 export class StockListFilterComponent {
@@ -303,7 +302,7 @@ export class StockListFilterComponent {
       },
       onSuccess: (response: SearchByTrialNumberResponse) => {
         if (response.items.length > 0) {
-          this.form.plannedFireTrialIds().setControlValue(response.items[0].id);
+          this.form.plannedFireTrialIds().controlValue.set(response.items[0].id);
           return null;
         }
         return {

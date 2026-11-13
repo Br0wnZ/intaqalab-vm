@@ -1,9 +1,9 @@
 ---
 name: create-feature
-version: 1.0.0
-last-updated: 2026-09-29
-description: Scaffolds a new complete Feature library using Angular 21, Nx CLI, and Zoneless architecture.
-argument-hint: 'Domain: [name], Feature: [name], Type: [CRUD | Dashboard | Form]'
+version: 1.0.1
+last-updated: 2026-11-12
+description: Scaffolds a new complete Feature library using Angular 22, Nx CLI, and Zoneless architecture.
+argument-hint: "Domain: [name], Feature: [name], Type: [CRUD | Dashboard | Form]"
 ---
 
 # Create Feature
@@ -24,7 +24,7 @@ ${input:args}
 2.  **Shell Component (Container)**
     - Generate the container component file (`[feature].ts` without `.component` suffix).
     - Class name: `[FeatureName]` (without `Component` suffix).
-    - Angular 21 standalone defaults (no need for `standalone: true`).
+    - Angular 22 standalone & `OnPush` defaults (omit `standalone: true` and `changeDetection: ChangeDetectionStrategy.OnPush`).
     - Use private functional store injection: `readonly #store = inject(...)`.
     - In templates, use modern Control Flow (`@if`, `@for`).
     - For styling, use inline Tailwind CSS (`class="flex flex-col gap-4 p-4"`). No dedicated SCSS.

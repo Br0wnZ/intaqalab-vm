@@ -9,7 +9,7 @@ import { AuthService, provideTestingEnvironment } from '@intaqalab/core';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -111,7 +111,6 @@ describe('FeatureTrialCreateFormComponent', () => {
       on: {
         viewDocument: options.onViewDocument ?? vi.fn(),
       },
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -119,7 +118,7 @@ describe('FeatureTrialCreateFormComponent', () => {
         { provide: AuthService, useValue: { userRoles: signal([]) } },
         { provide: MatDialog, useValue: mockDialog },
         { provide: ClientsDataService, useValue: mockClientsService },
-        { provide: TrialTypeService, useValue: mockTrialTypeService },
+        { provide: TrialTypeService, useValue: mockTrialTypeService }, provideTranslateService(),
       ],
     });
     const loader = TestbedHarnessEnvironment.loader(view.fixture);

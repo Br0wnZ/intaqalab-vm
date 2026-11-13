@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -36,12 +36,11 @@ async function setup(data: MasterDataRemoveDialog = MOCK_DIALOG_DATA, closeFn = 
   const events = userEvent.setup();
 
   const view = await render(MasterDataRemoveDialogComponent, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       { provide: MasterDataService, useValue: createMockMasterDataService() },
       MasterDataStore,
       { provide: MatDialogRef, useValue: { close: closeFn } },
-      { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
     ],
   });
 

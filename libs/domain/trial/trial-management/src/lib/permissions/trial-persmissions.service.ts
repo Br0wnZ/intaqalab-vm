@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { computed, inject, Service } from '@angular/core';
 import {
   ADMIN_ROLES,
   AuthService,
@@ -14,9 +14,7 @@ import type { TrialStatus } from '@intaqalab/models';
 
 import { CAN_SCHEDULE_ROLES, CAN_SCHEDULE_STATUS } from './data/scheduling-permissions.constants';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class TrialPersmissionsService {
   #authService = inject(AuthService);
 

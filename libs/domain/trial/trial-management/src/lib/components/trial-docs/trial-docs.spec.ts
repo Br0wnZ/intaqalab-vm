@@ -4,7 +4,7 @@ import type { WritableSignal } from '@angular/core';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -108,12 +108,12 @@ describe('TrialDocs', () => {
 
   const renderComponent = async (trialId = 'TRIAL-123') => {
     return render(`<inta-trial-docs [trialId]="'${trialId}'"></inta-trial-docs>`, {
-      imports: [TrialDocs, TranslateModule.forRoot()],
+      imports: [TrialDocs],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: TrialDocsService, useValue: mockTrialDocsService },
-        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
       ],
     });
   };

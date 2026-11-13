@@ -5,7 +5,7 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../../models/shooting-conditions.model';
@@ -51,7 +51,6 @@ describe('MassiveConfigurationDialog', () => {
 
   const renderDialog = async (dialogRefMock = createFullMockDialogRef()) => {
     const view = await render(MassiveConfigurationDialog, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideTestingEnvironment(),
         provideHttpClient(),
@@ -67,7 +66,7 @@ describe('MassiveConfigurationDialog', () => {
             trialId: 'trial-123',
           },
         },
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
       ],
     });
 

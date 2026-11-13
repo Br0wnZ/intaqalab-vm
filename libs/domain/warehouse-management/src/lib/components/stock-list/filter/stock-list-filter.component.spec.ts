@@ -7,7 +7,7 @@ import { signal } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -72,7 +72,6 @@ async function setup() {
   const filtersSpy = vi.fn();
 
   const view = await render(StockListFilterComponent, {
-    imports: [TranslateModule.forRoot()],
     on: { filtersData: filtersSpy },
     providers: [
       provideAnimationsAsync(),
@@ -82,7 +81,7 @@ async function setup() {
       { provide: StockListStore, useValue: stockListStore },
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
       { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
-      { provide: ClientsDataService, useValue: clientsDataService },
+      { provide: ClientsDataService, useValue: clientsDataService }, provideTranslateService(),
     ],
   });
 

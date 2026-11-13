@@ -4,9 +4,27 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, waitFor } from '@testing-library/angular';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('chart.js', () => {
+  class MockChart {
+    static register = vi.fn();
+    destroy = vi.fn();
+    update = vi.fn();
+    data: unknown;
+    options: unknown;
+    constructor(_el: unknown, config: { data: unknown; options: unknown }) {
+      this.data = config.data;
+      this.options = config.options;
+    }
+  }
+  return {
+    Chart: MockChart,
+    registerables: [],
+  };
+});
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { WidgetStateService } from '../../services/widget-state.service';
@@ -28,9 +46,8 @@ describe('TaradoVelocidadChartWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, inject, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { PropellantChargeParametersResponse } from '../models/propellant-charge-parameters.model';
@@ -11,9 +11,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
  * (Widget 9 — Información Tarado): una entrada por serie con zona de carga,
  * velocidad nominal, desviación máxima y peso de pólvora.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PropellantChargeParametersService {
   readonly #planningUrl = injectPlanningEndpoint();
   readonly #injector = inject(Injector);

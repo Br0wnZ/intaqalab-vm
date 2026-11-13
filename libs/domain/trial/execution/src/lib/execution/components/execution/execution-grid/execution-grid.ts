@@ -1,6 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   type Type,
   computed,
@@ -10,7 +9,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { GridPosition, PlacedWidget } from '../../../models/execution-grid.models';
 import { WidgetId } from '../../../models/widget-id.enum';
@@ -26,8 +25,7 @@ interface FreeBlock {
 }
 @Component({
   selector: 'inta-execution-grid',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, TranslateModule],
+  imports: [NgComponentOutlet, TranslatePipe],
   providers: [],
   host: { class: 'block h-full' },
   template: `

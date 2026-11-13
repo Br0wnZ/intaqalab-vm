@@ -1,6 +1,5 @@
 import type { Type } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   Injector,
   ViewEncapsulation,
@@ -20,7 +19,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
 import { BooleanStatusBadge, ErrorState, IntaIconComponent, SkeletonTable } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { MasterDataStore } from '../../+state/master-data.store';
@@ -36,7 +35,7 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
 @Component({
   selector: 'inta-master-data-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatTableModule,
     FormsModule,
     MatPaginatorModule,
@@ -140,7 +139,6 @@ import { MasterDataSwitchStatusDialogComponent } from '../dialogs/switch-status/
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MasterDataListComponent {
   readonly store = inject(MasterDataStore);

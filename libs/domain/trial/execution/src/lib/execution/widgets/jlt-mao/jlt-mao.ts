@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -30,7 +29,7 @@ import {
 import { AngleUnitEnum, MEASURE_UNIT_LABELS } from '@intaqalab/models';
 import { InputSelect, InputSelectInput, IntaIconComponent, ValueTooltip } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { JltMaoState } from '../../../+state/execution.store';
@@ -76,7 +75,7 @@ interface JltMaoSelectForm {
     MatIconModule,
     MatInputModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     InputSelect,
     InputSelectInput,
     IntaIconComponent,
@@ -320,7 +319,6 @@ interface JltMaoSelectForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JltMao extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

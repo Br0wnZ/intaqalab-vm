@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,7 +13,7 @@ import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { IntaIconComponent, UiDialogService } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { DenominationsStoreType } from '../../../+state/denominations.store';
 import { DenominationsStore } from '../../../+state/denominations.store';
@@ -38,7 +38,7 @@ const DEFAULT_COLUMNS = [
 @Component({
   selector: 'inta-wharehouse-denominations-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     ReactiveFormsModule,
     FormsModule,
     MatTableModule,
@@ -189,7 +189,6 @@ const DEFAULT_COLUMNS = [
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DenominationsListComponent {
   readonly store: DenominationsStoreType = inject(DenominationsStore);

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import type { ChangeStatusRequest, FinishFireTrialResponse, FireTrial } from '@intaqalab/models';
 
@@ -11,9 +11,7 @@ interface FireTrialChangeStatusParams extends FireTrialLifecycleParams {
   reason: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class FireTrialLifecycleService {
   readonly #fireTrialsUrl = injectFireTrialsEndpoint();
 

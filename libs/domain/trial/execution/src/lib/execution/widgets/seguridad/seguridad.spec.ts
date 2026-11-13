@@ -5,7 +5,9 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -20,9 +22,26 @@ const mockWidgetStateService = {
   saveSuccessCount: signal(0),
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('SeguridadWidget', () => {
-  const renderWidget = (widgetId = 'test-widget') =>
-    render(SeguridadWidget, {
+  const renderWidget = async (widgetId = 'test-widget') => {
+    const result = await render(SeguridadWidget, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -30,10 +49,12 @@ describe('SeguridadWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();
@@ -85,6 +106,8 @@ describe('SeguridadWidget', () => {
 
   it('isDirty becomes false after saveForm', async () => {
     const { fixture } = await renderWidget();
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
     fixture.componentInstance['blancoTexto'].set('nuevo texto');
     fixture.detectChanges();
     await fixture.componentInstance.saveForm();
@@ -99,6 +122,8 @@ describe('SeguridadWidget', () => {
 
   it('handles shotLock unlock and lock cycle', async () => {
     const { fixture } = await renderWidget();
+    fixture.componentInstance.onSerieSelected('series-1');
+    fixture.componentInstance.onDisparoSelected('shot-1');
     const lock = fixture.componentInstance['shotLock'];
     expect(lock).toBeDefined();
     lock.enableHistoricalEdit();

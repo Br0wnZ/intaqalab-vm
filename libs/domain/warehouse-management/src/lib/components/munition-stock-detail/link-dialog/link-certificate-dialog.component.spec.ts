@@ -9,7 +9,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { createMockMatDialog, createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -82,7 +82,7 @@ async function setup(options?: { items?: any[] }) {
   certsService = makeCertificatesService();
 
   const renderResult = await render(LinkCertificatesDialogComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -91,7 +91,7 @@ async function setup(options?: { items?: any[] }) {
       { provide: MAT_DIALOG_DATA, useValue: DIALOG_DATA },
       { provide: MunitionsStockListService, useValue: makeMunitionsStockListService() },
       { provide: ClientsDataService, useValue: makeClientsDataService() },
-      { provide: MunitionsStockCertificatesService, useValue: certsService },
+      { provide: MunitionsStockCertificatesService, useValue: certsService }, provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
@@ -153,7 +153,7 @@ describe('LinkCertificatesDialogComponent', () => {
   describe('Search', () => {
     it('should call stockListStore.search with clientId filter when clientId is set', async () => {
       const { component } = await setup();
-      component.filterForm.clientId().setControlValue('cli-1');
+      component.filterForm.clientId().controlValue.set('cli-1');
       component.search();
       expect(stockListStore.search).toHaveBeenCalledWith(expect.objectContaining({ clientIds: ['cli-1'] }));
     });
@@ -166,7 +166,7 @@ describe('LinkCertificatesDialogComponent', () => {
 
     it('should call stockListStore.search with munitionTypeId filter when set', async () => {
       const { component } = await setup();
-      component.filterForm.munitionTypeId().setControlValue('Vaso');
+      component.filterForm.munitionTypeId().controlValue.set('Vaso');
       component.search();
       expect(stockListStore.search).toHaveBeenCalledWith(expect.objectContaining({ munitionTypeIds: ['Vaso'] }));
     });

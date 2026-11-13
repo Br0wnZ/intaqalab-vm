@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -18,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ShotTrajectographyService } from '../../../data-access';
@@ -59,7 +58,7 @@ interface SelectorFormModel {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     TrayectografiasTrayectoriasTabComponent,
     TrayectografiaFuncionamientosTabComponent,
     TrayectografiaTrazasTabComponent,
@@ -185,7 +184,6 @@ interface SelectorFormModel {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrayectografiaIntroductionWidget extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -24,7 +24,6 @@ import type { UIDialogConfirm } from '../../ui-dialog.model';
     TranslatePipe,
     IntaIconComponent,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>
       <ui-inta-icon name="alert" size="xxl" />

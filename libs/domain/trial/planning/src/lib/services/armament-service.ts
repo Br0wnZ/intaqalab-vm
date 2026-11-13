@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, computed, signal } from '@angular/core';
+import { computed, signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
@@ -60,9 +60,7 @@ type TubeDenominationParams = {
   familyId: number;
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ArmamentService {
   readonly #getArmamentParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateArmamentTrigger = actionTrigger<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest }>();

@@ -13,7 +13,7 @@ import {
   PlanningTrialContextService,
 } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum, DistanceUnitEnum } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
@@ -47,9 +47,8 @@ describe('TargetDataWidget', () => {
           },
         },
         PlanningTrialContextService,
-        ExecutionStore,
+        ExecutionStore, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

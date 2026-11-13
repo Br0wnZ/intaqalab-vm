@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, input } from '@angular/core';
+import { Component, ViewEncapsulation, input } from '@angular/core';
 
 import { Skeleton, type SkeletonAnimation } from './skeleton';
 
@@ -62,7 +62,6 @@ import { Skeleton, type SkeletonAnimation } from './skeleton';
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonCard {
   /** Tipo de animación aplicada a todos los skeletons hijos */

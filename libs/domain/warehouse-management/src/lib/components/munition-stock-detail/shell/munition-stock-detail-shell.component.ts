@@ -1,6 +1,6 @@
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { MENU_WAREHOUSE_ROLES, injectCurrentUserRole } from '@intaqalab/core';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { DialogConfirmComponent } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -27,7 +27,7 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
 
 @Component({
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatButtonModule,
     MatMenuModule,
     MatIconModule,
@@ -250,7 +250,6 @@ import { RetireDialogComponent } from '../retire-dialog/retire-dialog.component'
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MunitionStockDetailShellComponent implements OnDestroy {
   readonly #dialog = inject(MatDialog);

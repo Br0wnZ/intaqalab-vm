@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -32,7 +32,6 @@ const mockMunitionsStore = {
   updateMunitions: vi.fn(),
 };
 
-const defaultImports = [TranslateModule.forRoot()];
 const defaultProviders = [
   provideHttpClient(),
   provideHttpClientTesting(),
@@ -80,8 +79,7 @@ describe('ComponentDetailFormComponent', () => {
   describe('Initial rendering', () => {
     it('should render espoleta form fields when type is espoleta', async () => {
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -105,8 +103,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should render default form fields when type is not espoleta', async () => {
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: nonEspoletaDetail },
       });
 
@@ -138,8 +135,7 @@ describe('ComponentDetailFormComponent', () => {
       };
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: supplementDetail },
       });
 
@@ -148,8 +144,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should display the conditioning checkbox', async () => {
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -162,8 +157,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should display component type in titlecase', async () => {
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -177,8 +171,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
         on: { detailChange: detailChangeSpy },
       });
@@ -197,8 +190,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: nonEspoletaDetail },
         on: { detailChange: detailChangeSpy },
       });
@@ -219,8 +211,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
         on: { detailChange: detailChangeSpy },
       });
@@ -243,8 +234,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
         on: { detailChange: detailChangeSpy },
       });
@@ -266,8 +256,7 @@ describe('ComponentDetailFormComponent', () => {
       const user = userEvent.setup();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -287,8 +276,7 @@ describe('ComponentDetailFormComponent', () => {
       const user = userEvent.setup();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...defaultDetail, reconditioning: { temperature: 25, tolerance: 2, timeMin: 4, timeMax: 8 } },
         },
@@ -313,8 +301,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
         on: { detailChange: detailChangeSpy },
       });
@@ -334,8 +321,7 @@ describe('ComponentDetailFormComponent', () => {
       const detailChangeSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...defaultDetail, reconditioning: { temperature: 25, tolerance: 2, timeMin: 4, timeMax: 8 } },
         },
@@ -369,8 +355,7 @@ describe('ComponentDetailFormComponent', () => {
   describe('addPowder output', () => {
     it('should not render the add powder button when the component type is not powder', async () => {
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -383,8 +368,7 @@ describe('ComponentDetailFormComponent', () => {
       const addPowderSpy = vi.fn();
 
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: powderDetail },
         on: { addPowder: addPowderSpy },
       });
@@ -401,8 +385,7 @@ describe('ComponentDetailFormComponent', () => {
   describe('Validations', () => {
     it('should have a form with denomination validation', async () => {
       const renderResult = await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
@@ -415,8 +398,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should reject maxAllowedErrors values above 99', async () => {
       const renderResult = await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: { ...defaultDetail, maxAllowedErrors: 100 } },
       });
 
@@ -430,8 +412,7 @@ describe('ComponentDetailFormComponent', () => {
       const user = userEvent.setup();
 
       const renderResult = await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: { ...defaultDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } } },
       });
 
@@ -444,8 +425,7 @@ describe('ComponentDetailFormComponent', () => {
     it('should sanitize clientNumber input to allow only digits and commas, preventing consecutive/leading commas', async () => {
       const user = userEvent.setup();
       await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: nonEspoletaDetail },
       });
 
@@ -460,8 +440,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should validate trailing comma in clientNumber', async () => {
       const renderResult = await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
         },
@@ -475,8 +454,7 @@ describe('ComponentDetailFormComponent', () => {
 
     it('should validate clientNumber counts against assignedShotsCount', async () => {
       const renderResult = await render(ComponentDetailFormComponent, {
-        imports: defaultImports,
-        providers: defaultProviders,
+        providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
           assignedShotsCount: 2,

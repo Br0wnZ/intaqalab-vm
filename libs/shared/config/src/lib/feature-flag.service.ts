@@ -1,11 +1,9 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 
 import { APP_ENV } from './environment.token';
 import type { AppFeatures } from './environment.types';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class FeatureFlagService {
   readonly #env = inject(APP_ENV);
 

@@ -1,6 +1,5 @@
 import type { ElementRef } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   Injector,
   computed,
@@ -31,7 +30,7 @@ import {
   ValueTooltip,
 } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { TrialDocsService } from '../../services/trial-docs-service';
 import type { FireTrialDocument } from '../../utils-models/documents-service.model';
@@ -52,7 +51,7 @@ enum TrialDocsViewState {
   selector: 'inta-trial-docs',
   imports: [
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatButtonModule,
     MatIconModule,
     MatTableModule,
@@ -384,7 +383,6 @@ enum TrialDocsViewState {
     </div>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrialDocs {
   protected readonly fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');

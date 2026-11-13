@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { inject, signal, Service } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -11,9 +11,7 @@ interface SecurityCountdownParams {
   fireTrialId: FireTrial['id'];
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SecurityCountdownService {
   readonly #http = inject(HttpClient);
   readonly #executionUrl = injectExecutionEndpoint();

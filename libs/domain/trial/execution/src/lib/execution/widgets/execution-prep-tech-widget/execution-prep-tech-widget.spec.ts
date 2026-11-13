@@ -6,7 +6,7 @@ import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { ToastrService } from 'ngx-toastr';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -123,7 +123,7 @@ async function runSetup(options: SetupOptions = {}) {
   const mockToastrService = createMockToastrService();
 
   const view = await render(ExecutionPrepTechWidgetComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     componentInputs: {
       widgetId: 'widget-test-1',
       profile,
@@ -134,7 +134,7 @@ async function runSetup(options: SetupOptions = {}) {
       provideHttpClientTesting(),
       { provide: ExecutionStore, useValue: mockStore },
       { provide: WidgetStateService, useValue: mockWidgetStateService },
-      { provide: ToastrService, useValue: mockToastrService },
+      { provide: ToastrService, useValue: mockToastrService }, provideTranslateService(),
     ],
   });
 
@@ -397,7 +397,7 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       });
 
       const view = await render(ExecutionPrepTechWidgetComponent, {
-        imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+        imports: [NoopAnimationsModule],
         componentInputs: {
           widgetId: 'widget-test-1',
           profile: 'presiones',
@@ -408,7 +408,7 @@ describe('ExecutionPrepTechWidgetComponent', () => {
           provideHttpClientTesting(),
           { provide: ExecutionStore, useValue: mockStore },
           { provide: WidgetStateService, useValue: widgetStateService },
-          { provide: ToastrService, useValue: createMockToastrService() },
+          { provide: ToastrService, useValue: createMockToastrService() }, provideTranslateService(),
         ],
       });
       const loader = TestbedHarnessEnvironment.loader(view.fixture);

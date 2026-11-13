@@ -19,7 +19,7 @@ import {
 } from '@intaqalab/data-access-planning';
 import { type FireTrial, QualificationTypeEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { ToastrService } from 'ngx-toastr';
@@ -241,7 +241,6 @@ describe('Execution', () => {
     };
 
     const view = await render(Execution, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideNoopAnimations(),
         provideTestingEnvironment(),
@@ -353,7 +352,7 @@ describe('Execution', () => {
               },
             },
           },
-        },
+        }, provideTranslateService(),
       ],
     });
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
+import { Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { RangePipe } from '@intaqalab/utils';
 
 import { Skeleton, type SkeletonAnimation } from './skeleton';
@@ -56,7 +56,6 @@ const CELL_WIDTHS = ['80%', '65%', '90%', '70%', '85%', '75%', '60%', '95%'];
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonTable {
   /** Número de columnas */

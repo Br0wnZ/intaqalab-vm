@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type {
@@ -10,9 +10,7 @@ import type {
 
 export type { StanagCriteriaListResponse, StanagCriterionItem, StanagCriterionRequest };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class StanagService {
   readonly #listParams = signal<{ page?: number; pageSize?: number } | null>(null);
   readonly #getParams = signal<{ id: string } | null>(null);

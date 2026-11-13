@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, isDevMode, output, signal } from '@angular/core';
+import { Component, computed, inject, input, isDevMode, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { IntaIconComponent, Skeleton } from '@intaqalab/ui';
 import { RangePipe } from '@intaqalab/utils';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type { PlacedWidget, Widget } from '../../models/execution-grid.models';
 import { WidgetId } from '../../models/widget-id.enum';
@@ -19,7 +19,7 @@ import { WidgetId } from '../../models/widget-id.enum';
     MatIconModule,
     MatInputModule,
     MatSlideToggleModule,
-    TranslateModule,
+    TranslatePipe,
     IntaIconComponent,
     Skeleton,
     RangePipe,
@@ -128,7 +128,6 @@ import { WidgetId } from '../../models/widget-id.enum';
       (keydown.space)="closed.emit()"
     ></div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetLibrary {
   readonly isDevMode = isDevMode();

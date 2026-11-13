@@ -1,12 +1,10 @@
 import { HttpContext, httpResource } from '@angular/common/http';
-import { Injectable, computed } from '@angular/core';
+import { computed, Service } from '@angular/core';
 import { SKIP_CENTER_INTERCEPTOR, injectClientsEndpoint } from '@intaqalab/config';
 
 import type { Client, ClientListResponse } from '../models/client.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ClientsDataService {
   readonly #url = injectClientsEndpoint();
 

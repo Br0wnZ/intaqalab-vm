@@ -5,7 +5,7 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialStatus } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -22,12 +22,11 @@ describe('TrialListFilter', () => {
 
     const renderResult = await render(TrialListFilter, {
       excludeComponentDeclaration: true,
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideAnimationsAsync(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideTestingEnvironment(),
+        provideTestingEnvironment(), provideTranslateService(),
       ],
     });
     fixture = renderResult.fixture;

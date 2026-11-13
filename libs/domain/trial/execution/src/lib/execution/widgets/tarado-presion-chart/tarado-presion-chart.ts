@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -17,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
 import { IntaDecimalPipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
 import type { TaradoPresionChartState } from '../../../+state/execution.store';
@@ -46,7 +45,7 @@ interface TaradoPresionForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     ChartDirective,
     IntaIconComponent,
   ],
@@ -160,7 +159,6 @@ interface TaradoPresionForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 /**
  * ## Gráfica Tarado - Presiones

@@ -5,7 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CalendarEventsDataService } from '@intaqalab/data-access';
 import type { TrialSchedulerModalShellInput } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
@@ -54,11 +54,11 @@ describe('TrialSchedulerModalShellComponent', () => {
     };
 
     const view = await render(TrialSchedulerModalShellComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: CalendarEventsDataService, useValue: mockCalendarEventsDataService },
+        { provide: CalendarEventsDataService, useValue: mockCalendarEventsDataService }, provideTranslateService(),
       ],
       componentProviders: [{ provide: MAT_DIALOG_DATA, useValue: inputData }],
     });

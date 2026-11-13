@@ -1,6 +1,5 @@
 import type { Signal } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
   computed,
@@ -16,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, MeasureUnitEnum } from '@intaqalab/models';
 import { ChartDirective, IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { ChartConfiguration } from 'chart.js';
 
 import type { OverpressureChartState } from '../../../+state/execution.store';
@@ -41,7 +40,7 @@ interface OverpressureChartForm {
     MatFormFieldModule,
     MatIconModule,
     MatSelectModule,
-    TranslateModule,
+    TranslatePipe,
     ChartDirective,
     IntaIconComponent,
   ],
@@ -150,7 +149,6 @@ interface OverpressureChartForm {
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 /**
  * ## Gráfica Sobrepresión

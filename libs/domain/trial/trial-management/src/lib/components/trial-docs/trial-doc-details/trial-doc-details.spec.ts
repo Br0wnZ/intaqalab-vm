@@ -5,7 +5,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -64,14 +64,13 @@ async function setup(options: { documentId?: string; mockDialog?: ReturnType<typ
   const mockDialog = options.mockDialog ?? makeDialog();
 
   const view = await render(TrialDocDetails, {
-    imports: [TranslateModule.forRoot()],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       provideAnimationsAsync(),
       { provide: TrialDocsService, useValue: mockService },
-      { provide: Router, useValue: { navigateByUrl: vi.fn() } },
+      { provide: Router, useValue: { navigateByUrl: vi.fn() } }, provideTranslateService(),
     ],
     componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
     componentInputs: options.documentId ? { documentId: options.documentId } : {},

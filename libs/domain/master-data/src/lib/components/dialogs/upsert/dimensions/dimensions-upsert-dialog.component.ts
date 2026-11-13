@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
 import type { MasterDataDimension } from '../../../../models/master-data-dimension.model';
@@ -17,7 +17,7 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     FormField,
     IntaIconComponent,
     NoNegativeValuesDirective,
@@ -134,7 +134,6 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DimensionsUpsertDialogComponent {
   readonly dialogRef = inject(MatDialogRef<DimensionsUpsertDialogComponent>);

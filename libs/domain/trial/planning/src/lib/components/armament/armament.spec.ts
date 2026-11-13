@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
 import { By } from '@angular/platform-browser';
 import { createMockArmamentService, createMockMatDialog, createMockPlanningGeneralDataStore } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
@@ -85,12 +85,11 @@ describe('Armament', () => {
     const user = userEvent.setup();
 
     const view = await render(Armament, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         ArmamentStore,
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
         { provide: ArmamentService, useValue: mockArmamentService },
-        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
       ],
     });
 
@@ -150,12 +149,11 @@ describe('Armament', () => {
       mockDialog = createMockMatDialog({ defaultResult: null });
 
       const view = await render(Armament, {
-        imports: [TranslateModule.forRoot()],
         providers: [
           ArmamentStore,
           { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
           { provide: ArmamentService, useValue: mockArmamentService },
-          { provide: MatDialog, useValue: mockDialog },
+          { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
         ],
       });
       const loader = TestbedHarnessEnvironment.loader(view.fixture);

@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CalendarTrialScheduleService, LinesOfShotDataService } from '@intaqalab/data-access';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,7 +51,7 @@ describe('TrialSchedulerInlineComponent', () => {
     const view = await render(
       `<inta-trial-scheduler-inline [trialId]="trialId" [trialStatus]="trialStatus" [trialNumber]="trialNumber"></inta-trial-scheduler-inline>`,
       {
-        imports: [TrialSchedulerInlineComponent, TranslateModule.forRoot()],
+        imports: [TrialSchedulerInlineComponent],
         componentProperties: {
           trialId: 'TRIAL-1',
           trialStatus: 'ACTIVE',
@@ -66,7 +66,7 @@ describe('TrialSchedulerInlineComponent', () => {
           { provide: TrialPersmissionsService, useValue: mockTrialPermissionsService },
           { provide: CalendarTrialScheduleService, useValue: mockCalendarTrialScheduleService },
           { provide: LinesOfShotDataService, useValue: mockLinesOfShotDataService },
-          { provide: TrialScheduleService, useValue: mockTrialScheduleService },
+          { provide: TrialScheduleService, useValue: mockTrialScheduleService }, provideTranslateService(),
         ],
       },
     );

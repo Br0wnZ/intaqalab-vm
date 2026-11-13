@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, input } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,7 +10,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStockDetailStore } from '../../../+state/munition-stock-detail.store';
 import { MunitionsStockCertificatesStore } from '../../../+state/munitions-stock-certificates.store';
@@ -25,7 +25,7 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components'];
   imports: [
     MatButtonModule,
     MatIconModule,
-    TranslateModule,
+    TranslatePipe,
     MatIconModule,
     MatTableModule,
     ValueTooltip,
@@ -202,7 +202,6 @@ const DISPLAYED_COLUMNS = ['name', 'createdAt', 'components'];
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CertificatesComponent {
   readonly store = inject(MunitionsStockCertificatesStore);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormField, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -10,14 +10,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
 import { type TrialSearchFilters, TrialStatus } from '@intaqalab/models';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type { AssociatedTrialForm } from '../../utils-models/associated-trial-form.model';
 
 @Component({
   selector: 'inta-associated-trial-dialog',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
@@ -99,7 +99,6 @@ import type { AssociatedTrialForm } from '../../utils-models/associated-trial-fo
     </mat-dialog-actions>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssociatedTrialDialog {
   readonly data = inject(MAT_DIALOG_DATA);

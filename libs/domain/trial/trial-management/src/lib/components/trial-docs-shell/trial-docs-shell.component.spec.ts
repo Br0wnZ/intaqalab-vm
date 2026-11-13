@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, input } from '@angular/core';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 
 import { TrialDocsShellComponent, injectionTokenTrialViewDocument } from './trial-docs-shell.component';
@@ -21,12 +21,11 @@ class TrialDocDetailsStub {
 describe('TrialDocsShellComponent', () => {
   it('should create', async () => {
     const result = await render(TrialDocsShellComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-1' } },
+        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-1' } }, provideTranslateService(),
       ],
       declarations: [TrialDocDetailsStub],
     });
@@ -36,12 +35,11 @@ describe('TrialDocsShellComponent', () => {
 
   it('should pass the injected id to the child component', async () => {
     const result = await render(TrialDocsShellComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-123' } },
+        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-123' } }, provideTranslateService(),
       ],
       declarations: [TrialDocDetailsStub],
     });

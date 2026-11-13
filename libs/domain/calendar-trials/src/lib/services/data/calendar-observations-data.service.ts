@@ -1,13 +1,11 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { injectCalendarEndpoint } from '@intaqalab/config';
 import type { CalendarViewObservation } from '@intaqalab/models';
 import { format } from 'date-fns';
 import type { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CalendarObservationsDataService {
   readonly #httpClient = inject(HttpClient);
   readonly #calendarUrl = injectCalendarEndpoint();

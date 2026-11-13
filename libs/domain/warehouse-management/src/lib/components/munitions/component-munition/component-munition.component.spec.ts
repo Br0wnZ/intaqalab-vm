@@ -5,7 +5,7 @@ import { form } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -82,14 +82,14 @@ async function setup(
   const munitionsDumpsStore = makeMunitionsDumpsStore();
 
   const view = await render(TestWrapperComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: DenominationsStore, useValue: denominationsStore },
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
-      { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
+      { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore }, provideTranslateService(),
     ],
   });
 
@@ -193,8 +193,8 @@ describe('ComponentMunitionComponent', () => {
   describe('munitionTypeChangeHandler', () => {
     it('should reset denominationId and trigger store search', async () => {
       const { component, componentForm, denominationsStore, fixture } = await setup();
-      componentForm.denominationId().setControlValue('Some Denom');
-      componentForm.munitionTypeId().setControlValue('vaso');
+      componentForm.denominationId().controlValue.set('Some Denom');
+      componentForm.munitionTypeId().controlValue.set('vaso');
       fixture.detectChanges();
 
       component.munitionTypeChangeHandler();
@@ -213,8 +213,8 @@ describe('ComponentMunitionComponent', () => {
     it('should return empty array when denomination query is <= 2 characters', async () => {
       const denominations = [makeDenomination({ name: 'Vaso 1' })];
       const { component, componentForm, fixture } = await setup({ denominationsItems: denominations });
-      componentForm.munitionTypeId().setControlValue('vaso');
-      componentForm.denominationId().setControlValue('Va');
+      componentForm.munitionTypeId().controlValue.set('vaso');
+      componentForm.denominationId().controlValue.set('Va');
       fixture.detectChanges();
 
       expect(component.filteredOptions()).toEqual([]);
@@ -226,8 +226,8 @@ describe('ComponentMunitionComponent', () => {
         makeDenomination({ name: 'Proyectil 1', munitionType: { id: 'vaso', name: 'Vaso' } }),
       ];
       const { component, componentForm, fixture } = await setup({ denominationsItems: denominations });
-      componentForm.munitionTypeId().setControlValue('vaso');
-      componentForm.denominationId().setControlValue('Vas');
+      componentForm.munitionTypeId().controlValue.set('vaso');
+      componentForm.denominationId().controlValue.set('Vas');
       fixture.detectChanges();
 
       const filtered = component.filteredOptions();

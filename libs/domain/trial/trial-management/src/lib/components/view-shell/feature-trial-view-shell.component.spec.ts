@@ -12,14 +12,14 @@ import { provideRouter } from '@angular/router';
 import { AuthService, Role, injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
-import { Badge, UiDialogService } from '@intaqalab/ui';
+import { Badge, UiDialogService, ValueTooltip } from '@intaqalab/ui';
 import {
   TrialStatusLabelPipe,
   createMockResource,
   createMockTrialGeneralDataStore,
   createMockTrialsDataService,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -153,8 +153,8 @@ describe('FeatureTrialViewShellComponent', () => {
           MatButton,
           MatCardModule,
           MatIconModule,
-          MatTooltipModule,
-          TranslateModule,
+          ValueTooltip,
+          TranslatePipe,
           Badge,
           TrialStatusLabelPipe,
           MockTrialCreateFormComponent,
@@ -166,7 +166,7 @@ describe('FeatureTrialViewShellComponent', () => {
     });
 
     const { fixture } = await render(FeatureTrialViewShellComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+      imports: [NoopAnimationsModule],
       providers: [
         provideRouter([]),
         provideHttpClient(),
@@ -177,7 +177,7 @@ describe('FeatureTrialViewShellComponent', () => {
         { provide: TrialTransitionsService, useValue: mockTransitionsService },
         { provide: UiDialogService, useValue: mockUiDialogs },
         { provide: injectionTokenTrialViewComponent, useValue: { id: 'someId', initialTab: options.initialTab } },
-        { provide: injectionTokenTabCommand, useValue: mockTabCommand },
+        { provide: injectionTokenTabCommand, useValue: mockTabCommand }, provideTranslateService(),
       ],
     });
 

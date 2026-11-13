@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
@@ -32,12 +32,12 @@ async function setup() {
   const munitionsDumpsStore = makeMunitionsDumpsStore();
 
   const view = await render(NeqDataComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
+    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
-      { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
+      { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore }, provideTranslateService(),
     ],
   });
 

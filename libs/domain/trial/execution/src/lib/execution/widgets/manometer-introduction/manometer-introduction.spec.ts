@@ -6,14 +6,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningSeriesService } from '@intaqalab/data-access-planning';
-import { DistanceUnitEnum } from '@intaqalab/models';
-import { TranslateModule } from '@ngx-translate/core';
+import { DistanceUnitEnum, type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
+import { patchState } from '@ngrx/signals';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
-import { ShotManometerPressuresService } from '../../../data-access';
+import { EquipmentSelectionService, ShotManometerPressuresService } from '../../../data-access';
 import { ExecutionService } from '../../../services/execution.service';
 import { EquipmentMeasurementGroupEnum, EquipmentTypeEnum } from '../../models';
 import type { ShotManometerPressuresResponse } from '../../models/shot-manometer-pressures.models';
@@ -57,9 +58,26 @@ const mockManometerResponse: ShotManometerPressuresResponse = {
   ],
 };
 
+const inProgressTrialForm: TrialCreateModifyForm = {
+  code: 'TRIAL-1',
+  hasAssociatedTrial: false,
+  hasLinkedTrial: false,
+  associatedTrial: '',
+  associatedTrialView: '',
+  linkedTrial: '',
+  linkedTrialView: '',
+  description: '',
+  type: '',
+  client: '',
+  clientReference: '',
+  requestedDate: '',
+  observations: '',
+  status: TrialStatus.IN_PROGRESS,
+};
+
 describe('ManometerIntroduction', () => {
-  const renderWidget = (widgetId = 'test-widget', customProviders: Provider[] = []) =>
-    render(ManometerIntroduction, {
+  const renderWidget = async (widgetId = 'test-widget', customProviders: Provider[] = []) => {
+    const result = await render(ManometerIntroduction, {
       inputs: { widgetId },
       providers: [
         provideNoopAnimations(),
@@ -69,10 +87,12 @@ describe('ManometerIntroduction', () => {
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
         ExecutionService,
-        ...customProviders,
+        ...customProviders, provideTranslateService(),
       ],
-      imports: [TranslateModule.forRoot()],
     });
+    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
+    return result;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();
@@ -248,7 +268,7 @@ describe('ManometerIntroduction', () => {
   });
 
   it('loads unified equipment options from the equipment categories GET', async () => {
-    const catalogSpy = vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
+    const catalogSpy = vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
       [EquipmentTypeEnum.PRESSURE_GAUGE]: [
         { id: '1', label: 'Gauge 1' },
         { id: '4', label: 'Gauge 2' },
@@ -270,7 +290,7 @@ describe('ManometerIntroduction', () => {
 
     const { fixture } = await renderWidget();
     fixture.componentInstance['selectorFormModel'].set({ serie: 'series-1', disparo: 'shot-1' });
-    const executionService = TestBed.inject(ExecutionService);
+    const executionService = TestBed.inject(EquipmentSelectionService);
     const http = TestBed.inject(HttpTestingController);
     executionService.getEquipmentSelector('trial-123');
     TestBed.tick();
@@ -392,7 +412,7 @@ describe('ManometerIntroduction', () => {
   });
 
   it('does not show equipment options or stale selections when the GET is empty', async () => {
-    vi.spyOn(ExecutionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
+    vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({});
 
     const { fixture } = await renderWidget();
     fixture.componentInstance['dataFormModel'].set({

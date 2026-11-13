@@ -8,7 +8,7 @@ import type { FireTrial, TrialSearchFilters } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { TrialListComponent, TrialStore } from '@intaqalab/trial-management';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ const EXECUTION_SELECTOR_STATUSES: TrialStatus[] = [
   providers: [TrialStore],
   imports: [
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatButtonModule,
     MatInputModule,
     MatFormFieldModule,

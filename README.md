@@ -76,6 +76,121 @@ npm run build:prod
 
 ---
 
+## 🌍 Trazabilidad de Entornos y Versiones Desplegadas (`version.json`)
+
+El proyecto incluye un sistema automatizado e independiente de GitLab para saber con exactitud **qué commit, rama e imagen Docker están físicamente desplegados** en cada entorno (**DES**, **PRE** y **PRO**) y obtener un informe detallado de diferencias entre ellos.
+
+### ⚙️ ¿Cómo funciona?
+
+1. **Generación automática en tiempo de compilación (`prebuild`):**
+   Cada vez que se ejecuta un build (`npm run build`, `npm run build:des`, `npm run build:pre` o `npm run build:prod`), el hook `prebuild` ejecuta automáticamente [`scripts/generate-version.mjs`](scripts/generate-version.mjs).
+2. **Extracción de metadatos (GitLab CI + Git local):**
+   El script lee las variables de entorno inyectadas por el runner de GitLab (`CI_COMMIT_SHA`, `CI_COMMIT_SHORT_SHA`, `CI_COMMIT_BRANCH`, `CI_COMMIT_TITLE`, `CI_PIPELINE_IID`) o hace fallback a comandos `git` locales y genera el fichero `apps/intaqalab/src/assets/version.json`.
+   > **Nota:** Este fichero está incluido en `.gitignore` para no ensuciar el repositorio local ni provocar bucles de commits en CI. Solo viaja dentro del artefacto compilado (`dist/intaqalab/assets/version.json`) y de la imagen Docker servida por Nginx.
+3. **Exposición HTTP sin caché:**
+   Nginx está configurado en [`nginx.conf`](nginx.conf) con `Cache-Control: no-cache, no-store, must-revalidate` para `/assets/version.json`, garantizando que cualquier consulta devuelva siempre la versión real en ejecución:
+
+| Entorno                 | Rama CI   | URL de la Aplicación            | Endpoint de Versión (`version.json`)                |
+| ----------------------- | --------- | ------------------------------- | --------------------------------------------------- |
+| **DES** (Desarrollo)    | `develop` | `https://intaqalab.des.inta.es` | `https://intaqalab.des.inta.es/assets/version.json` |
+| **PRE** (Preproducción) | `preprod` | `https://intaqalab.pre.inta.es` | `https://intaqalab.pre.inta.es/assets/version.json` |
+| **PRO** (Producción)    | `master`  | `https://intaqalab.inta.es`     | `https://intaqalab.inta.es/assets/version.json`     |
+
+### 📄 Estructura de `/assets/version.json`
+
+```json
+{
+  "app": "@intaqalab/source",
+  "version": "0.0.0",
+  "environment": "des",
+  "commit": {
+    "sha": "400fc2a2...",
+    "shortSha": "400fc2a2",
+    "branch": "develop",
+    "tag": null,
+    "subject": "feat(execution): ...",
+    "author": "Nombre Autor",
+    "committedAt": "2026-11-11T10:27:33+01:00"
+  },
+  "build": {
+    "builtAt": "2026-11-11T10:30:17.104Z",
+    "pipelineId": "12345",
+    "pipelineIid": "42",
+    "jobId": "67890",
+    "imageTag": "1.0.42"
+  }
+}
+```
+
+### 🔍 Cómo consultar qué hay en cada entorno y comparar diferencias
+
+El script [`scripts/compare-envs.mjs`](scripts/compare-envs.mjs) consulta los `version.json` remotos (o referencias Git locales), cruza los SHAs con el historial de Git local y agrupa todos los commits por tipo de **Conventional Commits** (`feat`, `fix`, `refactor`, etc.), módulos (`scopes`) y tickets detectados:
+
+#### 1. Informe completo de estado (DES, PRE y PRO)
+
+Muestra la tabla con la versión desplegada en los 3 entornos y calcula automáticamente qué hay en **PRE pendiente de subir a PRO** y qué hay en **DES pendiente de pasar a PRE**:
+
+```bash
+npm run env:report
+```
+
+#### 2. Comparar dos entornos concretos
+
+```bash
+# ¿Qué hay en PRE que todavía no está en PRO?
+npm run env:diff -- pre pro
+
+# ¿Qué hay en DES que todavía no está en PRE?
+npm run env:diff -- des pre
+```
+
+#### 3. Saber si un componente concreto está en DES, PRE y PROD (`npm run env:check`)
+
+Para responder a preguntas del tipo: _"¿Está el Widget de Armamento o el Diálogo de Borrado en DES y PRE pero no en PROD?"_:
+
+```bash
+# Comprobar un componente por nombre o palabra clave
+npm run env:check -- "armament"
+npm run env:check -- "confirm-delete"
+npm run env:check -- "munition-introduction"
+npm run env:check -- "radar-metcmq"
+```
+
+El comando inspecciona los commits reales de DES, PRE y PRO y genera una tabla con diagnóstico directo:
+
+- ✅ **SÍ existe:** Desplegado en ese entorno (indicando commit y fecha).
+- 🟡 **Desactualizado:** Existe en el entorno, pero con código antiguo (faltan mejoras de PRE o DES).
+- ❌ **NO existe:** Componente nuevo aún no desplegado en ese entorno.
+
+_(Si estás sin VPN de INTA, puedes simular contra referencias Git locales añadiendo `--des=HEAD --pre=HEAD~3 --pro=HEAD~6`)._
+
+#### 4. Comparar ramas, tags o commits locales (sin necesidad de red/VPN)
+
+También acepta nombres de ramas, tags o SHAs de Git directamente:
+
+```bash
+# Comparar ramas locales/remotas tras un git fetch
+npm run env:diff -- origin/develop origin/preprod
+npm run env:diff -- preprod master
+
+# Comparar dos commits o rangos concretos
+npm run env:diff -- HEAD HEAD~10
+npm run env:diff -- 400fc2a2 687151dc
+```
+
+#### 5. Sobrescribir URLs por variables de entorno (opcional)
+
+Si cambian las URLs de algún entorno o se quiere apuntar a un port-forward / entorno temporal:
+
+```bash
+ENV_URL_DES=https://intaqalab.des.inta.es \
+ENV_URL_PRE=https://intaqalab.pre.inta.es \
+ENV_URL_PRO=https://intaqalab.inta.es \
+npm run env:report
+```
+
+---
+
 ## 🧪 Testing
 
 ### Ejecutar todos los tests

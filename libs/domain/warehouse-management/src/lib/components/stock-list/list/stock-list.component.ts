@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
+import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
 import { MENU_WAREHOUSE_ROLES, injectCurrentUserRole } from '@intaqalab/core';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { BooleanStatusBadge, DialogConfirmComponent, IntaIconComponent, ValueTooltip } from '@intaqalab/ui';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { MunitionsDumpsStoreType } from '../../../+state/munition-dumps.store';
@@ -52,7 +52,7 @@ const DEFAULT_COLUMNS = [
     MatButtonModule,
     MatIconModule,
     MatInputModule,
-    TranslateModule,
+    TranslatePipe,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -304,7 +304,6 @@ const DEFAULT_COLUMNS = [
     }
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StockListComponent implements OnDestroy {
   readonly stockListStore = inject(StockListStore);

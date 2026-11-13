@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 
 import type {
@@ -8,9 +8,7 @@ import type {
 } from '../models/denominations.model';
 import { injectWarehouseResource } from './warehouse-resource.factory';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DenominationsService {
   readonly #crud = injectWarehouseResource<DenominationModel, DenominationUpSertModel>(
     `${injectWharehouseEndpoint()}/denominations`,

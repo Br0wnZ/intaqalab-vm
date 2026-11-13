@@ -10,7 +10,7 @@ import {
   createMockSeriesAndShotsStore,
   createSeries,
 } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
@@ -57,11 +57,10 @@ describe('SeriesAndShots', () => {
     const user = userEvent.setup();
 
     const view = await render(SeriesAndShots, {
-      imports: [TranslateModule.forRoot()],
       providers: [
         provideTestingEnvironment(),
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
-        { provide: MatDialog, useValue: mockDialog },
+        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
       ],
       componentProviders: [{ provide: SeriesAndShotsStore, useValue: mockSeriesStore }],
     });

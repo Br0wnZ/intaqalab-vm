@@ -1,11 +1,14 @@
 /// <reference types='vitest' />
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
+  resolve: {
+    tsconfigPaths: true,
+  },
   root: import.meta.dirname,
   cacheDir: '../node_modules/.vite/mocks',
-  plugins: [nxViteTsPaths()],
+  plugins: [nxReadySignal()],
   test: {
     name: 'mock-data',
     watch: false,

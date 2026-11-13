@@ -7,7 +7,7 @@ import { MatMenuHarness } from '@angular/material/menu/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
 import { TrialPersmissionsService } from '@intaqalab/trial-management';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { render } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,18 +55,13 @@ async function setup(inputs: SetupInputs = {}) {
       observations: null,
       ...componentInputs,
     },
-    imports: [
-      TranslateModule.forRoot({
-        loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
-      }),
-    ],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: EventsActionsService, useValue: mock },
       { provide: TrialPersmissionsService, useValue: permsMock },
-      { provide: AuthService, useValue: { userRoles: signal(userRoles) } },
+      { provide: AuthService, useValue: { userRoles: signal(userRoles) } }, provideTranslateService({ loader: provideTranslateLoader(FakeTranslateLoader) }),
     ],
   });
 
