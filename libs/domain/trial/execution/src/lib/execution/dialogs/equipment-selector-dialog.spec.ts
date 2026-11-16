@@ -1,16 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { AuthService, Role } from '@intaqalab/core';
 import { QualificationTypeEnum } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
-import { EquipmentSelectionService, type EquipmentSelectorResponse } from '../../data-access';
+import { EquipmentSelectionService } from '../../data-access';
 import { EquipmentSelectorPlanningService } from '../../services/equipment-selector-planning.service';
-import { EquipmentMagnitudeTagEnum, type EquipmentSelectorDialogData, EquipmentTypeEnum } from '../models';
+import {
+  EquipmentMagnitudeTagEnum,
+  type EquipmentSelectorDialogData,
+  type EquipmentSelectorResponse,
+  EquipmentTypeEnum,
+} from '../models';
 import { EquipmentSelectorDialog } from './equipment-selector-dialog';
 
 // Items returned by the mocked loadEquipmentItemsByCategories
@@ -114,7 +118,6 @@ describe('EquipmentSelectorDialog', () => {
     const view = await render(EquipmentSelectorDialog, {
       componentProviders: [{ provide: EquipmentSelectorPlanningService, useValue: planningService }],
       providers: [
-        provideNoopAnimations(),
         {
           provide: AuthService,
           useFactory: () => {
@@ -515,7 +518,6 @@ describe('EquipmentSelectorDialog', () => {
     const { component } = await render(EquipmentSelectorDialog, {
       componentProviders: [{ provide: EquipmentSelectorPlanningService, useValue: createMockPlanningService() }],
       providers: [
-        provideNoopAnimations(),
         {
           provide: AuthService,
           useFactory: () => {
@@ -574,12 +576,14 @@ describe('EquipmentSelectorDialog', () => {
         {
           id: 'av-boca',
           magnitudeCode: 'BAL_CAMERA_HIGH_VELOCITY_ENTRANCE',
+          magnitudeLabel: 'Vídeo Alta Velocidad en Boca',
           qualificationType: QualificationTypeEnum.QUANTITATIVE,
           measurements: [EquipmentMagnitudeTagEnum.VIDEO_AV],
         },
         {
           id: 'c-boca',
           magnitudeCode: 'BAL_CAMERA_CONV_ENTRANCE',
+          magnitudeLabel: 'Vídeo Convencional en Boca',
           qualificationType: QualificationTypeEnum.QUANTITATIVE,
           measurements: [EquipmentMagnitudeTagEnum.VIDEO_C],
         },

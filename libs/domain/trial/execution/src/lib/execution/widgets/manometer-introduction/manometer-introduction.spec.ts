@@ -3,11 +3,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningSeriesService } from '@intaqalab/data-access-planning';
 import { DistanceUnitEnum, type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -77,26 +77,28 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('ManometerIntroduction', () => {
   const renderWidget = async (widgetId = 'test-widget', customProviders: Provider[] = []) => {
-    const result = await render(ManometerIntroduction, {
+    const view = await render(ManometerIntroduction, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         ExecutionStore,
         ExecutionService,
-        ...customProviders, provideTranslateService(),
+        ...customProviders,
+        provideTranslateService(),
       ],
     });
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -268,25 +270,27 @@ describe('ManometerIntroduction', () => {
   });
 
   it('loads unified equipment options from the equipment categories GET', async () => {
-    const catalogSpy = vi.spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories').mockResolvedValue({
-      [EquipmentTypeEnum.PRESSURE_GAUGE]: [
-        { id: '1', label: 'Gauge 1' },
-        { id: '4', label: 'Gauge 2' },
-        { id: '7', label: 'Gauge 3' },
-      ],
-      [EquipmentTypeEnum.CRUSHER]: [
-        { id: '2', label: 'Crusher 1' },
-        { id: '5', label: 'Crusher 2' },
-        { id: '8', label: 'Crusher 3' },
-      ],
-      [EquipmentTypeEnum.PROBE]: [
-        { id: '3', label: 'Probe 1' },
-        { id: '6', label: 'Probe 2' },
-        { id: '9', label: 'Probe 3' },
-      ],
-      [EquipmentTypeEnum.DOPPLER_RADAR]: [{ id: 'radar-1', label: 'Radar 1' }],
-      [EquipmentTypeEnum.ANTENNA]: [{ id: 'antenna-1', label: 'Antenna 1' }],
-    });
+    const catalogSpy = vi
+      .spyOn(EquipmentSelectionService.prototype, 'loadEquipmentItemsByCategories')
+      .mockResolvedValue({
+        [EquipmentTypeEnum.PRESSURE_GAUGE]: [
+          { id: '1', label: 'Gauge 1' },
+          { id: '4', label: 'Gauge 2' },
+          { id: '7', label: 'Gauge 3' },
+        ],
+        [EquipmentTypeEnum.CRUSHER]: [
+          { id: '2', label: 'Crusher 1' },
+          { id: '5', label: 'Crusher 2' },
+          { id: '8', label: 'Crusher 3' },
+        ],
+        [EquipmentTypeEnum.PROBE]: [
+          { id: '3', label: 'Probe 1' },
+          { id: '6', label: 'Probe 2' },
+          { id: '9', label: 'Probe 3' },
+        ],
+        [EquipmentTypeEnum.DOPPLER_RADAR]: [{ id: 'radar-1', label: 'Radar 1' }],
+        [EquipmentTypeEnum.ANTENNA]: [{ id: 'antenna-1', label: 'Antenna 1' }],
+      });
 
     const { fixture } = await renderWidget();
     fixture.componentInstance['selectorFormModel'].set({ serie: 'series-1', disparo: 'shot-1' });

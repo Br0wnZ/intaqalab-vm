@@ -2,11 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { DeferBlockState } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -42,7 +41,6 @@ describe('TrialDocVersionsTab', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        provideAnimationsAsync(),
         { provide: TrialDocsService, useValue: mockService },
         { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } }, provideTranslateService(),
       ],
@@ -61,7 +59,6 @@ describe('TrialDocVersionsTab', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        provideAnimationsAsync(),
         { provide: TrialDocsService, useValue: mockService },
         { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } }, provideTranslateService(),
       ],
@@ -73,6 +70,6 @@ describe('TrialDocVersionsTab', () => {
     expect(deferBlocks.length).toBeGreaterThan(0);
     await deferBlocks[0].render(DeferBlockState.Complete);
 
-    expect(fixture.nativeElement.querySelector('inta-trial-doc-versions')).toBeTruthy();
+    expect(screen.getByText('TRIAL_DOCS.VERSIONS.TITLE')).toBeInTheDocument();
   });
 });

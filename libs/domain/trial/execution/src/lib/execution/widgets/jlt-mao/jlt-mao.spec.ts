@@ -6,11 +6,11 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService, PlanningMunitionsService } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum, type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -50,26 +50,28 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('JltMao', () => {
   const renderWidget = async (widgetId = 'test-jlt-mao') => {
-    const result = await render(JltMao, {
+    const view = await render(JltMao, {
       componentInputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     // Se parchea el estado directamente para no disparar GETs que dejarían
     // peticiones pendientes y bloquearían la estabilización de los harness.
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -150,13 +152,13 @@ describe('JltMao', () => {
     const { fixture } = await render(JltMao, {
       componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     const store = TestBed.inject(ExecutionStore);
@@ -214,13 +216,13 @@ describe('JltMao', () => {
     const { fixture } = await render(JltMao, {
       componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     const store = TestBed.inject(ExecutionStore);
@@ -296,13 +298,13 @@ describe('JltMao', () => {
     const { fixture } = await render(JltMao, {
       componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     const store = TestBed.inject(ExecutionStore);
@@ -674,7 +676,6 @@ describe('JltMao', () => {
     const { fixture } = await render(JltMao, {
       componentInputs: { widgetId: 'test-jlt-mao' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -688,7 +689,8 @@ describe('JltMao', () => {
             });
             return store;
           },
-        }, provideTranslateService(),
+        },
+        provideTranslateService(),
       ],
     });
 

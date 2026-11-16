@@ -6,7 +6,7 @@ import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-brow
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import '@intaqalab/utils/testing/pdf-mock';
 import { provideTranslateService } from '@ngx-translate/core';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { beforeEach } from 'vitest';
 
 // Initialize DOM adapter BEFORE TestBed - critical for direct Vitest runs
@@ -24,3 +24,26 @@ beforeEach(() => {
     providers: [provideTranslateService()],
   });
 });
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: query === '(prefers-reduced-motion)',
+      media: query,
+      onchange: null,
+      addListener: () => {
+        // noop
+      },
+      removeListener: () => {
+        // noop
+      },
+      addEventListener: () => {
+        // noop
+      },
+      removeEventListener: () => {
+        // noop
+      },
+      dispatchEvent: () => false,
+    }),
+  });
+}

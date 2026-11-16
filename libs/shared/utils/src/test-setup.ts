@@ -16,3 +16,26 @@ if (!__global.__ANGULAR_TESTBED_INITIALIZED__) {
   getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
   __global.__ANGULAR_TESTBED_INITIALIZED__ = true;
 }
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: query === '(prefers-reduced-motion)',
+      media: query,
+      onchange: null,
+      addListener: () => {
+        // noop
+      },
+      removeListener: () => {
+        // noop
+      },
+      addEventListener: () => {
+        // noop
+      },
+      removeEventListener: () => {
+        // noop
+      },
+      dispatchEvent: () => false,
+    }),
+  });
+}

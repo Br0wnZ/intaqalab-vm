@@ -5,7 +5,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockResource } from '@intaqalab/utils/testing/core';
@@ -34,7 +33,7 @@ describe('MunitionComponentsListComponent', () => {
   async function setup() {
     return await render(MunitionComponentsListComponent, {
       declarations: [],
-      imports: [MatTableModule, MatPaginatorModule, MatSortModule, NoopAnimationsModule],
+      imports: [MatTableModule, MatPaginatorModule, MatSortModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),

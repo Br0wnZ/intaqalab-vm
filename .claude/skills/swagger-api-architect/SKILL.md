@@ -1,7 +1,7 @@
 ---
 name: swagger-api-architect
-version: 1.2.3
-last-updated: 2026-11-05
+version: 1.3.0
+last-updated: 2026-11-13
 description: Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data.
 user-invocable: true
 ---
@@ -89,17 +89,18 @@ Consulta la guía detallada de cada capa antes de generar código:
 > Guía completa: [references/service-layer.md](references/service-layer.md)
 
 - **CQS Estricto (ADR-020):**
-  - **Consultas (GET):** `httpResource` con trigger de señal privado (`Signal Trigger Pattern`).
+  - **Consultas (GET):** `httpResource` con trigger de señal privado (`Signal Trigger Pattern`). Para listados paginados/filtrados, envolver con `extendResource(httpResource(...), withPreviousValueOnLoading())` (`@ngrx/signals/resource`).
   - **Mutaciones (POST, PUT, DELETE):** `HttpClient` directo con `firstValueFrom(this.#http.post/put/delete(...))` retornando `Promise<T>`.
   - 🚫 **Prohibido usar `httpResource` para mutaciones:** Cancela llamadas secuenciales en vuelo vía `AbortController`.
-- Decorador `@Service()` de `@angular/core`.
+- Decorador `@Service()` de `@angular/core` (nunca `@Injectable`).
+- Si existen esquemas Zod para validación de formularios, conéctalos con `validateStandardSchema(path, zodSchema)` en Signal Forms.
 - Inyección funcional privada: `readonly #http = inject(HttpClient)`.
 
 ### 3. SignalStore (Capa 3: `+state/`)
 
 > Guía completa: [references/store-layer.md](references/store-layer.md)
 
-- Uso de `signalStore` con `withState`, `withComputed`, `withMethods`, `withHooks`.
+- Uso de `signalStore` con `withState`, `withProps(() => ({ _service: inject(Service) }))`, `withComputed`, `withMethods`, `withHooks`.
 - Cero `any`, tipado completo en señales y métodos.
 
 ### 4. Mock Routes (Capa Mock: `mocks/src/routes/`)

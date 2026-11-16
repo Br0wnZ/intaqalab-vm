@@ -1,6 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createMockResource } from '@intaqalab/utils/testing/core';
+import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 
 import { MasterDataService } from '../services/master-data.service';
 import { MasterDataStore } from './master-data.store';
@@ -114,5 +116,13 @@ describe('MasterDataStore', () => {
       items: [],
     });
     expect(store.hasError()).toBe(false);
+  });
+
+  it('should allow patching protected state directly via unprotected() in tests', () => {
+    expect(store.isInitialized()).toBe(false);
+
+    patchState(unprotected(store), { isInitialized: true });
+
+    expect(store.isInitialized()).toBe(true);
   });
 });

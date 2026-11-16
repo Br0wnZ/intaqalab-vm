@@ -4,7 +4,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -74,7 +73,6 @@ async function setup() {
   const view = await render(StockListFilterComponent, {
     on: { filtersData: filtersSpy },
     providers: [
-      provideAnimationsAsync(),
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),

@@ -2,7 +2,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ɵSIGNAL as SIGNAL } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PlanningConditionsShot } from '@intaqalab/data-access-planning';
 import { TrialStatus } from '@intaqalab/models';
@@ -63,7 +62,6 @@ describe('MunitionIdentificacionTabComponent', () => {
   }) => {
     const view = await render(MunitionIdentificacionTabComponent, {
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),

@@ -5,7 +5,7 @@ Los servicios encapsulan las llamadas HTTP siguiendo el principio CQS (**Command
 - **Queries (Lecturas / GET):** Usan `httpResource` de Angular con un `signal` privado como mecanismo de trigger reactivo.
 - **Commands (Mutaciones / POST, PUT, PATCH, DELETE):** Usan `HttpClient` directamente con `firstValueFrom`, retornando un `Promise<T>`. NUNCA usar `httpResource` para mutaciones.
 
-Son `@Injectable({ providedIn: 'root' })` y NUNCA contienen lógica de negocio ni estado de UI.
+Son `@Service()` (auto-provided en `root`, Angular 22; `@Injectable` está prohibido) y NUNCA contienen lógica de negocio ni estado de UI. Para listados paginados/filtrados que recargan al cambiar parámetros, envuelve el `httpResource` con `extendResource(..., withPreviousValueOnLoading())` de `@ngrx/signals/resource`.
 
 ## Patrón Arquitectónico (CQS)
 
@@ -32,7 +32,7 @@ Archivo: `libs/domain/trial/planning/src/lib/services/armament-service.ts`
 
 ```typescript
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -46,9 +46,7 @@ import type { CatalogQueryParams, SpecimenItem, SpecimenListResponse } from '../
 export type { ArmamentBulkUpdateRequest, SeriesArmamentData, SpecimenItem, TrialArmamentResponse };
 export type { CatalogQueryParams, SpecimenListResponse };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ArmamentService {
   readonly #getArmamentParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateArmamentParams = signal<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest } | null>(null);
@@ -152,7 +150,7 @@ Archivo: `libs/domain/trial/planning/src/lib/services/measures-service.ts`
 
 ```typescript
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -165,9 +163,7 @@ import type {
 } from '../utils-models/catalog.model';
 import type { MeasuresBulkUpdateRequest, TrialMeasuresResponse } from '../utils-models/measures.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MeasuresService {
   readonly #getMeasuresParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateMeasuresParams = signal<{ trialId: FireTrial['id']; body: MeasuresBulkUpdateRequest } | null>(null);
@@ -294,7 +290,7 @@ Archivo: `libs/domain/trial/planning/src/lib/services/series-and-shots-service.t
 
 ```typescript
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -309,9 +305,7 @@ import type {
 import type { UpdateShotRequest } from '../utils-models/update-shot-request.model';
 import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie-info.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SeriesAndShotsService {
   readonly #getSeriesParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #addNewSerieParams = signal<AddNewSerieRequest | null>(null);
@@ -406,7 +400,8 @@ Archivo: `libs/domain/warehouse-management/src/lib/services/denominations.servic
 
 ```typescript
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
+import { extendResource, withPreviousValueOnLoading } from '@ngrx/signals/resource';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import type { PaginatedApiResponse } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
@@ -417,9 +412,7 @@ import type {
   SearchDenominationsPaginatedSortedRequest,
 } from '../models/denominations.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DenominationsService {
   searchItems = signal<SearchDenominationsPaginatedSortedRequest>({});
 
@@ -428,21 +421,24 @@ export class DenominationsService {
   readonly #saveItem = signal<DenominationUpSertModel | null>(null);
   readonly #deleteItem = signal<DenominationModel | null>(null);
 
-  readonly paginatedResponse = httpResource<PaginatedApiResponse<DenominationModel>>(() => {
-    const params = this.searchItems();
-    let apiParams = paginatedSortedParamsToSend(params);
-    if (params.name !== undefined) {
-      apiParams = apiParams.append('name', params.name);
-    }
-    if (params.active !== undefined) {
-      apiParams = apiParams.set('active', params.active);
-    }
-    return {
-      url: `${this.#whareHouseUrl}/denominations`,
-      params: apiParams,
-      method: 'GET',
-    };
-  });
+  readonly paginatedResponse = extendResource(
+    httpResource<PaginatedApiResponse<DenominationModel>>(() => {
+      const params = this.searchItems();
+      let apiParams = paginatedSortedParamsToSend(params);
+      if (params.name !== undefined) {
+        apiParams = apiParams.append('name', params.name);
+      }
+      if (params.active !== undefined) {
+        apiParams = apiParams.set('active', params.active);
+      }
+      return {
+        url: `${this.#whareHouseUrl}/denominations`,
+        params: apiParams,
+        method: 'GET',
+      };
+    }),
+    withPreviousValueOnLoading(),
+  );
 
   readonly saveResource = httpResource<DenominationModel>(() => {
     const params = this.#saveItem();

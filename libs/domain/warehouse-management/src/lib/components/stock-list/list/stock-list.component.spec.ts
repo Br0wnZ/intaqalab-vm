@@ -1,9 +1,8 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, MENU_WAREHOUSE_ROLES, Role } from '@intaqalab/core';
@@ -121,7 +120,6 @@ async function setup(opts: SetupOptions = {}) {
   const userRoles = signal(opts.userRoles ?? []);
 
   const view = await render(StockListComponent, {
-    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -171,9 +169,8 @@ describe('StockListComponent', () => {
     });
 
     it('should have the transfer button disabled when no rows are selected', async () => {
-      const { container } = await setup({ userRoles: [...MENU_WAREHOUSE_ROLES] });
-      const transferBtn = container.querySelector('[data-testid="transfer-btn"]') as HTMLButtonElement;
-      expect(transferBtn.disabled).toBe(true);
+      await setup({ userRoles: [...MENU_WAREHOUSE_ROLES] });
+      expect(screen.getByTestId('transfer-btn')).toBeDisabled();
     });
 
     it.each(MENU_WAREHOUSE_ROLES)('should enable transfer for warehouse role %s with selected rows', async (role) => {

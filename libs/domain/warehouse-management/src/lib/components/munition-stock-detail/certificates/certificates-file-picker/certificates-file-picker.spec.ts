@@ -1,12 +1,12 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpEventType, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 
 import { MunitionsStockCertificatesService } from '../../../../services/munitions-stock-certificates.service';
 import { CertificatesFilePicker } from './certificates-file-picker';
@@ -46,7 +46,6 @@ describe('CertificatesFilePicker', () => {
 
   const setup = async (data = mockDialogData, closeFn?: ReturnType<typeof vi.fn>) => {
     const view = await render(CertificatesFilePicker, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -96,12 +95,12 @@ describe('CertificatesFilePicker', () => {
 
   describe('File Selection', () => {
     it('should update formModel when a file is selected via input', async () => {
-      const { component, container, fixture } = await setup();
+      const { component, fixture } = await setup();
+      const user = userEvent.setup();
       const file = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
-      const input = container.querySelector('#fileInput') as HTMLInputElement;
+      const input = screen.getByLabelText('WHAREHOUSE_MANAGMENT.CERTIFICATES_DOC_PICKER_DIALOG.DOCUMENT_LABEL') as HTMLInputElement;
 
-      Object.defineProperty(input, 'files', { value: [file], writable: false });
-      input.dispatchEvent(new Event('change'));
+      await user.upload(input, file);
       fixture.detectChanges();
 
       expect(component.formModel().file).toBe(file);
@@ -119,8 +118,9 @@ describe('CertificatesFilePicker', () => {
     });
 
     it('should trigger file input click via triggerFileInput', async () => {
-      const { component, container } = await setup();
-      const input = container.querySelector('#fileInput') as HTMLInputElement;
+      const { component } = await setup();
+      const input = component.fileInputRef()?.nativeElement;
+      if (!input) throw new Error('Missing file input');
       const clickSpy = vi.fn();
       input.click = clickSpy;
 

@@ -1,10 +1,9 @@
-﻿import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { By } from '@angular/platform-browser';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
@@ -106,8 +105,7 @@ async function setup(
   mockStore = makeStockDetailStore();
   mockMunitionDumpsStore = makeMunitionDumpsStore(munitionDumps);
 
-  const renderResult = await render(MunitionStockDetailShellComponent, {
-    imports: [NoopAnimationsModule],
+  const view = await render(MunitionStockDetailShellComponent, {
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -127,7 +125,7 @@ async function setup(
     componentInputs: { id: 'stock-1', entity },
   });
 
-  const fixture = renderResult.fixture;
+  const fixture = view.fixture;
   fixture.detectChanges();
   return { fixture, component: fixture.componentInstance };
 }

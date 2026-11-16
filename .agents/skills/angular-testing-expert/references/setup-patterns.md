@@ -11,7 +11,7 @@ Usa **siempre** la función `render` de Angular Testing Library en lugar de `Tes
 ```typescript
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -22,8 +22,8 @@ describe('MyComponent', () => {
     const user = userEvent.setup();
 
     const view = await render(MyComponent, {
-      imports: [TranslateModule.forRoot()],
       providers: [
+        provideTranslateService(),
         provideTestingEnvironment(),
         // ... otros providers
       ],
@@ -62,12 +62,12 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 providers: [provideTestingEnvironment()];
 ```
 
-### `TranslateModule.forRoot()`
+### `provideTranslateService()` (`@ngx-translate/core` v18)
 
-Incluir siempre que el componente use traducciones (`translate` pipe o `TranslateService`). Las claves de traducción se renderizan tal cual en los tests (no se traduce), lo que es ideal para buscarlas con `screen.getByText()`.
+Incluir siempre que el componente use traducciones (`TranslatePipe`, `translate()` o `TranslateService`). Las claves de traducción se renderizan tal cual en los tests, lo que es ideal para buscarlas con `screen.getByText()`.
 
 ```typescript
-imports: [TranslateModule.forRoot()];
+providers: [provideTranslateService()];
 ```
 
 ### HTTP Testing
@@ -81,15 +81,10 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment()];
 ```
 
-### Animaciones
+### Animaciones (Angular Material 22.2)
 
-Si el componente usa animaciones de Angular Material:
-
-```typescript
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-
-imports: [TranslateModule.forRoot(), NoopAnimationsModule];
-```
+> [!NOTE]
+> **Prohibido `NoopAnimationsModule` / `provideAnimations()`:** Angular Material `22.2.7` usa animaciones CSS nativas y `@angular/animations` ha sido eliminado del proyecto. No añadas módulos de animación en tests.
 
 ## Setup con Parámetros Configurables
 
@@ -105,8 +100,11 @@ const runSetup = async (isEmptyResponse = false) => {
   };
 
   const view = await render(MyComponent, {
-    imports: [TranslateModule.forRoot()],
-    providers: [provideTestingEnvironment(), { provide: MyService, useValue: mockService }],
+    providers: [
+      provideTranslateService(),
+      provideTestingEnvironment(),
+      { provide: MyService, useValue: mockService },
+    ],
   });
 
   return { view, mockService };

@@ -2,10 +2,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -23,18 +22,20 @@ describe('TaradoPresionChartWidget', () => {
     render(TaradoPresionChartWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.TARADO_PRESION.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {

@@ -1,7 +1,7 @@
 ---
 name: nx-generator-expert
-version: 1.0.2
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: Nx Scaffolding Expert. Use this skill BEFORE writing code manually when creating libraries, components, and services. Enforces proper directory placement, `--tags` flags for ESLint Module Boundaries, and Angular 22 compatibility.
 argument-hint: "E.g. 'Generate feature library for warehouse management', 'Create card component in ui-shared lib', or '/create-feature'."
 user-invocable: true
@@ -88,7 +88,10 @@ _⚠️ **NAMING CONVENTION (2025 Style Guide)**: Strip technical type suffixes 
 nx g @nx/angular:service [name] --project=[nx-project-name] --no-interactive
 ```
 
-_⚠️ **NAMING CONVENTION (2025 Style Guide)**: Services keep their technical suffix (`example.service.ts` and class `ExampleService`)._
+_⚠️ **NAMING & ANGULAR 22 STANDARDS**:_
+- Generated **components** omit `standalone` and `changeDetection` metadata (default in Angular 22).
+- Generated **services** keep `.service.ts` / `Service` suffix and MUST use `@Service()` from `@angular/core` (run `@angular/core:service-migration` if a generator emits `@Injectable`).
+- Generated libraries do NOT need redundant `"strictTemplates": true` in `tsconfig.json` (enabled by default in Angular 22).
 
 ---
 

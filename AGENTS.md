@@ -116,11 +116,12 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 
 ## Technology Stack 🛠️
 
-- **Angular 22:** `signals`, `@Service()` (instead of `@Injectable({ providedIn: 'root' })`), `httpResource` (queries/reads ONLY), `HttpClient` (mutations/writes), `signal-forms` (`touch = output<void>()`, `controlValue`), `OnPush` by default (omit `changeDetection: ChangeDetectionStrategy.OnPush`), standalone by default (omit `standalone: true`), `TranslatePipe` / `provideTranslateService()` (`@ngx-translate/core` v18).
+- **Angular 22.2.6:** `signals`, `@Service()` (instead of `@Injectable({ providedIn: 'root' })`), `httpResource` (queries/reads ONLY, with `ctx.chain()` for dependent cascades and `resource.snapshot()`), `HttpClient` (mutations/writes), `signal-forms` (`[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, `touch = output<void>()`, `controlValue`, `FormUiControl`), `OnPush` by default (omit `changeDetection: ChangeDetectionStrategy.OnPush`), standalone by default (omit `standalone: true`), `TranslatePipe` / `provideTranslateService()` / `translate()` signal (`@ngx-translate/core` v18.1), native `animate.enter` / `animate.leave` (NO `@angular/animations`, NO `NoopAnimationsModule`), Router `withAutoCleanupInjectors()` + `shouldDestroyInjector()` + `withViewTransitions()`.
+- **NgRx Signals 22.0.1:** `withProps()`, `withLinkedState()`, `withFeature()`, `signalMethod()`, `@ngrx/signals/resource` (`extendResource`, `withPreviousValueOnLoading()`, `mapResource`), `@ngrx/signals/events` (`event`, `eventGroup`, `Dispatcher`, `Events`, `withEventHandlers`, `withReducer`, `on`), `@ngrx/signals/testing` (`unprotected(store)`).
 - **Nx Monorepo:** Layered modular libraries (`data-access`, `feature`, `ui`, `util`). Keep business logic in `data-access`.
-- **Tailwind CSS 4.1:** Inline classes and Angular Material (Aria/Headless). Prohibit dedicated component SCSS files.
-- **Testing:** Vitest + Angular Testing Library (ATL). **MANDATORY:** All `it()` descriptions MUST be written in English.
-- **Backend:** Clean ExpressJS mock server with Zod schema validation.
+- **Tailwind CSS 4.3:** Inline classes and Angular Material `22.2.7` (Aria/Headless, `MatTimepicker`, M3 token overrides, native CSS animations). Prohibit dedicated component SCSS files.
+- **Testing:** Vitest 5.1 + AnalogJS 2.9 + Angular Testing Library (ATL 19.6: `aliasedInput()`, `on` callbacks). **MANDATORY:** All `it()` descriptions MUST be written in English. Zero `NoopAnimationsModule` / `BrowserAnimationsModule` in specs.
+- **Backend:** Clean ExpressJS mock server with Zod schema validation (reusable on frontend via `validateStandardSchema()`).
 - **Planning reads (ADR-017) & Shot-Scoped Helpers (ADR-019):** GET `/planning/...` data used by Execution MUST come from `@intaqalab/data-access-planning` (query services, selectors, `injectTrialShots()`, `formatShotLabel()`). Never declare `/planning/` read URLs in `libs/domain/trial/execution`; `npm run check:planning-urls` runs in pre-commit (Node, macOS/Windows). Execution widgets requiring planned configurations or warehouse catalogs per shot MUST reuse or contribute shared helpers in `libs/domain/trial/execution/src/lib/data-access/` (`injectShotMunitionComponents`, `injectComponentDenominations`, `injectDenominationBatches`, `injectMunitionTypes`, etc.). Prohibit duplicate planning queries and ad-hoc parsing in widgets. Widget docs: `docs/WIDGET_SYSTEM.md`.
 
 ## Component Design & Best Practices 🧩
@@ -154,16 +155,20 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 ## Advanced Reactive Patterns 🔬
 
 - **Deep Cloning:** 🚫 **PROHIBITED:** `JSON.parse(JSON.stringify(obj))`. Always use native `structuredClone(obj)`.
-- **Project Utilities (`@intaqalab/utils`):** It is **MANDATORY** to use utilities from `@intaqalab/utils` (see [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)) for debounce, throttle, query parameters as signals, storage persistence, countdowns, and idle tracking.
-- **Derived Writable State:** Use `linkedSignal()` instead of signal+effect. E.g.: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
+- **Project Utilities (`@intaqalab/utils`):** It is **MANDATORY** to use utilities from `@intaqalab/utils` (see [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)) for debounce (`debouncedSignal` vs native `debounced()`), throttle, query parameters as signals, storage persistence, countdowns, and idle tracking.
+- **Derived Writable State:** Use `linkedSignal()` (or `withLinkedState()` inside `signalStore`) instead of signal+effect. E.g.: `readonly selected = linkedSignal(() => this.items()[0] ?? null);`
+- **Lazy Async Injection & Dynamic Bindings:** Use `injectAsync(() => import(...), { prefetch: onIdle })` for heavy non-critical services (PDF export, analytics) and `inputBinding()` / `outputBinding()` / `twoWayBinding()` with `ViewContainerRef.createComponent()`.
+- **Anti-Flicker Pagination & Cascades:** Wrap paginated/reloading `httpResource` with `extendResource(httpResource(...), withPreviousValueOnLoading())` (`@ngrx/signals/resource`) to keep previous rows visible during reload; use `ctx.chain(parentResource)` for dependent `httpResource` cascades and `resource.snapshot()` + `resourceFromSnapshots()` in 3-State views.
+- **Stores & Unit Testing:** Use `withProps()` to inject services once across `withComputed`/`withMethods`; use `unprotected(store)` from `@ngrx/signals/testing` for `patchState(unprotected(store), ...)` in `.store.spec.ts`.
 - **RxJS (Restricted Interop Only):**
   - ✅ Permitted: `toSignal(observable$)`, `firstValueFrom(observable$)` (exclusively for `HttpClient` mutations, `MatDialog.afterClosed()`, and testing).
-  - ❌ **PROHIBITED:** `.subscribe()` in components without `takeUntilDestroyed()`.
-- **Signal Forms:** Use modern `form()` API. **ELIMINATE** `ReactiveFormsModule` and `FormBuilder`. The model (`signal`) is the source of truth. Read and reset state via the model (`this.model()`, `this.model.set(initial)`), never via `form().reset()`.
+  - ❌ **PROHIBITED:** `.subscribe()` in components without `takeUntilDestroyed()`. Prefer Angular `isActive()` signal over `Router.events` and `@ngx-translate/core` `translate(key, params)` signal over `toSignal(translate.stream(...))` or `.instant()`.
+- **Signal Forms:** Use modern `form()` API with `<form [formRoot]="myForm">` + `submit(this.myForm, { action, onInvalid })` (binds `[isSaving]="myForm().submitting()"` on `<ui-save-button>`), reusable `schema<T>()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, and `parseErrors` (`formatNumericParseError()`). **ELIMINATE** `ReactiveFormsModule` and `FormBuilder`. The model (`signal`) is the source of truth. Read and reset state via the model (`this.model()`, `this.model.set(initial)`), never via `form().reset()`.
 - **Signal Forms Template Directives (No `[disabled]` / `[readonly]` / `[value]` / `min` / `max` with `[formField]`):** 🚫 **PROHIBITED:** Binding `[disabled]`, `[readonly]`, `[value]`, `min`, `max`, or `required` attributes on elements using the `[formField]` directive. Angular Signal Forms throws: `"Setting the 'min' attribute is not allowed on nodes using the '[formField]' directive"` / `"Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive"`. All state, constraints, and validation logic MUST be configured exclusively in the form schema callback (`form(model, (f) => { disabled(f.field, () => condition); min(f.field, 0); })`).
-- **Safe Effects:** Read all signals before the first `await`. Use `untracked()` for non-reactive reads. For DOM manipulation, use `afterRenderEffect()`.
-- **httpResource:** Strictly query-only (GET). Use `resource.hasValue()` as type guard.
-- **Control Flow:** Use native `@if`, `@for` (with mandatory `track`), `@switch`, `@empty`. Use `@defer` (`@placeholder`, `@loading`) for lazy rendering.
+- **Safe Effects & DOM:** Read all signals before the first `await`. Use `untracked()` for non-reactive reads. For DOM manipulation use `afterRenderEffect()`, and use signal queries (`viewChild()`, `viewChildren()`, `contentChild()`, `contentChildren()`) — query decorators (`@ViewChild`, `@ContentChild`, etc.) are prohibited.
+- **Native Animations:** Use Angular `animate.enter` and `animate.leave` with Tailwind/CSS animations. `@angular/animations` and `NoopAnimationsModule` are prohibited.
+- **httpResource:** Strictly query-only (GET). Use `resource.hasValue()` or `resource.snapshot()` as type guard.
+- **Control Flow & Template Syntax:** Use native `@if`, `@for` (with mandatory `track`), `@switch`, `@empty`, `@let`, `@defer` (`@placeholder`, `@loading`), plus Angular 22 template syntax (`in` operator, `**`, computed object keys `{ [k]: v }`, RegExp literals, trailing commas).
 
 ## 🏛️ Architecture Decision Records (ADRs)
 
@@ -193,4 +198,4 @@ Boundaries: code/commits/PRs written normal.
 
 ---
 
-<!-- AGENTS_VERSION: 1.5.0 | UPDATED: 2026-11-12 -->
+<!-- AGENTS_VERSION: 1.7.0 | UPDATED: 2026-11-13 -->

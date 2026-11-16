@@ -4,11 +4,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -17,7 +17,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
 import { ShotMaoTopographyService } from '../../../data-access';
-import { ExecutionService } from '../../../services/execution.service';
 import { WidgetStateService } from '../../services/widget-state.service';
 import { MaoTopography } from './mao-topography';
 import { MaoTopographyMassConfigDialog } from './mao-topography-mass-config-dialog';
@@ -48,25 +47,27 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('MaoTopography', () => {
   const renderWidget = async (widgetId = 'test-mao-topo') => {
-    const result = await render(MaoTopography, {
+    const view = await render(MaoTopography, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     // Se parchea el estado directamente para no disparar GETs pendientes.
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -291,11 +292,8 @@ describe('MaoTopography', () => {
     fixture.componentInstance.onSerieSelected(selectedSerie);
 
     expect(store.maoTopography()).toMatchObject({ serie: selectedSerie, disparo: expectedShot });
-    if (expectedShot === null) {
-      expect(fetchSpy).not.toHaveBeenCalled();
-    } else {
-      expect(fetchSpy).toHaveBeenCalledExactlyOnceWith('trial-123', selectedSerie, expectedShot);
-    }
+    const expectedCalls = expectedShot === null ? [] : [['trial-123', selectedSerie, expectedShot]];
+    expect(fetchSpy.mock.calls).toEqual(expectedCalls);
   });
 
   it('passes target context to the dialog without posting from the parent', async () => {
@@ -308,13 +306,13 @@ describe('MaoTopography', () => {
     const { fixture } = await render(MaoTopography, {
       inputs: { widgetId: 'test-mao-topo' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: MatDialog, useValue: { open: dialogOpen } },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     const store = TestBed.inject(ExecutionStore);

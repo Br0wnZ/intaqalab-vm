@@ -3,7 +3,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningMeasuresService } from '@intaqalab/data-access-planning';
 import { MeasureUnitEnum } from '@intaqalab/models';
@@ -22,7 +21,6 @@ describe('SeguimientoWidget', () => {
     render(SeguimientoWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -34,7 +32,9 @@ describe('SeguimientoWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {

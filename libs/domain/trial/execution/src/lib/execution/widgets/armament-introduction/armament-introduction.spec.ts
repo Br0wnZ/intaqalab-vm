@@ -6,11 +6,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatTooltipHarness } from '@angular/material/tooltip/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningSeriesService } from '@intaqalab/data-access-planning';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -48,19 +48,19 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('ArmamentIntroductionComponent', () => {
   const renderWidget = async (widgetId = 'test-widget') => {
-    const result = await render(ArmamentIntroductionComponent, {
+    const view = await render(ArmamentIntroductionComponent, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
@@ -134,23 +134,26 @@ describe('ArmamentIntroductionComponent', () => {
       fixture.detectChanges();
 
       const button = screen.getByRole('button', { name: /MASS_CONFIG_BTN/ });
+      const isButtonDisabled = button.hasAttribute('disabled');
+      expect(isButtonDisabled).toBe(scenario !== 'homogeneous');
+
       await manualChangeDetection(async () => {
         const loader = TestbedHarnessEnvironment.loader(fixture);
         const [tooltip] = await loader.getAllHarnesses(MatTooltipHarness);
         if (!tooltip) throw new Error('Bulk configuration tooltip not found');
-        if (scenario === 'homogeneous') {
-          expect(button).toBeEnabled();
-          await tooltip.show();
-          fixture.detectChanges();
-          expect(await tooltip.isOpen()).toBe(false);
-        } else {
-          expect(button).toBeDisabled();
-          await tooltip.show();
-          fixture.detectChanges();
-          expect(await tooltip.getTooltipText()).toBe(
-            'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_DISABLED_TOOLTIP',
-          );
-        }
+        await tooltip.show();
+        fixture.detectChanges();
+
+        const isOpen = await tooltip.isOpen();
+        const tooltipText = isOpen ? await tooltip.getTooltipText() : null;
+        expect({ isOpen, tooltipText }).toEqual(
+          scenario === 'homogeneous'
+            ? { isOpen: false, tooltipText: null }
+            : {
+                isOpen: true,
+                tooltipText: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_DISABLED_TOOLTIP',
+              },
+        );
       });
     },
   );
@@ -241,7 +244,7 @@ describe('ArmamentIntroductionComponent', () => {
           : { series: [], items: [] },
       );
     }
-    patchState(store, { fireTrial: inProgressTrialForm });
+    patchState(unprotected(store), { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
@@ -365,7 +368,7 @@ describe('ArmamentIntroductionComponent', () => {
           : { series: [], items: [] },
       );
     }
-    patchState(store, { fireTrial: inProgressTrialForm });
+    patchState(unprotected(store), { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
@@ -692,7 +695,7 @@ describe('ArmamentIntroductionComponent', () => {
           : { series: [], items: [] },
       );
     }
-    patchState(store, { fireTrial: inProgressTrialForm });
+    patchState(unprotected(store), { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
       const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);

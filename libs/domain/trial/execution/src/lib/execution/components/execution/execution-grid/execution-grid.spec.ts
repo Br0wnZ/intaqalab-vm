@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -57,11 +56,11 @@ describe('ExecutionGridComponent', () => {
       },
       providers: [
         provideTestingEnvironment(),
-        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         ExecutionStore,
-        { provide: WidgetStateService, useValue: mockWidgetStateService }, provideTranslateService(),
+        { provide: WidgetStateService, useValue: mockWidgetStateService },
+        provideTranslateService(),
       ],
     });
 
@@ -250,11 +249,7 @@ describe('ExecutionGridComponent', () => {
 
       comp.draggingWidget.set(sampleWidget);
 
-      const mockEvent = {
-        target: targetElement,
-      } as unknown as DragEvent;
-
-      comp.onDragEnd(mockEvent);
+      comp.onDragEnd();
 
       expect(comp.draggingWidget()).toBeNull();
     });

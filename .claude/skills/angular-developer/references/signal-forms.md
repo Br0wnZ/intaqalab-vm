@@ -539,15 +539,13 @@ form(
 ### `src/app/app.ts`
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormField, applyEach, email, form, hidden, min, required, submit, validate } from '@angular/forms/signals';
+import { Component, signal } from '@angular/core';
+import { FormField, FormRoot, applyEach, email, form, hidden, min, required, submit, validate } from '@angular/forms/signals';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [FormField],
+  imports: [FormRoot, FormField],
   templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   model = signal({
@@ -625,7 +623,7 @@ export class App {
 ### `src/app/app.html`
 
 ```html
-<form (submit)="onSubmit(); $event.preventDefault()">
+<form [formRoot]="bookingForm" (submit)="onSubmit()">
   <h1>Interstellar Booking</h1>
 
   <section>
@@ -881,3 +879,13 @@ For numeric presentation, follow [numeric-input-constraints](../../numeric-input
 <button (click)="remove(outerIdx, $index)">X</button>
 } }
 ```
+
+## Angular 22.2 Additions (`@angular/forms/signals`)
+
+- **`FormRoot` (`[formRoot]`) + `submit()`:** Bind `<form [formRoot]="myForm">` instead of manual `$event.preventDefault()`; use `submit(this.myForm, { action: async (f) => ... })` and drive `<ui-save-button [isSaving]="myForm().submitting()" />`.
+- **Reusable `schema<T>()`:** Define pure shared validation schemas with `schema<T>((path) => { ... })` and compose via `apply(f.sub, mySchema)`.
+- **Zod / Standard Schema Validation:** `validateStandardSchema(path, zodSchema)` connects Zod v3/v4 schemas directly into Signal Forms.
+- **HTTP Validation (`validateHttp()`):** Native async validation with automatic cancellation and `field().pending()` state.
+- **Custom Controls (`FormUiControl` / `FormCheckboxControl` + `transformedValue()`):** Implement `FormUiControl` instead of `ControlValueAccessor`; use `transformedValue(this.value, { parse, format })` and read metadata tokens (`REQUIRED`, `MIN`, `MAX`).
+- **Parse Errors:** Read `field().errors()` including `parseErrors` (`formatNumericParseError()` in custom numeric inputs).
+- **Gradual Migration (`compatForm()`):** Use `@angular/forms/signals/compat` (`compatForm`) when bridging legacy `FormGroup`s incrementally into Signal Forms.

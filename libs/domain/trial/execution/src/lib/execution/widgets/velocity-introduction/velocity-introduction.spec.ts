@@ -2,7 +2,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CadenceUnitEnum, MeasureUnitEnum, SpeedUnitEnum } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -130,9 +129,7 @@ describe('VelocityIntroduction', () => {
   };
 
   const mockExecutionService = {
-    fetchShotVelocities: vi.fn((trialId: string, serieId: string, shotId: string) => {
-      return Promise.resolve(defaultRemoteResponse);
-    }),
+    fetchShotVelocities: vi.fn().mockResolvedValue(defaultRemoteResponse),
     setShotVelocity: vi.fn(),
     updateShotVelocity: vi.fn().mockResolvedValue(defaultRemoteResponse),
     loadEquipmentItemsByCategories: vi.fn().mockResolvedValue({}),
@@ -224,21 +221,26 @@ describe('VelocityIntroduction', () => {
     render(VelocityIntroduction, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
         { provide: ExecutionStore, useValue: mockStore },
         { provide: ShotVelocitiesService, useValue: mockExecutionService },
-        { provide: EquipmentSelectionService, useValue: mockExecutionService }, provideTranslateService(),
+        { provide: EquipmentSelectionService, useValue: mockExecutionService },
+        provideTranslateService(),
       ],
     });
 
   it('renders without errors and initializes widgetId', async () => {
     const { fixture } = await renderWidget('velocity-widget-1');
     expect(fixture.componentInstance.formState().widgetId).toBe('velocity-widget-1');
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: 'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.TITLE',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('shows only radar and antenna selected for initial velocity', async () => {

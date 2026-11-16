@@ -6,7 +6,6 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import type { Provider } from '@angular/core';
 import { Service, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialsDataService } from '@intaqalab/data-access';
 import { PlanningConditionsService } from '@intaqalab/data-access-planning';
@@ -137,7 +136,6 @@ describe('MunitionIntroduction', () => {
     render(MunitionIntroduction, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),

@@ -1,8 +1,8 @@
 ---
 name: planning-specialist
-version: 1.1.2
-last-updated: 2026-11-03
-description: >
+version: 1.2.0
+last-updated: 2026-11-13
+description: Domain specialist for INTAQALAB Trial Planning (libs/domain/trial/planning) and shared planning read layer (@intaqalab/data-access-planning). Covers PlanningGeneralDataStore, ArmamentStore, MunitionsStore, Signal Trigger Pattern, schema() validation, and ADR-017/ADR-019 boundaries.
 ---
 
 # 🎯 INTAQALAB: Trial Planning Specialist
@@ -51,6 +51,8 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 ## 🛠️ Implementation Rules
 
 - When developing in `libs/domain/trial/planning`, **NEVER** use `HttpClient.subscribe`. Enforce the Signal Trigger Pattern + `httpResource` for GET queries, and `HttpClient` + `firstValueFrom` returning `Promise<T>` for mutations (POST/PUT/PATCH/DELETE) per ADR-020.
+- Use NgRx 22 `withProps()` and `withLinkedState()` in feature stores (`PlanningGeneralDataStore`, `ArmamentStore`, `MunitionsStore`), and `extendResource(..., withPreviousValueOnLoading())` for reloading tables.
+- Use Angular 22.2 Signal Forms `<form [formRoot]>`, `submit()`, and reusable domain `schema()` (or `compatForm()` when bridging any remaining legacy control).
 - Ensure mutations are coordinated through feature stores via `patchState` and synchronous service dispatch.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All models, DTOs, store slices, and service calls must use strict TypeScript interfaces and domain types.
 

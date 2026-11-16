@@ -2,11 +2,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
+import type { CartesianScaleOptions } from 'chart.js';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -24,7 +24,6 @@ describe('OverpressureChartWidget', () => {
     render(OverpressureChartWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -35,7 +34,9 @@ describe('OverpressureChartWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.OVERPRESSURE_CHART.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -100,7 +101,9 @@ describe('OverpressureChartWidget', () => {
     }));
 
     const config = fixture.componentInstance['chartConfig']();
-    expect(config.options?.scales?.x?.title?.text).toBe('Wc/kg');
-    expect(config.options?.scales?.y?.title?.text).toBe('Presión (bar)');
+    const xScale = config.options?.scales?.['x'] as CartesianScaleOptions | undefined;
+    const yScale = config.options?.scales?.['y'] as CartesianScaleOptions | undefined;
+    expect(xScale?.title?.text).toBe('Wc/kg');
+    expect(yScale?.title?.text).toBe('Presión (bar)');
   });
 });

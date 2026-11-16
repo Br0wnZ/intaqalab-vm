@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatSelectClearable } from './mat-select-clearable';
 
@@ -25,7 +24,7 @@ class TestComponent {
 describe('MatSelectClearable', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, TestComponent],
+      imports: [TestComponent],
     }).compileComponents();
   });
 

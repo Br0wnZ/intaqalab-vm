@@ -4,7 +4,6 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, signal } from '@angular/core';
 import { form } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -63,7 +62,6 @@ async function setup(
   const clientsService = makeClientsDataService();
 
   const view = await render(TestWrapperComponent, {
-    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),

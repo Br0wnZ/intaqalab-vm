@@ -1,6 +1,5 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { createMockSeriesAndShotsStore } from '@intaqalab/utils';
 import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -34,16 +33,16 @@ describe('UpsertSerieDialog', () => {
   });
 
   const renderDialog = async (data = defaultData) => {
-    const renderResult = await render(UpsertSerieDialog, {
+    const view = await render(UpsertSerieDialog, {
       providers: [
-        provideAnimations(),
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: SeriesAndShotsStore, useValue: mockStore }, provideTranslateService(),
+        { provide: SeriesAndShotsStore, useValue: mockStore },
+        provideTranslateService(),
       ],
       componentProviders: [{ provide: SeriesAndShotsStore, useValue: mockStore }],
     });
-    fixture = renderResult.fixture;
+    fixture = view.fixture;
     component = fixture.componentInstance;
   };
 

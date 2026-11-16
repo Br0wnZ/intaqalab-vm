@@ -10,14 +10,12 @@ You can generate a service using the Angular CLI:
 ng generate service my-data
 ```
 
-Or you can manually create a TypeScript class and decorate it with `@Injectable()`.
+Or you can manually create a TypeScript class and decorate it with `@Service()`.
 
 ```ts
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class BasicDataStore {
   private data: string[] = [];
 
@@ -31,13 +29,15 @@ export class BasicDataStore {
 }
 ```
 
-### The `providedIn: 'root'` Option
+### Automatic Provision with `@Service()`
 
-Using `providedIn: 'root'` is the recommended approach for most services. It tells Angular to:
+Using `@Service()` (Angular 22) is the mandatory standard in INTAQALAB (`@Injectable` is prohibited by ESLint for standard services). It tells Angular to:
 
-- **Create a single instance (singleton)** for the entire application.
+- **Create a single instance (singleton)** in the root environment injector.
 - **Make it available everywhere** automatically, without needing to list it in any `providers` array.
 - **Enable tree-shaking**, meaning the service is only included in the final JavaScript bundle if it is actually injected somewhere.
+
+If a service should NOT be auto-provided in root (e.g. scoped to a component or route), use `@Service({ autoProvided: false })`.
 
 ## Injecting a Service
 
@@ -70,13 +70,11 @@ export class Example {
 Services can inject other services in the exact same way.
 
 ```ts
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 
 import { AdvancedDataStore } from './advanced-data-store.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class BasicDataStore {
   // Injecting another service
   private advancedDataStore = inject(AdvancedDataStore);
@@ -92,8 +90,8 @@ export class BasicDataStore {
 
 ## Advanced Service Patterns
 
-While `providedIn: 'root'` covers most scenarios, you may sometimes need:
+While `@Service()` covers most scenarios, you may sometimes need:
 
-- **Component-specific instances**: If a component needs its own isolated instance of a service, provide it directly in the component's `@Component({ providers: [MyService] })` array.
+- **Component-specific instances**: Mark the service with `@Service({ autoProvided: false })` and provide it directly in the component's `@Component({ providers: [MyService] })` array.
 - **Factory providers**: For dynamic creation.
 - **Value providers**: For injecting configuration objects.

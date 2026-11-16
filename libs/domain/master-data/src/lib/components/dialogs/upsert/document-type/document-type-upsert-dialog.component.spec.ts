@@ -3,7 +3,6 @@
 /* eslint-disable testing-library/no-node-access */
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -47,7 +46,6 @@ describe('DocumentTypeUpsertDialogComponent', () => {
     const user = userEvent.setup();
 
     const view = await render(DocumentTypeUpsertDialogComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         { provide: MasterDataService, useValue: createMockMasterDataService() },

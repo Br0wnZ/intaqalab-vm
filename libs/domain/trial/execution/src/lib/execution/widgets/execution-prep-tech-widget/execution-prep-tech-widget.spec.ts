@@ -4,7 +4,6 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -123,7 +122,6 @@ async function runSetup(options: SetupOptions = {}) {
   const mockToastrService = createMockToastrService();
 
   const view = await render(ExecutionPrepTechWidgetComponent, {
-    imports: [NoopAnimationsModule],
     componentInputs: {
       widgetId: 'widget-test-1',
       profile,
@@ -203,9 +201,8 @@ describe('ExecutionPrepTechWidgetComponent', () => {
     });
 
     it('should not show the dirty indicator when form is clean', async () => {
-      const { view } = await runSetup();
-      const dirtyDot = view.fixture.nativeElement.querySelector('.bg-orange-500');
-      expect(dirtyDot).not.toBeTruthy();
+      await runSetup();
+      expect(screen.queryByTestId('dirty-dot')).not.toBeInTheDocument();
     });
   });
 
@@ -332,14 +329,12 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       await checkboxes[1].check();
       view.fixture.detectChanges();
 
-      const dirtyDot = view.fixture.nativeElement.querySelector('.bg-orange-500');
-      expect(dirtyDot).toBeTruthy();
+      expect(screen.getByTestId('dirty-dot')).toBeInTheDocument();
     });
 
     it('should not show dirty dot when state matches the store', async () => {
-      const { view } = await runSetup();
-      const dirtyDot = view.fixture.nativeElement.querySelector('.bg-orange-500');
-      expect(dirtyDot).not.toBeTruthy();
+      await runSetup();
+      expect(screen.queryByTestId('dirty-dot')).not.toBeInTheDocument();
     });
   });
 
@@ -397,7 +392,6 @@ describe('ExecutionPrepTechWidgetComponent', () => {
       });
 
       const view = await render(ExecutionPrepTechWidgetComponent, {
-        imports: [NoopAnimationsModule],
         componentInputs: {
           widgetId: 'widget-test-1',
           profile: 'presiones',

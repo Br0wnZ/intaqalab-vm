@@ -4,7 +4,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PropellantChargeParametersService } from '@intaqalab/data-access-planning';
 import { MEASURE_UNIT_LABELS, SpeedUnitEnum, WeightUnitEnum } from '@intaqalab/models';
@@ -30,7 +29,6 @@ describe('InformacionTaradoWidget', () => {
     render(InformacionTaradoWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -42,7 +40,9 @@ describe('InformacionTaradoWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.INFORMACION_TARADO.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('shows all supported speed units in the selector', async () => {

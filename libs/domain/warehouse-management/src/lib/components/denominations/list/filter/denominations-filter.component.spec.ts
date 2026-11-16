@@ -1,5 +1,4 @@
 import { signal } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -26,7 +25,7 @@ async function setup() {
 
   const view = await render(DenominationsFilter, {
     on: { filters: filtersSpy },
-    providers: [provideAnimationsAsync(), { provide: MunitionComponentStore, useValue: mockStore }, provideTranslateService()],
+    providers: [{ provide: MunitionComponentStore, useValue: mockStore }, provideTranslateService()],
   });
 
   const fixture = view.fixture;
@@ -56,9 +55,11 @@ describe('DenominationsFilter', () => {
     });
 
     it('should render the search button disabled when input is empty', async () => {
-      const { container } = await setup();
-      const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
-      expect(button.disabled).toBe(true);
+      await setup();
+      const button = screen.getByRole('button', {
+        name: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.SEARCH',
+      });
+      expect(button).toBeDisabled();
     });
 
     it('should render the clear filter button', async () => {
@@ -74,30 +75,33 @@ describe('DenominationsFilter', () => {
 
   describe('searchByName()', () => {
     it('should enable the search button when input has a value', async () => {
-      const { user, container } = await setup();
+      const { user } = await setup();
       const input = screen.getByRole('textbox');
       await user.type(input, 'Granada');
 
-      const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
-      expect(button.disabled).toBe(false);
+      const button = screen.getByRole('button', {
+        name: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.SEARCH',
+      });
+      expect(button).toBeEnabled();
     });
 
     it('should emit filters with the typed name when search is clicked', async () => {
-      const { user, container, filtersSpy } = await setup();
+      const { user, filtersSpy } = await setup();
       const input = screen.getByRole('textbox');
       await user.type(input, 'Granada');
 
-      const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
+      const button = screen.getByRole('button', {
+        name: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.SEARCH',
+      });
       await user.click(button);
 
       expect(filtersSpy).toHaveBeenCalledWith({ name: 'Granada', munitionTypeId: '' });
     });
 
     it('should NOT emit filters when both fields are empty', async () => {
-      const { container, filtersSpy } = await setup();
-      const button = container.querySelector('button[role="button"]') as HTMLButtonElement;
-      button.click();
-      await Promise.resolve();
+      const { fixture, filtersSpy } = await setup();
+      const component = fixture.componentInstance;
+      component.search();
 
       expect(filtersSpy).not.toHaveBeenCalled();
     });
@@ -105,13 +109,13 @@ describe('DenominationsFilter', () => {
 
   describe('clearFilter()', () => {
     it('should emit empty filter values when clear is clicked', async () => {
-      const { user, container, filtersSpy } = await setup();
+      const { user, filtersSpy } = await setup();
       const input = screen.getByRole('textbox');
       await user.type(input, 'Granada');
 
-      const clearBtn = screen
-        .getByText('WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.CLEAN')
-        .closest('button') as HTMLButtonElement;
+      const clearBtn = screen.getByRole('button', {
+        name: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.CLEAN',
+      });
       await user.click(clearBtn);
 
       expect(filtersSpy).toHaveBeenCalledWith({ name: '', munitionTypeId: '' });
@@ -122,9 +126,9 @@ describe('DenominationsFilter', () => {
       const input = screen.getByRole('textbox') as HTMLInputElement;
       await user.type(input, 'Granada');
 
-      const clearBtn = screen
-        .getByText('WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.CLEAN')
-        .closest('button') as HTMLButtonElement;
+      const clearBtn = screen.getByRole('button', {
+        name: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.FILTER.CLEAN',
+      });
       await user.click(clearBtn);
 
       expect(input).toHaveValue('');

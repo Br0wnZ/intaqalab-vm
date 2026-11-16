@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, output, signal } from '@angular/core';
@@ -6,7 +6,6 @@ import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { UiDialogService } from '@intaqalab/ui';
 import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -92,8 +91,8 @@ describe('DenominationsListComponent', () => {
             <span>{{ item.name }}</span>
             <span>{{ item.munitionType.name }}</span>
             <span>{{ item.neq }}</span>
-            <button mat-icon-button type="button" (click)="delete(item)"></button>
-            <button mat-icon-button type="button" (click)="edit(item)"></button>
+            <button mat-icon-button type="button" aria-label="COMMONS.DELETE" (click)="delete(item)"></button>
+            <button mat-icon-button type="button" aria-label="COMMONS.EDIT" (click)="edit(item)"></button>
             <mat-slide-toggle [checked]="getCheckedState(item)" (change)="toogleActive(item)"></mat-slide-toggle>
           </div>
         `,
@@ -101,7 +100,6 @@ describe('DenominationsListComponent', () => {
     });
 
     const view = await render(DenominationsListComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -153,9 +151,9 @@ describe('DenominationsListComponent', () => {
     it('should open the create dialog with item null when create button is clicked', async () => {
       const { user } = await setup();
 
-      const createBtn = screen
-        .getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)
-        .closest('button') as HTMLButtonElement;
+      const createBtn = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i,
+      });
       await user.click(createBtn);
 
       expect(mockStore.createItem).not.toHaveBeenCalled();
@@ -171,9 +169,9 @@ describe('DenominationsListComponent', () => {
         weight: 5,
       };
       const { user } = await setup([], newDenomination);
-      const createBtn = screen
-        .getByText(/WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i)
-        .closest('button') as HTMLButtonElement;
+      const createBtn = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.DENOMINATIONS\.CREATE/i,
+      });
       await user.click(createBtn);
 
       expect(mockStore.createItem).toHaveBeenCalledWith(newDenomination);
@@ -190,9 +188,8 @@ describe('DenominationsListComponent', () => {
         active: true,
         weight: 10,
       };
-      const { user, container } = await setup([mockItem], editResult);
-      const editBtns = container.querySelectorAll('button[mat-icon-button]');
-      const editBtn = editBtns[1] as HTMLButtonElement; // delete=0, edit=1
+      const { user } = await setup([mockItem], editResult);
+      const editBtn = screen.getByRole('button', { name: 'COMMONS.EDIT' });
       await user.click(editBtn);
 
       expect(mockStore.updateItem).toHaveBeenCalledWith(expect.objectContaining({ name: editResult.name }));
@@ -201,18 +198,18 @@ describe('DenominationsListComponent', () => {
 
   describe('Delete', () => {
     it('should call store.deleteItem when delete is confirmed', async () => {
-      const { user, container } = await setup([mockItem]);
+      const { user } = await setup([mockItem]);
       mockUiDialog.confirm.mockResolvedValue(true);
-      const deleteBtn = container.querySelectorAll('button[mat-icon-button]')[0] as HTMLButtonElement;
+      const deleteBtn = screen.getByRole('button', { name: 'COMMONS.DELETE' });
       await user.click(deleteBtn);
 
       expect(mockStore.deleteItem).toHaveBeenCalledWith(mockItem);
     });
 
     it('should NOT call store.deleteItem when delete is cancelled', async () => {
-      const { user, container } = await setup([mockItem]);
+      const { user } = await setup([mockItem]);
       mockUiDialog.confirm.mockResolvedValue(false);
-      const deleteBtn = container.querySelectorAll('button[mat-icon-button]')[0] as HTMLButtonElement;
+      const deleteBtn = screen.getByRole('button', { name: 'COMMONS.DELETE' });
       await user.click(deleteBtn);
 
       expect(mockStore.deleteItem).not.toHaveBeenCalled();

@@ -1,7 +1,6 @@
-﻿import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
 import { createMockResource } from '@intaqalab/utils/testing/core';
@@ -49,7 +48,6 @@ async function setup(data: Record<string, any> = { munitionTypeList: mockMunitio
   denomService = makeDenominationsService();
 
   const view = await render(UpsertDialogComponent, {
-    imports: [NoopAnimationsModule],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -87,13 +85,13 @@ describe('UpsertDialogComponent', () => {
 
     it('should disable the save button when the form is invalid', async () => {
       await setup();
-      const saveBtn = screen.getByText('MODIFY_DOC_DIALOG.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: 'MODIFY_DOC_DIALOG.SAVE' });
       expect(saveBtn).toBeDisabled();
     });
 
     it('should close the dialog with false when clicking cancel', async () => {
       const { user } = await setup();
-      const cancelBtn = screen.getByText('MODIFY_DOC_DIALOG.CANCEL').closest('button') as HTMLButtonElement;
+      const cancelBtn = screen.getByRole('button', { name: 'MODIFY_DOC_DIALOG.CANCEL' });
       await user.click(cancelBtn);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
     });
@@ -138,13 +136,13 @@ describe('UpsertDialogComponent', () => {
 
     it('should enable the save button when form is pre-filled', async () => {
       await setup(editData);
-      const saveBtn = screen.getByText('MODIFY_DOC_DIALOG.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: 'MODIFY_DOC_DIALOG.SAVE' });
       expect(saveBtn).toBeEnabled();
     });
 
     it('should close the dialog with the form data when clicking save', async () => {
       const { user, fixture } = await setup(editData);
-      const saveBtn = screen.getByText('MODIFY_DOC_DIALOG.SAVE').closest('button') as HTMLButtonElement;
+      const saveBtn = screen.getByRole('button', { name: 'MODIFY_DOC_DIALOG.SAVE' });
       await user.click(saveBtn);
       await fixture.whenStable();
       expect(mockDialogRef.close).toHaveBeenCalledWith(
@@ -158,7 +156,7 @@ describe('UpsertDialogComponent', () => {
 
     it('should close the dialog with false when clicking cancel', async () => {
       const { user } = await setup(editData);
-      const cancelBtn = screen.getByText('MODIFY_DOC_DIALOG.CANCEL').closest('button') as HTMLButtonElement;
+      const cancelBtn = screen.getByRole('button', { name: 'MODIFY_DOC_DIALOG.CANCEL' });
       await user.click(cancelBtn);
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);
     });

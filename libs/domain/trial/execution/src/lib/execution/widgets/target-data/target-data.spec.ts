@@ -5,7 +5,6 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import {
   type PlanningTargetConditionsResponse,
@@ -14,7 +13,7 @@ import {
 } from '@intaqalab/data-access-planning';
 import { AngleUnitEnum, DistanceUnitEnum } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -32,7 +31,6 @@ describe('TargetDataWidget', () => {
     render(TargetDataWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -53,7 +51,12 @@ describe('TargetDataWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: 'TRIAL_EXECUTION.WIDGETS.TARGET_DATA.TITLE',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('disables all planning output fields', async () => {

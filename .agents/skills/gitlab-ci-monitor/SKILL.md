@@ -1,7 +1,7 @@
 ---
 name: gitlab-ci-monitor
-version: 1.0.1
-last-updated: 2026-11-11
+version: 1.1.0
+last-updated: 2026-11-13
 description: Use when checking GitLab CI/CD pipeline status, jobs, failures, logs, or artifacts through the GitLab MCP server.
 ---
 
@@ -25,6 +25,7 @@ Consulta estado de pipelines GitLab, jobs, logs y artifacts mediante el MCP ofic
 4. Para explicar un fallo, llama `get_job` con `include: ["log"]`; limita lectura a fragmento relevante, preferiblemente últimas 32 KiB. No descargues logs completos sin necesidad.
 5. Usa `get_artifact_file` solo si hace falta inspeccionar artifact para resolver pregunta concreta.
 6. Informa estado, rama, commit, fecha, URL, jobs fallidos y evidencia breve. Separa hechos observados de hipótesis.
+7. Stack CI de referencia: **Node `>=22.22.3`**, **Nx `24.0.6`** (`static-failures-only` por defecto en CI), **Vite `8.3.8`** (Rolldown/OXC), **Vitest `5.1.0`** y **ESLint `10.14.0`**.
 
 ## Safety
 

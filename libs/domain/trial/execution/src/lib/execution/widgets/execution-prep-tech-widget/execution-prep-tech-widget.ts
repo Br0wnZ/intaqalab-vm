@@ -112,7 +112,11 @@ const TECH_PROFILE_CONFIG: Record<TechProfile, TechProfileConfig> = {
             </span>
           </div>
           @if (formState().dirty) {
-            <span class="size-1.5 rounded-full bg-orange-500 shrink-0"></span>
+            <span
+              data-testid="dirty-dot"
+              [attr.aria-label]="'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_TECH.DIRTY_ARIA' | translate"
+              class="size-1.5 rounded-full bg-orange-500 shrink-0"
+            ></span>
           }
         </mat-card-title>
       </mat-card-header>

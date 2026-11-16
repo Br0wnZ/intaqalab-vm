@@ -1,7 +1,7 @@
 ---
 name: nx-workspace
-version: 1.0.1
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
 ---
 
@@ -9,7 +9,7 @@ description: "Explore and understand Nx workspaces. USE WHEN answering questions
 
 This skill provides read-only exploration of Nx workspaces. Use it to understand workspace structure, project configuration, available targets, and dependencies.
 
-Keep in mind that you might have to prefix commands with `npx`/`pnpx`/`yarn` if nx isn't installed globally. Check the lockfile to determine the package manager in use.
+> **INTAQALAB Standard (Nx `24.0.6`):** Always prefix commands with `npx nx` (NEVER `pnpm`). Nx 24 computes task-level `affected` graphs; use `npx nx show project <name> --json` to inspect Crystal-inferred `lint` (`@nx/eslint/plugin`) and `test` (`@nx/vitest`) targets.
 
 ## Listing Projects
 

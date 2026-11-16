@@ -1,7 +1,6 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { CalendarEventsDataService } from '@intaqalab/data-access';
 import type { TrialSchedulerModalShellInput } from '@intaqalab/models';
@@ -54,7 +53,6 @@ describe('TrialSchedulerModalShellComponent', () => {
     };
 
     const view = await render(TrialSchedulerModalShellComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: mockDialogRef },

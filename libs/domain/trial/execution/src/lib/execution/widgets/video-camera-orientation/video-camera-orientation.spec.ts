@@ -1,10 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AngleUnitEnum, DistanceUnitEnum } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -27,7 +27,6 @@ describe('VideoCameraOrientation', () => {
     render(VideoCameraOrientation, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -54,7 +53,7 @@ describe('VideoCameraOrientation', () => {
       { value: '4668', label: 'Cam A', x: 1, y: 1 },
       { value: '4669', label: 'Cam B', x: 2, y: 2 },
     ]);
-    patchState(store, { fireTrialId: 'trial-1' });
+    patchState(unprotected(store), { fireTrialId: 'trial-1' });
     TestBed.tick();
     fixture.detectChanges();
 
@@ -76,7 +75,7 @@ describe('VideoCameraOrientation', () => {
     const httpMock = TestBed.inject(HttpTestingController);
     const loadOrientation = vi.spyOn(store, 'loadVideoCameraOrientation');
     const orientationUrl = 'http://localhost:3000/api/execution/fire-trials/trial-1/execution/cameras/4668/orientation';
-    patchState(store, { fireTrialId: 'trial-1' });
+    patchState(unprotected(store), { fireTrialId: 'trial-1' });
     TestBed.tick();
     httpMock.expectOne(orientationUrl).flush({
       cameraId: 4668,
@@ -119,7 +118,7 @@ describe('VideoCameraOrientation', () => {
     };
     vi.spyOn(store, 'videoCameraOrientationResponse').mockReturnValue(response);
     const loadOrientation = vi.spyOn(store, 'loadVideoCameraOrientation').mockImplementation(() => undefined);
-    patchState(store, { fireTrialId: 'trial-1' });
+    patchState(unprotected(store), { fireTrialId: 'trial-1' });
     TestBed.tick();
     loadOrientation.mockClear();
     fixture.detectChanges();
@@ -140,7 +139,7 @@ describe('VideoCameraOrientation', () => {
       const store = TestBed.inject(ExecutionStore);
       const httpMock = TestBed.inject(HttpTestingController);
       const loadOrientation = vi.spyOn(store, 'loadVideoCameraOrientation');
-      patchState(store, {
+      patchState(unprotected(store), {
         fireTrialId: 'trial-1',
         activeSerieId: 'active-series',
         activeShotId: 'active-shot',
@@ -174,7 +173,7 @@ describe('VideoCameraOrientation', () => {
   it('preserves manual selection and still follows subsequent active selection changes', async () => {
     const { fixture } = await renderWidget();
     const store = TestBed.inject(ExecutionStore);
-    patchState(store, { activeSerieId: 'series-1', activeShotId: 'shot-1' });
+    patchState(unprotected(store), { activeSerieId: 'series-1', activeShotId: 'shot-1' });
     TestBed.tick();
     loadCameraOrientation({
       cameraId: 4668,
@@ -186,7 +185,7 @@ describe('VideoCameraOrientation', () => {
       expect(screen.getByText('1.25')).toBeInTheDocument();
     });
     const loadOrientation = vi.spyOn(store, 'loadVideoCameraOrientation').mockImplementation(() => undefined);
-    patchState(store, { fireTrialId: 'trial-1' });
+    patchState(unprotected(store), { fireTrialId: 'trial-1' });
     TestBed.tick();
     loadOrientation.mockClear();
     fixture.detectChanges();
@@ -200,7 +199,7 @@ describe('VideoCameraOrientation', () => {
     expect(store.videoCameraOrientation()).toMatchObject({ serie: 'series-2', disparo: 'shot-3' });
     expect(loadOrientation).toHaveBeenCalledTimes(2);
 
-    patchState(store, { activeSerieId: 'series-2', activeShotId: 'shot-2' });
+    patchState(unprotected(store), { activeSerieId: 'series-2', activeShotId: 'shot-2' });
     TestBed.tick();
     await fixture.componentInstance.saveForm();
 

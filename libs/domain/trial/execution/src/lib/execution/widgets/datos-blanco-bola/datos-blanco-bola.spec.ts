@@ -2,12 +2,12 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -39,25 +39,27 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('DatosBlancoBola', () => {
   const renderWidget = async (widgetId = 'test-datos-blanco-bola') => {
-    const result = await render(DatosBlancoBola, {
+    const view = await render(DatosBlancoBola, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
     // Se parchea el estado directamente para no disparar GETs pendientes.
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.DATOS_BLANCO_BOLA.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState widgetId matches input', async () => {
@@ -97,11 +99,12 @@ describe('DatosBlancoBola', () => {
     const store = TestBed.inject(ExecutionStore);
     fixture.componentInstance['bocaPiezaPosition'].set({ x: 999.9, y: null, z: null, unit: 'm' });
     fixture.componentInstance.resetForm();
+    const stored = store.datosBlancoBola();
     expect(fixture.componentInstance['bocaPiezaPosition']()).toEqual({
-      x: store.datosBlancoBola().bocaPiezaX?.value ? parseFloat(store.datosBlancoBola().bocaPiezaX.value) : null,
-      y: store.datosBlancoBola().bocaPiezaY?.value ? parseFloat(store.datosBlancoBola().bocaPiezaY.value) : null,
-      z: store.datosBlancoBola().bocaPiezaZ?.value ? parseFloat(store.datosBlancoBola().bocaPiezaZ.value) : null,
-      unit: store.datosBlancoBola().bocaPiezaX?.unit ?? 'm',
+      x: stored.bocaPiezaX?.value ? parseFloat(stored.bocaPiezaX.value) : null,
+      y: stored.bocaPiezaY?.value ? parseFloat(stored.bocaPiezaY.value) : null,
+      z: stored.bocaPiezaZ?.value ? parseFloat(stored.bocaPiezaZ.value) : null,
+      unit: stored.bocaPiezaX?.unit ?? 'm',
     });
   });
 

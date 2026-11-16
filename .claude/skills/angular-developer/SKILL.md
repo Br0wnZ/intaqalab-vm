@@ -1,7 +1,7 @@
 ---
 name: angular-developer
-version: 1.0.2
-last-updated: 2026-11-03
+version: 1.1.0
+last-updated: 2026-11-13
 description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 user-invocable: true
 ---
@@ -56,11 +56,11 @@ If you require deeper documentation not found in the references above, read the 
 
 When managing state and data reactivity, use Angular Signals and consult the following references:
 
-- **Project Utilities**: Custom reactive helpers (debounce, throttle, page visibility, network, idle status, storage, countdown). It is mandatory to use these instead of custom code or third-party packages. Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)
-- **Signals Overview**: Core signal concepts (`signal`, `computed`), reactive contexts, and `untracked`. Read [signals-overview.md](references/signals-overview.md)
+- **Project Utilities**: Custom reactive helpers (debounce, throttle, page visibility, network, idle status, storage, countdown). Read [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md) (also compare `debouncedSignal` vs native `debounced()`).
+- **Signals Overview**: Core signal concepts (`signal`, `computed`), reactive contexts, `injectAsync()` + `onIdle()`, and `untracked`. Read [signals-overview.md](references/signals-overview.md)
 - **Dependent State (`linkedSignal`)**: Creating writable state linked to source signals. Read [linked-signal.md](references/linked-signal.md)
-- **Async Reactivity (`resource`)**: Fetching asynchronous data directly into signal state. Read [resource.md](references/resource.md)
-- **Side Effects (`effect`)**: Logging, third-party DOM manipulation (`afterRenderEffect`), and when NOT to use effects. Read [effects.md](references/effects.md)
+- **Async Reactivity (`resource`)**: Fetching asynchronous data with `httpResource`, `ctx.chain()`, `resource.snapshot()`, and `resourceFromSnapshots()`. Read [resource.md](references/resource.md)
+- **Side Effects (`effect`)**: Logging, DOM manipulation (`afterRenderEffect`, `inputBinding`/`outputBinding` on `createComponent`), and when NOT to use effects. Read [effects.md](references/effects.md)
 
 ## Measurement Units & Strict Typing (Mandatory)
 
@@ -75,19 +75,18 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 
 In most cases for new apps, **prefer signal forms**. When making a forms decision, analyze the project and consider the following guidelines:
 
-- if the application is using v21 or newer and this is a new form, **prefer signal forms**.
-  -For older applications or when working with existing forms, use the appropriate form type that matches the applications current form strategy.
+- In INTAQALAB (Angular 22.2), **Signal Forms (`@angular/forms/signals`) are mandatory** (`[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, `FormUiControl`).
 
 - **Signal Forms**: Use signals for form state management. Read [signal-forms.md](references/signal-forms.md)
-- **Template-driven forms**: Use for simple forms. Read [template-driven-forms.md](references/template-driven-forms.md)
-- **Reactive forms**: Use for complex forms. Read [reactive-forms.md](references/reactive-forms.md)
+- **Template-driven / Reactive forms (Legacy Only)**: Prohibited for new code; consult only when migrating legacy forms to Signal Forms / `compatForm()`. Read [template-driven-forms.md](references/template-driven-forms.md) | [reactive-forms.md](references/reactive-forms.md)
 
 ## Dependency Injection
 
-When implementing dependency injection in Angular, follow these guidelines:
+When implementing dependency injection in INTAQALAB Angular 22, follow these guidelines:
 
-- **Fundamentals**: Overview of Dependency Injection, services, and the `inject()` function. Read [di-fundamentals.md](references/di-fundamentals.md)
-- **Creating and Using Services**: Creating services, the `providedIn: 'root'` option, and injecting into components or other services. Read [creating-services.md](references/creating-services.md)
+- **Creating and Using Services**: Always use `@Service()` (never `@Injectable({ providedIn: 'root' })`, omit `standalone: true` and `ChangeDetectionStrategy.OnPush` on components). Read [creating-services.md](references/creating-services.md) | [di-fundamentals.md](references/di-fundamentals.md)
+- **Router Memory & Transitions**: Configure `withAutoCleanupInjectors()` + `shouldDestroyInjector()` and `withViewTransitions({ skipInitialTransition: true })` in `provideRouter(...)`. Read [hierarchical-injectors.md](references/hierarchical-injectors.md)
+- **Animations**: Use native `animate.enter` / `animate.leave` (`@angular/animations` and `NoopAnimationsModule` are prohibited). Read [angular-animations.md](references/angular-animations.md)
 - **Defining Dependency Providers**: Automatic vs manual provision, `InjectionToken`, `useClass`, `useValue`, `useFactory`, and scopes. Read [defining-providers.md](references/defining-providers.md)
 - **Injection Context**: Where `inject()` is allowed, `runInInjectionContext`, and `assertInInjectionContext`. Read [injection-context.md](references/injection-context.md)
 - **Hierarchical Injectors**: The `EnvironmentInjector` vs `ElementInjector`, resolution rules, modifiers (`optional`, `skipSelf`), and `providers` vs `viewProviders`. Read [hierarchical-injectors.md](references/hierarchical-injectors.md)

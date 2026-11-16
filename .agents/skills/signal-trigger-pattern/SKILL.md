@@ -1,7 +1,7 @@
 ---
 name: signal-trigger-pattern
-version: 1.1.1
-last-updated: 2026-11-12
+version: 1.2.0
+last-updated: 2026-11-13
 description: Implements the Signal Trigger Pattern — mandatory httpResource + private trigger signal pattern for GET queries, and HttpClient + firstValueFrom for mutations in Intaqalab. USE WHEN creating or modifying data-access services, stores that fetch remote data or execute mutations, or any component that interacts with APIs.
 ---
 
@@ -177,15 +177,20 @@ export class EntityShellComponent {
 
   constructor() {
     // Dispara la carga inicial en el constructor
-    effect(
-      () => {
-        this.#store.load({ page: 1, size: 20 });
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      this.#store.load({ page: 1, size: 20 });
+    });
   }
 }
 ```
+
+## Patrones Avanzados Angular 22.2 + NgRx Signals 22
+
+1. **Paginación/Recarga Sin Parpadeo (`@ngrx/signals/resource`):** En listados paginados o por disparo, envuelve `httpResource` con `extendResource(httpResource(...), withPreviousValueOnLoading())` para mantener los datos previos visibles durante `'reloading'`.
+2. **Encadenamiento Declarativo (`ctx.chain()`):** Para recursos dependientes (ej. componentes → denominaciones → lotes), usa `(ctx) => { const parents = ctx.chain(this.parentResource); ... }` propagando estados `'idle' | 'loading' | 'error'` sin guardas manuales.
+3. **Instantáneas (`resource.snapshot()` y `resourceFromSnapshots()`):** En vistas 3-State o composición de resources, usa `@let snap = resource.snapshot(); @switch (snap.status)` con narrow discriminado automático.
+4. **Debounce Nativo (`debounced()`):** Si una búsqueda requiere estado `.isLoading()` mientras el usuario teclea antes del HTTP, usa `debounced(searchSignal, 300)` combinado con `ctx.chain()`. Para debounce síncrono simple, usa `debouncedSignal()` de `@intaqalab/utils`.
+5. **Efectos sin `{ allowSignalWrites: true }`:** En Angular 22 `allowSignalWrites` es innecesario/obsoleto; escribe en triggers o stores directamente desde `effect()` leyendo dependencias antes del primer `await`.
 
 ---
 

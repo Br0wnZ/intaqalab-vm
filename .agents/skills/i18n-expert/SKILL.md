@@ -1,7 +1,7 @@
 ---
 name: i18n-expert
-version: 1.0.1
-last-updated: 2026-10-24
+version: 1.1.0
+last-updated: 2026-11-13
 description: Internationalization Specialist with @ngx-translate. Use when adding, updating or auditing es/en/de translation keys, namespaces, templates, locale-dependent decimal display, numeric input or language switching. Keeps localized view strings separate from numeric backend values.
 argument-hint: "E.g. 'Add i18n keys for munition creation component' or 'Create WAREHOUSE.AMMUNITION_NEW namespace with these keys...'."
 user-invocable: true
@@ -71,19 +71,26 @@ translate"
 {{ 'NAMESPACE.KEY' | translate: { name: entity.name, count: total() } }}
 ```
 
-## ⚙️ TypeScript Class Usage
+## ⚙️ TypeScript Class Usage (`@ngx-translate/core` v18.1)
 
-Use only when template pipes cannot be used (guards, toasts, programmatic alerts):
+Prefer the reactive **`translate()` signal function** from `@ngx-translate/core` whenever translated text is exposed to templates, Chart.js titles, or computed signals (it auto-updates on language switch AND reactive param changes without RxJS). Use `TranslateService.instant()` only for fire-and-forget imperative calls (e.g. one-shot toast inside a method):
 
 ```typescript
-readonly #translate = inject(TranslateService);
+import { Component, signal } from '@angular/core';
+import { translate } from '@ngx-translate/core';
 
-// Instant synchronous retrieval
-const msg = this.#translate.instant('NAMESPACE.KEY');
+@Component({ /* ... */ })
+export class ShotStatusSummary {
+  readonly shotNumber = signal(1);
 
-// Reactive signal stream
-readonly errorMsg = toSignal(this.#translate.stream('NAMESPACE.KEY'));
+  // ✅ Reactive Signal: updates automatically on language switch & shotNumber() change
+  readonly headerTitle = translate('TRIAL_EXECUTION.SHOT_HEADER', () => ({
+    number: this.shotNumber(),
+  }));
+}
 ```
+
+Use `provideTranslateService()` (root) or `provideChildTranslateService()` (lazy scopes) — never import `TranslateModule` in standalone components or specs (use `TranslatePipe` in component `imports`).
 
 ## ✅ Workflow for Adding New Keys
 

@@ -124,39 +124,7 @@ const animations = element.getAnimations();
 animations.forEach((anim) => anim.pause());
 ```
 
-## 3. Legacy Animations DSL (Deprecated)
+## 3. Legacy Animations DSL (Prohibited in INTAQALAB / Deprecated in Angular 22.2)
 
-For older projects (pre v20.2 or where `@angular/animations` is already heavily used), you use the component metadata DSL.
-
-**Important:** Do not mix legacy animations and `animate.enter`/`leave` in the same component.
-
-### Setup
-
-```ts
-bootstrapApplication(App, {
-  providers: [provideAnimationsAsync()],
-});
-```
-
-### Defining Transitions
-
-```ts
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { signal } from '@angular/core';
-
-@Component({
-  animations: [
-    trigger('openClose', [
-      state('open', style({ opacity: 1 })),
-      state('closed', style({ opacity: 0 })),
-      transition('open <=> closed', [animate('0.5s')]),
-    ]),
-  ],
-  template: `
-    <div [@openClose]="isOpen() ? 'open' : 'closed'">...</div>
-  `,
-})
-export class OpenClose {
-  isOpen = signal(true);
-}
-```
+> [!CAUTION]
+> `@angular/animations`, `provideAnimations()`, `provideAnimationsAsync()`, and `NoopAnimationsModule` are **prohibited** in INTAQALAB (`eslint.base.config.mjs` `no-restricted-imports`) and removed from `package.json`. Angular Material `22.2.7` uses native CSS animations and does not require any animation provider or module in production or tests. Always use `animate.enter` and `animate.leave` (Section 1 above) or pure CSS transitions / Tailwind `starting:*` utilities.

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import type { ComponentFixture } from '@angular/core/testing';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { TrialStatus } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -12,27 +10,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TrialListFilter } from './trial-list-filter';
 
 // vi.mock hoisted by Vitest
+async function setup() {
+  let lastFilters: Record<string, unknown> | null = null;
+  const view = await render(TrialListFilter, {
+    excludeComponentDeclaration: true,
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideTestingEnvironment(),
+      provideTranslateService(),
+    ],
+  });
+  const fixture = view.fixture;
+  fixture.componentInstance.filtersChange.subscribe((filters: Record<string, unknown>) => (lastFilters = filters));
+  return { view, fixture, detectChanges: view.detectChanges, getLastFilters: () => lastFilters };
+}
+
 describe('TrialListFilter', () => {
-  let fixture: ComponentFixture<TrialListFilter>;
-  let detectChanges: () => void;
-  let lastFilters: Record<string, unknown> | null;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-
-    const renderResult = await render(TrialListFilter, {
-      excludeComponentDeclaration: true,
-      providers: [
-        provideAnimationsAsync(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideTestingEnvironment(), provideTranslateService(),
-      ],
-    });
-    fixture = renderResult.fixture;
-    detectChanges = renderResult.detectChanges;
-    lastFilters = null;
-    fixture.componentInstance.filtersChange.subscribe((filters: Record<string, unknown>) => (lastFilters = filters));
   });
 
   afterEach(() => {
@@ -40,6 +36,7 @@ describe('TrialListFilter', () => {
   });
 
   it('should render and emit filter changes', async () => {
+    const { detectChanges, getLastFilters } = await setup();
     // getByRole with name option can trigger JSDOM CSS parser crash on Angular Material selectors;
     // use getByPlaceholderText which avoids CSS selector evaluation.
     const trialNumberInput = screen.getByPlaceholderText(/TRIALS_LIST.FILTERS.TRIAL_NUMBER_PLACEHOLDER/i);
@@ -49,19 +46,21 @@ describe('TrialListFilter', () => {
     expect(screen.getByText('TRIALS_LIST.FILTERS.CLIENT_PLACEHOLDER')).toBeInTheDocument();
     expect(screen.getByText('TRIALS_LIST.FILTERS.FIRE_TRIAL_TYPE_PLACEHOLDER')).toBeInTheDocument();
 
-    await fireEvent.input(trialNumberInput, { target: { value: '123' } });
+    fireEvent.input(trialNumberInput, { target: { value: '123' } });
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
+      expect(getLastFilters()).not.toBeNull();
     });
   });
 
-  it('should render the clean filters button', () => {
+  it('should render the clean filters button', async () => {
+    await setup();
     expect(screen.getByText('TRIALS_LIST.FILTERS.CLEAN_FILTERS')).toBeInTheDocument();
   });
 
   it('should emit filters when status is selected', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '',
       status: [TrialStatus.UNDER_REVIEW],
@@ -76,13 +75,14 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect((lastFilters as any).status).toEqual([TrialStatus.UNDER_REVIEW]);
-      expect((lastFilters as any).year).toBeUndefined();
+      expect(getLastFilters()).not.toBeNull();
+      expect((getLastFilters() as any).status).toEqual([TrialStatus.UNDER_REVIEW]);
+      expect((getLastFilters() as any).year).toBeUndefined();
     });
   });
 
   it('should emit multiple statuses when several are selected', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '',
       status: [TrialStatus.UNDER_REVIEW, TrialStatus.PLANNED, TrialStatus.IN_PROGRESS],
@@ -97,8 +97,8 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect((lastFilters as any).status).toEqual([
+      expect(getLastFilters()).not.toBeNull();
+      expect((getLastFilters() as any).status).toEqual([
         TrialStatus.UNDER_REVIEW,
         TrialStatus.PLANNED,
         TrialStatus.IN_PROGRESS,
@@ -107,6 +107,7 @@ describe('TrialListFilter', () => {
   });
 
   it('should emit filters when client is selected', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '',
       status: [],
@@ -121,12 +122,13 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect((lastFilters as any).clientId).toBe('CLIENT-1');
+      expect(getLastFilters()).not.toBeNull();
+      expect((getLastFilters() as any).clientId).toBe('CLIENT-1');
     });
   });
 
   it('should emit filters when fireTrialTypeId is selected', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '',
       status: [],
@@ -141,12 +143,13 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect((lastFilters as any).fireTrialTypeId).toBe('FT-1');
+      expect(getLastFilters()).not.toBeNull();
+      expect((getLastFilters() as any).fireTrialTypeId).toBe('FT-1');
     });
   });
 
   it('should emit filters with a specific year when year is selected', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '',
       status: [],
@@ -161,12 +164,13 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect((lastFilters as any).year).toBe('2025');
+      expect(getLastFilters()).not.toBeNull();
+      expect((getLastFilters() as any).year).toBe('2025');
     });
   });
 
   it('should reset form and emit empty filters when reset button is clicked', async () => {
+    const { fixture, detectChanges, getLastFilters } = await setup();
     fixture.componentInstance.formModel.set({
       trialNumber: '999',
       status: [TrialStatus.CANCELLED],
@@ -183,17 +187,17 @@ describe('TrialListFilter', () => {
     detectChanges();
 
     await waitFor(() => {
-      expect(lastFilters).not.toBeNull();
-      expect(lastFilters).toMatchObject({
+      expect(getLastFilters()).not.toBeNull();
+      expect(getLastFilters()).toMatchObject({
         trialNumber: '',
         status: [],
         clientId: '',
         fireTrialTypeId: '',
         description: '',
       });
-      expect((lastFilters as any).year).toBeUndefined();
-      expect((lastFilters as any).scheduledDateFrom).toBeUndefined();
-      expect((lastFilters as any).scheduledDateTo).toBeUndefined();
+      expect((getLastFilters() as any).year).toBeUndefined();
+      expect((getLastFilters() as any).scheduledDateFrom).toBeUndefined();
+      expect((getLastFilters() as any).scheduledDateTo).toBeUndefined();
     });
   });
 });

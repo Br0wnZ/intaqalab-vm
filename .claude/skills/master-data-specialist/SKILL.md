@@ -1,8 +1,8 @@
 ---
 name: master-data-specialist
-version: 1.0.0
-last-updated: 2026-09-29
-description: >
+version: 1.1.0
+last-updated: 2026-11-13
+description: Golden Path domain specialist for INTAQALAB Master Data (libs/domain/master-data). Covers MasterDataShellComponent, createMasterDataResource with extendResource/withPreviousValueOnLoading, MasterDataStore with withProps/unprotected tests, and Signal Forms [formRoot] upsert dialogs.
 ---
 
 # 🏗️ INTAQALAB: Master Data Specialist
@@ -63,6 +63,10 @@ readonly #debounced = debouncedSignal(computed(() => this.searchTerm() ?? ''), 3
 
 ## 🛠️ Implementation Rules
 
+- Always decorate Master Data services with `@Service()` from `@angular/core` (zero `@Injectable`).
+- Use `extendResource(httpResource(...), withPreviousValueOnLoading())` from `@ngrx/signals/resource` in `createMasterDataResource` so pagination/filter reloads keep previous table rows visible without skeleton flicker.
+- In `MasterDataStore`, inject shared `MasterDataService` once via `withProps(() => ({ _service: inject(MasterDataService) }))`, and use `patchState(unprotected(store), ...)` (`@ngrx/signals/testing`) in `*.store.spec.ts`.
+- In upsert dialogs, prefer `<form [formRoot]="...">` + `submit()` + `validateHttp()` (when async uniqueness checks apply) alongside `<ui-save-button>`.
 - When requested to build a management screen for a new basic entity, **never build UI components from scratch**. Implement the models, the service, and wire them to `MasterDataShellComponent`.
 - Avoid complex global stores for simple CRUD catalogs; leverage direct HTTP resource reloading.
 - **Zero `any` Policy:** PROHIBITED using `any` (`as any`, `: any`, `any[]`). All catalog models, DTOs, service responses, and query parameters must be strictly typed with real TypeScript types.

@@ -1,5 +1,4 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -62,10 +61,10 @@ const renderDialog = async (
 
   return render(UpdateArmamentDialog, {
     providers: [
-      provideNoopAnimations(),
       { provide: MatDialogRef, useValue: dialogRefMock },
       { provide: MAT_DIALOG_DATA, useValue: dialogData },
-      { provide: ArmamentStore, useValue: armamentStoreMock }, provideTranslateService(),
+      { provide: ArmamentStore, useValue: armamentStoreMock },
+      provideTranslateService(),
     ],
   });
 };
@@ -81,8 +80,8 @@ describe('UpdateArmamentDialog', () => {
 
   describe('Initial rendering', () => {
     it('should create the component', async () => {
-      const renderResult = await renderDialog();
-      expect(renderResult.fixture.componentInstance).toBeTruthy();
+      const view = await renderDialog();
+      expect(view.fixture.componentInstance).toBeTruthy();
     });
 
     it('should render dialog title', async () => {
@@ -113,8 +112,8 @@ describe('UpdateArmamentDialog', () => {
 
   describe('Form initialization', () => {
     it('should initialize form with provided armament data', async () => {
-      const renderResult = await renderDialog();
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog();
+      const component = view.fixture.componentInstance;
 
       const model = component.armamentModel();
       expect(model.weaponExternalId).toBe('weapon-1');
@@ -128,8 +127,8 @@ describe('UpdateArmamentDialog', () => {
       const data = createMockDialogData();
       data.armament.observations = undefined as never;
 
-      const renderResult = await renderDialog(createMockDialogRef(), data);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(createMockDialogRef(), data);
+      const component = view.fixture.componentInstance;
 
       expect(component.armamentModel().observations).toBe('');
     });
@@ -140,33 +139,33 @@ describe('UpdateArmamentDialog', () => {
       const data = createMockDialogData();
       data.armament.isInstrumented = true;
 
-      const renderResult = await renderDialog(createMockDialogRef(), data);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(createMockDialogRef(), data);
+      const component = view.fixture.componentInstance;
 
       expect(component.armamentForm().valid()).toBe(true);
     });
 
     it('should have a valid form when isInstrumented is false', async () => {
-      const renderResult = await renderDialog();
+      const view = await renderDialog();
 
-      expect(renderResult.fixture.componentInstance.armamentForm().valid()).toBe(true);
+      expect(view.fixture.componentInstance.armamentForm().valid()).toBe(true);
     });
 
     it('should have an invalid form when isInstrumented is undefined', async () => {
       const data = createMockDialogData();
       data.armament.isInstrumented = null as never;
 
-      const renderResult = await renderDialog(createMockDialogRef(), data);
+      const view = await renderDialog(createMockDialogRef(), data);
 
-      expect(renderResult.fixture.componentInstance.armamentForm().valid()).toBe(false);
+      expect(view.fixture.componentInstance.armamentForm().valid()).toBe(false);
     });
 
     it('should have invalid form when weaponExternalId is empty', async () => {
       const data = createMockDialogData();
       data.armament.weaponExternalId = '';
 
-      const renderResult = await renderDialog(createMockDialogRef(), data);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(createMockDialogRef(), data);
+      const component = view.fixture.componentInstance;
 
       expect(component.armamentForm().valid()).toBe(false);
     });
@@ -175,8 +174,8 @@ describe('UpdateArmamentDialog', () => {
       const data = createMockDialogData();
       data.armament.tubeExternalId = '';
 
-      const renderResult = await renderDialog(createMockDialogRef(), data);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(createMockDialogRef(), data);
+      const component = view.fixture.componentInstance;
 
       expect(component.armamentForm().valid()).toBe(false);
     });
@@ -187,24 +186,24 @@ describe('UpdateArmamentDialog', () => {
       const user = userEvent.setup();
       await renderDialog();
 
-      const lifeInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+      const lifeInput = screen.getByRole('spinbutton');
       expect(lifeInput).toBeInTheDocument();
 
       await user.clear(lifeInput);
       await user.type(lifeInput, '50');
-      expect(lifeInput.value).toBe('50');
+      expect(lifeInput).toHaveValue(50);
     });
 
     it('should allow entering text in observations field', async () => {
       const user = userEvent.setup();
       await renderDialog();
 
-      const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+      const textarea = screen.getByRole('textbox');
       expect(textarea).toBeInTheDocument();
 
       await user.clear(textarea);
       await user.type(textarea, 'Updated observations');
-      expect(textarea.value).toBe('Updated observations');
+      expect(textarea).toHaveValue('Updated observations');
     });
   });
 
@@ -222,8 +221,8 @@ describe('UpdateArmamentDialog', () => {
 
     it('onCancel should call dialogRef.close', async () => {
       const dialogRefMock = createMockDialogRef();
-      const renderResult = await renderDialog(dialogRefMock);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(dialogRefMock);
+      const component = view.fixture.componentInstance;
 
       component.onCancel();
 
@@ -235,8 +234,8 @@ describe('UpdateArmamentDialog', () => {
       data.armament.weaponExternalId = '';
 
       const dialogRefMock = createMockDialogRef();
-      const renderResult = await renderDialog(dialogRefMock, data);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(dialogRefMock, data);
+      const component = view.fixture.componentInstance;
 
       component.onApply();
 
@@ -245,9 +244,9 @@ describe('UpdateArmamentDialog', () => {
 
     it('onApply should close dialog with form data when form is valid', async () => {
       const dialogRefMock = createMockDialogRef();
-      const renderResult = await renderDialog(dialogRefMock);
+      const view = await renderDialog(dialogRefMock);
 
-      renderResult.fixture.componentInstance.onApply();
+      view.fixture.componentInstance.onApply();
 
       expect(dialogRefMock.close).toHaveBeenCalledWith({
         weaponExternalId: 'weapon-1',
@@ -261,8 +260,8 @@ describe('UpdateArmamentDialog', () => {
 
   describe('Component logic', () => {
     it('should have correct data from MAT_DIALOG_DATA', async () => {
-      const renderResult = await renderDialog();
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog();
+      const component = view.fixture.componentInstance;
 
       expect(component.data.shotNumber).toBe(1);
       expect(component.data.weapons.length).toBe(2);
@@ -270,18 +269,17 @@ describe('UpdateArmamentDialog', () => {
     });
 
     it('should render weapon options from data', async () => {
-      const user = userEvent.setup();
       await renderDialog();
 
-      const weaponSelect = document.querySelectorAll('mat-select')[0] as HTMLElement;
-      expect(weaponSelect).toBeInTheDocument();
+      const selects = screen.getAllByRole('combobox');
+      expect(selects[0]).toBeInTheDocument();
     });
 
     it('should render tube options from data', async () => {
       await renderDialog();
 
-      const tubeSelect = document.querySelectorAll('mat-select')[1] as HTMLElement;
-      expect(tubeSelect).toBeInTheDocument();
+      const selects = screen.getAllByRole('combobox');
+      expect(selects[1]).toBeInTheDocument();
     });
 
     it('should read tube options only for selected weapon family', async () => {
@@ -297,8 +295,8 @@ describe('UpdateArmamentDialog', () => {
           : [],
       );
 
-      const renderResult = await renderDialog(createMockDialogRef(), data, tubeDenominationsForFamily);
-      const component = renderResult.fixture.componentInstance;
+      const view = await renderDialog(createMockDialogRef(), data, tubeDenominationsForFamily);
+      const component = view.fixture.componentInstance;
 
       expect(component.tubeOptions().some((tube) => tube.id === 'stale-tube')).toBe(false);
       expect(tubeDenominationsForFamily).toHaveBeenCalledWith(10665);

@@ -1,7 +1,7 @@
 ---
 name: ui-design-engineer
-version: 1.0.4
-last-updated: 2026-11-05
+version: 1.1.0
+last-updated: 2026-11-13
 description: Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.
 argument-hint: "E.g. 'Create the munitions listing screen', 'Generate the card component', or 'Create a new widget for the execution grid'."
 user-invocable: true
@@ -40,8 +40,10 @@ Load [numeric-input-constraints](../numeric-input-constraints/SKILL.md) whenever
 
 ### 3. Angular Material & Native Form Controls
 
-- If an input, select, switch, table, dialog, expansion panel, or button is needed, **always use the official `@angular/material` component**. Never create raw unstyled HTML inputs.
-- **Save/Submit Button (`ui-save-button`):** It is **MANDATORY** to use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) for any save, submit, create, or update action. E.g.: `<ui-save-button [isSaving]="saveResource.isLoading()" (save)="onSave()" />`. Never use a plain `mat-flat-button` for form mutations.
+- If an input, select, switch, table, dialog, expansion panel, or button is needed, **always use the official `@angular/material` component** (including `@angular/material/timepicker` for time inputs). Never create raw unstyled HTML inputs.
+- **Save/Submit Button (`ui-save-button`):** It is **MANDATORY** to use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) for any save, submit, create, or update action. Bind `<form [formRoot]="myForm">` + `submit()` and `[isSaving]="myForm().submitting()"` (or `[isSaving]="saveResource.isLoading()"`). Never use a plain `mat-flat-button` for form mutations.
+- **Custom Form Controls (`FormUiControl` / `FormCheckboxControl`):** Implement Angular 22 `FormUiControl` (`@angular/forms/signals`) and read metadata tokens (`REQUIRED`, `MIN`, `MAX`) rather than legacy `ControlValueAccessor` or duplicating `@Input` metadata props.
+- **Animations (`animate.enter` / `animate.leave`):** Use Angular 22 native `animate.enter` and `animate.leave` with Tailwind CSS 4.3 (`starting:opacity-0`, transitions). Material 22.2 animates via native CSS; `@angular/animations` and `NoopAnimationsModule` are prohibited.
 - **Event Isolation (`uiStopClick`):** When nesting interactive actions (buttons, icons, toggles) inside clickable containers (`mat-option`, list items, accordion headers, table rows, cards), **always use the `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`)**. Prohibited: manually injecting `$event` into component methods to invoke `event.stopPropagation()` and `event.preventDefault()`. E.g.: `<button type="button" uiStopClick (click)="onAction()">`. Keeps component methods pure and testable without mock DOM events.
 - **Forms (Mandatory Floating Labels & Placeholders):** Always set `floatLabel="always"` on all `mat-form-field` elements with `subscriptSizing="dynamic"`. Always include `<mat-label>{{ '...' | translate }}</mat-label>` inside `mat-form-field` and its corresponding placeholder `[placeholder]="'...' | translate"`. External `<label>` or `<span>` tags outside `mat-form-field` are strictly forbidden.
 - **No Template `[disabled]` / `[readonly]` / `[value]` with `[formField]`:** 🚫 **STRICTLY PROHIBITED:** Never bind `[disabled]`, `[readonly]`, or `[value]` on elements that use the `[formField]` directive (Angular Signal Forms throws runtime error: `"Binding to '[disabled]' is not allowed on nodes using the '[formField]' directive"`). Disabled/readonly state must be configured in the form schema via `disabled(f.field, () => condition)`.

@@ -1,7 +1,7 @@
 ---
 name: angular-testing-expert
-version: 1.0.3
-last-updated: 2026-11-12
+version: 1.1.1
+last-updated: 2026-11-13
 description: Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
 user-invocable: true
 ---
@@ -12,9 +12,10 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 22+**
 
 ## ⚙️ Stack Tecnológico
 
-- **Framework:** Angular 22 (Zoneless Change Detection, `OnPush` por defecto, Signal-based components).
-- **Test Runner:** Vitest (usa `vi` utilities, NO Jest).
-- **Testing Utilities:** `@testing-library/angular` (`render`, `screen`) y `@testing-library/user-event`.
+- **Framework:** Angular 22.2 (Zoneless Change Detection, `OnPush` por defecto, Signal-based components). Zero `NoopAnimationsModule` / `BrowserAnimationsModule` / `provideAnimations` (prohibidos por ESLint; Material 22.2 usa animaciones CSS nativas).
+- **Test Runner:** Vitest 5.1 + AnalogJS 2.9 (`vi` utilities, NO Jest; soportar `setup-zoneless` y `@testing-library/jest-dom/vitest`).
+- **Testing Utilities:** `@testing-library/angular` 19.6 (`render`, `screen`, `aliasedInput()`, `on` outputs) y `@testing-library/user-event`.
+- **i18n & Stores Testing:** `provideTranslateService()` de `@ngx-translate/core` v18 (nunca `TranslateModule.forRoot()`); `unprotected(store)` de `@ngrx/signals/testing` + `patchState` para stores; `resourceFromSnapshots()` / `resource.snapshot()` para resources.
 - **Component Harnesses:** `@angular/cdk/testing/testbed` + `@angular/material/*/testing`.
 - **Project Utilities:** `@intaqalab/utils/testing/core` y `@intaqalab/config`. Read [project-utilities.md](references/project-utilities.md)
 
@@ -34,7 +35,7 @@ Cargar [numeric-input-constraints](../numeric-input-constraints/SKILL.md) para s
 ### 1. Filosofía de Testing 🧠
 
 - **Testea Comportamiento, no Implementación:** Usa queries accesibles (`screen.getByRole`, `screen.getAllByRole`, `screen.getByLabelText`, `screen.getAllByLabelText`, `screen.getByText`, `within()`) en lugar de selectores CSS o IDs.
-- **PROHIBIDO usar `container` y navegación de nodos DOM:** NUNCA uses `container.querySelector`, `container.querySelectorAll` ni navegues propiedades de nodos (`firstElementChild`, `parentElement`, `children`, `childNodes`). Usa `screen` queries y matchers semánticos de Jest DOM (`toBeInTheDocument()`, `toHaveAttribute()`, `toHaveClass()`).
+- **PROHIBIDO usar `container` y navegación de nodos DOM (`testing-library/no-node-access`):** NUNCA uses `container.querySelector`, `container.querySelectorAll` ni navegues propiedades de nodos (`firstElementChild`, `parentElement`, `children`, `childNodes`, `transferBtn.disabled`). Usa `screen` queries (`getByRole`, `getByTestId`, `getByText`) y matchers semánticos de Jest DOM (`toBeInTheDocument()`, `toBeDisabled()`, `toBeEnabled()`, `toHaveAttribute()`, `toHaveClass()`).
 - **Usuario Primero:** Simula interacciones reales usando `userEvent` (siempre asíncrono).
 - **Evita el Boilerplate:** Prefiere la función `render` de ATL sobre la configuración manual de `TestBed`.
 - **Component Harnesses obligatorios:** SIEMPRE usa Component Harnesses de Angular Material (`@angular/material/*/testing`) para interactuar y testear componentes de Angular Material. Usa el patrón canónico del repo: pasa la clase constructora a `loader.getAllHarnesses(HarnessClass)` y accede por índice. **Evita `.with({ selector })` y `getOptions({ text })`** para prevenir `SyntaxError: '' is not a valid selector` en Vitest (ver Issue #19). Para opciones, abre con el harness (`await select.open()`) y haz click con ATL (`screen.getByText` + `user.click`).
@@ -89,6 +90,7 @@ Cuando el usuario pida tests de un componente, sigue estos pasos:
    - Crash `SyntaxError: '' is not a valid selector` al usar `.with(...)` o `getOptions(...)` → usar `getAllHarnesses(HarnessClass)[index]` y ATL `screen.getByText` + `user.click` (Issue #19)
    - Discrepancia en array de `mat-select multiple` → Angular Material ordena según el orden de las opciones en el DOM, no el orden de clic (Issue #20)
    - Fallo de import `Failed to resolve import "@oxc-project/runtime/helpers/..."` → verificar `@oxc-project/runtime` en `devDependencies` del root `package.json` (Issue #21)
+   - Error TS `Property 'toBeInTheDocument' does not exist on type 'Assertion<...>'` → usar `import '@testing-library/jest-dom/vitest'` en `test-setup.ts` + `"@testing-library/jest-dom"` en `tsconfig.spec.json` `types` (Issue #22)
 
 1. **Analiza el componente:** Lee el archivo `.ts` del componente para entender:
    - Tipo: componente, diálogo, servicio, store, interceptor, pipe

@@ -1,7 +1,7 @@
 ---
 name: angular-architect
-version: 1.0.3
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: Expert in Angular 22, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns.
 argument-hint: "E.g. 'Migrate this component to Signal Forms and Signal Queries', 'Audit and optimize Signals usage', or 'Refactor this service to httpResource'."
 user-invocable: true
@@ -15,10 +15,10 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 ## 🛠️ Mandatory Technology Stack
 
-- **Framework:** Angular 22+ (Zoneless execution, standalone & `OnPush` by default).
-- **Reactivity:** Signals-first (`signal()`, `computed()`, `linkedSignal()`, `effect()`).
-- **Data Fetching & Mutations (CQS):** `httpResource()` with **Signal Trigger Pattern** for GET queries only. `HttpClient` + `firstValueFrom` for mutations (POST/PUT/PATCH/DELETE, ADR-020).
-- **Forms:** Modern **Signal Forms** (`form()`, `control()`, `[formField]` directive).
+- **Framework:** Angular 22.2+ (Zoneless execution, standalone & `OnPush` by default, native `animate.enter`/`animate.leave`, Router `withAutoCleanupInjectors()` + `withViewTransitions()`).
+- **Reactivity:** Signals-first (`signal()`, `computed()`, `linkedSignal()`, `effect()`, `afterRenderEffect()`, `injectAsync()`/`onIdle()`, `debounced()`, `inputBinding()`/`outputBinding()`).
+- **Data Fetching & Mutations (CQS):** `httpResource()` with **Signal Trigger Pattern**, `ctx.chain()`, `resource.snapshot()`/`resourceFromSnapshots()`, and `extendResource(..., withPreviousValueOnLoading())` (`@ngrx/signals/resource`) for GET queries only. `HttpClient` + `firstValueFrom` for mutations (POST/PUT/PATCH/DELETE, ADR-020).
+- **Forms:** Modern **Signal Forms** (`form()`, `[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, `FormUiControl`, `[formField]` directive).
 - **UI & Layout:** Angular Material (Aria/Headless) + inline Tailwind CSS.
 - **Testing:** Vitest + Angular Testing Library (ATL) + Component Harnesses.
 
@@ -77,11 +77,12 @@ When modernizing legacy code:
 | :--------------------------------------------- | :--------------------------------------------------- |
 | `BehaviorSubject`, `Observable`, `async` pipe  | `signal()`, `computed()`, `linkedSignal()`           |
 | `*ngIf`, `*ngFor`, `*ngSwitch`, `CommonModule` | `@if`, `@for (track item.id)`, `@switch`             |
-| `FormBuilder`, `FormGroup`, `[formGroup]`      | `form()`, `control()`, `[formField]` directive       |
-| `constructor(private s: Service)`              | `readonly #s = inject(Service)`                      |
+| `FormBuilder`, `FormGroup`, `[formGroup]`      | `form()`, `[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `[formField]` |
+| `constructor(private s: Service)`              | `readonly #s = inject(Service)` (`injectAsync()` + `onIdle()` for heavy services) |
 | `@Injectable({ providedIn: 'root' })`          | `@Service()` from `@angular/core`                    |
 | `changeDetection: ChangeDetectionStrategy.OnPush` | Omit (default in Angular 22)                      |
-| `@ViewChild()`, `@ContentChild()`              | `viewChild()`, `contentChild()`                      |
+| `@ViewChild()`, `@ContentChild()`              | `viewChild()`, `contentChild()` (ESLint banned)      |
+| `@angular/animations`, `NoopAnimationsModule`  | Native `animate.enter` / `animate.leave` (ESLint banned) |
 | `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern (GET only) |
 | `httpResource` used for mutations (POST/PUT)   | `HttpClient` + `firstValueFrom` (Promise, ADR-020)   |
 | `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())`      |

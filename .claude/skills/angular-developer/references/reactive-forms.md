@@ -1,5 +1,9 @@
 # Reactive Forms
 
+> [!WARNING]
+> **DEPRECATED / PROHIBITED FOR NEW CODE IN INTAQALAB (Angular 22.2):**
+> `ReactiveFormsModule`, `FormBuilder`, `FormGroup`, and `FormControl` are **prohibited in new INTAQALAB code** (`AGENTS.md`). Always use **Signal Forms (`@angular/forms/signals`)** with `<form [formRoot]="myForm">` and `submit()`. Consult this reference **only** when migrating remaining legacy files using `form()` or `@angular/forms/signals/compat` (`compatForm()`).
+
 Reactive forms provide a model-driven approach to handling form inputs. They are built around observable streams and provide synchronous access to the data model, making them more scalable and testable than template-driven forms.
 
 ## Core Classes

@@ -2,11 +2,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render, waitFor } from '@testing-library/angular';
+import { render, screen, waitFor } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
+
+import { ExecutionStore } from '../../../+state/execution.store';
+import { WidgetStateService } from '../../services/widget-state.service';
+import { TaradoVelocidadChartWidget } from './tarado-velocidad-chart';
 
 vi.mock('chart.js', () => {
   class MockChart {
@@ -26,10 +29,6 @@ vi.mock('chart.js', () => {
   };
 });
 
-import { ExecutionStore } from '../../../+state/execution.store';
-import { WidgetStateService } from '../../services/widget-state.service';
-import { TaradoVelocidadChartWidget } from './tarado-velocidad-chart';
-
 const mockWidgetStateService = {
   updateWidgetFormState: () => {},
   addWidget: () => {},
@@ -41,18 +40,20 @@ describe('TaradoVelocidadChartWidget', () => {
     render(TaradoVelocidadChartWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.TARADO_VELOCIDAD.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('loads configurations on startup and waits for nominal speed before calculation', async () => {
@@ -163,13 +164,13 @@ describe('TaradoVelocidadChartWidget', () => {
     const store = TestBed.inject(ExecutionStore);
     // Modify form and then reset
     fixture.componentInstance['formModel'].set({
-      selectedSerie: 'Alta Z1',
-      selectedDisparo: '6',
+      selectedSerie: ['Alta Z1'],
+      selectedDisparo: ['6'],
       selectedVelocidadNominal: '',
       selectedConfiguracion: null,
     });
     fixture.componentInstance.resetForm();
     const stored = store.taradoVelocidadChart();
-    expect(fixture.componentInstance['formModel']().selectedSerie).toBe(stored.selectedSerie);
+    expect(fixture.componentInstance['formModel']().selectedSerie).toEqual(stored.selectedSerie);
   });
 });

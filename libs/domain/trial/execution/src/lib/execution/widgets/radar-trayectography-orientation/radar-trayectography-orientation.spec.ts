@@ -4,7 +4,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { LOCALE_SIGNAL } from '@intaqalab/utils';
@@ -33,7 +32,6 @@ describe('RadarTrayectographyOrientation', () => {
     render(RadarTrayectographyOrientation, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -140,8 +138,8 @@ describe('RadarTrayectographyOrientation', () => {
       expect(screen.getByRole('textbox', { name: new RegExp(label) })).toHaveValue(formatter.format(value));
     }
     expect(screen.getByRole('textbox', { name: /X_PIEZA_LABEL/ })).toHaveValue('');
-    expect(screen.getByRole('combobox', { name: '°°', exact: true })).toHaveTextContent('°°');
-    expect(screen.getByRole('combobox', { name: 'kg', exact: true })).toHaveTextContent('kg');
+    expect(screen.getByRole('combobox', { name: '°°' })).toHaveTextContent('°°');
+    expect(screen.getByRole('combobox', { name: 'kg' })).toHaveTextContent('kg');
 
     const loader = TestbedHarnessEnvironment.loader(fixture);
     const user = userEvent.setup();
@@ -162,8 +160,8 @@ describe('RadarTrayectographyOrientation', () => {
     expect(screen.getByRole('textbox', { name: /TIEMPO_VUELO_LABEL/ })).toHaveValue('');
     expect(screen.getByRole('textbox', { name: /ANGULO_TIRO_LABEL/ })).toHaveValue('');
     expect(screen.getByRole('textbox', { name: /GRAD_ESPOLETA_LABEL/ })).toHaveValue(formatter.format(50.125));
-    expect(screen.getByRole('combobox', { name: 'mm', exact: true })).toHaveTextContent('mm');
-    expect(screen.getByRole('combobox', { name: 'kg', exact: true })).toHaveTextContent('kg');
+    expect(screen.getByRole('combobox', { name: 'mm' })).toHaveTextContent('mm');
+    expect(screen.getByRole('combobox', { name: 'kg' })).toHaveTextContent('kg');
   });
 
   it('formState starts clean (not dirty)', async () => {

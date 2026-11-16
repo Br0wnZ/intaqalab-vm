@@ -41,9 +41,6 @@ export class IntaSignalCheckboxComponent implements FormCheckboxControl {
   readonly hint = input<string | undefined>(undefined);
   readonly prefixIcon = input<string | undefined>(undefined);
   readonly suffixIcon = input<string | undefined>(undefined);
-  // @Input() hint?: string;
-  // @Input() prefixIcon?: string;
-  // @Input() suffixIcon?: string;
 
   checked = model(false);
   disabled = model(false);

@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen } from '@testing-library/angular';
@@ -14,7 +13,6 @@ describe('MunitionAcondicionamientoTabComponent', () => {
   const runSetup = async () => {
     const view = await render(MunitionAcondicionamientoTabComponent, {
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),

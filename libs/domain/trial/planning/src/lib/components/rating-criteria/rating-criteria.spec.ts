@@ -1,10 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -44,7 +43,7 @@ const setup = async (ratingCriteria = mockRatingCriteria, readonly = false) => {
       criteria: ratingCriteria,
       readonly,
     },
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideAnimationsAsync(), provideTestingEnvironment(), provideTranslateService()],
+    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
   });
   const hostInstance = view.fixture.componentInstance;
   return { view, user, ratingCriteriaChangeSpy: hostInstance.onChange, hostInstance };
@@ -71,22 +70,22 @@ describe('RatingCriteria', () => {
   });
 
   it('should display initial speed and pressure values in inputs', async () => {
-    const { view } = await setup();
-    const rows = view.container.querySelectorAll('tbody tr');
-    const v0cInputs = rows[0].querySelectorAll('input');
-    const v0cMinInput = v0cInputs[0];
-    const v0cMaxInput = v0cInputs[1];
+    await setup();
+    const rows = screen.getAllByRole('row');
+    const v0cInputs = within(rows[1]).getAllByRole('spinbutton');
+    const v0cMinInput = v0cInputs[0] as HTMLInputElement;
+    const v0cMaxInput = v0cInputs[1] as HTMLInputElement;
     expect(parseFloat(v0cMinInput.value.replace(',', '.'))).toBeCloseTo(101, 1);
     expect(parseFloat(v0cMaxInput.value.replace(',', '.'))).toBeCloseTo(202, 1);
 
-    const pInputs = rows[3].querySelectorAll('input');
-    const pMinInput = pInputs[0];
+    const pInputs = within(rows[4]).getAllByRole('spinbutton');
+    const pMinInput = pInputs[0] as HTMLInputElement;
     expect(parseFloat(pMinInput.value.replace(',', '.'))).toBeCloseTo(53, 1);
   });
 
   it('should disable all inputs when readonly is true', async () => {
-    const { view } = await setup(mockRatingCriteria, true);
-    const inputs = view.container.querySelectorAll('input');
+    await setup(mockRatingCriteria, true);
+    const inputs = screen.getAllByRole('spinbutton');
     expect(inputs.length).toBeGreaterThan(0);
     inputs.forEach((input) => {
       expect(input).toBeDisabled();
@@ -94,28 +93,28 @@ describe('RatingCriteria', () => {
   });
 
   it('should convert speed values when km/h is selected', async () => {
-    const { view, user } = await setup();
+    const { user } = await setup();
 
     const velocitySelect = screen.getByRole('combobox', { name: /TRIAL_PLANNING.RATING_CRITERIA.VELOCITY_LABEL/i });
     await user.click(velocitySelect);
     const optionKmh = await screen.findByText('km/h');
     await user.click(optionKmh);
 
-    const rows = view.container.querySelectorAll('tbody tr');
-    const v0cMinInput = rows[0].querySelectorAll('input')[0];
+    const rows = screen.getAllByRole('row');
+    const v0cMinInput = within(rows[1]).getAllByRole('spinbutton')[0] as HTMLInputElement;
     expect(parseFloat(v0cMinInput.value.replace(',', '.'))).toBeCloseTo(101 * 3.6, 1);
   });
 
   it('should convert pressure values when MPa is selected', async () => {
-    const { view, user } = await setup();
+    const { user } = await setup();
 
     const pressureSelect = screen.getByRole('combobox', { name: /TRIAL_PLANNING.RATING_CRITERIA.PRESSURE_LABEL/i });
     await user.click(pressureSelect);
     const optionMpa = await screen.findByText('MPa');
     await user.click(optionMpa);
 
-    const rows = view.container.querySelectorAll('tbody tr');
-    const pMinInput = rows[3].querySelectorAll('input')[0];
+    const rows = screen.getAllByRole('row');
+    const pMinInput = within(rows[4]).getAllByRole('spinbutton')[0] as HTMLInputElement;
     expect(parseFloat(pMinInput.value.replace(',', '.'))).toBeCloseTo(5.3, 1);
   });
 });

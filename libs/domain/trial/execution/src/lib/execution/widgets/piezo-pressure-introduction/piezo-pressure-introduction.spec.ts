@@ -2,10 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -32,7 +31,6 @@ describe('PiezoPressureIntroduction', () => {
     render(PiezoPressureIntroduction, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -44,11 +42,13 @@ describe('PiezoPressureIntroduction', () => {
 
   it('renders without errors and contains tab buttons and ui-input-select components', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
-    // 6 tabs in header
-    const tabButtons = document.querySelectorAll('button[type="button"]');
-    expect(tabButtons.length).toBeGreaterThanOrEqual(6);
-    expect(document.querySelectorAll('ui-input-select').length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.PIEZO_PRESSURE.TITLE' }),
+    ).toBeInTheDocument();
+    // 6 tabs in header + buttons
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThanOrEqual(6);
+    expect(screen.getAllByRole('combobox').length).toBeGreaterThanOrEqual(1);
   });
 
   it('formState starts clean (not dirty)', async () => {

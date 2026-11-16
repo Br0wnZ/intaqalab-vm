@@ -123,18 +123,18 @@ mockStore = {
 
 ## 6. Providers necesarios para componentes con Angular Material + Signal Forms
 
-Siempre incluir en los `providers` de `render()` cuando el componente usa Angular Material:
+Siempre incluir en los `providers` de `render()` cuando el componente usa Angular Material o traducciones:
 
 ```typescript
 providers: [
-  provideAnimationsAsync(), // ← requerido por Angular Material en tests
+  provideTranslateService(), // ← @ngx-translate/core v18
   provideTestingEnvironment(), // ← requerido para tokens de config (endpoints)
   { provide: MyStore, useValue: mockStore },
   { provide: MyService, useValue: mockService },
 ];
 ```
 
-> **Nota:** `provideAnimations()` puede causar el error de selector inválido (#4). Preferir `provideAnimationsAsync()`.
+> **Nota (Angular Material 22.2):** `provideAnimations()`, `provideAnimationsAsync()` y `NoopAnimationsModule` están **prohibidos** y han sido eliminados del proyecto. Material 22.2 usa animaciones CSS nativas y no requiere providers de animación en tests.
 
 ---
 
@@ -439,8 +439,7 @@ class TestWrapperComponent {
 // En el setup del test, renderizar el wrapper y recuperar la instancia si es necesario:
 async function setup() {
   const view = await render(TestWrapperComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
-    providers: [ ... ]
+    providers: [provideTranslateService(), ... ]
   });
 
   const componentDebug = view.fixture.debugElement.query(By.directive(MyComponent));
@@ -592,3 +591,38 @@ Asegurar que `@oxc-project/runtime` esté presente en las `devDependencies` del 
 ```
 
 No requiere ningún import manual en el código fuente de los tests ni de los componentes; el compilador OXC y Vite consumen los helpers de runtime de manera transparente durante la ejecución del test runner.
+
+---
+
+## 22. `Property 'toBeInTheDocument' does not exist on type 'Assertion<...>'` en Vitest
+
+**Contexto:** TypeScript o el IDE marca errores TS2339 en matchers de DOM (`toBeInTheDocument`, `toBeDisabled`, `toBeEnabled`, `toBeChecked`, etc.) dentro de archivos `.spec.ts`:
+
+```text
+Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement>'.
+```
+
+**Causa:**
+1. El `src/test-setup.ts` de la librería importa `@testing-library/jest-dom` (que solo extiende tipos de Jest), en lugar del entry point específico de Vitest `@testing-library/jest-dom/vitest`.
+2. El `tsconfig.spec.json` de la librería no incluye `"@testing-library/jest-dom"` en `compilerOptions.types`.
+
+**Solución:**
+1. En `src/test-setup.ts` de la librería, usar el import de Vitest:
+
+```typescript
+// ❌ Incorrecto (solo tipos de Jest)
+import '@testing-library/jest-dom';
+
+// ✅ Correcto (extiende Assertion<T> de Vitest)
+import '@testing-library/jest-dom/vitest';
+```
+
+2. En `tsconfig.spec.json` de la librería, añadir `"@testing-library/jest-dom"` a `compilerOptions.types`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node", "vitest", "@testing-library/jest-dom"]
+  }
+}
+```

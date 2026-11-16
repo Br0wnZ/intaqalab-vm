@@ -165,3 +165,17 @@ it('should handle error state', async () => {
   expect(resource.status()).toBe('error');
 });
 ```
+
+## Mutar Estado Protegido en Tests (`@ngrx/signals/testing`)
+
+Por defecto el estado de un `signalStore` está protegido frente a mutaciones externas. Usa `unprotected(store)` de `@ngrx/signals/testing` junto con `patchState` para sembrar estados iniciales o transiciones sin añadir métodos artificiales al store:
+
+```typescript
+import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
+
+it('should derive computed flags from seeded store state', () => {
+  patchState(unprotected(store), { isInitialized: true });
+  expect(store.isInitialized()).toBe(true);
+});
+```

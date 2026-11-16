@@ -1,5 +1,4 @@
 ﻿import { signal } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -56,7 +55,6 @@ describe('MovementsListComponent', () => {
     mockMunitionsDumpsStore = createMockMunitionsDumpsStore();
 
     const view = await render(MovementsListComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         // Ambos stores se inyectan con { skipSelf: true } en los componentes

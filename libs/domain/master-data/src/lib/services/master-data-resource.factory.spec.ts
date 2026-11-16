@@ -251,4 +251,35 @@ describe('injectMasterDataResource', () => {
       await Promise.resolve();
     });
   });
+
+  it('should retain previous page value while loading next page via withPreviousValueOnLoading', async () => {
+    await TestBed.runInInjectionContext(async () => {
+      const endpoint = `${BASE_URL}/dimension`;
+      const resource = injectMasterDataResource<{ id: string; name: string }>(endpoint);
+
+      resource.searchItems.set({ page: 0, pageSize: 10 });
+      TestBed.flushEffects();
+
+      const firstPage = { items: [{ id: '1', name: 'Page 1 Item' }], totalElements: 2 };
+      const reqPage0 = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqPage0.flush(firstPage);
+      await Promise.resolve();
+
+      expect(resource.paginatedResponse.value()).toEqual(firstPage);
+
+      resource.searchItems.set({ page: 1, pageSize: 10 });
+      TestBed.flushEffects();
+
+      expect(resource.paginatedResponse.isLoading()).toBe(true);
+      expect(resource.paginatedResponse.value()).toEqual(firstPage);
+
+      const secondPage = { items: [{ id: '2', name: 'Page 2 Item' }], totalElements: 2 };
+      const reqPage1 = httpTesting.expectOne((r) => r.url.includes('/dimension') && r.method === 'GET');
+      reqPage1.flush(secondPage);
+      await Promise.resolve();
+
+      expect(resource.paginatedResponse.isLoading()).toBe(false);
+      expect(resource.paginatedResponse.value()).toEqual(secondPage);
+    });
+  });
 });

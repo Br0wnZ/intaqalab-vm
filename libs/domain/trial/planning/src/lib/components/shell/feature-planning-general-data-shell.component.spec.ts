@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
 import { createMockPlanningGeneralDataStore, createTrial } from '@intaqalab/utils';
@@ -39,7 +38,6 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideAnimationsAsync(),
         provideTestingEnvironment(),
         { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } }, provideTranslateService(),
       ],

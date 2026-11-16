@@ -4,7 +4,7 @@ Angular offers automatic and manual ways to provide dependencies to its Dependen
 
 ## Automatic Provision
 
-The most common way to provide a service is using `providedIn: 'root'` on an `@Injectable()`.
+The standard way to provide a service in Angular 22 is decorating the class with `@Service()` from `@angular/core` (auto-provided in `root`). Use `@Service({ autoProvided: false })` if the service must only be provided manually at component or route level.
 
 ### InjectionToken
 

@@ -1,7 +1,6 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import {
   createMockPlanningGeneralDataStore,
@@ -37,9 +36,7 @@ describe('ShootingConditionsComponent', () => {
     return createShootingConditions(count, shots);
   }
 
-  beforeEach(async () => {
-    vi.clearAllMocks();
-
+  async function setup() {
     const mockConditions = createFullConditions(2, 2);
     const mockSchedules = [
       { date: '2025-11-22T00:00:00.000Z', lineOfShootId: '1' },
@@ -77,17 +74,23 @@ describe('ShootingConditionsComponent', () => {
       getLoadingZones: vi.fn(),
     };
 
-    const renderResult = await render(ShootingConditionsComponent, {
+    const view = await render(ShootingConditionsComponent, {
       providers: [
-        provideAnimationsAsync(),
         provideTestingEnvironment(),
         { provide: PlanningGeneralDataStore, useValue: mockStore },
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        provideTranslateService(),
       ],
     });
 
-    fixture = renderResult.fixture;
+    fixture = view.fixture;
     component = fixture.componentInstance;
+    return { view, fixture, component };
+  }
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    await setup();
   });
 
   afterEach(() => {
@@ -151,9 +154,9 @@ describe('ShootingConditionsComponent', () => {
   describe('Button State', () => {
     it('should disable buttons when form values are unchanged', async () => {
       await waitFor(() => {
-        const saveButton = screen
-          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
-          .closest('button');
+        const saveButton = screen.getByRole('button', {
+          name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE',
+        });
         expect(saveButton).toBeDisabled();
       });
     });
@@ -169,9 +172,9 @@ describe('ShootingConditionsComponent', () => {
       fixture.detectChanges();
 
       await waitFor(() => {
-        const saveButton = screen
-          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE')
-          .closest('button');
+        const saveButton = screen.getByRole('button', {
+          name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE',
+        });
         expect(saveButton).toBeEnabled();
       });
     });
@@ -220,10 +223,12 @@ describe('ShootingConditionsComponent', () => {
       fixture.detectChanges();
 
       await waitFor(() => {
-        const saveBtn = screen.getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE').closest('button');
-        const cancelBtn = screen
-          .getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL')
-          .closest('button');
+        const saveBtn = screen.getByRole('button', {
+          name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE',
+        });
+        const cancelBtn = screen.getByRole('button', {
+          name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.CANCEL',
+        });
         expect(saveBtn).toBeDisabled();
         expect(cancelBtn).toBeDisabled();
       });
@@ -524,7 +529,12 @@ describe('ShootingConditionsComponent', () => {
     );
 
     it('should preserve target details when loading conditions', () => {
-      expect(component.getFormValues()[0].shots[0]).toMatchObject(mockStore.shootingConditions()[0].shots[0]);
+      const formValue = component.getFormValues()[0]?.shots[0];
+      const initialConditions = mockStore.shootingConditions();
+      const initialCondition = initialConditions ? initialConditions[0]?.shots[0] : undefined;
+      expect(formValue).toBeDefined();
+      expect(initialCondition).toBeDefined();
+      expect(formValue).toMatchObject(initialCondition as object);
     });
 
     it('should not reset target details in readonly mode', () => {

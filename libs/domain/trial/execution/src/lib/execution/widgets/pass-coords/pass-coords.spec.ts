@@ -2,7 +2,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -23,7 +22,6 @@ describe('PassCoordsWidget', () => {
     render(PassCoordsWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -34,7 +32,9 @@ describe('PassCoordsWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.PASS_COORDS.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -60,8 +60,7 @@ describe('PassCoordsWidget', () => {
 
   it('output fields display em dash when values are null', async () => {
     await renderWidget();
-    const dashes = document.querySelectorAll('.tabular-nums');
+    const dashes = screen.getAllByText('—');
     expect(dashes.length).toBe(6);
-    dashes.forEach((el) => expect(el.textContent?.trim()).toBe('—'));
   });
 });

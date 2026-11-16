@@ -2,7 +2,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -211,7 +210,6 @@ describe('JltShotData', () => {
     render(JltShotData, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -223,7 +221,9 @@ describe('JltShotData', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('starts clean and loads current shot plus last shot defaults', async () => {
@@ -499,6 +499,8 @@ describe('JltShotData', () => {
   it('renders filter selectors and current shot action', async () => {
     await renderWidget();
     expect(screen.getByRole('heading', { name: /JLT_SHOT_DATA\.TITLE/ })).toBeInTheDocument();
-    expect(document.querySelectorAll('button[mat-flat-button]').length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByRole('button', { name: 'TRIAL_EXECUTION.WIDGETS.JLT_SHOT_DATA.CURRENT_SHOT_BTN' }),
+    ).toBeInTheDocument();
   });
 });

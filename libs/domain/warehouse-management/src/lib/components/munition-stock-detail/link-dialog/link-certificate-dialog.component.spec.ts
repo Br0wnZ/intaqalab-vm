@@ -5,12 +5,11 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { createMockMatDialog, createMockResource } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render, screen, within } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
@@ -81,8 +80,7 @@ async function setup(options?: { items?: any[] }) {
   stockListStore = makeStockListStore(options?.items ?? stockItems());
   certsService = makeCertificatesService();
 
-  const renderResult = await render(LinkCertificatesDialogComponent, {
-    imports: [NoopAnimationsModule],
+  const view = await render(LinkCertificatesDialogComponent, {
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -91,7 +89,8 @@ async function setup(options?: { items?: any[] }) {
       { provide: MAT_DIALOG_DATA, useValue: DIALOG_DATA },
       { provide: MunitionsStockListService, useValue: makeMunitionsStockListService() },
       { provide: ClientsDataService, useValue: makeClientsDataService() },
-      { provide: MunitionsStockCertificatesService, useValue: certsService }, provideTranslateService(),
+      { provide: MunitionsStockCertificatesService, useValue: certsService },
+      provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
@@ -100,7 +99,7 @@ async function setup(options?: { items?: any[] }) {
     ],
   });
 
-  const fixture = renderResult.fixture;
+  const fixture = view.fixture;
   fixture.detectChanges();
   const loader = TestbedHarnessEnvironment.loader(fixture);
   return { fixture, component: fixture.componentInstance, loader };

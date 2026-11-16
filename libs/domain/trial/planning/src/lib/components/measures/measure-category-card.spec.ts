@@ -1,6 +1,5 @@
 import { Component, signal } from '@angular/core';
 import { form } from '@angular/forms/signals';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -68,7 +67,7 @@ describe('MeasureCategoryCard', () => {
   }) => {
     const user = userEvent.setup();
     const view = await render(TestHostComponent, {
-      providers: [provideAnimationsAsync(), provideTestingEnvironment()],
+      providers: [provideTestingEnvironment()],
     });
     const host = view.fixture.componentInstance;
     if (initialState?.category) {
@@ -213,11 +212,8 @@ describe('MeasureCategoryCard', () => {
         isOpen: true,
         selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
-      const deleteBtn = screen.getByText('delete').closest('button');
-      expect(deleteBtn).not.toBeNull();
-      if (deleteBtn) {
-        await user.click(deleteBtn);
-      }
+      const deleteBtn = screen.getByRole('button', { name: 'delete' });
+      await user.click(deleteBtn);
       expect(host.onRemoveMeasure).toHaveBeenCalledWith('meas-1');
     });
 
@@ -226,11 +222,8 @@ describe('MeasureCategoryCard', () => {
         isOpen: true,
         selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
-      const toggleBtn = screen.getByText('expand_more').closest('button');
-      expect(toggleBtn).not.toBeNull();
-      if (toggleBtn) {
-        await user.click(toggleBtn);
-      }
+      const toggleBtn = screen.getByRole('button', { name: 'expand_more' });
+      await user.click(toggleBtn);
       expect(host.onToggleMeasureExpanded).toHaveBeenCalledWith('meas-1');
     });
 

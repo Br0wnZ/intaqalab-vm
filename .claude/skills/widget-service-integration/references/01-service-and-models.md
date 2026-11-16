@@ -116,7 +116,7 @@ export type { <Resource>Response, <Resource>Request } from './<widget-resource>.
 
 ```typescript
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injectable, Injector, inject, signal } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -131,9 +131,7 @@ interface Shot<Resource>Params {
   shotId: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class Shot<Resource>Service {
   readonly #http = inject(HttpClient);
   readonly #injector = inject(Injector);

@@ -21,12 +21,12 @@ const getPlannedMeasures = (response: TrialMeasuresResponse | undefined) =>
 
 const matchesTab = (magnitudeCode: string | null | undefined, tab: SeguimientoTab): boolean => {
   const option = MEASURE_TABS.find((item) => item.value === tab);
-  return Boolean(magnitudeCode && option && magnitudeCode.includes(option.code));
+  return Boolean(magnitudeCode && !magnitudeCode.includes('CAMERA') && option && magnitudeCode.includes(option.code));
 };
 
 export const getSeguimientoTabs = (response: TrialMeasuresResponse | undefined): SeguimientoTab[] => {
   const measures = getPlannedMeasures(response);
-  return MEASURE_TABS.filter((tab) => measures.some((measure) => measure.magnitudeCode?.includes(tab.code))).map(
+  return MEASURE_TABS.filter((tab) => measures.some((measure) => matchesTab(measure.magnitudeCode, tab.value))).map(
     (tab) => tab.value,
   );
 };

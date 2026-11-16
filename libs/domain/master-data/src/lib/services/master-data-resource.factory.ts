@@ -3,6 +3,7 @@ import { effect, signal } from '@angular/core';
 import type { PaginatedApiResponse } from '@intaqalab/models';
 import { paginatedSortedParamsToSend } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
+import { extendResource, withPreviousValueOnLoading } from '@ngrx/signals/resource';
 
 import type { MasterDataCreateItemType, MasterDataEntityId, MasterDataWithId } from '../models/utils.model';
 import type { MasterDataSearchRequest } from './master-data.service';
@@ -21,23 +22,26 @@ export function injectMasterDataResource<T extends MasterDataWithId>(
   const _updateItem = actionTrigger<T | null>();
   const _deleteItem = actionTrigger<MasterDataEntityId | null>();
 
-  const paginatedResponse = httpResource<PaginatedApiResponse<T>>(() => {
-    const params = searchItems();
+  const paginatedResponse = extendResource(
+    httpResource<PaginatedApiResponse<T>>(() => {
+      const params = searchItems();
 
-    if (!Object.keys(params).length) return;
+      if (!Object.keys(params).length) return;
 
-    let apiParams = paginatedSortedParamsToSend(params);
-    for (const [name, value] of Object.entries(params.filters ?? {})) {
-      if (value) apiParams = apiParams.set(name, value);
-    }
+      let apiParams = paginatedSortedParamsToSend(params);
+      for (const [name, value] of Object.entries(params.filters ?? {})) {
+        if (value) apiParams = apiParams.set(name, value);
+      }
 
-    return {
-      url: endpointUrl,
-      params: apiParams,
-      method: 'GET',
-      context,
-    };
-  });
+      return {
+        url: endpointUrl,
+        params: apiParams,
+        method: 'GET',
+        context,
+      };
+    }),
+    withPreviousValueOnLoading(),
+  );
 
   const saveResource = httpResource<T>(() => {
     const params = _saveItem.value();

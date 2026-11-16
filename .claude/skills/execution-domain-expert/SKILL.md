@@ -1,7 +1,7 @@
 ---
 name: execution-domain-expert
-version: 1.4.0
-last-updated: 2026-11-05
+version: 1.5.0
+last-updated: 2026-11-13
 description: Expert in the INTAQALAB execution domain, widgets, shot selectors, stores, API integration, and lifecycle.
 ---
 
@@ -184,9 +184,15 @@ All Execution Grid widgets extend `BaseFormWidgetComponent`:
 
 1. Prohibit `querySelector('.mat-*')`; use Component Harnesses.
 2. Use accessible queries (`screen.getByRole`) and `userEvent` from `@testing-library/angular`.
-3. Use `provideMockStore()` to isolate stores in component tests.
+3. Use `unprotected(store)` from `@ngrx/signals/testing` (`patchState(unprotected(store), ...)`) in store specs; zero `NoopAnimationsModule`.
 4. Verify `httpMock.verify()` in `afterEach()` in all service tests.
 5. All test descriptions (`it()`) MUST be written in English.
+
+## ⚡ Angular 22.2 & NgRx 22 Execution Patterns
+
+- **Reactive Cascades (`ctx.chain()`):** Prefer `(ctx) => { const components = ctx.chain(parentResource); ... }` in `data-access/munitions/` and `data-access/warehouse/` so loading/error states propagate cleanly without manual null guards.
+- **Store Composition:** Prefer `withProps()` to share injected services across `withComputed` and `withMethods` in `ExecutionStore` features, and `withLinkedState()` for writable derived shot/tab state.
+- **Anti-Flicker Shot Switching:** Wrap reloading shot `httpResource`s with `extendResource(..., withPreviousValueOnLoading())` (`@ngrx/signals/resource`) where appropriate, and use `<form [formRoot]="...">` + `submit()` / `schema()` in execution dialogs.
 
 ## 🔗 Planning Data Access (ADR-017) — Mandatory
 

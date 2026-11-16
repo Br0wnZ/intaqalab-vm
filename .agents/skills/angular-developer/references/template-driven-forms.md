@@ -1,5 +1,9 @@
 # Template-Driven Forms
 
+> [!WARNING]
+> **PROHIBITED FOR NEW FORMS IN INTAQALAB (Angular 22.2):**
+> `FormsModule`, `NgForm`, and legacy `[(ngModel)]` forms are **prohibited in new INTAQALAB forms**. Always use **Signal Forms (`@angular/forms/signals`)** with `form()`, `[formField]`, `<form [formRoot]>`, and `submit()`.
+
 Template-driven forms use two-way data binding (`[(ngModel)]`) to update the data model in the component as changes are made in the template and vice versa. They are ideal for simple forms and use directives in the HTML template to manage form state and validation.
 
 ## Core Directives

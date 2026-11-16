@@ -253,3 +253,115 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [AGENTS.md - 1.5.0] - 2026-11-12
 
 - Migrar estándares del monorepo a Angular 22.2.6, Nx 24.0.6, Vite 8, Vitest 5 y ESLint 10 (ADR-026)
+
+## [AGENTS.md - 1.6.0] - 2026-11-13
+
+- Document Angular 22.2, NgRx 22, and ngx-translate 18 primitives in AGENTS.md
+
+## [angular-architect - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [angular-developer - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [angular-testing-expert - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [chartjs-expert - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [chartjs-intake - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [create-feature - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [dialog-patterns - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [execution-domain-expert - 1.5.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [gitlab-ci-monitor - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [i18n-expert - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [interface-design - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [master-data-specialist - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [mock-server-expert - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [numeric-input-constraints - 1.2.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [nx-generator-expert - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [nx-plugins - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [nx-run-tasks - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [nx-workspace - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [planning-specialist - 1.2.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [signal-trigger-pattern - 1.2.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [signalstore-expert - 1.2.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [swagger-api-architect - 1.3.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [ui-design-engineer - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [view-state-pattern - 1.1.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [widget-service-integration - 1.5.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [AGENTS.md - 1.7.0] - 2026-11-13
+
+- Add Angular 22.2, Material 22.2, NgRx 22, ngx-translate 18, Vite 8 and Vitest 5 advanced patterns across all skills
+
+## [angular-testing-expert - 1.1.1] - 2026-11-13
+
+- Document jest-dom/vitest types fix (Issue #22) and testing-library/no-node-access rule

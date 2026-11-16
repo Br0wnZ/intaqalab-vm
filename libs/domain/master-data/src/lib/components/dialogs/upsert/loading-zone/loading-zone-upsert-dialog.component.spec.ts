@@ -1,7 +1,6 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
@@ -84,7 +83,6 @@ describe('LoadingZoneUpsertDialogComponent', () => {
     mockDenominationsStore = createMockDenominationsStore();
 
     const view = await render(LoadingZoneUpsertDialogComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideHttpClientTesting(),
         provideTestingEnvironment(),

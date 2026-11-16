@@ -13,10 +13,9 @@ Guía para construir suites de tests unitarios e integrados con Vitest + Angular
 ```typescript
 import { TestBed } from '@angular/core/testing';
 import { render } from '@testing-library/angular';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { provideTestingEnvironment } from '@intaqalab/config';
 
 import { Shot<Resource>Service } from '../../../data-access';
@@ -34,7 +33,7 @@ describe('<Widget>', () => {
     render(<Widget>, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
+        provideTranslateService(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -44,7 +43,6 @@ describe('<Widget>', () => {
         { provide: TrialsDataService, useClass: MockTrialsDataService },
         ...customProviders,
       ],
-      imports: [TranslateModule.forRoot()],
     });
 
   it('renders without errors', async () => {

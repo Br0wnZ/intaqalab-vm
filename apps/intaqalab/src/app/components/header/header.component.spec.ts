@@ -4,7 +4,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatMenuHarness } from '@angular/material/menu/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FeatureFlagService, provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
 import { LanguageService, type SupportedLanguage } from '@intaqalab/data-access';
@@ -60,7 +59,6 @@ async function runSetup({
   const logoutSpy = vi.fn();
 
   const view = await render(HeaderComponent, {
-    imports: [NoopAnimationsModule],
     componentImports: [MatIconModule, MatButtonModule, MatMenuModule, IntaIconComponent, HeaderToolsStub],
     providers: [
       provideTestingEnvironment(),

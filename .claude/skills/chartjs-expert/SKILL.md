@@ -1,9 +1,9 @@
 ---
 name: chartjs-expert
-version: 1.0.1
-last-updated: 2026-10-24
-description: 'USE WHEN building Chart.js visualizations, configuring charts, optimizing rendering performance, integrating plugins (annotation, datalabels, zoom, decimation), working with time-series charts, or adapting charts to any component-based framework. Trigger: chart, Chart.js, visualization, canvas, data chart, graph, bar chart, line chart, pie chart, scatter plot, histogram, datalabels, ng2-charts, chart performance.'
-argument-hint: 'Describe the chart: type (bar/line/pie/scatter/mixed), data source and volume, interactivity needs, framework context (vanilla / Angular ng2-charts / React), or specific plugin required.'
+version: 1.1.0
+last-updated: 2026-11-13
+description: "USE WHEN building Chart.js visualizations, configuring charts, optimizing rendering performance, integrating plugins (annotation, datalabels, zoom, decimation), working with time-series charts, or adapting charts to any component-based framework. Trigger: chart, Chart.js, visualization, canvas, data chart, graph, bar chart, line chart, pie chart, scatter plot, histogram, datalabels, ng2-charts, chart performance."
+argument-hint: "Describe the chart: type (bar/line/pie/scatter/mixed), data source and volume, interactivity needs, framework context (vanilla / Angular ng2-charts / React), or specific plugin required."
 tools: [read, search, edit, web, agent]
 ---
 
@@ -20,11 +20,11 @@ Load [numeric-input-constraints](../numeric-input-constraints/SKILL.md) before f
 
 ## Constraints
 
-- DO NOT use Chart.js v2 or v3 APIs — target v4 only; all documentation links must point to v4 docs
+- DO NOT use Chart.js v2 or v3 APIs — target v4 only (`chart.js` `^4.6.1`); all documentation links must point to v4 docs
 - DO NOT import the full Chart.js bundle — always tree-shake by registering only the components needed
 - DO NOT suggest custom plugin implementations before searching `github.com/chartjs/awesome` for existing community solutions
 - DO NOT add heavy date adapters (date-fns, luxon, dayjs) unless time-series data is actually present
-- DO NOT manipulate the canvas DOM directly — adapt to the target framework's component model
+- DO NOT manipulate the canvas DOM directly or use `@ViewChild` — in Angular 22 use `viewChild.required<ElementRef<HTMLCanvasElement>>('canvas')` + `afterRenderEffect()`, reactive `translate()` signal (`@ngx-translate/core` v18) for chart titles/labels, and `injectAsync(..., { prefetch: onIdle })` for off-critical-path chart bundles.
 
 ## Approach
 

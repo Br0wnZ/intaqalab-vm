@@ -2,7 +2,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import {
   createMockMunitionsService,
@@ -88,7 +87,6 @@ const runSetup = async (options?: { mockDialog?: Partial<MatDialog>; munitions?:
   const providers = [
     provideHttpClient(),
     provideHttpClientTesting(),
-    provideAnimationsAsync(),
     provideTestingEnvironment(),
     { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
     { provide: MunitionsService, useValue: mockMunitionsService },
@@ -351,8 +349,7 @@ describe('Munitions', () => {
       component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
-      expect(saveButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
     });
 
     it('should disable save button when form data is unchanged', async () => {
@@ -362,8 +359,7 @@ describe('Munitions', () => {
       component.loadConfiguration([validSerie]);
       view.fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
-      expect(saveButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
     });
 
     it('should enable save button when form is valid and changed', async () => {
@@ -373,8 +369,7 @@ describe('Munitions', () => {
       component.seriesForm().markAsTouched();
       view.fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
-      expect(saveButton).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeEnabled();
     });
 
     describe('Reconditioning validation', () => {
@@ -590,8 +585,7 @@ describe('Munitions', () => {
         component.seriesForm().markAsTouched();
         view.fixture.detectChanges();
 
-        const saveButton = screen.getByText('TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON').closest('button');
-        expect(saveButton).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
       });
     });
   });
@@ -698,13 +692,13 @@ describe('Munitions', () => {
         expect(component.seriesSignal()[0]?.configurations[0]?.id).toBe(validSerie.configurations[0]?.id);
         expect(component.seriesSignal()[0]?.configurations[0]?.observations).toBe('');
         expect(component.seriesSignal()[1]?.configurations).toHaveLength(returnsEmptySeries ? 0 : 1);
-        if (!returnsEmptySeries) {
-          expect(component.seriesSignal()[1]?.configurations[0]).toMatchObject({
-            seriesId: 'series-2',
-            denomination: '',
-            observations: '',
-          });
-        }
+        expect(
+          component.seriesSignal()[1]?.configurations.map((configuration) => ({
+            seriesId: configuration.seriesId,
+            denomination: configuration.denomination,
+            observations: configuration.observations,
+          })),
+        ).toEqual(returnsEmptySeries ? [] : [{ seriesId: 'series-2', denomination: '', observations: '' }]);
         expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
       },
     );

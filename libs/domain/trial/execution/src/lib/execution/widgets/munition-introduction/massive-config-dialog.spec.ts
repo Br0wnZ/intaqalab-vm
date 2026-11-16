@@ -4,7 +4,6 @@ import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
@@ -43,6 +42,7 @@ describe('MassiveConfigDialog', () => {
     const updated: MunitionConditioningBulkConfigurationResponse = { updatedShotIds: ['shot-1', 'shot-2'] };
     const status = signal<'idle' | 'loading' | 'resolved'>('idle');
     const isLoading = signal(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let resolveRequest = (_response: MunitionConditioningBulkConfigurationResponse): void => {
       throw new Error('Request resolver was not initialized');
     };
@@ -63,10 +63,10 @@ describe('MassiveConfigDialog', () => {
     const view = await render(MassiveConfigDialog, {
       providers: [
         provideTestingEnvironment(),
-        provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: ShotMunitionService, useValue: serviceMock }, provideTranslateService(),
+        { provide: ShotMunitionService, useValue: serviceMock },
+        provideTranslateService(),
       ],
     });
     loader = TestbedHarnessEnvironment.loader(view.fixture);
@@ -156,11 +156,11 @@ describe('MassiveConfigDialog', () => {
     const view = await render(MassiveConfigDialog, {
       providers: [
         provideTestingEnvironment(),
-        provideAnimationsAsync(),
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
         { provide: MAT_DIALOG_DATA, useValue: data },
         { provide: EquipmentSelectionService, useValue: serviceMock },
-        { provide: ShotMunitionService, useValue: serviceMock }, provideTranslateService(),
+        { provide: ShotMunitionService, useValue: serviceMock },
+        provideTranslateService(),
       ],
     });
 

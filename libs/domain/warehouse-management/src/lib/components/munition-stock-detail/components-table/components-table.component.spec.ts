@@ -3,7 +3,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { UiDialogService } from '@intaqalab/ui';
 import { createMockMatDialog } from '@intaqalab/utils';
@@ -120,9 +119,13 @@ async function setup(options?: {
     },
   });
 
-  const renderResult = await render(ComponentsTableComponent, {
-    imports: [NoopAnimationsModule],
-    providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+  const view = await render(ComponentsTableComponent, {
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideTestingEnvironment(),
+      provideTranslateService(),
+    ],
     componentProviders: [
       { provide: MunitionsStockDetailStore, useValue: stockDetailStore },
       { provide: MunitionComponentStore, useValue: componentStore },
@@ -135,7 +138,7 @@ async function setup(options?: {
     },
   });
 
-  const fixture = renderResult.fixture;
+  const fixture = view.fixture;
   fixture.detectChanges();
   return { fixture, component: fixture.componentInstance };
 }

@@ -3,7 +3,6 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { PressureUnitEnum } from '@intaqalab/models';
 import type { AppLocale } from '@intaqalab/utils';
@@ -69,7 +68,6 @@ describe('OverpressureInfoWidget', () => {
     const view = await render(OverpressureInfoWidget, {
       inputs: { widgetId: 'test-widget' },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),

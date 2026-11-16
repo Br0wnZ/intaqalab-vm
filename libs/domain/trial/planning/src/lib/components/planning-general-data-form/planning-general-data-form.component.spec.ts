@@ -3,7 +3,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService } from '@intaqalab/core';
 import {
@@ -83,7 +82,6 @@ const setup = async (options: SetupOptions = {}) => {
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
-      provideAnimationsAsync(),
       provideTestingEnvironment(),
       { provide: PlanningGeneralDataStore, useValue: mockStore },
       { provide: AuthService, useValue: { userRoles: signal(roles) } }, provideTranslateService(),
@@ -164,7 +162,6 @@ describe('PlanningGeneralDataFormComponent', () => {
         providers: [
           provideHttpClient(),
           provideHttpClientTesting(),
-          provideAnimationsAsync(),
           provideTestingEnvironment(),
           { provide: PlanningGeneralDataStore, useValue: mockStore },
           { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } }, provideTranslateService(),
@@ -345,9 +342,10 @@ describe('PlanningGeneralDataFormComponent', () => {
       });
       view.fixture.detectChanges();
 
-      const cancelButton = screen.getByText('TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL').closest('button');
+      const cancelButton = screen.getByRole('button', {
+        name: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.CANCEL',
+      });
       expect(cancelButton).toBeInTheDocument();
-      if (!cancelButton) return;
       await user.click(cancelButton);
       await view.fixture.whenStable();
 

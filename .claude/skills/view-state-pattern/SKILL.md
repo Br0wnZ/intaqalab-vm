@@ -1,7 +1,7 @@
 ---
 name: view-state-pattern
-version: 1.0.1
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states.
 user-invocable: true
 ---
@@ -147,6 +147,30 @@ export class MyFeatureShellComponent {
        "ERRORS": {
          "LOAD_FAILED_TITLE": "Error al cargar los datos",
          "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información requerida. Intente de nuevo más tarde."
+       }
+     }
+     ```
+
+5. **Variante Angular 22.2 (`resource.snapshot()`) + Anti-Parpadeo en Paginación (`withPreviousValueOnLoading()`):**
+   - Cuando el recurso usa `extendResource(httpResource(...), withPreviousValueOnLoading())` (`@ngrx/signals/resource`), `snapshot().status` diferencia `'loading'` (carga inicial → muestra `<ui-skeleton-table>`) de `'reloading'` (cambio de página/filtro → mantiene los datos previos visibles con un spinner/opacidad sutil):
+     ```html
+     @let snap = catalogResource.snapshot();
+     @switch (snap.status) {
+       @case ('loading') {
+         <ui-skeleton-table [rows]="6" [columns]="4" animation="wave" />
+       }
+       @case ('error') {
+         <ui-error-state
+           [title]="'<FEATURE>.ERRORS.LOAD_FAILED_TITLE' | translate"
+           [message]="'<FEATURE>.ERRORS.LOAD_FAILED_DETAIL' | translate"
+         />
+       }
+       @case ('resolved')
+       @case ('reloading')
+       @case ('local') {
+         <div animate.enter="transition-opacity duration-150 opacity-100 starting:opacity-0">
+           <inta-catalog-table [items]="snap.value" [isReloading]="snap.status === 'reloading'" />
+         </div>
        }
      }
      ```

@@ -6,8 +6,6 @@ import { MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { AuthService, Role, injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
@@ -166,7 +164,6 @@ describe('FeatureTrialViewShellComponent', () => {
     });
 
     const { fixture } = await render(FeatureTrialViewShellComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideRouter([]),
         provideHttpClient(),
@@ -177,7 +174,8 @@ describe('FeatureTrialViewShellComponent', () => {
         { provide: TrialTransitionsService, useValue: mockTransitionsService },
         { provide: UiDialogService, useValue: mockUiDialogs },
         { provide: injectionTokenTrialViewComponent, useValue: { id: 'someId', initialTab: options.initialTab } },
-        { provide: injectionTokenTabCommand, useValue: mockTabCommand }, provideTranslateService(),
+        { provide: injectionTokenTabCommand, useValue: mockTabCommand },
+        provideTranslateService(),
       ],
     });
 

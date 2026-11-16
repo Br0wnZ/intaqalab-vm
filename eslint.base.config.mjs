@@ -144,6 +144,29 @@ const baseConfig = [
           selector: 'Decorator[expression.callee.name="Component"] Property[key.name="changeDetection"][value.object.name="ChangeDetectionStrategy"][value.property.name="OnPush"]',
           message: 'Angular 22: Omite changeDetection: ChangeDetectionStrategy.OnPush (OnPush es el comportamiento por defecto).',
         },
+        {
+          selector: 'Decorator[expression.callee.name=/^(ViewChild|ViewChildren|ContentChild|ContentChildren)$/]',
+          message: 'Signal Queries: Usa viewChild(), viewChildren(), contentChild() o contentChildren() en lugar de decoradores.',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@angular/animations',
+              message: 'Angular 22: @angular/animations está eliminado. Usa animate.enter / animate.leave o transiciones CSS nativas.',
+            },
+            {
+              name: '@angular/platform-browser/animations',
+              message: 'Angular 22: @angular/platform-browser/animations (y NoopAnimationsModule) está eliminado. Angular Material 22 usa animaciones CSS nativas.',
+            },
+            {
+              name: '@angular/platform-browser/animations/async',
+              message: 'Angular 22: @angular/platform-browser/animations/async está eliminado.',
+            },
+          ],
+        },
       ],
     },
   },

@@ -1,9 +1,9 @@
 ---
 name: signalstore-expert
-version: 1.1.0
-last-updated: 2026-11-03
+version: 1.2.0
+last-updated: 2026-11-13
 description: NgRx SignalStore Expert. Use when creating or modifying state management, connecting API endpoints to stores, implementing the Signal Trigger Pattern, or using withEntities.
-argument-hint: 'Entity: [name], Endpoints: [GET /api/xxx, POST /api/xxx], Extra properties: [local flags]'
+argument-hint: "Entity: [name], Endpoints: [GET /api/xxx, POST /api/xxx], Extra properties: [local flags]"
 user-invocable: true
 ---
 
@@ -38,7 +38,7 @@ All SignalStores must compose functional operators:
 
 ```typescript
 import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withProps, withState } from '@ngrx/signals';
 import { withEntities } from '@ngrx/signals/entities';
 
 // 1. Local state (mutable only via patchState)
@@ -56,17 +56,22 @@ export const FeatureStore = signalStore(
   withState(initialState),
   withEntities<Entity>(),
 
-  // 3. Computed signals (injecting services in factory arguments)
-  withComputed((store, service = inject(FeatureHttpService)) => ({
-    items: computed(() => service.fetchResource.value() ?? []),
-    isLoading: computed(() => service.fetchResource.isLoading()),
+  // 3. Inject shared services/dependencies ONCE with withProps() (NgRx 22)
+  withProps(() => ({
+    _service: inject(FeatureHttpService),
   })),
 
-  // 4. Methods (mutations or triggering service actions)
-  withMethods((store, service = inject(FeatureHttpService)) => ({
+  // 4. Computed signals reading store._service
+  withComputed((store) => ({
+    items: computed(() => store._service.fetchResource.value() ?? []),
+    isLoading: computed(() => store._service.fetchResource.isLoading()),
+  })),
+
+  // 5. Methods reusing store._service
+  withMethods((store) => ({
     loadData(id: string): void {
       patchState(store, { entityId: id, isInitialized: true });
-      service.setFetchParams(id); // Triggers the signal
+      store._service.setFetchParams(id); // Triggers the signal
     },
     reset(): void {
       patchState(store, initialState);
@@ -75,18 +80,25 @@ export const FeatureStore = signalStore(
 );
 ```
 
+## 🚀 NgRx Signals 22.0.1 Advanced Primitives
+
+- **`withProps()`:** Inject services or expose `httpResource` handles **once** at store top-level (`_service: inject(MyService)`), avoiding duplicate `inject()` across `withComputed` and `withMethods`.
+- **`withLinkedState()`:** Define writable derived state inside the store that resets automatically when a source signal changes (replaces manual `effect` resets).
+- **`withFeature()` & `signalMethod()`:** Use `withFeature((store) => ...)` to compose parameterized reusable store features with full access to prior state/props, and `signalMethod<T>((arg) => ...)` for signal-reactive side effects in store methods.
+- **`@ngrx/signals/resource`:** Use `extendResource(httpResource(...), withPreviousValueOnLoading())` for anti-flicker pagination/reloads, and `mapResource()` when transforming resource payloads.
+- **`@ngrx/signals/events`:** Use `eventGroup()`, `withReducer()`, `on()`, `withEventHandlers()`, `Dispatcher`, and `Events` for complex decoupled state machines (e.g. `ExecutionStore` trial lifecycle transitions).
+- **`@ngrx/signals/testing`:** Use `patchState(unprotected(store), { ... })` in `*.store.spec.ts` to seed protected store state directly without adding test-only setter methods to production stores.
+
 ## Critical Rules
 
-1. **Parameter Injection:** NEVER inject services outside `withComputed` or `withMethods` function declarations. Use default parameter injection: `(store, srv = inject(Service))`.
+1. **Shared Injection (`withProps`):** Prefer `withProps(() => ({ _service: inject(Service) }))` when a service is needed in both `withComputed` and `withMethods`, or default parameter injection `(store, srv = inject(Service))` for single-block access.
 2. **Zero RxJS:** Avoid RxJS. Do not use `withRxMethods` unless managing websockets or streams unsupported by `httpResource`.
-3. **Store Testing:** In unit tests, inject the store using `TestBed.inject(FeatureStore)` alongside `provideMockStore()` where appropriate.
+3. **Store Testing:** Inject the store with `TestBed.inject(FeatureStore)` and use `unprotected(store)` from `@ngrx/signals/testing` + `createMockResource()` from `@intaqalab/utils/testing/core`.
 4. **Project Utilities (`@intaqalab/utils`):** It is **MANDATORY** to use utilities from `@intaqalab/utils` (see [UTILITIES.md](file:///Users/pw-jmoreno/Projects/personal/intaqalab-vm/docs/UTILITIES.md)) for debounce, throttle, query parameters, storage persistence, countdowns, and timers.
 
 ## ⚡ Quick Mode (Fast Generation)
 
 When fast generation without explanation is requested:
 
-1. Use `signalStore`.
-2. Use `withEntities` if managing an entity list.
-3. Structure with `withState`, `withComputed`, and `withMethods`.
-4. Output clean, complete code directly.
+1. Use `signalStore` with `withState`, `withProps`, `withComputed`, `withMethods` (plus `withLinkedState` / `withEntities` if needed).
+2. Output clean, complete code directly.

@@ -38,3 +38,26 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 afterEach(() => {
   getTestBed().resetTestingModule();
 });
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: query === '(prefers-reduced-motion)',
+      media: query,
+      onchange: null,
+      addListener: () => {
+        // noop
+      },
+      removeListener: () => {
+        // noop
+      },
+      addEventListener: () => {
+        // noop
+      },
+      removeEventListener: () => {
+        // noop
+      },
+      dispatchEvent: () => false,
+    }),
+  });
+}

@@ -7,7 +7,6 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialogHarness } from '@angular/material/dialog/testing';
 import { MatMenuHarness } from '@angular/material/menu/testing';
 import { MatSlideToggleHarness } from '@angular/material/slide-toggle/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
@@ -233,6 +232,7 @@ describe('Execution', () => {
             ({
               id,
               magnitudeCode: id,
+              magnitudeLabel: id,
               qualificationType: QualificationTypeEnum.QUANTITATIVE,
               measurements: [tag],
             }) satisfies PlanningMagnitudeSelection,
@@ -242,7 +242,6 @@ describe('Execution', () => {
 
     const view = await render(Execution, {
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),

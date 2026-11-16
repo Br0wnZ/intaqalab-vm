@@ -13,18 +13,16 @@ Angular components, directives, and services automatically participate in DI.
 
 ## Services
 
-A **service** is the most common way to share data and functionality across an application. It is a TypeScript class decorated with `@Injectable()`.
+A **service** is the most common way to share data and functionality across an application. In Angular 22+, it is a TypeScript class decorated with `@Service()` from `@angular/core` (replaces `@Injectable({ providedIn: 'root' })`).
 
 ### Creating a Service
 
-Use the `providedIn: 'root'` option in the `@Injectable` decorator to make the service a singleton available throughout the entire application. This is the recommended approach for most services.
+Use `@Service()` to make the service a singleton automatically available throughout the entire application.
 
 ```ts
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root', // Makes this a singleton available everywhere
-})
+@Service() // Makes this a singleton available everywhere
 export class AnalyticsLogger {
   trackEvent(category: string, value: string) {
     console.log('Analytics event logged:', { category, value });
@@ -86,7 +84,7 @@ Valid places to call `inject()`:
 
 ```typescript
 import { HttpClient } from '@angular/common/http';
-import { Component, Directive, ElementRef, Injectable, inject } from '@angular/core';
+import { Component, Directive, ElementRef, Service, inject, injectAsync, onIdle } from '@angular/core';
 
 // 1. In a Component (Field Initializer & Constructor)
 @Component({
@@ -94,6 +92,12 @@ import { Component, Directive, ElementRef, Injectable, inject } from '@angular/c
 })
 export class Example {
   private service1 = inject(MyService); // ✅ Field initializer
+
+  // ✅ Angular 22.2 Lazy Async Injection with idle prefetch
+  private loadHeavyService = injectAsync(
+    () => import('./heavy-analytics.service').then((m) => m.HeavyAnalyticsService),
+    { prefetch: onIdle },
+  );
 
   private service2: MyService;
   constructor() {
@@ -110,7 +114,7 @@ export class MyDirective {
 }
 
 // 3. In a Service
-@Injectable({ providedIn: 'root' })
+@Service()
 export class MyService {
   private http = inject(HttpClient); // ✅ Field initializer
 }

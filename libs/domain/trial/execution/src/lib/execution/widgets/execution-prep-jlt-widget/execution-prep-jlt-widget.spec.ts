@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PlanningSeriesItem } from '@intaqalab/data-access-planning';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -96,7 +95,6 @@ describe('ExecutionPrepJltWidgetComponent', () => {
     render(ExecutionPrepJltWidgetComponent, {
       componentInputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -107,7 +105,9 @@ describe('ExecutionPrepJltWidgetComponent', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('mat-card')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'TRIAL_EXECUTION.WIDGETS.EXEC_PREP_JLT.TITLE' }),
+    ).toBeInTheDocument();
   });
 
   it('does not set optimistic active shot in store when changing series in the widget', async () => {

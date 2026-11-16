@@ -3,12 +3,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
+import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -42,24 +42,29 @@ const inProgressTrialForm: TrialCreateModifyForm = {
 
 describe('TrayectografiaIntroductionWidget', () => {
   const renderWidget = async (widgetId = 'test-trayectografia') => {
-    const result = await render(TrayectografiaIntroductionWidget, {
+    const view = await render(TrayectografiaIntroductionWidget, {
       inputs: { widgetId },
       providers: [
-        provideNoopAnimations(),
         provideTestingEnvironment(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
-    patchState(TestBed.inject(ExecutionStore), { fireTrial: inProgressTrialForm });
-    return result;
+    patchState(unprotected(TestBed.inject(ExecutionStore)), { fireTrial: inProgressTrialForm });
+    return view;
   };
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: 'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.TITLE',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {
@@ -106,9 +111,10 @@ describe('TrayectografiaIntroductionWidget', () => {
 
   it('tab trayectorias is visible by default', async () => {
     await renderWidget();
-    const trayTab = document.querySelector('inta-trayectografia-trayectorias-tab');
-    expect(trayTab).toBeTruthy();
-    expect(trayTab?.classList.contains('hidden')).toBe(false);
+    const [trayEquipoLabel] = screen.getAllByText(
+      'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.EQUIPO_LABEL',
+    );
+    expect(trayEquipoLabel).toBeVisible();
   });
 
   it('calls fetchShotTrajectography on selection when trialId, serie and shot are present', async () => {

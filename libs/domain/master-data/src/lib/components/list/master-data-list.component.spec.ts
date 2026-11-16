@@ -5,7 +5,6 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 import { MatTableHarness } from '@angular/material/table/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -94,7 +93,6 @@ const setup = async (masterView: MasterView = MOCK_VIEW) => {
   const mockService = makeMockService();
 
   const view = await render(MasterDataListComponent, {
-    imports: [NoopAnimationsModule],
     componentInputs: { masterView },
     providers: [
       provideTestingEnvironment(),
@@ -204,7 +202,6 @@ describe('MasterDataListComponent', () => {
   describe('View States', () => {
     async function renderWithService(mockService: ReturnType<typeof makeMockService>) {
       return render(MasterDataListComponent, {
-        imports: [NoopAnimationsModule],
         componentInputs: { masterView: MOCK_VIEW },
         providers: [
           provideTestingEnvironment(),

@@ -102,19 +102,39 @@ readonly resumedFromPause = computed(
 
 ---
 
-## 3. `debouncedSignal(source, debounceMs?, options?)`
+## 3. `debouncedSignal(source, debounceMs?, options?)` vs Angular 22 `debounced()`
 
-**Qué es:** signal de solo lectura que replica `source` tras `debounceMs` (default 300) sin cambios. Sin RxJS.
+**Qué es:** `debouncedSignal` devuelve un `Signal<T>` de solo lectura síncrono que replica `source` tras `debounceMs` (default 300) sin cambios. Sin RxJS.
 
-**Para qué se usa:** inputs de búsqueda que alimentan el Signal Trigger Pattern — `httpResource` no refetchea por tecla.
+**Cuándo usar `debouncedSignal` vs `debounced()` nativo (`@angular/core` 22.2):**
+
+| Necesidad | Usa | Motivo |
+| :--- | :--- | :--- |
+| Valor síncrono directo (`Signal<T>`) sin estado de carga | `debouncedSignal(source, 300)` (`@intaqalab/utils`) | Lectura directa `this.#debouncedTerm()`, cero overhead de `Resource` |
+| Búsqueda encadenada con `httpResource` + spinner de escritura | `debounced(source, 300)` (`@angular/core`) | Devuelve `Resource<T>` con `.isLoading()` mientras el timer corre y se encadena nativamente vía `ctx.chain()` |
 
 ```typescript
+// Opción A: Signal síncrono con @intaqalab/utils
 readonly searchTerm = signal('');
 readonly #debouncedTerm = debouncedSignal(this.searchTerm, 300);
 
 readonly results = httpResource<CatalogItem[]>(() =>
   this.#debouncedTerm() ? `/api/master-data/ammo?q=${this.#debouncedTerm()}` : undefined,
 );
+```
+
+```typescript
+// Opción B: Resource nativo Angular 22 con ctx.chain() e indicador isLoading()
+import { debounced } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+
+readonly searchTerm = signal('');
+readonly debouncedSearch = debounced(this.searchTerm, 300);
+
+readonly resultsWithStatus = httpResource<CatalogItem[]>((ctx) => {
+  const term = ctx.chain(this.debouncedSearch);
+  return term ? `/api/master-data/ammo?q=${encodeURIComponent(term)}` : undefined;
+});
 ```
 
 ---

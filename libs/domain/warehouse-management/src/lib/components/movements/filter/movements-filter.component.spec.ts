@@ -1,5 +1,4 @@
-﻿import { signal } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { signal } from '@angular/core';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -33,7 +32,6 @@ describe('MovementsFilterComponent', () => {
     mockMunitionsDumpsStore = createMockMunitionsDumpsStore();
 
     const view = await render(MovementsFilterComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         // MovementsListStore se inyecta con { skipSelf: true }, debe estar en el mÃ³dulo padre
@@ -278,10 +276,10 @@ describe('MovementsFilterComponent', () => {
       component.clearFilters();
       view.fixture.detectChanges();
 
-      const clearButton = screen
-        .getByText(/WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i)
-        .closest('button') as HTMLButtonElement;
-      expect(clearButton.disabled).toBe(true);
+      const clearButton = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i,
+      });
+      expect(clearButton).toBeDisabled();
     });
   });
 
@@ -289,10 +287,10 @@ describe('MovementsFilterComponent', () => {
     it('should disable the clean-filters button when formModel matches defaultFormValues', async () => {
       await setup();
 
-      const clearButton = screen
-        .getByText(/WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i)
-        .closest('button') as HTMLButtonElement;
-      expect(clearButton.disabled).toBe(true);
+      const clearButton = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i,
+      });
+      expect(clearButton).toBeDisabled();
     });
 
     it('should enable the clean-filters button when formModel differs from defaultFormValues', async () => {
@@ -300,10 +298,10 @@ describe('MovementsFilterComponent', () => {
       component.formModel.set({ ...component.defaultFormValues, userId: 'user-abc' });
       view.fixture.detectChanges();
 
-      const clearButton = screen
-        .getByText(/WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i)
-        .closest('button') as HTMLButtonElement;
-      expect(clearButton.disabled).toBe(false);
+      const clearButton = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.STOCK_LIST\.CLEAN_FILTERS_BUTTON/i,
+      });
+      expect(clearButton).toBeEnabled();
     });
 
     it('should disable the search button when form is invalid', async () => {
@@ -313,17 +311,17 @@ describe('MovementsFilterComponent', () => {
       component.form.quantityMax().controlValue.set(50);
       view.fixture.detectChanges();
 
-      const searchButton = screen.getByText(/COMMONS\.SEARCH/i).closest('button') as HTMLButtonElement;
+      const searchButton = screen.getByRole('button', { name: /COMMONS\.SEARCH/i });
       expect(component.form().invalid()).toBe(true);
-      expect(searchButton.disabled).toBe(true);
+      expect(searchButton).toBeDisabled();
     });
 
     it('should enable the search button when form is valid', async () => {
       const { component } = await setup();
 
-      const searchButton = screen.getByText(/COMMONS\.SEARCH/i).closest('button') as HTMLButtonElement;
+      const searchButton = screen.getByRole('button', { name: /COMMONS\.SEARCH/i });
       expect(component.form().invalid()).toBe(false);
-      expect(searchButton.disabled).toBe(false);
+      expect(searchButton).toBeEnabled();
     });
   });
 

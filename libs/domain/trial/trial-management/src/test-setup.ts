@@ -5,7 +5,7 @@ import '@angular/compiler';
 import { getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 // Initialize DOM adapter BEFORE TestBed - critical for direct Vitest runs
 BrowserDomAdapter.makeCurrent();
@@ -15,4 +15,27 @@ const __global = globalThis as unknown as { __ANGULAR_TESTBED_INITIALIZED__?: bo
 if (!__global.__ANGULAR_TESTBED_INITIALIZED__) {
   getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
   __global.__ANGULAR_TESTBED_INITIALIZED__ = true;
+}
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: query === '(prefers-reduced-motion)',
+      media: query,
+      onchange: null,
+      addListener: () => {
+        // noop
+      },
+      removeListener: () => {
+        // noop
+      },
+      addEventListener: () => {
+        // noop
+      },
+      removeEventListener: () => {
+        // noop
+      },
+      dispatchEvent: () => false,
+    }),
+  });
 }

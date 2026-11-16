@@ -1,7 +1,7 @@
 ---
 name: dialog-patterns
-version: 1.0.1
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: Implements Angular Material Dialog patterns for the Intaqalab project. USE WHEN creating confirmation dialogs, form dialogs, info modals, or any MatDialog-based component. Covers dialog component structure, data injection, result typing, and opener pattern.
 ---
 
@@ -114,42 +114,56 @@ export class EntityListComponent {
 ## Form Dialog Pattern
 
 ```typescript
+import { Component, inject, signal } from '@angular/core';
+import { FormField, FormRoot, form, required, submit } from '@angular/forms/signals';
+
 export type CreateEntityDialogData = void;
 export type CreateEntityDialogResult = { action: 'create'; dto: CreateEntityDto } | { action: 'cancel' };
 
 @Component({
   selector: 'inta-create-entity-dialog',
-  imports: [MatDialogModule, MatButtonModule, SaveButton /* Signal Forms */],
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, FormRoot, FormField, SaveButton, TranslatePipe],
   template: `
     <h2 mat-dialog-title>{{ 'DOMAIN.DIALOGS.CREATE.TITLE' | translate }}</h2>
 
-    <mat-dialog-content>
-      <mat-form-field floatLabel="always" class="w-full">
-        <mat-label>{{ 'DOMAIN.FIELDS.NAME' | translate }}</mat-label>
-        <input matInput [placeholder]="'DOMAIN.FIELDS.NAME_PLACEHOLDER' | translate" [formField]="form.controls.name" />
-      </mat-form-field>
-    </mat-dialog-content>
+    <form [formRoot]="entityForm" (submit)="onSubmit()">
+      <mat-dialog-content>
+        <mat-form-field floatLabel="always" subscriptSizing="dynamic" class="w-full">
+          <mat-label>{{ 'DOMAIN.FIELDS.NAME' | translate }}</mat-label>
+          <input matInput [placeholder]="'DOMAIN.FIELDS.NAME_PLACEHOLDER' | translate" [formField]="entityForm.name" />
+        </mat-form-field>
+      </mat-dialog-content>
 
-    <mat-dialog-actions class="justify-end gap-2">
-      <button mat-stroked-button [mat-dialog-close]="{ action: 'cancel' }">
-        {{ 'COMMONS.CANCEL' | translate }}
-      </button>
-      <ui-save-button label="COMMONS.CREATE" [isSaving]="isSubmitting()" (save)="submit()" />
-    </mat-dialog-actions>
+      <mat-dialog-actions class="justify-end gap-2">
+        <button mat-stroked-button type="button" [mat-dialog-close]="{ action: 'cancel' }">
+          {{ 'COMMONS.CANCEL' | translate }}
+        </button>
+        <ui-save-button
+          label="COMMONS.CREATE"
+          [isSaving]="entityForm().submitting()"
+          [disabled]="entityForm().invalid()"
+          (save)="onSubmit()"
+        />
+      </mat-dialog-actions>
+    </form>
   `,
 })
 export class CreateEntityDialogComponent {
   readonly #dialogRef = inject(MatDialogRef<CreateEntityDialogComponent>);
-  protected readonly form = form({
-    name: control('', { validators: [Validators.required] }),
+  protected readonly model = signal<CreateEntityDto>({ name: '' });
+  protected readonly entityForm = form(this.model, (f) => {
+    required(f.name);
   });
 
-  submit(): void {
-    if (this.form.invalid()) return;
-    this.#dialogRef.close({ action: 'create', dto: this.form.value() });
+  async onSubmit(): Promise<void> {
+    await submit(this.entityForm, async (f) => {
+      this.#dialogRef.close({ action: 'create', dto: f().value() });
+    });
   }
 }
 ```
+
+> **Tip (Angular 22.2):** Use `<form [formRoot]="myForm">` + `submit()` so `myForm().submitting()` drives `<ui-save-button>` automatically without `$event.preventDefault()`. For dynamic portal/overlay components outside `MatDialog`, use `inputBinding()` / `outputBinding()` with `ViewContainerRef.createComponent()`.
 
 ## Rules Summary
 

@@ -14,10 +14,9 @@ Los componentes de diálogo requieren:
 
 ```typescript
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockMatDialog } from '@intaqalab/utils';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 
@@ -26,13 +25,13 @@ import { MyDialogComponent } from './my-dialog.component';
 describe('MyDialogComponent', () => {
   let mockDialogRef: { close: ReturnType<typeof vi.fn> };
 
-  const setup = async (data: any = { item: null }) => {
+  const setup = async (data: { item: unknown } = { item: null }) => {
     const user = userEvent.setup();
     mockDialogRef = { close: vi.fn() };
 
     const view = await render(MyDialogComponent, {
-      imports: [TranslateModule.forRoot(), NoopAnimationsModule],
       providers: [
+        provideTranslateService(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
@@ -78,8 +77,8 @@ const setup = async (data = {}) => {
   const mockDialog = createMockMatDialog({ defaultResult: null });
 
   const view = await render(MyDialogComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
+      provideTranslateService(),
       provideTestingEnvironment(),
       { provide: MatDialogRef, useValue: mockDialogRef },
       { provide: MAT_DIALOG_DATA, useValue: data },
@@ -116,8 +115,8 @@ const setup = async (data = {}) => {
   };
 
   const view = await render(MyDialogComponent, {
-    imports: [TranslateModule.forRoot(), NoopAnimationsModule],
     providers: [
+      provideTranslateService(),
       provideTestingEnvironment(),
       { provide: MatDialogRef, useValue: mockDialogRef },
       { provide: MAT_DIALOG_DATA, useValue: data },

@@ -1,7 +1,7 @@
 ---
 name: interface-design
-version: 1.0.0
-last-updated: 2026-09-29
+version: 1.1.0
+last-updated: 2026-11-13
 description: This skill is for interface design — dashboards, admin panels, apps, tools, and interactive products. NOT for marketing design (landing pages, marketing sites, campaigns).
 ---
 
@@ -288,7 +288,7 @@ Icons clarify, not decorate — if removing an icon loses no meaning, remove it.
 
 ## Animation
 
-Fast micro-interactions, smooth easing. Larger transitions can be slightly longer. Use deceleration easing. Avoid spring/bounce in professional interfaces.
+Fast micro-interactions, smooth easing. Larger transitions can be slightly longer. Use deceleration easing. Avoid spring/bounce in professional interfaces. In INTAQALAB Angular 22.2 + Tailwind CSS 4.3 + Material 22.2, use native `animate.enter` / `animate.leave`, Router `withViewTransitions({ skipInitialTransition: true })`, and M3 token overrides (`mat.<component>-overrides()`) instead of `@angular/animations` or `.mat-mdc-*` overrides.
 
 ## States
 

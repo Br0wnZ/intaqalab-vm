@@ -4,7 +4,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { signal } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { ClientsDataService, TrialsDataService } from '@intaqalab/data-access';
@@ -95,7 +94,6 @@ async function setup() {
   const user = userEvent.setup();
   const trialsDataService = mockTrialsDataService();
   const view = await render(MunitionsShellComponent, {
-    imports: [NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: MunitionComponentStore, useValue: makeMunitionComponentStore() },
@@ -229,13 +227,16 @@ describe('MunitionsShellComponent', () => {
 
       if (isMunition) {
         await user.click(screen.getByRole('button', { name: 'COMMONS.DELETE' }));
-
-        expect(component.formModel()[field]).toHaveLength(0);
-        expect(component.form[field]().value()).toHaveLength(0);
-        expect(screen.queryByDisplayValue('first')).not.toBeInTheDocument();
-      } else {
-        expect(screen.getByDisplayValue('first')).toBeInTheDocument();
       }
+
+      const expectedBatches = isMunition ? [] : ['first'];
+      expect(component.formModel()[field].map((item) => item.batch)).toEqual(expectedBatches);
+      expect(
+        component.form[field]()
+          .value()
+          .map((item) => item.batch),
+      ).toEqual(expectedBatches);
+      expect(Boolean(screen.queryByDisplayValue('first'))).toBe(!isMunition);
 
       expect(screen.queryByRole('button', { name: 'COMMONS.DELETE' })).not.toBeInTheDocument();
     },

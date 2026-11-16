@@ -1,6 +1,5 @@
-﻿import { signal } from '@angular/core';
+import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -24,7 +23,6 @@ describe('DenominationsDialogComponent', () => {
   ) => {
     const user = userEvent.setup();
     const view = await render(DenominationsDialogComponent, {
-      imports: [NoopAnimationsModule],
       providers: [
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn ?? vi.fn() } },
@@ -53,7 +51,7 @@ describe('DenominationsDialogComponent', () => {
 
     it('should have the save button disabled when form is invalid', async () => {
       await setup({ item: null });
-      const saveButton = screen.getByText(/MODIFY_DOC_DIALOG.SAVE/i).closest('button');
+      const saveButton = screen.getByRole('button', { name: /MODIFY_DOC_DIALOG\.SAVE/i });
       expect(saveButton).toBeDisabled();
     });
 
@@ -99,13 +97,13 @@ describe('DenominationsDialogComponent', () => {
 
     it('should have the save button enabled when form is valid', async () => {
       await setup({ item: editItem });
-      const saveButton = screen.getByText(/MODIFY_DOC_DIALOG.SAVE/i).closest('button');
+      const saveButton = screen.getByRole('button', { name: /MODIFY_DOC_DIALOG\.SAVE/i });
       expect(saveButton).toBeEnabled();
     });
 
     it('should close with the correct payload when save is clicked', async () => {
       const { user } = await setup({ item: editItem }, closeMock);
-      const saveButton = screen.getByText(/MODIFY_DOC_DIALOG.SAVE/i).closest('button') as HTMLButtonElement;
+      const saveButton = screen.getByRole('button', { name: /MODIFY_DOC_DIALOG\.SAVE/i });
       await user.click(saveButton);
 
       const expectedPayload: Partial<DenominationModel> = {

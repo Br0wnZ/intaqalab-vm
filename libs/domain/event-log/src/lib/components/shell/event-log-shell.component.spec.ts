@@ -1,7 +1,6 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MatTabGroupHarness } from '@angular/material/tabs/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -60,7 +59,6 @@ async function setup() {
   const events = userEvent.setup();
 
   const view = await render(EventLogShellComponent, {
-    imports: [NoopAnimationsModule],
     providers: [
       provideTestingEnvironment(),
       { provide: DocumentsService, useValue: makeMockDocumentsService() },
@@ -103,8 +101,10 @@ describe('EventLogShellComponent', () => {
     });
 
     it('should render the documents tab content by default (first tab active)', async () => {
-      const { container } = await setup();
-      expect(container.querySelector('inta-event-log-documents')).not.toBeNull();
+      await setup();
+      expect(
+        screen.getByRole('button', { name: 'EVENT_LOG.FILTERS.EXPORT_PDF_BUTTON' }),
+      ).toBeInTheDocument();
     });
   });
 

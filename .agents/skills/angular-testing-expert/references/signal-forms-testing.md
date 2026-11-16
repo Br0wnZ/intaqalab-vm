@@ -1,6 +1,6 @@
 # Signal Forms Testing
 
-Guía para testear componentes que usan **Signal Forms** (`@angular/experimental/signal-forms`).
+Guía para testear componentes que usan **Signal Forms** (`@angular/forms/signals`, incluyendo `[formRoot]`, `submit()` y `parseErrors`).
 
 ## Acceso al Formulario
 
@@ -119,7 +119,7 @@ describe('Filter panel toggle state', () => {
 ```typescript
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { provideTestingEnvironment } from '@intaqalab/config';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 
 import { MyFilterComponent } from './my-filter.component';
@@ -127,8 +127,7 @@ import { MyFilterComponent } from './my-filter.component';
 describe('MyFilterComponent', () => {
   const runSetup = async () => {
     const view = await render(MyFilterComponent, {
-      imports: [TranslateModule.forRoot()],
-      providers: [provideTestingEnvironment()],
+      providers: [provideTranslateService(), provideTestingEnvironment()],
     });
 
     const container = view.fixture.nativeElement as HTMLElement;

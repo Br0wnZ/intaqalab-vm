@@ -1,7 +1,7 @@
 ---
 name: numeric-input-constraints
-version: 1.1.0
-last-updated: 2026-10-24
+version: 1.2.0
+last-updated: 2026-11-13
 description: Use when creating or changing decimal inputs, localized numeric display, precision, unit conversions, numeric mappers or backend payloads. Defines the no-rounding contract for multilingual views, LOCALE_SIGNAL, libLocalDecimal, InputSelect, SoundLevelMeterInput and JSON numbers, plus domain min/max validation.
 argument-hint: "E.g. 'Create planning form with velocities and pressures' or 'Generate execution data inputs with coordinates and pressure gauges'."
 user-invocable: true
@@ -70,14 +70,27 @@ The `[formField]` directive in Signal Forms manages validation through TypeScrip
 
 ```typescript
 import { signal } from '@angular/core';
-import { form, max, min } from '@angular/forms/signals';
+import { MAX, MIN, apply, form, max, min, schema } from '@angular/forms/signals';
 
-protected readonly model = signal({ age: 1 });
+// Reusable Angular 22.2 domain schema
+export const velocityBoundsSchema = schema<number | null>((path) => {
+  min(path, 0);
+  max(path, 2000);
+});
+
+protected readonly model = signal({ age: 1, velocity: null as number | null });
 protected readonly ageForm = form(this.model, (fields) => {
   min(fields.age, 1);
   max(fields.age, 150);
+  apply(fields.velocity, velocityBoundsSchema);
 });
 ```
+
+### Angular 22.2 Custom Control Contract (`FormUiControl`, `transformedValue`, `parseErrors`)
+
+- Custom numeric inputs implement `FormUiControl` / `FormValueControl<number | null>` (`touch = output<void>()`, `controlValue`) and use `transformedValue(this.value, { parse, format })` or `libLocalDecimal` without rounding.
+- Read validation metadata tokens directly via `field().metadata(MIN)` / `field().metadata(MAX)` when available.
+- Surface invalid user input (e.g., non-numeric string) via `parseErrors` (`FieldState.errors()` / `formatNumericParseError()`) while keeping underlying JSON payloads finite `number | null`.
 
 ```html
 <!-- HTML Template: NO min/max attributes -->

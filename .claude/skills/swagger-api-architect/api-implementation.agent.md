@@ -151,10 +151,10 @@ export type PlanningResponse = {
 
 ```typescript
 import { httpResource } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { inject<API>Endpoint } from '@intaqalab/config';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class <Entity>Service {
   // 1. Signals privados como triggers (uno por operación)
   readonly #getParams = signal<{ id: string } | null>(null);

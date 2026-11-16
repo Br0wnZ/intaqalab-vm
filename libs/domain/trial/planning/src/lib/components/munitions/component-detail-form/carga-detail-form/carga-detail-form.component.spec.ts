@@ -3,7 +3,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatOptionHarness } from '@angular/material/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -58,7 +57,6 @@ describe('CargaDetailFormComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideAnimationsAsync(),
         provideTestingEnvironment(),
         { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
       ],

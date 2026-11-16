@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.4.0
-last-updated: 2026-11-05
+version: 1.5.0
+last-updated: 2026-11-13
 description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]
@@ -50,13 +50,13 @@ Sigue cada paso consultando su guía de referencia correspondiente:
 - [ ] **Paso 0 — Verificar datos de planificación/almacén por disparo (ADR-019)**: Si el widget requiere munición o componentes planificados, consulta [references/07-domain-integration.md](references/07-domain-integration.md).
 - [ ] **Paso 1 — Leer Swagger e identificar endpoints**: Localiza `GET` y `PUT` de serie/disparo en `apis/execution-api.json`. Guía: [references/01-service-and-models.md](references/01-service-and-models.md).
 - [ ] **Paso 2 — Modelos TypeScript de Request/Response**: Define DTOs en `execution/models/<widget-resource>.models.ts` y expórtalos en `execution/models/index.ts`. Guía: [references/01-service-and-models.md](references/01-service-and-models.md).
-- [ ] **Paso 3 — Servicio de Dominio en `data-access/execution/` (ADR-025)**: Crear o extender `shot/shot-<resource>.service.ts` con URLs puras (`executionTrialUrl`), `httpResource` para GET, `awaitResourceValue` para fetch imperativo, y `HttpClient` + `firstValueFrom` para PUT (ADR-020). Re-exportar en `data-access/index.ts`. PROHIBIDO añadir métodos a `ExecutionService`. Guía: [references/01-service-and-models.md](references/01-service-and-models.md).
-- [ ] **Paso 4 — Feature Store NgRx**: Define estados en `execution-state.models.ts` y crea `features/with-<widget>.ts`. Guía: [references/02-feature-store.md](references/02-feature-store.md).
+- [ ] **Paso 3 — Servicio de Dominio en `data-access/execution/` (ADR-025)**: Crear o extender `shot/shot-<resource>.service.ts` con `@Service()`, URLs puras (`executionTrialUrl`), `httpResource` + `ctx.chain()` para GET dependientes, `awaitResourceValue` para fetch imperativo, y `HttpClient` + `firstValueFrom` para PUT (ADR-020). Re-exportar en `data-access/index.ts`. PROHIBIDO añadir métodos a `ExecutionService`. Guía: [references/01-service-and-models.md](references/01-service-and-models.md).
+- [ ] **Paso 4 — Feature Store NgRx**: Define estados en `execution-state.models.ts` y crea `features/with-<widget>.ts` (usando `withProps()` / `withLinkedState()` cuando proceda). Guía: [references/02-feature-store.md](references/02-feature-store.md).
 - [ ] **Paso 5 — Mapper bidireccional**: Crea `<widget>.mapper.ts` resolviendo IDs Calibry (número ↔ string UI). Guía: [references/03-bidirectional-mapper.md](references/03-bidirectional-mapper.md).
-- [ ] **Paso 6 — Widget Padre**: Extiende `BaseFormWidgetComponent`, inyecta el servicio de dominio específico (`Shot<Resource>Service`), implementa `saveForm()`, selection guard y dirty tracking compuesto. Guía: [references/04-parent-widget-and-tabs.md](references/04-parent-widget-and-tabs.md).
+- [ ] **Paso 6 — Widget Padre**: Extiende `BaseFormWidgetComponent`, usa `TranslatePipe` (nunca `TranslateModule` ni `ChangeDetectionStrategy.OnPush`), inyecta el servicio de dominio específico (`Shot<Resource>Service`), implementa `saveForm()`, selection guard y dirty tracking compuesto. Guía: [references/04-parent-widget-and-tabs.md](references/04-parent-widget-and-tabs.md).
 - [ ] **Paso 7 — Tabs Hijas**: Implementa contrato `{ isDirty, isValid, getFormUpdates(), applyData(), save(), reset() }` con `createDirtyTracker`. Guía: [references/04-parent-widget-and-tabs.md](references/04-parent-widget-and-tabs.md).
 - [ ] **Paso 8 — Mocks Express Coherentes**: Actualiza fixtures JSON y rutas en mock server aceptando estados `['PENDING', 'ACTIVE', 'FIRED']`. Guía: [references/05-mock-server-fixtures.md](references/05-mock-server-fixtures.md).
-- [ ] **Paso 9 — Tests Vitest + ATL**: Verifica el widget padre con testing harness mockeando `Shot<Resource>Service` (NUNCA `ExecutionService`). Guía: [references/06-vitest-testing.md](references/06-vitest-testing.md).
+- [ ] **Paso 9 — Tests Vitest + ATL**: Verifica el widget padre con testing harness usando `provideTranslateService()`, cero `NoopAnimationsModule`/`provideNoopAnimations()`, y mockeando `Shot<Resource>Service` (NUNCA `ExecutionService`). Guía: [references/06-vitest-testing.md](references/06-vitest-testing.md).
 
 ---
 

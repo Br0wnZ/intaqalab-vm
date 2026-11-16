@@ -13,7 +13,14 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import type { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
-import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
+import {
+  RouteReuseStrategy,
+  provideRouter,
+  withAutoCleanupInjectors,
+  withComponentInputBinding,
+  withRouterConfig,
+  withViewTransitions,
+} from '@angular/router';
 import { provideAppEnvironment, provideIntaDateAdapter } from '@intaqalab/config';
 import {
   centerInterceptor,
@@ -48,6 +55,9 @@ export class NoReuseStrategy implements RouteReuseStrategy {
   shouldReuseRoute() {
     return false;
   }
+  shouldDestroyInjector(): boolean {
+    return true;
+  }
 }
 
 export const Config: ApplicationConfig = {
@@ -58,6 +68,8 @@ export const Config: ApplicationConfig = {
     provideRouter(
       appRoutes,
       withComponentInputBinding(),
+      withAutoCleanupInjectors(),
+      withViewTransitions({ skipInitialTransition: true }),
       withRouterConfig({
         onSameUrlNavigation: 'reload',
       }),

@@ -23,7 +23,7 @@ Guía de arquitectura e implementación para widgets de ejecución (`BaseFormWid
   selector: 'inta-<widget-name>',
   imports: [
     FormField, ReadonlyContentDirective, FormTouchDirective,
-    MatButtonModule, MatFormFieldModule, MatSelectModule, TranslateModule,
+    MatButtonModule, MatFormFieldModule, MatSelectModule, TranslatePipe,
     <IdentTab>Component, <PesosTab>Component, <AcondTab>Component,
   ],
   template: `
@@ -78,7 +78,6 @@ Guía de arquitectura e implementación para widgets de ejecución (`BaseFormWid
     </div>
   `,
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class <Widget> extends BaseFormWidgetComponent {
   readonly widgetId = input.required<string>();
@@ -301,9 +300,8 @@ Cada tab presentacional implementa el contrato:
 ```typescript
 @Component({
   selector: 'inta-<widget-ident-tab>',
-  imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslateModule],
+  imports: [FormField, MatFormFieldModule, MatSelectModule, MatInputModule, TranslatePipe],
   template: `<!-- campos del tab -->`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class <Widget>IdentTabComponent {
   readonly #store = inject(ExecutionStore);

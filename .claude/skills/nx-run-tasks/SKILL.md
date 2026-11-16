@@ -1,7 +1,7 @@
 ---
 name: nx-run-tasks
-version: 1.0.1
-last-updated: 2026-11-12
+version: 1.1.0
+last-updated: 2026-11-13
 description: Helps with running tasks in an Nx workspace. USE WHEN the user wants to execute build, test, lint, serve, or run any other tasks defined in the workspace.
 ---
 
@@ -63,9 +63,12 @@ These flags work with `run`, `run-many`, and `affected`:
   - `static`: compact progress without animated spinners.
   - `stream`: streaming stdout/stderr in real-time.
 
-## Daemon & Environment Handling
+## Daemon, Vitest 5 & Verification Sensor (INTAQALAB)
 
-In restricted sandbox environments or CI pipelines where unix socket connections fail, run commands with `NX_DAEMON=false`:
+- **Package Manager (MANDATORY):** Always prefix with `npx` or `npm exec` (NEVER `pnpm`).
+- **Fast Incremental Verification Sensor (ADR-024):** Run `bash tools/verify/verify.sh --project <name> --no-i18n` during rapid iterations; run `npm run verify` before completing a task.
+- **Vitest 5 Parallelism:** In local runs across all projects (tracked in `vitest.config.ts`), cap parallelism to protect JSDOM memory: `npx nx run-many --target=test --all --parallel=2`.
+- **Sandbox Daemon Handling:** In restricted sandbox environments or CI pipelines where unix socket connections fail, run commands with `NX_DAEMON=false`:
 
 ```bash
 NX_DAEMON=false npx nx test <project>
