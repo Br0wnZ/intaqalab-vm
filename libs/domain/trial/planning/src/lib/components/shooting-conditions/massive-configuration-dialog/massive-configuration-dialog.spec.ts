@@ -66,7 +66,8 @@ describe('MassiveConfigurationDialog', () => {
             trialId: 'trial-123',
           },
         },
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        provideTranslateService(),
       ],
     });
 
@@ -113,16 +114,6 @@ describe('MassiveConfigurationDialog', () => {
     expect(applyBtn).toBeTruthy();
     expect(cancelBtn).toBeTruthy();
   });
-
-  /* it('should populate selects with data from service', async () => {
-    const { loader } = await renderDialog();
-    const targetSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#bulk-target' }));
-    await targetSelect.open();
-
-    const options = await targetSelect.getOptions();
-    expect(options.length).toBe(2);
-    expect(await options[0].getText()).toBe('Blanco tipo 1');
-  }); */
 
   it('should close dialog when clicking Cancelar button', async () => {
     const { loader } = await renderDialog();
@@ -232,51 +223,4 @@ describe('MassiveConfigurationDialog', () => {
       expect(component.bulkForm().invalid()).toBe(true);
     }
   });
-
-  /* it('should enable apply button when series are selected and call service on apply', async () => {
-    const { loader } = await renderDialog();
-
-    // Select series to make form valid
-    const seriesSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#bulk-series' }));
-    await seriesSelect.open();
-    const options = await seriesSelect.getOptions();
-    await options[0].click(); // Select first series
-    await seriesSelect.close();
-
-    const applyBtn = await loader.getHarness(
-      MatButtonHarness.with({ text: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' }),
-    );
-    expect(await applyBtn.isDisabled()).toBe(false);
-
-    await applyBtn.click();
-
-    expect(mockShootingConditionsService.updateShootingConditions).toHaveBeenCalledWith(
-      expect.objectContaining({ trialId: 'trial-123' }),
-    );
-  }); */
-
-  /* it('should call updateShootingConditions with form values applied to selected series', async () => {
-    const { loader } = await renderDialog();
-
-    // 1. Select series
-    const seriesSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#bulk-series' }));
-    await seriesSelect.open();
-    const sOptions = await seriesSelect.getOptions({ text: 'Serie 1' });
-    await sOptions[0].click();
-    await seriesSelect.close();
-
-    // 2. Select Target Type
-    const targetSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#bulk-target' }));
-    await targetSelect.open();
-    const targetOptions = await targetSelect.getOptions({ text: 'Blanco tipo 2' });
-    await targetOptions[0].click();
-
-    // 3. Apply
-    const applyBtn = await loader.getHarness(
-      MatButtonHarness.with({ text: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' }),
-    );
-    await applyBtn.click();
-
-    expect(mockShootingConditionsService.updateShootingConditions).toHaveBeenCalled();
-  }); */
 });

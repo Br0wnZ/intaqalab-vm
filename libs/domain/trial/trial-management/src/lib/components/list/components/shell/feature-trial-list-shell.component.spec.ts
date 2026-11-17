@@ -3,6 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { Signal } from '@angular/core';
 import { Component, output, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { injectionTokenTabCommand, provideTestingEnvironment } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
@@ -54,9 +55,14 @@ describe('FeatureTrialListShellComponent', () => {
     mockStore.isLoading.set(false);
     mockStore.error.set(null);
 
-    const { container } = await render(FeatureTrialListShellComponent, {
+    const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -66,7 +72,7 @@ describe('FeatureTrialListShellComponent', () => {
       ],
     });
 
-    expect(container.querySelector('inta-trial-list')).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('inta-trial-list'))).not.toBeNull();
     expect(screen.getByRole('heading', { name: 'MENU_LEFT.GESTION_TRIALS_LIST' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'TAPS_TOP.TRIAL_LIST' })).toBeInTheDocument();
   });
@@ -78,7 +84,12 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -103,7 +114,12 @@ describe('FeatureTrialListShellComponent', () => {
 
     const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -135,9 +151,14 @@ describe('FeatureTrialListShellComponent', () => {
     mockStore.isLoading.set(true);
     mockStore.error.set(null);
 
-    const { container } = await render(FeatureTrialListShellComponent, {
+    const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -147,17 +168,22 @@ describe('FeatureTrialListShellComponent', () => {
       ],
     });
 
-    expect(container.querySelector('ui-skeleton')).toBeTruthy();
-    expect(container.querySelector('inta-trial-list')).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('ui-skeleton'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('inta-trial-list'))).toBeNull();
   });
 
   it('should render error state when store has an error', async () => {
     mockStore.isLoading.set(false);
     mockStore.error.set('Failed to fetch data');
 
-    const { container } = await render(FeatureTrialListShellComponent, {
+    const { fixture } = await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -167,8 +193,8 @@ describe('FeatureTrialListShellComponent', () => {
       ],
     });
 
-    expect(container.querySelector('ui-error-state')).toBeTruthy();
-    expect(container.querySelector('inta-trial-list')).toBeFalsy();
+    expect(fixture.debugElement.query(By.css('ui-error-state'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('inta-trial-list'))).toBeNull();
   });
 
   it('should not render the Excel button when there are no results from store', async () => {
@@ -178,7 +204,12 @@ describe('FeatureTrialListShellComponent', () => {
 
     await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {
@@ -198,7 +229,12 @@ describe('FeatureTrialListShellComponent', () => {
 
     await render(FeatureTrialListShellComponent, {
       declarations: [TrialListStubComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvironment(), provideTranslateService()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTestingEnvironment(),
+        provideTranslateService(),
+      ],
       componentProviders: [
         { provide: TrialStore, useValue: mockStore },
         {

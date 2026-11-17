@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
@@ -111,18 +110,21 @@ describe('CommandsTabService', () => {
   describe('executeCommand', () => {
     it.each([
       ['TRIAL_DETAIL' as const, 'addTrialView', 99],
-      ['TRIAL_LIST' as const, 'addTrialList', undefined],
       ['TRIAL_VIEW_DOCUMENT' as const, 'addDocumentTrial', 'doc-5'],
-    ])('command "%s" → should delegate to %s', (command, method, argument) => {
+    ])('command "%s" → should delegate to %s with argument', (command, method, argument) => {
       const { service } = setup(true);
       const spy = vi.spyOn(service as any, method).mockImplementation(async () => {});
 
       service.executeCommand({ command, argument } as any);
-      if (argument !== undefined) {
-        expect(spy).toHaveBeenCalledWith(argument);
-      } else {
-        expect(spy).toHaveBeenCalled();
-      }
+      expect(spy).toHaveBeenCalledWith(argument);
+    });
+
+    it('command "TRIAL_LIST" → should delegate to addTrialList', () => {
+      const { service } = setup(true);
+      const spy = vi.spyOn(service, 'addTrialList').mockImplementation(async () => {});
+
+      service.executeCommand({ command: 'TRIAL_LIST' });
+      expect(spy).toHaveBeenCalled();
     });
 
     it('should forward query params separately when opening a trial detail', () => {

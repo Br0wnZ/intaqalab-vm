@@ -86,7 +86,7 @@ describe('ConfirmDeleteDialogComponent', () => {
 
   it('closes dialog with false when cancel button is clicked', async () => {
     const { user, closeMock } = await setup();
-    const cancelButton = screen.getByText('Cancelar').closest('button')!;
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
 
     await user.click(cancelButton);
     expect(closeMock).toHaveBeenCalledWith(false);
@@ -94,7 +94,7 @@ describe('ConfirmDeleteDialogComponent', () => {
 
   it('calls deleteDocument on confirm and closes dialog when resolved', async () => {
     const { user, closeMock, mockService } = await setup();
-    const confirmButton = screen.getByText('Eliminar').closest('button')!;
+    const confirmButton = screen.getByRole('button', { name: 'Eliminar' });
 
     await user.click(confirmButton);
     expect(mockService.deleteDocument).toHaveBeenCalledWith('trial-1', 'doc-1');

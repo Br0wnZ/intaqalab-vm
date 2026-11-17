@@ -1,7 +1,7 @@
 ---
 name: widget-service-integration
-version: 1.5.0
-last-updated: 2026-11-13
+version: 1.5.1
+last-updated: 2026-11-16
 description: Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows.
 argument-hint: "Número de widget y nombre (ej: '20 — Munition Introduction'). Opcionalmente, ruta del JSON de Swagger."
 tools: [read, edit, search, execute, todo, agent]

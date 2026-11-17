@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { inputBinding, outputBinding, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/angular';
@@ -15,7 +16,6 @@ import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.
 import type { Configuration } from '../../../utils-models/munitions.model';
 import { createEmptyComponentDetail, createEmptyConfiguration } from '../../../utils-models/munitions.model';
 import { ConfigurationFormComponent } from './configuration-form.component';
-
 
 const mockMunitionTypes = signal([
   { id: 'type-1', label: 'Tipo 1', name: { es: 'Tipo 1', en: 'Tipo 1' }, active: true },
@@ -161,24 +161,24 @@ describe('ConfigurationFormComponent', () => {
       const munitionTypeSelect = screen.getByTestId('munition-type-select');
       await user.click(munitionTypeSelect);
       await fixture.whenStable();
-      const typeOptions = document.querySelectorAll('mat-option');
-      const tipo1Option = Array.from(typeOptions).find((opt) => opt.textContent?.includes('Tipo 1'));
+      const typeOptions = screen.getAllByRole('option');
+      const tipo1Option = typeOptions.find((opt) => opt.textContent?.includes('Tipo 1'));
       expect(tipo1Option).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await user.click(tipo1Option!);
       await fixture.whenStable();
 
-      const denominationSelect = document.querySelector('#denomination-0') as HTMLElement;
+      const denominationSelect = fixture.debugElement.query(By.css('#denomination-0')).nativeElement as HTMLElement;
       expect(denominationSelect).toBeInTheDocument();
 
       await user.click(denominationSelect);
 
       await fixture.whenStable();
 
-      const options = document.querySelectorAll('mat-option');
+      const options = screen.getAllByRole('option');
       expect(options.length).toBeGreaterThan(0);
 
-      const denominationOption = Array.from(options).find((opt) => opt.textContent?.includes('Denominación 1'));
+      const denominationOption = options.find((opt) => opt.textContent?.includes('Denominación 1'));
       expect(denominationOption).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await user.click(denominationOption!);
@@ -200,13 +200,13 @@ describe('ConfigurationFormComponent', () => {
       const munitionTypeSelect = screen.getByTestId('munition-type-select');
       await user.click(munitionTypeSelect);
       await fixture.whenStable();
-      const typeOptions = document.querySelectorAll('mat-option');
-      const tipo1Option = Array.from(typeOptions).find((opt) => opt.textContent?.includes('Tipo 1'));
+      const typeOptions = screen.getAllByRole('option');
+      const tipo1Option = typeOptions.find((opt) => opt.textContent?.includes('Tipo 1'));
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await user.click(tipo1Option!);
       await fixture.whenStable();
 
-      const denominationSelect = document.querySelector('#denomination-0') as HTMLElement;
+      const denominationSelect = fixture.debugElement.query(By.css('#denomination-0')).nativeElement as HTMLElement;
       await user.click(denominationSelect);
 
       const searchInput = await screen.findByTestId('denomination-search-input');
@@ -404,15 +404,15 @@ describe('ConfigurationFormComponent', () => {
         ],
       });
 
-      const select = document.querySelector('#selectedComponents-0') as HTMLElement;
+      const select = fixture.debugElement.query(By.css('#selectedComponents-0')).nativeElement as HTMLElement;
       expect(select).toBeInTheDocument();
 
       await user.click(select);
 
       await fixture.whenStable();
 
-      const options = document.querySelectorAll('mat-option');
-      const espoletaOption = Array.from(options).find((opt) => opt.textContent?.includes('Espoleta'));
+      const options = screen.getAllByRole('option');
+      const espoletaOption = options.find((opt) => opt.textContent?.includes('Espoleta'));
       expect(espoletaOption).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await user.click(espoletaOption!);
@@ -468,7 +468,7 @@ describe('ConfigurationFormComponent', () => {
         components: [createEmptyComponentDetail('espoleta')],
       };
 
-      const renderResult = await render(ConfigurationFormComponent, {
+      const view = await render(ConfigurationFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         bindings: [
           inputBinding('config', () => configWithComponents),
@@ -477,11 +477,11 @@ describe('ConfigurationFormComponent', () => {
         ],
       });
 
-      const component = renderResult.fixture.componentInstance;
+      const component = view.fixture.componentInstance;
 
       component.removeComponent('espoleta');
 
-      renderResult.fixture.detectChanges();
+      view.fixture.detectChanges();
 
       await waitFor(() => {
         expect(configChangeSpy).toHaveBeenCalled();
@@ -510,12 +510,12 @@ describe('ConfigurationFormComponent', () => {
 
   describe('Validations', () => {
     it('should require denomination', async () => {
-      const renderResult = await render(ConfigurationFormComponent, {
+      const view = await render(ConfigurationFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: defaultConfig, configIndex: 0 },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       fixture.detectChanges();
@@ -526,12 +526,12 @@ describe('ConfigurationFormComponent', () => {
     });
 
     it('should require lot', async () => {
-      const renderResult = await render(ConfigurationFormComponent, {
+      const view = await render(ConfigurationFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: { ...defaultConfig, denomination: 'option1' }, configIndex: 0 },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       fixture.detectChanges();
@@ -548,12 +548,12 @@ describe('ConfigurationFormComponent', () => {
         batch: 'LOT-001',
       };
 
-      const renderResult = await render(ConfigurationFormComponent, {
+      const view = await render(ConfigurationFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: validConfig, configIndex: 0 },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       fixture.detectChanges();
@@ -566,12 +566,12 @@ describe('ConfigurationFormComponent', () => {
     it('should validate that maxAllowedErrors is greater than or equal to 0', async () => {
       const user = userEvent.setup();
 
-      const renderResult = await render(ConfigurationFormComponent, {
+      const view = await render(ConfigurationFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { config: { ...defaultConfig, denomination: 'option1', batch: 'LOT-001' }, configIndex: 0 },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       const maxFailuresInput = screen.getByTestId('max-errors-input');

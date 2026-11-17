@@ -131,7 +131,7 @@ describe('FeatureTrialCreateShellComponent', () => {
       },
     });
 
-    const renderResult = await render(FeatureTrialCreateShellComponent, {
+    const view = await render(FeatureTrialCreateShellComponent, {
       imports: [MockFeatureTrialCreateFormComponent],
       providers: [
         provideRouter([]),
@@ -142,11 +142,12 @@ describe('FeatureTrialCreateShellComponent', () => {
         { provide: injectionTokenComponentCreateModifyShell, useValue: params },
         { provide: ClientsDataService, useValue: mockClientsService },
         { provide: TrialTypeService, useValue: mockTrialTypeService },
-        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
+        { provide: MatDialog, useValue: mockDialog },
+        provideTranslateService(),
       ],
     });
 
-    fixture = renderResult.fixture;
+    fixture = view.fixture;
     component = fixture.componentInstance;
 
     const formDebugElement = fixture.debugElement.query(By.directive(MockFeatureTrialCreateFormComponent));
@@ -198,7 +199,7 @@ describe('FeatureTrialCreateShellComponent', () => {
     it('should become editable after clicking the modify button', async () => {
       const { user } = await setup({ id: '123' });
 
-      const modifyButton = screen.getByText('UTILS_TRIALS.TRIAL_ACTIONS.MODIFY').closest('button')!;
+      const modifyButton = screen.getByRole('button', { name: /UTILS_TRIALS\.TRIAL_ACTIONS\.MODIFY/i });
       await user.click(modifyButton);
 
       expect(component.editable()).toBe(true);
@@ -224,7 +225,7 @@ describe('FeatureTrialCreateShellComponent', () => {
       mockFormComponent._valid.set(false);
       fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL').closest('button');
+      const saveButton = screen.getByRole('button', { name: /TRIAL_CREATE_MODIFY_FORM\.SAVE_TRIAL/i });
       expect(saveButton).toBeDisabled();
     });
 
@@ -233,7 +234,7 @@ describe('FeatureTrialCreateShellComponent', () => {
       mockFormComponent._valid.set(true);
       fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL').closest('button');
+      const saveButton = screen.getByRole('button', { name: /TRIAL_CREATE_MODIFY_FORM\.SAVE_TRIAL/i });
       expect(saveButton).toBeEnabled();
     });
   });
@@ -246,7 +247,7 @@ describe('FeatureTrialCreateShellComponent', () => {
       mockFormComponent._value.set({ code: '123', type: 't1', client: 'c1' });
       fixture.detectChanges();
 
-      const saveButton = screen.getByText('TRIAL_CREATE_MODIFY_FORM.SAVE_TRIAL').closest('button')!;
+      const saveButton = screen.getByRole('button', { name: /TRIAL_CREATE_MODIFY_FORM\.SAVE_TRIAL/i });
       await waitFor(() => expect(saveButton).toBeEnabled());
       await user.click(saveButton);
 

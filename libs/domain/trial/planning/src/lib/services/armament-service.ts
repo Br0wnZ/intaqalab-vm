@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { computed, signal, Service } from '@angular/core';
+import { Service, computed, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
@@ -98,78 +98,88 @@ export class ArmamentService {
   });
 
   // Legacy: carga inicial de catálogos sin filtro
-  readonly weaponsResource = httpResource<SpecimenListResponse>(() => {
-    const params = this.#getWeaponsParams();
-    if (!params) return undefined;
+  readonly weaponsResource = httpResource<SpecimenListResponse>(
+    () => {
+      const params = this.#getWeaponsParams();
+      if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ ...params, itemType: 'WEAPON' });
-    return {
-      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
-      method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON'),
-    };
-  });
+      const queryParams = this.#buildQueryParams({ ...params, itemType: 'WEAPON' });
+      return {
+        url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+        method: 'GET',
+      };
+    },
+    { parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON') },
+  );
 
-  readonly tubesResource = httpResource<SpecimenListResponse>(() => {
-    const params = this.#getTubesParams();
-    if (!params) return undefined;
+  readonly tubesResource = httpResource<SpecimenListResponse>(
+    () => {
+      const params = this.#getTubesParams();
+      if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ ...params, itemType: 'TUBE' });
-    return {
-      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
-      method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
-    };
-  });
+      const queryParams = this.#buildQueryParams({ ...params, itemType: 'TUBE' });
+      return {
+        url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+        method: 'GET',
+      };
+    },
+    { parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE') },
+  );
 
   /**
    * Resource reactivo para denominaciones de arma.
    * URL: GET /centers/{centerId}/equipment/denominations?itemType=WEAPON
    */
-  readonly weaponDenominationsResource = httpResource<SpecimenListResponse>(() => {
-    const params = this.#weaponDenominationParams();
-    if (!params) return undefined;
+  readonly weaponDenominationsResource = httpResource<SpecimenListResponse>(
+    () => {
+      const params = this.#weaponDenominationParams();
+      if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ itemType: params.itemType });
-    return {
-      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
-      method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, params.itemType as SpecimenItem['type']),
-    };
-  });
+      const queryParams = this.#buildQueryParams({ itemType: params.itemType });
+      return {
+        url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+        method: 'GET',
+      };
+    },
+    { parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'WEAPON') },
+  );
 
   /**
    * Resource reactivo para denominaciones de mortero.
    * URL: GET /centers/{centerId}/equipment/denominations?itemType=MORTAR
    */
-  readonly mortarDenominationsResource = httpResource<SpecimenListResponse>(() => {
-    const params = this.#mortarDenominationParams();
-    if (!params) return undefined;
+  readonly mortarDenominationsResource = httpResource<SpecimenListResponse>(
+    () => {
+      const params = this.#mortarDenominationParams();
+      if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ itemType: params.itemType });
-    return {
-      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
-      method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, params.itemType as SpecimenItem['type']),
-    };
-  });
+      const queryParams = this.#buildQueryParams({ itemType: params.itemType });
+      return {
+        url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+        method: 'GET',
+      };
+    },
+    { parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'MORTAR') },
+  );
 
   /**
    * Resource reactivo para denominaciones de tubo filtradas por familyId del arma seleccionada.
    * Se activa cuando se selecciona un arma.
    * URL: GET /centers/{centerId}/equipment/denominations?itemType=TUBE&familyId={familyId}
    */
-  readonly tubeDenominationsResource = httpResource<SpecimenListResponse>(() => {
-    const params = this.#tubeDenominationParams();
-    if (!params) return undefined;
+  readonly tubeDenominationsResource = httpResource<SpecimenListResponse>(
+    () => {
+      const params = this.#tubeDenominationParams();
+      if (!params) return undefined;
 
-    const queryParams = this.#buildQueryParams({ itemType: 'TUBE', familyId: params.familyId });
-    return {
-      url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
-      method: 'GET',
-      parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE'),
-    };
-  });
+      const queryParams = this.#buildQueryParams({ itemType: 'TUBE', familyId: params.familyId });
+      return {
+        url: `${this.#planningUrl}/equipment/denominations${queryParams}`,
+        method: 'GET',
+      };
+    },
+    { parse: (raw: unknown) => this.#mapEquipmentDenominationsResponse(raw, 'TUBE') },
+  );
 
   readonly tubeDenominationsFamilyId = computed(() => this.#tubeDenominationParams()?.familyId);
 

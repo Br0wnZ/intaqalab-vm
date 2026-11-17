@@ -3,6 +3,7 @@ import { HttpEventType, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { fireEvent, render } from '@testing-library/angular';
@@ -56,7 +57,8 @@ describe('TrialDocsFilePicker', () => {
         provideHttpClientTesting(),
         provideTestingEnvironment(),
         { provide: MatDialogRef, useValue: { close: closeFn || vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
+        { provide: MAT_DIALOG_DATA, useValue: data },
+        provideTranslateService(),
       ],
     });
   };
@@ -104,7 +106,7 @@ describe('TrialDocsFilePicker', () => {
     it('should select a file when input changes', async () => {
       const { fixture } = await renderDialog();
       const file = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
-      const input = document.getElementById('fileInput') as HTMLInputElement;
+      const input = fixture.debugElement.query(By.css('#fileInput')).nativeElement as HTMLInputElement;
 
       Object.defineProperty(input, 'files', {
         value: [file],
@@ -133,7 +135,7 @@ describe('TrialDocsFilePicker', () => {
       const { fixture } = await renderDialog();
       const clickSpy = vi.fn();
 
-      const inputElement = document.getElementById('fileInput') as HTMLInputElement;
+      const inputElement = fixture.debugElement.query(By.css('#fileInput')).nativeElement as HTMLInputElement;
       inputElement.click = clickSpy;
 
       fixture.componentInstance.triggerFileInput();

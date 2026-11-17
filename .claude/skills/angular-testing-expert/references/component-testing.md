@@ -69,10 +69,12 @@ it('should render the component title', async () => {
 ### Componente hijo presente
 
 ```typescript
+import { By } from '@angular/platform-browser';
+
 it('should render the child filter component', async () => {
-  const { container } = await runSetup();
-  const filterPanel = container.querySelector('inta-my-filter');
-  expect(filterPanel).toBeTruthy();
+  const { view } = await runSetup();
+  const filterPanel = view.fixture.debugElement.query(By.css('inta-my-filter'));
+  expect(filterPanel).not.toBeNull();
 });
 ```
 
@@ -80,9 +82,8 @@ it('should render the child filter component', async () => {
 
 ```typescript
 it('should render the data table when data is set', async () => {
-  const { container } = await runSetup();
-  const table = container.querySelector('table');
-  expect(table).toBeTruthy();
+  await runSetup();
+  expect(screen.getByRole('table')).toBeInTheDocument();
 });
 ```
 

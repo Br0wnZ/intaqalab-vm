@@ -77,10 +77,7 @@ describe('MeasureLimitCard', () => {
     const user = userEvent.setup();
     const view = await render(TestHostComponent, {
       componentProperties: initialState,
-      providers: [
-        provideTestingEnvironment(),
-        { provide: LOCALE_SIGNAL, useValue: signal(locale) },
-      ],
+      providers: [provideTestingEnvironment(), { provide: LOCALE_SIGNAL, useValue: signal(locale) }],
     });
     const host = view.fixture.componentInstance;
     return { view, user, host };
@@ -190,14 +187,14 @@ describe('MeasureLimitCard', () => {
 
     it('should emit toggleExpanded when expand icon button is clicked', async () => {
       const { user, host } = await runSetup();
-      const toggleBtn = screen.getByRole('button', { name: 'expand_more' });
+      const toggleBtn = screen.getByRole('button', { name: /COMMONS\.EXPAND|Expandir/i });
       await user.click(toggleBtn);
       expect(host.onToggleExpanded).toHaveBeenCalledTimes(1);
     });
 
     it('should emit remove when delete button is clicked in collapsed state', async () => {
       const { user, host } = await runSetup();
-      const deleteBtn = screen.getByRole('button', { name: 'delete' });
+      const deleteBtn = screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i });
       await user.click(deleteBtn);
       expect(host.onRemove).toHaveBeenCalledTimes(1);
     });
@@ -290,7 +287,7 @@ describe('MeasureLimitCard', () => {
       const { user, host } = await runSetup({
         measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: null, deviation: null },
       });
-      const collapseBtn = screen.getByRole('button', { name: 'expand_less' });
+      const collapseBtn = screen.getByRole('button', { name: /COMMONS\.COLLAPSE|Contraer/i });
       await user.click(collapseBtn);
       expect(host.onToggleExpanded).toHaveBeenCalledTimes(1);
     });
@@ -299,7 +296,7 @@ describe('MeasureLimitCard', () => {
       const { user, host } = await runSetup({
         measure: { id: 'm-1', expanded: true, minLimit: null, maxLimit: null, deviation: null },
       });
-      const deleteBtn = screen.getByRole('button', { name: 'delete' });
+      const deleteBtn = screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i });
       await user.click(deleteBtn);
       expect(host.onRemove).toHaveBeenCalledTimes(1);
     });
@@ -341,7 +338,7 @@ describe('MeasureLimitCard', () => {
   describe('Readonly Mode', () => {
     it('should disable delete button in collapsed state when readonly is true', async () => {
       await runSetup({ readonly: true });
-      expect(screen.getByRole('button', { name: 'delete' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i })).toBeDisabled();
     });
 
     it('should disable delete button and inputs in expanded state when readonly is true', async () => {
@@ -350,7 +347,7 @@ describe('MeasureLimitCard', () => {
         isQuantitative: true,
         measure: { id: 'm-1', expanded: true, minLimit: 10, maxLimit: 50, deviation: 2 },
       });
-      expect(screen.getByRole('button', { name: 'delete' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i })).toBeDisabled();
       expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MAX_LIMIT|Límite máximo/i)).toBeDisabled();
       expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.MIN_LIMIT|Límite mínimo/i)).toBeDisabled();
       expect(screen.getByLabelText(/TRIAL_PLANNING\.MEASURES\.LIMIT_CARD\.DEVIATION|Desviación/i)).toBeDisabled();
@@ -398,7 +395,7 @@ describe('MeasureLimitCard', () => {
 
     it('should still allow deleting qualitative measures', async () => {
       const { user, host } = await runSetup({ isQuantitative: false });
-      const deleteBtn = screen.getByRole('button', { name: 'delete' });
+      const deleteBtn = screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i });
       await user.click(deleteBtn);
       expect(host.onRemove).toHaveBeenCalledTimes(1);
     });

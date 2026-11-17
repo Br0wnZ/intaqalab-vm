@@ -1,4 +1,5 @@
-import { computed, inject, signal, Service } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Service, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Role, injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
@@ -397,6 +398,16 @@ export class ExecutionPageFacade {
     this.#isSaving.set(true);
     try {
       await this.#widgetState.saveAllDirtyForms();
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        this.#toastr.warning(this.#translate.instant('TRIAL_EXECUTION.ERRORS.SHOT_SAVE_CONFLICT'), undefined, {
+          timeOut: 5000,
+          progressBar: true,
+          closeButton: true,
+        });
+        return;
+      }
+      throw error;
     } finally {
       this.#isSaving.set(false);
     }

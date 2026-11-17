@@ -1,5 +1,3 @@
-import type { ComponentFixture } from '@angular/core/testing';
-import { fakeAsync, tick } from '@angular/core/testing';
 import { render, screen } from '@testing-library/angular';
 import { vi } from 'vitest';
 
@@ -10,131 +8,143 @@ import { LoaderComponent } from './loader.component';
 const SHOW_DEBOUNCE_MS = 150;
 
 describe('LoaderComponent', () => {
-  let fixture: ComponentFixture<LoaderComponent>;
   let loaderService: LoaderService;
 
-  beforeEach(async () => {
-    const rendered = await render(LoaderComponent);
-    fixture = rendered.fixture;
-    loaderService = fixture.debugElement.injector.get(LoaderService);
-  });
+  const setup = async () => {
+    const view = await render(LoaderComponent);
+    loaderService = view.fixture.debugElement.injector.get(LoaderService);
+    return view;
+  };
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
   });
 
   afterEach(() => {
-    loaderService.reset();
+    loaderService?.reset();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it('should create the component', () => {
+  it('should create the component', async () => {
+    const { fixture } = await setup();
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should not show loader when isLoading is false', () => {
+  it('should not show loader when isLoading is false', async () => {
+    await setup();
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
   });
 
-  it('should show loader after the debounce delay', fakeAsync(() => {
+  it('should show loader after the debounce delay', async () => {
+    const { fixture } = await setup();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
-  }));
+  });
 
-  it('should not show loader before the debounce delay elapses', fakeAsync(() => {
+  it('should not show loader before the debounce delay elapses', async () => {
+    const { fixture } = await setup();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS - 1);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS - 1);
     fixture.detectChanges();
 
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  }));
+  });
 
-  it('should not show loader if hide() is called before debounce fires', fakeAsync(() => {
+  it('should not show loader if hide() is called before debounce fires', async () => {
+    const { fixture } = await setup();
     loaderService.show();
     loaderService.hide();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  }));
+  });
 
-  it('should hide loader when isLoading changes from true to false', fakeAsync(() => {
+  it('should hide loader when isLoading changes from true to false', async () => {
+    const { fixture } = await setup();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
     expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  }));
+  });
 
-  it('should contain mat-spinner when loading', fakeAsync(() => {
+  it('should contain mat-spinner when loading', async () => {
+    const { fixture } = await setup();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
-    const loader = screen.getByTestId('loader');
-    expect(loader.querySelector('mat-spinner')).toBeTruthy();
-  }));
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
 
-  it('should have correct CSS classes when loading', fakeAsync(() => {
+  it('should have correct CSS classes when loading', async () => {
+    const { fixture } = await setup();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     const loader = screen.getByTestId('loader');
     expect(loader).toHaveClass('loading');
-    expect(loader.querySelector('.spinner')).toBeTruthy();
-  }));
+    expect(loader).toContainHTML('class="spinner"');
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
 
-  it('should remain visible until all show() calls are balanced by hide()', fakeAsync(() => {
+  it('should remain visible until all show() calls are balanced by hide()', async () => {
+    const { fixture } = await setup();
     loaderService.show();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  }));
+  });
 
-  it('should hide immediately when reset() is called regardless of active requests', fakeAsync(() => {
+  it('should hide immediately when reset() is called regardless of active requests', async () => {
+    const { fixture } = await setup();
     loaderService.show();
     loaderService.show();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
 
     loaderService.reset();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     fixture.detectChanges();
 
     expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
-  }));
+  });
 
-  it('should show loader again after reset() followed by a new show()', fakeAsync(() => {
+  it('should show loader again after reset() followed by a new show()', async () => {
+    const { fixture } = await setup();
     loaderService.show();
     loaderService.show();
     loaderService.reset();
     loaderService.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     fixture.detectChanges();
 
     expect(screen.getByTestId('loader')).toBeInTheDocument();
-  }));
+  });
 });

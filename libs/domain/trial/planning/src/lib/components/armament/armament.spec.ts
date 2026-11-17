@@ -5,6 +5,7 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { By } from '@angular/platform-browser';
 import { createMockArmamentService, createMockMatDialog, createMockPlanningGeneralDataStore } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -89,7 +90,8 @@ describe('Armament', () => {
         ArmamentStore,
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
         { provide: ArmamentService, useValue: mockArmamentService },
-        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
+        { provide: MatDialog, useValue: mockDialog },
+        provideTranslateService(),
       ],
     });
 
@@ -153,7 +155,8 @@ describe('Armament', () => {
           ArmamentStore,
           { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
           { provide: ArmamentService, useValue: mockArmamentService },
-          { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
+          { provide: MatDialog, useValue: mockDialog },
+          provideTranslateService(),
         ],
       });
       const loader = TestbedHarnessEnvironment.loader(view.fixture);
@@ -171,6 +174,37 @@ describe('Armament', () => {
       expect(screen.getAllByText(/TRIAL_PLANNING.ARMAMENT.TABLE.LIFE/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/TRIAL_PLANNING.ARMAMENT.TABLE.OBSERVATIONS/i).length).toBeGreaterThan(0);
     });
+  });
+
+  describe('Conditional tube fields', () => {
+    const cases: ReadonlyArray<{ weaponType: SpecimenType | ''; showsTubeFields: boolean }> = [
+      { weaponType: SpecimenType.Weapon, showsTubeFields: true },
+      { weaponType: SpecimenType.Mortar, showsTubeFields: false },
+      { weaponType: '', showsTubeFields: false },
+    ];
+
+    it.each(cases)(
+      'should render tube fields only for weapons ($weaponType)',
+      async ({ weaponType, showsTubeFields }) => {
+        const { view, loader } = await runSetup({ armamentData: createArmamentResponse(1, 1) });
+        await expandPanelByIndex(loader, 0);
+
+        view.fixture.componentInstance.armamentSignal.update((series) =>
+          series.map((serie) => ({
+            ...serie,
+            shots: serie.shots.map((shot) => ({
+              ...shot,
+              armament: { ...shot.armament, weaponType },
+            })),
+          })),
+        );
+        view.fixture.detectChanges();
+
+        const selects = await loader.getAllHarnesses(MatSelectHarness);
+        expect(selects).toHaveLength(showsTubeFields ? 4 : 2);
+        expect(screen.queryAllByRole('spinbutton')).toHaveLength(showsTubeFields ? 1 : 0);
+      },
+    );
   });
 
   describe('Expansion Panels', () => {
@@ -199,7 +233,7 @@ describe('Armament', () => {
   });
 
   describe('Form state', () => {
-    it('should enable saving changed mortar shots without tube life', async () => {
+    it('should enable saving changed mortar shots without tube fields', async () => {
       const { view } = await runSetup();
       const component = view.fixture.componentInstance;
 
@@ -213,7 +247,6 @@ describe('Armament', () => {
               weaponType: SpecimenType.Mortar,
               tubeExternalId: '',
               tubeName: '',
-              tubeLifePercentage: null,
             },
           })),
         })),
@@ -224,23 +257,37 @@ describe('Armament', () => {
       expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' })).toBeEnabled();
     });
 
-    it.each([null, 0])(
-      'should require weapon tube life while accepting zero percent (%s)',
-      async (tubeLifePercentage) => {
-        const { view } = await runSetup();
-        const component = view.fixture.componentInstance;
+    it('should accept zero percent for weapon tube life', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
 
-        component.armamentSignal.update((series) => {
-          const updatedSeries = structuredClone(series);
-          updatedSeries[0].shots[0].armament.tubeLifePercentage = tubeLifePercentage;
-          return updatedSeries;
-        });
-        view.fixture.detectChanges();
+      component.armamentSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].armament.tubeLifePercentage = 0;
+        return updatedSeries;
+      });
+      view.fixture.detectChanges();
 
-        expect(component.isFormValid()).toBe(tubeLifePercentage !== null);
-        expect(component.hasToBeDisabled()).toBe(tubeLifePercentage === null);
-      },
-    );
+      expect(component.isFormValid()).toBe(true);
+      expect(component.hasToBeDisabled()).toBe(false);
+    });
+
+    it('should require weapon tube life when field is empty', async () => {
+      const { view, loader, user } = await runSetup();
+      await expandPanelByIndex(loader, 0);
+
+      const lifeInput = screen.getAllByRole('spinbutton')[0];
+      if (!lifeInput) {
+        throw new Error('Tube life input not found');
+      }
+
+      await user.clear(lifeInput);
+      view.fixture.detectChanges();
+
+      const component = view.fixture.componentInstance;
+      await waitFor(() => expect(component.isFormValid()).toBe(false));
+      expect(component.hasToBeDisabled()).toBe(true);
+    });
 
     it('should have a valid form when data is correct', async () => {
       const { view } = await runSetup();

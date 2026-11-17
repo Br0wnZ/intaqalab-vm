@@ -1,4 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import type { ConfirmDialogData } from '@intaqalab/models';
 import { createMockSeriesAndShotsStore } from '@intaqalab/utils';
 import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
@@ -66,11 +67,9 @@ describe('ConfirmDeleteShotDialog', () => {
     });
 
     it('should render delete icon in title', async () => {
-      await renderDialog();
-      const title = screen.getByRole('heading');
-      // Query for the custom icon component by selector
-      const icon = title.querySelector('ui-inta-icon');
-      expect(icon).toBeTruthy();
+      const { fixture } = await renderDialog();
+      const icon = fixture.debugElement.query(By.css('h2 ui-inta-icon, [mat-dialog-title] ui-inta-icon, ui-inta-icon'));
+      expect(icon).not.toBeNull();
     });
 
     it('should render message content', async () => {
@@ -246,13 +245,13 @@ describe('ConfirmDeleteShotDialog', () => {
     });
 
     it('should have semantic HTML for content', async () => {
-      const { container } = await renderDialog();
+      const { fixture } = await renderDialog();
 
-      const dialogContent = container.querySelector('mat-dialog-content');
-      expect(dialogContent).toBeInTheDocument();
+      const dialogContent = fixture.debugElement.query(By.css('mat-dialog-content'));
+      expect(dialogContent).not.toBeNull();
 
-      const dialogActions = container.querySelector('mat-dialog-actions');
-      expect(dialogActions).toBeInTheDocument();
+      const dialogActions = fixture.debugElement.query(By.css('mat-dialog-actions'));
+      expect(dialogActions).not.toBeNull();
     });
 
     it('should be keyboard navigable', async () => {

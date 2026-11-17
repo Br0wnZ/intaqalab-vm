@@ -1,6 +1,6 @@
 import { HttpContext, HttpErrorResponse, HttpRequest, provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { SKIP_ERROR_TOAST } from '@intaqalab/config';
+import { SKIP_ERROR_TOAST, SKIP_ERROR_TOAST_STATUSES } from '@intaqalab/config';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { throwError } from 'rxjs';
@@ -35,14 +35,16 @@ describe('globalHttpErrorInterceptor', () => {
     expect(globalHttpErrorInterceptor).toBeTruthy();
   });
 
-  function runInterceptor(status: number, skipErrorToast = false): Promise<void> {
-    const context = new HttpContext().set(SKIP_ERROR_TOAST, skipErrorToast);
+  function runInterceptor(status: number, skipErrorToast = false, skipStatuses: readonly number[] = []): Promise<void> {
+    const context = new HttpContext()
+      .set(SKIP_ERROR_TOAST, skipErrorToast)
+      .set(SKIP_ERROR_TOAST_STATUSES, skipStatuses);
     const baseReq = new HttpRequest('GET', '/api/test');
     const req = baseReq.clone({ context });
     const error = new HttpErrorResponse({ status, statusText: 'Error', url: '/api/test' });
     const next = vi.fn(() => throwError(() => error));
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       TestBed.runInInjectionContext(() => {
         globalHttpErrorInterceptor(req, next).subscribe({
           next: () => resolve(),
@@ -133,6 +135,13 @@ describe('globalHttpErrorInterceptor', () => {
 
   it('should NOT show a toaster if SKIP_ERROR_TOAST context token is true', async () => {
     await runInterceptor(500, true);
+
+    expect(mockToastrService.error).not.toHaveBeenCalled();
+    expect(mockTranslateService.instant).not.toHaveBeenCalled();
+  });
+
+  it('should NOT show a toaster when error status is listed in SKIP_ERROR_TOAST_STATUSES', async () => {
+    await runInterceptor(409, false, [409]);
 
     expect(mockToastrService.error).not.toHaveBeenCalled();
     expect(mockTranslateService.instant).not.toHaveBeenCalled();

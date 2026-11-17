@@ -12,7 +12,7 @@ Guía para construir suites de tests unitarios e integrados con Vitest + Angular
 
 ```typescript
 import { TestBed } from '@angular/core/testing';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -47,7 +47,7 @@ describe('<Widget>', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {

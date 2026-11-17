@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -189,7 +190,7 @@ describe('LocaleDecimalInputDirective', () => {
 
     fixture = TestBed.createComponent(component as typeof HostComponent);
     fixture.detectChanges();
-    inputEl = fixture.nativeElement.querySelector('#dec') as HTMLInputElement;
+    inputEl = fixture.debugElement.query(By.css('#dec')).nativeElement as HTMLInputElement;
     return localeSig;
   }
 

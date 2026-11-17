@@ -29,10 +29,9 @@ describe('MyComponent', () => {
       ],
     });
 
-    const container = view.fixture.nativeElement as HTMLElement;
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { user, view, container, loader };
+    return { user, view, loader };
   };
 
   beforeEach(() => {
@@ -84,7 +83,45 @@ providers: [provideHttpClient(), provideHttpClientTesting(), provideTestingEnvir
 ### Animaciones (Angular Material 22.2)
 
 > [!NOTE]
-> **Prohibido `NoopAnimationsModule` / `provideAnimations()`:** Angular Material `22.2.7` usa animaciones CSS nativas y `@angular/animations` ha sido eliminado del proyecto. No añadas módulos de animación en tests.
+> **Prohibido `NoopAnimationsModule` / `provideAnimations()`:** Angular Material `22.2.7` usa animaciones CSS nativas y `@angular/animations` ha sido eliminado del proyecto. No añadas módulos de animación en tests. Cada `src/test-setup.ts` incluye el polyfill `window.matchMedia('(prefers-reduced-motion)')` para que `MediaMatcher` resuelva overlays (`MatDialog`, `MatSelect`) de forma síncrona sin retardos CSS en `jsdom`.
+
+### `src/test-setup.ts` Zoneless Estándar
+
+Todas las librerías y apps ejecutan Vitest **sin `zone.js`**:
+
+```typescript
+import '@analogjs/vitest-angular/setup-snapshots';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
+import '@angular/compiler';
+import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
+import '@testing-library/jest-dom/vitest';
+
+BrowserDomAdapter.makeCurrent();
+setRootDomAdapter(new BrowserDomAdapter());
+
+setupTestBed();
+```
+
+### Timers Simulados en Zoneless (`vi.useFakeTimers`)
+
+`fakeAsync` y `tick()` de `@angular/core/testing` están eliminados. Para debounces/timers usa Vitest:
+
+```typescript
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+it('should trigger debounce after 150ms', async () => {
+  service.show();
+  await vi.advanceTimersByTimeAsync(150);
+  expect(service.isLoading()).toBe(true);
+});
+```
 
 ## Setup con Parámetros Configurables
 
@@ -100,11 +137,7 @@ const runSetup = async (isEmptyResponse = false) => {
   };
 
   const view = await render(MyComponent, {
-    providers: [
-      provideTranslateService(),
-      provideTestingEnvironment(),
-      { provide: MyService, useValue: mockService },
-    ],
+    providers: [provideTranslateService(), provideTestingEnvironment(), { provide: MyService, useValue: mockService }],
   });
 
   return { view, mockService };

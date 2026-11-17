@@ -288,43 +288,42 @@ try {
 
 ---
 
-## 10. `fakeAsync` + `tick()` — debounce en `LoaderService.show()` no dispara
+## 10. Temporizadores y debounce (`LoaderService.show()`) sin `fakeAsync`
 
-**Contexto:** Tests de `LoaderComponent`, `LoaderService` y `loaderInterceptor` usan `fakeAsync` + `tick()` y fallan con `expected true, received false` al verificar `isLoading()`.
-
-**Causa:** `LoaderService.show()` tiene un debounce interno de **150ms** implementado con `setTimeout`. `tick()` sin argumento avanza 0ms — el timer nunca dispara y `isLoading` permanece `false`.
+**Contexto:** Tests de `LoaderComponent`, `LoaderService` y `loaderInterceptor` evalúan un debounce interno de **150ms** implementado con `setTimeout`. Con `zone.js` desinstalado, `fakeAsync()` y `tick()` fallan o no existen en entorno zoneless.
 
 **Síntoma característico:**
 
-```
-expected: true
-received: false
+```text
+Error: zone-testing.js is needed for the fakeAsync() test helper
+// o
+expected: true, received: false (timer no avanzado)
 ```
 
-en la línea `expect(service.isLoading()).toBe(true)` justo después de `tick()`.
-
-**Solución:** Usar `tick(150)` (o una constante `SHOW_DEBOUNCE_MS = 150`) siempre que se espere que `isLoading` sea `true` después de `show()`. Los métodos `hide()` y `reset()` son **síncronos** → `tick()` sin argumento es correcto tras ellos.
+**Solución:** Activar `vi.useFakeTimers()` antes de `render()` / llamadas al servicio y avanzar explícitamente con `await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS)` (restaurando `vi.useRealTimers()` en `afterEach`). Para flush de acciones síncronas/microtasks, usar `await vi.advanceTimersByTimeAsync(0)`.
 
 ```typescript
-const SHOW_DEBOUNCE_MS = 150; // al inicio del spec
+const SHOW_DEBOUNCE_MS = 150;
 
-// ❌ Falla — debounce no dispara
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+// ✅ Correcto en Zoneless Vitest 5
 service.show();
-tick();
-expect(service.isLoading()).toBe(true); // false!
+await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
+expect(service.isLoading()).toBe(true);
 
-// ✅ Correcto
-service.show();
-tick(SHOW_DEBOUNCE_MS);
-expect(service.isLoading()).toBe(true); // true ✓
-
-// ✅ hide() y reset() son síncronos
 service.hide();
-tick(); // 0ms es suficiente
-expect(service.isLoading()).toBe(false); // true ✓
+await vi.advanceTimersByTimeAsync(0);
+expect(service.isLoading()).toBe(false);
 ```
 
-**Regla general:** Antes de hacer `tick()`, revisar si el método llamado usa `setTimeout` internamente. Si lo usa, pasar el tiempo exacto del debounce.
+**Regla general:** Nunca uses `fakeAsync` ni `tick()` de `@angular/core/testing`; usa `vi.useFakeTimers()` + `await vi.advanceTimersByTimeAsync(...)`.
 
 ---
 
@@ -451,22 +450,33 @@ async function setup() {
 
 ---
 
-## 17. `TestBed.tick()` no válido en Angular 21 Zoneless (httpResource no dispara)
+## 17. Diferencia entre `tick()` (`fakeAsync`), `TestBed.tick()` y `TestBed.flushEffects()` con `httpResource`
 
-**Contexto:** Un test usa `TestBed.tick()` para intentar avanzar el tiempo y procesar peticiones HTTP generadas por un `httpResource`.
+**Contexto:** Un test actualiza un signal trigger que debe disparar un `httpResource`, o migra un test antiguo que devolvía `() => fakeAsync(() => ...)` sin ejecutarse.
 
-**Causa:** `TestBed.tick()` dependía de `zone.js` (`fakeAsync`) y no es válido en tests Zoneless de Angular 21. Además, el API de `httpResource` funciona usando _Signals_ y _Effects_ internamente para disparar las peticiones cuando cambian sus parámetros.
+**Causa:** `tick()` standalone de `@angular/core/testing` requería `fakeAsync` + `zone.js` (eliminados del repo). Por su parte, `httpResource` en Angular 22 dispara sus peticiones dentro del ciclo reactivo de efectos y propaga la respuesta parseada al signal de `value()` de forma asíncrona tras resolver el observable/promesa interna.
 
-**Solución:** Reemplazar `TestBed.tick()` por `TestBed.flushEffects()`. Esto fuerza la ejecución síncrona de los _effects_ pendientes en la cola, disparando así la petición reactiva del `httpResource` de manera segura y sin temporizadores falsos.
+**Solución:** Hacer el `it(...)` `async`, llamar al trigger del servicio y ejecutar `TestBed.tick()` (o `TestBed.flushEffects()`). Tras `req.flush(...)`, esperar microtasks (`await Promise.resolve(); await Promise.resolve(); TestBed.tick();` o `await vi.waitFor(...)`) para leer `.value()`.
 
 ```typescript
-// ❌ Incorrecto en Angular 21 Zoneless
-service.getShootingConditions(trialId);
-TestBed.tick();
+// ❌ Prohibido — dependía de zone.js (y si iba envuelto en () => fakeAsync(...) ni se ejecutaba)
+it('fetches', () =>
+  fakeAsync(() => {
+    service.load();
+    tick();
+  }));
 
-// ✅ Correcto para procesar triggers de httpResource
-service.getShootingConditions(trialId);
-TestBed.flushEffects();
+// ✅ Correcto en Angular 22 Zoneless
+it('fetches', async () => {
+  service.load();
+  TestBed.tick();
+
+  const req = httpTesting.expectOne('/api/items');
+  req.flush(mockResponse);
+  await Promise.resolve();
+  await Promise.resolve();
+  TestBed.tick();
+});
 ```
 
 ---
@@ -579,7 +589,7 @@ Failed to resolve import "@oxc-project/runtime/helpers/asyncToGenerator" from "n
 ```
 
 **Causa:**
-`@analogjs/vite-plugin-angular` transfigura paquetes `@angular/*` y `@angular/cdk` a target `es2016` mediante `transformWithOxc()` para que `async/await` pueda ser interceptado por Zone.js en utilidades de testing (`fakeAsync`, `tick`). El compilador OXC emite llamadas a helpers externos (`@oxc-project/runtime/helpers/*`). Al no venir incluido transitivamente en upstream, Vite no puede resolver la ruta a menos que esté instalado en el monorepo.
+`@analogjs/vite-plugin-angular` y las transformaciones OXC de Vite 8 / Vitest 5 emiten llamadas a helpers externos (`@oxc-project/runtime/helpers/*`) al transpilar paquetes Angular / TypeScript modernos. Al no venir incluido transitivamente en upstream, Vite no puede resolver la ruta a menos que esté instalado en el monorepo.
 
 **Solución:**
 Asegurar que `@oxc-project/runtime` esté presente en las `devDependencies` del `package.json` raíz del workspace:
@@ -603,16 +613,17 @@ Property 'toBeInTheDocument' does not exist on type 'Assertion<void, HTMLElement
 ```
 
 **Causa:**
+
 1. El `src/test-setup.ts` de la librería importa `@testing-library/jest-dom` (que solo extiende tipos de Jest), en lugar del entry point específico de Vitest `@testing-library/jest-dom/vitest`.
 2. El `tsconfig.spec.json` de la librería no incluye `"@testing-library/jest-dom"` en `compilerOptions.types`.
 
 **Solución:**
+
 1. En `src/test-setup.ts` de la librería, usar el import de Vitest:
 
 ```typescript
 // ❌ Incorrecto (solo tipos de Jest)
 import '@testing-library/jest-dom';
-
 // ✅ Correcto (extiende Assertion<T> de Vitest)
 import '@testing-library/jest-dom/vitest';
 ```

@@ -1,15 +1,5 @@
 import type { OnInit } from '@angular/core';
-import {
-  Component,
-  Injector,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  model,
-  signal,
-} from '@angular/core';
+import { Component, Injector, ViewEncapsulation, computed, effect, inject, input, model, signal } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -96,7 +86,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
 
     <!-- Tube Column -->
     <td class="py-2 px-1">
-      @if (shot().armament.weaponType.toLowerCase() !== mortarType) {
+      @if (shot().armament.weaponType.toLowerCase() === weaponType) {
         <mat-form-field uiValueTooltip appearance="outline" subscriptSizing="dynamic">
           <mat-select clearable [formField]="formPath().armament.tubeExternalId">
             @for (tube of tubeOptions(); track tube.id) {
@@ -111,7 +101,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
 
     <!-- Instrumented Column -->
     <td class="py-2 px-1">
-      @if (shot().armament.weaponType.toLowerCase() !== mortarType) {
+      @if (shot().armament.weaponType.toLowerCase() === weaponType) {
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-24">
           <mat-select clearable [formField]="formPath().armament.isInstrumented">
             <mat-option [value]="true">
@@ -127,7 +117,7 @@ export type ShotFormPath = FieldTree<ArmamentSerieShot>;
 
     <!-- Life Column -->
     <td class="py-2 px-1 text-center">
-      @if (shot().armament.weaponType.toLowerCase() !== mortarType) {
+      @if (shot().armament.weaponType.toLowerCase() === weaponType) {
         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="max-w-28">
           <input matInput type="number" step="1" [formField]="formPath().armament.tubeLifePercentage" />
           <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
@@ -217,7 +207,7 @@ export class ArmamentRow implements OnInit {
 
   readonly hasWeaponType = signal<boolean>(false);
 
-  readonly mortarType = SpecimenType.Mortar;
+  readonly weaponType = SpecimenType.Weapon;
 
   readonly typeOptions = [
     { value: SpecimenType.Weapon, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_WEAPON' },

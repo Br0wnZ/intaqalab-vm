@@ -113,7 +113,8 @@ describe('TrialDocs', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: TrialDocsService, useValue: mockTrialDocsService },
-        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
+        { provide: MatDialog, useValue: mockDialog },
+        provideTranslateService(),
       ],
     });
   };
@@ -179,9 +180,9 @@ describe('TrialDocs', () => {
 
   it('should call deleteDocument when delete action is confirmed', async () => {
     (mockTrialDocsService.documentsResource.value as WritableSignal<any>).set({ items: MOCK_DOCUMENTS });
-    const result = await renderComponent();
+    const view = await renderComponent();
 
-    const fixture = result.fixture;
+    const fixture = view.fixture;
     fixture.detectChanges();
     const debugEl = fixture.debugElement.query(By.directive(TrialDocs as any));
     const compInstance = debugEl.componentInstance as any;
@@ -196,8 +197,8 @@ describe('TrialDocs', () => {
   });
 
   it('should call getDocuments with filters when form values change', async () => {
-    const result = await renderComponent();
-    const fixture = result.fixture;
+    const view = await renderComponent();
+    const fixture = view.fixture;
     fixture.detectChanges();
     const debugEl = fixture.debugElement.query(By.directive(TrialDocs as any));
     const compInstance = debugEl.componentInstance as any;
@@ -214,8 +215,8 @@ describe('TrialDocs', () => {
 
   it('should log when downloading a document', async () => {
     (mockTrialDocsService.documentsResource.value as WritableSignal<any>).set({ items: MOCK_DOCUMENTS });
-    const result = await renderComponent();
-    const fixture = result.fixture;
+    const view = await renderComponent();
+    const fixture = view.fixture;
     fixture.detectChanges();
     const debugEl = fixture.debugElement.query(By.directive(TrialDocs as any));
     const compInstance = debugEl.componentInstance as any;
@@ -229,8 +230,8 @@ describe('TrialDocs', () => {
     (mockTrialDocsService.deleteDocumentResource.status as WritableSignal<string>).set('pending');
     (mockTrialDocsService.deleteDocumentResource.isLoading as WritableSignal<boolean>).set(true);
 
-    const result = await renderComponent();
-    const fixture = result.fixture;
+    const view = await renderComponent();
+    const fixture = view.fixture;
     fixture.detectChanges();
     const debugEl = fixture.debugElement.query(By.directive(TrialDocs as any));
     const compInstance = debugEl.componentInstance as any;

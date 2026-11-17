@@ -120,7 +120,7 @@ Each consolidated skill in `.agents/skills/` contains a **⚡ Quick Mode** subse
 - **NgRx Signals 22.0.1:** `withProps()`, `withLinkedState()`, `withFeature()`, `signalMethod()`, `@ngrx/signals/resource` (`extendResource`, `withPreviousValueOnLoading()`, `mapResource`), `@ngrx/signals/events` (`event`, `eventGroup`, `Dispatcher`, `Events`, `withEventHandlers`, `withReducer`, `on`), `@ngrx/signals/testing` (`unprotected(store)`).
 - **Nx Monorepo:** Layered modular libraries (`data-access`, `feature`, `ui`, `util`). Keep business logic in `data-access`.
 - **Tailwind CSS 4.3:** Inline classes and Angular Material `22.2.7` (Aria/Headless, `MatTimepicker`, M3 token overrides, native CSS animations). Prohibit dedicated component SCSS files.
-- **Testing:** Vitest 5.1 + AnalogJS 2.9 + Angular Testing Library (ATL 19.6: `aliasedInput()`, `on` callbacks). **MANDATORY:** All `it()` descriptions MUST be written in English. Zero `NoopAnimationsModule` / `BrowserAnimationsModule` in specs.
+- **Testing:** Vitest 5.1 + AnalogJS 2.9 (100% Zoneless via `setupTestBed()` + `setup-snapshots` + `@testing-library/jest-dom/vitest`; ZERO `zone.js`, ZERO `fakeAsync`/`tick()`, ZERO `NoopAnimationsModule` / `BrowserAnimationsModule`; `vi.useFakeTimers()` + `await vi.advanceTimersByTimeAsync(...)` for timers and `TestBed.tick()` for `httpResource` flushes) + Angular Testing Library (ATL 19.6: `aliasedInput()`, `on` callbacks). Testing ESLint rules (`@vitest/eslint-plugin`, `eslint-plugin-testing-library`, `eslint-plugin-jest-dom`) are enforced at `'error'`. **MANDATORY:** All `it()` descriptions MUST be written in English.
 - **Backend:** Clean ExpressJS mock server with Zod schema validation (reusable on frontend via `validateStandardSchema()`).
 - **Planning reads (ADR-017) & Shot-Scoped Helpers (ADR-019):** GET `/planning/...` data used by Execution MUST come from `@intaqalab/data-access-planning` (query services, selectors, `injectTrialShots()`, `formatShotLabel()`). Never declare `/planning/` read URLs in `libs/domain/trial/execution`; `npm run check:planning-urls` runs in pre-commit (Node, macOS/Windows). Execution widgets requiring planned configurations or warehouse catalogs per shot MUST reuse or contribute shared helpers in `libs/domain/trial/execution/src/lib/data-access/` (`injectShotMunitionComponents`, `injectComponentDenominations`, `injectDenominationBatches`, `injectMunitionTypes`, etc.). Prohibit duplicate planning queries and ad-hoc parsing in widgets. Widget docs: `docs/WIDGET_SYSTEM.md`.
 
@@ -198,4 +198,4 @@ Boundaries: code/commits/PRs written normal.
 
 ---
 
-<!-- AGENTS_VERSION: 1.7.0 | UPDATED: 2026-11-13 -->
+<!-- AGENTS_VERSION: 1.7.1 | UPDATED: 2026-11-16 -->

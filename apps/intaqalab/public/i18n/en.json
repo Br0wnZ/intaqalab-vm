@@ -116,12 +116,14 @@
     "ACTIONS": "Actions",
     "ADD": "Add",
     "CANCEL": "Cancel",
+    "COLLAPSE": "Collapse",
     "CONFIRM": "Confirm",
     "CREATE": "Create",
     "DELETE": "Delete",
     "DELETE_DATA": "Clear data",
     "DRAG_TO_REORDER": "Drag to reorder",
     "EDIT": "Edit",
+    "EXPAND": "Expand",
     "INVALID_DATE_FORMAT": "Invalid date format",
     "LOADING": "Loading...",
     "NO_OBSERVATIONS": "No observations",
@@ -1304,7 +1306,8 @@
     "EMPTY_PANEL_TITLE": "Your panel is empty",
     "ERRORS": {
       "LOAD_FAILED_DETAIL": "Execution information could not be retrieved. Please try again later.",
-      "LOAD_FAILED_TITLE": "Error loading execution"
+      "LOAD_FAILED_TITLE": "Error loading execution",
+      "SHOT_SAVE_CONFLICT": "Changes cannot be made to the selected shot"
     },
     "FREE_SPACE_DESC_1": "Click",
     "FREE_SPACE_DESC_2": "to add more modules",

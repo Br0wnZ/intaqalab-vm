@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { signal } from '@angular/core';
 import { MatButtonHarness } from '@angular/material/button/testing';
@@ -99,7 +98,8 @@ const setup = async (masterView: MasterView = MOCK_VIEW) => {
       { provide: MasterDataService, useValue: mockService },
       { provide: MODAL_COMPONENT, useValue: MasterDataDefaultUpsertDialogComponent },
       { provide: MatDialog, useValue: mockMatDialog },
-      MasterDataStore, provideTranslateService(),
+      MasterDataStore,
+      provideTranslateService(),
     ],
   });
 
@@ -181,7 +181,7 @@ describe('MasterDataListComponent', () => {
   describe('Dialog Actions', () => {
     it('should open dialog when create button is clicked', async () => {
       const { user } = await setup();
-      const createBtn = screen.getByText('MASTER_DATA.DIALOGS.UPSERT.CREATE_TITLE').closest('button')!;
+      const createBtn = screen.getByRole('button', { name: /MASTER_DATA\.DIALOGS\.UPSERT\.CREATE_TITLE/i });
       await user.click(createBtn);
       expect(mockMatDialog.open).toHaveBeenCalled();
     });
@@ -208,7 +208,8 @@ describe('MasterDataListComponent', () => {
           { provide: MasterDataService, useValue: mockService },
           { provide: MODAL_COMPONENT, useValue: MasterDataDefaultUpsertDialogComponent },
           { provide: MatDialog, useValue: mockMatDialog },
-          MasterDataStore, provideTranslateService(),
+          MasterDataStore,
+          provideTranslateService(),
         ],
       });
     }

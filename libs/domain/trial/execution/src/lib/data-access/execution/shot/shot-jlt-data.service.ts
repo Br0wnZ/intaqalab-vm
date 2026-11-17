@@ -1,11 +1,12 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
 
 import type { JltShotDataRequest, JltShotDataResponse } from '../../../execution/models';
 import { executionTrialUrl } from '../shared/execution-endpoints';
+import { skipConflictErrorToastOptions } from '../shared/execution-http-context';
 import { awaitResourceValue } from '../shared/resource-await';
 
 interface JltShotDataParams {
@@ -105,6 +106,7 @@ export class ShotJltDataService {
       this.#http.put<JltShotDataResponse>(
         executionTrialUrl(this.#executionUrl, fireTrialId, 'jlt-shot-data', 'series', seriesId, 'shots', shotId),
         body,
+        skipConflictErrorToastOptions(),
       ),
     );
   }

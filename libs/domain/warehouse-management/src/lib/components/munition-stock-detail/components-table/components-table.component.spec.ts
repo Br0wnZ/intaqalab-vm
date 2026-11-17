@@ -274,9 +274,9 @@ describe('ComponentsTableComponent', () => {
   describe('Add component', () => {
     it('should open the dialog in add mode (item: undefined) when clicking the Add button', async () => {
       await setup();
-      const addBtn = screen
-        .getByText('WHAREHOUSE_MANAGMENT.TABLE_COMPONENTS.ADD_COMPONENTS')
-        .closest('button') as HTMLButtonElement;
+      const addBtn = screen.getByRole('button', {
+        name: /WHAREHOUSE_MANAGMENT\.TABLE_COMPONENTS\.ADD_COMPONENTS/i,
+      });
 
       await userEvent.click(addBtn);
 

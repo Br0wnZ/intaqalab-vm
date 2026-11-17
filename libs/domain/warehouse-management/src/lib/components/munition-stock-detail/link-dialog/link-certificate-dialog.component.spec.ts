@@ -174,7 +174,7 @@ describe('LinkCertificatesDialogComponent', () => {
   describe('Confirm (link)', () => {
     it('should save button be disabled when nothing is selected', async () => {
       await setup();
-      const saveBtn = screen.getByText('MODIFY_DOC_DIALOG.SAVE').closest('button');
+      const saveBtn = screen.getByRole('button', { name: /MODIFY_DOC_DIALOG\.SAVE/i });
       expect(saveBtn).toBeDisabled();
     });
 
@@ -204,7 +204,7 @@ describe('LinkCertificatesDialogComponent', () => {
   describe('Cancel', () => {
     it('should close the dialog with false when clicking cancel', async () => {
       const { fixture } = await setup();
-      const cancelBtn = screen.getByText('MODIFY_DOC_DIALOG.CANCEL').closest('button') as HTMLButtonElement;
+      const cancelBtn = screen.getByRole('button', { name: /MODIFY_DOC_DIALOG\.CANCEL/i });
       await userEvent.click(cancelBtn);
       await fixture.whenStable();
       expect(mockDialogRef.close).toHaveBeenCalledWith(false);

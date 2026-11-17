@@ -16,20 +16,21 @@ async function setup() {
   mockDialog = createMockMatDialog({
     defaultResult: null,
   });
-  const renderResult = await render(TransferDialogComponent, {
+  const view = await render(TransferDialogComponent, {
     declarations: [],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: MatDialogRef, useValue: mockDialogRef },
-      provideTestingEnvironment(), provideTranslateService(),
+      provideTestingEnvironment(),
+      provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
       { provide: MAT_DIALOG_DATA, useValue: { items: [{ denomination: { id: 1, name: 'name' }, quantity: 1000 }] } },
     ],
   });
-  const fixture = renderResult.fixture;
+  const fixture = view.fixture;
   fixture.detectChanges();
   return { fixture };
 }

@@ -43,8 +43,8 @@ import type {
             <button
               mat-icon-button
               type="button"
-              aria-label="delete"
               class="!text-red-500 hover:!bg-red-50 !w-8 !h-8"
+              [attr.aria-label]="'COMMONS.DELETE' | translate"
               [disabled]="readonly()"
               (click)="remove.emit()"
             >
@@ -53,8 +53,8 @@ import type {
             <button
               mat-icon-button
               type="button"
-              aria-label="expand_less"
               class="!text-purple-600 !w-8 !h-8"
+              [attr.aria-label]="'COMMONS.COLLAPSE' | translate"
               (click)="onToggleExpanded()"
             >
               <mat-icon class="!text-xl !w-5 !h-5">expand_less</mat-icon>
@@ -126,8 +126,8 @@ import type {
           <button
             mat-icon-button
             type="button"
-            aria-label="delete"
             class="!text-red-500 hover:!bg-red-50 !w-8 !h-8"
+            [attr.aria-label]="'COMMONS.DELETE' | translate"
             [disabled]="readonly()"
             (click)="remove.emit()"
           >
@@ -137,8 +137,8 @@ import type {
             <button
               mat-icon-button
               type="button"
-              aria-label="expand_more"
               class="!text-gray-400 hover:!text-purple-600 !w-8 !h-8"
+              [attr.aria-label]="'COMMONS.EXPAND' | translate"
               (click)="onToggleExpanded()"
             >
               <mat-icon class="!text-xl !w-5 !h-5">expand_more</mat-icon>

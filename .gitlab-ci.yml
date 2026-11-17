@@ -325,10 +325,9 @@ coverity-pro:
 
 unit-test-des:
   stage: unit-tests
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   tags: [k8s-des]
   before_script:
-    - !reference [.node-upgrade, before_script]
     - git fetch origin develop --depth=1 
   script:
     - npm install --cache .npm --prefer-offline
@@ -342,7 +341,7 @@ unit-test-des:
 
 unit-test-pre:
   stage: unit-tests
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   tags: [k8s-des]
   before_script:
     - git fetch origin preprod --depth=1  
@@ -358,7 +357,7 @@ unit-test-pre:
 
 unit-test-pro:
   stage: unit-tests
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   tags: [k8s-des]
   before_script:
     - git fetch origin master --depth=1  
@@ -375,7 +374,7 @@ unit-test-pro:
 build-des:
   stage: build
   tags: [k8s-des]
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   script:
     - npm ci --prefer-offline --no-audit --no-fund --ignore-scripts
     - npm run build -- --configuration des
@@ -391,7 +390,7 @@ build-des:
 build-pre:
   stage: build
   tags: [k8s-des]    
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   script:
       - npm install --cache .npm --prefer-offline
       - npm run build -- --configuration pre
@@ -410,7 +409,7 @@ build-pre:
 build-pro:
   stage: build
   tags: [k8s-des]    
-  image: registry.tools.inta.es/builders/node:22.14.0
+  image: registry.tools.inta.es/builders/node:22.22.3
   script:
       - npm install --cache .npm --prefer-offline
       - npm run build -- --configuration pro

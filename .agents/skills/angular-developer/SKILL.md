@@ -1,7 +1,7 @@
 ---
 name: angular-developer
-version: 1.1.0
-last-updated: 2026-11-13
+version: 1.1.1
+last-updated: 2026-11-16
 description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 user-invocable: true
 ---

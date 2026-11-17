@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -26,13 +26,14 @@ describe('VigilanciaWidget', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WidgetStateService, useValue: mockWidgetStateService },
-        ExecutionStore, provideTranslateService(),
+        ExecutionStore,
+        provideTranslateService(),
       ],
     });
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
   });
 
   it('formState is always clean (read-only widget)', async () => {

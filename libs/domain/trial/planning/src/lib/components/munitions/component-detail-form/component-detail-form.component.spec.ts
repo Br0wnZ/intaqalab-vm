@@ -384,12 +384,12 @@ describe('ComponentDetailFormComponent', () => {
 
   describe('Validations', () => {
     it('should have a form with denomination validation', async () => {
-      const renderResult = await render(ComponentDetailFormComponent, {
+      const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: defaultDetail },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       expect(component.detailForm).toBeDefined();
@@ -397,12 +397,12 @@ describe('ComponentDetailFormComponent', () => {
     });
 
     it('should reject maxAllowedErrors values above 99', async () => {
-      const renderResult = await render(ComponentDetailFormComponent, {
+      const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: { ...defaultDetail, maxAllowedErrors: 100 } },
       });
 
-      const component = renderResult.fixture.componentInstance;
+      const component = view.fixture.componentInstance;
 
       expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
     });
@@ -411,12 +411,12 @@ describe('ComponentDetailFormComponent', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = userEvent.setup();
 
-      const renderResult = await render(ComponentDetailFormComponent, {
+      const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: { detail: { ...defaultDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } } },
       });
 
-      fixture = renderResult.fixture;
+      fixture = view.fixture;
       const component = fixture.componentInstance;
 
       expect(component.detailForm().valid()).toBe(true);
@@ -439,21 +439,21 @@ describe('ComponentDetailFormComponent', () => {
     });
 
     it('should validate trailing comma in clientNumber', async () => {
-      const renderResult = await render(ComponentDetailFormComponent, {
+      const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
         },
       });
 
-      const component = renderResult.fixture.componentInstance;
+      const component = view.fixture.componentInstance;
       component.formModel.update((c) => ({ ...c, clientNumber: '1,2,' }));
       expect(component.detailForm().valid()).toBe(false);
       expect(component.detailForm.clientNumber().errors()).not.toBeNull();
     });
 
     it('should validate clientNumber counts against assignedShotsCount', async () => {
-      const renderResult = await render(ComponentDetailFormComponent, {
+      const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
         componentInputs: {
           detail: { ...nonEspoletaDetail, denomination: { id: 'denom-1', name: 'Modelo 1' } },
@@ -461,7 +461,7 @@ describe('ComponentDetailFormComponent', () => {
         },
       });
 
-      const component = renderResult.fixture.componentInstance;
+      const component = view.fixture.componentInstance;
 
       // Valid: 2 numbers, limit is 2
       component.formModel.update((c) => ({ ...c, clientNumber: '1,2' }));

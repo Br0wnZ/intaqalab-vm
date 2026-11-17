@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -11,6 +11,7 @@ import type {
   ShotJltMaoResponse,
 } from '../../../execution/models';
 import { executionTrialUrl } from '../shared/execution-endpoints';
+import { skipConflictErrorToastOptions } from '../shared/execution-http-context';
 import { awaitResourceValue } from '../shared/resource-await';
 
 interface ShotJltMaoParams {
@@ -107,6 +108,7 @@ export class ShotJltMaoService {
       this.#http.put<ShotJltMaoResponse>(
         executionTrialUrl(this.#executionUrl, fireTrialId, 'jlt-mao', 'series', seriesId, 'shots', shotId),
         body,
+        skipConflictErrorToastOptions(),
       ),
     );
   }

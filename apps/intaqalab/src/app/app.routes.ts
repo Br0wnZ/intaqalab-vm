@@ -19,7 +19,7 @@ export const appRoutes: Route[] = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'trial/new',
+    redirectTo: 'calendar-trials',
   },
   {
     path: 'demos',

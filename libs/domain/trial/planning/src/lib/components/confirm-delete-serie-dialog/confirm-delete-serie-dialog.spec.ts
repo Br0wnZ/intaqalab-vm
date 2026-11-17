@@ -1,6 +1,7 @@
 import type { ResourceStatus } from '@angular/core';
 import { signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import type { ConfirmDialogData } from '@intaqalab/models';
 import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
 import { render, screen, within } from '@testing-library/angular';
@@ -301,13 +302,13 @@ describe('ConfirmDeleteSerieDialog', () => {
     });
 
     it('should have semantic HTML for content', async () => {
-      const { container } = await renderDialog();
+      const { fixture } = await renderDialog();
 
-      const dialogContent = container.querySelector('mat-dialog-content');
-      expect(dialogContent).toBeInTheDocument();
+      const dialogContent = fixture.debugElement.query(By.css('mat-dialog-content'));
+      expect(dialogContent).not.toBeNull();
 
-      const dialogActions = container.querySelector('mat-dialog-actions');
-      expect(dialogActions).toBeInTheDocument();
+      const dialogActions = fixture.debugElement.query(By.css('mat-dialog-actions'));
+      expect(dialogActions).not.toBeNull();
     });
 
     it('should be keyboard navigable', async () => {

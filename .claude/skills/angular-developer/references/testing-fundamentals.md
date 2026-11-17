@@ -13,64 +13,49 @@ This project follows a modern, zoneless testing approach. State changes schedule
 2.  **Wait:** Use `await fixture.whenStable()` to allow the framework to process the scheduled update and render the changes.
 3.  **Assert:** Verify the outcome.
 
-### Basic Test Structure Example
+### Basic Test Structure Example (ATL + Zoneless Vitest)
 
 ```ts
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { render, screen } from '@testing-library/angular';
 
 import { MyComponent } from './my.component';
 
 describe('MyComponent', () => {
-  let component: MyComponent;
-  let fixture: ComponentFixture<MyComponent>;
-  let h1: HTMLElement;
-
-  beforeEach(async () => {
-    // 1. Configure the test module
-    await TestBed.configureTestingModule({
-      imports: [MyComponent],
-    }).compileComponents();
-
-    // 2. Create the component fixture
-    fixture = TestBed.createComponent(MyComponent);
-    component = fixture.componentInstance;
-    h1 = fixture.nativeElement.querySelector('h1');
-  });
-
   it('should display the default title', async () => {
-    // ACT: (Implicit) Component is created with default state.
-    // WAIT for initial data binding.
-    await fixture.whenStable();
-    // ASSERT the initial state.
-    expect(h1.textContent).toContain('Default Title');
+    await render(MyComponent);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Default Title');
   });
 
   it('should display a different title after a change', async () => {
-    // ACT: Change the component's title property.
-    component.title.set('New Test Title');
+    const { fixture } = await render(MyComponent);
 
-    // WAIT for the asynchronous update to complete.
+    // ACT: Change the component's signal title property.
+    fixture.componentInstance.title.set('New Test Title');
+
+    // WAIT for the asynchronous zoneless update to complete.
     await fixture.whenStable();
 
     // ASSERT the DOM has been updated.
-    expect(h1.textContent).toContain('New Test Title');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('New Test Title');
   });
 });
 ```
 
-## TestBed and ComponentFixture
+## TestBed, ATL `render()` and ComponentFixture
 
-- **`TestBed`**: The primary utility for creating a test-specific Angular module. Use `TestBed.configureTestingModule({...})` in your `beforeEach` to declare components, provide services, and set up imports needed for your test.
-- **`ComponentFixture`**: A handle on the created component instance and its environment.
+- **`render()` (Angular Testing Library):** The standard entry point for component specs in this workspace (`setupTestBed()` configures pure zoneless mode in `src/test-setup.ts`, with zero `zone.js`). Never call `render()` inside `beforeEach`.
+- **`TestBed` & `TestBed.tick()`:** Use `TestBed.configureTestingModule({...})` for service/store specs and `TestBed.tick()` + `await Promise.resolve()` to flush `httpResource` effects without `fakeAsync`.
+- **`ComponentFixture`**: Handle on the created component instance and its environment.
   - `fixture.componentInstance`: Access the component's class instance.
-  - `fixture.nativeElement`: Access the component's root DOM element.
-  - `fixture.debugElement`: An Angular-specific wrapper around the `nativeElement` that provides safer, platform-agnostic ways to query the DOM (e.g., `debugElement.query(By.css('p'))`).
+  - `fixture.debugElement`: Platform-agnostic Angular wrapper (`debugElement.query(By.css('...'))`) preferred over direct DOM `.querySelector()` (banned by `testing-library/no-node-access`).
 
-## Custom Utilities
+## Simulated Timers (Pure Zoneless Vitest)
 
-To keep tests fast and avoid long waits, this project provides custom utilities:
+`zone.js`, `fakeAsync()`, and `tick()` are removed from the workspace. For debounced services or `setTimeout` flows, use Vitest fake timers:
 
-- **`useAutoTick()`**: (from `packages/private/testing/src/utils.ts`) Fast-forwards time via a mock clock to avoid real waits.
-- **`await timeout(ms)`**: (from `packages/private/testing/src/utils.ts`) Use for cases where a specific real-time delay is unavoidable.
-
-Always prefer `useAutoTick()` to keep tests efficient.
+```ts
+vi.useFakeTimers();
+service.triggerDebounce();
+await vi.advanceTimersByTimeAsync(150);
+vi.useRealTimers();
+```

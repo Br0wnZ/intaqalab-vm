@@ -212,7 +212,7 @@ describe('MeasureCategoryCard', () => {
         isOpen: true,
         selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
-      const deleteBtn = screen.getByRole('button', { name: 'delete' });
+      const deleteBtn = screen.getByRole('button', { name: /COMMONS\.DELETE|Eliminar/i });
       await user.click(deleteBtn);
       expect(host.onRemoveMeasure).toHaveBeenCalledWith('meas-1');
     });
@@ -222,7 +222,7 @@ describe('MeasureCategoryCard', () => {
         isOpen: true,
         selectedValues: [{ id: 'meas-1', minLimit: null, maxLimit: null, deviation: null, expanded: false }],
       });
-      const toggleBtn = screen.getByRole('button', { name: 'expand_more' });
+      const toggleBtn = screen.getByRole('button', { name: /COMMONS\.EXPAND|Expandir/i });
       await user.click(toggleBtn);
       expect(host.onToggleMeasureExpanded).toHaveBeenCalledWith('meas-1');
     });

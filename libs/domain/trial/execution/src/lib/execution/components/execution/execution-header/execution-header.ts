@@ -85,6 +85,7 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
             mat-icon-button
             style="color: var(--inta-color-primary)"
             class="!bg-transparent !shadow-none !size-12"
+            [attr.aria-label]="'COMMONS.SAVE' | translate"
             [disabled]="isSaving() || !hasUnsavedChanges()"
             [class.!opacity-30]="isSaving() || !hasUnsavedChanges()"
             [attr.aria-disabled]="isSaving() || !hasUnsavedChanges()"

@@ -6,9 +6,9 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.7.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "36d59fb20fabec7a",
+      "version": "1.7.1",
+      "lastUpdated": "2026-11-16",
+      "checksum": "d7876c1495e82238",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
@@ -21,16 +21,16 @@
       "description": "Expert in Angular 22, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns."
     },
     "angular-developer": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "007a96c648dc0fcd",
+      "version": "1.1.1",
+      "lastUpdated": "2026-11-16",
+      "checksum": "4c9e98cbae575588",
       "path": ".agents/skills/angular-developer/SKILL.md",
       "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
     },
     "angular-testing-expert": {
-      "version": "1.1.1",
-      "lastUpdated": "2026-11-13",
-      "checksum": "594314b7c16fe69d",
+      "version": "1.1.3",
+      "lastUpdated": "2026-11-16",
+      "checksum": "1f00aa0a78e49b4c",
       "path": ".agents/skills/angular-testing-expert/SKILL.md",
       "description": "Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads."
     },
@@ -175,9 +175,9 @@
       "description": "Standardizes the 3-State View Pattern (Loading with ui-skeleton, Error with i18n, Success with real components). Automatically scans attached UI images or component templates to generate pixel-perfect skeletons with zero extra prompt required. USE WHEN creating or modifying any feature view, shell component, dialog, or page that loads remote data, or when converting UI mockups/components into skeleton states."
     },
     "widget-service-integration": {
-      "version": "1.5.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "03af5b688a935430",
+      "version": "1.5.1",
+      "lastUpdated": "2026-11-16",
+      "checksum": "ce9db960ff71b54f",
       "path": ".agents/skills/widget-service-integration/SKILL.md",
       "description": "Integrates INTAQALAB execution widgets with APIs and stores, including series and shot selectors and load/save flows."
     },

@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { LoaderService } from './loader.service';
@@ -10,6 +10,7 @@ describe('LoaderService', () => {
   let service: LoaderService;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
     TestBed.configureTestingModule({
       providers: [LoaderService],
@@ -19,8 +20,9 @@ describe('LoaderService', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
     service.reset();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('should create the service', () => {
@@ -31,132 +33,132 @@ describe('LoaderService', () => {
     expect(service.isLoading()).toBe(false);
   });
 
-  it('should set isLoading to true after the debounce delay when show() is called', fakeAsync(() => {
+  it('should set isLoading to true after the debounce delay when show() is called', async () => {
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(true);
-  }));
+  });
 
-  it('should not show loader before the debounce delay elapses', fakeAsync(() => {
+  it('should not show loader before the debounce delay elapses', async () => {
     service.show();
-    tick(SHOW_DEBOUNCE_MS - 1);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS - 1);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should not show loader if hide() is called before debounce fires', fakeAsync(() => {
+  it('should not show loader if hide() is called before debounce fires', async () => {
     service.show();
     service.hide();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should set isLoading to false when hide() is called after loader is visible', fakeAsync(() => {
+  it('should set isLoading to false when hide() is called after loader is visible', async () => {
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     expect(service.isLoading()).toBe(true);
 
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should keep isLoading true until all show() calls are balanced by hide()', fakeAsync(() => {
+  it('should keep isLoading true until all show() calls are balanced by hide()', async () => {
     service.show();
     service.show();
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(true);
 
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     expect(service.isLoading()).toBe(true);
 
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     expect(service.isLoading()).toBe(true);
 
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should not allow the counter to go negative', fakeAsync(() => {
+  it('should not allow the counter to go negative', async () => {
     service.hide();
     service.hide();
     service.hide();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(false);
 
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(true);
-  }));
+  });
 
-  it('should reset counter to zero and hide loader when reset() is called', fakeAsync(() => {
+  it('should reset counter to zero and hide loader when reset() is called', async () => {
     service.show();
     service.show();
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(true);
 
     service.reset();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should cancel a pending debounce when reset() is called before it fires', fakeAsync(() => {
+  it('should cancel a pending debounce when reset() is called before it fires', async () => {
     service.show();
     service.reset();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should work correctly after a reset()', fakeAsync(() => {
+  it('should work correctly after a reset()', async () => {
     service.show();
     service.show();
     service.reset();
 
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
 
     expect(service.isLoading()).toBe(true);
 
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
 
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 
-  it('should handle an alternating show/hide sequence', fakeAsync(() => {
+  it('should handle an alternating show/hide sequence', async () => {
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
-    expect(service.isLoading()).toBe(true);
-
-    service.show();
-    tick(SHOW_DEBOUNCE_MS);
-    expect(service.isLoading()).toBe(true);
-
-    service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     expect(service.isLoading()).toBe(true);
 
     service.show();
-    tick(SHOW_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
+    expect(service.isLoading()).toBe(true);
+
+    service.hide();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(service.isLoading()).toBe(true);
+
+    service.show();
+    await vi.advanceTimersByTimeAsync(SHOW_DEBOUNCE_MS);
     expect(service.isLoading()).toBe(true);
 
     service.hide();
     service.hide();
-    tick();
+    await vi.advanceTimersByTimeAsync(0);
     expect(service.isLoading()).toBe(false);
-  }));
+  });
 });

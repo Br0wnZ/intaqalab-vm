@@ -1,9 +1,9 @@
+import '@analogjs/vitest-angular/setup-snapshots';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
 import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
 import '@angular/compiler';
-import { getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 import './lib/testing/pdf-mock';
 
@@ -11,11 +11,8 @@ import './lib/testing/pdf-mock';
 BrowserDomAdapter.makeCurrent();
 setRootDomAdapter(new BrowserDomAdapter());
 
-const __global = globalThis as unknown as { __ANGULAR_TESTBED_INITIALIZED__?: boolean };
-if (!__global.__ANGULAR_TESTBED_INITIALIZED__) {
-  getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
-  __global.__ANGULAR_TESTBED_INITIALIZED__ = true;
-}
+setupTestBed();
+
 if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

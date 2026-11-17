@@ -20,30 +20,32 @@ class TrialDocDetailsStub {
 
 describe('TrialDocsShellComponent', () => {
   it('should create', async () => {
-    const result = await render(TrialDocsShellComponent, {
+    const view = await render(TrialDocsShellComponent, {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-1' } }, provideTranslateService(),
+        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-1' } },
+        provideTranslateService(),
       ],
       declarations: [TrialDocDetailsStub],
     });
 
-    expect(result.fixture.componentInstance).toBeTruthy();
+    expect(view.fixture.componentInstance).toBeTruthy();
   });
 
   it('should pass the injected id to the child component', async () => {
-    const result = await render(TrialDocsShellComponent, {
+    const view = await render(TrialDocsShellComponent, {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-123' } }, provideTranslateService(),
+        { provide: injectionTokenTrialViewDocument, useValue: { id: 'doc-123' } },
+        provideTranslateService(),
       ],
       declarations: [TrialDocDetailsStub],
     });
 
-    expect(result.fixture.componentInstance.rawParams.id).toBe('doc-123');
+    expect(view.fixture.componentInstance.rawParams.id).toBe('doc-123');
   });
 });

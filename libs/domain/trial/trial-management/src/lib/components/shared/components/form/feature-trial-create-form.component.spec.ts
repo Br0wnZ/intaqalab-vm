@@ -5,6 +5,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatDialog } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { AuthService, provideTestingEnvironment } from '@intaqalab/core';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
@@ -118,7 +119,8 @@ describe('FeatureTrialCreateFormComponent', () => {
         { provide: AuthService, useValue: { userRoles: signal([]) } },
         { provide: MatDialog, useValue: mockDialog },
         { provide: ClientsDataService, useValue: mockClientsService },
-        { provide: TrialTypeService, useValue: mockTrialTypeService }, provideTranslateService(),
+        { provide: TrialTypeService, useValue: mockTrialTypeService },
+        provideTranslateService(),
       ],
     });
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
@@ -143,34 +145,34 @@ describe('FeatureTrialCreateFormComponent', () => {
   describe('Loading and Error States', () => {
     it('should show skeletons when clients resource is loading', async () => {
       const { view } = await setup({ clientsLoading: true });
-      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      const skeletons = view.fixture.debugElement.queryAll(By.css('ui-skeleton'));
       expect(skeletons.length).toBeGreaterThan(0);
       expect(screen.queryByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.CODE')).not.toBeInTheDocument();
     });
 
     it('should show skeletons when trial types resource is loading', async () => {
       const { view } = await setup({ trialTypesLoading: true });
-      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      const skeletons = view.fixture.debugElement.queryAll(By.css('ui-skeleton'));
       expect(skeletons.length).toBeGreaterThan(0);
       expect(screen.queryByPlaceholderText('TRIAL_CREATE_MODIFY_FORM.CODE')).not.toBeInTheDocument();
     });
 
     it('should show skeletons when editing trial (trialId provided) but formData is not yet loaded', async () => {
       const { view } = await setup({ inputs: { trialId: 'trial-123', formData: null } });
-      const skeletons = view.fixture.nativeElement.querySelectorAll('ui-skeleton');
+      const skeletons = view.fixture.debugElement.queryAll(By.css('ui-skeleton'));
       expect(skeletons.length).toBeGreaterThan(0);
     });
 
     it('should show error state when clients resource fails with error', async () => {
       const { view } = await setup({ clientsError: new Error('Network error') });
-      const errorState = view.fixture.nativeElement.querySelector('ui-error-state');
-      expect(errorState).toBeInTheDocument();
+      const errorState = view.fixture.debugElement.query(By.css('ui-error-state'));
+      expect(errorState).not.toBeNull();
     });
 
     it('should show error state when trial types resource fails with error', async () => {
       const { view } = await setup({ trialTypesError: new Error('Trial types failed') });
-      const errorState = view.fixture.nativeElement.querySelector('ui-error-state');
-      expect(errorState).toBeInTheDocument();
+      const errorState = view.fixture.debugElement.query(By.css('ui-error-state'));
+      expect(errorState).not.toBeNull();
     });
   });
 
@@ -387,4 +389,3 @@ describe('FeatureTrialCreateFormComponent', () => {
     });
   });
 });
-

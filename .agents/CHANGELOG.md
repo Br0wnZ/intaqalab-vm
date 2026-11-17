@@ -365,3 +365,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [angular-testing-expert - 1.1.1] - 2026-11-13
 
 - Document jest-dom/vitest types fix (Issue #22) and testing-library/no-node-access rule
+
+## [angular-testing-expert - 1.1.2] - 2026-11-16
+
+- Align AnalogJS 2.9 setupTestBed() zoneless entrypoint in angular-testing-expert
+
+## [AGENTS.md - 1.7.1] - 2026-11-16
+
+- Document 100% pure zoneless Vitest 5 setup and ESLint testing rules at error
+
+## [angular-developer - 1.1.1] - 2026-11-16
+
+- Update testing-fundamentals.md to ATL + pure zoneless Vitest 5
+
+## [angular-testing-expert - 1.1.3] - 2026-11-16
+
+- Update testing skill and references to pure zoneless Vitest 5 (no zone.js/fakeAsync)
+
+## [widget-service-integration - 1.5.1] - 2026-11-16
+
+- Remove document.querySelector from 06-vitest-testing.md

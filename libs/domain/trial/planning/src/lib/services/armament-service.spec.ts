@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArmamentService } from './armament-service';
@@ -33,7 +33,7 @@ describe('ArmamentService', () => {
     httpTestingController.verify();
   });
 
-  const expectHttpRequest = <T>(url: string, method: string, response: T | null, body?: unknown) => {
+  const expectHttpRequest = async <T>(url: string, method: string, response: T | null, body?: unknown) => {
     const req = httpTestingController.expectOne(url);
     expect(req.request.method).toBe(method);
 
@@ -43,7 +43,9 @@ describe('ArmamentService', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     req.flush(response as any);
-    tick();
+    await Promise.resolve();
+    await Promise.resolve();
+    TestBed.tick();
   };
 
   it('should be created', () => {
@@ -51,256 +53,261 @@ describe('ArmamentService', () => {
   });
 
   describe('getArmament', () => {
-    it('should fetch armament data for a trial', () =>
-      fakeAsync(() => {
-        const mockResponse = {
-          series: [
-            {
-              seriesId: 'series-1',
-              seriesName: 'Serie A',
-              shots: [
-                {
-                  shotId: 'shot-1',
-                  armament: {
-                    weaponName: 'Obús 105mm',
-                    weaponExternalId: 'weapon-1',
-                    tubeName: 'Tubo 1',
-                    tubeExternalId: 'tube-1',
-                    isInstrumented: false,
-                    tubeLifePercentage: 75,
-                    observations: '',
-                  },
+    it('should fetch armament data for a trial', async () => {
+      const mockResponse = {
+        series: [
+          {
+            seriesId: 'series-1',
+            seriesName: 'Serie A',
+            shots: [
+              {
+                shotId: 'shot-1',
+                armament: {
+                  weaponName: 'Obús 105mm',
+                  weaponExternalId: 'weapon-1',
+                  tubeName: 'Tubo 1',
+                  tubeExternalId: 'tube-1',
+                  isInstrumented: false,
+                  tubeLifePercentage: 75,
+                  observations: '',
                 },
-              ],
-            },
-          ],
-        };
+              },
+            ],
+          },
+        ],
+      };
 
-        service.getArmament(MOCK_IDS.TRIAL);
-        tick();
+      service.getArmament(MOCK_IDS.TRIAL);
+      TestBed.tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`, 'GET', mockResponse);
-      }));
+      await expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+        'GET',
+        mockResponse,
+      );
+    });
 
-    it('should handle error when fetching armament data', () =>
-      fakeAsync(() => {
-        service.getArmament(MOCK_IDS.TRIAL);
-        tick();
+    it('should handle error when fetching armament data', async () => {
+      service.getArmament(MOCK_IDS.TRIAL);
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/${MOCK_IDS.TRIAL}/planning/armament`);
-        req.error(new ErrorEvent('Network error'));
-        tick();
-      }));
+      const req = httpTestingController.expectOne(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+      );
+      req.error(new ErrorEvent('Network error'));
+      await Promise.resolve();
+      TestBed.tick();
+    });
   });
 
   describe('updateArmament', () => {
-    it('should update armament data for a trial', () =>
-      fakeAsync(() => {
-        const body = {
-          shots: [
-            {
-              shotId: 'shot-1',
-              weaponExternalId: 'weapon-2',
-              tubeExternalId: 'tube-2',
-              isInstrumented: true,
-              lifeUsefulPercentage: 50,
-              observations: 'Updated',
-            },
-          ],
-        };
+    it('should update armament data for a trial', async () => {
+      const body = {
+        shots: [
+          {
+            shotId: 'shot-1',
+            weaponExternalId: 'weapon-2',
+            tubeExternalId: 'tube-2',
+            isInstrumented: true,
+            lifeUsefulPercentage: 50,
+            observations: 'Updated',
+          },
+        ],
+      };
 
-        service.updateArmament(MOCK_IDS.TRIAL, body);
-        tick();
+      service.updateArmament(MOCK_IDS.TRIAL, body);
+      TestBed.tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`, 'PUT', null, body);
-      }));
+      await expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+        'PUT',
+        null,
+        body,
+      );
+    });
 
-    it('should handle error when updating armament data', () =>
-      fakeAsync(() => {
-        const body = {
-          shots: [
-            {
-              shotId: 'shot-1',
-              weaponExternalId: 'weapon-1',
-              tubeExternalId: 'tube-1',
-              isInstrumented: false,
-              lifeUsefulPercentage: 100,
-              observations: '',
-            },
-          ],
-        };
+    it('should handle error when updating armament data', async () => {
+      const body = {
+        shots: [
+          {
+            shotId: 'shot-1',
+            weaponExternalId: 'weapon-1',
+            tubeExternalId: 'tube-1',
+            isInstrumented: false,
+            lifeUsefulPercentage: 100,
+            observations: '',
+          },
+        ],
+      };
 
-        service.updateArmament(MOCK_IDS.TRIAL, body);
-        tick();
+      service.updateArmament(MOCK_IDS.TRIAL, body);
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/${MOCK_IDS.TRIAL}/planning/armament`);
-        req.error(new ErrorEvent('Network error'));
-        tick();
-      }));
+      const req = httpTestingController.expectOne(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+      );
+      req.error(new ErrorEvent('Network error'));
+      await Promise.resolve();
+      TestBed.tick();
+    });
   });
 
   describe('resetUpdateArmament', () => {
-    it('should reset update params without triggering a request', () =>
-      fakeAsync(() => {
-        service.resetUpdateArmament();
-        tick();
+    it('should reset update params without triggering a request', () => {
+      service.resetUpdateArmament();
+      TestBed.tick();
 
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
-      }));
+      httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
+    });
   });
 
   describe('getWeapons', () => {
-    it('should fetch weapons with default params', () =>
-      fakeAsync(() => {
-        const mockResponse = {
-          page: 0,
-          pageSize: 10,
-          totalElements: 2,
-          items: [
-            { id: 1, name: 'Obús 105mm', itemType: 'WEAPON', active: true },
-            { id: 2, name: 'Obús 155mm', itemType: 'WEAPON', active: true },
-          ],
-        };
+    it('should fetch weapons with default params', async () => {
+      const mockResponse = {
+        page: 0,
+        pageSize: 10,
+        totalElements: 2,
+        items: [
+          { id: 1, name: 'Obús 105mm', itemType: 'WEAPON', active: true },
+          { id: 2, name: 'Obús 155mm', itemType: 'WEAPON', active: true },
+        ],
+      };
 
-        service.getWeapons();
-        tick();
+      service.getWeapons();
+      TestBed.tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', mockResponse);
-      }));
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', mockResponse);
+    });
 
-    it('should fetch weapons with paging and familyId params', () =>
-      fakeAsync(() => {
-        service.getWeapons({ page: 0, pageSize: 20, familyId: 10 });
-        tick();
+    it('should fetch weapons with paging and familyId params', async () => {
+      service.getWeapons({ page: 0, pageSize: 20, familyId: 10 });
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne((r) =>
-          r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
-        );
-        expect(req.request.method).toBe('GET');
+      const req = httpTestingController.expectOne((r) =>
+        r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
+      );
+      expect(req.request.method).toBe('GET');
 
-        const url = new URL(req.request.url);
-        expect(url.searchParams.get('itemType')).toBe('WEAPON');
-        expect(url.searchParams.get('page')).toBe('0');
-        expect(url.searchParams.get('pageSize')).toBe('20');
-        expect(url.searchParams.get('familyId')).toBe('10');
+      const url = new URL(req.request.url);
+      expect(url.searchParams.get('itemType')).toBe('WEAPON');
+      expect(url.searchParams.get('page')).toBe('0');
+      expect(url.searchParams.get('pageSize')).toBe('20');
+      expect(url.searchParams.get('familyId')).toBe('10');
 
-        req.flush({ page: 0, pageSize: 20, totalElements: 0, items: [] });
-        tick();
-      }));
+      req.flush({ page: 0, pageSize: 20, totalElements: 0, items: [] });
+      await Promise.resolve();
+      TestBed.tick();
+    });
 
-    it('should handle error when fetching weapons', () =>
-      fakeAsync(() => {
-        service.getWeapons();
-        tick();
+    it('should handle error when fetching weapons', async () => {
+      service.getWeapons();
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`);
-        req.error(new ErrorEvent('Network error'));
-        tick();
-      }));
+      const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`);
+      req.error(new ErrorEvent('Network error'));
+      await Promise.resolve();
+      TestBed.tick();
+    });
   });
 
   describe('getTubes', () => {
-    it('should fetch tubes with default params', () =>
-      fakeAsync(() => {
-        const mockResponse = {
-          page: 0,
-          pageSize: 10,
-          totalElements: 2,
-          items: [
-            { id: 5, name: 'Tubo 1', itemType: 'TUBE', active: true },
-            { id: 6, name: 'Tubo 2', itemType: 'TUBE', active: true },
-          ],
-        };
+    it('should fetch tubes with default params', async () => {
+      const mockResponse = {
+        page: 0,
+        pageSize: 10,
+        totalElements: 2,
+        items: [
+          { id: 5, name: 'Tubo 1', itemType: 'TUBE', active: true },
+          { id: 6, name: 'Tubo 2', itemType: 'TUBE', active: true },
+        ],
+      };
 
-        service.getTubes();
-        tick();
+      service.getTubes();
+      TestBed.tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`, 'GET', mockResponse);
-      }));
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`, 'GET', mockResponse);
+    });
 
-    it('should fetch tubes with query params', () =>
-      fakeAsync(() => {
-        service.getTubes({ page: 1, pageSize: 5, familyId: 11 });
-        tick();
+    it('should fetch tubes with query params', async () => {
+      service.getTubes({ page: 1, pageSize: 5, familyId: 11 });
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne((r) =>
-          r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
-        );
-        expect(req.request.method).toBe('GET');
+      const req = httpTestingController.expectOne((r) =>
+        r.url.startsWith(`${MOCK_URLS.PLANNING}/equipment/denominations`),
+      );
+      expect(req.request.method).toBe('GET');
 
-        const url = new URL(req.request.url);
-        expect(url.searchParams.get('itemType')).toBe('TUBE');
-        expect(url.searchParams.get('page')).toBe('1');
-        expect(url.searchParams.get('pageSize')).toBe('5');
-        expect(url.searchParams.get('familyId')).toBe('11');
+      const url = new URL(req.request.url);
+      expect(url.searchParams.get('itemType')).toBe('TUBE');
+      expect(url.searchParams.get('page')).toBe('1');
+      expect(url.searchParams.get('pageSize')).toBe('5');
+      expect(url.searchParams.get('familyId')).toBe('11');
 
-        req.flush({ page: 1, pageSize: 5, totalElements: 0, items: [] });
-        tick();
-      }));
+      req.flush({ page: 1, pageSize: 5, totalElements: 0, items: [] });
+      await Promise.resolve();
+      TestBed.tick();
+    });
 
-    it('should handle error when fetching tubes', () =>
-      fakeAsync(() => {
-        service.getTubes();
-        tick();
+    it('should handle error when fetching tubes', async () => {
+      service.getTubes();
+      TestBed.tick();
 
-        const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`);
-        req.error(new ErrorEvent('Network error'));
-        tick();
-      }));
+      const req = httpTestingController.expectOne(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=TUBE`);
+      req.error(new ErrorEvent('Network error'));
+      await Promise.resolve();
+      TestBed.tick();
+    });
   });
 
   describe('Denomination resources', () => {
-    it('should fetch weapon and mortar denominations independently', () =>
-      fakeAsync(() => {
-        service.loadWeaponDenominations();
-        service.loadMortarDenominations();
-        tick();
+    it('should fetch weapon and mortar denominations independently', async () => {
+      service.loadWeaponDenominations();
+      service.loadMortarDenominations();
+      TestBed.tick();
 
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', {
-          page: 0,
-          pageSize: 1,
-          totalElements: 1,
-          items: [{ id: 1, name: 'Weapon denomination', itemType: 'WEAPON', active: true }],
-        });
-        expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=MORTAR`, 'GET', {
-          page: 0,
-          pageSize: 1,
-          totalElements: 1,
-          items: [{ id: 2, name: 'Mortar denomination', itemType: 'MORTAR', active: true }],
-        });
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=WEAPON`, 'GET', {
+        page: 0,
+        pageSize: 1,
+        totalElements: 1,
+        items: [{ id: 1, name: 'Weapon denomination', itemType: 'WEAPON', active: true }],
+      });
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/equipment/denominations?itemType=MORTAR`, 'GET', {
+        page: 0,
+        pageSize: 1,
+        totalElements: 1,
+        items: [{ id: 2, name: 'Mortar denomination', itemType: 'MORTAR', active: true }],
+      });
 
+      await vi.waitFor(() => {
         expect(service.weaponDenominationsResource.value()?.items[0]?.type).toBe('WEAPON');
         expect(service.mortarDenominationsResource.value()?.items[0]?.type).toBe('MORTAR');
-      }));
+      });
+    });
   });
 
   describe('Resource States & Edge Cases', () => {
-    it('should not make armament request when params are null', () =>
-      fakeAsync(() => {
-        tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
-        expect(service.armamentResource.value()).toBeUndefined();
-      }));
+    it('should not make armament request when params are null', () => {
+      TestBed.tick();
+      httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
+      expect(service.armamentResource.value()).toBeUndefined();
+    });
 
-    it('should not make weapons request when params are null', () =>
-      fakeAsync(() => {
-        tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
-        expect(service.weaponsResource.value()).toBeUndefined();
-      }));
+    it('should not make weapons request when params are null', () => {
+      TestBed.tick();
+      httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
+      expect(service.weaponsResource.value()).toBeUndefined();
+    });
 
-    it('should not make tubes request when params are null', () =>
-      fakeAsync(() => {
-        tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
-        expect(service.tubesResource.value()).toBeUndefined();
-      }));
+    it('should not make tubes request when params are null', () => {
+      TestBed.tick();
+      httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/equipment/denominations`);
+      expect(service.tubesResource.value()).toBeUndefined();
+    });
 
-    it('should not make update request when params are null', () =>
-      fakeAsync(() => {
-        tick();
-        httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
-        expect(service.updateArmamentResource.value()).toBeUndefined();
-      }));
+    it('should not make update request when params are null', () => {
+      TestBed.tick();
+      httpTestingController.expectNone(`${MOCK_URLS.PLANNING}/`);
+      expect(service.updateArmamentResource.value()).toBeUndefined();
+    });
   });
 });

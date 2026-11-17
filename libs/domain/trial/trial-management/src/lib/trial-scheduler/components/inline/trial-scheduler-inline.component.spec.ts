@@ -66,7 +66,8 @@ describe('TrialSchedulerInlineComponent', () => {
           { provide: TrialPersmissionsService, useValue: mockTrialPermissionsService },
           { provide: CalendarTrialScheduleService, useValue: mockCalendarTrialScheduleService },
           { provide: LinesOfShotDataService, useValue: mockLinesOfShotDataService },
-          { provide: TrialScheduleService, useValue: mockTrialScheduleService }, provideTranslateService(),
+          { provide: TrialScheduleService, useValue: mockTrialScheduleService },
+          provideTranslateService(),
         ],
       },
     );
@@ -116,6 +117,6 @@ describe('TrialSchedulerInlineComponent', () => {
       expect(screen.getByText(/Línea de tiro 1/)).toBeInTheDocument();
     });
 
-    expect(document.querySelector('.mat-mdc-chip-remove')).toBeNull();
+    expect(screen.queryByRole('button', { name: /remove/i })).not.toBeInTheDocument();
   });
 });

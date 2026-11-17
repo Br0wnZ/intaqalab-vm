@@ -1,8 +1,9 @@
 import '@analogjs/vitest-angular/setup-snapshots';
 import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
 import '@angular/compiler';
+import '@testing-library/jest-dom/vitest';
 
-setupTestBed({ zoneless: false });
+setupTestBed();
 if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

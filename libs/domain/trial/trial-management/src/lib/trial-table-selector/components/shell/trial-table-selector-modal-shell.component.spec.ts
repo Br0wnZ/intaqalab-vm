@@ -9,22 +9,24 @@ import { TrialTableSelectorModalShellComponent } from './trial-table-selector-mo
 
 // vi.mock hoisted by Vitest
 describe('TrialTableSelectorModalShellComponent', () => {
-  beforeEach(async () => {
-    await render(TrialTableSelectorModalShellComponent, {
+  const setup = () =>
+    render(TrialTableSelectorModalShellComponent, {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: MatDialogRef, useValue: {} }, provideTranslateService(),
+        { provide: MatDialogRef, useValue: {} },
+        provideTranslateService(),
       ],
     });
-  });
 
-  it('should render the dialog title', () => {
+  it('should render the dialog title', async () => {
+    await setup();
     expect(screen.getByRole('heading')).toBeInTheDocument();
   });
 
-  it('should render the cancel button', () => {
+  it('should render the cancel button', async () => {
+    await setup();
     const cancelButton = screen.getByRole('button', { name: /cancel|cancelar/i });
     expect(cancelButton).toBeInTheDocument();
   });

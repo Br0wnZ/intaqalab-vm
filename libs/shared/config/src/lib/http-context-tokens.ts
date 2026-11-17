@@ -1,6 +1,7 @@
 import { HttpContextToken } from '@angular/common/http';
 
 export const SKIP_ERROR_TOAST = new HttpContextToken(() => false);
+export const SKIP_ERROR_TOAST_STATUSES = new HttpContextToken<readonly number[]>(() => []);
 export const SKIP_CENTER_INTERCEPTOR = new HttpContextToken(() => false);
 
 interface ToastMessage {

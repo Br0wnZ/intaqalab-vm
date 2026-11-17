@@ -1,13 +1,12 @@
-import '@analogjs/vitest-angular/setup-zone';
-import { registerLocaleData, ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
+import '@analogjs/vitest-angular/setup-snapshots';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { ɵsetRootDomAdapter as setRootDomAdapter } from '@angular/common';
+import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import '@angular/compiler';
-import { getTestBed } from '@angular/core/testing';
 import { ɵBrowserDomAdapter as BrowserDomAdapter } from '@angular/platform-browser';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import '@intaqalab/utils/testing/pdf-mock';
 import '@testing-library/jest-dom/vitest';
-import { afterEach } from 'vitest';
 
 registerLocaleData(localeEs);
 
@@ -15,11 +14,7 @@ registerLocaleData(localeEs);
 BrowserDomAdapter.makeCurrent();
 setRootDomAdapter(new BrowserDomAdapter());
 
-const __global = globalThis as unknown as { __ANGULAR_TESTBED_INITIALIZED__?: boolean };
-if (!__global.__ANGULAR_TESTBED_INITIALIZED__) {
-  getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
-  __global.__ANGULAR_TESTBED_INITIALIZED__ = true;
-}
+setupTestBed();
 
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class ResizeObserver {
@@ -35,9 +30,6 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
   };
 }
 
-afterEach(() => {
-  getTestBed().resetTestingModule();
-});
 if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

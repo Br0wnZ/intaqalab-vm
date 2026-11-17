@@ -1,7 +1,7 @@
 ---
 name: angular-testing-expert
-version: 1.1.1
-last-updated: 2026-11-13
+version: 1.1.3
+last-updated: 2026-11-16
 description: Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ Eres un experto en QA e Ingeniería de Software especializado en **Angular 22+**
 ## ⚙️ Stack Tecnológico
 
 - **Framework:** Angular 22.2 (Zoneless Change Detection, `OnPush` por defecto, Signal-based components). Zero `NoopAnimationsModule` / `BrowserAnimationsModule` / `provideAnimations` (prohibidos por ESLint; Material 22.2 usa animaciones CSS nativas).
-- **Test Runner:** Vitest 5.1 + AnalogJS 2.9 (`vi` utilities, NO Jest; soportar `setup-zoneless` y `@testing-library/jest-dom/vitest`).
+- **Test Runner:** Vitest 5.1 + AnalogJS 2.9 (`vi` utilities, NO Jest; usar `@analogjs/vitest-angular/setup-testbed` con `setupTestBed()` zoneless + `setup-snapshots` + `@testing-library/jest-dom/vitest`, sin `zone.js`).
 - **Testing Utilities:** `@testing-library/angular` 19.6 (`render`, `screen`, `aliasedInput()`, `on` outputs) y `@testing-library/user-event`.
 - **i18n & Stores Testing:** `provideTranslateService()` de `@ngx-translate/core` v18 (nunca `TranslateModule.forRoot()`); `unprotected(store)` de `@ngrx/signals/testing` + `patchState` para stores; `resourceFromSnapshots()` / `resource.snapshot()` para resources.
 - **Component Harnesses:** `@angular/cdk/testing/testbed` + `@angular/material/*/testing`.
@@ -42,10 +42,13 @@ Cargar [numeric-input-constraints](../numeric-input-constraints/SKILL.md) para s
 - **Evitar aserciones no nulas:** NUNCA uses aserciones no nulas (`!`, _non-null assertions_) en los archivos `.spec.ts` para evitar la advertencia de linter `Forbidden non-null assertion`. En su lugar, usa búsquedas semánticas exactas o comprobaciones condicionales explícitas.
 - **Clean Code:** Tests descriptivos. **IMPORTANTE:** Todas las descripciones de los casos de prueba (`it()`) deben ser redactadas obligatoriamente en inglés (e.g. `it('should save the form when...')`). Patrón AAA (Arrange, Act, Assert).
 
-### 2. Zonaless & Signals ⚡
+### 2. Zoneless Puro & Signals ⚡ (Sin `zone.js`)
 
-- La aplicación corre sin `zone.js`. **Testing comportamental:** Evalúa el DOM simulando interacciones del usuario e invoca manualmente `fixture.detectChanges()` (o el helper equivalente) para actualizar la vista luego de cambiar el estado de un Signal.
-- **Temporizadores (Fake Timers):** Ya no debes usar utilidades como `fakeAsync()` o `tick()` que dependían de `zone.js`. En su lugar, emplea los temporizadores simulados de Vitest como `vi.runAllTimersAsync()` o `vi.advanceTimersByTimeAsync()`.
+- La aplicación **y toda la suite de tests** corren **100% sin `zone.js`** (`zone.js` ha sido desinstalado del monorepo).
+- **`src/test-setup.ts` estándar:** Usar `setupTestBed()` de `@analogjs/vitest-angular/setup-testbed` (`zoneless: true` por defecto), `@analogjs/vitest-angular/setup-snapshots`, `@testing-library/jest-dom/vitest`, `BrowserDomAdapter.makeCurrent()` y el polyfill de `window.matchMedia` para `(prefers-reduced-motion)` requerido por Angular Material `22.2.7+`.
+- **Testing comportamental:** Evalúa el DOM simulando interacciones del usuario (`userEvent`), usa `await fixture.whenStable()`, `TestBed.tick()` o `fixture.detectChanges()` para procesar actualizaciones reactivas y `httpResource`.
+- **Temporizadores (Fake Timers):** `fakeAsync()` y `tick()` (`@angular/core/testing`) están **prohibidos** al no existir `zone.js`. Usa `vi.useFakeTimers()`, `await vi.advanceTimersByTimeAsync(ms)`, `await vi.runAllTimersAsync()` y `vi.useRealTimers()`.
+- **ESLint de testing en `'error'`:** En `eslint.base.config.mjs`, `@vitest/eslint-plugin`, `eslint-plugin-testing-library` y `eslint-plugin-jest-dom` están configurados en `'error'` (`no-node-access`, `no-container`, `no-render-in-lifecycle`, `render-result-naming-convention`, `no-conditional-expect`, `prefer-to-have-style`, `prefer-in-document`). Si necesitas localizar un selector Angular sin rol ARIA, usa `view.fixture.debugElement.query(By.css(...))` en lugar de `container.querySelector` / `document.querySelector`.
 - **Mocking:** Usa `vi.fn()` para espías, `vi.mock()` para dependencias externas.
 - **SIEMPRE** usa `createMockResource()` de `@intaqalab/utils/testing/core` para mockear resources.
 - **SIEMPRE** incluye `provideTestingEnvironment()` de `@intaqalab/config` en los providers.
@@ -72,16 +75,16 @@ afterEach(() => {
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   ```
   Evita `nxViteTsPaths()` y `nxCopyAssetsPlugin` (obsoletos). La propiedad `tsconfig: './tsconfig.spec.json'` es obligatoria para evitar advertencias de Analog buscando `tsconfig.app.json`.
-- **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4.
-- **OXC Runtime Helpers (`@oxc-project/runtime`):** `@analogjs/vite-plugin-angular` transfigura paquetes Angular a `es2016` con OXC para que Zone.js intercepte `async/await` en tests (`fakeAsync`). Los helpers emitidos (`@oxc-project/runtime/helpers/*`) se resuelven automáticamente gracias a `@oxc-project/runtime` en root `devDependencies` (ver Issue #21 en [known-issues.md](references/known-issues.md)).
-- **Concurrencia en ejecución masiva:** Para suites completas en local, evita saturación de memoria en JSDOM limitando el paralelismo (`npx nx run-many -t test --parallel=2` o ejecutando por dominio `-p [domain]`).
+- **Root Vitest Config:** El registro de proyectos se mantiene centralizado en `vitest.config.ts` (array `projects`). `vitest.workspace.ts` está descontinuado e ignorado en Vitest 4+.
+- **OXC Runtime Helpers (`@oxc-project/runtime`):** Requerido en root `devDependencies` para resolver helpers emitidos durante la transpilación OXC de `@analogjs/vite-plugin-angular` / Vite 8 / Vitest 5 (ver Issue #21 en [known-issues.md](references/known-issues.md)).
+- **Concurrencia en ejecución masiva:** Para suites completas en local o agentes, usa `--parallel=1` (`CI=true npx nx run-many --target=test --all --parallel=1 --output-style=static`) para evitar timeouts por contención de CPU en JSDOM y bloqueos de TUI interactiva.
 
 ## 📋 Workflow: "Dame los tests de {{ componente }}"
 
 Cuando el usuario pida tests de un componente, sigue estos pasos:
 
 0. **⚠️ ANTES DE NADA — Lee los problemas conocidos:** Lee [known-issues.md](references/known-issues.md) completo y comprueba si alguno de los issues encaja con el componente/servicio que vas a testear. **Aplica la solución directamente sin necesidad de que falle el test primero.** Issues más frecuentes:
-   - Servicio con `setTimeout` debounce → usar `tick(N)` no `tick()` (Issue #10)
+   - Servicio con `setTimeout` debounce → usar `vi.useFakeTimers()` + `await vi.advanceTimersByTimeAsync(ms)` (Issue #10)
    - Spec en librería `core` → no usar `provideTestingEnvironment()` (Issue #13)
    - Componente con `MatDialogModule` en imports → mock en `componentProviders` (Issue #9)
    - Store con `providedIn: null` → `NG0201` → usar `componentProviders` o `providers` (Issue #7)

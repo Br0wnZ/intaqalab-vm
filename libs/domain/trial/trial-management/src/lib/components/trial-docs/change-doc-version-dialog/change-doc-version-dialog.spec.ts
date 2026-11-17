@@ -12,16 +12,10 @@ describe('ChangeDocVersionDialog', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const version = { id: 'doc-1', versionTag: 'v2' } as any;
 
-  let closeMock: ReturnType<typeof vi.fn>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let docsServiceMock: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let fixture: any;
+  const setup = async () => {
+    const closeMock = vi.fn();
 
-  beforeEach(async () => {
-    closeMock = vi.fn();
-
-    docsServiceMock = {
+    const docsServiceMock = {
       setDocumentVersionActive: vi.fn(),
       setDocumentVersionActiveResource: {
         statusCode: signal<number | null>(null),
@@ -30,22 +24,25 @@ describe('ChangeDocVersionDialog', () => {
       getDocumentVersions: vi.fn(),
     };
 
-    const result = await render(ChangeDocVersionDialog, {
+    const view = await render(ChangeDocVersionDialog, {
       providers: [
         { provide: MatDialogRef, useValue: { close: closeMock } },
         { provide: MAT_DIALOG_DATA, useValue: { version } },
-        { provide: TrialDocsService, useValue: docsServiceMock }, provideTranslateService(),
+        { provide: TrialDocsService, useValue: docsServiceMock },
+        provideTranslateService(),
       ],
     });
 
-    fixture = result.fixture;
-  });
+    return { view, fixture: view.fixture, closeMock, docsServiceMock };
+  };
 
   it('should create', async () => {
+    const { fixture } = await setup();
     expect(fixture.componentInstance).toBeTruthy();
   });
 
   it('calls service on confirm click', async () => {
+    const { docsServiceMock } = await setup();
     const user = userEvent.setup();
     const confirmButton = screen.getByText(/COMMONS.CONFIRM/i);
     await user.click(confirmButton);
@@ -54,6 +51,7 @@ describe('ChangeDocVersionDialog', () => {
   });
 
   it('closes dialog when service resource statusCode becomes 200', async () => {
+    const { fixture, docsServiceMock, closeMock } = await setup();
     docsServiceMock.setDocumentVersionActiveResource.statusCode.set(200);
     fixture.detectChanges();
 

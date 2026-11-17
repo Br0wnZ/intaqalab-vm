@@ -1,11 +1,12 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
 
 import type { ShotTopographyRequest, ShotTopographyResponse } from '../../../execution/models';
 import { executionTrialUrl } from '../shared/execution-endpoints';
+import { skipConflictErrorToastOptions } from '../shared/execution-http-context';
 import { awaitResourceValue } from '../shared/resource-await';
 
 interface ShotTopographyParams {
@@ -102,6 +103,7 @@ export class ShotTopographyService {
       this.#http.put<ShotTopographyResponse>(
         executionTrialUrl(this.#executionUrl, fireTrialId, 'topography', 'series', seriesId, 'shots', shotId),
         body,
+        skipConflictErrorToastOptions(),
       ),
     );
   }

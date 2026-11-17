@@ -44,7 +44,8 @@ const setup = async (options: { initialUrl?: string; collapsed?: boolean } = {})
       { provide: Router, useValue: routerFake },
       { provide: CommandsTabService, useValue: tabsFake },
       { provide: AuthService, useValue: authFake },
-      provideTestingEnvironment(), provideTranslateService(),
+      provideTestingEnvironment(),
+      provideTranslateService(),
     ],
     componentInputs: { collapsed },
     on: { collapsedChange: collapsedChangeSpy },
@@ -190,8 +191,8 @@ describe('MenuLeftComponent', () => {
     it('should not mark any button as active on unknown URL', async () => {
       await setup({ initialUrl: '/', collapsed: false });
 
-      const activeButtons = document.querySelectorAll('[data-active="true"]');
-      expect(activeButtons.length).toBe(0);
+      const activeButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('data-active') === 'true');
+      expect(activeButtons).toHaveLength(0);
     });
   });
 });

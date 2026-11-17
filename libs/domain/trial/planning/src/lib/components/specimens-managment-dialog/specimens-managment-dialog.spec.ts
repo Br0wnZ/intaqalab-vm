@@ -1,10 +1,9 @@
-import type { ComponentFixture } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { createMockPlanningGeneralDataStore, createSpecimens } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SpecimenType } from '../../utils-models/specimen.model';
@@ -16,12 +15,7 @@ type MockResourceControls = {
 };
 
 describe('SpecimensManagmentDialog', () => {
-  let fixture: ComponentFixture<SpecimensManagmentDialog>;
-  let component: SpecimensManagmentDialog;
-  let mockStore: ReturnType<typeof createMockPlanningGeneralDataStore>;
-  let mockDialogRef: { close: ReturnType<typeof vi.fn> };
-
-  beforeEach(async () => {
+  const setup = async () => {
     vi.clearAllMocks();
 
     const specimensResponse = createSpecimens(4);
@@ -46,48 +40,56 @@ describe('SpecimensManagmentDialog', () => {
       type: 'denomination',
     };
 
-    mockStore = createMockPlanningGeneralDataStore({ specimens: specimensResponse });
-    mockDialogRef = { close: vi.fn() };
+    const mockStore = createMockPlanningGeneralDataStore({ specimens: specimensResponse });
+    const mockDialogRef = { close: vi.fn() };
 
-    const renderResult = await render(SpecimensManagmentDialog, {
+    const view = await render(SpecimensManagmentDialog, {
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: { specimens: specimensResponse.items } }, provideTranslateService(),
+        { provide: MAT_DIALOG_DATA, useValue: { specimens: specimensResponse.items } },
+        provideTranslateService(),
       ],
       componentProviders: [{ provide: PlanningGeneralDataStore, useValue: mockStore }],
     });
 
-    fixture = renderResult.fixture;
-    component = fixture.componentInstance;
-  });
+    const fixture = view.fixture;
+    const component = fixture.componentInstance;
+    return { fixture, component, mockStore, mockDialogRef };
+  };
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   describe('Initial Rendering', () => {
-    it('should render the component', () => {
+    it('should render the component', async () => {
+      const { component } = await setup();
       expect(component).toBeTruthy();
     });
 
-    it('should render dialog title', () => {
+    it('should render dialog title', async () => {
+      await setup();
       expect(screen.getByText(/SPECIMENS_MANAGMENT_DIALOG.TITLE/i)).toBeInTheDocument();
     });
 
-    it('should render specimen input field', () => {
+    it('should render specimen input field', async () => {
+      await setup();
       expect(screen.getByPlaceholderText(/SPECIMENS_MANAGMENT_DIALOG.SPECIMEN_PLACEHOLDER/i)).toBeInTheDocument();
     });
 
-    it('should render specimen type select field', () => {
+    it('should render specimen type select field', async () => {
+      await setup();
       expect(screen.getByText(/SPECIMENS_MANAGMENT_DIALOG.TYPE_LABEL/i)).toBeInTheDocument();
     });
 
-    it('should render save and cancel buttons', () => {
+    it('should render save and cancel buttons', async () => {
+      await setup();
       expect(screen.getByRole('button', { name: /SPECIMENS_MANAGMENT_DIALOG.SAVE/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /SPECIMENS_MANAGMENT_DIALOG.CANCEL/i })).toBeInTheDocument();
     });
 
-    it('should render add button when a specimen is selected', () => {
+    it('should render add button when a specimen is selected', async () => {
+      const { fixture, component } = await setup();
       const specimens = component.specimens();
       component.formModel.update((current) => ({
         ...current,
@@ -101,6 +103,7 @@ describe('SpecimensManagmentDialog', () => {
 
   describe('Autocomplete Behavior', () => {
     it('should filter specimens when typing in search', async () => {
+      const { fixture, component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Munition);
       fixture.detectChanges();
 
@@ -117,6 +120,7 @@ describe('SpecimensManagmentDialog', () => {
     });
 
     it('should update search term when typing', async () => {
+      const { fixture, component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Munition);
       fixture.detectChanges();
 
@@ -130,6 +134,7 @@ describe('SpecimensManagmentDialog', () => {
     });
 
     it('should enable autocomplete after search', async () => {
+      const { fixture, component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Munition);
       fixture.detectChanges();
 
@@ -144,11 +149,13 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.autocompleteEnabled()).toBe(true);
     });
 
-    it('should keep specimen input disabled when type is not selected', () => {
+    it('should keep specimen input disabled when type is not selected', async () => {
+      const { component } = await setup();
       expect(component.isSpecimenInputDisabled()).toBe(true);
     });
 
-    it('should disable specimen input while typed specimens are loading', () => {
+    it('should disable specimen input while typed specimens are loading', async () => {
+      const { component, mockStore } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Weapon);
 
       const resource = mockStore._specimensResource as unknown as MockResourceControls;
@@ -157,7 +164,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.isSpecimenInputDisabled()).toBe(true);
     });
 
-    it('should keep specimen input enabled when request fails but type is selected and not loading', () => {
+    it('should keep specimen input enabled when request fails but type is selected and not loading', async () => {
+      const { component, mockStore } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Tube);
 
       const resource = mockStore._specimensResource as unknown as MockResourceControls;
@@ -169,7 +177,8 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Form State', () => {
-    it('should have selectedOption when a specimen is selected', () => {
+    it('should have selectedOption when a specimen is selected', async () => {
+      const { component } = await setup();
       expect(component.selectedOption()).toBe(null);
 
       const specimens = component.specimens();
@@ -181,43 +190,50 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.selectedOption()).not.toBe(null);
     });
 
-    it('should have empty initial form model', () => {
+    it('should have empty initial form model', async () => {
+      const { component } = await setup();
       expect(component.formModel().specimenId).toBe('');
       expect(component.formModel().serialNumber).toBe('');
       expect(component.formModel().lot).toBe('');
     });
 
-    it('should have empty selected specimens initially', () => {
+    it('should have empty selected specimens initially', async () => {
+      const { component } = await setup();
       expect(component.selectedSpecimens()).toEqual([]);
     });
   });
 
   describe('Store Interaction', () => {
-    it('should call getCachedSpecimensByType when specimen type changes', () => {
+    it('should call getCachedSpecimensByType when specimen type changes', async () => {
+      const { component, mockStore } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Weapon);
       expect(mockStore.getCachedSpecimensByType).toHaveBeenCalledWith(SpecimenType.Weapon);
     });
 
-    it('should call getCachedSpecimensByType with Munition when specimen type is Munition', () => {
+    it('should call getCachedSpecimensByType with Munition when specimen type is Munition', async () => {
+      const { component, mockStore } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Munition);
       expect(mockStore.getCachedSpecimensByType).toHaveBeenCalledWith(SpecimenType.Munition);
     });
 
-    it('should get specimens from store', () => {
+    it('should get specimens from store', async () => {
+      const { component } = await setup();
       const specimens = component.specimens();
       expect(specimens.length).toBeGreaterThan(0);
     });
   });
 
   describe('Button Actions', () => {
-    it('should close dialog without result on cancel', () => {
+    it('should close dialog without result on cancel', async () => {
+      const { component, mockDialogRef } = await setup();
       component.onCancel();
       expect(mockDialogRef.close).toHaveBeenCalledWith();
     });
   });
 
   describe('Selection Management', () => {
-    it('should reset selection correctly', () => {
+    it('should reset selection correctly', async () => {
+      const { component } = await setup();
       component.formModel.update((current) => ({
         ...current,
         specimenId: 'test-id',
@@ -236,7 +252,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.autocompleteEnabled()).toBe(false);
     });
 
-    it('should remove specimen from selection', () => {
+    it('should remove specimen from selection', async () => {
+      const { component } = await setup();
       component.selectedSpecimens.set([
         { id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition },
         { id: 'specimen-2', label: 'Specimen 2', type: SpecimenType.Weapon },
@@ -250,17 +267,20 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Helper Methods', () => {
-    it('should get specimen label correctly', () => {
+    it('should get specimen label correctly', async () => {
+      const { component } = await setup();
       const specimenWithLabel = { id: '1', label: 'Test Label', name: { es: 'Nombre', en: 'Name' } };
       expect(component.getSpecimenLabel(specimenWithLabel)).toBe('Test Label');
     });
 
-    it('should use name.es when label is empty', () => {
+    it('should use name.es when label is empty', async () => {
+      const { component } = await setup();
       const specimenWithName = { id: '1', label: '', name: { es: 'Nombre ES', en: 'Name EN' } };
       expect(component.getSpecimenLabel(specimenWithName)).toBe('Nombre ES');
     });
 
-    it('should use string name when label is empty and name is string', () => {
+    it('should use string name when label is empty and name is string', async () => {
+      const { component } = await setup();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const specimenWithStringName = { id: '1', label: '', name: 'String Name' } as any;
       expect(component.getSpecimenLabel(specimenWithStringName)).toBe('String Name');
@@ -268,54 +288,55 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Conditional Fields by Specimen Type', () => {
-    it('should show serial number field for WEAPON type', () => {
-      const specimens = component.specimens();
-      const weaponSpecimen = specimens.find((s) => s.type === 'weapon');
-      if (weaponSpecimen) {
-        component.formModel.update((current) => ({
-          ...current,
-          specimenId: weaponSpecimen.id,
-        }));
-        fixture.detectChanges();
+    it('should show serial number field for WEAPON type', async () => {
+      const { fixture, component } = await setup();
+      const weaponSpecimen = component.specimens().find((s) => s.type === 'weapon');
+      if (!weaponSpecimen) throw new Error('Expected weapon specimen in mock data');
 
-        expect(component.showSerialNumberField()).toBe(true);
-        expect(component.showLotField()).toBe(false);
-      }
+      component.formModel.update((current) => ({
+        ...current,
+        specimenId: weaponSpecimen.id,
+      }));
+      fixture.detectChanges();
+
+      expect(component.showSerialNumberField()).toBe(true);
+      expect(component.showLotField()).toBe(false);
     });
 
-    it('should show serial number field for TUBE type', () => {
-      const specimens = component.specimens();
-      const tubeSpecimen = specimens.find((s) => s.type === 'tube');
-      if (tubeSpecimen) {
-        component.formModel.update((current) => ({
-          ...current,
-          specimenId: tubeSpecimen.id,
-        }));
-        fixture.detectChanges();
+    it('should show serial number field for TUBE type', async () => {
+      const { fixture, component } = await setup();
+      const tubeSpecimen = component.specimens().find((s) => s.type === 'tube');
+      if (!tubeSpecimen) throw new Error('Expected tube specimen in mock data');
 
-        expect(component.showSerialNumberField()).toBe(true);
-        expect(component.showLotField()).toBe(false);
-      }
+      component.formModel.update((current) => ({
+        ...current,
+        specimenId: tubeSpecimen.id,
+      }));
+      fixture.detectChanges();
+
+      expect(component.showSerialNumberField()).toBe(true);
+      expect(component.showLotField()).toBe(false);
     });
 
-    it('should show lot field for MUNITION (denomination) type', () => {
-      const specimens = component.specimens();
-      const munitionSpecimen = specimens.find((s) => s.type === 'denomination');
-      if (munitionSpecimen) {
-        component.formModel.update((current) => ({
-          ...current,
-          specimenId: munitionSpecimen.id,
-        }));
-        fixture.detectChanges();
+    it('should show lot field for MUNITION (denomination) type', async () => {
+      const { fixture, component } = await setup();
+      const munitionSpecimen = component.specimens().find((s) => s.type === 'denomination');
+      if (!munitionSpecimen) throw new Error('Expected denomination specimen in mock data');
 
-        expect(component.showLotField()).toBe(true);
-        expect(component.showSerialNumberField()).toBe(false);
-      }
+      component.formModel.update((current) => ({
+        ...current,
+        specimenId: munitionSpecimen.id,
+      }));
+      fixture.detectChanges();
+
+      expect(component.showLotField()).toBe(true);
+      expect(component.showSerialNumberField()).toBe(false);
     });
   });
 
   describe('Filtered Options', () => {
-    it('should filter weapon options by search term', () => {
+    it('should filter weapon options by search term', async () => {
+      const { component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Weapon);
       component.searchTerm.set('cañón');
 
@@ -323,7 +344,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(filtered.every((s) => s.label?.toLowerCase().includes('cañón'))).toBe(true);
     });
 
-    it('should filter denomination options by search term', () => {
+    it('should filter denomination options by search term', async () => {
+      const { component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Munition);
       component.searchTerm.set('munición');
 
@@ -331,7 +353,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(filtered.every((s) => s.label?.toLowerCase().includes('munición'))).toBe(true);
     });
 
-    it('should show only selected type in filtered options', () => {
+    it('should show only selected type in filtered options', async () => {
+      const { component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Tube);
       component.searchTerm.set('');
 
@@ -340,7 +363,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(filtered.every((s) => s.type === SpecimenType.Tube)).toBe(true);
     });
 
-    it('should filter options by Mortar specimen type', () => {
+    it('should filter options by Mortar specimen type', async () => {
+      const { component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Mortar);
       component.searchTerm.set('');
 
@@ -349,7 +373,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(filtered.every((s) => s.type === SpecimenType.Mortar)).toBe(true);
     });
 
-    it('should filter options by Bundle specimen type', () => {
+    it('should filter options by Bundle specimen type', async () => {
+      const { component } = await setup();
       component.onSpecimenTypeChange(SpecimenType.Bundle);
       component.searchTerm.set('');
 
@@ -360,11 +385,13 @@ describe('SpecimensManagmentDialog', () => {
   });
 
   describe('Change Detection (hasChanges)', () => {
-    it('should have no changes initially', () => {
+    it('should have no changes initially', async () => {
+      const { component } = await setup();
       expect(component.hasChanges()).toBe(false);
     });
 
-    it('should detect changes when a specimen is added', () => {
+    it('should detect changes when a specimen is added', async () => {
+      const { component } = await setup();
       expect(component.hasChanges()).toBe(false);
 
       component.selectedSpecimens.set([{ id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition }]);
@@ -372,7 +399,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.hasChanges()).toBe(true);
     });
 
-    it('should detect changes when a specimen is removed', () => {
+    it('should detect changes when a specimen is removed', async () => {
+      const { fixture, component } = await setup();
       const initial = [
         { id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition },
         { id: 'specimen-2', label: 'Specimen 2', type: SpecimenType.Weapon },
@@ -385,7 +413,8 @@ describe('SpecimensManagmentDialog', () => {
       expect(component.hasChanges()).toBe(true);
     });
 
-    it('should detect changes when lot/serialNumber is modified', () => {
+    it('should detect changes when lot/serialNumber is modified', async () => {
+      const { fixture, component } = await setup();
       const initial = [{ id: 'specimen-1', label: 'Specimen 1', type: SpecimenType.Munition, lot: 'LOT001' }];
       component.selectedSpecimens.set(initial);
       fixture.detectChanges();
@@ -400,6 +429,7 @@ describe('SpecimensManagmentDialog', () => {
 
   describe('Specimen Overwrite', () => {
     it('should overwrite existing specimen when added again', async () => {
+      const { component } = await setup();
       const specimens = component.specimens();
       const specimen = specimens[0];
 

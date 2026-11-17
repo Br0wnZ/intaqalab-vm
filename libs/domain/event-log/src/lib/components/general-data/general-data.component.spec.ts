@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import type { PaginatedSortedViewRequest } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
@@ -58,7 +59,8 @@ async function setup(items: EventLogGeneralDataResponse[] = MOCKED_RESPONSE) {
     providers: [
       provideTestingEnvironment(),
       { provide: GeneralDataService, useValue: mockGeneralDataService },
-      { provide: UserDataService, useValue: mockUserDataService }, provideTranslateService(),
+      { provide: UserDataService, useValue: mockUserDataService },
+      provideTranslateService(),
     ],
   });
 
@@ -78,13 +80,13 @@ describe('EventLogGeneralDataComponent', () => {
 
   describe('initial rendering', () => {
     it('should render the filter component', async () => {
-      const { container } = await setup();
-      expect(container.querySelector('inta-event-log-general-data-filter')).not.toBeNull();
+      const { view } = await setup();
+      expect(view.fixture.debugElement.query(By.css('inta-event-log-general-data-filter'))).not.toBeNull();
     });
 
     it('should render the table when data is available', async () => {
-      const { container } = await setup();
-      expect(container.querySelector('table')).not.toBeNull();
+      await setup();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
     it('should render all column headers', async () => {
@@ -115,9 +117,9 @@ describe('EventLogGeneralDataComponent', () => {
     });
 
     it('should render the table with no data rows when data is empty', async () => {
-      const { container } = await setup([]);
-      const rows = container.querySelectorAll('tr[mat-row]');
-      expect(rows.length).toBe(0);
+      await setup([]);
+      // Only the header row is rendered when data is empty
+      expect(screen.getAllByRole('row')).toHaveLength(1);
     });
   });
 

@@ -2,7 +2,36 @@ import { describe, expect, it } from 'vitest';
 
 import type { ArmamentSerie } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
-import { mapLocalToRequest } from './armament.mapper';
+import { buildSeriesFromStore, mapBackendToLocal, mapLocalToRequest } from './armament.mapper';
+
+describe('armament defaults', () => {
+  it('should default tube life percentage to 100 when API data is missing', () => {
+    const [series] = mapBackendToLocal([
+      {
+        seriesId: 'series-1',
+        seriesName: 'Series 1',
+        shots: [{ shotId: 'shot-1' }],
+      },
+    ]);
+
+    expect(series.shots[0].armament.tubeLifePercentage).toBe(100);
+  });
+
+  it('should default tube life percentage to 100 for new shots', () => {
+    const [series] = buildSeriesFromStore([
+      {
+        id: 'series-1',
+        name: 'Series 1',
+        shotQuantity: 1,
+        executionOrder: 1,
+        observations: '',
+        shots: [{ id: 'shot-1', globalNumber: 1, observation: '' }],
+      },
+    ]);
+
+    expect(series.shots[0].armament.tubeLifePercentage).toBe(100);
+  });
+});
 
 describe('mapLocalToRequest', () => {
   const series: ArmamentSerie[] = [

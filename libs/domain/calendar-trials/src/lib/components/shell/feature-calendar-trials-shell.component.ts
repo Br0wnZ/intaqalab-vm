@@ -94,6 +94,7 @@ export class FeatureCalendarTrialsShellComponent {
   readonly injector = inject(Injector);
   readonly store = inject(CalendarTrialStore);
   readonly specialDaysManager = inject(SpecialDaysManagerService);
+  readonly #onAction = this.injector.get(injectionTokenTabCommand);
 
   readonly Role = Role;
   readonly CAN_MANAGE_SPECIAL_DAYS_ROLES = [...CAN_MANAGE_SPECIAL_DAYS_ROLES];
@@ -126,8 +127,10 @@ export class FeatureCalendarTrialsShellComponent {
   }
 
   handleViewTrial(trialId: string) {
-    this.#onAction({ command: 'TRIAL_DETAIL', argument: trialId });
+    this.#onAction({
+      command: 'TRIAL_DETAIL',
+      argument: trialId,
+      queryParams: { tab: '1' },
+    });
   }
-
-  readonly #onAction = this.injector.get(injectionTokenTabCommand);
 }

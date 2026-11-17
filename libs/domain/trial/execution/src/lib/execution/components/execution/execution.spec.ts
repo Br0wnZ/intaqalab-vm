@@ -1,5 +1,5 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -351,7 +351,8 @@ describe('Execution', () => {
               },
             },
           },
-        }, provideTranslateService(),
+        },
+        provideTranslateService(),
       ],
     });
 
@@ -798,5 +799,47 @@ describe('Execution', () => {
 
     expect(callOrder).toEqual(['widget1', 'widget2']);
     await saving;
+  });
+
+  it('shows warning toast when saving fails with 409 conflict', async () => {
+    const { view, toastrService, user } = await setup();
+    const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
+
+    const widgetId = widgetStateService.addWidget(WidgetId.JLT_SHOT_DATA, 1);
+    view.fixture.detectChanges();
+
+    widgetStateService.updateWidgetFormState(widgetId, {
+      widgetId,
+      dirty: true,
+      touched: true,
+      valid: true,
+      hasChanges: true,
+    });
+    vi.spyOn(widgetStateService, 'saveAllDirtyForms').mockRejectedValue(
+      new HttpErrorResponse({ status: 409, statusText: 'Conflict' }),
+    );
+    view.fixture.detectChanges();
+
+    const saveButton = screen.getByRole('button', { name: 'COMMONS.SAVE' });
+    await user.click(saveButton);
+
+    expect(toastrService.warning).toHaveBeenCalledWith('TRIAL_EXECUTION.ERRORS.SHOT_SAVE_CONFLICT', undefined, {
+      timeOut: 5000,
+      progressBar: true,
+      closeButton: true,
+    });
+    expect(view.fixture.componentInstance.isSaving()).toBe(false);
+  });
+
+  it('rethrows non-409 errors when saving fails without showing conflict warning', async () => {
+    const { view, toastrService } = await setup();
+    const widgetStateService = view.fixture.debugElement.injector.get(WidgetStateService);
+
+    const serverError = new HttpErrorResponse({ status: 500, statusText: 'Internal Server Error' });
+    vi.spyOn(widgetStateService, 'saveAllDirtyForms').mockRejectedValue(serverError);
+
+    await expect(view.fixture.componentInstance.saveAllChanges()).rejects.toBe(serverError);
+    expect(toastrService.warning).not.toHaveBeenCalled();
+    expect(view.fixture.componentInstance.isSaving()).toBe(false);
   });
 });

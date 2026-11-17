@@ -59,22 +59,21 @@ Usa `userEvent.type()` para escribir en campos de texto. El signal form se actua
 
 ```typescript
 it('should enable search button with valid form', async () => {
-  const { view, container } = await runSetup();
+  const { user, view } = await runSetup();
   const component = view.fixture.componentInstance as MyFormComponent;
 
   // Mostrar el panel de filtros si está oculto
   component.showFilters.set(true);
   view.detectChanges();
 
-  // Interactuar con el campo
-  const input = container.querySelector('#my-field') as HTMLInputElement;
-  input.value = '192.168.1.1';
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  view.fixture.detectChanges();
+  // Interactuar con el campo mediante query accesible
+  const input = screen.getByLabelText(/MY_FIELD/i);
+  await user.clear(input);
+  await user.type(input, '192.168.1.1');
 
   // Verificar que el botón se habilitó
   const searchButton = screen.getByRole('button', { name: /SEARCH/i });
-  expect(searchButton.disabled).toBe(false);
+  expect(searchButton).toBeEnabled();
 });
 ```
 
@@ -126,14 +125,14 @@ import { MyFilterComponent } from './my-filter.component';
 
 describe('MyFilterComponent', () => {
   const runSetup = async () => {
+    const user = userEvent.setup();
     const view = await render(MyFilterComponent, {
       providers: [provideTranslateService(), provideTestingEnvironment()],
     });
 
-    const container = view.fixture.nativeElement as HTMLElement;
     const loader = TestbedHarnessEnvironment.loader(view.fixture);
 
-    return { view, container, loader };
+    return { user, view, loader };
   };
 
   beforeEach(() => {
@@ -154,13 +153,13 @@ describe('MyFilterComponent', () => {
 
   describe('Filter panel toggle', () => {
     it('should toggle filters when button clicked', async () => {
-      const { view } = await runSetup();
+      const { user, view } = await runSetup();
       const component = view.fixture.componentInstance as MyFilterComponent;
 
       const toggleBtn = screen.getByRole('button', {
         name: /TOGGLE_FILTERS/i,
       });
-      toggleBtn.click();
+      await user.click(toggleBtn);
 
       expect(component.showFilters()).toBe(true);
     });
@@ -168,19 +167,17 @@ describe('MyFilterComponent', () => {
 
   describe('Search button', () => {
     it('should enable search button with valid form', async () => {
-      const { view, container } = await runSetup();
+      const { user, view } = await runSetup();
       const component = view.fixture.componentInstance as MyFilterComponent;
 
       component.showFilters.set(true);
       view.detectChanges();
 
-      const input = container.querySelector('#my-filter-field') as HTMLInputElement;
-      if (input) input.value = 'test-value';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      view.fixture.detectChanges();
+      const input = screen.getByLabelText(/FILTER_FIELD/i);
+      await user.type(input, 'test-value');
 
       const searchButton = screen.getByRole('button', { name: /SEARCH/i });
-      expect(searchButton.disabled).toBe(false);
+      expect(searchButton).toBeEnabled();
     });
   });
 });

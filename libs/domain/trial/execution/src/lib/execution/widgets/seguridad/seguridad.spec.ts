@@ -8,7 +8,7 @@ import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { patchState } from '@ngrx/signals';
 import { unprotected } from '@ngrx/signals/testing';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -58,7 +58,7 @@ describe('SeguridadWidget', () => {
 
   it('renders without errors', async () => {
     await renderWidget();
-    expect(document.querySelector('h3')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
   });
 
   it('formState starts clean (not dirty)', async () => {

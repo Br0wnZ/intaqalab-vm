@@ -1,100 +1,100 @@
 import { provideTranslateService } from '@ngx-translate/core';
-import { render } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import { describe, expect, it } from 'vitest';
 
 import { Skeleton } from './skeleton';
 
-const withTranslate = { providers: [provideTranslateService({ fallbackLang: 'es' })]
-};
+const withTranslate = { providers: [provideTranslateService({ fallbackLang: 'es' })] };
 
 describe('Skeleton', () => {
   it('renders with role="status"', async () => {
-    const { container } = await render(Skeleton, withTranslate);
-    expect(container).toHaveAttribute('role', 'status');
+    await render(Skeleton, withTranslate);
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('renders with aria-busy="true"', async () => {
-    const { container } = await render(Skeleton, withTranslate);
-    expect(container).toHaveAttribute('aria-busy', 'true');
+    await render(Skeleton, withTranslate);
+    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
   });
 
   it('applies background-color style as base', async () => {
-    const { container } = await render(Skeleton, withTranslate);
-    expect(container.getAttribute('style')).toContain('background-color: var(--inta-neutral-200, #e5e7eb)');
+    await render(Skeleton, withTranslate);
+    expect(screen.getByRole('status')).toHaveStyle({ backgroundColor: 'rgb(229, 231, 235)' });
   });
 
   it('applies pulse animation class by default', async () => {
-    const { container } = await render(Skeleton, withTranslate);
-    expect(container.className).toContain('animate-pulse');
+    await render(Skeleton, withTranslate);
+    expect(screen.getByRole('status')).toHaveClass('animate-pulse');
   });
 
   it('applies wave animation class when animation="wave"', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { animation: 'wave' as const },
     });
-    expect(container.className).toContain('inta-skeleton-wave');
+    expect(screen.getByRole('status')).toHaveClass('inta-skeleton-wave');
   });
 
   it('does not apply animation class when animation="none"', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { animation: 'none' as const },
     });
-    expect(container.className).not.toContain('animate-pulse');
-    expect(container.className).not.toContain('inta-skeleton-wave');
+    const status = screen.getByRole('status');
+    expect(status).not.toHaveClass('animate-pulse');
+    expect(status).not.toHaveClass('inta-skeleton-wave');
   });
 
   it('applies circle variant classes', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { variant: 'circle' as const },
     });
-    expect(container.className).toContain('rounded-full');
+    expect(screen.getByRole('status')).toHaveClass('rounded-full');
   });
 
   it('applies text variant classes', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { variant: 'text' as const },
     });
-    expect(container.className).toContain('h-[1em]');
+    expect(screen.getByRole('status')).toHaveClass('h-[1em]');
   });
 
   it('applies button variant h-9 class', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { variant: 'button' as const },
     });
-    expect(container.className).toContain('h-9');
+    expect(screen.getByRole('status')).toHaveClass('h-9');
   });
 
   it('binds width style', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { width: '200px' },
     });
-    expect(container).toHaveStyle({ width: '200px' });
+    expect(screen.getByRole('status')).toHaveStyle({ width: '200px' });
   });
 
   it('binds height style', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { height: '80px' },
     });
-    expect(container).toHaveStyle({ height: '80px' });
+    expect(screen.getByRole('status')).toHaveStyle({ height: '80px' });
   });
 
   it('merges custom class via class input', async () => {
-    const { container } = await render(Skeleton, {
+    await render(Skeleton, {
       ...withTranslate,
       componentInputs: { class: 'my-custom-class' },
     });
-    expect(container.className).toContain('my-custom-class');
+    expect(screen.getByRole('status')).toHaveClass('my-custom-class');
   });
 
   it('renders sr-only span for screen reader', async () => {
-    const { container } = await render(Skeleton, withTranslate);
-    expect(container.querySelector('.sr-only')).toBeTruthy();
+    await render(Skeleton, withTranslate);
+    expect(screen.getByLabelText('UI.SKELETON.LOADING')).toHaveClass('sr-only');
   });
 });

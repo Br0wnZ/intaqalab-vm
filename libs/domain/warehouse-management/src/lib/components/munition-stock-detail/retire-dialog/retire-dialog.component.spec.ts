@@ -10,7 +10,7 @@ import { RetireDialogComponent } from './retire-dialog.component';
 
 let mockDialog: ReturnType<typeof createMockMatDialog>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-let mockService: any /* eslint-disable-line @typescript-eslint/no-explicit-any */;
+let mockService: any; /* eslint-disable-line @typescript-eslint/no-explicit-any */
 let mockDialogRef: { close: ReturnType<typeof vi.fn> };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function setup(data: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
@@ -24,20 +24,21 @@ async function setup(data: any /* eslint-disable-line @typescript-eslint/no-expl
   mockDialog = createMockMatDialog({
     defaultResult: null,
   });
-  const renderResult = await render(RetireDialogComponent, {
+  const view = await render(RetireDialogComponent, {
     declarations: [],
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTestingEnvironment(),
-      { provide: MatDialogRef, useValue: mockDialogRef }, provideTranslateService(),
+      { provide: MatDialogRef, useValue: mockDialogRef },
+      provideTranslateService(),
     ],
     componentProviders: [
       { provide: MatDialog, useValue: mockDialog },
       { provide: MAT_DIALOG_DATA, useValue: { item: { denomination: { id: 1, name: 'name' }, quantity: 1000 } } },
     ],
   });
-  const fixture = renderResult.fixture;
+  const fixture = view.fixture;
   fixture.detectChanges();
   return { fixture, sortPaginationChanges };
 }

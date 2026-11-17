@@ -116,12 +116,14 @@
     "ACTIONS": "Acciones",
     "ADD": "Añadir",
     "CANCEL": "Cancelar",
+    "COLLAPSE": "Contraer",
     "CONFIRM": "Confirmar",
     "CREATE": "Crear",
     "DELETE": "Eliminar",
     "DELETE_DATA": "Borrar datos",
     "DRAG_TO_REORDER": "Arrastrar para reordenar",
     "EDIT": "Editar",
+    "EXPAND": "Expandir",
     "INVALID_DATE_FORMAT": "Formato de fecha no válido",
     "LOADING": "Cargando...",
     "NO_OBSERVATIONS": "Sin observaciones",
@@ -1304,7 +1306,8 @@
     "EMPTY_PANEL_TITLE": "Tu panel está vacío",
     "ERRORS": {
       "LOAD_FAILED_DETAIL": "No se ha podido recuperar la información de ejecución. Inténtelo de nuevo más tarde.",
-      "LOAD_FAILED_TITLE": "Error al cargar la ejecución"
+      "LOAD_FAILED_TITLE": "Error al cargar la ejecución",
+      "SHOT_SAVE_CONFLICT": "No se puede realizar cambios en el disparo seleccionado"
     },
     "FREE_SPACE_DESC_1": "Haz clic en",
     "FREE_SPACE_DESC_2": "para añadir más módulos",

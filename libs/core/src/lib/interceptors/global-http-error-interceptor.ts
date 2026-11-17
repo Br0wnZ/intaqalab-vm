@@ -1,6 +1,6 @@
 import type { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { SKIP_ERROR_TOAST } from '@intaqalab/config';
+import { SKIP_ERROR_TOAST, SKIP_ERROR_TOAST_STATUSES } from '@intaqalab/config';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { catchError, throwError } from 'rxjs';
@@ -19,10 +19,15 @@ export const globalHttpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastrService);
   const translate = inject(TranslateService);
   const skipErrorToast = req.context.get(SKIP_ERROR_TOAST);
+  const skipErrorStatuses = req.context.get(SKIP_ERROR_TOAST_STATUSES);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (!skipErrorToast && !HTTP_ERROR_TOAST_EXCLUDED_STATUSES.has(error.status)) {
+      if (
+        !skipErrorToast &&
+        !HTTP_ERROR_TOAST_EXCLUDED_STATUSES.has(error.status) &&
+        !skipErrorStatuses.includes(error.status)
+      ) {
         const messageKey = resolveErrorTranslationKey(error.status);
         const title = translate.instant('HTTP_ERRORS.TITLE');
         const message = translate.instant(messageKey);

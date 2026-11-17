@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import { PlanningArmamentService } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
@@ -13,6 +13,7 @@ import type {
   ShotArmamentResponse,
 } from '../../../execution/models';
 import { executionTrialUrl } from '../shared/execution-endpoints';
+import { skipConflictErrorToastOptions } from '../shared/execution-http-context';
 import { awaitResourceValue } from '../shared/resource-await';
 
 interface ShotArmamentParams {
@@ -95,6 +96,7 @@ export class ShotArmamentService {
       this.#http.put<ShotArmamentResponse>(
         executionTrialUrl(this.#executionUrl, fireTrialId, 'armament', 'series', seriesId, 'shots', shotId),
         body,
+        skipConflictErrorToastOptions(),
       ),
     );
   }

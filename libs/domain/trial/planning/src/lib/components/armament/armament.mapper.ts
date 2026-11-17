@@ -19,7 +19,7 @@ export function mapBackendToLocal(seriesArmament: SeriesArmamentData[]): Armamen
         tubeName: shot.armament?.tubeName ?? '',
         tubeExternalId: shot.armament?.tubeExternalId?.toString() ?? '',
         isInstrumented: shot.armament?.isInstrumented ?? false,
-        tubeLifePercentage: shot.armament?.tubeLifePercentage ?? 0,
+        tubeLifePercentage: shot.armament?.tubeLifePercentage ?? 100,
         observations: shot.armament?.observations ?? '',
       },
     })),
@@ -58,7 +58,7 @@ export function buildSeriesFromStore(
           tubeName: existing?.tubeName ?? '',
           tubeExternalId: existing?.tubeExternalId?.toString() ?? '',
           isInstrumented: existing?.isInstrumented ?? false,
-          tubeLifePercentage: existing?.tubeLifePercentage ?? 0,
+          tubeLifePercentage: existing?.tubeLifePercentage ?? 100,
           observations: existing?.observations ?? '',
         },
       };

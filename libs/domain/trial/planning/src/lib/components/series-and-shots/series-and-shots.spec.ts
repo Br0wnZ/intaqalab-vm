@@ -2,6 +2,7 @@ import type { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionPanelHarness } from '@angular/material/expansion/testing';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import {
   TEST_CONSTANTS,
@@ -60,7 +61,8 @@ describe('SeriesAndShots', () => {
       providers: [
         provideTestingEnvironment(),
         { provide: PlanningGeneralDataStore, useValue: mockPlanningStore },
-        { provide: MatDialog, useValue: mockDialog }, provideTranslateService(),
+        { provide: MatDialog, useValue: mockDialog },
+        provideTranslateService(),
       ],
       componentProviders: [{ provide: SeriesAndShotsStore, useValue: mockSeriesStore }],
     });
@@ -115,12 +117,7 @@ describe('SeriesAndShots', () => {
     it('should render actions for each series', async () => {
       await runSetup();
       const seriesNames = ['Serie A', 'Serie B', 'Serie C'];
-      const seriesHeaders = seriesNames.map((name) => {
-        const seriesName = screen.getByText(name);
-        const header = seriesName.closest('mat-expansion-panel-header');
-        expect(header).toBeTruthy();
-        return header as HTMLElement;
-      });
+      const seriesHeaders = seriesNames.map((name) => screen.getByRole('button', { name: new RegExp(name) }));
 
       expect(seriesHeaders.flatMap((header) => within(header).getAllByLabelText(/COMMONS\.EDIT|Editar/i))).toHaveLength(
         3,
@@ -174,12 +171,9 @@ describe('SeriesAndShots', () => {
   describe('Series Management', () => {
     it('should open create series dialog', async () => {
       const { user } = await runSetup();
-      const createButton = screen
-        .getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.CREATE_SERIE_BUTTON')
-        .closest('button');
-
-      expect(createButton).toBeTruthy();
-      if (!createButton) return;
+      const createButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING\.SERIES_AND_SHOTS_SECTION\.CREATE_SERIE_BUTTON/i,
+      });
 
       await user.click(createButton);
 
@@ -228,18 +222,15 @@ describe('SeriesAndShots', () => {
     });
 
     it('should call addShotToSerie when clicking add shot button', async () => {
-      const { user, container, loader } = await runSetup();
+      const { user, view, loader } = await runSetup();
       await expandPanelByIndex(loader, 0);
 
-      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-      expect(expandedPanel).toBeTruthy();
-      if (!expandedPanel) return;
+      const expandedPanelDe = view.fixture.debugElement.query(By.css('mat-expansion-panel.mat-expanded'));
+      expect(expandedPanelDe).not.toBeNull();
 
-      const addShotButton = within(expandedPanel as HTMLElement)
-        .getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.ADD_SHOT_BUTTON')
-        .closest('button');
-      expect(addShotButton).toBeTruthy();
-      if (!addShotButton) return;
+      const addShotButton = within(expandedPanelDe.nativeElement as HTMLElement).getByRole('button', {
+        name: /TRIAL_PLANNING\.SERIES_AND_SHOTS_SECTION\.ADD_SHOT_BUTTON/i,
+      });
 
       await user.click(addShotButton);
 
@@ -247,19 +238,15 @@ describe('SeriesAndShots', () => {
     });
 
     it('should allow editing a shot observation', async () => {
-      const { container, view, loader } = await runSetup();
+      const { view, loader } = await runSetup();
       await expandPanelByIndex(loader, 0);
 
       await waitFor(() => {
-        const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-        expect(expandedPanel).toBeTruthy();
+        expect(view.fixture.debugElement.query(By.css('mat-expansion-panel.mat-expanded'))).not.toBeNull();
       });
 
-      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-      expect(expandedPanel).toBeTruthy();
-      if (!expandedPanel) return;
-
-      const panelQueries = within(expandedPanel as HTMLElement);
+      const expandedPanelDe = view.fixture.debugElement.query(By.css('mat-expansion-panel.mat-expanded'));
+      const panelQueries = within(expandedPanelDe.nativeElement as HTMLElement);
 
       const editButtons = panelQueries.getAllByTitle(/COMMONS\.EDIT|Editar/i);
       expect(editButtons.length).toBeGreaterThan(0);
@@ -271,13 +258,13 @@ describe('SeriesAndShots', () => {
         expect(saveButton).toBeInTheDocument();
       });
 
-      const input = expandedPanel.querySelector('input:not([disabled])');
-      expect(input).toBeTruthy();
-      if (!input) return;
+      const inputDe = expandedPanelDe.query(By.css('input:not([disabled])'));
+      expect(inputDe).not.toBeNull();
+      const input = inputDe.nativeElement as HTMLInputElement;
 
       const user = userEvent.setup();
-      await user.clear(input as HTMLInputElement);
-      await user.type(input as HTMLInputElement, 'New Observation');
+      await user.clear(input);
+      await user.type(input, 'New Observation');
       view.fixture.detectChanges();
 
       const saveButton = panelQueries.getByTitle(/COMMONS\.SAVE|Guardar/i);
@@ -306,27 +293,30 @@ describe('SeriesAndShots', () => {
 
     it('should disable shot deletion and show tooltip when series has a single shot', async () => {
       const singleShotSeries = createSeriesData(1, 1);
-      const { user, container, loader } = await runSetup(singleShotSeries);
+      const { user, view, loader } = await runSetup(singleShotSeries);
       await expandPanelByIndex(loader, 0);
 
-      const expandedPanel = container.querySelector('mat-expansion-panel.mat-expanded');
-      expect(expandedPanel).toBeTruthy();
-      if (!expandedPanel) return;
+      const expandedPanelDe = view.fixture.debugElement.query(By.css('mat-expansion-panel.mat-expanded'));
+      expect(expandedPanelDe).not.toBeNull();
 
-      const panelQueries = within(expandedPanel as HTMLElement);
+      const panelQueries = within(expandedPanelDe.nativeElement as HTMLElement);
       const deleteButtons = panelQueries.getAllByLabelText(/COMMONS\.DELETE|Eliminar/i);
       const shotDeleteButton = deleteButtons.find((button) => button.hasAttribute('disabled'));
 
-      expect(shotDeleteButton).toBeTruthy();
-      if (!shotDeleteButton?.parentElement) return;
+      expect(shotDeleteButton).toBeDefined();
+      const disabledBtnDe = expandedPanelDe
+        .queryAll(By.css('button[disabled]'))
+        .find((de) => de.nativeElement === shotDeleteButton);
+      const hoverTarget = disabledBtnDe?.parent?.nativeElement as HTMLElement;
+      expect(hoverTarget).toBeDefined();
 
-      await user.hover(shotDeleteButton.parentElement);
+      await user.hover(hoverTarget);
 
       expect(
         panelQueries.getByText('TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SINGLE_SHOT_DELETE_TOOLTIP'),
       ).toBeInTheDocument();
 
-      await user.click(shotDeleteButton);
+      await user.click(shotDeleteButton as HTMLElement);
 
       expect(mockDialog.open).not.toHaveBeenCalled();
     });
