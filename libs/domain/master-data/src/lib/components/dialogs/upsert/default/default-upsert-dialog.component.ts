@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +19,7 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaIconComponent,
     SaveButton,
   ],
@@ -32,46 +33,53 @@ import type { MasterDataDefault } from '../../../../models/master-data-default.m
       }
     </h2>
 
-    <mat-dialog-content>
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_ES.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="name"
-            matInput
-            [formField]="form.nameEs"
-            [placeholder]="'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_ES.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
-      <div>
-        <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_EN.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="nameEn"
-            matInput
-            [formField]="form.nameEn"
-            [placeholder]="'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_EN.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_ES.LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="name"
+              matInput
+              [formField]="form.nameEs"
+              [placeholder]="'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_ES.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
+        <div>
+          <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_EN.LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="nameEn"
+              matInput
+              [formField]="form.nameEn"
+              [placeholder]="'MASTER_DATA.DIALOGS.UPSERT.INPUTS.NAME_EN.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
-      </button>
-      <ui-save-button
-        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
-        [isDisabled]="form().invalid()"
-        [isSaving]="store.isMutating()"
-        (save)="onConfirm()"
-      />
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          [matDialogClose]="false"
+        >
+          {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
+        </button>
+        <ui-save-button
+          buttonType="submit"
+          label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+          [isDisabled]="form().invalid()"
+          [isSaving]="store.isMutating() || form().submitting()"
+        />
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -89,10 +97,20 @@ export class MasterDataDefaultUpsertDialogComponent {
     nameEn: '',
   });
 
-  readonly form = form(this.formModel, (f) => {
-    required(f.nameEs);
-    required(f.nameEn);
-  });
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      required(f.nameEs);
+      required(f.nameEn);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   constructor() {
     if (this.data !== null) {

@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, disabled, form, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +19,7 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
@@ -34,89 +35,96 @@ import type { MasterDataDimension } from '../../../../models/master-data-dimensi
       }
     </h2>
 
-    <mat-dialog-content>
-      <div>
-        <label for="width" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.WIDTH' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="width"
-            matInput
-            type="number"
-            libNoNegativeValues
-            libLocalDecimal
-            [formField]="form.width"
-            [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.WIDTH' | translate"
-          />
-        </mat-form-field>
-        @if (form.width().touched() && form.width().errors()) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.width().errors(); track error) {
-              <p>{{ error.message | translate }}</p>
-            }
-          </div>
-        }
-      </div>
-      <div class="mt-4">
-        <label for="height" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.HEIGHT' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="height"
-            matInput
-            type="number"
-            libNoNegativeValues
-            libLocalDecimal
-            [formField]="form.height"
-            [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.HEIGHT' | translate"
-          />
-        </mat-form-field>
-        @if (form.height().touched() && form.height().errors()) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.height().errors(); track error) {
-              <p>{{ error.message | translate }}</p>
-            }
-          </div>
-        }
-      </div>
-      <div class="mt-4">
-        <label for="diameter" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.DIAMETER' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="diameter"
-            matInput
-            type="number"
-            libNoNegativeValues
-            libLocalDecimal
-            [formField]="form.diameter"
-            [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.DIAMETER' | translate"
-          />
-        </mat-form-field>
-        @if (form.diameter().touched() && form.diameter().errors()) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.diameter().errors(); track error) {
-              <p>{{ error.message | translate }}</p>
-            }
-          </div>
-        }
-      </div>
-    </mat-dialog-content>
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div>
+          <label for="width" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.WIDTH' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="width"
+              matInput
+              type="number"
+              libNoNegativeValues
+              libLocalDecimal
+              [formField]="form.width"
+              [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.WIDTH' | translate"
+            />
+          </mat-form-field>
+          @if (form.width().touched() && form.width().errors()) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              @for (error of form.width().errors(); track error) {
+                <p>{{ error.message | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+        <div class="mt-4">
+          <label for="height" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.HEIGHT' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="height"
+              matInput
+              type="number"
+              libNoNegativeValues
+              libLocalDecimal
+              [formField]="form.height"
+              [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.HEIGHT' | translate"
+            />
+          </mat-form-field>
+          @if (form.height().touched() && form.height().errors()) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              @for (error of form.height().errors(); track error) {
+                <p>{{ error.message | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+        <div class="mt-4">
+          <label for="diameter" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.DIAMETER' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="diameter"
+              matInput
+              type="number"
+              libNoNegativeValues
+              libLocalDecimal
+              [formField]="form.diameter"
+              [placeholder]="'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.DIAMETER' | translate"
+            />
+          </mat-form-field>
+          @if (form.diameter().touched() && form.diameter().errors()) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              @for (error of form.diameter().errors(); track error) {
+                <p>{{ error.message | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [mat-dialog-close]="false">
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
-      </button>
-      <ui-save-button
-        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
-        [isDisabled]="form().invalid()"
-        [isSaving]="store.isMutating()"
-        (save)="onConfirm()"
-      />
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          [mat-dialog-close]="false"
+        >
+          {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
+        </button>
+        <ui-save-button
+          buttonType="submit"
+          label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+          [isDisabled]="form().invalid()"
+          [isSaving]="store.isMutating() || form().submitting()"
+        />
+      </mat-dialog-actions>
+    </form>
   `,
   styles: `
     mat-dialog-content {
@@ -150,44 +158,54 @@ export class DimensionsUpsertDialogComponent {
     diameter: 0,
   });
 
-  readonly form = form(this.formModel, (f) => {
-    disabled(f.width, () => this.formModel().diameter > 0);
-    disabled(f.height, () => this.formModel().diameter > 0);
-    disabled(f.diameter, () => this.formModel().width > 0 || this.formModel().height > 0);
-    validate(f.width, ({ value, valueOf }) => {
-      const width = value();
-      if (width < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      disabled(f.width, () => this.formModel().diameter > 0);
+      disabled(f.height, () => this.formModel().diameter > 0);
+      disabled(f.diameter, () => this.formModel().width > 0 || this.formModel().height > 0);
+      validate(f.width, ({ value, valueOf }) => {
+        const width = value();
+        if (width < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
 
-      const height = valueOf(f.height) > 0;
-      if (!width && height)
-        return { kind: 'widthRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.WIDTH' };
+        const height = valueOf(f.height) > 0;
+        if (!width && height)
+          return { kind: 'widthRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.WIDTH' };
 
-      return null;
-    });
+        return null;
+      });
 
-    validate(f.height, ({ value, valueOf }) => {
-      const height = value();
-      if (height < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
+      validate(f.height, ({ value, valueOf }) => {
+        const height = value();
+        if (height < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
 
-      const width = valueOf(f.width) > 0;
+        const width = valueOf(f.width) > 0;
 
-      if (!height && width)
-        return { kind: 'heightRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.HEIGHT' };
+        if (!height && width)
+          return { kind: 'heightRequired', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.HEIGHT' };
 
-      return null;
-    });
+        return null;
+      });
 
-    validate(f.diameter, ({ value, valueOf }) => {
-      const diameter = value();
-      if (diameter < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
+      validate(f.diameter, ({ value, valueOf }) => {
+        const diameter = value();
+        if (diameter < 0) return { kind: 'positive', message: 'MASTER_DATA.DIMENSION.DIALOGS.UPSERT.ERROR.POSITIVE' };
 
-      const height = valueOf(f.height);
-      const width = valueOf(f.width);
-      if (!diameter && !height && !width) return { kind: 'noData' };
+        const height = valueOf(f.height);
+        const width = valueOf(f.width);
+        if (!diameter && !height && !width) return { kind: 'noData' };
 
-      return null;
-    });
-  });
+        return null;
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   constructor() {
     if (this.data !== null) {

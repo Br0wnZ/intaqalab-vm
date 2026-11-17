@@ -46,20 +46,22 @@ const MOCK_EDIT_DATA_WITHOUT_EN: MasterDataDefault = {
 async function setup(data: MasterDataDefault | null = null) {
   const closeFn = vi.fn();
   const events = userEvent.setup();
+  const mockService = createMockMasterDataService();
 
   const view = await render(MasterDataDefaultUpsertDialogComponent, {
     providers: [
       provideTestingEnvironment(),
-      { provide: MasterDataService, useValue: createMockMasterDataService() },
+      { provide: MasterDataService, useValue: mockService },
       MasterDataStore,
       { provide: MatDialogRef, useValue: { close: closeFn } },
-      { provide: MAT_DIALOG_DATA, useValue: data }, provideTranslateService(),
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      provideTranslateService(),
     ],
   });
 
   view.fixture.detectChanges();
   const loader = TestbedHarnessEnvironment.loader(view.fixture);
-  return { view, events, loader, closeFn };
+  return { view, events, loader, closeFn, mockService };
 }
 
 describe('MasterDataDefaultUpsertDialogComponent', () => {
@@ -139,12 +141,30 @@ describe('MasterDataDefaultUpsertDialogComponent', () => {
   });
 
   describe('dialog actions', () => {
-    it('should close the dialog with false when cancel is clicked', async () => {
-      const { events, closeFn } = await setup(null);
+    it('should close the dialog with false and not submit when cancel is clicked', async () => {
+      const { events, closeFn, mockService } = await setup(null);
 
       await events.click(screen.getByText('MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL'));
 
       expect(closeFn).toHaveBeenCalledWith(false);
+      expect(mockService.create).not.toHaveBeenCalled();
+    });
+
+    it('should submit once via FormRoot when save button is clicked', async () => {
+      const { events, loader, mockService } = await setup(null);
+      const inputs = await loader.getAllHarnesses(MatInputHarness);
+
+      await inputs[0].setValue('Nombre');
+      await inputs[1].setValue('Name');
+
+      const saveBtn = screen.getByRole('button', { name: 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE' });
+      await events.click(saveBtn);
+
+      expect(mockService.create).toHaveBeenCalledTimes(1);
+      expect(mockService.create).toHaveBeenCalledWith({
+        name: { es: 'Nombre', en: 'Name' },
+        active: true,
+      });
     });
   });
 });

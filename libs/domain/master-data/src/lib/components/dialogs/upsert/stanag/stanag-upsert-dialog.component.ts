@@ -1,14 +1,5 @@
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
-} from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormField, FormRoot, form, required, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
@@ -24,9 +15,8 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
   imports: [
     IntaSignalSelectComponent,
     FormField,
+    FormRoot,
     TranslatePipe,
-    FormsModule,
-    ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -46,132 +36,139 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
       }
     </h2>
 
-    <mat-dialog-content>
-      <ui-inta-signal-select
-        appearance="outline"
-        [id]="'variable'"
-        [valueKey]="'id'"
-        [labelKey]="'name'"
-        [formField]="form.variable"
-        [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.PLACEHOLDER' | translate"
-        [options]="variableNamesList"
-      />
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <ui-inta-signal-select
+          appearance="outline"
+          [id]="'variable'"
+          [valueKey]="'id'"
+          [labelKey]="'name'"
+          [formField]="form.variable"
+          [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.LABEL' | translate"
+          [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.VARIABLE.PLACEHOLDER' | translate"
+          [options]="variableNamesList"
+        />
 
-      <div class="mt-4">
-        <label for="numThreshold" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.NUM_THRESHOLD.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="numThreshold"
-            matInput
-            type="number"
-            [formField]="form.numericThreshold"
-            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.NUM_THRESHOLD.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
+        <div class="mt-4">
+          <label for="numThreshold" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.NUM_THRESHOLD.LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="numThreshold"
+              matInput
+              type="number"
+              [formField]="form.numericThreshold"
+              [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.NUM_THRESHOLD.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
 
-      <ui-inta-signal-select
-        appearance="outline"
-        [id]="'measureUnit'"
-        [valueKey]="'value'"
-        [labelKey]="'label'"
-        [formField]="form.unit"
-        [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.PLACEHOLDER' | translate"
-        [options]="measureUnitsList"
-      />
+        <ui-inta-signal-select
+          appearance="outline"
+          [id]="'measureUnit'"
+          [valueKey]="'value'"
+          [labelKey]="'label'"
+          [formField]="form.unit"
+          [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.LABEL' | translate"
+          [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.MEASURE_UNIT.PLACEHOLDER' | translate"
+          [options]="measureUnitsList"
+        />
 
-      <ui-inta-signal-select
-        appearance="outline"
-        [id]="'calcType'"
-        [valueKey]="'id'"
-        [labelKey]="'name'"
-        [formField]="form.calculationType"
-        [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.PLACEHOLDER' | translate"
-        [options]="calcTypeList"
-      />
+        <ui-inta-signal-select
+          appearance="outline"
+          [id]="'calcType'"
+          [valueKey]="'id'"
+          [labelKey]="'name'"
+          [formField]="form.calculationType"
+          [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.LABEL' | translate"
+          [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.CALC_TYPE.PLACEHOLDER' | translate"
+          [options]="calcTypeList"
+        />
 
-      <ui-inta-signal-select
-        appearance="outline"
-        [id]="'involvedLayers'"
-        [valueKey]="'id'"
-        [labelKey]="'name'"
-        [formField]="form.involvedLayer"
-        [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.LABEL' | translate"
-        [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.PLACEHOLDER' | translate"
-        [options]="involvedLayersList()"
-      />
+        <ui-inta-signal-select
+          appearance="outline"
+          [id]="'involvedLayers'"
+          [valueKey]="'id'"
+          [labelKey]="'name'"
+          [formField]="form.involvedLayer"
+          [label]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.LABEL' | translate"
+          [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.INV_LAYERS.PLACEHOLDER' | translate"
+          [options]="involvedLayersList()"
+        />
 
-      <div>
-        <label for="startLayer" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="startLayer"
-            matInput
-            type="number"
-            libNoNegativeValues
-            libNoLeadingZeros
-            [formField]="form.startLayer"
-            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-        @if (form.calculationType().dirty() && form.startLayer().errors()) {
-          @for (error of form.startLayer().errors(); track error.kind) {
-            <mat-error>{{ error.message | translate }}</mat-error>
+        <div>
+          <label for="startLayer" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="startLayer"
+              matInput
+              type="number"
+              libNoNegativeValues
+              libNoLeadingZeros
+              [formField]="form.startLayer"
+              [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+          @if (form.calculationType().dirty() && form.startLayer().errors()) {
+            @for (error of form.startLayer().errors(); track error.kind) {
+              <mat-error>{{ error.message | translate }}</mat-error>
+            }
           }
-        }
-      </div>
+        </div>
 
-      <div>
-        <label for="endLayer" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full">
-          <input
-            id="endLayer"
-            matInput
-            type="number"
-            libNoNegativeValues
-            libNoLeadingZeros
-            [formField]="form.endLayer"
-            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-        @if (form.calculationType().dirty() && form.endLayer().errors()) {
-          @for (error of form.endLayer().errors(); track error.kind) {
-            <mat-error>{{ error.message | translate }}</mat-error>
+        <div>
+          <label for="endLayer" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full">
+            <input
+              id="endLayer"
+              matInput
+              type="number"
+              libNoNegativeValues
+              libNoLeadingZeros
+              [formField]="form.endLayer"
+              [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+          @if (form.calculationType().dirty() && form.endLayer().errors()) {
+            @for (error of form.endLayer().errors(); track error.kind) {
+              <mat-error>{{ error.message | translate }}</mat-error>
+            }
           }
-        }
-      </div>
+        </div>
 
-      <div>
-        <mat-form-field appearance="outline" class="w-full">
-          <textarea
-            matInput
-            [formField]="form.name.es"
-            [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION' | translate"
-          ></textarea>
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
+        <div>
+          <mat-form-field appearance="outline" class="w-full">
+            <textarea
+              matInput
+              [formField]="form.name.es"
+              [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.DESCRIPTION' | translate"
+            ></textarea>
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
-      </button>
-      <ui-save-button
-        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
-        [isDisabled]="form().invalid()"
-        [isSaving]="store.isMutating()"
-        (save)="sendData()"
-      />
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          [matDialogClose]="false"
+        >
+          {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
+        </button>
+        <ui-save-button
+          buttonType="submit"
+          label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+          [isDisabled]="form().invalid()"
+          [isSaving]="store.isMutating() || form().submitting()"
+        />
+      </mat-dialog-actions>
+    </form>
   `,
   styles: `
     mat-dialog-content {
@@ -314,66 +311,76 @@ export class StanagUpsertDialogComponent {
     this.defaultFormValues,
   );
 
-  readonly form = form(this.formModel, (schemaPath) => {
-    required(schemaPath.variable);
-    required(schemaPath.numericThreshold);
-    required(schemaPath.unit);
-    required(schemaPath.calculationType);
-    required(schemaPath.involvedLayer);
-    validate(schemaPath.startLayer, ({ value, valueOf }) => {
-      const calculationType = valueOf(schemaPath.calculationType);
-      const startLayerTouched = this.form.startLayer().touched();
+  readonly form = form(
+    this.formModel,
+    (schemaPath) => {
+      required(schemaPath.variable);
+      required(schemaPath.numericThreshold);
+      required(schemaPath.unit);
+      required(schemaPath.calculationType);
+      required(schemaPath.involvedLayer);
+      validate(schemaPath.startLayer, ({ value, valueOf }) => {
+        const calculationType = valueOf(schemaPath.calculationType);
+        const startLayerTouched = this.form.startLayer().touched();
 
-      if (!calculationType || !startLayerTouched) return null;
+        if (!calculationType || !startLayerTouched) return null;
 
-      const startLayer = value();
+        const startLayer = value();
 
-      if (!startLayer && startLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+        if (!startLayer && startLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
 
-      const startLayerNumber = +startLayer!;
-      const endLayer = valueOf(schemaPath.endLayer);
+        const startLayerNumber = +startLayer!;
+        const endLayer = valueOf(schemaPath.endLayer);
 
-      if (endLayer === null) return;
+        if (endLayer === null) return;
 
-      if (calculationType === 'SINGLE_VALUE' && startLayerNumber !== +endLayer) {
-        return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
-      }
+        if (calculationType === 'SINGLE_VALUE' && startLayerNumber !== +endLayer) {
+          return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
+        }
 
-      const involvedLayer = valueOf(schemaPath.involvedLayer);
+        const involvedLayer = valueOf(schemaPath.involvedLayer);
 
-      if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && startLayerNumber > +endLayer) {
-        return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
-      }
+        if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && startLayerNumber > +endLayer) {
+          return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
+        }
 
-      return null;
-    });
-    validate(schemaPath.endLayer, ({ value, valueOf }) => {
-      const calculationType = valueOf(schemaPath.calculationType);
-      const endLayerTouched = this.form.endLayer().touched();
+        return null;
+      });
+      validate(schemaPath.endLayer, ({ value, valueOf }) => {
+        const calculationType = valueOf(schemaPath.calculationType);
+        const endLayerTouched = this.form.endLayer().touched();
 
-      if (!calculationType || !endLayerTouched) return null;
+        if (!calculationType || !endLayerTouched) return null;
 
-      const endLayer = value();
+        const endLayer = value();
 
-      if (!endLayer && endLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
+        if (!endLayer && endLayer !== 0) return { kind: 'required', message: 'COMMONS.REQUIRED_FIELD' };
 
-      const endLayerNumber = +endLayer!;
-      const startLayer = valueOf(schemaPath.startLayer);
+        const endLayerNumber = +endLayer!;
+        const startLayer = valueOf(schemaPath.startLayer);
 
-      if (startLayer === null) return;
+        if (startLayer === null) return;
 
-      if (calculationType === 'SINGLE_VALUE' && endLayerNumber !== +startLayer) {
-        return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
-      }
+        if (calculationType === 'SINGLE_VALUE' && endLayerNumber !== +startLayer) {
+          return { kind: 'equal_layers', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.EQUAL_LAYERS' };
+        }
 
-      const involvedLayer = valueOf(schemaPath.involvedLayer);
+        const involvedLayer = valueOf(schemaPath.involvedLayer);
 
-      if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && endLayerNumber < +startLayer) {
-        return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
-      }
-      return null;
-    });
-  });
+        if (involvedLayer === 'BETWEEN_TWO_HEIGHTS' && endLayerNumber < +startLayer) {
+          return { kind: 'greater_end_layer', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_END_LAYER' };
+        }
+        return null;
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.sendData();
+        },
+      },
+    },
+  );
 
   protected sendData() {
     const { variable, name, numericThreshold, unit, calculationType, involvedLayer, startLayer, endLayer } =

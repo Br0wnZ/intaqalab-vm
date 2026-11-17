@@ -1,6 +1,5 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
@@ -19,9 +18,8 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
   imports: [
     IntaSignalSelectComponent,
     FormField,
+    FormRoot,
     TranslatePipe,
-    FormsModule,
-    ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -42,69 +40,76 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
       }
     </h2>
 
-    <mat-dialog-content>
-      <div class="flex flex-col gap-6">
-        <ui-inta-signal-select
-          appearance="outline"
-          floatLabel="always"
-          [id]="'denomination'"
-          [valueKey]="'id'"
-          [labelKey]="'name'"
-          [formField]="form.denominationId"
-          [searchable]="true"
-          [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
-          [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
-          [options]="denominationsStore.items() || []"
-        />
-
-        <div>
-          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-            <mat-label>{{ 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.LABEL' | translate }}</mat-label>
-            <input
-              id="zones"
-              matInput
-              [formField]="form.zone"
-              [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-
-        <ui-input-select
-          placeholder="0"
-          floatLabel="always"
-          [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
-          [opciones]="caliberUnitOptions"
-          [value]="{
-            value: formModel().caliber?.toString() ?? '',
-            unit: formModel().caliberUnit,
-          }"
-          (valueChange)="onCaliberUnitChanges($event)"
-        >
-          <input
-            placeholder="0"
-            type="number"
-            inputSelectInput
-            libLocalDecimal
-            libNoNegativeValues
-            [decimals]="2"
-            [attr.aria-label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
-            [formField]="form.caliber"
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div class="flex flex-col gap-6">
+          <ui-inta-signal-select
+            appearance="outline"
+            floatLabel="always"
+            [id]="'denomination'"
+            [valueKey]="'id'"
+            [labelKey]="'name'"
+            [formField]="form.denominationId"
+            [searchable]="true"
+            [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.LABEL' | translate"
+            [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.DENOMINATION.PLACEHOLDER' | translate"
+            [options]="denominationsStore.items() || []"
           />
-        </ui-input-select>
-      </div>
-    </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" [matDialogClose]="false">
-        {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
-      </button>
-      <ui-save-button
-        label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
-        [isDisabled]="form().invalid()"
-        [isSaving]="store.isMutating()"
-        (save)="sendData()"
-      />
-    </mat-dialog-actions>
+          <div>
+            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+              <mat-label>{{ 'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.LABEL' | translate }}</mat-label>
+              <input
+                id="zones"
+                matInput
+                [formField]="form.zone"
+                [placeholder]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.ZONE.PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+
+          <ui-input-select
+            placeholder="0"
+            floatLabel="always"
+            [label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
+            [opciones]="caliberUnitOptions"
+            [value]="{
+              value: formModel().caliber?.toString() ?? '',
+              unit: formModel().caliberUnit,
+            }"
+            (valueChange)="onCaliberUnitChanges($event)"
+          >
+            <input
+              placeholder="0"
+              type="number"
+              inputSelectInput
+              libLocalDecimal
+              libNoNegativeValues
+              [decimals]="2"
+              [attr.aria-label]="'MASTER_DATA.LOADING_ZONE.DIALOGS.UPSERT.CALIBER.LABEL' | translate"
+              [formField]="form.caliber"
+            />
+          </ui-input-select>
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          [matDialogClose]="false"
+        >
+          {{ 'MASTER_DATA.DIALOGS.UPSERT.BUTTONS.CANCEL' | translate }}
+        </button>
+        <ui-save-button
+          buttonType="submit"
+          label="MASTER_DATA.DIALOGS.UPSERT.BUTTONS.SAVE"
+          [isDisabled]="form().invalid()"
+          [isSaving]="store.isMutating() || form().submitting()"
+        />
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -160,10 +165,20 @@ export class LoadingZoneUpsertDialogComponent {
     }
   >(this.defaultFormValues);
 
-  readonly form = form(this.formModel, (schemaPath) => {
-    required(schemaPath.denominationId);
-    required(schemaPath.zone);
-  });
+  readonly form = form(
+    this.formModel,
+    (schemaPath) => {
+      required(schemaPath.denominationId);
+      required(schemaPath.zone);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.sendData();
+        },
+      },
+    },
+  );
 
   protected sendData() {
     const { denominationId, caliber, caliberUnit } = this.formModel();
