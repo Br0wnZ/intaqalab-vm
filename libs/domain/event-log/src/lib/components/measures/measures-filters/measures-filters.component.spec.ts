@@ -156,7 +156,7 @@ describe('EventLogEventLogMeasuresFiltersComponent', () => {
 
   describe('search() action', () => {
     it('should call measuresService.filtersItems.set with mapped filters on search click', async () => {
-      const { component, view, container, mockMeasuresService } = await setup();
+      const { component, view, container, events, mockMeasuresService } = await setup();
 
       component.showFilters.set(true);
       view.fixture.detectChanges();
@@ -167,7 +167,7 @@ describe('EventLogEventLogMeasuresFiltersComponent', () => {
       view.fixture.detectChanges();
 
       const setSpy = vi.spyOn(mockMeasuresService.filtersItems, 'set');
-      screen.getByText('EVENT_LOG.FILTERS.SEARCH_BUTTON').click();
+      await events.click(screen.getByText('EVENT_LOG.FILTERS.SEARCH_BUTTON'));
       view.fixture.detectChanges();
 
       expect(setSpy).toHaveBeenCalledOnce();

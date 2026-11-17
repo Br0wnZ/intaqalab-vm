@@ -1,6 +1,5 @@
 import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormField, form, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, form, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -25,12 +24,11 @@ import { castEventLogFiltersToEventLogSearch } from '../../../utils-models/utils
     IntaSignalSelectComponent,
     MatButtonModule,
     FormField,
+    FormRoot,
     MatDatepickerModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule,
-    ReactiveFormsModule,
     TranslatePipe,
     MatIconModule,
   ],
@@ -66,136 +64,138 @@ import { castEventLogFiltersToEventLogSearch } from '../../../utils-models/utils
       </button>
     </div>
     @if (showFilters()) {
-      <div class="w-full flex gap-4 flex-wrap">
-        <div class="flex flex-col">
-          <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'EVENT_LOG.FILTERS.DATE.LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-date-range-input [rangePicker]="picker" [dateFilter]="filterDates">
-              <input
-                placeholder="{{ 'EVENT_LOG.FILTERS.DATE.PLACEHOLDER_START' | translate }}"
-                readonly
-                matStartDate
-                [formField]="form.dateStart"
-              />
-              <input
-                placeholder="{{ 'EVENT_LOG.FILTERS.DATE.PLACEHOLDER_END' | translate }}"
-                readonly
-                matEndDate
-                [formField]="form.dateEnd"
-              />
-            </mat-date-range-input>
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-date-range-picker #picker></mat-date-range-picker>
-          </mat-form-field>
-          @if (form().errors()) {
-            @for (error of form().errors(); track error.kind) {
-              @if (error.kind === 'required_end_date') {
-                <mat-error>{{ error.message | translate }}</mat-error>
+      <form [formRoot]="form">
+        <div class="w-full flex gap-4 flex-wrap">
+          <div class="flex flex-col">
+            <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'EVENT_LOG.FILTERS.DATE.LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-date-range-input [rangePicker]="picker" [dateFilter]="filterDates">
+                <input
+                  placeholder="{{ 'EVENT_LOG.FILTERS.DATE.PLACEHOLDER_START' | translate }}"
+                  readonly
+                  matStartDate
+                  [formField]="form.dateStart"
+                />
+                <input
+                  placeholder="{{ 'EVENT_LOG.FILTERS.DATE.PLACEHOLDER_END' | translate }}"
+                  readonly
+                  matEndDate
+                  [formField]="form.dateEnd"
+                />
+              </mat-date-range-input>
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+            @if (form().errors()) {
+              @for (error of form().errors(); track error.kind) {
+                @if (error.kind === 'required_end_date') {
+                  <mat-error>{{ error.message | translate }}</mat-error>
+                }
               }
             }
-          }
+          </div>
+
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'event-filter-action'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form.action"
+            [label]="'EVENT_LOG.FILTERS.ACTION.LABEL' | translate"
+            [placeholder]="'EVENT_LOG.FILTERS.ACTION.PLACEHOLDER' | translate"
+            [options]="availableActions"
+            [multiple]="true"
+          />
+
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'event-filter-user'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form.user"
+            [label]="'EVENT_LOG.FILTERS.USER.LABEL' | translate"
+            [placeholder]="'EVENT_LOG.FILTERS.USER.PLACEHOLDER' | translate"
+            [options]="usersList()"
+            [multiple]="true"
+          />
+
+          <div>
+            <label for="event-filter-hardware" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'EVENT_LOG.FILTERS.HARDWARE.LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                id="event-filter-hardware"
+                matInput
+                [formField]="form.hardwareId"
+                [placeholder]="'EVENT_LOG.FILTERS.HARDWARE.PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'event-filter-element'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form.element"
+            [label]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.ELEMENT.LABEL' | translate"
+            [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.ELEMENT.PLACEHOLDER' | translate"
+            [options]="availableElements"
+            [multiple]="true"
+          />
+
+          <div>
+            <label for="event-filter-visibleNumber" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.VISIBLE_NUMBER.LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                id="event-filter-visibleNumber"
+                matInput
+                [formField]="form.visibleNumber"
+                [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.VISIBLE_NUMBER.PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+
+          <div>
+            <label for="event-filter-internalId" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.INTERNAL_ID.LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input
+                id="event-filter-internalId"
+                matInput
+                [formField]="form.internalId"
+                [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.INTERNAL_ID.PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
         </div>
 
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'event-filter-action'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form.action"
-          [label]="'EVENT_LOG.FILTERS.ACTION.LABEL' | translate"
-          [placeholder]="'EVENT_LOG.FILTERS.ACTION.PLACEHOLDER' | translate"
-          [options]="availableActions"
-          [multiple]="true"
-        />
+        <div class="w-full flex justify-end mb-4">
+          <div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="mr-4"
+              [disabled]="formModel() === defaultFormValues"
+              (click)="clearFilters()"
+            >
+              {{ 'EVENT_LOG.FILTERS.CLEAN_BUTTON' | translate }}
+            </button>
+          </div>
 
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'event-filter-user'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form.user"
-          [label]="'EVENT_LOG.FILTERS.USER.LABEL' | translate"
-          [placeholder]="'EVENT_LOG.FILTERS.USER.PLACEHOLDER' | translate"
-          [options]="usersList()"
-          [multiple]="true"
-        />
-
-        <div>
-          <label for="event-filter-hardware" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'EVENT_LOG.FILTERS.HARDWARE.LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              id="event-filter-hardware"
-              matInput
-              [formField]="form.hardwareId"
-              [placeholder]="'EVENT_LOG.FILTERS.HARDWARE.PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
+          <div>
+            <button mat-flat-button type="submit" [disabled]="form().invalid()">
+              {{ 'EVENT_LOG.FILTERS.SEARCH_BUTTON' | translate }}
+            </button>
+          </div>
         </div>
-
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'event-filter-element'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form.element"
-          [label]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.ELEMENT.LABEL' | translate"
-          [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.ELEMENT.PLACEHOLDER' | translate"
-          [options]="availableElements"
-          [multiple]="true"
-        />
-
-        <div>
-          <label for="event-filter-visibleNumber" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.VISIBLE_NUMBER.LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              id="event-filter-visibleNumber"
-              matInput
-              [formField]="form.visibleNumber"
-              [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.VISIBLE_NUMBER.PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-
-        <div>
-          <label for="event-filter-internalId" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.INTERNAL_ID.LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <input
-              id="event-filter-internalId"
-              matInput
-              [formField]="form.internalId"
-              [placeholder]="'EVENT_LOG.SERIES_AND_SHOOTS.FILTERS.INTERNAL_ID.PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-      </div>
-
-      <div class="w-full flex justify-end mb-4">
-        <div>
-          <button
-            mat-stroked-button
-            type="button"
-            class="mr-4"
-            [disabled]="formModel() === defaultFormValues"
-            (click)="clearFilters()"
-          >
-            {{ 'EVENT_LOG.FILTERS.CLEAN_BUTTON' | translate }}
-          </button>
-        </div>
-
-        <div>
-          <button mat-flat-button type="button" [disabled]="form().invalid()" (click)="search()">
-            {{ 'EVENT_LOG.FILTERS.SEARCH_BUTTON' | translate }}
-          </button>
-        </div>
-      </div>
+      </form>
     }
   `,
   styles: ``,
@@ -226,38 +226,48 @@ export class EventLogSeriesAndShootsFilterComponent {
 
   readonly formModel = signal<EventLogSeriesAndShootsFilters>(this.defaultFormValues);
 
-  readonly form = form(this.formModel, (schemaPath) => {
-    validate(schemaPath, (ctx) => {
-      const formValues = ctx.value();
+  readonly form = form(
+    this.formModel,
+    (schemaPath) => {
+      validate(schemaPath, (ctx) => {
+        const formValues = ctx.value();
 
-      const startDateFilled = formValues.dateStart instanceof Date;
-      const endDateFilled = formValues.dateEnd instanceof Date;
-      const dateRangeFilled = startDateFilled && endDateFilled;
+        const startDateFilled = formValues.dateStart instanceof Date;
+        const endDateFilled = formValues.dateEnd instanceof Date;
+        const dateRangeFilled = startDateFilled && endDateFilled;
 
-      if (startDateFilled && !endDateFilled)
-        return { kind: 'required_end_date', message: 'EVENT_LOG.FILTERS.DATE.ERROR' };
+        if (startDateFilled && !endDateFilled)
+          return { kind: 'required_end_date', message: 'EVENT_LOG.FILTERS.DATE.ERROR' };
 
-      const actionFilled = formValues.action.length > 0;
-      const userFilled = formValues.user.length > 0;
-      const hardwareIdFilled = formValues.hardwareId.trim().length > 0;
-      const elementFilled = formValues.element.length > 0;
-      const visibleNumberFilled = formValues.visibleNumber.trim().length > 0;
-      const internalIdFilled = formValues.internalId.trim().length > 0;
+        const actionFilled = formValues.action.length > 0;
+        const userFilled = formValues.user.length > 0;
+        const hardwareIdFilled = formValues.hardwareId.trim().length > 0;
+        const elementFilled = formValues.element.length > 0;
+        const visibleNumberFilled = formValues.visibleNumber.trim().length > 0;
+        const internalIdFilled = formValues.internalId.trim().length > 0;
 
-      if (
-        elementFilled ||
-        dateRangeFilled ||
-        actionFilled ||
-        userFilled ||
-        hardwareIdFilled ||
-        visibleNumberFilled ||
-        internalIdFilled
-      )
-        return undefined;
+        if (
+          elementFilled ||
+          dateRangeFilled ||
+          actionFilled ||
+          userFilled ||
+          hardwareIdFilled ||
+          visibleNumberFilled ||
+          internalIdFilled
+        )
+          return undefined;
 
-      return { kind: 'no_filters' };
-    });
-  });
+        return { kind: 'no_filters' };
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.search();
+        },
+      },
+    },
+  );
 
   protected filterDates = (date: Date | null) => {
     const rangeStart = this.form.dateStart().value();

@@ -142,7 +142,7 @@ describe('EventLogGeneralDataFilterComponent', () => {
 
   describe('search() action', () => {
     it('should call generalDataService.filtersItems.set with mapped filters on search click', async () => {
-      const { component, view, container, mockGeneralDataService } = await setup();
+      const { component, view, container, events, mockGeneralDataService } = await setup();
 
       component.showFilters.set(true);
       view.fixture.detectChanges();
@@ -153,7 +153,7 @@ describe('EventLogGeneralDataFilterComponent', () => {
       view.fixture.detectChanges();
 
       const setSpy = vi.spyOn(mockGeneralDataService.filtersItems, 'set');
-      screen.getByText('EVENT_LOG.FILTERS.SEARCH_BUTTON').click();
+      await events.click(screen.getByText('EVENT_LOG.FILTERS.SEARCH_BUTTON'));
       view.fixture.detectChanges();
 
       expect(setSpy).toHaveBeenCalledOnce();

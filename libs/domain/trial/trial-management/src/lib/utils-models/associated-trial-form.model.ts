@@ -1,4 +1,4 @@
-import type { ControlsOf, FireTrialClient } from '@intaqalab/models';
+import type { FireTrialClient } from '@intaqalab/models';
 
 export type AssociatedTrialForm = {
   year: string | null;
@@ -6,5 +6,3 @@ export type AssociatedTrialForm = {
   searchTerm: string;
   trialId: string;
 };
-
-export type AssociatedTrialFormControls = ControlsOf<AssociatedTrialForm>;

@@ -10,7 +10,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -50,7 +49,6 @@ enum TrialDocsViewState {
 @Component({
   selector: 'inta-trial-docs',
   imports: [
-    ReactiveFormsModule,
     TranslatePipe,
     MatButtonModule,
     MatIconModule,

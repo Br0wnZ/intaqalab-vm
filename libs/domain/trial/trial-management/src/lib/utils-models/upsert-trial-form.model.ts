@@ -1,4 +1,4 @@
-import type { ControlsOf, FireTrial, FireTrialClient, FireTrialType } from '@intaqalab/models';
+import type { FireTrial, FireTrialClient, FireTrialType } from '@intaqalab/models';
 
 export type TriaUpsertForm = {
   code: FireTrial['trialNumber'];
@@ -16,5 +16,3 @@ export type TriaUpsertForm = {
   observations: string;
   status?: FireTrial['status'];
 };
-
-export type TriaUpsertFormControls = ControlsOf<TriaUpsertForm>;
