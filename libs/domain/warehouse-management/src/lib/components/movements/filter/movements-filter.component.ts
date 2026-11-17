@@ -1,13 +1,5 @@
-import {
-  Component,
-  ViewEncapsulation,
-  effect,
-  inject,
-  input,
-  signal,
-  untracked,
-} from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, effect, inject, input, signal, untracked } from '@angular/core';
+import { FormField, FormRoot, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -50,6 +42,7 @@ type FilterForm = {
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaSignalSelectComponent,
     MatTableModule,
     MatPaginatorModule,
@@ -67,200 +60,202 @@ type FilterForm = {
           {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.TITLE' | translate }}
         </h3>
       </div>
-      <div class="p-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div>
-          <label for="dateTimeFrom" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_FROM' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="dateTimeFrom"
-              matInput
-              [formField]="form.dateTimeFrom"
-              [matDatepicker]="pickerDateFrom"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_PLACEHOLDER' | translate"
-              (click)="pickerDateFrom.open()"
-              #dateTimeFrom
-            />
-            <mat-datepicker-toggle matIconSuffix [for]="pickerDateFrom"></mat-datepicker-toggle>
-            <mat-datepicker (closed)="dateTimeFrom.blur()" #pickerDateFrom></mat-datepicker>
-          </mat-form-field>
-          @if (form.dateTimeFrom().touched() && form.dateTimeFrom().errors().length) {
-            @for (error of form.dateTimeFrom().errors(); track error.kind) {
-              @if (error.kind === 'invalid_date_interval') {
-                <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+      <form [formRoot]="form">
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div>
+            <label for="dateTimeFrom" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_FROM' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="dateTimeFrom"
+                matInput
+                [formField]="form.dateTimeFrom"
+                [matDatepicker]="pickerDateFrom"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_PLACEHOLDER' | translate"
+                (click)="pickerDateFrom.open()"
+                #dateTimeFrom
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDateFrom"></mat-datepicker-toggle>
+              <mat-datepicker (closed)="dateTimeFrom.blur()" #pickerDateFrom></mat-datepicker>
+            </mat-form-field>
+            @if (form.dateTimeFrom().touched() && form.dateTimeFrom().errors().length) {
+              @for (error of form.dateTimeFrom().errors(); track error.kind) {
+                @if (error.kind === 'invalid_date_interval') {
+                  <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+                }
               }
             }
-          }
-        </div>
-        <div>
-          <label for="timeFrom" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.HOUR_FROM' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="timeFrom" matInput [formField]="form.timeFrom" [matTimepicker]="timePickerFrom" />
-            <mat-timepicker-toggle matIconSuffix [for]="timePickerFrom" />
-            <mat-timepicker #timePickerFrom />
-          </mat-form-field>
-          @if (form.dateTimeFrom().dirty() && form.timeFrom().errors()) {
-            @for (error of form.timeFrom().errors(); track error.kind) {
-              @if (error.kind === 'invalid_hour_interval') {
-                <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
-              } @else {
-                <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+          </div>
+          <div>
+            <label for="timeFrom" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.HOUR_FROM' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input id="timeFrom" matInput [formField]="form.timeFrom" [matTimepicker]="timePickerFrom" />
+              <mat-timepicker-toggle matIconSuffix [for]="timePickerFrom" />
+              <mat-timepicker #timePickerFrom />
+            </mat-form-field>
+            @if (form.dateTimeFrom().dirty() && form.timeFrom().errors()) {
+              @for (error of form.timeFrom().errors(); track error.kind) {
+                @if (error.kind === 'invalid_hour_interval') {
+                  <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+                } @else {
+                  <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+                }
               }
             }
-          }
-        </div>
-        <div>
-          <label for="dateTimeFrom" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_TO' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="requested-date"
-              matInput
-              [formField]="form.dateTimeTo"
-              [matDatepicker]="pickerDateTo"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_PLACEHOLDER' | translate"
-              (click)="pickerDateTo.open()"
-              #dateTimeTo
-            />
-            <mat-datepicker-toggle matIconSuffix [for]="pickerDateTo"></mat-datepicker-toggle>
-            <mat-datepicker (closed)="dateTimeTo.blur()" #pickerDateTo></mat-datepicker>
-          </mat-form-field>
-          @if (form.dateTimeTo().touched() && form.dateTimeTo().errors().length) {
-            @for (error of form.dateTimeTo().errors(); track error.kind) {
-              @if (error.kind === 'invalid_date_interval') {
-                <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+          </div>
+          <div>
+            <label for="dateTimeFrom" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_TO' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="requested-date"
+                matInput
+                [formField]="form.dateTimeTo"
+                [matDatepicker]="pickerDateTo"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.DATE_PLACEHOLDER' | translate"
+                (click)="pickerDateTo.open()"
+                #dateTimeTo
+              />
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDateTo"></mat-datepicker-toggle>
+              <mat-datepicker (closed)="dateTimeTo.blur()" #pickerDateTo></mat-datepicker>
+            </mat-form-field>
+            @if (form.dateTimeTo().touched() && form.dateTimeTo().errors().length) {
+              @for (error of form.dateTimeTo().errors(); track error.kind) {
+                @if (error.kind === 'invalid_date_interval') {
+                  <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+                }
               }
             }
-          }
-        </div>
-        <div>
-          <label for="dateTimeTo" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.HOUR_TO' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input id="dateTimeTo" matInput [formField]="form.timeTo" [matTimepicker]="timePickerTo" />
-            <mat-timepicker-toggle matIconSuffix [for]="timePickerTo" />
-            <mat-timepicker #timePickerTo />
-          </mat-form-field>
-          @if (form.dateTimeTo().dirty() && form.timeTo().errors()) {
-            @for (error of form.timeTo().errors(); track error.kind) {
-              @if (error.kind === 'invalid_hour_interval') {
-                <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
-              } @else {
-                <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+          </div>
+          <div>
+            <label for="dateTimeTo" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.HOUR_TO' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input id="dateTimeTo" matInput [formField]="form.timeTo" [matTimepicker]="timePickerTo" />
+              <mat-timepicker-toggle matIconSuffix [for]="timePickerTo" />
+              <mat-timepicker #timePickerTo />
+            </mat-form-field>
+            @if (form.dateTimeTo().dirty() && form.timeTo().errors()) {
+              @for (error of form.timeTo().errors(); track error.kind) {
+                @if (error.kind === 'invalid_hour_interval') {
+                  <mat-error>{{ 'WHAREHOUSE_MANAGMENT.VALIDATIONS.DATE_TIME_INTERVAL_WRONG' | translate }}</mat-error>
+                } @else {
+                  <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+                }
               }
             }
-          }
-        </div>
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'client'"
-          [valueKey]="'id'"
-          [multiple]="true"
-          [labelKey]="'label'"
-          [formField]="form.movementTypes"
-          [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MOVEMENT_TYPE_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MOVEMENT_TYPE_PLACEHOLDER' | translate"
-          [options]="movementTypesOptions"
-        />
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'originMunitionDumpIds'"
-          [valueKey]="'id'"
-          [multiple]="true"
-          [labelKey]="'munitionDumpId'"
-          [formField]="form.originMunitionDumpIds"
-          [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_ORIGIN' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_ORIGIN' | translate"
-          [options]="munitionDumpsStore.items()"
-        />
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'destinationMunitionDumpIds'"
-          [valueKey]="'id'"
-          [multiple]="true"
-          [labelKey]="'munitionDumpId'"
-          [formField]="form.destinationMunitionDumpIds"
-          [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_DESTINATION' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_DESTINATION' | translate"
-          [options]="munitionDumpsStore.items()"
-        />
-        <div>
-          <label for="quantityMin" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MIN' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="quantityMin"
-              type="number"
-              matInput
-              libNoNegativeValues
-              libNoLeadingZeros
-              [formField]="form.quantityMin"
-            />
-          </mat-form-field>
-          @if (form.quantityMin().touched() && form.quantityMin().errors()) {
-            @for (error of form.quantityMin().errors(); track error.kind) {
-              <mat-error>{{ error.message | translate }}</mat-error>
+          </div>
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'client'"
+            [valueKey]="'id'"
+            [multiple]="true"
+            [labelKey]="'label'"
+            [formField]="form.movementTypes"
+            [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MOVEMENT_TYPE_LABEL' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MOVEMENT_TYPE_PLACEHOLDER' | translate"
+            [options]="movementTypesOptions"
+          />
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'originMunitionDumpIds'"
+            [valueKey]="'id'"
+            [multiple]="true"
+            [labelKey]="'munitionDumpId'"
+            [formField]="form.originMunitionDumpIds"
+            [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_ORIGIN' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_ORIGIN' | translate"
+            [options]="munitionDumpsStore.items()"
+          />
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'destinationMunitionDumpIds'"
+            [valueKey]="'id'"
+            [multiple]="true"
+            [labelKey]="'munitionDumpId'"
+            [formField]="form.destinationMunitionDumpIds"
+            [label]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_DESTINATION' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.MUNITION_DUMP_DESTINATION' | translate"
+            [options]="munitionDumpsStore.items()"
+          />
+          <div>
+            <label for="quantityMin" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MIN' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="quantityMin"
+                type="number"
+                matInput
+                libNoNegativeValues
+                libNoLeadingZeros
+                [formField]="form.quantityMin"
+              />
+            </mat-form-field>
+            @if (form.quantityMin().touched() && form.quantityMin().errors()) {
+              @for (error of form.quantityMin().errors(); track error.kind) {
+                <mat-error>{{ error.message | translate }}</mat-error>
+              }
             }
-          }
-        </div>
-        <div>
-          <label for="quantityMax" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MAX' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="quantityMax"
-              type="number"
-              matInput
-              libNoNegativeValues
-              libNoLeadingZeros
-              [formField]="form.quantityMax"
-            />
-          </mat-form-field>
-          @if (form.quantityMax().touched() && form.quantityMax().errors()) {
-            @for (error of form.quantityMax().errors(); track error.kind) {
-              <mat-error>{{ error.message | translate }}</mat-error>
+          </div>
+          <div>
+            <label for="quantityMax" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MAX' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="quantityMax"
+                type="number"
+                matInput
+                libNoNegativeValues
+                libNoLeadingZeros
+                [formField]="form.quantityMax"
+              />
+            </mat-form-field>
+            @if (form.quantityMax().touched() && form.quantityMax().errors()) {
+              @for (error of form.quantityMax().errors(); track error.kind) {
+                <mat-error>{{ error.message | translate }}</mat-error>
+              }
             }
-          }
+          </div>
+          <div>
+            <label for="affectedNeq" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.NEQ_AFECTED' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="affectedNeq"
+                type="number"
+                matInput
+                libNoNegativeValues
+                libLocalDecimal
+                [formField]="form.affectedNeq"
+              />
+            </mat-form-field>
+          </div>
         </div>
-        <div>
-          <label for="affectedNeq" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.NEQ_AFECTED' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="affectedNeq"
-              type="number"
-              matInput
-              libNoNegativeValues
-              libLocalDecimal
-              [formField]="form.affectedNeq"
-            />
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="flex justify-end px-6 pb-6">
-        <div>
-          <button
-            mat-stroked-button
-            type="button"
-            class="mr-4"
-            [disabled]="formModel() === defaultFormValues"
-            (click)="clearFilters()"
-          >
-            {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.CLEAN_FILTERS_BUTTON' | translate }}
+        <div class="flex justify-end px-6 pb-6">
+          <div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="mr-4"
+              [disabled]="formModel() === defaultFormValues"
+              (click)="clearFilters()"
+            >
+              {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.CLEAN_FILTERS_BUTTON' | translate }}
+            </button>
+          </div>
+          <button mat-flat-button type="submit" [disabled]="form().invalid()">
+            {{ 'COMMONS.SEARCH' | translate }}
           </button>
         </div>
-        <button mat-flat-button type="button" role="button" [disabled]="form().invalid()" (click)="search()">
-          {{ 'COMMONS.SEARCH' | translate }}
-        </button>
-      </div>
+      </form>
     </div>
   `,
   styles: ``,
@@ -328,67 +323,79 @@ export class MovementsFilterComponent {
 
   readonly formModel = signal<FilterForm>(this.defaultFormValues);
 
-  form = form(this.formModel, (schemaPath) => {
-    required(schemaPath.timeFrom, { when: () => !!this.formModel().dateTimeFrom });
-    required(schemaPath.timeTo, { when: () => !!this.formModel().dateTimeTo });
-    disabled(schemaPath.timeFrom, () => !this.formModel().dateTimeFrom);
-    disabled(schemaPath.timeTo, () => !this.formModel().dateTimeTo);
-    validate(schemaPath.quantityMax, ({ value, valueOf }) => {
-      const quantityMax = value();
+  form = form(
+    this.formModel,
+    (schemaPath) => {
+      required(schemaPath.timeFrom, { when: () => !!this.formModel().dateTimeFrom });
+      required(schemaPath.timeTo, { when: () => !!this.formModel().dateTimeTo });
+      disabled(schemaPath.timeFrom, () => !this.formModel().dateTimeFrom);
+      disabled(schemaPath.timeTo, () => !this.formModel().dateTimeTo);
+      validate(schemaPath.quantityMax, ({ value, valueOf }) => {
+        const quantityMax = value();
 
-      if (quantityMax === null) return null;
+        if (quantityMax === null) return null;
 
-      const quantityMaxNumber = +quantityMax;
+        const quantityMaxNumber = +quantityMax;
 
-      const quantityMin = valueOf(schemaPath.quantityMin);
-      if (quantityMin !== null && +quantityMin > quantityMaxNumber) {
-        return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG' };
-      }
-      return null;
-    });
-    validate(schemaPath.dateTimeFrom, ({ value, valueOf }) => {
-      const dateTimeFrom = value();
-      const dateTimeTo = valueOf(schemaPath.dateTimeTo);
+        const quantityMin = valueOf(schemaPath.quantityMin);
+        if (quantityMin !== null && +quantityMin > quantityMaxNumber) {
+          return { kind: 'positive', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG' };
+        }
+        return null;
+      });
+      validate(schemaPath.dateTimeFrom, ({ value, valueOf }) => {
+        const dateTimeFrom = value();
+        const dateTimeTo = valueOf(schemaPath.dateTimeTo);
 
-      if (!dateTimeFrom || !dateTimeTo) return null;
+        if (!dateTimeFrom || !dateTimeTo) return null;
 
-      if (dateTimeFrom > dateTimeTo) return { kind: 'invalid_date_interval' };
+        if (dateTimeFrom > dateTimeTo) return { kind: 'invalid_date_interval' };
 
-      return null;
-    });
-    validate(schemaPath.dateTimeTo, ({ value, valueOf }) => {
-      const dateTimeTo = value();
-      const dateTimeFrom = valueOf(schemaPath.dateTimeFrom);
+        return null;
+      });
+      validate(schemaPath.dateTimeTo, ({ value, valueOf }) => {
+        const dateTimeTo = value();
+        const dateTimeFrom = valueOf(schemaPath.dateTimeFrom);
 
-      if (!dateTimeFrom || !dateTimeTo) return null;
+        if (!dateTimeFrom || !dateTimeTo) return null;
 
-      if (dateTimeFrom > dateTimeTo) return { kind: 'invalid_date_interval' };
+        if (dateTimeFrom > dateTimeTo) return { kind: 'invalid_date_interval' };
 
-      return null;
-    });
-    validate(schemaPath.timeFrom, ({ value, valueOf }) => {
-      const timeFrom = value();
-      const timeTo = valueOf(schemaPath.dateTimeTo);
-      const sameDay = valueOf(schemaPath.dateTimeFrom)?.toISOString() === valueOf(schemaPath.dateTimeTo)?.toISOString();
+        return null;
+      });
+      validate(schemaPath.timeFrom, ({ value, valueOf }) => {
+        const timeFrom = value();
+        const timeTo = valueOf(schemaPath.dateTimeTo);
+        const sameDay =
+          valueOf(schemaPath.dateTimeFrom)?.toISOString() === valueOf(schemaPath.dateTimeTo)?.toISOString();
 
-      if (!timeFrom || !timeTo || !sameDay) return null;
+        if (!timeFrom || !timeTo || !sameDay) return null;
 
-      if (this.form.timeTo().dirty() && timeFrom > timeTo) return { kind: 'invalid_hour_interval' };
+        if (this.form.timeTo().dirty() && timeFrom > timeTo) return { kind: 'invalid_hour_interval' };
 
-      return null;
-    });
-    validate(schemaPath.timeTo, ({ value, valueOf }) => {
-      const timeTo = value();
-      const timeFrom = valueOf(schemaPath.timeFrom);
-      const sameDay = valueOf(schemaPath.dateTimeFrom)?.toISOString() === valueOf(schemaPath.dateTimeTo)?.toISOString();
+        return null;
+      });
+      validate(schemaPath.timeTo, ({ value, valueOf }) => {
+        const timeTo = value();
+        const timeFrom = valueOf(schemaPath.timeFrom);
+        const sameDay =
+          valueOf(schemaPath.dateTimeFrom)?.toISOString() === valueOf(schemaPath.dateTimeTo)?.toISOString();
 
-      if (!timeTo || !timeFrom || !sameDay) return null;
+        if (!timeTo || !timeFrom || !sameDay) return null;
 
-      if (timeFrom > timeTo) return { kind: 'invalid_hour_interval' };
+        if (timeFrom > timeTo) return { kind: 'invalid_hour_interval' };
 
-      return null;
-    });
-  });
+        return null;
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.search();
+        },
+      },
+    },
+  );
 
   movementTypesOptions = [
     { id: 'TRANSFER', label: this.#translate.instant('WHAREHOUSE_MANAGMENT.MOVEMENTS.MOVEMENT_TRANSFER') },

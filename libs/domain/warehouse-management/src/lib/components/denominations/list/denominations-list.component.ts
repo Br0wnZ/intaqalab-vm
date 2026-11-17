@@ -1,5 +1,4 @@
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,8 +38,6 @@ const DEFAULT_COLUMNS = [
   selector: 'inta-wharehouse-denominations-list',
   imports: [
     TranslatePipe,
-    ReactiveFormsModule,
-    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,

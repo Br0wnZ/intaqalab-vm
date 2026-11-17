@@ -1,5 +1,4 @@
 ﻿/* eslint-disable testing-library/no-node-access */
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -79,7 +78,8 @@ async function setup() {
       { provide: StockListStore, useValue: stockListStore },
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
       { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
-      { provide: ClientsDataService, useValue: clientsDataService }, provideTranslateService(),
+      { provide: ClientsDataService, useValue: clientsDataService },
+      provideTranslateService(),
     ],
   });
 
@@ -212,6 +212,20 @@ describe('StockListFilterComponent', () => {
       // fireEvent.click bypasses disabled state in JSDOM, so assert the attribute directly
       const searchBtn = container.querySelector('[mat-flat-button]') as HTMLButtonElement;
       expect(searchBtn.disabled).toBe(true);
+    });
+
+    it('should submit via FormRoot when Search button is clicked on dirty valid form', async () => {
+      const { component, fixture, filtersSpy } = await setup();
+      component.form.batches().controlValue.set('LOT-C');
+      component.form().markAsDirty();
+      fixture.detectChanges();
+
+      const searchBtn = screen.getByRole('button', { name: 'COMMONS.SEARCH' });
+      expect(searchBtn).toHaveAttribute('type', 'submit');
+      searchBtn.click();
+      await fixture.whenStable();
+
+      expect(filtersSpy).toHaveBeenCalledWith({ batches: 'LOT-C' });
     });
   });
 

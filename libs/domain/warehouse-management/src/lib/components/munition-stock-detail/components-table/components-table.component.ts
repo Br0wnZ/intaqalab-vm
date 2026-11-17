@@ -1,13 +1,4 @@
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { Component, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,7 +22,6 @@ const DISPLAYED_COLUMNS = ['munitionTypeId', 'denominationId', 'batch'];
 @Component({
   selector: 'inta-components-table',
   imports: [
-    ReactiveFormsModule,
     TranslatePipe,
     MatButtonModule,
     MatIconModule,

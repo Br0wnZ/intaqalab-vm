@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -34,7 +34,7 @@ export interface EditFormResult {
     MatInputModule,
     TranslatePipe,
     FormField,
-    IntaSignalSelectComponent,
+    FormRoot,
     IntaSignalSelectComponent,
     MatAutocompleteModule,
     IntaIconComponent,
@@ -50,73 +50,80 @@ export interface EditFormResult {
       }
     </h2>
 
-    <mat-dialog-content>
-      <!-- <pre> {{ data | json }}</pre> -->
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <!-- <pre> {{ data | json }}</pre> -->
 
-      @if (dialogData.item === undefined) {
+        @if (dialogData.item === undefined) {
+          <div class="mb-4">
+            <ui-inta-signal-select
+              appearance="outline"
+              [id]="'trial-category'"
+              [valueKey]="'id'"
+              [labelKey]="'label'"
+              [formField]="form.munitionTypeId"
+              [label]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.MUNITION_TYPE_LABEL' | translate"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.MUNITION_TYPE_PLACEHOLDER' | translate"
+              [options]="dialogData.munitionTypeList"
+              (selectionChange)="munitionTypeChangeHandler()"
+            />
+          </div>
+        }
         <div class="mb-4">
-          <ui-inta-signal-select
-            appearance="outline"
-            [id]="'trial-category'"
-            [valueKey]="'id'"
-            [labelKey]="'label'"
-            [formField]="form.munitionTypeId"
-            [label]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.MUNITION_TYPE_LABEL' | translate"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.MUNITION_TYPE_PLACEHOLDER' | translate"
-            [options]="dialogData.munitionTypeList"
-            (selectionChange)="munitionTypeChangeHandler()"
-          />
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.DENOMINATION_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="denomination"
+              type="text"
+              matInput
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER' | translate"
+              [formField]="form.denominationId"
+              [matAutocomplete]="auto"
+            />
+            <mat-autocomplete [displayWith]="displayFn" #auto="matAutocomplete">
+              @for (option of filteredOptions(); track option.id) {
+                <mat-option [value]="option">{{ option.name }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
         </div>
-      }
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.DENOMINATION_LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="denomination"
-            type="text"
-            matInput
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_CREATE.DENOMINATION_PLACEHOLDER' | translate"
-            [formField]="form.denominationId"
-            [matAutocomplete]="auto"
-          />
-          <mat-autocomplete [displayWith]="displayFn" #auto="matAutocomplete">
-            @for (option of filteredOptions(); track option.id) {
-              <mat-option [value]="option">{{ option.name }}</mat-option>
-            }
-          </mat-autocomplete>
-        </mat-form-field>
-      </div>
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.BATCH_LABEL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="name"
-            matInput
-            [formField]="form.batch"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.BATCH_PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.BATCH_LABEL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="name"
+              matInput
+              [formField]="form.batch"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_EDIT_COMPONENT.BATCH_PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
+      </mat-dialog-content>
 
-    <mat-dialog-actions class="!mt-4">
-      <button
-        mat-flat-button
-        cdkFocusInitial
-        class="disabled:!bg-gray-300"
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
-      </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
-        {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions class="!mt-4">
+        <button
+          mat-flat-button
+          type="submit"
+          cdkFocusInitial
+          class="disabled:!bg-gray-300"
+          [disabled]="form().invalid()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          (click)="onCancel()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: `
     mat-dialog-content {
@@ -149,11 +156,21 @@ export class UpsertDialogComponent {
     munitionTypeId: '',
   });
 
-  readonly form = form(this.formModel, (f) => {
-    required(f.batch);
-    required(f.denominationId);
-    required(f.munitionTypeId);
-  });
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      required(f.batch);
+      required(f.denominationId);
+      required(f.munitionTypeId);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   readonly filteredOptions = computed(() => {
     const denominations = this.#denominationsStore.items();

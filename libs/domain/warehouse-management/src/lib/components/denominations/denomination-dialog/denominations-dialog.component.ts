@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, disabled, form, min, required } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, min, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,6 +40,7 @@ interface DenominationForm {
     MatSelectModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaIconComponent,
     NoNegativeValuesDirective,
     LocaleDecimalInputDirective,
@@ -55,134 +56,146 @@ interface DenominationForm {
       }
     </h2>
 
-    <mat-dialog-content>
-      <div class="flex flex-col gap-4 pb-8">
-        <div>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_LABEL' | translate }}</mat-label>
-            <mat-select
-              id="trial-category"
-              [formField]="form.category"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_PLACEHOLDER' | translate"
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div class="flex flex-col gap-4 pb-8">
+          <div>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_LABEL' | translate }}</mat-label>
+              <mat-select
+                id="trial-category"
+                [formField]="form.category"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.CATEGORY_PLACEHOLDER' | translate"
+              >
+                @for (option of categoryOptions; track option.id) {
+                  <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div>
+            <mat-form-field
+              appearance="outline"
+              class="w-full"
+              [subscriptSizing]="'dynamic'"
+              [hideRequiredMarker]="true"
             >
-              @for (option of categoryOptions; track option.id) {
-                <mat-option [value]="option.id">{{ option.label }}</mat-option>
+              <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_LABEL' | translate }}</mat-label>
+              <mat-select
+                id="munitionType"
+                [formField]="form.munitionTypeId"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_PLACEHOLDER' | translate"
+              >
+                @for (option of munitionTypeOptions(); track option.id) {
+                  <mat-option [value]="option.id">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.DENOMINATION_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="name"
+                matInput
+                [formField]="form.name"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.DENOMINATION_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div>
+            <label for="nominalWeight" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="nominalWeight"
+                type="number"
+                matInput
+                libNoNegativeValues
+                libLocalDecimal
+                [formField]="form.weight"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+            @if (form.weight().touched() && form.weight().errors()) {
+              @for (error of form.weight().errors(); track error.kind) {
+                <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
+              }
+            }
+          </div>
+          <div>
+            <label for="neq" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NEQ_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="neq"
+                type="number"
+                matInput
+                libNoNegativeValues
+                libLocalDecimal
+                [formField]="form.neq"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NEQ_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div>
+            <label for="onu" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.ONU_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="onu"
+                matInput
+                [formField]="form.unNumber"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.ONU_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_LABEL' | translate }}</mat-label>
+            <mat-select
+              id="riskGroups"
+              [formField]="form.riskGroups"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_PLACEHOLDER' | translate"
+            >
+              @for (option of riskGroups; track option.id) {
+                <mat-option [value]="option.id">{{ option.id }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_LABEL' | translate }}</mat-label>
+            <mat-select
+              id="compatibility"
+              [formField]="form.compatibility"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_PLACEHOLDER' | translate"
+            >
+              @for (option of compatibilities; track option.id) {
+                <mat-option [value]="option.id">{{ option.id }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
         </div>
-        <div>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'" [hideRequiredMarker]="true">
-            <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_LABEL' | translate }}</mat-label>
-            <mat-select
-              id="munitionType"
-              [formField]="form.munitionTypeId"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.MUNITION_TYPE_PLACEHOLDER' | translate"
-            >
-              @for (option of munitionTypeOptions(); track option.id) {
-                <mat-option [value]="option.id">{{ option.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.DENOMINATION_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="name"
-              matInput
-              [formField]="form.name"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.DENOMINATION_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <div>
-          <label for="nominalWeight" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="nominalWeight"
-              type="number"
-              matInput
-              libNoNegativeValues
-              libLocalDecimal
-              [formField]="form.weight"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NOMINAL_WEIGHT_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-          @if (form.weight().touched() && form.weight().errors()) {
-            @for (error of form.weight().errors(); track error.kind) {
-              <mat-error>{{ 'COMMONS.REQUIRED_FIELD' | translate }}</mat-error>
-            }
-          }
-        </div>
-        <div>
-          <label for="neq" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NEQ_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="neq"
-              type="number"
-              matInput
-              libNoNegativeValues
-              libLocalDecimal
-              [formField]="form.neq"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.NEQ_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <div>
-          <label for="onu" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.ONU_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="onu"
-              matInput
-              [formField]="form.unNumber"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.ONU_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_LABEL' | translate }}</mat-label>
-          <mat-select
-            id="riskGroups"
-            [formField]="form.riskGroups"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.RISK_GROUP_PLACEHOLDER' | translate"
-          >
-            @for (option of riskGroups; track option.id) {
-              <mat-option [value]="option.id">{{ option.id }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <mat-label>{{ 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_LABEL' | translate }}</mat-label>
-          <mat-select
-            id="compatibility"
-            [formField]="form.compatibility"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.DENOMINATIONS.MODAL.COMPATIBILITY_PLACEHOLDER' | translate"
-          >
-            @for (option of compatibilities; track option.id) {
-              <mat-option [value]="option.id">{{ option.id }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </mat-dialog-content>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-flat-button cdkFocusInitial [disabled]="form().invalid()" (click)="onConfirm()">
-        {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
-      </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
-        {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button mat-flat-button type="submit" cdkFocusInitial [disabled]="form().invalid()">
+          {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          (click)="onCancel()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -236,13 +249,23 @@ export class DenominationsDialogComponent {
     return options || [];
   });
 
-  readonly form = form(this.formModel, (f) => {
-    required(f.name);
-    disabled(f.munitionTypeId, () => !this.formModel().category);
-    required(f.munitionTypeId);
-    required(f.weight);
-    min(f.weight, 0.1);
-  });
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      required(f.name);
+      disabled(f.munitionTypeId, () => !this.formModel().category);
+      required(f.munitionTypeId);
+      required(f.weight);
+      min(f.weight, 0.1);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   constructor() {
     this.#store.search({ pageSize: 100 });

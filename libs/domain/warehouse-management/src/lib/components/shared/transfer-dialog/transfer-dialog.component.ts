@@ -1,11 +1,11 @@
 import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, form, max, min, required, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, apply, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
-import { NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TransferMovementsPayload } from '../../../models/movements.model';
@@ -23,6 +23,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaSignalSelectComponent,
     IntaIconComponent,
     NoNegativeValuesDirective,
@@ -32,61 +33,68 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
       <ui-inta-icon name="edit" size="xxl" />
       {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.TITLE' | translate }}
     </h2>
-    <mat-dialog-content>
-      <div class="flex flex-col gap-4">
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'destination'"
-          [valueKey]="'id'"
-          [labelKey]="'munitionDumpId'"
-          [formField]="form.munitionDumpId"
-          [label]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.DESTINATION_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.DESTINATION_PLACEHOLDER' | translate"
-          [options]="munitionsDumpList()"
-        />
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div class="flex flex-col gap-4">
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'destination'"
+            [valueKey]="'id'"
+            [labelKey]="'munitionDumpId'"
+            [formField]="form.munitionDumpId"
+            [label]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.DESTINATION_LABEL' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.DESTINATION_PLACEHOLDER' | translate"
+            [options]="munitionsDumpList()"
+          />
 
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'cell'"
-          [valueKey]="'id'"
-          [labelKey]="'id'"
-          [formField]="form.cellName"
-          [label]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_LABEL' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_PLACEHOLDER' | translate"
-          [options]="cellOptions()"
-        />
-        @if (data.items.length === 1) {
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
-            </label>
-            <mat-form-field appearance="outline" class="w-full">
-              <input id="quantiy" type="number" matInput libNoNegativeValues [formField]="form.quantity" />
-            </mat-form-field>
-            @if (form.quantity().touched() && form.quantity().errors()) {
-              @for (error of form.quantity().errors(); track error.kind) {
-                <mat-error>{{ error.message | translate }}</mat-error>
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'cell'"
+            [valueKey]="'id'"
+            [labelKey]="'id'"
+            [formField]="form.cellName"
+            [label]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_LABEL' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_PLACEHOLDER' | translate"
+            [options]="cellOptions()"
+          />
+          @if (data.items.length === 1) {
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" class="w-full">
+                <input id="quantiy" type="number" matInput libNoNegativeValues [formField]="form.quantity" />
+              </mat-form-field>
+              @if (form.quantity().touched() && form.quantity().errors()) {
+                @for (error of form.quantity().errors(); track error.kind) {
+                  <mat-error>{{ error.message | translate }}</mat-error>
+                }
               }
-            }
-          </div>
-        }
-      </div>
-    </mat-dialog-content>
+            </div>
+          }
+        </div>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button
-        mat-flat-button
-        cdkFocusInitial
-        class="disabled:!bg-gray-300 "
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
-      </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
-        {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button
+          mat-flat-button
+          type="submit"
+          cdkFocusInitial
+          class="disabled:!bg-gray-300 "
+          [disabled]="form().invalid()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          (click)="onCancel()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -125,22 +133,31 @@ export class TransferDialogComponent {
     munitionDumpId: '',
     cellName: '',
   });
-  readonly form = form(this.formModel, (f) => {
-    min(f.quantity, 0);
-    max(f.quantity, 999999);
-    validate(f.quantity, ({ value }) => {
-      if (this.data.items.length !== 1) return null;
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      apply(f.quantity, boundedNumberSchema(0, 999999));
+      validate(f.quantity, ({ value }) => {
+        if (this.data.items.length !== 1) return null;
 
-      const quantity = value();
+        const quantity = value();
 
-      if (+quantity < 1) {
-        return { kind: 'min_one', message: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.QUANTITY_ERROR' };
-      }
-      return null;
-    });
-    required(f.munitionDumpId);
-    required(f.cellName);
-  });
+        if (+quantity < 1) {
+          return { kind: 'min_one', message: 'WHAREHOUSE_MANAGMENT.DENOMINATIONS.QUANTITY_ERROR' };
+        }
+        return null;
+      });
+      required(f.munitionDumpId);
+      required(f.cellName);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   onConfirm() {
     const formModelData = this.formModel();

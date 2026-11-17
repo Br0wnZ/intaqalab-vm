@@ -36,7 +36,8 @@ describe('MovementsFilterComponent', () => {
         provideTestingEnvironment(),
         // MovementsListStore se inyecta con { skipSelf: true }, debe estar en el mÃ³dulo padre
         { provide: MovementsListStore, useValue: mockMovementsStore },
-        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore }, provideTranslateService(),
+        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore },
+        provideTranslateService(),
       ],
       componentInputs: { stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d' },
     });
@@ -537,6 +538,22 @@ describe('MovementsFilterComponent', () => {
 
       expect(mockMovementsStore.search).toHaveBeenCalledWith({
         stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d',
+      });
+    });
+
+    it('should submit via FormRoot when Search button is clicked', async () => {
+      const { user, component, view } = await setup();
+      component.formModel.set({ ...component.defaultFormValues, userId: 'user-submit' });
+      view.fixture.detectChanges();
+
+      const searchButton = screen.getByRole('button', { name: /COMMONS\.SEARCH/i });
+      expect(searchButton).toHaveAttribute('type', 'submit');
+      await user.click(searchButton);
+      await view.fixture.whenStable();
+
+      expect(mockMovementsStore.search).toHaveBeenCalledWith({
+        stockId: '57e0ef82-5f18-48ab-b36b-115c4e137f3d',
+        userId: 'user-submit',
       });
     });
   });

@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, pattern, schema, validateHttp } from '@angular/forms/signals';
+import { FormField, FormRoot, form, pattern, schema, validateHttp } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -41,7 +41,7 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
     MatInputModule,
     TranslatePipe,
     FormField,
-    IntaSignalSelectComponent,
+    FormRoot,
     IntaSignalSelectComponent,
     MatTableModule,
     MatPaginatorModule,
@@ -56,7 +56,7 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
     </h2>
 
     <mat-dialog-content>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <form class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6" [formRoot]="filterForm">
         <ui-inta-signal-select
           appearance="outline"
           [id]="'trial-status'"
@@ -96,12 +96,12 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
             }
           }
           <div class="flex justify-end mt-4 gap-2">
-            <button mat-raised-button type="button" role="button" [disabled]="!filterForm().dirty()" (click)="search()">
+            <button mat-raised-button type="submit" [disabled]="!filterForm().dirty()">
               {{ 'COMMONS.SEARCH' | translate }}
             </button>
           </div>
         </div>
-      </div>
+      </form>
 
       <div class="inta-bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -167,6 +167,7 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
     <mat-dialog-actions>
       <button
         mat-flat-button
+        type="button"
         cdkFocusInitial
         class="disabled:!bg-gray-300 "
         [disabled]="selection.selected.length === 0"
@@ -174,7 +175,12 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
       >
         {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
       </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
+      <button
+        mat-stroked-button
+        type="button"
+        class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+        (click)="onCancel()"
+      >
         {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
       </button>
     </mat-dialog-actions>
@@ -230,7 +236,13 @@ export class LinkCertificatesDialogComponent {
     );
   });
 
-  readonly filterForm = form(this.formModel, this.schemaForm);
+  readonly filterForm = form(this.formModel, this.schemaForm, {
+    submission: {
+      action: async () => {
+        this.search();
+      },
+    },
+  });
 
   readonly dialogRef = inject(MatDialogRef);
   readonly data = inject<{

@@ -169,6 +169,20 @@ describe('LinkCertificatesDialogComponent', () => {
       component.search();
       expect(stockListStore.search).toHaveBeenCalledWith(expect.objectContaining({ munitionTypeIds: ['Vaso'] }));
     });
+
+    it('should submit filterForm via FormRoot when Search button is clicked', async () => {
+      const { component, fixture } = await setup();
+      component.filterForm.clientId().controlValue.set('cli-1');
+      component.filterForm().markAsDirty();
+      fixture.detectChanges();
+
+      const searchBtn = screen.getByRole('button', { name: 'COMMONS.SEARCH' });
+      expect(searchBtn).toHaveAttribute('type', 'submit');
+      await userEvent.click(searchBtn);
+      await fixture.whenStable();
+
+      expect(stockListStore.search).toHaveBeenCalledWith({ clientIds: ['cli-1'] });
+    });
   });
 
   describe('Confirm (link)', () => {

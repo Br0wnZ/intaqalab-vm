@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
-import { FormField, disabled, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +27,7 @@ interface MunitionComponentsDialogForm {
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaSignalSelectComponent,
     IntaIconComponent,
   ],
@@ -40,70 +41,77 @@ interface MunitionComponentsDialogForm {
       }
     </h2>
 
-    <mat-dialog-content>
-      <div class="flex flex-col gap-4 pb-8">
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="name"
-              matInput
-              [formField]="form.nameEs"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_PLACEHOLDER' | translate"
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div class="flex flex-col gap-4 pb-8">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="name"
+                matInput
+                [formField]="form.nameEs"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div>
+            <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_EN_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input
+                id="nameEn"
+                matInput
+                [formField]="form.nameEn"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_EN_PLACEHOLDER' | translate"
+              />
+            </mat-form-field>
+          </div>
+          <div>
+            <ui-inta-signal-select
+              appearance="outline"
+              [id]="'cellcount'"
+              [valueKey]="'id'"
+              [labelKey]="'label'"
+              [formField]="form.category"
+              [label]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.CATEGORY' | translate"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.CATEGORY_PLACEHOLDER' | translate"
+              [options]="categoryOptions"
             />
-          </mat-form-field>
+          </div>
+          <div>
+            <label for="observations" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.OBSERVATIONS_PLACEHOLDER' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <textarea
+                id="observations"
+                matInput
+                [formField]="form.observations"
+                [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.OBSERVATIONS_PLACEHOLDER' | translate"
+              ></textarea>
+            </mat-form-field>
+          </div>
         </div>
-        <div>
-          <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_EN_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <input
-              id="nameEn"
-              matInput
-              [formField]="form.nameEn"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.NAME_EN_PLACEHOLDER' | translate"
-            />
-          </mat-form-field>
-        </div>
-        <div>
-          <ui-inta-signal-select
-            appearance="outline"
-            [id]="'cellcount'"
-            [valueKey]="'id'"
-            [labelKey]="'label'"
-            [formField]="form.category"
-            [label]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.CATEGORY' | translate"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.CATEGORY_PLACEHOLDER' | translate"
-            [options]="categoryOptions"
-          />
-        </div>
-        <div>
-          <label for="observations" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.OBSERVATIONS_PLACEHOLDER' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <textarea
-              id="observations"
-              matInput
-              [formField]="form.observations"
-              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_COMPONENTS.MODAL.OBSERVATIONS_PLACEHOLDER' | translate"
-            ></textarea>
-          </mat-form-field>
-        </div>
-      </div>
-    </mat-dialog-content>
+      </mat-dialog-content>
 
-    <mat-dialog-actions>
-      <button mat-flat-button cdkFocusInitial [disabled]="form().invalid()" (click)="onConfirm()">
-        {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
-      </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
-        {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button mat-flat-button type="submit" cdkFocusInitial [disabled]="form().invalid()">
+          {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          (click)="onCancel()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -130,12 +138,22 @@ export class MunitionComponentDialogComponent {
       label: this.#translate.instant('WHAREHOUSE_MANAGMENT.MUNITION_COMPONENT'),
     },
   ];
-  readonly form = form(this.formModel, (f) => {
-    required(f.nameEs);
-    required(f.nameEn);
-    disabled(f.nameEs, () => this.data.item !== null);
-    disabled(f.nameEn, () => this.data.item !== null);
-  });
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      required(f.nameEs);
+      required(f.nameEn);
+      disabled(f.nameEs, () => this.data.item !== null);
+      disabled(f.nameEn, () => this.data.item !== null);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   constructor() {
     if (this.data.item !== null) {

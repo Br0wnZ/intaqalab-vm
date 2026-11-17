@@ -1,16 +1,7 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { HttpErrorResponse } from '@angular/common/http';
 import type { OnDestroy } from '@angular/core';
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
-} from '@angular/core';
-import { FormField, applyEach, disabled, form, max, min, required, validate } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormField, apply, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,6 +11,7 @@ import { TrialsDataService } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import type { UIDialogConfirm } from '@intaqalab/ui';
 import { IntaSignalSelectComponent, UiDialogService } from '@intaqalab/ui';
+import { boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { DenominationsStore } from '../../../+state/denominations.store';
@@ -429,8 +421,7 @@ export class MunitionsShellComponent implements OnDestroy {
         return this.formModel().category === WarehouseMunitionCategory.MUNITION;
       },
     });
-    min(schemaPath.quantity, 0);
-    max(schemaPath.quantity, 999999);
+    apply(schemaPath.quantity, boundedNumberSchema(0, 999999));
     validate(schemaPath.quantity, ({ value }) => {
       const quantity = value();
 
@@ -484,23 +475,24 @@ export class MunitionsShellComponent implements OnDestroy {
           return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
         },
       });
-      required(component.quantity!, {
-        when: () => {
-          return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
-        },
-      });
-      min(component.quantity!, 0);
-      max(component.quantity!, 999999);
-      validate(component.quantity!, ({ value }) => {
-        const quantity = value();
-        const isMunitionComponent = this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+      if (component.quantity) {
+        required(component.quantity, {
+          when: () => {
+            return this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
+          },
+        });
+        apply(component.quantity, boundedNumberSchema(0, 999999));
+        validate(component.quantity, ({ value }) => {
+          const quantity = value();
+          const isMunitionComponent = this.formModel().category === WarehouseMunitionCategory.MUNITION_COMPONENT;
 
-        if (isMunitionComponent && quantity !== null && +quantity <= 0) {
-          return { kind: 'greater_than_zero', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
-        }
+          if (isMunitionComponent && quantity !== null && quantity !== undefined && +quantity <= 0) {
+            return { kind: 'greater_than_zero', message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.GREATER_THAN_ZERO' };
+          }
 
-        return null;
-      });
+          return null;
+        });
+      }
     });
 
     applyEach(schemaPath.associatedComponents, (component) => {

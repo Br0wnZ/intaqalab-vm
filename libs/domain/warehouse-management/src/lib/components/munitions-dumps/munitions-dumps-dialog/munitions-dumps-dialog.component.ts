@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, disabled, form, min, required, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, min, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +18,7 @@ import type { MunitionDumpForm, MunitionsDumpDialog, MunitionsDumpModel } from '
     MatInputModule,
     TranslatePipe,
     FormField,
+    FormRoot,
     IntaSignalSelectComponent,
     IntaIconComponent,
     NoNegativeValuesDirective,
@@ -32,116 +33,123 @@ import type { MunitionDumpForm, MunitionsDumpDialog, MunitionsDumpModel } from '
       }
     </h2>
 
-    <mat-dialog-content>
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.ID' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="name"
-            matInput
-            [formField]="form.name"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.ID_PLACEHOLDER' | translate"
+    <form class="contents" [formRoot]="form">
+      <mat-dialog-content>
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.ID' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="name"
+              matInput
+              [formField]="form.name"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.ID_PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="mb-4">
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'cellcount'"
+            [valueKey]="'id'"
+            [labelKey]="'label'"
+            [formField]="form.cellsCount"
+            [label]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELLS_COUNT' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELLS_COUNT_PLACEHOLDER' | translate"
+            [options]="cellsCountOptions"
           />
-        </mat-form-field>
-      </div>
+        </div>
 
-      <div class="mb-4">
-        <ui-inta-signal-select
-          appearance="outline"
-          [id]="'cellcount'"
-          [valueKey]="'id'"
-          [labelKey]="'label'"
-          [formField]="form.cellsCount"
-          [label]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELLS_COUNT' | translate"
-          [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELLS_COUNT_PLACEHOLDER' | translate"
-          [options]="cellsCountOptions"
-        />
-      </div>
-
-      @if (+formModel().cellsCount > 0) {
-        <div class="flex flex-wrap gap-2 mb-4">
-          @for (cell of formModel().cells; track $index; let idx = $index) {
-            <div class="max-w-16">
-              <label class="block text-sm font-medium text-gray-700 mb-2" [for]="'cell' + idx">
-                {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELL_PREFIX' | translate }} {{ idx + 1 }}
-              </label>
-              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-                <input matInput [id]="'cell' + idx" [formField]="form.cells[idx]" />
-              </mat-form-field>
-            </div>
-          }
-          @if (form.cells().errors()) {
-            @for (error of form.cells().errors(); track error.kind) {
-              @if (error.kind === 'cell_value_required') {
-                <mat-error>{{ error.message | translate }}</mat-error>
+        @if (+formModel().cellsCount > 0) {
+          <div class="flex flex-wrap gap-2 mb-4">
+            @for (cell of formModel().cells; track $index; let idx = $index) {
+              <div class="max-w-16">
+                <label class="block text-sm font-medium text-gray-700 mb-2" [for]="'cell' + idx">
+                  {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELL_PREFIX' | translate }} {{ idx + 1 }}
+                </label>
+                <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                  <input matInput [id]="'cell' + idx" [formField]="form.cells[idx]" />
+                </mat-form-field>
+              </div>
+            }
+            @if (form.cells().errors()) {
+              @for (error of form.cells().errors(); track error.kind) {
+                @if (error.kind === 'cell_value_required') {
+                  <mat-error>{{ error.message | translate }}</mat-error>
+                }
               }
             }
+          </div>
+        }
+
+        <div class="mb-4">
+          <label for="neqmaxcell" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXCELL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="neqmaxcell"
+              type="number"
+              libNoNegativeValues
+              matInput
+              [formField]="form.neqMaxCell"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXCELL_PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+          @if (form.neqMaxCell().errors()) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              @for (error of form.neqMaxCell().errors(); track error.kind) {
+                <p>{{ error.message | translate }}</p>
+              }
+            </div>
           }
         </div>
-      }
+        <div class="mb-4">
+          <label for="neqmax" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXTOTAL' | translate }}
+          </label>
+          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+            <input
+              id="neqmax"
+              libNoNegativeValues
+              type="number"
+              matInput
+              [formField]="form.neqMax"
+              [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXTOTAL_PLACEHOLDER' | translate"
+            />
+          </mat-form-field>
+          @if (form.neqMax().touched() && form.neqMax().errors()) {
+            <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
+              @for (error of form.neqMax().errors(); track error.kind) {
+                <p>{{ error.message | translate }}</p>
+              }
+            </div>
+          }
+        </div>
+      </mat-dialog-content>
 
-      <div class="mb-4">
-        <label for="neqmaxcell" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXCELL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="neqmaxcell"
-            type="number"
-            libNoNegativeValues
-            matInput
-            [formField]="form.neqMaxCell"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXCELL_PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-        @if (form.neqMaxCell().errors()) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.neqMaxCell().errors(); track error.kind) {
-              <p>{{ error.message | translate }}</p>
-            }
-          </div>
-        }
-      </div>
-      <div class="mb-4">
-        <label for="neqmax" class="block text-sm font-medium text-gray-700 mb-2">
-          {{ 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXTOTAL' | translate }}
-        </label>
-        <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-          <input
-            id="neqmax"
-            libNoNegativeValues
-            type="number"
-            matInput
-            [formField]="form.neqMax"
-            [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.NEQMAXTOTAL_PLACEHOLDER' | translate"
-          />
-        </mat-form-field>
-        @if (form.neqMax().touched() && form.neqMax().errors()) {
-          <div class="text-sm text-[var(--mat-sys-error)] space-y-1">
-            @for (error of form.neqMax().errors(); track error.kind) {
-              <p>{{ error.message | translate }}</p>
-            }
-          </div>
-        }
-      </div>
-    </mat-dialog-content>
-
-    <mat-dialog-actions>
-      <button
-        mat-flat-button
-        cdkFocusInitial
-        class="disabled:!bg-gray-300 !mt-4"
-        [disabled]="form().invalid()"
-        (click)="onConfirm()"
-      >
-        {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
-      </button>
-      <button mat-stroked-button class="!border-gray-300 !text-gray-700 hover:!bg-gray-50" (click)="onCancel()">
-        {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button
+          mat-flat-button
+          type="submit"
+          cdkFocusInitial
+          class="disabled:!bg-gray-300 !mt-4"
+          [disabled]="form().invalid()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.SAVE' | translate }}
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+          (click)="onCancel()"
+        >
+          {{ 'MODIFY_DOC_DIALOG.CANCEL' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
 
@@ -161,46 +169,56 @@ export class MunitionsDumpsDialogComponent {
   });
 
   isDisabledCellsCount = signal(false);
-  readonly form = form(this.formModel, (f) => {
-    required(f.name);
-    required(f.neqMax);
-    required(f.neqMaxCell);
-    required(f.cellsCount);
-    min(f.neqMaxCell, 1);
-    min(f.neqMax, 1);
-    disabled(f.cellsCount, () => !!this.data.item);
+  readonly form = form(
+    this.formModel,
+    (f) => {
+      required(f.name);
+      required(f.neqMax);
+      required(f.neqMaxCell);
+      required(f.cellsCount);
+      min(f.neqMaxCell, 1);
+      min(f.neqMax, 1);
+      disabled(f.cellsCount, () => !!this.data.item);
 
-    validate(f.neqMaxCell, ({ value, valueOf }) => {
-      const controlValue = value();
-      const neqMaxValue = valueOf(f.neqMax);
+      validate(f.neqMaxCell, ({ value, valueOf }) => {
+        const controlValue = value();
+        const neqMaxValue = valueOf(f.neqMax);
 
-      if (neqMaxValue && controlValue && +neqMaxValue < +controlValue) {
-        return {
-          kind: 'cellGreaterThanMunitionDump',
-          message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.CELL_GREATER_THAN_MUNITIONDUMP',
-        };
-      }
+        if (neqMaxValue && controlValue && +neqMaxValue < +controlValue) {
+          return {
+            kind: 'cellGreaterThanMunitionDump',
+            message: 'WHAREHOUSE_MANAGMENT.VALIDATIONS.CELL_GREATER_THAN_MUNITIONDUMP',
+          };
+        }
 
-      return null;
-    });
+        return null;
+      });
 
-    validate(f.cells, ({ value }) => {
-      const controlValue = value();
-      const cellsTouched = this.form.cells().touched();
+      validate(f.cells, ({ value }) => {
+        const controlValue = value();
+        const cellsTouched = this.form.cells().touched();
 
-      const hasSomeEmptyControl = controlValue.some((value) => !value);
+        const hasSomeEmptyControl = controlValue.some((value) => !value);
 
-      if (hasSomeEmptyControl && cellsTouched)
-        return {
-          kind: 'cell_value_required',
-          message: 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELL_VALUE_REQUIRED',
-        };
+        if (hasSomeEmptyControl && cellsTouched)
+          return {
+            kind: 'cell_value_required',
+            message: 'WHAREHOUSE_MANAGMENT.MUNITIONS_DUMPS.MODAL.CELL_VALUE_REQUIRED',
+          };
 
-      if (!cellsTouched) return { kind: 'cell_value_required' };
+        if (!cellsTouched) return { kind: 'cell_value_required' };
 
-      return null;
-    });
-  });
+        return null;
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.onConfirm();
+        },
+      },
+    },
+  );
 
   cellsCountOptions = new Array(6).fill(null).map((_, i) => {
     return { id: `${i + 1}`, label: `${i + 1}` };
