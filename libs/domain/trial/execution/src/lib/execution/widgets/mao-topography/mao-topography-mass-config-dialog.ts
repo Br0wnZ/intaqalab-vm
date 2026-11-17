@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
-import { FormField, disabled, form } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -44,6 +44,7 @@ type InputFieldValue = { value: string; unit: string } | null;
   selector: 'inta-mao-topography-mass-config-dialog',
   imports: [
     FormField,
+    FormRoot,
     SaveButton,
     ReadonlyContentDirective,
     MatButtonModule,
@@ -62,82 +63,84 @@ type InputFieldValue = { value: string; unit: string } | null;
       {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_TITLE' | translate }}
     </h2>
 
-    <!-- Content -->
-    <mat-dialog-content intaReadonlyContent>
-      <!-- Series multi-select -->
-      <div class="flex flex-col gap-1">
-        <span class="text-sm text-gray-700">
-          {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_SERIES_LABEL' | translate }}
-        </span>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full mb-2">
-          <mat-select
-            multiple
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
-            [formField]="massForm.series"
-          >
-            @for (opt of data.serieOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+    <form class="contents" [formRoot]="massForm">
+      <!-- Content -->
+      <mat-dialog-content intaReadonlyContent>
+        <!-- Series multi-select -->
+        <div class="flex flex-col gap-1">
+          <span class="text-sm text-gray-700">
+            {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_SERIES_LABEL' | translate }}
+          </span>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full mb-2">
+            <mat-select
+              multiple
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
+              [formField]="massForm.series"
+            >
+              @for (opt of data.serieOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
 
-      <!-- Fields 3-column layout -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mt-2 pt-2.5 pb-2">
-        <!-- Pieza Position -->
-        <ui-sound-level-meter-input
-          size="small"
-          class="col-span-1 md:col-span-2"
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.PIEZA_GROUP_LABEL' | translate"
-          [placeholder]="'0'"
-          [unitOptions]="metersOptions"
-          [disabled]="isSaving()"
-          [value]="piezaPosition()"
-          (valueChange)="piezaPosition.set($event)"
+        <!-- Fields 3-column layout -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mt-2 pt-2.5 pb-2">
+          <!-- Pieza Position -->
+          <ui-sound-level-meter-input
+            size="small"
+            class="col-span-1 md:col-span-2"
+            [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.PIEZA_GROUP_LABEL' | translate"
+            [placeholder]="'0'"
+            [unitOptions]="metersOptions"
+            [disabled]="isSaving()"
+            [value]="piezaPosition()"
+            (valueChange)="piezaPosition.set($event)"
+          />
+
+          <!-- Blanco Position -->
+          <ui-sound-level-meter-input
+            size="small"
+            class="col-span-1 md:col-span-2"
+            [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
+            [placeholder]="'0'"
+            [unitOptions]="metersOptions"
+            [disabled]="isSaving()"
+            [value]="blancoPosition()"
+            (valueChange)="blancoPosition.set($event)"
+          />
+
+          <!-- Observador -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-1 md:col-span-1 w-full">
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_LABEL' | translate }}</mat-label>
+            <mat-select
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_PLACEHOLDER' | translate"
+              [formField]="massForm.observador"
+            >
+              @for (opt of data.observadorOptions; track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        @if (errorKey(); as key) {
+          <p role="alert" class="mt-2 text-sm text-red-700">{{ key | translate }}</p>
+        }
+      </mat-dialog-content>
+
+      <!-- Actions -->
+      <mat-dialog-actions class="!flex gap-2 !justify-center !pb-4">
+        <ui-save-button
+          buttonType="submit"
+          label="TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_APPLY_BTN"
+          [isSaving]="isSaving()"
+          [isDisabled]="!canApply()"
         />
-
-        <!-- Blanco Position -->
-        <ui-sound-level-meter-input
-          size="small"
-          class="col-span-1 md:col-span-2"
-          [label]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.BLANCO_GROUP_LABEL' | translate"
-          [placeholder]="'0'"
-          [unitOptions]="metersOptions"
-          [disabled]="isSaving()"
-          [value]="blancoPosition()"
-          (valueChange)="blancoPosition.set($event)"
-        />
-
-        <!-- Observador -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="col-span-1 md:col-span-1 w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_LABEL' | translate }}</mat-label>
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.OBSERVADOR_PLACEHOLDER' | translate"
-            [formField]="massForm.observador"
-          >
-            @for (opt of data.observadorOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-      @if (errorKey(); as key) {
-        <p role="alert" class="mt-2 text-sm text-red-700">{{ key | translate }}</p>
-      }
-    </mat-dialog-content>
-
-    <!-- Actions -->
-    <mat-dialog-actions class="!flex gap-2 !justify-center !pb-4">
-      <ui-save-button
-        label="TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_APPLY_BTN"
-        [isSaving]="isSaving()"
-        [isDisabled]="!canApply()"
-        (save)="apply()"
-      />
-      <button mat-stroked-button type="button" [disabled]="isSaving()" (click)="cancel()">
-        {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_CANCEL_BTN' | translate }}
-      </button>
-    </mat-dialog-actions>
+        <button mat-stroked-button type="button" [disabled]="isSaving()" (click)="cancel()">
+          {{ 'TRIAL_EXECUTION.WIDGETS.MAO_TOPOGRAPHY.MASS_CONFIG_CANCEL_BTN' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   encapsulation: ViewEncapsulation.None,
 })
@@ -157,7 +160,13 @@ export class MaoTopographyMassConfigDialog {
     series: [],
     observador: this.data.current.observador,
   });
-  readonly massForm = form(this.formModel, (path) => disabled(path, () => this.isSaving()));
+  readonly massForm = form(this.formModel, (path) => disabled(path, () => this.isSaving()), {
+    submission: {
+      action: async () => {
+        await this.apply();
+      },
+    },
+  });
 
   readonly canApply = computed(() => this.#buildRequest() !== null);
 

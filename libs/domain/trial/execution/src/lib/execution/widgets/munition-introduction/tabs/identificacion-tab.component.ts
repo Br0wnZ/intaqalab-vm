@@ -1,20 +1,11 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-  untracked,
-} from '@angular/core';
-import { FormField, disabled, form, min } from '@angular/forms/signals';
+import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { FormField, apply, disabled, form } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { type PlanningConditionsShot, PlanningLoadingZonesService } from '@intaqalab/data-access-planning';
 import { InputSelect } from '@intaqalab/ui';
-import { createDirtyTracker } from '@intaqalab/utils';
+import { createDirtyTracker, nonNegativeSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore, type MunitionIntroIdentificationState } from '../../../../+state/execution.store';
@@ -196,7 +187,7 @@ export class MunitionIdentificacionTabComponent {
     disabled(f.modoFuncionamiento, () => this.isModoFuncionamientoDisabled());
     disabled(f.loadingZone, () => !this.identFormModel().denominacion);
     disabled(f.cantidad, () => this.isCantidadDisabled());
-    min(f.cantidad, 0);
+    apply(f.cantidad, nonNegativeSchema);
   });
 
   readonly observacionesField = signal<string | null>(this.#store.munitionIntroduction().identificacion.observaciones);

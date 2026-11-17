@@ -1,14 +1,5 @@
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  linkedSignal,
-  signal,
-  untracked,
-} from '@angular/core';
-import { FormField, disabled, form } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
+import { FormField, FormRoot, disabled, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -89,6 +80,7 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
   selector: 'inta-jlt-mao-mass-config-dialog',
   imports: [
     FormField,
+    FormRoot,
     ReadonlyContentDirective,
     InputSelect,
     MatButtonModule,
@@ -109,196 +101,198 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
       {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_TITLE' | translate }}
     </h2>
 
-    <!-- Content -->
-    <mat-dialog-content intaReadonlyContent>
-      <!-- Series (full-width multi-select) -->
-      <div class="flex flex-col gap-1 mb-2">
-        <span class="text-sm font-medium text-gray-700">
-          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_SERIES_LABEL' | translate }}
-        </span>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-select
-            multiple
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
-            [formField]="massForm.series"
-          >
-            @for (opt of serieSelectOptions(); track opt.value) {
-              <mat-option [value]="opt.value" [disabled]="opt.disabled">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+    <form class="contents" [formRoot]="massForm">
+      <!-- Content -->
+      <mat-dialog-content intaReadonlyContent>
+        <!-- Series (full-width multi-select) -->
+        <div class="flex flex-col gap-1 mb-2">
+          <span class="text-sm font-medium text-gray-700">
+            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_SERIES_LABEL' | translate }}
+          </span>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-select
+              multiple
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
+              [formField]="massForm.series"
+            >
+              @for (opt of serieSelectOptions(); track opt.value) {
+                <mat-option [value]="opt.value" [disabled]="opt.disabled">{{ opt.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
 
-      @if (selectedSeriesStatuses().length > 0 && !planningConditionsReady()) {
-        <p role="alert" class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_UNAVAILABLE' | translate }}
-        </p>
-      }
+        @if (selectedSeriesStatuses().length > 0 && !planningConditionsReady()) {
+          <p role="alert" class="mb-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_ORIENTATION_UNAVAILABLE' | translate }}
+          </p>
+        }
 
-      <!-- TTN / OLT / Piqueta / Diferencia angular -->
-      <div class="my-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
-        <!-- TTN (Tabla de tiro numérica) -->
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TTN_LABEL' | translate }}</mat-label>
-          <input
-            matInput
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TTN_PLACEHOLDER' | translate"
-            [value]="ttnField() ?? ''"
-            (input)="onTtnInput($event)"
-          />
-        </mat-form-field>
+        <!-- TTN / OLT / Piqueta / Diferencia angular -->
+        <div class="my-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
+          <!-- TTN (Tabla de tiro numérica) -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TTN_LABEL' | translate }}</mat-label>
+            <input
+              matInput
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TTN_PLACEHOLDER' | translate"
+              [value]="ttnField() ?? ''"
+              (input)="onTtnInput($event)"
+            />
+          </mat-form-field>
 
-        <ui-input-select
-          label="OLT"
-          [opciones]="angleOptions"
-          [placeholder]="'0,000'"
-          [value]="oltDisplayField()"
-          [readOnly]="oltReadOnly()"
-          [unitDisabled]="false"
-          [variant]="oltReadOnly() ? 'computed' : 'default'"
-          (valueChange)="onOltChanged($event)"
-        >
-          <input
-            inputSelectInput
-            libLocalDecimal
-            [decimals]="2"
-            [disabled]="oltReadOnly()"
+          <ui-input-select
+            label="OLT"
+            [opciones]="angleOptions"
+            [placeholder]="'0,000'"
+            [value]="oltDisplayField()"
             [readOnly]="oltReadOnly()"
-            [value]="oltDisplayField()?.value ?? ''"
-          />
-        </ui-input-select>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-          <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
-          <mat-select
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
-            [formField]="massForm.piqueta"
+            [unitDisabled]="false"
+            [variant]="oltReadOnly() ? 'computed' : 'default'"
+            (valueChange)="onOltChanged($event)"
           >
-            <mat-option [value]="null">—</mat-option>
-            @for (option of data.piquetaOptions; track option.value) {
-              <mat-option [value]="option.value">{{ option.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+            <input
+              inputSelectInput
+              libLocalDecimal
+              [decimals]="2"
+              [disabled]="oltReadOnly()"
+              [readOnly]="oltReadOnly()"
+              [value]="oltDisplayField()?.value ?? ''"
+            />
+          </ui-input-select>
 
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
-          [value]="diferenciaAngularField()"
-          [readOnly]="angularDifferenceReadOnly()"
-          [variant]="angularDifferenceReadOnly() ? 'computed' : 'default'"
-          (valueChange)="diferenciaAngularField.set($event)"
-        >
-          <input
-            inputSelectInput
-            libLocalDecimal
-            [decimals]="2"
-            [disabled]="angularDifferenceReadOnly()"
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+            <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_LABEL' | translate }}</mat-label>
+            <mat-select
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.PIQUETA_PLACEHOLDER' | translate"
+              [formField]="massForm.piqueta"
+            >
+              <mat-option [value]="null">—</mat-option>
+              @for (option of data.piquetaOptions; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_LABEL' | translate"
+            [opciones]="ooOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DIFERENCIA_ANGULAR_PLACEHOLDER' | translate"
+            [value]="diferenciaAngularField()"
             [readOnly]="angularDifferenceReadOnly()"
-            [value]="diferenciaAngularField()?.value ?? ''"
+            [variant]="angularDifferenceReadOnly() ? 'computed' : 'default'"
+            (valueChange)="diferenciaAngularField.set($event)"
+          >
+            <input
+              inputSelectInput
+              libLocalDecimal
+              [decimals]="2"
+              [disabled]="angularDifferenceReadOnly()"
+              [readOnly]="angularDifferenceReadOnly()"
+              [value]="diferenciaAngularField()?.value ?? ''"
+            />
+          </ui-input-select>
+        </div>
+        @if (needsManualOrientation() && calculatedOlt() === null) {
+          <p role="status" class="mb-3 text-sm text-gray-600">
+            {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_REQUIRED' | translate }}
+          </p>
+        }
+
+        <!-- 2-column grid: numeric fields -->
+        <div class="grid grid-cols-2 gap-x-4 gap-y-8">
+          <!-- Velocidad inicial teórica -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_LABEL' | translate"
+            [opciones]="msOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_PLACEHOLDER' | translate"
+            [value]="velocidadInicialField()"
+            (valueChange)="velocidadInicialField.set($event)"
           />
-        </ui-input-select>
-      </div>
-      @if (needsManualOrientation() && calculatedOlt() === null) {
-        <p role="status" class="mb-3 text-sm text-gray-600">
-          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_OLT_REQUIRED' | translate }}
-        </p>
-      }
 
-      <!-- 2-column grid: numeric fields -->
-      <div class="grid grid-cols-2 gap-x-4 gap-y-8">
-        <!-- Velocidad inicial teórica -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_LABEL' | translate"
-          [opciones]="msOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.VELOCIDAD_INICIAL_PLACEHOLDER' | translate"
-          [value]="velocidadInicialField()"
-          (valueChange)="velocidadInicialField.set($event)"
-        />
+          <!-- Distancia prevista pique -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_LABEL' | translate"
+            [opciones]="metersOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_PLACEHOLDER' | translate"
+            [value]="distanciaPiqueDisplayField()"
+            [readOnly]="distanciaPiqueReadOnly()"
+            [variant]="distanciaPiqueReadOnly() ? 'computed' : 'default'"
+            (valueChange)="onDistanciaPiqueChanged($event)"
+          />
 
-        <!-- Distancia prevista pique -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_PIQUE_PLACEHOLDER' | translate"
-          [value]="distanciaPiqueDisplayField()"
-          [readOnly]="distanciaPiqueReadOnly()"
-          [variant]="distanciaPiqueReadOnly() ? 'computed' : 'default'"
-          (valueChange)="onDistanciaPiqueChanged($event)"
-        />
+          <!-- Deriva tabular -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_LABEL' | translate"
+            [opciones]="ooOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_PLACEHOLDER' | translate"
+            [value]="derivaTabularField()"
+            (valueChange)="derivaTabularField.set($event)"
+          />
 
-        <!-- Deriva tabular -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DERIVA_TABULAR_PLACEHOLDER' | translate"
-          [value]="derivaTabularField()"
-          (valueChange)="derivaTabularField.set($event)"
-        />
+          <!-- Tiempo vuelo teórico -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_LABEL' | translate"
+            [opciones]="secondsOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_PLACEHOLDER' | translate"
+            [value]="tiempoVueloField()"
+            (valueChange)="tiempoVueloField.set($event)"
+          />
 
-        <!-- Tiempo vuelo teórico -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_LABEL' | translate"
-          [opciones]="secondsOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.TIEMPO_VUELO_PLACEHOLDER' | translate"
-          [value]="tiempoVueloField()"
-          (valueChange)="tiempoVueloField.set($event)"
-        />
+          <!-- Ángulo tiro -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_LABEL' | translate"
+            [opciones]="ooOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_PLACEHOLDER' | translate"
+            [value]="anguloTiroDisplayField()"
+            [readOnly]="anguloTiroReadOnly()"
+            [variant]="anguloTiroReadOnly() ? 'computed' : 'default'"
+            (valueChange)="onAnguloTiroChanged($event)"
+          />
 
-        <!-- Ángulo tiro -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_LABEL' | translate"
-          [opciones]="ooOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ANGULO_TIRO_PLACEHOLDER' | translate"
-          [value]="anguloTiroDisplayField()"
-          [readOnly]="anguloTiroReadOnly()"
-          [variant]="anguloTiroReadOnly() ? 'computed' : 'default'"
-          (valueChange)="onAnguloTiroChanged($event)"
-        />
+          <!-- Graduación espoleta -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_LABEL' | translate"
+            [opciones]="secondsOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_PLACEHOLDER' | translate"
+            [value]="graduacionEspoletaDisplayField()"
+            [readOnly]="graduacionEspoletaReadOnly()"
+            [variant]="graduacionEspoletaReadOnly() ? 'computed' : 'default'"
+            (valueChange)="onGraduacionEspoletaChanged($event)"
+          />
 
-        <!-- Graduación espoleta -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_LABEL' | translate"
-          [opciones]="secondsOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.GRADUACION_ESPOLETA_PLACEHOLDER' | translate"
-          [value]="graduacionEspoletaDisplayField()"
-          [readOnly]="graduacionEspoletaReadOnly()"
-          [variant]="graduacionEspoletaReadOnly() ? 'computed' : 'default'"
-          (valueChange)="onGraduacionEspoletaChanged($event)"
-        />
+          <!-- Altura de explosión -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_EXPLOSION_LABEL' | translate"
+            [opciones]="metersOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_EXPLOSION_PLACEHOLDER' | translate"
+            [value]="alturaFuncionamientoDisplayField()"
+            [readOnly]="alturaFuncionamientoReadOnly()"
+            [variant]="alturaFuncionamientoReadOnly() ? 'computed' : 'default'"
+            (valueChange)="onAlturaFuncionamientoChanged($event)"
+          />
 
-        <!-- Altura de explosión -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_EXPLOSION_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.ALTURA_EXPLOSION_PLACEHOLDER' | translate"
-          [value]="alturaFuncionamientoDisplayField()"
-          [readOnly]="alturaFuncionamientoReadOnly()"
-          [variant]="alturaFuncionamientoReadOnly() ? 'computed' : 'default'"
-          (valueChange)="onAlturaFuncionamientoChanged($event)"
-        />
+          <!-- Distancia de explosión -->
+          <ui-input-select
+            [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_EXPLOSION_LABEL' | translate"
+            [opciones]="metersOptions"
+            [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_EXPLOSION_PLACEHOLDER' | translate"
+            [value]="distanciaFuncionamientoField()"
+            (valueChange)="distanciaFuncionamientoField.set($event)"
+          />
+        </div>
+      </mat-dialog-content>
 
-        <!-- Distancia de explosión -->
-        <ui-input-select
-          [label]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_EXPLOSION_LABEL' | translate"
-          [opciones]="metersOptions"
-          [placeholder]="'TRIAL_EXECUTION.WIDGETS.JLT_MAO.DISTANCIA_EXPLOSION_PLACEHOLDER' | translate"
-          [value]="distanciaFuncionamientoField()"
-          (valueChange)="distanciaFuncionamientoField.set($event)"
-        />
-      </div>
-    </mat-dialog-content>
-
-    <!-- Actions -->
-    <mat-dialog-actions align="end" class="!px-6 !pb-4 gap-2">
-      <button mat-stroked-button type="button" (click)="cancel()">
-        {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_CANCEL_BTN' | translate }}
-      </button>
-      <button mat-flat-button color="primary" type="button" [disabled]="!canApply()" (click)="apply()">
-        {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_APPLY_BTN' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <!-- Actions -->
+      <mat-dialog-actions align="end" class="!px-6 !pb-4 gap-2">
+        <button mat-stroked-button type="button" (click)="cancel()">
+          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_CANCEL_BTN' | translate }}
+        </button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="!canApply()">
+          {{ 'TRIAL_EXECUTION.WIDGETS.JLT_MAO.MASS_CONFIG_APPLY_BTN' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   encapsulation: ViewEncapsulation.None,
 })
@@ -335,9 +329,19 @@ export class JltMaoMassConfigDialog {
     series: [],
     piqueta: this.data.currentPiqueta ?? null,
   });
-  protected readonly massForm = form(this.formModel, (path) => {
-    disabled(path.piqueta, () => !this.needsManualOrientation() || this.hasManualOlt());
-  });
+  protected readonly massForm = form(
+    this.formModel,
+    (path) => {
+      disabled(path.piqueta, () => !this.needsManualOrientation() || this.hasManualOlt());
+    },
+    {
+      submission: {
+        action: async () => {
+          this.apply();
+        },
+      },
+    },
+  );
 
   protected readonly oltField = signal<InputFieldValue>(null);
 

@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required, submit } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,6 +23,7 @@ export type InterruptExecutionDialogResult =
     MatInputModule,
     MatIconModule,
     FormField,
+    FormRoot,
     TranslatePipe,
   ],
   template: `
@@ -32,66 +33,70 @@ export type InterruptExecutionDialogResult =
       {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.TITLE' | translate }}
     </h2>
 
-    <!-- Content -->
-    <mat-dialog-content class="flex flex-col gap-3 !px-0">
-      <p class="text-sm text-gray-700 text-center m-0">
-        {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.TEXT_PREFIX' | translate }}
-        <strong>
-          {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.TRIAL_NAME_PREFIX' | translate }} {{ data.trialName }}
-        </strong>
-      </p>
+    <form class="contents" [formRoot]="dialogForm">
+      <!-- Content -->
+      <mat-dialog-content class="flex flex-col gap-3 !px-0">
+        <p class="text-sm text-gray-700 text-center m-0">
+          {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.TEXT_PREFIX' | translate }}
+          <strong>
+            {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.TRIAL_NAME_PREFIX' | translate }} {{ data.trialName }}
+          </strong>
+        </p>
 
-      <p class="text-sm text-gray-700 text-center m-0">
-        {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.DESCRIPTION' | translate }}
-      </p>
+        <p class="text-sm text-gray-700 text-center m-0">
+          {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.DESCRIPTION' | translate }}
+        </p>
 
-      <!-- Textarea -->
-      <mat-form-field appearance="outline" class="w-full mt-2">
-        <textarea
-          matInput
-          rows="4"
-          [placeholder]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.REASON_PLACEHOLDER' | translate"
-          [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.REASON_LABEL' | translate"
-          [formField]="dialogForm.reason"
-        ></textarea>
-        @if (dialogForm.reason().touched() && dialogForm.reason().errors()) {
-          @for (error of dialogForm.reason().errors(); track error) {
-            <mat-error>{{ error.message }}</mat-error>
+        <!-- Textarea -->
+        <mat-form-field appearance="outline" class="w-full mt-2">
+          <textarea
+            matInput
+            rows="4"
+            [placeholder]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.REASON_PLACEHOLDER' | translate"
+            [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.REASON_LABEL' | translate"
+            [formField]="dialogForm.reason"
+          ></textarea>
+          @if (dialogForm.reason().touched() && dialogForm.reason().errors()) {
+            @for (error of dialogForm.reason().errors(); track error) {
+              <mat-error>{{ error.message }}</mat-error>
+            }
           }
-        }
-      </mat-form-field>
-    </mat-dialog-content>
+        </mat-form-field>
+      </mat-dialog-content>
 
-    <!-- Actions -->
-    <mat-dialog-actions class="flex flex-wrap !px-0">
-      <button
-        mat-flat-button
-        class="flex-1"
-        [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.CONFIRM_BTN' | translate"
-        [disabled]="dialogForm().invalid()"
-        (click)="interrupt()"
-      >
-        {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.CONFIRM_BTN' | translate }}
-      </button>
+      <!-- Actions -->
+      <mat-dialog-actions class="flex flex-wrap !px-0">
+        <button
+          mat-flat-button
+          type="submit"
+          class="flex-1"
+          [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.CONFIRM_BTN' | translate"
+          [disabled]="dialogForm().invalid()"
+        >
+          {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.CONFIRM_BTN' | translate }}
+        </button>
 
-      <button
-        mat-flat-button
-        class="flex-1"
-        [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.START_SECURITY_COUNT_BTN' | translate"
-        [disabled]="dialogForm().invalid()"
-        (click)="startCountDown()"
-      >
-        {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.START_SECURITY_COUNT_BTN' | translate }}
-      </button>
+        <button
+          mat-flat-button
+          type="button"
+          class="flex-1"
+          [attr.aria-label]="'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.START_SECURITY_COUNT_BTN' | translate"
+          [disabled]="dialogForm().invalid()"
+          (click)="startCountDown()"
+        >
+          {{ 'TRIAL_EXECUTION.DIALOGS.INTERRUPT_EXECUTION.START_SECURITY_COUNT_BTN' | translate }}
+        </button>
 
-      <button
-        mat-stroked-button
-        [attr.aria-label]="'COMMONS.RETURN' | translate"
-        [mat-dialog-close]="{ action: 'back' }"
-      >
-        {{ 'COMMONS.RETURN' | translate }}
-      </button>
-    </mat-dialog-actions>
+        <button
+          mat-stroked-button
+          type="button"
+          [attr.aria-label]="'COMMONS.RETURN' | translate"
+          [mat-dialog-close]="{ action: 'back' }"
+        >
+          {{ 'COMMONS.RETURN' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: ``,
   encapsulation: ViewEncapsulation.None,
@@ -105,23 +110,31 @@ export class InterruptExecutionDialog {
     reason: '',
   });
 
-  readonly dialogForm = form(this.formModel, (f) => {
-    required(f.reason);
-  });
-
-  interrupt(): void {
-    if (this.dialogForm().invalid()) {
-      this.dialogForm().markAsTouched();
-      return;
-    }
-    this.#dialogRef.close({ action: 'interrupt', reason: this.formModel().reason });
-  }
+  readonly dialogForm = form(
+    this.formModel,
+    (f) => {
+      required(f.reason);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.#dialogRef.close({ action: 'interrupt', reason: this.formModel().reason });
+        },
+        onInvalid: () => {
+          this.dialogForm().markAsTouched();
+        },
+      },
+    },
+  );
 
   startCountDown(): void {
-    if (this.dialogForm().invalid()) {
-      this.dialogForm().markAsTouched();
-      return;
-    }
-    this.#dialogRef.close({ action: 'startCountDown', reason: this.formModel().reason });
+    void submit(this.dialogForm, {
+      action: async () => {
+        this.#dialogRef.close({ action: 'startCountDown', reason: this.formModel().reason });
+      },
+      onInvalid: () => {
+        this.dialogForm().markAsTouched();
+      },
+    });
   }
 }

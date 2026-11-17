@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -49,6 +49,7 @@ interface MassConfigForm {
   selector: 'inta-armament-introduction-mass-config-dialog',
   imports: [
     FormField,
+    FormRoot,
     ReadonlyContentDirective,
     MatButtonModule,
     MatDialogModule,
@@ -67,126 +68,130 @@ interface MassConfigForm {
       {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_TITLE' | translate }}
     </h2>
 
-    <!-- Content -->
-    <mat-dialog-content intaReadonlyContent>
-      <div>
-        <!-- Series (full-width multi-select) -->
-        <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full mb-2 mt-2">
-          <mat-label>
-            {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_LABEL' | translate }}
-          </mat-label>
-          <mat-select
-            multiple
-            [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
-            [formField]="massForm.series"
-            (selectionChange)="onSeriesSelected($event.value)"
-          >
-            @for (opt of data.serieOptions; track opt.value) {
-              <mat-option [value]="opt.value" [disabled]="disabledSeries().has(opt.value)">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+    <form class="contents" [formRoot]="massForm">
+      <!-- Content -->
+      <mat-dialog-content intaReadonlyContent>
+        <div>
+          <!-- Series (full-width multi-select) -->
+          <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full mb-2 mt-2">
+            <mat-label>
+              {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_LABEL' | translate }}
+            </mat-label>
+            <mat-select
+              multiple
+              [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_PLACEHOLDER' | translate"
+              [formField]="massForm.series"
+              (selectionChange)="onSeriesSelected($event.value)"
+            >
+              @for (opt of data.serieOptions; track opt.value) {
+                <mat-option [value]="opt.value" [disabled]="disabledSeries().has(opt.value)">
+                  {{ opt.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
-        <!-- 2-column grid for fields -->
-        <div class="grid grid-cols-2 gap-x-4 gap-y-6 mt-2">
-          <!-- Arma -->
-          <div>
-            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}</mat-label>
-              <mat-select
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_PLACEHOLDER' | translate"
-                [formField]="massForm.arma"
-                (selectionChange)="onWeaponSelected($event.value)"
-              >
-                @for (opt of weaponOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+          <!-- 2-column grid for fields -->
+          <div class="grid grid-cols-2 gap-x-4 gap-y-6 mt-2">
+            <!-- Arma -->
+            <div>
+              <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_PLACEHOLDER' | translate"
+                  [formField]="massForm.arma"
+                  (selectionChange)="onWeaponSelected($event.value)"
+                >
+                  @for (opt of weaponOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-          <!-- Nº serie del arma -->
-          <div>
-            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-              <mat-label>
-                {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_ARMA_LABEL' | translate }}
-              </mat-label>
-              <mat-select
-                id="mass-armament-weapon-serial"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_ARMA_LABEL' | translate"
-                [formField]="massForm.weaponItemId"
-              >
-                @for (opt of weaponSerialOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+            <!-- Nº serie del arma -->
+            <div>
+              <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                <mat-label>
+                  {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_ARMA_LABEL' | translate }}
+                </mat-label>
+                <mat-select
+                  id="mass-armament-weapon-serial"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_ARMA_LABEL' | translate"
+                  [formField]="massForm.weaponItemId"
+                >
+                  @for (opt of weaponSerialOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-          <!-- Tubo -->
-          <div>
-            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-              <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_LABEL' | translate }}</mat-label>
-              <mat-select
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_PLACEHOLDER' | translate"
-                [formField]="massForm.tubo"
-              >
-                @for (opt of tubeOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+            <!-- Tubo -->
+            <div>
+              <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                <mat-label>{{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_LABEL' | translate }}</mat-label>
+                <mat-select
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_PLACEHOLDER' | translate"
+                  [formField]="massForm.tubo"
+                >
+                  @for (opt of tubeOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-          <!-- Nº serie del tubo -->
-          <div>
-            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-              <mat-label>
-                {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_TUBO_LABEL' | translate }}
-              </mat-label>
-              <mat-select
-                id="mass-armament-tube-serial"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_TUBO_LABEL' | translate"
-                [formField]="massForm.tubo"
-              >
-                @for (opt of tubeSerialOptions(); track opt.value) {
-                  <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+            <!-- Nº serie del tubo -->
+            <div>
+              <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                <mat-label>
+                  {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_TUBO_LABEL' | translate }}
+                </mat-label>
+                <mat-select
+                  id="mass-armament-tube-serial"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.N_SERIE_TUBO_LABEL' | translate"
+                  [formField]="massForm.tubo"
+                >
+                  @for (opt of tubeSerialOptions(); track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
 
-          <div class="col-span-2">
-            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
-              <mat-label>
-                {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_LABEL' | translate }}
-              </mat-label>
-              <textarea
-                id="mass-armament-observations"
-                matInput
-                rows="2"
-                class="!resize-none"
-                [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_PLACEHOLDER' | translate"
-                [formField]="massForm.observations"
-              ></textarea>
-            </mat-form-field>
+            <div class="col-span-2">
+              <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic" class="w-full">
+                <mat-label>
+                  {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_LABEL' | translate }}
+                </mat-label>
+                <textarea
+                  id="mass-armament-observations"
+                  matInput
+                  rows="2"
+                  class="!resize-none"
+                  [placeholder]="'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.OBSERVATIONS_PLACEHOLDER' | translate"
+                  [formField]="massForm.observations"
+                ></textarea>
+              </mat-form-field>
+            </div>
           </div>
         </div>
-      </div>
-    </mat-dialog-content>
+      </mat-dialog-content>
 
-    <!-- Actions -->
-    <mat-dialog-actions class="!flex gap-2 !justify-center !pb-4">
-      <ui-save-button
-        label="TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_APPLY_BTN"
-        [isSaving]="isSaving()"
-        [isDisabled]="!canApply()"
-        (save)="apply()"
-      />
-      <button mat-stroked-button (click)="cancel()">
-        {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_CANCEL_BTN' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <!-- Actions -->
+      <mat-dialog-actions class="!flex gap-2 !justify-center !pb-4">
+        <ui-save-button
+          buttonType="submit"
+          label="TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_APPLY_BTN"
+          [isSaving]="isSaving()"
+          [isDisabled]="!canApply()"
+        />
+        <button mat-stroked-button type="button" (click)="cancel()">
+          {{ 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_CANCEL_BTN' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   encapsulation: ViewEncapsulation.None,
 })
@@ -217,19 +222,29 @@ export class ArmamentIntroductionMassConfigDialog {
   });
 
   // ── Schema declarativo: validación centralizada ─────────────────────────
-  readonly massForm = form(this.formModel, (path) => {
-    validate(path.series, ({ value }) =>
-      value().length > 0
-        ? null
-        : { kind: 'required', message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_REQUIRED' },
-    );
+  readonly massForm = form(
+    this.formModel,
+    (path) => {
+      validate(path.series, ({ value }) =>
+        value().length > 0
+          ? null
+          : { kind: 'required', message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.MASS_CONFIG_SERIES_REQUIRED' },
+      );
 
-    required(path.arma, { message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_REQUIRED' });
-    required(path.tubo, { message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_REQUIRED' });
+      required(path.arma, { message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.ARMA_REQUIRED' });
+      required(path.tubo, { message: 'TRIAL_EXECUTION.WIDGETS.ARMAMENT_INTRODUCTION.TUBO_REQUIRED' });
 
-    disabled(path.tubo, () => this.tubeDisabled());
-    disabled(path, () => this.isSaving());
-  });
+      disabled(path.tubo, () => this.tubeDisabled());
+      disabled(path, () => this.isSaving());
+    },
+    {
+      submission: {
+        action: async () => {
+          await this.apply();
+        },
+      },
+    },
+  );
 
   readonly #compatibleSeries = getBulkCompatibleArmamentSeries(this.data.planningArmament);
   readonly disabledSeries = computed(() => {

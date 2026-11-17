@@ -1,21 +1,12 @@
 import type { Signal } from '@angular/core';
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  linkedSignal,
-  untracked,
-  viewChild,
-} from '@angular/core';
-import { FormField, disabled, form, min, required } from '@angular/forms/signals';
+import { Component, computed, effect, inject, input, linkedSignal, untracked, viewChild } from '@angular/core';
+import { FormField, apply, disabled, form, required } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MEASURE_UNIT_LABELS, PressureUnitEnum } from '@intaqalab/models';
 import { ErrorState, IntaIconComponent, Skeleton } from '@intaqalab/ui';
-import { IntaDecimalPipe, LocaleDecimalInputDirective, deepEqual } from '@intaqalab/utils';
+import { IntaDecimalPipe, LocaleDecimalInputDirective, deepEqual, nonNegativeSchema } from '@intaqalab/utils';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -184,9 +175,9 @@ export class OverpressureInfoWidget extends BaseFormWidgetComponent {
     required(fields.presionMaxima);
     required(fields.presionMinima);
     required(fields.presionRef);
-    min(fields.presionMaxima, 0);
-    min(fields.presionMinima, 0);
-    min(fields.presionRef, 0);
+    apply(fields.presionMaxima, nonNegativeSchema);
+    apply(fields.presionMinima, nonNegativeSchema);
+    apply(fields.presionRef, nonNegativeSchema);
     disabled(fields, () => !this.#store.fireTrialId() || this.isLoading() || this.#store.overpressureInfoSaving());
   });
   protected readonly touchRef = viewChild('touch', { read: FormTouchDirective });

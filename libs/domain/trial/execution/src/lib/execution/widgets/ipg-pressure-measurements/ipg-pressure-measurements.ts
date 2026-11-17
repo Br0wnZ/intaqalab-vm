@@ -10,7 +10,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { FormField, form, min } from '@angular/forms/signals';
+import { FormField, apply, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -18,7 +18,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { IntaIconComponent } from '@intaqalab/ui';
-import { LocaleDecimalInputDirective, NoNegativeValuesDirective, createDirtyTracker } from '@intaqalab/utils';
+import {
+  LocaleDecimalInputDirective,
+  NoNegativeValuesDirective,
+  createDirtyTracker,
+  nonNegativeSchema,
+} from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../+state/execution.store';
@@ -303,7 +308,7 @@ export class IpgPressureMeasurements extends BaseFormWidgetComponent {
     observaciones: this.#store.medidasPresionIpg().observaciones ?? '',
   });
   protected readonly dataForm = form(this.dataFormModel, (f) => {
-    min(f.pmax, 0);
+    apply(f.pmax, nonNegativeSchema);
   });
 
   // ── Dirty tracking ─────────────────────────────────────────────────────────
