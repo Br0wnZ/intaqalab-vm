@@ -12,7 +12,7 @@ import { MatSelect } from '@angular/material/select';
  *
  * Estrategia de detección de valor:
  * 1. Parchea `writeValue` del MatSelect para capturar valores escritos por
- *    cualquier ControlValueAccessor (ngModel, Signal Forms, FormControl...).
+ *    cualquier ControlValueAccessor (Signal Forms, ngModel...).
  * 2. Suscribe a `valueChange` y `stateChanges` para selecciones manuales.
  * 3. Ejecuta una comprobación inicial en ngAfterViewInit.
  *

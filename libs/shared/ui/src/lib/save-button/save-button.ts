@@ -35,7 +35,7 @@ import { TranslatePipe } from '@ngx-translate/core';
   template: `
     <button
       mat-flat-button
-      type="button"
+      [attr.type]="buttonType()"
       class="save-btn"
       [disabled]="isSaving() || isDisabled()"
       [attr.aria-busy]="isSaving()"
@@ -87,6 +87,9 @@ export class SaveButton {
 
   /** Boleano para deshabilitar botón. Por defecto false */
   readonly isDisabled = input<boolean>(false);
+
+  /** Tipo HTML del botón ('button' por defecto; 'submit' dentro de `<form [formRoot]>`) */
+  readonly buttonType = input<'button' | 'submit'>('button');
 
   /** Emitido al hacer click (solo cuando no está guardando) */
   readonly save = output<void>();

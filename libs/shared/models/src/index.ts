@@ -1,4 +1,3 @@
-export * from './lib/form/types';
 export * from './lib/trials/document-subtype.model';
 export * from './lib/trials/trial-docs-category.enum';
 export * from './lib/trials/trial-docs-filter.model';

@@ -10,7 +10,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -36,8 +35,6 @@ interface TabConfig {
   imports: [
     MatFormFieldModule,
     MatInputModule,
-    FormsModule,
-    ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
     MatTabsModule,
