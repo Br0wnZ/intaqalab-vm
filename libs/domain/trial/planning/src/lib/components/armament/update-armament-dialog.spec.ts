@@ -1,4 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -179,6 +180,20 @@ describe('UpdateArmamentDialog', () => {
 
       expect(component.armamentForm().valid()).toBe(false);
     });
+
+    it('should enforce percentageSchema bounds [0, 100] on tubeLifePercentage', async () => {
+      const view = await renderDialog();
+      const component = view.fixture.componentInstance;
+
+      component.armamentModel.update((current) => ({ ...current, tubeLifePercentage: -1 }));
+      expect(component.armamentForm.tubeLifePercentage().valid()).toBe(false);
+
+      component.armamentModel.update((current) => ({ ...current, tubeLifePercentage: 101 }));
+      expect(component.armamentForm.tubeLifePercentage().valid()).toBe(false);
+
+      component.armamentModel.update((current) => ({ ...current, tubeLifePercentage: 100 }));
+      expect(component.armamentForm.tubeLifePercentage().valid()).toBe(true);
+    });
   });
 
   describe('Form interaction', () => {
@@ -237,7 +252,7 @@ describe('UpdateArmamentDialog', () => {
       const view = await renderDialog(dialogRefMock, data);
       const component = view.fixture.componentInstance;
 
-      component.onApply();
+      await component.onApply();
 
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
@@ -246,7 +261,7 @@ describe('UpdateArmamentDialog', () => {
       const dialogRefMock = createMockDialogRef();
       const view = await renderDialog(dialogRefMock);
 
-      view.fixture.componentInstance.onApply();
+      await view.fixture.componentInstance.onApply();
 
       expect(dialogRefMock.close).toHaveBeenCalledWith({
         weaponExternalId: 'weapon-1',
@@ -255,6 +270,30 @@ describe('UpdateArmamentDialog', () => {
         tubeLifePercentage: 75,
         observations: 'Initial observations',
       });
+    });
+
+    it('should submit via FormRoot on apply click and Enter key', async () => {
+      const user = userEvent.setup();
+      const dialogRefMock = createMockDialogRef();
+      const view = await renderDialog(dialogRefMock);
+
+      const formEl = view.fixture.debugElement.query(By.css('form')).nativeElement as HTMLFormElement;
+      expect(formEl).toHaveAttribute('novalidate');
+
+      const applyButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.ARMAMENT.UPDATE_SHOT_DIALOG.APPLY_BUTTON/i,
+      });
+      expect(applyButton).toHaveAttribute('type', 'submit');
+
+      const lifeInput = screen.getByRole('spinbutton');
+      await user.clear(lifeInput);
+      await user.type(lifeInput, '85{Enter}');
+
+      expect(dialogRefMock.close).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tubeLifePercentage: 85,
+        }),
+      );
     });
   });
 

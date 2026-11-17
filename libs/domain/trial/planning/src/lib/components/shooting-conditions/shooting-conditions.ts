@@ -1,7 +1,7 @@
 import type { OnInit } from '@angular/core';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FormField, applyEach, disabled, form, max, min, required } from '@angular/forms/signals';
+import { FormField, apply, applyEach, disabled, form, max, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -29,6 +29,7 @@ import {
   NoNegativeValuesDirective,
   RangePipe,
   TrialStatusLabelPipe,
+  boundedNumberSchema,
 } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -896,22 +897,16 @@ export class ShootingConditionsComponent implements OnInit {
         disabled(shotPath.projectileWeight, () => this.readonly());
         disabled(shotPath.nominalSpeed, () => this.readonly());
 
-        min(shotPath.orientation, 0);
-        max(shotPath.orientation, MAX_ANGULAR_VALUE);
+        apply(shotPath.orientation, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
         max(shotPath.elevation, MAX_ANGULAR_VALUE);
-        min(shotPath.angle, 0);
-        max(shotPath.angle, MAX_ANGULAR_VALUE);
+        apply(shotPath.angle, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
         max(shotPath.targetInclination, MAX_ANGULAR_VALUE);
         max(shotPath.distance, MAX_DISTANCE_VALUE);
-        max(shotPath.range, MAX_DISTANCE_VALUE);
-        max(shotPath.functioningHeight, MAX_DISTANCE_VALUE);
+        apply(shotPath.range, boundedNumberSchema(0, MAX_DISTANCE_VALUE));
+        apply(shotPath.functioningHeight, boundedNumberSchema(0, MAX_DISTANCE_VALUE));
         max(shotPath.powderWeight, MAX_WEIGHT_VALUE);
-        max(shotPath.projectileWeight, MAX_WEIGHT_VALUE);
-        min(shotPath.range, 0);
-        min(shotPath.functioningHeight, 0);
-        min(shotPath.projectileWeight, 0);
-        min(shotPath.nominalSpeed, 0);
-        max(shotPath.nominalSpeed, MAX_DISTANCE_VALUE);
+        apply(shotPath.projectileWeight, boundedNumberSchema(0, MAX_WEIGHT_VALUE));
+        apply(shotPath.nominalSpeed, boundedNumberSchema(0, MAX_DISTANCE_VALUE));
       });
     });
   });

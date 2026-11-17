@@ -5,6 +5,7 @@ import { MatChipHarness } from '@angular/material/chips/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { By } from '@angular/platform-browser';
 import { createMockArmamentService, createMockMatDialogRef } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -33,7 +34,8 @@ describe('MassiveShotsConfigurationDialog', () => {
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
-        { provide: ArmamentService, useValue: mockArmamentService }, provideTranslateService(),
+        { provide: ArmamentService, useValue: mockArmamentService },
+        provideTranslateService(),
       ],
     });
 
@@ -341,7 +343,7 @@ describe('MassiveShotsConfigurationDialog', () => {
         observaciones: 'Test',
       });
 
-      component.onApply();
+      await component.onApply();
 
       expect(mockDialogRef.close).toHaveBeenCalledWith({
         series: ['serie1'],
@@ -352,6 +354,22 @@ describe('MassiveShotsConfigurationDialog', () => {
         vidaUtil: '50',
         observaciones: 'Test',
       });
+    });
+
+    it('should configure FormRoot with novalidate and submit button type', async () => {
+      const { view } = await runSetup();
+
+      const formEl = view.fixture.debugElement.query(By.css('form')).nativeElement as HTMLFormElement;
+      expect(formEl).toHaveAttribute('novalidate');
+
+      const applyButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.APPLY_BUTTON/i,
+      });
+      const cancelButton = screen.getByRole('button', {
+        name: /TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.CANCEL_BUTTON/i,
+      });
+      expect(applyButton).toHaveAttribute('type', 'submit');
+      expect(cancelButton).toHaveAttribute('type', 'button');
     });
   });
 

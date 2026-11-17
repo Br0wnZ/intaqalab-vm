@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, disabled, form, required, requiredError, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, disabled, form, required, requiredError, submit, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -12,14 +12,15 @@ import { safeResourceValue } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentService } from '../../services/armament-service';
-import { numericMax, numericMin } from '../../utils/numeric-validators';
 import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
+import { numericMax, numericMin } from '../../utils/numeric-validators';
 
 @Component({
   selector: 'inta-massive-shots-configuration-dialog',
   imports: [
     FormField,
+    FormRoot,
     MatDialogModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -37,189 +38,192 @@ import { SpecimenType } from '../../utils-models/specimen.model';
       {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TITLE' | translate }}
     </h2>
 
-    <mat-dialog-content>
-      <div class="flex flex-col gap-4">
-        <!-- Series -->
-        <div>
-          <label for="series" class="block text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="series"
-              clearable
-              multiple
-              [formField]="configForm.series"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_PLACEHOLDER' | translate"
-            >
-              @for (option of seriesOptions(); track option.value) {
-                <mat-option [value]="option.value">{{ option.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        @if (selectedChips().length > 0) {
-          <mat-chip-set
-            [attr.aria-label]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SELECTED_ITEMS_ARIA' | translate"
-          >
-            @for (chip of selectedChips(); track chip.value) {
-              <mat-chip [removable]="true" (removed)="removeChip(chip.value)">
-                <span>
-                  {{ chip.label }}
-                </span>
-                <button
-                  matChipRemove
-                  [attr.aria-label]="
-                    ('TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.REMOVE_ARIA_LABEL' | translate) + ' ' + chip.label
-                  "
-                >
-                  <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
-                </button>
-              </mat-chip>
-            }
-          </mat-chip-set>
-        }
-
-        <!-- Tipo -->
-        <div>
-          <label for="tipo" class="block text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="tipo"
-              clearable
-              [formField]="configForm.tipo"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_PLACEHOLDER' | translate"
-              (valueChange)="onTypeChange($event)"
-            >
-              @for (option of typeOptions; track option.value) {
-                <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Denominación arma — se carga según el Tipo seleccionado -->
-        <div>
-          <label for="denominacionArma" class="block text-sm font-medium text-gray-700">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="denominacionArma"
-              clearable
-              [formField]="configForm.denominacionArma"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_PLACEHOLDER' | translate"
-              (valueChange)="onWeaponChange($event)"
-            >
-              @if (isLoadingWeapons()) {
-                <mat-option disabled>{{ 'COMMONS.LOADING' | translate }}</mat-option>
-              } @else {
-                @for (option of weaponsOptions(); track option.value) {
-                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
-                }
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Denominación tubo — SOLO si se ha seleccionado un arma y no es mortero; filtrado por familyId del arma -->
-        @if (!isMortar()) {
+    <form class="contents" [formRoot]="configForm">
+      <mat-dialog-content>
+        <div class="flex flex-col gap-4">
+          <!-- Series -->
           <div>
-            <label for="denominacionTubo" class="block text-sm font-medium text-gray-700">
-              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_LABEL' | translate }}
+            <label for="series" class="block text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_LABEL' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
-                id="denominacionTubo"
+                id="series"
                 clearable
-                [formField]="configForm.denominacionTubo"
-                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_PLACEHOLDER' | translate"
+                multiple
+                [formField]="configForm.series"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SERIES_PLACEHOLDER' | translate"
               >
-                @if (isLoadingTubes()) {
+                @for (option of seriesOptions(); track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          @if (selectedChips().length > 0) {
+            <mat-chip-set
+              [attr.aria-label]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.SELECTED_ITEMS_ARIA' | translate"
+            >
+              @for (chip of selectedChips(); track chip.value) {
+                <mat-chip [removable]="true" (removed)="removeChip(chip.value)">
+                  <span>
+                    {{ chip.label }}
+                  </span>
+                  <button
+                    type="button"
+                    matChipRemove
+                    [attr.aria-label]="
+                      ('TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.REMOVE_ARIA_LABEL' | translate) + ' ' + chip.label
+                    "
+                  >
+                    <ui-inta-icon name="close" size="xs" color="var(--color-purple-700)" />
+                  </button>
+                </mat-chip>
+              }
+            </mat-chip-set>
+          }
+
+          <!-- Tipo -->
+          <div>
+            <label for="tipo" class="block text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <mat-select
+                id="tipo"
+                clearable
+                [formField]="configForm.tipo"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TYPE_PLACEHOLDER' | translate"
+                (valueChange)="onTypeChange($event)"
+              >
+                @for (option of typeOptions; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Denominación arma — se carga según el Tipo seleccionado -->
+          <div>
+            <label for="denominacionArma" class="block text-sm font-medium text-gray-700">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <mat-select
+                id="denominacionArma"
+                clearable
+                [formField]="configForm.denominacionArma"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.WEAPON_PLACEHOLDER' | translate"
+                (valueChange)="onWeaponChange($event)"
+              >
+                @if (isLoadingWeapons()) {
                   <mat-option disabled>{{ 'COMMONS.LOADING' | translate }}</mat-option>
                 } @else {
-                  @for (option of tubesOptions(); track option.value) {
+                  @for (option of weaponsOptions(); track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
                 }
               </mat-select>
             </mat-form-field>
           </div>
-        }
 
-        <!-- Instrumentado y Vida Útil — SOLO si el tipo es diferente de mortero -->
-        @if (isNotMortar()) {
-          <!-- Instrumentado -->
-          <div>
-            <label for="instrumentado" class="block text-sm font-medium text-gray-700">
-              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL' | translate }}
-            </label>
-            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <mat-select
-                id="instrumentado"
-                clearable
-                [formField]="configForm.instrumentado"
-                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
-              >
-                <mat-option value="si">
-                  {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_YES' | translate }}
-                </mat-option>
-                <mat-option value="no">
-                  {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_NO' | translate }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+          <!-- Denominación tubo — SOLO si se ha seleccionado un arma y no es mortero; filtrado por familyId del arma -->
+          @if (!isMortar()) {
+            <div>
+              <label for="denominacionTubo" class="block text-sm font-medium text-gray-700">
+                {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="denominacionTubo"
+                  clearable
+                  [formField]="configForm.denominacionTubo"
+                  [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.TUBE_PLACEHOLDER' | translate"
+                >
+                  @if (isLoadingTubes()) {
+                    <mat-option disabled>{{ 'COMMONS.LOADING' | translate }}</mat-option>
+                  } @else {
+                    @for (option of tubesOptions(); track option.value) {
+                      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                    }
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
 
-          <!-- Vida útil -->
+          <!-- Instrumentado y Vida Útil — SOLO si el tipo es diferente de mortero -->
+          @if (isNotMortar()) {
+            <!-- Instrumentado -->
+            <div>
+              <label for="instrumentado" class="block text-sm font-medium text-gray-700">
+                {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="instrumentado"
+                  clearable
+                  [formField]="configForm.instrumentado"
+                  [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_PLACEHOLDER' | translate"
+                >
+                  <mat-option value="si">
+                    {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_YES' | translate }}
+                  </mat-option>
+                  <mat-option value="no">
+                    {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.INSTRUMENTED_NO' | translate }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Vida útil -->
+            <div>
+              <label for="vidaUtil" class="block text-sm font-medium text-gray-700">
+                {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL' | translate }}
+              </label>
+              <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+                <input
+                  id="vidaUtil"
+                  matInput
+                  type="number"
+                  step="1"
+                  [formField]="configForm.vidaUtil"
+                  [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_PLACEHOLDER' | translate"
+                />
+                <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
+              </mat-form-field>
+            </div>
+          }
+
+          <!-- Observaciones -->
           <div>
-            <label for="vidaUtil" class="block text-sm font-medium text-gray-700">
-              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_LABEL' | translate }}
+            <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.OBSERVATIONS' | translate }}
             </label>
-            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input
-                id="vidaUtil"
+            <mat-form-field appearance="outline" class="w-full">
+              <textarea
                 matInput
-                type="number"
-                step="1"
-                [formField]="configForm.vidaUtil"
-                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.LIFE_PLACEHOLDER' | translate"
-              />
-              <span matSuffix class="pr-2 text-sm text-gray-500">%</span>
+                rows="4"
+                class="resize-none"
+                [formField]="configForm.observaciones"
+                [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.OBSERVATIONS_PLACEHOLDER' | translate"
+              ></textarea>
             </mat-form-field>
           </div>
-        }
-
-        <!-- Observaciones -->
-        <div>
-          <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
-            {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.OBSERVATIONS' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full">
-            <textarea
-              matInput
-              rows="4"
-              class="resize-none"
-              [formField]="configForm.observaciones"
-              [placeholder]="'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.OBSERVATIONS_PLACEHOLDER' | translate"
-            ></textarea>
-          </mat-form-field>
         </div>
-      </div>
-    </mat-dialog-content>
+      </mat-dialog-content>
 
-    <!-- Actions -->
-    <mat-dialog-actions>
-      <button mat-flat-button color="primary" [disabled]="configForm().invalid()" (click)="onApply()">
-        {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.APPLY_BUTTON' | translate }}
-      </button>
-      <button mat-stroked-button (click)="onCancel()">
-        {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.CANCEL_BUTTON' | translate }}
-      </button>
-    </mat-dialog-actions>
+      <!-- Actions -->
+      <mat-dialog-actions>
+        <button type="submit" mat-flat-button color="primary" [disabled]="configForm().invalid()">
+          {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.APPLY_BUTTON' | translate }}
+        </button>
+        <button type="button" mat-stroked-button (click)="onCancel()">
+          {{ 'TRIAL_PLANNING.ARMAMENT.MASSIVE_SHOTS_DIALOG.CANCEL_BUTTON' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None,
@@ -282,39 +286,49 @@ export class MassiveShotsConfigurationDialog {
     () => !!this.configModel().tipo && this.configModel().tipo?.toLowerCase() !== SpecimenType.Mortar,
   );
 
-  readonly configForm = form(this.configModel, (path) => {
-    validate(path.series, ({ value }) => {
-      const selected = value();
-      return !selected || selected.length === 0 ? requiredError() : undefined;
-    });
-    required(path.tipo);
-    required(path.denominacionArma);
-    required(path.denominacionTubo, {
-      when: ({ valueOf }) => {
-        const tipo = valueOf(path.tipo)?.toLowerCase();
-        return !!tipo && tipo !== SpecimenType.Mortar;
+  readonly configForm = form(
+    this.configModel,
+    (path) => {
+      validate(path.series, ({ value }) => {
+        const selected = value();
+        return !selected || selected.length === 0 ? requiredError() : undefined;
+      });
+      required(path.tipo);
+      required(path.denominacionArma);
+      required(path.denominacionTubo, {
+        when: ({ valueOf }) => {
+          const tipo = valueOf(path.tipo)?.toLowerCase();
+          return !!tipo && tipo !== SpecimenType.Mortar;
+        },
+      });
+      validate(path.instrumentado, ({ value, valueOf }) => {
+        const instrument = value();
+        const type = valueOf(path.tipo)?.toLowerCase();
+
+        if (type === SpecimenType.Mortar) return null;
+
+        return instrument ? null : { kind: 'required' };
+      });
+      required(path.vidaUtil, {
+        when: ({ valueOf }) => {
+          const tipo = valueOf(path.tipo)?.toLowerCase();
+          return !!tipo && tipo !== SpecimenType.Mortar;
+        },
+      });
+
+      disabled(path.denominacionArma, ({ valueOf }) => !valueOf(path.tipo) || this.isLoadingWeapons());
+      disabled(path.denominacionTubo, ({ valueOf }) => !valueOf(path.denominacionArma) || this.isLoadingTubes());
+      numericMin(path.vidaUtil, 0);
+      numericMax(path.vidaUtil, 100);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.dialogRef.close(this.configModel());
+        },
       },
-    });
-    validate(path.instrumentado, ({ value, valueOf }) => {
-      const instrument = value();
-      const type = valueOf(path.tipo)?.toLowerCase();
-
-      if (type === SpecimenType.Mortar) return null;
-
-      return instrument ? null : { kind: 'required' };
-    });
-    required(path.vidaUtil, {
-      when: ({ valueOf }) => {
-        const tipo = valueOf(path.tipo)?.toLowerCase();
-        return !!tipo && tipo !== SpecimenType.Mortar;
-      },
-    });
-
-    disabled(path.denominacionArma, ({ valueOf }) => !valueOf(path.tipo) || this.isLoadingWeapons());
-    disabled(path.denominacionTubo, ({ valueOf }) => !valueOf(path.denominacionArma) || this.isLoadingTubes());
-    numericMin(path.vidaUtil, 0);
-    numericMax(path.vidaUtil, 100);
-  });
+    },
+  );
 
   readonly weaponsOptions = computed<{ value: string; label: string }[]>(() => {
     const response = safeResourceValue(
@@ -409,7 +423,7 @@ export class MassiveShotsConfigurationDialog {
     this.dialogRef.close();
   }
 
-  onApply(): void {
-    this.dialogRef.close(this.configModel());
+  async onApply(): Promise<void> {
+    await submit(this.configForm);
   }
 }

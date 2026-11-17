@@ -396,13 +396,17 @@ describe('ComponentDetailFormComponent', () => {
       expect(component.detailForm().value().denomination).toBeDefined();
     });
 
-    it('should reject maxAllowedErrors values above 99', async () => {
+    it('should reject maxAllowedErrors values below 0 or above 99', async () => {
       const view = await render(ComponentDetailFormComponent, {
         providers: [...defaultProviders, provideTranslateService()],
-        componentInputs: { detail: { ...defaultDetail, maxAllowedErrors: 100 } },
+        componentInputs: { detail: { ...defaultDetail, maxAllowedErrors: -1 } },
       });
 
       const component = view.fixture.componentInstance;
+
+      expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
+
+      component.formModel.update((current) => ({ ...current, maxAllowedErrors: 100 }));
 
       expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
     });

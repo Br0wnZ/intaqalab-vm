@@ -11,12 +11,12 @@ import {
   untracked,
 } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
-import { applyEach, disabled, form, max, min, required, validate } from '@angular/forms/signals';
+import { apply, applyEach, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import type { MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Badge, ErrorState, Skeleton, SkeletonTable } from '@intaqalab/ui';
-import { RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
+import { RangePipe, TrialStatusLabelPipe, percentageSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
@@ -373,8 +373,7 @@ export class Armament implements OnInit {
         );
         disabled(shotPath.armament.isInstrumented, () => this.readonly());
         disabled(shotPath.armament.tubeLifePercentage, () => this.readonly());
-        min(shotPath.armament.tubeLifePercentage, 0);
-        max(shotPath.armament.tubeLifePercentage, 100);
+        apply(shotPath.armament.tubeLifePercentage, percentageSchema);
       });
     });
   });

@@ -272,6 +272,27 @@ describe('Armament', () => {
       expect(component.hasToBeDisabled()).toBe(false);
     });
 
+    it('should reject weapon tube life outside percentageSchema bounds [0, 100]', async () => {
+      const { view } = await runSetup();
+      const component = view.fixture.componentInstance;
+
+      component.armamentSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].armament.tubeLifePercentage = -1;
+        return updatedSeries;
+      });
+      view.fixture.detectChanges();
+      expect(component.isFormValid()).toBe(false);
+
+      component.armamentSignal.update((series) => {
+        const updatedSeries = structuredClone(series);
+        updatedSeries[0].shots[0].armament.tubeLifePercentage = 101;
+        return updatedSeries;
+      });
+      view.fixture.detectChanges();
+      expect(component.isFormValid()).toBe(false);
+    });
+
     it('should require weapon tube life when field is empty', async () => {
       const { view, loader, user } = await runSetup();
       await expandPanelByIndex(loader, 0);

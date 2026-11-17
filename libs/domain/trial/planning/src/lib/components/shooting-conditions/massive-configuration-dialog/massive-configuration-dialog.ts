@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { FormField, form, required, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required, submit, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -56,6 +56,7 @@ interface DialogData {
     MatIconModule,
     ValueTooltip,
     FormField,
+    FormRoot,
     IntaIconComponent,
     IntaDatePipe,
     TranslatePipe,
@@ -72,355 +73,363 @@ interface DialogData {
         {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TITLE' | translate }}
       </h2>
     </h2>
-    <mat-dialog-content>
-      <div class="grid grid-cols-2 gap-x-8 gap-y-4 pt-2">
-        <div class="flex flex-col gap-1">
-          <label for="bulk-series" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.SERIES_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="bulk-series"
-              clearable
-              multiple
-              [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.SERIES_PLACEHOLDER' | translate
-              "
-              [formField]="bulkForm.series"
-            >
-              @for (serie of data.series; track serie.seriesId) {
-                <mat-option [value]="serie.seriesId">{{ serie.seriesName }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-date" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_LABEL' | translate }}
-          </label>
-          <mat-form-field uiValueTooltip appearance="outline" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="bulk-date"
-              clearable
-              [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_PLACEHOLDER' | translate
-              "
-              [formField]="bulkForm.date"
-            >
-              @for (schedule of shootingConditionsService.getTrialSchedulesResource.value(); track schedule.date) {
-                <mat-option class="truncate" [value]="schedule.date">
-                  <span class="truncate">{{ schedule.date | intaDate }}</span>
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-impact" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.IMPACT_ZONE_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="bulk-impact"
-              clearable
-              [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.IMPACT_ZONE_PLACEHOLDER' | translate
-              "
-              [formField]="bulkForm.impactZone"
-            >
-              @for (impactZone of shootingConditionsService.getImpactZonesResource.value(); track impactZone.id) {
-                <mat-option [value]="impactZone.id">{{ impactZone.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-orient" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate
-            }}"
-            [opciones]="unitOptions.orientation"
-            [showLabel]="false"
-            [value]="configModel().orientation"
-            (valueChange)="onFieldChange('orientation', $event)"
-          >
-            <input id="bulk-orient" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-elev" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate }}"
-            [opciones]="unitOptions.elevation"
-            [showLabel]="false"
-            [value]="configModel().elevation"
-            (valueChange)="onFieldChange('elevation', $event)"
-          >
-            <input id="bulk-elev" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-angle" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}"
-            [opciones]="unitOptions.angle"
-            [showLabel]="false"
-            [value]="configModel().angle"
-            (valueChange)="onFieldChange('angle', $event)"
-          >
-            <input id="bulk-angle" inputSelectInput libNoNegativeValues libNoLeadingZeros libLocalDecimal />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-range" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}"
-            [opciones]="unitOptions.range"
-            [showLabel]="false"
-            [value]="configModel().range"
-            (valueChange)="onFieldChange('range', $event)"
-          >
-            <input id="bulk-range" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-height" class="text-xs font-bold text-slate-700 ml-1">
-            {{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
-            }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
-            }}"
-            [opciones]="unitOptions.functioningHeight"
-            [showLabel]="false"
-            [value]="configModel().functioningHeight"
-            (valueChange)="onFieldChange('functioningHeight', $event)"
-          >
-            <input id="bulk-height" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-powder" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate
-            }}"
-            [opciones]="unitOptions.powderWeight"
-            [showLabel]="false"
-            [value]="configModel().powderWeight"
-            (valueChange)="onFieldChange('powderWeight', $event)"
-          >
-            <input id="bulk-powder" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-proj" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate
-            }}"
-            [opciones]="unitOptions.projectileWeight"
-            [showLabel]="false"
-            [value]="configModel().projectileWeight"
-            (valueChange)="onFieldChange('projectileWeight', $event)"
-          >
-            <input id="bulk-proj" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-speed" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate }}
-          </label>
-          <ui-input-select
-            placeholder="0"
-            label="{{
-              'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate
-            }}"
-            [opciones]="unitOptions.nominalSpeed"
-            [showLabel]="false"
-            [value]="configModel().nominalSpeed"
-            (valueChange)="onFieldChange('nominalSpeed', $event)"
-          >
-            <input id="bulk-speed" inputSelectInput libNoNegativeValues libNoLeadingZeros />
-          </ui-input-select>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="bulk-target" class="text-xs font-bold text-slate-700 ml-1">
-            {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_LABEL' | translate }}
-          </label>
-          <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
-            <mat-select
-              id="bulk-target"
-              clearable
-              [placeholder]="
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
-              "
-              [formField]="bulkForm.targetType"
-            >
-              @for (targetType of shootingConditionsService.getTargetTypesResource.value(); track targetType.id) {
-                <mat-option [value]="targetType.id">{{ targetType.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        @if (hasTargetSelected()) {
+    <form class="contents" [formRoot]="bulkForm">
+      <mat-dialog-content>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4 pt-2">
           <div class="flex flex-col gap-1">
-            <label for="bulk-material" class="text-xs font-bold text-slate-700 ml-1">
-              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_LABEL' | translate }}
+            <label for="bulk-series" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.SERIES_LABEL' | translate }}
             </label>
-            <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-select
-                id="bulk-material"
+                id="bulk-series"
                 clearable
+                multiple
                 [placeholder]="
-                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
-                    | translate
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.SERIES_PLACEHOLDER' | translate
                 "
-                [formField]="bulkForm.material"
+                [formField]="bulkForm.series"
               >
-                @for (
-                  targetMaterial of shootingConditionsService.getTargetMaterialsResource.value();
-                  track targetMaterial.id
-                ) {
-                  <mat-option [value]="targetMaterial.id">{{ targetMaterial.label }}</mat-option>
+                @for (serie of data.series; track serie.seriesId) {
+                  <mat-option [value]="serie.seriesId">{{ serie.seriesName }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="bulk-dims" class="text-xs font-bold text-slate-700 ml-1">
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_LABEL' | translate
-              }}
+            <label for="bulk-date" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_LABEL' | translate }}
             </label>
-            <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+            <mat-form-field uiValueTooltip appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
-                id="bulk-dims"
+                id="bulk-date"
                 clearable
                 [placeholder]="
-                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_PLACEHOLDER'
-                    | translate
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DATE_PLACEHOLDER' | translate
                 "
-                [formField]="bulkForm.dimensions"
+                [formField]="bulkForm.date"
               >
-                @for (
-                  targetDimension of shootingConditionsService.getTargetDimensionsResource.value();
-                  track targetDimension.id
-                ) {
-                  <mat-option [value]="targetDimension.id">{{ targetDimension.label }}</mat-option>
+                @for (schedule of shootingConditionsService.getTrialSchedulesResource.value(); track schedule.date) {
+                  <mat-option class="truncate" [value]="schedule.date">
+                    <span class="truncate">{{ schedule.date | intaDate }}</span>
+                  </mat-option>
                 }
               </mat-select>
             </mat-form-field>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="bulk-thick" class="text-xs font-bold text-slate-700 ml-1">
-              {{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_LABEL' | translate
-              }}
+            <label for="bulk-impact" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.IMPACT_ZONE_LABEL' | translate }}
             </label>
             <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
               <mat-select
-                id="bulk-thick"
+                id="bulk-impact"
                 clearable
                 [placeholder]="
-                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_PLACEHOLDER'
-                    | translate
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.IMPACT_ZONE_PLACEHOLDER' | translate
                 "
-                [formField]="bulkForm.thickness"
+                [formField]="bulkForm.impactZone"
               >
-                @for (
-                  targetThickness of shootingConditionsService.getTargetThicknessesResource.value();
-                  track targetThickness.id
-                ) {
-                  <mat-option [value]="targetThickness.id">{{ targetThickness.name }}</mat-option>
+                @for (impactZone of shootingConditionsService.getImpactZonesResource.value(); track impactZone.id) {
+                  <mat-option [value]="impactZone.id">{{ impactZone.label }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="bulk-dist" class="text-xs font-bold text-slate-700 ml-1">
-              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate }}
+            <label for="bulk-orient" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate }}
             </label>
             <ui-input-select
               placeholder="0"
               label="{{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ORIENTATION_LABEL' | translate
               }}"
-              [opciones]="unitOptions.distance"
+              [opciones]="unitOptions.orientation"
               [showLabel]="false"
-              [value]="configModel().distance"
-              (valueChange)="onFieldChange('distance', $event)"
+              [value]="configModel().orientation"
+              (valueChange)="onFieldChange('orientation', $event)"
             >
-              <input id="bulk-dist" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-orient" inputSelectInput libNoNegativeValues libNoLeadingZeros />
             </ui-input-select>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label for="bulk-inclination" class="text-xs font-bold text-slate-700 ml-1">
-              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate }}
+            <label for="bulk-elev" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate }}
             </label>
             <ui-input-select
               placeholder="0"
               label="{{
-                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ELEVATION_LABEL' | translate
               }}"
-              [opciones]="unitOptions.targetInclination"
+              [opciones]="unitOptions.elevation"
               [showLabel]="false"
-              [value]="configModel().targetInclination"
-              (valueChange)="onFieldChange('targetInclination', $event)"
+              [value]="configModel().elevation"
+              (valueChange)="onFieldChange('elevation', $event)"
             >
-              <input id="bulk-inclination" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-elev" inputSelectInput libNoNegativeValues libNoLeadingZeros />
             </ui-input-select>
           </div>
-        }
-      </div>
-    </mat-dialog-content>
 
-    <mat-dialog-actions class="!flex !justify-center gap-4 !pb-6">
-      <button mat-flat-button [disabled]="isUpdating() || bulkForm().invalid()" (click)="apply()">
-        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' | translate }}
-      </button>
-      <button mat-stroked-button mat-dialog-close>
-        {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.CANCEL_BUTTON' | translate }}
-      </button>
-    </mat-dialog-actions>
+          <div class="flex flex-col gap-1">
+            <label for="bulk-angle" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.ANGLE_LABEL' | translate }}"
+              [opciones]="unitOptions.angle"
+              [showLabel]="false"
+              [value]="configModel().angle"
+              (valueChange)="onFieldChange('angle', $event)"
+            >
+              <input id="bulk-angle" inputSelectInput libNoNegativeValues libNoLeadingZeros libLocalDecimal />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-range" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.RANGE_LABEL' | translate }}"
+              [opciones]="unitOptions.range"
+              [showLabel]="false"
+              [value]="configModel().range"
+              (valueChange)="onFieldChange('range', $event)"
+            >
+              <input id="bulk-range" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-height" class="text-xs font-bold text-slate-700 ml-1">
+              {{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
+              }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.FUNCTIONING_HEIGHT_LABEL' | translate
+              }}"
+              [opciones]="unitOptions.functioningHeight"
+              [showLabel]="false"
+              [value]="configModel().functioningHeight"
+              (valueChange)="onFieldChange('functioningHeight', $event)"
+            >
+              <input id="bulk-height" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-powder" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.POWDER_WEIGHT_LABEL' | translate
+              }}"
+              [opciones]="unitOptions.powderWeight"
+              [showLabel]="false"
+              [value]="configModel().powderWeight"
+              (valueChange)="onFieldChange('powderWeight', $event)"
+            >
+              <input id="bulk-powder" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-proj" class="text-xs font-bold text-slate-700 ml-1">
+              {{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate
+              }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.PROJECTILE_WEIGHT_LABEL' | translate
+              }}"
+              [opciones]="unitOptions.projectileWeight"
+              [showLabel]="false"
+              [value]="configModel().projectileWeight"
+              (valueChange)="onFieldChange('projectileWeight', $event)"
+            >
+              <input id="bulk-proj" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-speed" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate }}
+            </label>
+            <ui-input-select
+              placeholder="0"
+              label="{{
+                'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.NOMINAL_SPEED_LABEL' | translate
+              }}"
+              [opciones]="unitOptions.nominalSpeed"
+              [showLabel]="false"
+              [value]="configModel().nominalSpeed"
+              (valueChange)="onFieldChange('nominalSpeed', $event)"
+            >
+              <input id="bulk-speed" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+            </ui-input-select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bulk-target" class="text-xs font-bold text-slate-700 ml-1">
+              {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_LABEL' | translate }}
+            </label>
+            <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+              <mat-select
+                id="bulk-target"
+                clearable
+                [placeholder]="
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_PLACEHOLDER' | translate
+                "
+                [formField]="bulkForm.targetType"
+              >
+                @for (targetType of shootingConditionsService.getTargetTypesResource.value(); track targetType.id) {
+                  <mat-option [value]="targetType.id">{{ targetType.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          @if (hasTargetSelected()) {
+            <div class="flex flex-col gap-1">
+              <label for="bulk-material" class="text-xs font-bold text-slate-700 ml-1">
+                {{
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_LABEL' | translate
+                }}
+              </label>
+              <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="bulk-material"
+                  clearable
+                  [placeholder]="
+                    'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_MATERIAL_PLACEHOLDER'
+                      | translate
+                  "
+                  [formField]="bulkForm.material"
+                >
+                  @for (
+                    targetMaterial of shootingConditionsService.getTargetMaterialsResource.value();
+                    track targetMaterial.id
+                  ) {
+                    <mat-option [value]="targetMaterial.id">{{ targetMaterial.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="bulk-dims" class="text-xs font-bold text-slate-700 ml-1">
+                {{
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_LABEL' | translate
+                }}
+              </label>
+              <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="bulk-dims"
+                  clearable
+                  [placeholder]="
+                    'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_DIMENSIONS_PLACEHOLDER'
+                      | translate
+                  "
+                  [formField]="bulkForm.dimensions"
+                >
+                  @for (
+                    targetDimension of shootingConditionsService.getTargetDimensionsResource.value();
+                    track targetDimension.id
+                  ) {
+                    <mat-option [value]="targetDimension.id">{{ targetDimension.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="bulk-thick" class="text-xs font-bold text-slate-700 ml-1">
+                {{
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_LABEL' | translate
+                }}
+              </label>
+              <mat-form-field appearance="outline" [subscriptSizing]="'dynamic'">
+                <mat-select
+                  id="bulk-thick"
+                  clearable
+                  [placeholder]="
+                    'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.TARGET_THICKNESS_PLACEHOLDER'
+                      | translate
+                  "
+                  [formField]="bulkForm.thickness"
+                >
+                  @for (
+                    targetThickness of shootingConditionsService.getTargetThicknessesResource.value();
+                    track targetThickness.id
+                  ) {
+                    <mat-option [value]="targetThickness.id">{{ targetThickness.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="bulk-dist" class="text-xs font-bold text-slate-700 ml-1">
+                {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate }}
+              </label>
+              <ui-input-select
+                placeholder="0"
+                label="{{
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.DISTANCE_LABEL' | translate
+                }}"
+                [opciones]="unitOptions.distance"
+                [showLabel]="false"
+                [value]="configModel().distance"
+                (valueChange)="onFieldChange('distance', $event)"
+              >
+                <input id="bulk-dist" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              </ui-input-select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="bulk-inclination" class="text-xs font-bold text-slate-700 ml-1">
+                {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate }}
+              </label>
+              <ui-input-select
+                placeholder="0"
+                label="{{
+                  'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.INCLINATION_LABEL' | translate
+                }}"
+                [opciones]="unitOptions.targetInclination"
+                [showLabel]="false"
+                [value]="configModel().targetInclination"
+                (valueChange)="onFieldChange('targetInclination', $event)"
+              >
+                <input id="bulk-inclination" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              </ui-input-select>
+            </div>
+          }
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions class="!flex !justify-center gap-4 !pb-6">
+        <button type="submit" mat-flat-button [disabled]="isUpdating() || bulkForm().invalid()">
+          {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' | translate }}
+        </button>
+        <button type="button" mat-stroked-button mat-dialog-close>
+          {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.CANCEL_BUTTON' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
   `,
   styles: [
     `
@@ -469,30 +478,40 @@ export class MassiveConfigurationDialog {
     nominalSpeed: { value: '', unit: '' },
   });
 
-  readonly bulkForm = form(this.configModel, (f) => {
-    numericMin(f.orientation.value, 0);
-    numericMax(f.orientation.value, MAX_ANGULAR_VALUE);
-    numericMin(f.elevation.value, 0);
-    numericMax(f.elevation.value, MAX_ANGULAR_VALUE);
-    numericMin(f.angle.value, 0);
-    numericMax(f.angle.value, MAX_ANGULAR_VALUE);
-    numericMin(f.targetInclination.value, 0);
-    numericMax(f.targetInclination.value, MAX_ANGULAR_VALUE);
-    numericMax(f.distance.value, MAX_DISTANCE_VALUE);
-    numericMax(f.range.value, MAX_DISTANCE_VALUE);
-    numericMax(f.functioningHeight.value, MAX_DISTANCE_VALUE);
-    numericMax(f.powderWeight.value, MAX_WEIGHT_VALUE);
-    numericMax(f.projectileWeight.value, MAX_WEIGHT_VALUE);
-    numericMax(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
+  readonly bulkForm = form(
+    this.configModel,
+    (f) => {
+      numericMin(f.orientation.value, 0);
+      numericMax(f.orientation.value, MAX_ANGULAR_VALUE);
+      numericMin(f.elevation.value, 0);
+      numericMax(f.elevation.value, MAX_ANGULAR_VALUE);
+      numericMin(f.angle.value, 0);
+      numericMax(f.angle.value, MAX_ANGULAR_VALUE);
+      numericMin(f.targetInclination.value, 0);
+      numericMax(f.targetInclination.value, MAX_ANGULAR_VALUE);
+      numericMax(f.distance.value, MAX_DISTANCE_VALUE);
+      numericMax(f.range.value, MAX_DISTANCE_VALUE);
+      numericMax(f.functioningHeight.value, MAX_DISTANCE_VALUE);
+      numericMax(f.powderWeight.value, MAX_WEIGHT_VALUE);
+      numericMax(f.projectileWeight.value, MAX_WEIGHT_VALUE);
+      numericMax(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
 
-    validate(f.series, ({ value }) => {
-      const selected = value();
-      return !selected || selected.length === 0
-        ? { kind: 'required-series', message: 'Debe haber al menos una serie seleccionada' }
-        : undefined;
-    });
-    required(f.impactZone);
-  });
+      validate(f.series, ({ value }) => {
+        const selected = value();
+        return !selected || selected.length === 0
+          ? { kind: 'required-series', message: 'Debe haber al menos una serie seleccionada' }
+          : undefined;
+      });
+      required(f.impactZone);
+    },
+    {
+      submission: {
+        action: async () => {
+          this.#applyConfiguration();
+        },
+      },
+    },
+  );
 
   constructor() {
     const units = this.shootingConditionsService.conditionsResource.value()?.units;
@@ -532,7 +551,11 @@ export class MassiveConfigurationDialog {
     }));
   }
 
-  apply() {
+  async apply(): Promise<void> {
+    await submit(this.bulkForm);
+  }
+
+  #applyConfiguration(): void {
     const config = this.configModel();
     const selectedSeriesIds = new Set(config.series);
 

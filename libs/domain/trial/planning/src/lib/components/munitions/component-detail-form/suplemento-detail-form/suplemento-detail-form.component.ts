@@ -1,23 +1,14 @@
 import { TitleCasePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import type { ElementRef } from '@angular/core';
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  input,
-  linkedSignal,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
-import { FormField, disabled, form, max, required, validate } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, input, linkedSignal, output, signal, viewChild } from '@angular/core';
+import { FormField, apply, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type {
@@ -253,7 +244,7 @@ export class SuplementoDetailFormComponent {
     disabled(f.batch, () => this.readonly());
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
-    max(f.maxAllowedErrors, 99);
+    apply(f.maxAllowedErrors, boundedNumberSchema(0, 99));
     disabled(f.observations, () => this.readonly());
     disabled(f.quantity, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {

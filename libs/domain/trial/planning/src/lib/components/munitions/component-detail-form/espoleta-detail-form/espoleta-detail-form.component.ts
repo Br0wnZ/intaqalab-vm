@@ -12,13 +12,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, max, required, validate } from '@angular/forms/signals';
+import { FormField, apply, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../../+state/munitions.store';
@@ -293,7 +293,7 @@ export class EspoletaDetailFormComponent {
     disabled(f.clientNumber, () => this.readonly());
     disabled(f.fuseMeasurement, () => this.readonly());
     disabled(f.maxAllowedErrors, () => this.readonly());
-    max(f.maxAllowedErrors, 99);
+    apply(f.maxAllowedErrors, boundedNumberSchema(0, 99));
     disabled(f.observations, () => this.readonly());
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();

@@ -1,19 +1,19 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, form, required, submit } from '@angular/forms/signals';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import type { FireTrial } from '@intaqalab/models';
-import { IntaIconComponent } from '@intaqalab/ui';
+import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
-import { numericMax, numericMin } from '../../../utils/numeric-validators';
 import type { AddNewSerieRequest } from '../../../utils-models/series-and-shots.model';
 import type { UpsertTrialSerieRequest } from '../../../utils-models/upsert-trial-serie-info.model';
+import { numericMax, numericMin } from '../../../utils/numeric-validators';
 
 type Upsert = {
   trialId: FireTrial['id'];
@@ -34,7 +34,9 @@ type Upsert = {
     MatButtonModule,
     MatIconModule,
     FormField,
+    FormRoot,
     IntaIconComponent,
+    SaveButton,
     NoNegativeValuesDirective,
   ],
   providers: [SeriesAndShotsStore],
@@ -49,7 +51,7 @@ type Upsert = {
     </h2>
 
     <mat-dialog-content>
-      <div class="flex flex-col gap-4">
+      <form class="flex flex-col gap-4" [formRoot]="serieForm">
         <div class="flex flex-col gap-1">
           <label for="nombre-input">
             {{ 'TRIAL_PLANNING.UPSERT_SERIE_DIALOG.SERIE_NAME_LABEL' | translate }}
@@ -99,19 +101,20 @@ type Upsert = {
         </div>
 
         <div class="flex justify-center gap-4 mt-4">
-          <button type="button" mat-flat-button [disabled]="serieForm().invalid()" (click)="handleSubmit($event)">
-            {{
-              isEditMode()
-                ? ('TRIAL_PLANNING.UPSERT_SERIE_DIALOG.UPDATE' | translate)
-                : ('TRIAL_PLANNING.UPSERT_SERIE_DIALOG.SAVE' | translate)
-            }}
-          </button>
+          <ui-save-button
+            buttonType="submit"
+            [label]="
+              isEditMode() ? 'TRIAL_PLANNING.UPSERT_SERIE_DIALOG.UPDATE' : 'TRIAL_PLANNING.UPSERT_SERIE_DIALOG.SAVE'
+            "
+            [isSaving]="serieForm().submitting() || store.isAddingSerie() || store.isUpdatingSerie()"
+            [isDisabled]="serieForm().invalid()"
+          />
 
           <button type="button" mat-stroked-button [mat-dialog-close]="false">
             {{ 'TRIAL_PLANNING.UPSERT_SERIE_DIALOG.CANCEL' | translate }}
           </button>
         </div>
-      </div>
+      </form>
     </mat-dialog-content>
   `,
   styles: `
@@ -137,14 +140,40 @@ export class UpsertSerieDialog {
     observations: this.data.observations ?? '',
   });
 
-  readonly serieForm = form(this.serieModel, (f) => {
-    required(f.name);
-    if (!this.data.isEditing) {
-      required(f.numberOfShots);
-      numericMin(f.numberOfShots, 1);
-      numericMax(f.numberOfShots, 20);
-    }
-  });
+  readonly serieForm = form(
+    this.serieModel,
+    (f) => {
+      required(f.name);
+      if (!this.data.isEditing) {
+        required(f.numberOfShots);
+        numericMin(f.numberOfShots, 1);
+        numericMax(f.numberOfShots, 20);
+      }
+    },
+    {
+      submission: {
+        action: async (formTree) => {
+          const value = formTree().value();
+          if (this.isEditMode()) {
+            const data: UpsertTrialSerieRequest = {
+              id: this.data.serieId ?? '',
+              name: value.name,
+              observations: value.observations,
+            };
+            this.store.updateSerie(data);
+          } else {
+            const data: AddNewSerieRequest = {
+              trialId: this.data.trialId,
+              name: value.name,
+              numberOfShots: Number(value.numberOfShots),
+              observations: value.observations,
+            };
+            this.store.addSerie(data);
+          }
+        },
+      },
+    },
+  );
 
   constructor() {
     effect(() => {
@@ -157,26 +186,4 @@ export class UpsertSerieDialog {
       }
     });
   }
-
-  readonly handleSubmit = async (event: Event) => {
-    event.preventDefault();
-    await submit(this.serieForm, async (form) => {
-      if (this.isEditMode()) {
-        const data: UpsertTrialSerieRequest = {
-          id: this.data.serieId as string,
-          name: form().value().name,
-          observations: form().value().observations as string,
-        };
-        this.store.updateSerie(data);
-      } else {
-        const data: AddNewSerieRequest = {
-          trialId: this.data.trialId,
-          name: form().value().name,
-          numberOfShots: Number(form().value().numberOfShots),
-          observations: form().value().observations,
-        };
-        this.store.addSerie(data);
-      }
-    });
-  };
 }

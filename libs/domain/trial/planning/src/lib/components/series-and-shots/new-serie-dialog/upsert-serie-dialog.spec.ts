@@ -1,5 +1,6 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { createMockSeriesAndShotsStore } from '@intaqalab/utils';
 import { createMockMatDialogRef } from '@intaqalab/utils/testing/dialog-test-helpers';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -172,6 +173,31 @@ describe('UpsertSerieDialog', () => {
           id: 'serie-1',
           name: 'Updated Name',
           observations: 'Old notes',
+        }),
+      );
+    });
+
+    it('should configure FormRoot with novalidate, submit button type, and submit on Enter key', async () => {
+      await renderDialog({ ...defaultData, isEditing: false });
+      const user = userEvent.setup();
+
+      const formEl = fixture.debugElement.query(By.css('form')).nativeElement as HTMLFormElement;
+      expect(formEl).toHaveAttribute('novalidate');
+
+      const submitButton = screen.getByRole('button', { name: 'TRIAL_PLANNING.UPSERT_SERIE_DIALOG.SAVE' });
+      expect(submitButton).toHaveAttribute('type', 'submit');
+
+      const nameInput = screen.getByLabelText('TRIAL_PLANNING.UPSERT_SERIE_DIALOG.SERIE_NAME_LABEL');
+      const shotsInput = screen.getByLabelText('TRIAL_PLANNING.UPSERT_SERIE_DIALOG.NUMBER_OF_SHOTS_LABEL');
+
+      await user.type(shotsInput, '4');
+      await user.type(nameInput, 'Enter Serie{Enter}');
+
+      expect(mockStore.addSerie).toHaveBeenCalledWith(
+        expect.objectContaining({
+          trialId: 'trial-123',
+          name: 'Enter Serie',
+          numberOfShots: 4,
         }),
       );
     });

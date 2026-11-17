@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { createMockResource } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -222,5 +223,40 @@ describe('MassiveConfigurationDialog', () => {
       }));
       expect(component.bulkForm().invalid()).toBe(true);
     }
+  });
+
+  it('should configure FormRoot with novalidate and submit on apply click', async () => {
+    const { view, loader } = await renderDialog();
+    const component = view.fixture.componentInstance;
+
+    const formEl = view.fixture.debugElement.query(By.css('form')).nativeElement as HTMLFormElement;
+    expect(formEl).toHaveAttribute('novalidate');
+
+    const applyButtonEl = screen.getByRole('button', {
+      name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON',
+    });
+    const cancelButtonEl = screen.getByRole('button', {
+      name: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.CANCEL_BUTTON',
+    });
+    expect(applyButtonEl).toHaveAttribute('type', 'submit');
+    expect(cancelButtonEl).toHaveAttribute('type', 'button');
+
+    component.configModel.update((config) => ({
+      ...config,
+      series: ['serie-1'],
+      impactZone: 'zone-1',
+    }));
+    view.fixture.detectChanges();
+
+    const applyBtn = await loader.getHarness(
+      MatButtonHarness.with({ text: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' }),
+    );
+    await applyBtn.click();
+
+    expect(mockShootingConditionsService.updateShootingConditions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        trialId: 'trial-123',
+      }),
+    );
   });
 });

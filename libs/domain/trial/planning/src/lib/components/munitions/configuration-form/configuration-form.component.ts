@@ -13,7 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { FormField, disabled, form, max, min, required, validate } from '@angular/forms/signals';
+import { FormField, apply, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective } from '@intaqalab/utils';
+import { NoLeadingZerosDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
@@ -565,8 +565,7 @@ export class ConfigurationFormComponent {
       }
       return undefined;
     });
-    min(f.maxAllowedErrors, 0);
-    max(f.maxAllowedErrors, 99);
+    apply(f.maxAllowedErrors, boundedNumberSchema(0, 99));
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return undefined;

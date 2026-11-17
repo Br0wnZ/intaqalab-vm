@@ -58,7 +58,8 @@ describe('CargaDetailFormComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTestingEnvironment(),
-        { provide: ShootingConditionsService, useValue: mockShootingConditionsService }, provideTranslateService(),
+        { provide: ShootingConditionsService, useValue: mockShootingConditionsService },
+        provideTranslateService(),
       ],
       componentInputs: {
         detail: createEmptyComponentDetail('carga de proyección'),
@@ -81,8 +82,12 @@ describe('CargaDetailFormComponent', () => {
     expect(await selects[1].isDisabled()).toBe(true);
   });
 
-  it('should reject maxAllowedErrors values above 99', async () => {
+  it('should reject maxAllowedErrors values below 0 or above 99', async () => {
     const { component } = await renderForm();
+    component.formModel.update((current) => ({ ...current, maxAllowedErrors: -1 }));
+
+    expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
+
     component.formModel.update((current) => ({ ...current, maxAllowedErrors: 100 }));
 
     expect(component.detailForm.maxAllowedErrors().valid()).toBe(false);
