@@ -1,12 +1,4 @@
-import {
-  Component,
-  ViewEncapsulation,
-  computed,
-  input,
-  linkedSignal,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, ViewEncapsulation, computed, input, linkedSignal, output, signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';

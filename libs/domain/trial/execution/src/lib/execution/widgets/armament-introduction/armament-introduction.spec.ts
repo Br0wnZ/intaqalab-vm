@@ -698,10 +698,13 @@ describe('ArmamentIntroductionComponent', () => {
     patchState(unprotected(store), { fireTrial: inProgressTrialForm });
     await manualChangeDetection(async () => {
       fixture.detectChanges();
-      const selects = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatSelectHarness);
-      const serialSelect = selects[3];
-      if (!serialSelect) throw new Error('Weapon serial selector not found');
-      expect(await serialSelect.getValueText()).toBe('7323');
+      const loader = TestbedHarnessEnvironment.loader(fixture);
+      const serialSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#armament-weapon-serial' }));
+      // The model can be ready before MatSelect's deferred selection reaches the DOM.
+      await vi.waitFor(async () => {
+        fixture.detectChanges();
+        expect(await serialSelect.getValueText()).toBe('7323');
+      });
       await serialSelect.open();
       fixture.detectChanges();
       for (const weapon of weapons) {
@@ -709,8 +712,7 @@ describe('ArmamentIntroductionComponent', () => {
       }
       await user.click(screen.getByRole('option', { name: '14398' }));
       fixture.detectChanges();
-      const tubeSerialSelect = selects[5];
-      if (!tubeSerialSelect) throw new Error('Tube serial selector not found');
+      const tubeSerialSelect = await loader.getHarness(MatSelectHarness.with({ selector: '#armament-tube-serial' }));
       expect(await tubeSerialSelect.getValueText()).toBe('SN-T-100');
       await tubeSerialSelect.open();
       fixture.detectChanges();

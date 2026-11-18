@@ -188,13 +188,7 @@ type FilterForm = {
               {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MIN' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input
-                id="quantityMin"
-                type="number"
-                matInput
-                libNoNegativeValues
-                [formField]="form.quantityMin"
-              />
+              <input id="quantityMin" type="number" matInput libNoNegativeValues [formField]="form.quantityMin" />
             </mat-form-field>
             @if (form.quantityMin().touched() && form.quantityMin().errors()) {
               @for (error of form.quantityMin().errors(); track error.kind) {
@@ -207,13 +201,7 @@ type FilterForm = {
               {{ 'WHAREHOUSE_MANAGMENT.MOVEMENTS.FILTER.QUANTITY_MAX' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input
-                id="quantityMax"
-                type="number"
-                matInput
-                libNoNegativeValues
-                [formField]="form.quantityMax"
-              />
+              <input id="quantityMax" type="number" matInput libNoNegativeValues [formField]="form.quantityMax" />
             </mat-form-field>
             @if (form.quantityMax().touched() && form.quantityMax().errors()) {
               @for (error of form.quantityMax().errors(); track error.kind) {

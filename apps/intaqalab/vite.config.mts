@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_MOCKS_AUTH': JSON.stringify(process.env['VITE_MOCKS_AUTH'] ?? ''),
     },
     test: {
+      fsModuleCache: false,
       name: 'intaqalab',
       watch: false,
       globals: true,

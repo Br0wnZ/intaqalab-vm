@@ -10,6 +10,7 @@ export default defineConfig(() => ({
   cacheDir: '../../../node_modules/.vite/libs/shared/config',
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   test: {
+    fsModuleCache: false,
     name: 'config',
     watch: false,
     globals: true,

@@ -10,7 +10,9 @@ export default defineConfig(() => ({
   cacheDir: '../../../node_modules/.vite/libs/shared/models',
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   test: {
+    fsModuleCache: false,
     name: 'models',
+    passWithNoTests: true,
     watch: false,
     globals: true,
     environment: 'jsdom',

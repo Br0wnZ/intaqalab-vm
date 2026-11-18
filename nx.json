@@ -70,25 +70,7 @@
         "testMode": "watch",
         "testTargetName": "test"
       },
-      "include": [
-        "apps/intaqalab/**/*",
-        "libs/core/**/*",
-        "libs/domain/admin/**/*",
-        "libs/domain/calendar-trials/**/*",
-        "libs/domain/event-log/**/*",
-        "libs/domain/master-data/**/*",
-        "libs/domain/trial/data-access-planning/**/*",
-        "libs/domain/trial/execution/**/*",
-        "libs/domain/trial/planning/**/*",
-        "libs/domain/trial/trial-management/**/*",
-        "libs/domain/warehouse-management/**/*",
-        "libs/pruebas/**/*",
-        "libs/shared/config/**/*",
-        "libs/shared/data-access/**/*",
-        "libs/shared/theme/**/*",
-        "libs/shared/ui/**/*",
-        "libs/shared/utils/**/*"
-      ]
+      "include": ["apps/**/*", "libs/**/*", "mocks/**/*"]
     }
   ],
   "generators": {

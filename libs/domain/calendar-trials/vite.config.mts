@@ -24,6 +24,7 @@ export default defineConfig(() => ({
   //  plugins: [ nxViteTsPaths() ],
   // },
   test: {
+    fsModuleCache: false,
     name: 'domain-calendar-trials',
     watch: false,
     globals: true,

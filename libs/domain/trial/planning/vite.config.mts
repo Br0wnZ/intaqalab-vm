@@ -14,6 +14,7 @@ export default defineConfig(() => ({
   //  plugins: [ nxViteTsPaths() ],
   // },
   test: {
+    fsModuleCache: false,
     name: 'trial-planning',
     watch: false,
     globals: true,

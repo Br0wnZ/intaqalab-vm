@@ -60,13 +60,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
               {{ 'WHAREHOUSE_MANAGMENT.DIALOG_RETIRE.QUANTITY_LABEL' | translate }}
             </label>
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <input
-                id="quantiy"
-                type="number"
-                matInput
-                libNoNegativeValues
-                [formField]="form.quantity"
-              />
+              <input id="quantiy" type="number" matInput libNoNegativeValues [formField]="form.quantity" />
             </mat-form-field>
           </div>
           <ui-inta-signal-select

@@ -217,14 +217,27 @@ npm run test:admin:watch
 UI interactiva:
 
 ```bash id="i2rx8n"
+npm run vitest:ui
 npm run test:admin:ui
 ```
 
-### Ejecutar múltiples proyectos
+El primer comando muestra todos los proyectos con un máximo de dos workers; el segundo limita la UI a `admin`. La caché de módulos en disco de Vitest se desactiva explícitamente en cada configuración para evitar el desbordamiento de pila al recuperar sourcemaps de Angular en Vitest 5.1. La cobertura permanece habilitada en la UI global.
+
+### Ejecutar la suite completa
 
 ```bash id="rbsy0n"
 npm run test:all
 ```
+
+Nx descubre todos los proyectos con target `test`, incluidos aplicación, dominios y mocks. Los proyectos se ejecutan secuencialmente y cada uno utiliza como máximo dos workers para limitar el consumo de memoria.
+
+En CI, ejecutar la misma suite sin reutilizar resultados de la caché de Nx:
+
+```bash
+npm run test:ci
+```
+
+Los jobs `unit-test-*` de GitLab ejecutan este comando antes del build. Una suite fallida devuelve un código de salida distinto de cero y bloquea el job.
 
 ### Cobertura
 

@@ -373,8 +373,20 @@ describe('LocaleDecimalInputDirective', () => {
 
   describe('Signal Forms [formField] + matInput integration', () => {
     it.each([
-      { locale: 'es-ES' as const, formatted: '12.345,6789', editStr: '12345,6789', typed: '98765,4321', expectedFormatted: '98.765,4321' },
-      { locale: 'en-US' as const, formatted: '12,345.6789', editStr: '12345.6789', typed: '98765.4321', expectedFormatted: '98,765.4321' },
+      {
+        locale: 'es-ES' as const,
+        formatted: '12.345,6789',
+        editStr: '12345,6789',
+        typed: '98765,4321',
+        expectedFormatted: '98.765,4321',
+      },
+      {
+        locale: 'en-US' as const,
+        formatted: '12,345.6789',
+        editStr: '12345.6789',
+        typed: '98765.4321',
+        expectedFormatted: '98,765.4321',
+      },
     ])(
       'syncs model, focus/blur formatting, touched state, and zero rounding in $locale',
       async ({ locale, formatted, editStr, typed, expectedFormatted }) => {

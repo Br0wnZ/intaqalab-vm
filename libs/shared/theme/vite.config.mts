@@ -14,7 +14,9 @@ export default defineConfig(() => ({
   //  plugins: [ nxViteTsPaths() ],
   // },
   test: {
+    fsModuleCache: false,
     name: 'theme',
+    passWithNoTests: true,
     watch: false,
     globals: true,
     environment: 'jsdom',

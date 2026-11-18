@@ -73,21 +73,21 @@ You are a Senior Software Architect and Lead Developer specializing in TypeScrip
 
 When modernizing legacy code:
 
-| Legacy Code (❌ Remove)                        | Angular 22+ Standard (✅ Apply)                      |
-| :--------------------------------------------- | :--------------------------------------------------- |
-| `BehaviorSubject`, `Observable`, `async` pipe  | `signal()`, `computed()`, `linkedSignal()`           |
-| `*ngIf`, `*ngFor`, `*ngSwitch`, `CommonModule` | `@if`, `@for (track item.id)`, `@switch`             |
-| `FormBuilder`, `FormGroup`, `[formGroup]`      | `form()`, `[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `[formField]` |
-| `constructor(private s: Service)`              | `readonly #s = inject(Service)` (`injectAsync()` + `onIdle()` for heavy services) |
-| `@Injectable({ providedIn: 'root' })`          | `@Service()` from `@angular/core`                    |
-| `changeDetection: ChangeDetectionStrategy.OnPush` | Omit (default in Angular 22)                      |
-| `@ViewChild()`, `@ContentChild()`              | `viewChild()`, `contentChild()` (ESLint banned)      |
-| `@angular/animations`, `NoopAnimationsModule`  | Native `animate.enter` / `animate.leave` (ESLint banned) |
-| `HttpClient.get().subscribe()`                 | `httpResource()` + Signal Trigger Pattern (GET only) |
-| `httpResource` used for mutations (POST/PUT)   | `HttpClient` + `firstValueFrom` (Promise, ADR-020)   |
-| `dialog.afterClosed().subscribe()`             | `await firstValueFrom(dialogRef.afterClosed())`      |
-| Massive mapping inside component `.ts`         | Extract to `<feature>-mapper.service.ts`             |
-| `event.stopPropagation()` in component method  | `uiStopClick` directive (`StopClick` from UI)        |
+| Legacy Code (❌ Remove)                           | Angular 22+ Standard (✅ Apply)                                                            |
+| :------------------------------------------------ | :----------------------------------------------------------------------------------------- |
+| `BehaviorSubject`, `Observable`, `async` pipe     | `signal()`, `computed()`, `linkedSignal()`                                                 |
+| `*ngIf`, `*ngFor`, `*ngSwitch`, `CommonModule`    | `@if`, `@for (track item.id)`, `@switch`                                                   |
+| `FormBuilder`, `FormGroup`, `[formGroup]`         | `form()`, `[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `[formField]` |
+| `constructor(private s: Service)`                 | `readonly #s = inject(Service)` (`injectAsync()` + `onIdle()` for heavy services)          |
+| `@Injectable({ providedIn: 'root' })`             | `@Service()` from `@angular/core`                                                          |
+| `changeDetection: ChangeDetectionStrategy.OnPush` | Omit (default in Angular 22)                                                               |
+| `@ViewChild()`, `@ContentChild()`                 | `viewChild()`, `contentChild()` (ESLint banned)                                            |
+| `@angular/animations`, `NoopAnimationsModule`     | Native `animate.enter` / `animate.leave` (ESLint banned)                                   |
+| `HttpClient.get().subscribe()`                    | `httpResource()` + Signal Trigger Pattern (GET only)                                       |
+| `httpResource` used for mutations (POST/PUT)      | `HttpClient` + `firstValueFrom` (Promise, ADR-020)                                         |
+| `dialog.afterClosed().subscribe()`                | `await firstValueFrom(dialogRef.afterClosed())`                                            |
+| Massive mapping inside component `.ts`            | Extract to `<feature>-mapper.service.ts`                                                   |
+| `event.stopPropagation()` in component method     | `uiStopClick` directive (`StopClick` from UI)                                              |
 
 ---
 

@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [],
   test: {
     globals: true,
+    // Vitest 5.1 overflows while extracting large cached Angular source maps.
+    // Cached Angular JIT style imports also lose their virtual-module context.
+    fsModuleCache: false,
     server: {
       deps: {
         inline: [/@intaqalab\//],

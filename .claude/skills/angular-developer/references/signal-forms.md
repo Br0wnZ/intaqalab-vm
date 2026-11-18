@@ -11,16 +11,20 @@ You can import the following from `@angular/forms/signals`:
 ```ts
 import {
   FormField,
-  applyEach, // Schema helpers
+  applyEach,
+  // Schema helpers
   applyWhen,
-  debounce, // Rules for field state
+  debounce,
+  // Rules for field state
   disabled,
   form,
-  hidden, // Metadata
+  hidden,
+  // Metadata
   metadata,
   readonly,
   schema,
-  submit, // Custom validation
+  submit,
+  // Custom validation
   validate,
   validateHttp,
   validateStandardSchema,
@@ -540,7 +544,18 @@ form(
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { FormField, FormRoot, applyEach, email, form, hidden, min, required, submit, validate } from '@angular/forms/signals';
+import {
+  FormField,
+  FormRoot,
+  applyEach,
+  email,
+  form,
+  hidden,
+  min,
+  required,
+  submit,
+  validate,
+} from '@angular/forms/signals';
 
 @Component({
   selector: 'app-root',

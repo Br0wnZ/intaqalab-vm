@@ -10,6 +10,7 @@ export default defineConfig(() => ({
   cacheDir: '../node_modules/.vite/mocks',
   plugins: [nxReadySignal()],
   test: {
+    fsModuleCache: false,
     name: 'mock-data',
     watch: false,
     globals: true,

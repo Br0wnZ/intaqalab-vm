@@ -10,7 +10,9 @@ export default defineConfig(() => ({
   cacheDir: '../../node_modules/.vite/libs/demos',
   plugins: [angular({ tsconfig: './tsconfig.spec.json' })],
   test: {
+    fsModuleCache: false,
     name: 'demos',
+    passWithNoTests: true,
     watch: false,
     globals: true,
     environment: 'jsdom',

@@ -84,7 +84,8 @@ const setup = async (options: SetupOptions = {}) => {
       provideHttpClientTesting(),
       provideTestingEnvironment(),
       { provide: PlanningGeneralDataStore, useValue: mockStore },
-      { provide: AuthService, useValue: { userRoles: signal(roles) } }, provideTranslateService(),
+      { provide: AuthService, useValue: { userRoles: signal(roles) } },
+      provideTranslateService(),
     ],
   });
 
@@ -164,7 +165,8 @@ describe('PlanningGeneralDataFormComponent', () => {
           provideHttpClientTesting(),
           provideTestingEnvironment(),
           { provide: PlanningGeneralDataStore, useValue: mockStore },
-          { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } }, provideTranslateService(),
+          { provide: AuthService, useValue: { userRoles: signal(['INTAQALAB_ADMIN']) } },
+          provideTranslateService(),
         ],
       });
 
