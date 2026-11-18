@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
+import { NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../../+state/munitions.store';
@@ -38,7 +38,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatSelectModule,
     MatSelectClearable,
     FormField,
-    NoLeadingZerosDirective,
     NoNegativeValuesDirective,
     NoNegativeValuesDirective,
     TranslatePipe,
@@ -176,7 +175,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             id="espoleta-measurement"
             matInput
             type="number"
-            libNoLeadingZeros
             libNoNegativeValues
             [formField]="detailForm.fuseMeasurement"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FUZE_GRADUATION' | translate"
@@ -197,7 +195,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             id="espoleta-errors"
             matInput
             type="number"
-            libNoLeadingZeros
             libNoNegativeValues
             [formField]="detailForm.maxAllowedErrors"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"

@@ -1,5 +1,15 @@
 import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, FormRoot, disabled, form, required, requiredError, submit, validate } from '@angular/forms/signals';
+import {
+  FormField,
+  FormRoot,
+  apply,
+  disabled,
+  form,
+  required,
+  requiredError,
+  submit,
+  validate,
+} from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,13 +18,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { safeResourceValue } from '@intaqalab/utils';
+import { percentageSchema, safeResourceValue } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentService } from '../../services/armament-service';
 import type { MassiveConfigData, MassiveShotsConfigurationDialogData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
-import { numericMax, numericMin } from '../../utils/numeric-validators';
+
+type MassiveConfigFormModel = Omit<MassiveConfigData, 'vidaUtil'> & {
+  vidaUtil: number | null;
+};
 
 @Component({
   selector: 'inta-massive-shots-configuration-dialog',
@@ -246,13 +259,13 @@ export class MassiveShotsConfigurationDialog {
     { value: SpecimenType.Mortar, label: 'SPECIMENS_MANAGMENT_DIALOG.TYPE_MORTAR' },
   ] as const;
 
-  readonly configModel = signal<MassiveConfigData>({
+  readonly configModel = signal<MassiveConfigFormModel>({
     series: [],
     tipo: '',
     denominacionArma: '',
     denominacionTubo: '',
     instrumentado: '',
-    vidaUtil: '',
+    vidaUtil: null,
     observaciones: '',
   });
 
@@ -318,13 +331,17 @@ export class MassiveShotsConfigurationDialog {
 
       disabled(path.denominacionArma, ({ valueOf }) => !valueOf(path.tipo) || this.isLoadingWeapons());
       disabled(path.denominacionTubo, ({ valueOf }) => !valueOf(path.denominacionArma) || this.isLoadingTubes());
-      numericMin(path.vidaUtil, 0);
-      numericMax(path.vidaUtil, 100);
+      apply(path.vidaUtil, percentageSchema);
     },
     {
       submission: {
         action: async () => {
-          this.dialogRef.close(this.configModel());
+          const model = this.configModel();
+          const result: MassiveConfigData = {
+            ...model,
+            vidaUtil: model.vidaUtil !== null ? String(model.vidaUtil) : '',
+          };
+          this.dialogRef.close(result);
         },
       },
     },
@@ -373,7 +390,7 @@ export class MassiveShotsConfigurationDialog {
     this.configForm.denominacionArma().reset('');
     this.configForm.denominacionTubo().reset('');
     this.configForm.instrumentado().reset('');
-    this.configForm.vidaUtil().reset('');
+    this.configForm.vidaUtil().reset(null);
     this.selectedWeaponId.set(null);
     this.#selectedWeaponFamilyId.set(null);
 

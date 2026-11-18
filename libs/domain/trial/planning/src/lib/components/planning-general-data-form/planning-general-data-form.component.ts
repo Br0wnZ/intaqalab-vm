@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { FormField, disabled, form, required, validate } from '@angular/forms/signals';
+import { FormField, apply, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,13 +10,18 @@ import { MatSelectModule } from '@angular/material/select';
 import { CalendarTrialScheduleStore } from '@intaqalab/data-access';
 import { TrialStatus } from '@intaqalab/models';
 import { Badge, ErrorState, IntaIconComponent, MatSelectClearable, Skeleton, ValueTooltip } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective, RangePipe, TrialStatusLabelPipe } from '@intaqalab/utils';
+import {
+  NoNegativeValuesDirective,
+  RangePipe,
+  TrialStatusLabelPipe,
+  boundedNumberSchema,
+  percentageSchema,
+} from '@intaqalab/utils';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
-import { numericMax, numericMin } from '../../utils/numeric-validators';
 import { type SpecimenDialogResult, SpecimenType } from '../../utils-models/specimen.model';
 import type {
   RatingCriteria as RatingCriteriaModel,
@@ -36,10 +41,10 @@ export type PlanningGeneralData = {
   observations: string;
   requeriments: string;
   additionalInfo: string;
-  maxEmissionDates: number | string;
-  percentageTechnicalUnits: number | string;
-  percentageEndTrial: number | string;
-  daysSignReport: number | string;
+  maxEmissionDates: number | null;
+  percentageTechnicalUnits: number | null;
+  percentageEndTrial: number | null;
+  daysSignReport: number | null;
   hypochelometricReviewBefore: boolean;
   hypochelometricReviewAfter: boolean;
 };
@@ -65,7 +70,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
     TrialStatusLabelPipe,
     PlanningScheduledDatesComponent,
     NoNegativeValuesDirective,
-    NoLeadingZerosDirective,
     RatingCriteria,
     MatSelectClearable,
     Skeleton,
@@ -412,7 +416,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.MAX_DATE_REPORT_PLACEHOLDER' | translate }}"
                     id="maxDaysReport"
                     libNoNegativeValues
-                    libNoLeadingZeros
                     matInput
                     type="number"
                     [formField]="generalDataForm.maxEmissionDates"
@@ -430,7 +433,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_PLACEHOLDER' | translate }}"
                     id="percentageTechnicalUnits"
                     libNoNegativeValues
-                    libNoLeadingZeros
                     matInput
                     type="number"
                     [formField]="generalDataForm.percentageTechnicalUnits"
@@ -458,7 +460,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                       placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_PLACEHOLDER' | translate }}"
                       id="percentageEndTrial"
                       libNoNegativeValues
-                      libNoLeadingZeros
                       matInput
                       type="number"
                       class="flex-1"
@@ -484,7 +485,6 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
                     placeholder="{{ 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_PLACEHOLDER' | translate }}"
                     id="daysSignReport"
                     libNoNegativeValues
-                    libNoLeadingZeros
                     matInput
                     type="number"
                     [formField]="generalDataForm.daysSignReport"
@@ -611,22 +611,18 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.daysSignReport, () => this.readonly() || false);
     disabled(f.specimen, () => this.readonly() || this.#store.isLoadingTypedSpecimens());
     disabled(f.planningUser, () => this.readonly() || this.#store.isLoadingUsers());
-    numericMin(f.maxEmissionDates, 1);
-    numericMax(f.maxEmissionDates, 120);
-    numericMin(f.percentageTechnicalUnits, 0);
-    numericMax(f.percentageTechnicalUnits, 100);
-    numericMin(f.percentageEndTrial, 0);
-    numericMax(f.percentageEndTrial, 100);
-    numericMin(f.daysSignReport, 0);
-    numericMax(f.daysSignReport, 30);
+    apply(f.maxEmissionDates, boundedNumberSchema(1, 120));
+    apply(f.percentageTechnicalUnits, percentageSchema);
+    apply(f.percentageEndTrial, percentageSchema);
+    apply(f.daysSignReport, boundedNumberSchema(0, 30));
     validate(f.percentageTechnicalUnits, ({ value, valueOf }) => {
-      const sum = Number(value()) + Number(valueOf(f.percentageEndTrial));
+      const sum = Number(value() ?? 0) + Number(valueOf(f.percentageEndTrial) ?? 0);
       return !isNaN(sum) && sum !== 100
         ? { kind: 'invalid_percentage_range', message: 'La suma de los porcentajes deben ser 100' }
         : null;
     });
     validate(f.percentageEndTrial, ({ value, valueOf }) => {
-      const sum = Number(value()) + Number(valueOf(f.percentageTechnicalUnits));
+      const sum = Number(value() ?? 0) + Number(valueOf(f.percentageTechnicalUnits) ?? 0);
       return !isNaN(sum) && sum !== 100
         ? { kind: 'invalid_percentage_range', message: 'La suma de los porcentajes deben ser 100' }
         : null;

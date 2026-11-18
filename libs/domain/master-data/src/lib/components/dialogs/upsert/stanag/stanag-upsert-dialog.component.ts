@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MeasureUnitEnum, toUnitOptions } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule, MatInputModule } from '@intaqalab/theme';
 import { IntaIconComponent, IntaSignalSelectComponent, SaveButton } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MasterDataStore } from '../../../../+state/master-data.store';
@@ -23,7 +23,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
     MatInputModule,
     IntaIconComponent,
     NoNegativeValuesDirective,
-    NoLeadingZerosDirective,
     SaveButton,
   ],
   template: `
@@ -107,7 +106,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
               matInput
               type="number"
               libNoNegativeValues
-              libNoLeadingZeros
               [formField]="form.startLayer"
               [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.START_LAYER.PLACEHOLDER' | translate"
             />
@@ -129,7 +127,6 @@ import type { MasterDataUpsertDialogType } from '../../../../models/utils.model'
               matInput
               type="number"
               libNoNegativeValues
-              libNoLeadingZeros
               [formField]="form.endLayer"
               [placeholder]="'MASTER_DATA.STANAG.DIALOGS.UPSERT.END_LAYER.PLACEHOLDER' | translate"
             />

@@ -134,6 +134,7 @@ describe('MassiveMunitionsConfigurationDialog', () => {
     const maxFailuresInput = document.querySelector('#maxAllowedErrors') as HTMLInputElement;
     expect(maxFailuresInput).toBeInTheDocument();
 
+    await user.clear(maxFailuresInput);
     await user.type(maxFailuresInput, '5');
     expect(maxFailuresInput.value).toBe('5');
   });

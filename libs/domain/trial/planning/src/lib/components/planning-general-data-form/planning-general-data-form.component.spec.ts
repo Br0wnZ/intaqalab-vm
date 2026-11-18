@@ -32,10 +32,10 @@ const validFormValues = {
   observations: 'Observaciones de prueba',
   requeriments: 'Requisitos de prueba',
   additionalInfo: 'Info adicional',
-  maxEmissionDates: '30',
+  maxEmissionDates: 30,
   percentageTechnicalUnits: 40,
   percentageEndTrial: 60,
-  daysSignReport: '10',
+  daysSignReport: 10,
 };
 
 // ─── Setup ───────────────────────────────────────────────────────────────────

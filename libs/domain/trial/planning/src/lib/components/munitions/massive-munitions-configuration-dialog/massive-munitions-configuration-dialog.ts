@@ -21,7 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
@@ -61,7 +61,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
     MatTabsModule,
     TranslatePipe,
     IntaIconComponent,
-    NoLeadingZerosDirective,
     EspoletaDetailFormComponent,
     SuplementoDetailFormComponent,
     CargaDetailFormComponent,
@@ -199,7 +198,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                   type="number"
                   min="0"
                   max="99"
-                  libNoLeadingZeros
                   libNoNegativeValues
                   [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_PLACEHOLDER' | translate"
                   [(ngModel)]="formData.maxAllowedErrors"
@@ -275,7 +273,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     id="temperature"
                     matInput
                     type="number"
-                    libNoLeadingZeros
                     [value]="formData.reconditioning?.temperature ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('temperature', $any($event.target).valueAsNumber)"
@@ -294,7 +291,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     id="tolerance"
                     matInput
                     type="number"
-                    libNoLeadingZeros
                     libNoNegativeValues
                     [value]="formData.reconditioning?.tolerance ?? ''"
                     (keydown)="onDecimalKeydown($event)"
@@ -315,7 +311,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     matInput
                     libNoNegativeValues
                     type="number"
-                    libNoLeadingZeros
                     libNoNegativeValues
                     [value]="formData.reconditioning?.timeMin ?? ''"
                     (keydown)="onDecimalKeydown($event)"
@@ -336,7 +331,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     matInput
                     libNoNegativeValues
                     type="number"
-                    libNoLeadingZeros
                     [value]="formData.reconditioning?.timeMax ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('timeMax', $any($event.target).valueAsNumber)"
@@ -515,7 +509,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               type="number"
                               min="0"
                               max="99"
-                              libNoLeadingZeros
                               libNoNegativeValues
                               [placeholder]="
                                 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate
@@ -597,7 +590,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               placeholder="0"
                               matInput
                               type="number"
-                              libNoLeadingZeros
                               [id]="'component-temperature-' + component"
                               [value]="getComponentData(component).reconditioning?.temperature ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -624,7 +616,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               placeholder="0"
                               matInput
                               type="number"
-                              libNoLeadingZeros
                               libNoNegativeValues
                               [id]="'component-tolerance-' + component"
                               [value]="getComponentData(component).reconditioning?.tolerance ?? ''"
@@ -652,7 +643,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               placeholder="0"
                               matInput
                               type="number"
-                              libNoLeadingZeros
                               libNoNegativeValues
                               [id]="'component-timeMin-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMin ?? '24'"
@@ -676,7 +666,6 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               placeholder="0"
                               matInput
                               type="number"
-                              libNoLeadingZeros
                               libNoNegativeValues
                               [id]="'component-timeMax-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMax ?? ''"

@@ -203,7 +203,7 @@ export interface DataFormModel {
                 libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
-                [value]="h1Field()?.value ?? ''"
+                [value]="h1Numeric()"
                 (input)="onHeightInput('h1', $event)"
               />
               <mat-select
@@ -227,7 +227,7 @@ export interface DataFormModel {
                 libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
-                [value]="h2Field()?.value ?? ''"
+                [value]="h2Numeric()"
                 (input)="onHeightInput('h2', $event)"
               />
               <mat-select
@@ -251,7 +251,7 @@ export interface DataFormModel {
                 libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
-                [value]="h3Field()?.value ?? ''"
+                [value]="h3Numeric()"
                 (input)="onHeightInput('h3', $event)"
               />
               <mat-select
@@ -275,7 +275,7 @@ export interface DataFormModel {
                 libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
-                [value]="h4Field()?.value ?? ''"
+                [value]="h4Numeric()"
                 (input)="onHeightInput('h4', $event)"
               />
               <mat-select
@@ -299,7 +299,7 @@ export interface DataFormModel {
                 libLocalDecimal
                 inputmode="decimal"
                 [placeholder]="'TRIAL_EXECUTION.WIDGETS.MANOMETER_INTRODUCTION.H_PLACEHOLDER' | translate"
-                [value]="h5Field()?.value ?? ''"
+                [value]="h5Numeric()"
                 (input)="onHeightInput('h5', $event)"
               />
               <mat-select
@@ -483,6 +483,11 @@ export class ManometerIntroduction extends BaseFormWidgetComponent {
   protected readonly h5Field = signal<InputFieldValue>(
     numToField(this.#store.manometerIntroduction().h5, this.#store.manometerIntroduction().h5Unit),
   );
+  protected readonly h1Numeric = computed<number | null>(() => parseNum(this.h1Field()));
+  protected readonly h2Numeric = computed<number | null>(() => parseNum(this.h2Field()));
+  protected readonly h3Numeric = computed<number | null>(() => parseNum(this.h3Field()));
+  protected readonly h4Numeric = computed<number | null>(() => parseNum(this.h4Field()));
+  protected readonly h5Numeric = computed<number | null>(() => parseNum(this.h5Field()));
 
   protected readonly observacionesField = signal<string | null>(this.#store.manometerIntroduction().observaciones);
 

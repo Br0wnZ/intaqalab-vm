@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { IntaIconComponent, MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, boundedNumberSchema } from '@intaqalab/utils';
+import { boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { MunitionsStore } from '../../../+state/munitions.store';
@@ -49,7 +49,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
     FormField,
     ConditioningFieldsComponent,
     ComponentDetailFormComponent,
-    NoLeadingZerosDirective,
     TranslatePipe,
     IntaIconComponent,
   ],
@@ -182,7 +181,6 @@ import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning
               matInput
               type="number"
               data-testid="max-errors-input"
-              libNoLeadingZeros
               [formField]="configForm.maxAllowedErrors"
               [placeholder]="'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_PLACEHOLDER' | translate"
               [id]="'maxAllowedErrors-' + configIndex()"

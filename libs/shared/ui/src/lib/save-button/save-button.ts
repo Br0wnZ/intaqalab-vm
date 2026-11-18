@@ -35,8 +35,8 @@ import { TranslatePipe } from '@ngx-translate/core';
   template: `
     <button
       mat-flat-button
-      [attr.type]="buttonType()"
       class="save-btn"
+      [attr.type]="buttonType()"
       [disabled]="isSaving() || isDisabled()"
       [attr.aria-busy]="isSaving()"
       [matTooltip]="isSaving() ? ('UI.SAVE_BUTTON.SAVING_TOOLTIP' | translate) : ''"

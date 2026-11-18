@@ -17,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectTrialShots } from '@intaqalab/data-access-planning';
 import { InputSelect, IntaIconComponent } from '@intaqalab/ui';
-import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type { TopographyIntroductionState } from '../../../+state/execution.store';
@@ -66,7 +66,6 @@ interface TopographyFormModel {
     InputSelect,
     IntaIconComponent,
     LocaleDecimalInputDirective,
-    NoLeadingZerosDirective,
     NoNegativeValuesDirective,
   ],
   template: `
@@ -183,11 +182,10 @@ interface TopographyFormModel {
             matInput
             type="number"
             libNoNegativeValues
-            libNoLeadingZeros
             libLocalDecimal
             [decimals]="0"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.TOPOGRAPHY_INTRODUCTION.NUM_ESTELAS_PLACEHOLDER' | translate"
-            [value]="numeroEstelaHumoField() ?? ''"
+            [value]="numeroEstelaHumoField()"
             (input)="onNumeroEstelaHumoInput($event)"
           />
         </mat-form-field>

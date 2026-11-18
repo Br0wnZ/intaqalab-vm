@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { FormField, FormRoot, form, required, submit, validate } from '@angular/forms/signals';
+import { FormField, FormRoot, apply, form, max, required, submit, validate } from '@angular/forms/signals';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -9,15 +9,14 @@ import { InputSelect, InputSelectInput, IntaIconComponent, MatSelectClearable, V
 import {
   IntaDatePipe,
   LocaleDecimalInputDirective,
-  NoLeadingZerosDirective,
   NoNegativeValuesDirective,
+  boundedNumberSchema,
 } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type { Serie, ShootingConditionsUnits, UpdateShot } from '../../../models/shooting-conditions.model';
 import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../../services/shooting-conditions.service';
-import { numericMax, numericMin } from '../../../utils/numeric-validators';
 
 interface BulkConfig {
   series: string[];
@@ -27,16 +26,16 @@ interface BulkConfig {
   impactZone: string;
   dimensions: string;
   thickness: string;
-  distance: { value: string; unit: string };
-  targetInclination: { value: string; unit: string };
-  orientation: { value: string; unit: string };
-  elevation: { value: string; unit: string };
-  angle: { value: string; unit: string };
-  range: { value: string; unit: string };
-  functioningHeight: { value: string; unit: string };
-  powderWeight: { value: string; unit: string };
-  projectileWeight: { value: string; unit: string };
-  nominalSpeed: { value: string; unit: string };
+  distance: { value: number | null; unit: string };
+  targetInclination: { value: number | null; unit: string };
+  orientation: { value: number | null; unit: string };
+  elevation: { value: number | null; unit: string };
+  angle: { value: number | null; unit: string };
+  range: { value: number | null; unit: string };
+  functioningHeight: { value: number | null; unit: string };
+  powderWeight: { value: number | null; unit: string };
+  projectileWeight: { value: number | null; unit: string };
+  nominalSpeed: { value: number | null; unit: string };
 }
 
 interface DialogData {
@@ -63,7 +62,6 @@ interface DialogData {
     InputSelect,
     InputSelectInput,
     NoNegativeValuesDirective,
-    NoLeadingZerosDirective,
     LocaleDecimalInputDirective,
   ],
   template: `
@@ -153,7 +151,7 @@ interface DialogData {
               [value]="configModel().orientation"
               (valueChange)="onFieldChange('orientation', $event)"
             >
-              <input id="bulk-orient" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-orient" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -171,7 +169,7 @@ interface DialogData {
               [value]="configModel().elevation"
               (valueChange)="onFieldChange('elevation', $event)"
             >
-              <input id="bulk-elev" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-elev" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -187,7 +185,7 @@ interface DialogData {
               [value]="configModel().angle"
               (valueChange)="onFieldChange('angle', $event)"
             >
-              <input id="bulk-angle" inputSelectInput libNoNegativeValues libNoLeadingZeros libLocalDecimal />
+              <input id="bulk-angle" inputSelectInput libNoNegativeValues libLocalDecimal />
             </ui-input-select>
           </div>
 
@@ -203,7 +201,7 @@ interface DialogData {
               [value]="configModel().range"
               (valueChange)="onFieldChange('range', $event)"
             >
-              <input id="bulk-range" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-range" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -223,7 +221,7 @@ interface DialogData {
               [value]="configModel().functioningHeight"
               (valueChange)="onFieldChange('functioningHeight', $event)"
             >
-              <input id="bulk-height" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-height" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -241,7 +239,7 @@ interface DialogData {
               [value]="configModel().powderWeight"
               (valueChange)="onFieldChange('powderWeight', $event)"
             >
-              <input id="bulk-powder" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-powder" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -261,7 +259,7 @@ interface DialogData {
               [value]="configModel().projectileWeight"
               (valueChange)="onFieldChange('projectileWeight', $event)"
             >
-              <input id="bulk-proj" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-proj" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -279,7 +277,7 @@ interface DialogData {
               [value]="configModel().nominalSpeed"
               (valueChange)="onFieldChange('nominalSpeed', $event)"
             >
-              <input id="bulk-speed" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+              <input id="bulk-speed" inputSelectInput libNoNegativeValues />
             </ui-input-select>
           </div>
 
@@ -396,7 +394,7 @@ interface DialogData {
                 [value]="configModel().distance"
                 (valueChange)="onFieldChange('distance', $event)"
               >
-                <input id="bulk-dist" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+                <input id="bulk-dist" inputSelectInput libNoNegativeValues />
               </ui-input-select>
             </div>
 
@@ -414,7 +412,7 @@ interface DialogData {
                 [value]="configModel().targetInclination"
                 (valueChange)="onFieldChange('targetInclination', $event)"
               >
-                <input id="bulk-inclination" inputSelectInput libNoNegativeValues libNoLeadingZeros />
+                <input id="bulk-inclination" inputSelectInput libNoNegativeValues />
               </ui-input-select>
             </div>
           }
@@ -466,35 +464,31 @@ export class MassiveConfigurationDialog {
     impactZone: '',
     dimensions: '',
     thickness: '',
-    distance: { value: '', unit: '' },
-    targetInclination: { value: '', unit: '' },
-    orientation: { value: '', unit: '' },
-    elevation: { value: '', unit: '' },
-    angle: { value: '', unit: '' },
-    range: { value: '', unit: '' },
-    functioningHeight: { value: '', unit: '' },
-    powderWeight: { value: '', unit: '' },
-    projectileWeight: { value: '', unit: '' },
-    nominalSpeed: { value: '', unit: '' },
+    distance: { value: null, unit: '' },
+    targetInclination: { value: null, unit: '' },
+    orientation: { value: null, unit: '' },
+    elevation: { value: null, unit: '' },
+    angle: { value: null, unit: '' },
+    range: { value: null, unit: '' },
+    functioningHeight: { value: null, unit: '' },
+    powderWeight: { value: null, unit: '' },
+    projectileWeight: { value: null, unit: '' },
+    nominalSpeed: { value: null, unit: '' },
   });
 
   readonly bulkForm = form(
     this.configModel,
     (f) => {
-      numericMin(f.orientation.value, 0);
-      numericMax(f.orientation.value, MAX_ANGULAR_VALUE);
-      numericMin(f.elevation.value, 0);
-      numericMax(f.elevation.value, MAX_ANGULAR_VALUE);
-      numericMin(f.angle.value, 0);
-      numericMax(f.angle.value, MAX_ANGULAR_VALUE);
-      numericMin(f.targetInclination.value, 0);
-      numericMax(f.targetInclination.value, MAX_ANGULAR_VALUE);
-      numericMax(f.distance.value, MAX_DISTANCE_VALUE);
-      numericMax(f.range.value, MAX_DISTANCE_VALUE);
-      numericMax(f.functioningHeight.value, MAX_DISTANCE_VALUE);
-      numericMax(f.powderWeight.value, MAX_WEIGHT_VALUE);
-      numericMax(f.projectileWeight.value, MAX_WEIGHT_VALUE);
-      numericMax(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
+      apply(f.orientation.value, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
+      apply(f.elevation.value, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
+      apply(f.angle.value, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
+      apply(f.targetInclination.value, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
+      max(f.distance.value, MAX_DISTANCE_VALUE);
+      max(f.range.value, MAX_DISTANCE_VALUE);
+      max(f.functioningHeight.value, MAX_DISTANCE_VALUE);
+      max(f.powderWeight.value, MAX_WEIGHT_VALUE);
+      max(f.projectileWeight.value, MAX_WEIGHT_VALUE);
+      max(f.nominalSpeed.value, MAX_DISTANCE_VALUE);
 
       validate(f.series, ({ value }) => {
         const selected = value();
@@ -523,16 +517,16 @@ export class MassiveConfigurationDialog {
       impactZone: '',
       dimensions: '',
       thickness: '',
-      distance: { value: '', unit: units?.distance ?? 'M' },
-      targetInclination: { value: '', unit: units?.targetInclination ?? 'DEGREES' },
-      orientation: { value: '', unit: units?.orientation ?? 'DEGREES' },
-      elevation: { value: '', unit: units?.elevation ?? 'DEGREES' },
-      angle: { value: '', unit: units?.angle ?? 'DEGREES' },
-      range: { value: '', unit: units?.range ?? 'M' },
-      functioningHeight: { value: '', unit: units?.functioningHeight ?? 'M' },
-      powderWeight: { value: '', unit: units?.powderWeight ?? 'KG' },
-      projectileWeight: { value: '', unit: units?.projectileWeight ?? 'KG' },
-      nominalSpeed: { value: '', unit: units?.nominalSpeed ?? 'M_S' },
+      distance: { value: null, unit: units?.distance ?? 'M' },
+      targetInclination: { value: null, unit: units?.targetInclination ?? 'DEGREES' },
+      orientation: { value: null, unit: units?.orientation ?? 'DEGREES' },
+      elevation: { value: null, unit: units?.elevation ?? 'DEGREES' },
+      angle: { value: null, unit: units?.angle ?? 'DEGREES' },
+      range: { value: null, unit: units?.range ?? 'M' },
+      functioningHeight: { value: null, unit: units?.functioningHeight ?? 'M' },
+      powderWeight: { value: null, unit: units?.powderWeight ?? 'KG' },
+      projectileWeight: { value: null, unit: units?.projectileWeight ?? 'KG' },
+      nominalSpeed: { value: null, unit: units?.nominalSpeed ?? 'M_S' },
     });
 
     effect(() => {
@@ -543,7 +537,7 @@ export class MassiveConfigurationDialog {
     });
   }
 
-  onFieldChange(field: keyof BulkConfig, change: { value: string; unit: string } | null): void {
+  onFieldChange(field: keyof BulkConfig, change: { value: number | null; unit: string } | null): void {
     if (!change) return;
     this.configModel.update((config) => ({
       ...config,
@@ -566,44 +560,44 @@ export class MassiveConfigurationDialog {
     if (config.impactZone) override.impactZoneId = config.impactZone;
     if (config.dimensions) override.targetDimensionsId = config.dimensions;
     if (config.thickness) override.targetThicknessId = config.thickness;
-    if (config.distance.value !== '') {
-      override.distance = Number(config.distance.value);
+    if (config.distance.value !== null) {
+      override.distance = config.distance.value;
       override.distanceUnit = config.distance.unit;
     }
-    if (config.targetInclination.value !== '') {
-      override.targetInclination = Number(config.targetInclination.value);
+    if (config.targetInclination.value !== null) {
+      override.targetInclination = config.targetInclination.value;
       override.targetInclinationUnit = config.targetInclination.unit;
     }
-    if (config.orientation.value !== '') {
-      override.orientation = Number(config.orientation.value);
+    if (config.orientation.value !== null) {
+      override.orientation = config.orientation.value;
       override.orientationUnit = config.orientation.unit;
     }
-    if (config.elevation.value !== '') {
-      override.elevation = Number(config.elevation.value);
+    if (config.elevation.value !== null) {
+      override.elevation = config.elevation.value;
       override.elevationUnit = config.elevation.unit;
     }
-    if (config.angle.value !== '') {
-      override.angle = Number(config.angle.value);
+    if (config.angle.value !== null) {
+      override.angle = config.angle.value;
       override.angleUnit = config.angle.unit;
     }
-    if (config.range.value !== '') {
-      override.range = Number(config.range.value);
+    if (config.range.value !== null) {
+      override.range = config.range.value;
       override.rangeUnit = config.range.unit;
     }
-    if (config.functioningHeight.value !== '') {
-      override.functioningHeight = Number(config.functioningHeight.value);
+    if (config.functioningHeight.value !== null) {
+      override.functioningHeight = config.functioningHeight.value;
       override.functioningHeightUnit = config.functioningHeight.unit;
     }
-    if (config.powderWeight.value !== '') {
-      override.powderWeight = Number(config.powderWeight.value);
+    if (config.powderWeight.value !== null) {
+      override.powderWeight = config.powderWeight.value;
       override.powderWeightUnit = config.powderWeight.unit;
     }
-    if (config.projectileWeight.value !== '') {
-      override.projectileWeight = Number(config.projectileWeight.value);
+    if (config.projectileWeight.value !== null) {
+      override.projectileWeight = config.projectileWeight.value;
       override.projectileWeightUnit = config.projectileWeight.unit;
     }
-    if (config.nominalSpeed.value !== '') {
-      override.nominalSpeed = Number(config.nominalSpeed.value);
+    if (config.nominalSpeed.value !== null) {
+      override.nominalSpeed = config.nominalSpeed.value;
       override.nominalSpeedUnit = config.nominalSpeed.unit;
     }
 

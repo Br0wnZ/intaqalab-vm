@@ -1,7 +1,7 @@
 ---
 name: angular-developer
-version: 1.1.1
-last-updated: 2026-11-16
+version: 1.1.2
+last-updated: 2026-11-18
 description: Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling.
 user-invocable: true
 ---
@@ -75,7 +75,7 @@ When managing state and data reactivity, use Angular Signals and consult the fol
 
 In most cases for new apps, **prefer signal forms**. When making a forms decision, analyze the project and consider the following guidelines:
 
-- In INTAQALAB (Angular 22.2), **Signal Forms (`@angular/forms/signals`) are mandatory** (`[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, `FormUiControl`).
+- In INTAQALAB (Angular 22.2), **Signal Forms (`@angular/forms/signals`) are mandatory** (`[formRoot]` + `submit()`, `schema()`, `validateStandardSchema()`, `validateHttp()`, `transformedValue()`, `compatForm()`, `FormValueControl<T>` / `FormCheckboxControl`).
 
 - **Signal Forms**: Use signals for form state management. Read [signal-forms.md](references/signal-forms.md)
 - **Template-driven / Reactive forms (Legacy Only)**: Prohibited for new code; consult only when migrating legacy forms to Signal Forms / `compatForm()`. Read [template-driven-forms.md](references/template-driven-forms.md) | [reactive-forms.md](references/reactive-forms.md)

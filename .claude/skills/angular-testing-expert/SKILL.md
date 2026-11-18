@@ -1,7 +1,7 @@
 ---
 name: angular-testing-expert
-version: 1.1.3
-last-updated: 2026-11-16
+version: 1.1.4
+last-updated: 2026-11-18
 description: Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads.
 user-invocable: true
 ---

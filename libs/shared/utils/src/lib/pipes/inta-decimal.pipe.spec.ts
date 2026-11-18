@@ -41,21 +41,30 @@ describe('IntaDecimalPipe', () => {
 
     it.each([
       { value: 3.46, es: '3,46', en: '3.46' },
+      { value: 3.456789, es: '3,456789', en: '3.456789' },
+      { value: 1.6500000000000001, es: '1,6500000000000001', en: '1.6500000000000001' },
       { value: 12345.67, es: '12.345,67', en: '12,345.67' },
       { value: -12345.67, es: '-12.345,67', en: '-12,345.67' },
       { value: 0.01, es: '0,01', en: '0.01' },
       { value: 12345, es: '12.345', en: '12,345' },
       { value: 0, es: '0', en: '0' },
-    ])('formats $value with locale-specific separators', ({ value, es, en }) => {
+    ])('formats $value with locale-specific separators without rounding', ({ value, es, en }) => {
       const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
 
       expect(pipe.transform(value)).toBe(locale === 'es-ES' ? es : en);
     });
 
-    it('pads decimal zeros with the locale-specific separator', () => {
+    it('preserves full precision when digitsInfo is empty string', () => {
+      const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
+
+      expect(pipe.transform(3.456789, '')).toBe(locale === 'es-ES' ? '3,456789' : '3.456789');
+    });
+
+    it('pads decimal zeros with the locale-specific separator when digitsInfo is provided', () => {
       const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
 
       expect(pipe.transform(3.4, '1.2-2')).toBe(locale === 'es-ES' ? '3,40' : '3.40');
+      expect(pipe.transform(3.456789, '1.5-5')).toBe(locale === 'es-ES' ? '3,45679' : '3.45679');
     });
   });
 
@@ -91,9 +100,10 @@ describe('IntaDecimalPipe', () => {
       expect(pipe.transform(value, '1.0-1')).toBe(expected);
     });
 
-    it('limits decimals to two by default', () => {
+    it('preserves full decimal precision by default (no rounding)', () => {
       const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
-      expect(pipe.transform(1.6500000000000001)).toBe('1,65');
+      expect(pipe.transform(1.6500000000000001)).toBe('1,6500000000000001');
+      expect(pipe.transform(3.456789)).toBe('3,456789');
     });
 
     it('formats negative — comma as decimal sep', () => {
@@ -118,9 +128,10 @@ describe('IntaDecimalPipe', () => {
       expect(result).not.toContain(',56');
     });
 
-    it('limits decimals to two by default', () => {
+    it('preserves full decimal precision by default (no rounding)', () => {
       const pipe = TestBed.runInInjectionContext(() => new IntaDecimalPipe());
-      expect(pipe.transform(1.6500000000000001)).toBe('1.65');
+      expect(pipe.transform(1.6500000000000001)).toBe('1.6500000000000001');
+      expect(pipe.transform(3.456789)).toBe('3.456789');
     });
 
     it('formats integer', () => {

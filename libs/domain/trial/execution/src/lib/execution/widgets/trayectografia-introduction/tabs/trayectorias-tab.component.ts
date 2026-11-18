@@ -137,7 +137,7 @@ import { type InputFieldValue, numToField, parseNum } from '../trayectografia-in
           [placeholder]="
             'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.COEF_AERODINAMICO_PLACEHOLDER' | translate
           "
-          [value]="coefAerodinamicoField() ?? ''"
+          [value]="coefAerodinamicoField()"
           (input)="coefAerodinamicoField.set(+$any($event.target).value || null)"
         />
       </mat-form-field>

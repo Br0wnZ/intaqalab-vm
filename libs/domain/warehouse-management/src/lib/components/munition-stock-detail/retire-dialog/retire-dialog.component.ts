@@ -65,7 +65,6 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
                 type="number"
                 matInput
                 libNoNegativeValues
-                libNoLeadingZeros
                 [formField]="form.quantity"
               />
             </mat-form-field>

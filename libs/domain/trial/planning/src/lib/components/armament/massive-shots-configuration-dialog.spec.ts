@@ -293,7 +293,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(model.denominacionArma).toBe('');
       expect(model.denominacionTubo).toBe('');
       expect(model.instrumentado).toBe('');
-      expect(model.vidaUtil).toBe('');
+      expect(model.vidaUtil).toBeNull();
       expect(model.observaciones).toBe('');
     });
 
@@ -339,7 +339,7 @@ describe('MassiveShotsConfigurationDialog', () => {
         denominacionArma: 'obus105',
         denominacionTubo: 'tubo1',
         instrumentado: 'si',
-        vidaUtil: '50',
+        vidaUtil: 50,
         observaciones: 'Test',
       });
 
@@ -381,7 +381,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       component.configForm.denominacionArma().reset('weapon-1');
       component.configForm.denominacionTubo().reset('tube-1');
       component.configForm.instrumentado().reset('si');
-      component.configForm.vidaUtil().reset('50');
+      component.configForm.vidaUtil().reset(50);
 
       component.onTypeChange(null);
       view.fixture.detectChanges();
@@ -389,7 +389,7 @@ describe('MassiveShotsConfigurationDialog', () => {
       expect(component.configForm.denominacionArma().value()).toBe('');
       expect(component.configForm.denominacionTubo().value()).toBe('');
       expect(component.configForm.instrumentado().value()).toBe('');
-      expect(component.configForm.vidaUtil().value()).toBe('');
+      expect(component.configForm.vidaUtil().value()).toBeNull();
     });
 
     it('should reset tube field when weapon denomination changes or is cleared', async () => {

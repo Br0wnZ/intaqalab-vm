@@ -193,7 +193,6 @@ type FilterForm = {
                 type="number"
                 matInput
                 libNoNegativeValues
-                libNoLeadingZeros
                 [formField]="form.quantityMin"
               />
             </mat-form-field>
@@ -213,7 +212,6 @@ type FilterForm = {
                 type="number"
                 matInput
                 libNoNegativeValues
-                libNoLeadingZeros
                 [formField]="form.quantityMax"
               />
             </mat-form-field>

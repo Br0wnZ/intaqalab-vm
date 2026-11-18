@@ -43,3 +43,8 @@ Por defecto, el repositorio debe protegerse. Si se activa Husky o si utilizas Nx
 - El contrato numérico sigue siendo `number` de JavaScript: no recupera precisión ya perdida en backend ni ofrece aritmética decimal arbitraria. Los índices, descomposición de tiempos y porcentajes de progreso no son mediciones.
 
 Regresión mínima: introducir `3,46`, perder foco y guardar debe enviar `3.46`, no `3.5`. Incluir también negativos, varios decimales y carga de valores existentes.
+
+## 5. Regla de Inputs Numéricos (Signal Forms 22.2)
+
+- **Enteros no localizados (`integer`):** usar `<input matInput type="number" [formField]="...">` con el modelo tipado estrictamente como `number | null` (nunca `number | string`). La validación de rango se configura en el schema de Signal Forms con `min()` / `max()` nativos de `@angular/forms/signals` o esquemas compartidos (`percentageSchema`, `nonNegativeSchema`, `boundedNumberSchema`) de `@intaqalab/utils`.
+- **Decimales y medidas con localización (`number` / `double`):** usar la directiva `libLocalDecimal` (o controles respaldados por `FormValueControl<number | null>` + `transformedValue()`), nunca `type="number"` nativo (que depende del locale del SO/navegador e ignora `LOCALE_SIGNAL`). Garantiza separador decimal acorde a `LOCALE_SIGNAL` (`es-ES` `,`, `en-US` `.`), cero redondeo y payload `number | null`.

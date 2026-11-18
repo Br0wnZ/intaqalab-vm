@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type { ReconditioningData } from '../../../utils-models/munitions.model';
@@ -18,7 +18,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
 
 @Component({
   selector: 'inta-conditioning-fields',
-  imports: [MatFormFieldModule, MatInputModule, NoLeadingZerosDirective, TranslatePipe, NoNegativeValuesDirective],
+  imports: [MatFormFieldModule, MatInputModule, TranslatePipe, NoNegativeValuesDirective],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <div>
@@ -36,7 +36,6 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-temperature"
             matInput
             type="number"
-            libNoLeadingZeros
             [value]="formModel().temperature ?? ''"
             [style.color]="temperatureColor()"
             [disabled]="readonly()"
@@ -56,7 +55,6 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-tolerance"
             matInput
             type="number"
-            libNoLeadingZeros
             [value]="formModel().tolerance ?? ''"
             [disabled]="readonly()"
             (input)="onFieldChange('tolerance', $any($event.target).valueAsNumber)"
@@ -75,7 +73,6 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-time-min"
             matInput
             type="number"
-            libNoLeadingZeros
             libNoNegativeValues
             [value]="formModel().timeMin ?? ''"
             [disabled]="readonly()"
@@ -95,7 +92,6 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-time-max"
             matInput
             type="number"
-            libNoLeadingZeros
             libNoNegativeValues
             [value]="formModel().timeMax ?? ''"
             [disabled]="readonly()"

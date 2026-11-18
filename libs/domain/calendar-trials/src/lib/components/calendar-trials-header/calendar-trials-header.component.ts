@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { Component, effect, input, model, output } from '@angular/core';
+import { Component, computed, effect, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,6 +38,7 @@ import {
               mwlCalendarPreviousView
               class="calendar-trials-header__nav-button"
               [view]="viewValue"
+              [excludeDays]="excludeDays()"
               [(viewDate)]="viewDateValue"
               (viewDateChange)="handleViewDateChange($event)"
             >
@@ -57,6 +58,7 @@ import {
               mwlCalendarNextView
               class="calendar-trials-header__nav-button"
               [view]="viewValue"
+              [excludeDays]="excludeDays()"
               [(viewDate)]="viewDateValue"
               (viewDateChange)="handleViewDateChange($event)"
             >
@@ -143,6 +145,7 @@ export class CalendarTrialsHeaderComponent {
   viewValue!: CalendarView;
 
   showWeekendsValue = model<boolean>(false);
+  excludeDays = computed(() => (this.view() === CalendarView.Day && !this.showWeekendsValue() ? [0, 6] : []));
 
   viewDate = input<Date>(new Date());
   viewDateValue!: Date;

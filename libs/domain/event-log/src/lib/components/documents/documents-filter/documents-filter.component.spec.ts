@@ -54,7 +54,8 @@ async function setup() {
       provideTestingEnvironment(),
       { provide: UserDataService, useValue: mockUserDataService },
       { provide: DocumentTypesService, useValue: mockDocumentTypesService },
-      { provide: DocumentsService, useValue: mockDocumentsService }, provideTranslateService(),
+      { provide: DocumentsService, useValue: mockDocumentsService },
+      provideTranslateService(),
     ],
   });
 

@@ -1,6 +1,9 @@
 import { Component, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { FormField, form, min } from '@angular/forms/signals';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -75,6 +78,22 @@ class ReadonlyBoundValueHost {
 })
 class ReadonlyDisplayHost {}
 
+@Component({
+  imports: [FormField, LocaleDecimalInputDirective, MatFormFieldModule, MatInputModule],
+  template: `
+    <mat-form-field>
+      <mat-label>Velocity</mat-label>
+      <input matInput type="number" libLocalDecimal [formField]="modelForm.velocity" />
+    </mat-form-field>
+  `,
+})
+class SignalFormMatInputHost {
+  readonly model = signal<{ velocity: number | null }>({ velocity: 12345.6789 });
+  readonly modelForm = form(this.model, (f) => {
+    min(f.velocity, 0);
+  });
+}
+
 // ── Event helpers ──────────────────────────────────────────────────────────────
 
 function fireKeydown(el: HTMLInputElement, key: string, extra?: KeyboardEventInit): boolean {
@@ -84,7 +103,7 @@ function fireKeydown(el: HTMLInputElement, key: string, extra?: KeyboardEventIni
 }
 
 function firePaste(el: HTMLInputElement, text: string): void {
-  const dt = { getData: (_format: string) => text } as unknown as DataTransfer;
+  const dt = { getData: () => text } as unknown as DataTransfer;
   const event = new Event('paste', { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'clipboardData', { value: dt, writable: false });
   el.dispatchEvent(event);
@@ -315,21 +334,16 @@ describe('LocaleDecimalInputDirective', () => {
     beforeEach(async () => setup('es-ES'));
 
     it('parses ES decimal string to number on blur', () => {
-      let emittedValue: number | null = null;
-      const dir = TestBed.runInInjectionContext(() =>
-        fixture.debugElement.query((el) => el.nativeElement === inputEl)?.injector.get(LocaleDecimalInputDirective),
-      );
-      if (dir) {
-        dir.registerOnChange((v: number | null) => {
-          emittedValue = v;
-        });
-      }
+      const dir = fixture.debugElement
+        .query((el) => el.nativeElement === inputEl)
+        ?.injector.get(LocaleDecimalInputDirective);
 
-      inputEl.value = '1234,56';
+      inputEl.value = '12345,67';
       inputEl.dispatchEvent(new Event('blur'));
       fixture.detectChanges();
 
-      expect(emittedValue).toBeCloseTo(1234.56, 2);
+      expect(dir?.value()).toBeCloseTo(12345.67, 2);
+      expect(inputEl.value).toBe('12.345,67');
     });
   });
 
@@ -337,23 +351,88 @@ describe('LocaleDecimalInputDirective', () => {
     it('updates display when locale signal changes while unfocused', async () => {
       const localeSig = await setup('es-ES');
 
-      // Write a value through CVA
+      // Write a value through FormValueControl model
       const dir = fixture.debugElement
         .query((el) => el.nativeElement === inputEl)
         ?.injector.get(LocaleDecimalInputDirective);
-      dir?.writeValue(1234.56);
+      dir?.value.set(12345.67);
       fixture.detectChanges();
 
-      // ES: comma as decimal
-      expect(inputEl.value).toContain(',');
+      // ES: dot for thousands (5+ digits) and comma as decimal
+      expect(inputEl.value).toBe('12.345,67');
 
       // Switch to EN
       localeSig.set('en-US');
       fixture.detectChanges();
       await fixture.whenStable();
 
-      // EN: dot as decimal
-      expect(inputEl.value).toContain('.');
+      // EN: comma for thousands and dot as decimal
+      expect(inputEl.value).toBe('12,345.67');
+    });
+  });
+
+  describe('Signal Forms [formField] + matInput integration', () => {
+    it.each([
+      { locale: 'es-ES' as const, formatted: '12.345,6789', editStr: '12345,6789', typed: '98765,4321', expectedFormatted: '98.765,4321' },
+      { locale: 'en-US' as const, formatted: '12,345.6789', editStr: '12345.6789', typed: '98765.4321', expectedFormatted: '98,765.4321' },
+    ])(
+      'syncs model, focus/blur formatting, touched state, and zero rounding in $locale',
+      async ({ locale, formatted, editStr, typed, expectedFormatted }) => {
+        const user = userEvent.setup();
+        const { fixture: sfFixture } = await render(SignalFormMatInputHost, {
+          providers: [localeSignalProvider(locale).provider],
+        });
+        const input = screen.getByRole('textbox', { name: 'Velocity' });
+
+        expect(input).toHaveValue(formatted);
+        expect(sfFixture.componentInstance.modelForm.velocity().touched()).toBe(false);
+
+        await user.click(input);
+        expect(input).toHaveValue(editStr);
+
+        await user.clear(input);
+        await user.type(input, typed);
+        expect(sfFixture.componentInstance.model().velocity).toBe(98765.4321);
+
+        await user.tab();
+        expect(sfFixture.componentInstance.modelForm.velocity().touched()).toBe(true);
+        expect(input).toHaveValue(expectedFormatted);
+        expect(sfFixture.componentInstance.model().velocity).toBe(98765.4321);
+      },
+    );
+
+    it.each([
+      { locale: 'es-ES' as const, expectedEdit: '0,0000001' },
+      { locale: 'en-US' as const, expectedEdit: '0.0000001' },
+    ])('expands scientific notation without grouping on focus in $locale', async ({ locale, expectedEdit }) => {
+      const user = userEvent.setup();
+      const { fixture: sfFixture } = await render(SignalFormMatInputHost, {
+        providers: [localeSignalProvider(locale).provider],
+      });
+      sfFixture.componentInstance.model.set({ velocity: 1e-7 });
+      sfFixture.detectChanges();
+
+      const input = screen.getByRole('textbox', { name: 'Velocity' });
+      expect(input).toHaveValue(expectedEdit);
+
+      await user.click(input);
+      expect(input).toHaveValue(expectedEdit);
+    });
+
+    it('validates min() from Signal Forms schema and preserves disabled state', async () => {
+      const user = userEvent.setup();
+      const { fixture: sfFixture } = await render(SignalFormMatInputHost, {
+        providers: [localeSignalProvider('en-US').provider],
+      });
+      const input = screen.getByRole('textbox', { name: 'Velocity' });
+
+      await user.click(input);
+      await user.clear(input);
+      await user.type(input, '-5');
+      await user.tab();
+
+      expect(sfFixture.componentInstance.model().velocity).toBe(-5);
+      expect(sfFixture.componentInstance.modelForm.velocity().invalid()).toBe(true);
     });
   });
 });

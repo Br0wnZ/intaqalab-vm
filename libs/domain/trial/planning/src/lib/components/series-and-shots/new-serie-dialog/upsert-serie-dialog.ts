@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/core';
-import { FormField, FormRoot, form, required } from '@angular/forms/signals';
+import { FormField, FormRoot, apply, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,13 +7,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import type { FireTrial } from '@intaqalab/models';
 import { IntaIconComponent, SaveButton } from '@intaqalab/ui';
-import { NoNegativeValuesDirective } from '@intaqalab/utils';
+import { NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
 import type { AddNewSerieRequest } from '../../../utils-models/series-and-shots.model';
 import type { UpsertTrialSerieRequest } from '../../../utils-models/upsert-trial-serie-info.model';
-import { numericMax, numericMin } from '../../../utils/numeric-validators';
 
 type Upsert = {
   trialId: FireTrial['id'];
@@ -134,9 +133,13 @@ export class UpsertSerieDialog {
   readonly isEditMode = signal<boolean>(this.data.isEditing);
   protected readonly store = inject(SeriesAndShotsStore);
 
-  readonly serieModel = signal({
+  readonly serieModel = signal<{
+    name: string;
+    numberOfShots: number | null;
+    observations: string;
+  }>({
     name: this.data.name ?? '',
-    numberOfShots: this.data.numberOfShots !== undefined ? String(this.data.numberOfShots) : '',
+    numberOfShots: this.data.numberOfShots ?? null,
     observations: this.data.observations ?? '',
   });
 
@@ -146,8 +149,7 @@ export class UpsertSerieDialog {
       required(f.name);
       if (!this.data.isEditing) {
         required(f.numberOfShots);
-        numericMin(f.numberOfShots, 1);
-        numericMax(f.numberOfShots, 20);
+        apply(f.numberOfShots, boundedNumberSchema(1, 20));
       }
     },
     {
@@ -165,7 +167,7 @@ export class UpsertSerieDialog {
             const data: AddNewSerieRequest = {
               trialId: this.data.trialId,
               name: value.name,
-              numberOfShots: Number(value.numberOfShots),
+              numberOfShots: value.numberOfShots ?? 0,
               observations: value.observations,
             };
             this.store.addSerie(data);

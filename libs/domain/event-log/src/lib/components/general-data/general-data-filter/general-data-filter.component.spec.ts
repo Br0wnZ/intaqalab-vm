@@ -38,7 +38,8 @@ async function setup() {
     providers: [
       provideTestingEnvironment(),
       { provide: UserDataService, useValue: mockUserDataService },
-      { provide: GeneralDataService, useValue: mockGeneralDataService }, provideTranslateService(),
+      { provide: GeneralDataService, useValue: mockGeneralDataService },
+      provideTranslateService(),
     ],
   });
 

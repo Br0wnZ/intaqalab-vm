@@ -138,7 +138,7 @@ describe('MassiveConfigurationDialog', () => {
   it('should enforce the angular maximum', async () => {
     const { view } = await renderDialog();
     const component = view.fixture.componentInstance;
-    const setOrientation = (value: string) => {
+    const setOrientation = (value: number | null) => {
       component.configModel.update((config) => ({
         ...config,
         series: ['serie-1'],
@@ -147,13 +147,13 @@ describe('MassiveConfigurationDialog', () => {
       }));
     };
 
-    setOrientation(String(MAX_ANGULAR_VALUE));
+    setOrientation(MAX_ANGULAR_VALUE);
     expect(component.bulkForm().invalid()).toBe(false);
 
-    setOrientation('-1');
+    setOrientation(-1);
     expect(component.bulkForm().invalid()).toBe(true);
 
-    setOrientation(String(MAX_ANGULAR_VALUE + 1));
+    setOrientation(MAX_ANGULAR_VALUE + 1);
     expect(component.bulkForm().invalid()).toBe(true);
   });
 
@@ -167,16 +167,16 @@ describe('MassiveConfigurationDialog', () => {
         ...config,
         series: ['serie-1'],
         impactZone: 'zone-1',
-        distance: { ...config.distance, value: String(MAX_DISTANCE_VALUE) },
-        range: { ...config.range, value: String(MAX_DISTANCE_VALUE) },
-        functioningHeight: { ...config.functioningHeight, value: String(MAX_DISTANCE_VALUE) },
-        [field]: { ...config[field], value: String(MAX_DISTANCE_VALUE) },
+        distance: { ...config.distance, value: MAX_DISTANCE_VALUE },
+        range: { ...config.range, value: MAX_DISTANCE_VALUE },
+        functioningHeight: { ...config.functioningHeight, value: MAX_DISTANCE_VALUE },
+        [field]: { ...config[field], value: MAX_DISTANCE_VALUE },
       }));
       expect(component.bulkForm().invalid()).toBe(false);
 
       component.configModel.update((config) => ({
         ...config,
-        [field]: { ...config[field], value: String(MAX_DISTANCE_VALUE + 1) },
+        [field]: { ...config[field], value: MAX_DISTANCE_VALUE + 1 },
       }));
       expect(component.bulkForm().invalid()).toBe(true);
     }
@@ -185,7 +185,7 @@ describe('MassiveConfigurationDialog', () => {
   it('should enforce the distance maximum for nominal speed', async () => {
     const { view } = await renderDialog();
     const component = view.fixture.componentInstance;
-    const setNominalSpeed = (value: string) => {
+    const setNominalSpeed = (value: number | null) => {
       component.configModel.update((config) => ({
         ...config,
         series: ['serie-1'],
@@ -194,10 +194,10 @@ describe('MassiveConfigurationDialog', () => {
       }));
     };
 
-    setNominalSpeed(String(MAX_DISTANCE_VALUE));
+    setNominalSpeed(MAX_DISTANCE_VALUE);
     expect(component.bulkForm().invalid()).toBe(false);
 
-    setNominalSpeed(String(MAX_DISTANCE_VALUE + 1));
+    setNominalSpeed(MAX_DISTANCE_VALUE + 1);
     expect(component.bulkForm().invalid()).toBe(true);
   });
 
@@ -211,15 +211,15 @@ describe('MassiveConfigurationDialog', () => {
         ...config,
         series: ['serie-1'],
         impactZone: 'zone-1',
-        powderWeight: { ...config.powderWeight, value: String(MAX_WEIGHT_VALUE) },
-        projectileWeight: { ...config.projectileWeight, value: String(MAX_WEIGHT_VALUE) },
-        [field]: { ...config[field], value: String(MAX_WEIGHT_VALUE) },
+        powderWeight: { ...config.powderWeight, value: MAX_WEIGHT_VALUE },
+        projectileWeight: { ...config.projectileWeight, value: MAX_WEIGHT_VALUE },
+        [field]: { ...config[field], value: MAX_WEIGHT_VALUE },
       }));
       expect(component.bulkForm().invalid()).toBe(false);
 
       component.configModel.update((config) => ({
         ...config,
-        [field]: { ...config[field], value: String(MAX_WEIGHT_VALUE + 1) },
+        [field]: { ...config[field], value: MAX_WEIGHT_VALUE + 1 },
       }));
       expect(component.bulkForm().invalid()).toBe(true);
     }

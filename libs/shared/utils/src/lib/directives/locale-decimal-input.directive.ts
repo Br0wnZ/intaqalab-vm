@@ -1,7 +1,18 @@
 import type { OnInit } from '@angular/core';
-import { Directive, ElementRef, computed, effect, forwardRef, inject, input, output, untracked } from '@angular/core';
-import type { ControlValueAccessor } from '@angular/forms';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  Directive,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
+import type { FormValueControl, ParseResult } from '@angular/forms/signals';
+import { transformedValue } from '@angular/forms/signals';
 
 import { formatPreciseNumber } from '../pipes/format-precise-number';
 import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
@@ -14,8 +25,9 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
  * - Allows only digits, the locale-specific decimal separator, `-` (negatives), and navigation keys.
  * - Preserves all decimal places on input, paste, display, and blur.
  * - On focus: converts the stored JS number to an editable locale string (no thousands separator).
- * - On blur: parses the locale string back to a JS `number` and notifies the form.
- * - Implements `ControlValueAccessor` → compatible with `[formField]`, `ngModel`, `formControl`.
+ * - On blur: parses the locale string back to a JS `number` and notifies Signal Forms / listeners.
+ * - Implements `FormValueControl<number | null>` with `transformedValue()` → native `[formField]` integration.
+ * - Also supports standalone `[decimalValue]` / `(decimalValueChange)` bindings.
  * - Reactive to language changes via `LOCALE_SIGNAL` token (no direct `data-access` dependency).
  *
  * @example
@@ -31,21 +43,21 @@ import { LOCALE_SIGNAL } from '../tokens/locale-signal.token';
     '(keydown)': 'onKeyDown($event)',
     '(paste)': 'onPaste($event)',
   },
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => LocaleDecimalInputDirective),
-      multi: true,
-    },
-  ],
 })
-export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit {
+export class LocaleDecimalInputDirective implements FormValueControl<number | null>, OnInit {
+  /** Model signal for Signal Forms `FormValueControl<number | null>` integration. */
+  readonly value = model<number | null>(null);
+  /** Emits on blur to mark the bound Signal Forms field as touched. */
+  readonly touch = output<void>();
+
   /** Retained for compatibility; precision is never limited. */
   readonly decimals = input<number>(2);
   /** Minimum fraction digits displayed — default 0. */
   readonly minDecimals = input<number>(0);
   readonly numericSign = input<'any' | 'non-negative' | 'non-positive'>('any');
+  /** Standalone value input for non-`[formField]` consumers (e.g. `InputSelect`). */
   readonly decimalValue = input<number | null>();
+  /** Standalone value change output for non-`[formField]` consumers. */
   readonly decimalValueChange = output<number | null>();
 
   readonly #el = inject(ElementRef<HTMLInputElement>);
@@ -53,36 +65,49 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
 
   /** The decimal separator character for the active locale. */
   readonly #decimalSeparator = computed(() => (this.#localeSignal() === 'es-ES' ? ',' : '.'));
-
-  /** Stored JS number (source of truth). */
-  #internalValue: number | null = null;
-  /** Whether a form control has initialized this directive through writeValue. */
-  #hasWrittenValue = false;
   /** Whether user is currently editing the field. */
-  #isFocused = false;
+  readonly #isFocused = signal(false);
+  /** Tracks whether a bound form control or `decimalValue` has initialized the value. */
+  #hasBoundValue = false;
 
-  // CVA callbacks
-  #onChange: (value: number | null) => void = () => {
-    /* empty */
-  };
-  #onTouched: () => void = () => {
-    /* empty */
-  };
+  /** Raw string value synchronized with `value` via `transformedValue()`. */
+  readonly #rawValue = transformedValue(this.value, {
+    parse: (raw: string): ParseResult<number | null> => this.#parseForTransform(raw),
+    format: (val: number | null): string => this.#formatForTransform(val),
+  });
+
+  /** Parse errors produced by the latest `transformedValue()` transformation. */
+  readonly parseErrors = this.#rawValue.parseErrors;
 
   constructor() {
     effect(() => {
-      const value = this.decimalValue();
-      if (value !== undefined) {
-        untracked(() => this.writeValue(value));
+      const legacyValue = this.decimalValue();
+      if (legacyValue !== undefined) {
+        this.#hasBoundValue = true;
+        untracked(() => {
+          if (this.value() !== legacyValue) {
+            this.value.set(legacyValue);
+          }
+        });
       }
     });
 
     // Effect runs in injection context → auto-cleaned when directive is destroyed.
     effect(() => {
-      // Register reactive dependency on locale signal.
-      this.#localeSignal();
-      if (!this.#isFocused && (this.#hasWrittenValue || this.#internalValue !== null)) {
-        this.#renderDisplayValue();
+      const currentValue = this.value();
+      if (typeof currentValue === 'string') {
+        return;
+      }
+      if (currentValue !== null) {
+        this.#hasBoundValue = true;
+      }
+      const formatted = this.#rawValue();
+      if (!this.#hasBoundValue && currentValue === null) {
+        return;
+      }
+      const el = this.#el.nativeElement;
+      if (el.value !== formatted) {
+        el.value = formatted;
       }
     });
   }
@@ -92,34 +117,10 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     el.type = 'text';
     el.autocomplete = 'off';
     el.inputMode = 'decimal';
-    if (this.#hasWrittenValue) {
-      this.#renderDisplayValue();
+    const current = this.value();
+    if ((this.#hasBoundValue || current !== null) && typeof current === 'number') {
+      el.value = this.#formatForTransform(current);
     }
-  }
-
-  // ── ControlValueAccessor ────────────────────────────────────────────────────
-
-  writeValue(value: number | null | undefined): void {
-    this.#hasWrittenValue = true;
-    const hasChanged = this.#internalValue !== (value ?? null);
-    this.#internalValue = value ?? null;
-    if (!this.#isFocused) {
-      this.#renderDisplayValue();
-    } else if (hasChanged) {
-      this.#el.nativeElement.value = this.#internalValue === null ? '' : this.#toEditString(this.#internalValue);
-    }
-  }
-
-  registerOnChange(fn: (value: number | null) => void): void {
-    this.#onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.#onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.#el.nativeElement.disabled = isDisabled;
   }
 
   // ── Host Listeners ──────────────────────────────────────────────────────────
@@ -129,40 +130,51 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     const parsed = this.#parseLocaleString(raw);
     if (!this.#isSignAllowed(raw, parsed)) return;
 
-    this.#internalValue = parsed;
-    this.decimalValueChange.emit(parsed);
+    this.#hasBoundValue = true;
+    this.#rawValue.set(raw);
+    this.decimalValueChange.emit(this.value());
   }
 
   onFocus(): void {
     const el = this.#el.nativeElement;
     if (el.readOnly || el.disabled) return;
 
-    this.#isFocused = true;
-    if (this.#internalValue !== null && !isNaN(this.#internalValue)) {
-      el.value = this.#toEditString(this.#internalValue);
+    this.#isFocused.set(true);
+    const current = this.value();
+    if (current !== null && !Number.isNaN(current)) {
+      el.value = this.#toEditString(current);
     }
   }
 
   onBlur(): void {
     const el = this.#el.nativeElement;
     if (el.readOnly || el.disabled) {
-      this.#isFocused = false;
+      this.#isFocused.set(false);
       return;
     }
 
-    this.#isFocused = false;
-    this.#onTouched();
+    this.#isFocused.set(false);
+    this.touch.emit();
+
     const raw = el.value;
     const parsed = this.#parseLocaleString(raw);
     if (!this.#isSignAllowed(raw, parsed)) {
-      this.#renderDisplayValue();
+      const fallback = this.#formatForTransform(this.value());
+      this.#rawValue.set(fallback);
+      el.value = fallback;
       return;
     }
 
-    this.#internalValue = parsed;
-    this.#onChange(parsed);
-    this.decimalValueChange.emit(parsed);
-    this.#renderDisplayValue();
+    this.#hasBoundValue = true;
+    this.#rawValue.set(raw);
+    const committed = this.value();
+    this.decimalValueChange.emit(committed);
+
+    const formatted = this.#formatForTransform(committed);
+    if (formatted !== raw) {
+      this.#rawValue.set(formatted);
+    }
+    el.value = formatted;
   }
 
   onKeyDown(event: KeyboardEvent): void {
@@ -184,35 +196,56 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
         return;
       }
 
-      this.#internalValue = parsed;
-      this.#onChange(parsed);
+      this.#hasBoundValue = true;
+      this.#rawValue.set(sanitized);
       this.#el.nativeElement.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────────
 
-  /**
-   * Renders the formatted display value with thousands + decimal separators.
-   * Used when the field is NOT focused.
-   */
-  #renderDisplayValue(): void {
-    const el = this.#el.nativeElement;
-    if (this.#internalValue === null || isNaN(this.#internalValue)) {
-      el.value = '';
-      return;
+  #parseForTransform(raw: string): ParseResult<number | null> {
+    if (!raw.trim()) {
+      return { value: null };
     }
-    el.value = formatPreciseNumber(this.#internalValue, this.#localeSignal(), this.minDecimals());
+    const parsed = this.#parseLocaleString(raw);
+    if (!this.#isSignAllowed(raw, parsed)) {
+      return { error: { kind: 'parse', message: 'Sign not allowed' } };
+    }
+    if (parsed === null && raw.trim() !== '-') {
+      return { error: { kind: 'parse', message: 'Invalid decimal number' } };
+    }
+    return { value: parsed };
+  }
+
+  #formatForTransform(val: number | null): string {
+    if (val === null || Number.isNaN(val)) {
+      return '';
+    }
+    if (this.#isFocused()) {
+      return this.#toEditString(val);
+    }
+    return formatPreciseNumber(val, this.#localeSignal(), this.minDecimals());
   }
 
   /**
    * Converts a JS number to an editable string using the locale decimal separator
-   * but WITHOUT thousands separators, for comfortable editing.
+   * without thousands separators or scientific notation, for comfortable editing.
    */
   #toEditString(value: number): string {
-    const sep = this.#decimalSeparator();
-    const str = value.toString(); // always uses '.' as decimal
-    return sep === ',' ? str.replace('.', ',') : str;
+    if (Object.is(value, -0)) {
+      return '0';
+    }
+    const [coefficient, exponent = '0'] = String(value).split('e');
+    const fractionDigits = coefficient.split('.')[1]?.length ?? 0;
+    const maximumFractionDigits = Math.max(fractionDigits - Number(exponent), 0);
+
+    return new Intl.NumberFormat(
+      this.#localeSignal(),
+      maximumFractionDigits <= 100
+        ? { useGrouping: false, maximumFractionDigits }
+        : { useGrouping: false, maximumSignificantDigits: 21 },
+    ).format(value);
   }
 
   /**
@@ -228,8 +261,8 @@ export class LocaleDecimalInputDirective implements ControlValueAccessor, OnInit
     } else {
       normalized = raw.replace(/,/g, '');
     }
-    const parsed = parseFloat(normalized);
-    return isNaN(parsed) ? null : parsed;
+    const parsed = Number.parseFloat(normalized);
+    return Number.isNaN(parsed) ? null : parsed;
   }
 
   #isSignAllowed(raw: string, value: number | null): boolean {

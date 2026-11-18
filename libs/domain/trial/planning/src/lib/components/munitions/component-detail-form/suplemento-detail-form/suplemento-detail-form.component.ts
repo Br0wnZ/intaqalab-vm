@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { injectWharehouseEndpoint } from '@intaqalab/config';
 import { MatSelectClearable } from '@intaqalab/ui';
-import { NoLeadingZerosDirective, NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
+import { NoNegativeValuesDirective, boundedNumberSchema } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type {
@@ -27,7 +27,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
     MatSelectModule,
     MatSelectClearable,
     FormField,
-    NoLeadingZerosDirective,
     NoNegativeValuesDirective,
     TranslatePipe,
   ],
@@ -110,7 +109,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             id="supl-errors"
             matInput
             type="number"
-            libNoLeadingZeros
             libNoNegativeValues
             [formField]="detailForm.maxAllowedErrors"
             [placeholder]="'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.PLACEHOLDERS.FAILURES' | translate"
@@ -152,7 +150,6 @@ import type { ComponentDetail } from '../../../../utils-models/munitions.model';
             matInput
             type="number"
             libNoNegativeValues
-            libNoLeadingZeros
             [formField]="detailForm.quantity"
             (blur)="emitChanges()"
           />
@@ -241,12 +238,12 @@ export class SuplementoDetailFormComponent {
 
   readonly detailForm = form(this.formModel, (f) => {
     required(f.denomination);
-    disabled(f.batch, () => this.readonly());
-    disabled(f.clientNumber, () => this.readonly());
-    disabled(f.maxAllowedErrors, () => this.readonly());
+    disabled(f.batch, { when: () => this.readonly() });
+    disabled(f.clientNumber, { when: () => this.readonly() });
+    disabled(f.maxAllowedErrors, { when: () => this.readonly() });
     apply(f.maxAllowedErrors, boundedNumberSchema(0, 99));
-    disabled(f.observations, () => this.readonly());
-    disabled(f.quantity, () => this.readonly());
+    disabled(f.observations, { when: () => this.readonly() });
+    disabled(f.quantity, { when: () => this.readonly() });
     validate(f.clientNumber, ({ value }) => {
       const val = String(value() ?? '').trim();
       if (!val || val === '0') return null;

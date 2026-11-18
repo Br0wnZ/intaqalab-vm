@@ -858,11 +858,11 @@ import { FormState } from '@angular/forms/signals';
 <!-- WRONG -->
 {{ totalPrice() | number:'1.2-2' }}
 
-<!-- RIGHT - import IntaDecimalPipe from @intaqalab/utils in the component imports -->
-{{ totalPrice() | intaDecimal: '1.2-2' }}
+<!-- RIGHT - import IntaDecimalPipe from @intaqalab/utils in the component imports (zero rounding without digitsInfo) -->
+{{ totalPrice() | intaDecimal }}
 ```
 
-For numeric presentation, follow [numeric-input-constraints](../../numeric-input-constraints/SKILL.md). `intaDecimal` pads the minimum fraction digits without discarding existing precision. Keep the underlying form value numeric and never send localized display text to the backend. For `json` or `date`, import the corresponding pipe; replacing a missing pipe with `toFixed` is not a valid fix.
+For numeric presentation, follow [numeric-input-constraints](../../numeric-input-constraints/SKILL.md). Without `digitsInfo`, `intaDecimal` delegates to `formatPreciseNumber()` with zero rounding; explicit `digitsInfo` (e.g., `'1.5-5'`) is reserved for fixed-format charts/regressions. Keep the underlying form value numeric (`number | null` with `type="number"` for integers, `libLocalDecimal` for localized decimals) and never send localized display text to the backend. For `json` or `date`, import the corresponding pipe; replacing a missing pipe with `toFixed` is not a valid fix.
 
 ### `$parent.$index` in nested @for loops
 
@@ -886,6 +886,6 @@ For numeric presentation, follow [numeric-input-constraints](../../numeric-input
 - **Reusable `schema<T>()`:** Define pure shared validation schemas with `schema<T>((path) => { ... })` and compose via `apply(f.sub, mySchema)`.
 - **Zod / Standard Schema Validation:** `validateStandardSchema(path, zodSchema)` connects Zod v3/v4 schemas directly into Signal Forms.
 - **HTTP Validation (`validateHttp()`):** Native async validation with automatic cancellation and `field().pending()` state.
-- **Custom Controls (`FormUiControl` / `FormCheckboxControl` + `transformedValue()`):** Implement `FormUiControl` instead of `ControlValueAccessor`; use `transformedValue(this.value, { parse, format })` and read metadata tokens (`REQUIRED`, `MIN`, `MAX`).
-- **Parse Errors:** Read `field().errors()` including `parseErrors` (`formatNumericParseError()` in custom numeric inputs).
+- **Custom Controls (`FormValueControl<T>` / `FormCheckboxControl` + `transformedValue()`):** Implement `FormValueControl<T>` (`value = model<T>(...)`) instead of `ControlValueAccessor`; use `transformedValue(this.value, { parse, format })` and read metadata tokens (`REQUIRED`, `MIN`, `MAX`).
+- **Parse Errors:** Read `field().errors()` including `parseErrors` exposed by `transformedValue()` (`TransformedValueSignal.parseErrors`).
 - **Gradual Migration (`compatForm()`):** Use `@angular/forms/signals/compat` (`compatForm`) when bridging legacy `FormGroup`s incrementally into Signal Forms.

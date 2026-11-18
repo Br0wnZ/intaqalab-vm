@@ -1,15 +1,5 @@
 import type { ElementRef } from '@angular/core';
-import {
-  Component,
-  Injector,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, Injector, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormField, form } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';

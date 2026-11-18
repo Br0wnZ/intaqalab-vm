@@ -215,7 +215,7 @@ interface DataFormModel {
             class="tabular-nums"
             [placeholder]="'TRIAL_EXECUTION.WIDGETS.VELOCITY_INTRODUCTION.CADENCIA_PLACEHOLDER' | translate"
             [disabled]="readOnly()"
-            [value]="cadenciaField()?.value ?? ''"
+            [value]="cadenciaNumeric()"
             (input)="onCadenciaChange($any($event.target).value)"
           />
           <span matSuffix class="pr-4 text-sm text-gray-700">{{ cadenceUnitLabel() }}</span>
@@ -420,6 +420,7 @@ export class VelocityIntroduction extends BaseFormWidgetComponent {
   protected readonly cadenciaField = signal<InputFieldValue>(
     numToField(this.#store.velocityIntroduction().cadencia, MeasureUnitEnum.SPM),
   );
+  protected readonly cadenciaNumeric = computed<number | null>(() => parseNum(this.cadenciaField()));
   protected readonly observacionesField = signal<string | null>(this.#store.velocityIntroduction().observaciones);
 
   // ── Snapshot for dirty tracking (selectores serie/disparo excluidos) ───────

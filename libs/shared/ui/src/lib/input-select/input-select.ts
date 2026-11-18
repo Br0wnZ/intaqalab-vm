@@ -257,7 +257,9 @@ export class InputSelect<T extends number | string | null = number | string | nu
       const dir = projected.decimalDirective;
       if (dir) {
         untracked(() => {
-          dir.writeValue(num);
+          if (dir.value() !== num) {
+            dir.value.set(num);
+          }
         });
       } else if (!this.focused()) {
         const formatted = formatDisplayNumber(num, this.#localeSignal(), this.minDecimals());

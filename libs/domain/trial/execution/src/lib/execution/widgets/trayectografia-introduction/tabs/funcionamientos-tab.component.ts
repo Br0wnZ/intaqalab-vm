@@ -10,7 +10,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LocaleDecimalInputDirective, NoLeadingZerosDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
+import { LocaleDecimalInputDirective, NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { ExecutionStore } from '../../../../+state/execution.store';
@@ -23,7 +23,6 @@ import { ExecutionStore } from '../../../../+state/execution.store';
     MatSelectModule,
     TranslatePipe,
     LocaleDecimalInputDirective,
-    NoLeadingZerosDirective,
     NoNegativeValuesDirective,
   ],
   template: `
@@ -100,13 +99,12 @@ import { ExecutionStore } from '../../../../+state/execution.store';
           matInput
           type="number"
           libNoNegativeValues
-          libNoLeadingZeros
           libLocalDecimal
           [decimals]="0"
           [placeholder]="
             'TRIAL_EXECUTION.WIDGETS.TRAYECTOGRAFIA_INTRODUCTION.NUM_BOTES_EYECTADOS_PLACEHOLDER' | translate
           "
-          [value]="numeroBotesEyectadosField() ?? ''"
+          [value]="numeroBotesEyectadosField()"
           (input)="numeroBotesEyectadosField.set(+$any($event.target).value || null)"
         />
       </mat-form-field>

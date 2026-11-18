@@ -6,31 +6,31 @@
   },
   "core": {
     "AGENTS.md": {
-      "version": "1.7.1",
-      "lastUpdated": "2026-11-16",
-      "checksum": "d7876c1495e82238",
+      "version": "1.7.2",
+      "lastUpdated": "2026-11-18",
+      "checksum": "b15bf2ae29c78fad",
       "description": "System configuration, AI rules, and architecture standards"
     }
   },
   "skills": {
     "angular-architect": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "b0a46bdcc25e1ed7",
+      "version": "1.1.1",
+      "lastUpdated": "2026-11-18",
+      "checksum": "7bcb0a3866b083e9",
       "path": ".agents/skills/angular-architect/SKILL.md",
       "description": "Expert in Angular 22, Nx Workspace, Signal Forms, Tailwind, and Clean Code. Use this for architectural tasks, component generation, refactoring legacy Angular, and strict modern Angular patterns."
     },
     "angular-developer": {
-      "version": "1.1.1",
-      "lastUpdated": "2026-11-16",
-      "checksum": "4c9e98cbae575588",
+      "version": "1.1.2",
+      "lastUpdated": "2026-11-18",
+      "checksum": "bbfc4c9f14fada8c",
       "path": ".agents/skills/angular-developer/SKILL.md",
       "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
     },
     "angular-testing-expert": {
-      "version": "1.1.3",
-      "lastUpdated": "2026-11-16",
-      "checksum": "1f00aa0a78e49b4c",
+      "version": "1.1.4",
+      "lastUpdated": "2026-11-18",
+      "checksum": "88c600c0f271b5d4",
       "path": ".agents/skills/angular-testing-expert/SKILL.md",
       "description": "Expert QA guide for Angular 22+, Vitest and Angular Testing Library. Use for behavior-driven tests, signals, Material harnesses and decimal precision regressions across multilingual inputs, display, unit conversion and backend payloads."
     },
@@ -98,9 +98,9 @@
       "description": "Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines."
     },
     "numeric-input-constraints": {
-      "version": "1.2.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "05f7e424d888cfe3",
+      "version": "1.2.3",
+      "lastUpdated": "2026-11-18",
+      "checksum": "4b2b49cba04adb4a",
       "path": ".agents/skills/numeric-input-constraints/SKILL.md",
       "description": "Use when creating or changing decimal inputs, localized numeric display, precision, unit conversions, numeric mappers or backend payloads. Defines the no-rounding contract for multilingual views, LOCALE_SIGNAL, libLocalDecimal, InputSelect, SoundLevelMeterInput and JSON numbers, plus domain min/max validation."
     },
@@ -161,9 +161,9 @@
       "description": "Given a Swagger/OpenAPI JSON file, automatically implements the full API integration in the Angular application — generating TypeScript models, httpResource-based services, SignalStore state management, and Express mock server routes with realistic fixture data."
     },
     "ui-design-engineer": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "d046093af2493de7",
+      "version": "1.1.2",
+      "lastUpdated": "2026-11-18",
+      "checksum": "6a1afee09c265e7c",
       "path": ".agents/skills/ui-design-engineer/SKILL.md",
       "description": "Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards."
     },

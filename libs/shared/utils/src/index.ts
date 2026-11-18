@@ -1,7 +1,6 @@
 export * from './lib/cn/cn';
 export * from './lib/dates/dates-utils.functions';
 export * from './lib/directives/locale-decimal-input.directive';
-export * from './lib/directives/no-leading-zeros.directive';
 export * from './lib/directives/no-negative-values.directive';
 export * from './lib/forms/domain-schemas';
 export * from './lib/i18n/resolve-localized-text';

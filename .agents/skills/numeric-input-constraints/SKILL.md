@@ -1,7 +1,7 @@
 ---
 name: numeric-input-constraints
-version: 1.2.0
-last-updated: 2026-11-13
+version: 1.2.3
+last-updated: 2026-11-18
 description: Use when creating or changing decimal inputs, localized numeric display, precision, unit conversions, numeric mappers or backend payloads. Defines the no-rounding contract for multilingual views, LOCALE_SIGNAL, libLocalDecimal, InputSelect, SoundLevelMeterInput and JSON numbers, plus domain min/max validation.
 argument-hint: "E.g. 'Create planning form with velocities and pressures' or 'Generate execution data inputs with coordinates and pressure gauges'."
 user-invocable: true
@@ -27,8 +27,10 @@ This skill owns the numeric contract. UI, i18n, API, charts and testing skills m
 
 1. **State and HTTP:** Keep measurements as finite `number | null` wherever the API contract is numeric. Localized strings belong only to editing/display. JSON must contain `3.46`, never `"3,46"`, `"3.46"` or a grouped string. Preserve `null`, zero, optional/omitted fields and PATCH semantics according to the endpoint schema; never turn empty input into zero automatically.
 2. **No rounding or truncation:** Never apply `toFixed`, `toPrecision`, `Math.round`, `Math.ceil`, `Math.floor`, fractional slicing or a fixed `maximumFractionDigits` to measurements, mapper results, derived values, chart statistics or tooltips. Integer fields must reject non-integers, not silently round them. Index calculations, time decomposition and progress indicators are not measurements.
-3. **Display:** Reuse `formatPreciseNumber(value, locale, minimumFractionDigits)` from `@intaqalab/utils`, or the `intaDecimal` pipe. The helper selects sufficient precision for the existing numeric value, including scientific notation. `minDecimals` and the minimum fraction part of `digitsInfo` may add trailing zeros; they must never remove existing digits. Do not use Angular `number`/`DecimalPipe` or plain `toLocaleString()` defaults for measurements: their default maximum precision can round values.
-4. **Editing:** Reuse `libLocalDecimal`, `ui-input-select` or `ui-sound-level-meter-input`. Preserve all digits while typing, pasting, loading external values, switching units, focusing and blurring repeatedly. The legacy `decimals` input is compatibility-only, NOT a precision limit. Do not recreate decimal parsers or clipboard sanitizers in widgets.
+3. **Display:** Reuse `formatPreciseNumber(value, locale, minimumFractionDigits)` from `@intaqalab/utils`, or the `intaDecimal` pipe (`{{ value | intaDecimal }}`). When `digitsInfo` is omitted, `IntaDecimalPipe` delegates to `formatPreciseNumber()` for **zero rounding**; passing an explicit `digitsInfo` (e.g., `'1.5-5'`) uses Angular `formatNumber()` and is reserved for fixed-format visual charts/regressions only. `minDecimals` and the minimum fraction part of `digitsInfo` may add trailing zeros; they must never remove existing digits on measurements. Do not use Angular `number`/`DecimalPipe` or plain `toLocaleString()` defaults for measurements: their default maximum precision rounds values.
+4. **Editing:**
+   - **Non-localized integers (`integer`):** Use `<input matInput type="number" [formField]="...">` with strict `number | null` models (zero `string | number` unions). Signal Forms 22.2 normalizes `"01"` → `1` natively.
+   - **Localized decimals & measurements (`number` / `double`):** Reuse `libLocalDecimal`, `ui-input-select` or `ui-sound-level-meter-input`. Preserve all digits while typing, pasting, loading external values, switching units, focusing and blurring repeatedly. The legacy `decimals` input is compatibility-only, NOT a precision limit. Do not recreate decimal parsers or clipboard sanitizers in widgets.
 5. **Locale:** Consume reactive `LOCALE_SIGNAL`, not hardcoded `es-ES`, browser language or translation text. Inspect `AppLocale`, `LanguageService` and `provideLocaleSignal()` before claiming support. Current numeric locales are `es-ES` and `en-US`; translation catalogs alone do not enable `de-DE`. A newly enabled locale requires coordinated token/provider/input separator handling and tests; derive separators with `Intl.NumberFormat(...).formatToParts()` when extending support.
 6. **Parsing boundary:** Normalize localized input exactly once in the shared control. Backend numeric values and canonical decimal strings are not localized input. Never parse `String(3.46)` with an ES parser that treats `.` as a grouping separator. `parseFloat('3,46')` is invalid for this contract because it yields `3`; a comma replacement alone is insufficient for grouped input. Reuse the owning mapper/control appropriate to the source format.
 7. **Units and derived values:** Keep the full arithmetic result; do not round to hide floating-point artifacts. A display/locale/unit change must not write a converted-and-reconverted value back to the base state. Read-only or disabled fields must not be parsed and overwritten on focus/blur. A save without edits must preserve values loaded from the API.
@@ -71,26 +73,34 @@ The `[formField]` directive in Signal Forms manages validation through TypeScrip
 ```typescript
 import { signal } from '@angular/core';
 import { MAX, MIN, apply, form, max, min, schema } from '@angular/forms/signals';
+import { boundedNumberSchema, nonNegativeSchema, percentageSchema } from '@intaqalab/utils';
 
-// Reusable Angular 22.2 domain schema
+// Prefer shared domain schemas from @intaqalab/utils for typed `number | null` fields:
+// - `percentageSchema`: [0, 100]
+// - `nonNegativeSchema`: >= 0
+// - `boundedNumberSchema(minVal, maxVal)`: [minVal, maxVal]
+// All numeric form models must be strict `number | null` (no `string | number` unions or `numericMin`/`numericMax`).
+
+// Custom reusable Angular 22.2 domain schema
 export const velocityBoundsSchema = schema<number | null>((path) => {
   min(path, 0);
   max(path, 2000);
 });
 
-protected readonly model = signal({ age: 1, velocity: null as number | null });
+protected readonly model = signal({ age: 1, pct: null as number | null, velocity: null as number | null });
 protected readonly ageForm = form(this.model, (fields) => {
   min(fields.age, 1);
   max(fields.age, 150);
+  apply(fields.pct, percentageSchema);
   apply(fields.velocity, velocityBoundsSchema);
 });
 ```
 
-### Angular 22.2 Custom Control Contract (`FormUiControl`, `transformedValue`, `parseErrors`)
+### Angular 22.2 Custom Control Contract (`FormValueControl`, `transformedValue`)
 
-- Custom numeric inputs implement `FormUiControl` / `FormValueControl<number | null>` (`touch = output<void>()`, `controlValue`) and use `transformedValue(this.value, { parse, format })` or `libLocalDecimal` without rounding.
+- Custom numeric inputs implement `FormValueControl<number | null>` (`value = model<number | null>(...)`, optional `touch = output<void>()`) and use `transformedValue(this.value, { parse, format })` or `libLocalDecimal` without rounding.
 - Read validation metadata tokens directly via `field().metadata(MIN)` / `field().metadata(MAX)` when available.
-- Surface invalid user input (e.g., non-numeric string) via `parseErrors` (`FieldState.errors()` / `formatNumericParseError()`) while keeping underlying JSON payloads finite `number | null`.
+- `transformedValue()` returns a `TransformedValueSignal` exposing `parseErrors` (`Signal<readonly ValidationError.WithoutFieldTree[]>`), and automatically reports parse errors to the nearest Signal Forms field (`field().errors()`) while keeping underlying JSON payloads finite `number | null`.
 
 ```html
 <!-- HTML Template: NO min/max attributes -->
@@ -101,11 +111,11 @@ protected readonly ageForm = form(this.model, (fields) => {
 
 ## 📦 Core Directives
 
-Three production-ready directives live in `libs/shared/utils/src/lib/directives/`:
+Two production-ready directives live in `libs/shared/utils/src/lib/directives/` (`NoLeadingZerosDirective` was removed — `<input type="number">` + Signal Forms `number | null` normalizes leading zeros natively):
 
 ### 1️⃣ `NoNegativeValuesDirective`
 
-**Purpose:** Block negative input on `type="number"` fields.
+**Purpose:** UX key/paste guard on `type="number"` fields (business validation belongs in `min(path, 0)` / `nonNegativeSchema`).
 **What it does:** Blocks `-` and `+` key presses; strips `-`/`+` on paste.
 
 ```html
@@ -116,11 +126,12 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 
 ### 2️⃣ `LocaleDecimalInputDirective`
 
-**Purpose:** Accept decimal input with locale-specific separator (`,` for es-ES, `.` for en-US).
+**Purpose:** Accept decimal input with locale-specific separator (`,` for es-ES, `.` for en-US) using Signal Forms `FormValueControl<number | null>` + `transformedValue()`.
 **What it does:**
 
+- Implements `FormValueControl<number | null>` (`value = model<number | null>(null)`) with `transformedValue()` (no `ControlValueAccessor`)
 - Changes `type="text"` + `inputMode="decimal"`
-- On focus: displays raw editable numeric format
+- On focus: displays raw editable numeric format (handles scientific notation without grouping)
 - On blur: parses supported locale input to JS `number`, then displays it through `formatPreciseNumber`
 - Preserves existing, typed and pasted digits; `decimals` does not cap precision
 - Uses `minDecimals` only to pad trailing zeros; `numericSign` expresses allowed signs
@@ -131,40 +142,30 @@ Three production-ready directives live in `libs/shared/utils/src/lib/directives/
 
 ---
 
-### 3️⃣ `NoLeadingZerosDirective`
-
-**Purpose:** Strip leading zeros on integer inputs (e.g. `01` → `1`).
-
-```html
-<input matInput type="number" libNoLeadingZeros [formField]="form.daysUntilDeadline" />
-```
-
----
-
 ## 📋 INTAQALAB Context: Input Constraints by Domain
 
 The `Decimals` column below describes examples, NOT maximum precision or rounding instructions. Verify min/max and sign constraints against the current functional/API contract; never infer decimal limits from examples.
 
 ### Planning (`libs/domain/trial/planning`)
 
-| Field                             | Type    | Min | Max   | Directive                                              | Decimals | Example | Notes                          |
-| --------------------------------- | ------- | --- | ----- | ------------------------------------------------------ | -------- | ------- | ------------------------------ |
-| **Max days for report**           | integer | 1   | 120   | `NoNegativeValuesDirective`, `NoLeadingZerosDirective` | —        | 20      | Days until report delivery     |
-| **Percentage for tech units**     | integer | 0   | 100   | `NoNegativeValuesDirective`                            | —        | 40      | % of time for unit validations |
-| **Percentage for trial sign-off** | integer | 0   | 100   | `NoNegativeValuesDirective`                            | —        | 60      | % time to sign off             |
-| **Days for report signature**     | integer | 0   | 30    | `NoNegativeValuesDirective`, `NoLeadingZerosDirective` | —        | 1       | Margin days for signature      |
-| **V0c Min/Max Criteria**          | decimal | 0   | 2000  | `LocaleDecimalInputDirective`                          | 2        | 800.50  | Initial velocity range (m/s)   |
-| **Pressure Min/Max Criteria**     | decimal | 0   | 50000 | `LocaleDecimalInputDirective`                          | 1        | 2500.5  | Pressure range (MPa/bar)       |
+| Field                             | Type    | Min | Max   | Directive                     | Decimals | Example | Notes                          |
+| --------------------------------- | ------- | --- | ----- | ----------------------------- | -------- | ------- | ------------------------------ |
+| **Max days for report**           | integer | 1   | 120   | `NoNegativeValuesDirective`   | —        | 20      | Days until report delivery     |
+| **Percentage for tech units**     | integer | 0   | 100   | `NoNegativeValuesDirective`   | —        | 40      | % of time for unit validations |
+| **Percentage for trial sign-off** | integer | 0   | 100   | `NoNegativeValuesDirective`   | —        | 60      | % time to sign off             |
+| **Days for report signature**     | integer | 0   | 30    | `NoNegativeValuesDirective`   | —        | 1       | Margin days for signature      |
+| **V0c Min/Max Criteria**          | decimal | 0   | 2000  | `LocaleDecimalInputDirective` | 2        | 800.50  | Initial velocity range (m/s)   |
+| **Pressure Min/Max Criteria**     | decimal | 0   | 50000 | `LocaleDecimalInputDirective` | 1        | 2500.5  | Pressure range (MPa/bar)       |
 
 ### Execution (`libs/domain/trial/execution`)
 
-| Field                     | Type    | Min    | Max    | Directive                                              | Decimals | Example | Notes               |
-| ------------------------- | ------- | ------ | ------ | ------------------------------------------------------ | -------- | ------- | ------------------- |
-| **Initial Velocity (V0)** | decimal | 0      | 2000   | `LocaleDecimalInputDirective`                          | 2        | 850.75  | m/s, physics ≥ 0    |
-| **Piezo Pressure**        | decimal | 0      | 50000  | `LocaleDecimalInputDirective`                          | 1        | 3200.4  | MPa or bar          |
-| **Manometer Pressure**    | decimal | 0      | 5000   | `LocaleDecimalInputDirective`                          | 2        | 2450.25 | Backup pressure     |
-| **Projectile Weight**     | decimal | 0      | 100000 | `LocaleDecimalInputDirective`                          | 3        | 12.500  | grams               |
-| **Fuze Weight**           | decimal | 0      | 5000   | `LocaleDecimalInputDirective`                          | 3        | 125.750 | grams               |
-| **Shot Number**           | integer | 1      | 999    | `NoNegativeValuesDirective`, `NoLeadingZerosDirective` | —        | 5       | Must be ≥ 1         |
-| **Coordinate X/Y**        | decimal | -10000 | 10000  | `LocaleDecimalInputDirective`                          | 2        | 1250.75 | Can be negative     |
-| **Height Z**              | decimal | 0      | 5000   | `LocaleDecimalInputDirective`                          | 2        | 450.50  | Height (always ≥ 0) |
+| Field                     | Type    | Min    | Max    | Directive                     | Decimals | Example | Notes               |
+| ------------------------- | ------- | ------ | ------ | ----------------------------- | -------- | ------- | ------------------- |
+| **Initial Velocity (V0)** | decimal | 0      | 2000   | `LocaleDecimalInputDirective` | 2        | 850.75  | m/s, physics ≥ 0    |
+| **Piezo Pressure**        | decimal | 0      | 50000  | `LocaleDecimalInputDirective` | 1        | 3200.4  | MPa or bar          |
+| **Manometer Pressure**    | decimal | 0      | 5000   | `LocaleDecimalInputDirective` | 2        | 2450.25 | Backup pressure     |
+| **Projectile Weight**     | decimal | 0      | 100000 | `LocaleDecimalInputDirective` | 3        | 12.500  | grams               |
+| **Fuze Weight**           | decimal | 0      | 5000   | `LocaleDecimalInputDirective` | 3        | 125.750 | grams               |
+| **Shot Number**           | integer | 1      | 999    | `NoNegativeValuesDirective`   | —        | 5       | Must be ≥ 1         |
+| **Coordinate X/Y**        | decimal | -10000 | 10000  | `LocaleDecimalInputDirective` | 2        | 1250.75 | Can be negative     |
+| **Height Z**              | decimal | 0      | 5000   | `LocaleDecimalInputDirective` | 2        | 450.50  | Height (always ≥ 0) |

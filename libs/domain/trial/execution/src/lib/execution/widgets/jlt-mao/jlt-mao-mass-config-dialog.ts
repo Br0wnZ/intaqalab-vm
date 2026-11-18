@@ -157,7 +157,6 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
               [decimals]="2"
               [disabled]="oltReadOnly()"
               [readOnly]="oltReadOnly()"
-              [value]="oltDisplayField()?.value ?? ''"
             />
           </ui-input-select>
 
@@ -189,7 +188,6 @@ type SeriesOrientationStatus = 'missing' | 'planned' | 'inconsistent' | 'unavail
               [decimals]="2"
               [disabled]="angularDifferenceReadOnly()"
               [readOnly]="angularDifferenceReadOnly()"
-              [value]="diferenciaAngularField()?.value ?? ''"
             />
           </ui-input-select>
         </div>

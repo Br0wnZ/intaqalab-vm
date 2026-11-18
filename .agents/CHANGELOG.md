@@ -385,3 +385,39 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [widget-service-integration - 1.5.1] - 2026-11-16
 
 - Remove document.querySelector from 06-vitest-testing.md
+
+## [ui-design-engineer - 1.1.1] - 2026-11-17
+
+- Document ui-save-button buttonType='submit' with FormRoot
+
+## [numeric-input-constraints - 1.2.1] - 2026-11-17
+
+- Document shared @intaqalab/utils Signal Form domain schemas
+
+## [numeric-input-constraints - 1.2.2] - 2026-11-17
+
+- Align Signal Forms 22.2 numeric contract symbols
+
+## [numeric-input-constraints - 1.2.3] - 2026-11-18
+
+- Reflect IntaDecimalPipe no-rounding default, FormValueControl libLocalDecimal, strict number | null typing, and NoLeadingZerosDirective removal
+
+## [ui-design-engineer - 1.1.2] - 2026-11-18
+
+- Update numeric control rules (FormValueControl, type=number for integers, intaDecimal no-rounding default)
+
+## [angular-architect - 1.1.1] - 2026-11-18
+
+- Align Signal Forms custom control types (FormValueControl/FormCheckboxControl)
+
+## [angular-developer - 1.1.2] - 2026-11-18
+
+- Update Signal Forms numeric formatting and custom control contract references
+
+## [AGENTS.md - 1.7.2] - 2026-11-18
+
+- Align Signal Forms 22.2 custom control references with signals.d.ts
+
+## [angular-testing-expert - 1.1.4] - 2026-11-18
+
+- Sync skill checksum and version with current testing guidelines

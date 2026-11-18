@@ -1,7 +1,7 @@
 ---
 name: ui-design-engineer
-version: 1.1.0
-last-updated: 2026-11-13
+version: 1.1.2
+last-updated: 2026-11-18
 description: Pixel-perfect UI Specialist for Intaqalab. Use when building visual components, layouts, and Execution Grid widgets following the Design System, inline TailwindCSS, Angular Material, and Accessibility (a11y) standards.
 argument-hint: "E.g. 'Create the munitions listing screen', 'Generate the card component', or 'Create a new widget for the execution grid'."
 user-invocable: true
@@ -15,8 +15,8 @@ You are the **UI Design System Engineer** of the Intaqalab project. Your mission
 
 Load [numeric-input-constraints](../numeric-input-constraints/SKILL.md) whenever a view contains decimal inputs, coordinates, numeric results or unit selectors.
 
-- Reuse `ui-input-select`, `ui-sound-level-meter-input` and `libLocalDecimal`; never implement widget-local decimal parsing or truncate pasted digits. For numeric backend contracts expose `number | null` to controls; legacy string-valued models must use the owning mapper and preserve the full value.
-- Display measurements through `intaDecimal` or `formatPreciseNumber` with reactive `LOCALE_SIGNAL`. Never use `toFixed`, `toPrecision`, Angular `number`/`DecimalPipe` or a fixed maximum precision, including readonly fields and calculated outputs.
+- Use `<input matInput type="number" [formField]="...">` with strict `number | null` models for non-localized integers, and reuse `ui-input-select`, `ui-sound-level-meter-input` and `libLocalDecimal` (`FormValueControl<number | null>`) for localized decimals; never implement widget-local decimal parsing or truncate pasted digits.
+- Display measurements through `{{ value | intaDecimal }}` (without `digitsInfo`, delegates to `formatPreciseNumber` with zero rounding) or `formatPreciseNumber` with reactive `LOCALE_SIGNAL`. Never use `toFixed`, `toPrecision`, Angular `number`/`DecimalPipe` or a fixed maximum precision for measurements, including readonly fields and calculated outputs.
 - `decimals` is compatibility-only, not a precision cap. `minDecimals` may pad zeros but cannot remove digits. Readonly/disabled controls must not reparse display text or overwrite state on focus/blur.
 - Keep long precise values usable in existing responsive layouts; preserve inspectable values instead of rounding to make text fit. Formatting, locale changes and unit selection without edits must not mark the form dirty or rewrite its base measurements.
 - Verify ES/EN input, backend load, repeated focus/blur, paste, external value updates, projected controls, all coordinate axes and bulk dialogs. Exact numeric payload must match the edited value regardless of display language.
@@ -41,8 +41,8 @@ Load [numeric-input-constraints](../numeric-input-constraints/SKILL.md) whenever
 ### 3. Angular Material & Native Form Controls
 
 - If an input, select, switch, table, dialog, expansion panel, or button is needed, **always use the official `@angular/material` component** (including `@angular/material/timepicker` for time inputs). Never create raw unstyled HTML inputs.
-- **Save/Submit Button (`ui-save-button`):** It is **MANDATORY** to use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) for any save, submit, create, or update action. Bind `<form [formRoot]="myForm">` + `submit()` and `[isSaving]="myForm().submitting()"` (or `[isSaving]="saveResource.isLoading()"`). Never use a plain `mat-flat-button` for form mutations.
-- **Custom Form Controls (`FormUiControl` / `FormCheckboxControl`):** Implement Angular 22 `FormUiControl` (`@angular/forms/signals`) and read metadata tokens (`REQUIRED`, `MIN`, `MAX`) rather than legacy `ControlValueAccessor` or duplicating `@Input` metadata props.
+- **Save/Submit Button (`ui-save-button`):** It is **MANDATORY** to use `<ui-save-button>` from `@intaqalab/ui` (`SaveButton`) for any save, submit, create, or update action. Inside `<form [formRoot]="myForm">` with `submission`, pass `buttonType="submit"` (or `[buttonType]="'submit'"`) and `[isSaving]="myForm().submitting()"` (for standalone button triggers outside `FormRoot`, keep the default `buttonType="button"`, `(save)="..."`, and `[isSaving]="saveResource.isLoading()"`). Never use a plain `mat-flat-button` for form mutations.
+- **Custom Form Controls (`FormValueControl<T>` / `FormCheckboxControl`):** Implement Angular 22 `FormValueControl<T>` / `FormCheckboxControl` (`@angular/forms/signals`) and read metadata tokens (`REQUIRED`, `MIN`, `MAX`) rather than legacy `ControlValueAccessor` or duplicating `@Input` metadata props.
 - **Animations (`animate.enter` / `animate.leave`):** Use Angular 22 native `animate.enter` and `animate.leave` with Tailwind CSS 4.3 (`starting:opacity-0`, transitions). Material 22.2 animates via native CSS; `@angular/animations` and `NoopAnimationsModule` are prohibited.
 - **Event Isolation (`uiStopClick`):** When nesting interactive actions (buttons, icons, toggles) inside clickable containers (`mat-option`, list items, accordion headers, table rows, cards), **always use the `uiStopClick` (or `stopClick`) directive from `@intaqalab/ui` (`StopClick`)**. Prohibited: manually injecting `$event` into component methods to invoke `event.stopPropagation()` and `event.preventDefault()`. E.g.: `<button type="button" uiStopClick (click)="onAction()">`. Keeps component methods pure and testable without mock DOM events.
 - **Forms (Mandatory Floating Labels & Placeholders):** Always set `floatLabel="always"` on all `mat-form-field` elements with `subscriptSizing="dynamic"`. Always include `<mat-label>{{ '...' | translate }}</mat-label>` inside `mat-form-field` and its corresponding placeholder `[placeholder]="'...' | translate"`. External `<label>` or `<span>` tags outside `mat-form-field` are strictly forbidden.
