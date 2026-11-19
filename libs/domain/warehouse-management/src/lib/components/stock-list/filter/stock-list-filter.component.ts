@@ -1,5 +1,5 @@
-import { Component, ViewEncapsulation, inject, output, signal } from '@angular/core';
-import { FormField, FormRoot, form, pattern, validate, validateHttp } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, output, signal, untracked } from '@angular/core';
+import { FormField, FormRoot, form, pattern, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -9,18 +9,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
-import { IntaSignalSelectComponent, NumericRangeInput } from '@intaqalab/ui';
+import { IntaSignalSelectComponent, NumericRangeInput, ValueTooltip } from '@intaqalab/ui';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { format } from 'date-fns';
 
+import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionStockListFilterForm, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
-import type { SearchByTrialNumberResponse } from '../../../utils/search-trial.utils';
-import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
+import { PLANNED_TRIAL_PATTERN, injectTrialSearch, trialSearchError } from '../../../utils/search-trial.utils';
 
 @Component({
   selector: 'inta-stock-list-filter',
@@ -38,6 +37,7 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
     MatCheckboxModule,
     MatDatepickerModule,
     NumericRangeInput,
+    ValueTooltip,
   ],
   template: `
     <div class="w-full bg-white rounded-lg border border-gray-200">
@@ -74,6 +74,30 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
           />
 
           <ui-inta-signal-select
+            uiValueTooltip
+            appearance="outline"
+            [id]="'denominationIds'"
+            [valueKey]="'id'"
+            [multiple]="true"
+            [labelKey]="'name'"
+            [formField]="form.denominationIds"
+            [searchable]="true"
+            [label]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION' | translate"
+            [options]="denominationsStore.items()"
+            [uiValueTooltipValue]="selectedDenominationNames()"
+          />
+
+          <div>
+            <label for="batches" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <input id="batches" matInput [formField]="form.batches" />
+            </mat-form-field>
+          </div>
+
+          <ui-inta-signal-select
             appearance="outline"
             [id]="'munitionDumpIds'"
             [valueKey]="'id'"
@@ -84,6 +108,19 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
             [label]="'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.MUNITIONS_DUMP' | translate"
             [placeholder]="'WHAREHOUSE_MANAGMENT.MUNITION_DETAIL.MUNITIONS_DUMP' | translate"
             [options]="munitionDumpsStore.items()"
+          />
+
+          <ui-inta-signal-select
+            appearance="outline"
+            [id]="'cellNames'"
+            [valueKey]="'name'"
+            [multiple]="true"
+            [labelKey]="'name'"
+            [formField]="form.cellNames"
+            [searchable]="true"
+            [label]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_CELL_NAME' | translate"
+            [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_CELL_NAME' | translate"
+            [options]="cellOptions()"
           />
 
           <div>
@@ -97,6 +134,27 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
                 [formField]="form.plannedFireTrialView"
                 [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRIAL_PREVIEW' | translate"
               />
+            </mat-form-field>
+            @if (form.plannedFireTrialView().touched() && form.plannedFireTrialView().errors()) {
+              @for (error of form.plannedFireTrialView().errors(); track error.kind) {
+                <mat-error>{{ error.message | translate }}</mat-error>
+              }
+            }
+          </div>
+
+          <div>
+            <label for="entryDateFrom" class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.ENTERING_DATE' | translate }}
+            </label>
+            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
+              <mat-date-range-input [rangePicker]="OnePicker">
+                <input
+                  id="plannedFireTrialView"
+                  matInput
+                  [formField]="form.plannedFireTrialView"
+                  [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRIAL_PREVIEW' | translate"
+                />
+              </mat-date-range-input>
             </mat-form-field>
             @if (form.plannedFireTrialView().touched() && form.plannedFireTrialView().errors()) {
               @for (error of form.plannedFireTrialView().errors(); track error.kind) {
@@ -207,6 +265,18 @@ import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
             </button>
           </div>
         </div>
+
+        <div>
+          <button
+            mat-flat-button
+            type="button"
+            role="button"
+            [disabled]="!(form().dirty() && form().errorSummary().length === 0) || trialSearchLoading()"
+            (click)="search()"
+          >
+            {{ 'COMMONS.SEARCH' | translate }}
+          </button>
+        </div>
       </form>
     </div>
   `,
@@ -233,19 +303,34 @@ export class StockListFilterComponent {
   store = inject(StockListStore);
   readonly munitionComponentStore = inject(MunitionComponentStore);
   readonly munitionDumpsStore = inject(MunitionsDumpsStore);
+  readonly denominationsStore = inject(DenominationsStore);
   readonly clientDataService = inject(ClientsDataService);
   readonly #translate = inject(TranslateService);
-  readonly #urlTrialSearch = injectFireTrialsEndpoint();
 
   readonly filtersData = output<MunitionStockListSearch>();
 
+  readonly cellOptions = computed(() =>
+    [...new Set(this.munitionDumpsStore.items().flatMap((dump) => dump.cells?.map((cell) => cell.name)))].map(
+      (name) => ({ name }),
+    ),
+  );
+
   constructor() {
     this.munitionComponentStore.search({ pageSize: 100, active: true });
+    this.denominationsStore.search({ pageSize: 500, active: true });
+    effect(() => {
+      const trialId = this.#trialSearch.hasValue() ? (this.#trialSearch.value().items[0]?.id ?? '') : '';
+      if (untracked(() => this.formModel().plannedFireTrialIds) !== trialId) {
+        this.form.plannedFireTrialIds().controlValue.set(trialId);
+      }
+    });
   }
 
   readonly defaultFormValues = {
     clientIds: [],
+    denominationIds: [],
     munitionDumpIds: [],
+    cellNames: [],
     munitionTypeIds: [],
     plannedFireTrialIds: '',
     plannedFireTrialView: '',
@@ -258,113 +343,92 @@ export class StockListFilterComponent {
   };
 
   readonly formModel = signal<MunitionStockListFilterForm>(this.defaultFormValues);
+  readonly #trialSearch = injectTrialSearch(computed(() => this.formModel().plannedFireTrialView));
+  protected readonly trialSearchLoading = this.#trialSearch.isLoading;
 
-  readonly form = form(
-    this.formModel,
-    (schemaPath) => {
-      validate(schemaPath.quantity, ({ value }) => {
-        const { min, max } = value();
+  readonly selectedDenominationNames = computed(() => {
+    const selectedIds = this.formModel().denominationIds;
+    return this.denominationsStore
+      .items()
+      .filter((denomination) => selectedIds.includes(denomination.id))
+      .map((denomination) => denomination.name)
+      .join(', ');
+  });
 
-        if (!min && !max) return null;
+  readonly form = form(this.formModel, (schemaPath) => {
+    validate(schemaPath.quantity, ({ value }) => {
+      const { min, max } = value();
 
-        const numMin = min ? +min : null;
-        const numMax = max ? +max : null;
+      if (!min && !max) return null;
 
-        if (numMin && numMin < 0)
-          return {
-            kind: 'min_greater_than_zero',
-            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MIN_GREATER_THAN_ZERO'),
-          };
+      const numMin = min ? +min : null;
+      const numMax = max ? +max : null;
 
-        if (numMax && numMax < 0)
-          return {
-            kind: 'max_greater_than_zero',
-            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MAX_GREATER_THAN_ZERO'),
-          };
+      if (numMin && numMin < 0)
+        return {
+          kind: 'min_greater_than_zero',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MIN_GREATER_THAN_ZERO'),
+        };
 
-        if (numMin && numMax && numMin > numMax)
-          return {
-            kind: 'wrong_interval',
-            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG'),
-          };
+      if (numMax && numMax < 0)
+        return {
+          kind: 'max_greater_than_zero',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MAX_GREATER_THAN_ZERO'),
+        };
 
-        return null;
-      });
-      pattern(schemaPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN);
-      validateHttp(schemaPath.plannedFireTrialView, {
-        request: ({ value }) => {
-          if (!value()) return undefined;
-          return {
-            url: this.#urlTrialSearch,
-            params: { trialNumber: value() },
-          };
-        },
-        onSuccess: (response: SearchByTrialNumberResponse) => {
-          if (response.items.length > 0) {
-            this.form.plannedFireTrialIds().controlValue.set(response.items[0].id);
-            return null;
-          }
-          return {
-            kind: 'trialNotFound',
-            message: 'WHAREHOUSE_MANAGMENT.TRIAL_NOT_FOUND',
-          };
-        },
-        onError: () => ({
-          kind: 'networkError',
-          message: 'Could not verify existance of trial',
-        }),
-      });
-      validate(schemaPath.entryDateFrom, ({ value, valueOf }) => {
-        const startDate = value();
-        const endDate = valueOf(schemaPath.entryDateTo);
+      if (numMin && numMax && numMin > numMax)
+        return {
+          kind: 'wrong_interval',
+          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG'),
+        };
 
-        const startDateFilled = startDate instanceof Date;
-        const endDateFilled = endDate instanceof Date;
+      return null;
+    });
+    pattern(schemaPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN);
+    validate(schemaPath.plannedFireTrialView, () => trialSearchError(this.#trialSearch));
+    validate(schemaPath.entryDateFrom, ({ value, valueOf }) => {
+      const startDate = value();
+      const endDate = valueOf(schemaPath.entryDateTo);
 
-        if (startDateFilled && !endDateFilled)
-          return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
+      const startDateFilled = startDate instanceof Date;
+      const endDateFilled = endDate instanceof Date;
 
-        return null;
-      });
-      validate(schemaPath.retirementDateFrom, ({ value, valueOf }) => {
-        const startDate = value();
-        const endDate = valueOf(schemaPath.retirementDateTo);
+      if (startDateFilled && !endDateFilled)
+        return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
 
-        const startDateFilled = startDate instanceof Date;
-        const endDateFilled = endDate instanceof Date;
+      return null;
+    });
+    validate(schemaPath.retirementDateFrom, ({ value, valueOf }) => {
+      const startDate = value();
+      const endDate = valueOf(schemaPath.retirementDateTo);
 
-        if (startDateFilled && !endDateFilled)
-          return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
+      const startDateFilled = startDate instanceof Date;
+      const endDateFilled = endDate instanceof Date;
 
-        const entryStartDate = valueOf(schemaPath.entryDateFrom);
-        const entryEndDate = valueOf(schemaPath.entryDateTo);
+      if (startDateFilled && !endDateFilled)
+        return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
 
-        const entryDatesFilled = entryStartDate instanceof Date && entryEndDate instanceof Date;
-        const retirementDatesFilled = startDateFilled && endDateFilled;
+      const entryStartDate = valueOf(schemaPath.entryDateFrom);
+      const entryEndDate = valueOf(schemaPath.entryDateTo);
 
-        if (entryDatesFilled && retirementDatesFilled && startDate < entryStartDate)
-          return {
-            kind: 'retirement_start_date_higher_than_entry',
-            message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR',
-          };
+      const entryDatesFilled = entryStartDate instanceof Date && entryEndDate instanceof Date;
+      const retirementDatesFilled = startDateFilled && endDateFilled;
 
-        if (entryDatesFilled && retirementDatesFilled && endDate < entryEndDate)
-          return {
-            kind: 'retirement_end_date_higher_than_entry',
-            message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR',
-          };
+      if (entryDatesFilled && retirementDatesFilled && startDate < entryStartDate)
+        return {
+          kind: 'retirement_start_date_higher_than_entry',
+          message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR',
+        };
 
-        return null;
-      });
-    },
-    {
-      submission: {
-        action: async () => {
-          this.search();
-        },
-      },
-    },
-  );
+      if (entryDatesFilled && retirementDatesFilled && endDate < entryEndDate)
+        return {
+          kind: 'retirement_end_date_higher_than_entry',
+          message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR',
+        };
+
+      return null;
+    });
+  });
 
   search() {
     const criteria = this.formModel();
@@ -375,10 +439,12 @@ export class StockListFilterComponent {
   #castFilterFormIntoListSearch(criteria: MunitionStockListFilterForm) {
     const search = <MunitionStockListSearch>{
       clientIds: criteria.clientIds,
+      denominationIds: criteria.denominationIds,
       batches: criteria.batches,
       plannedFireTrialIds: criteria.plannedFireTrialIds.length ? [criteria.plannedFireTrialIds] : '',
       munitionTypeIds: criteria.munitionTypeIds,
       munitionDumpIds: criteria.munitionDumpIds,
+      cellNames: criteria.cellNames,
       quantityMin: criteria.quantity.min,
       quantityMax: criteria.quantity.max,
       entryDateFrom: criteria.entryDateFrom ? format(criteria.entryDateFrom, 'yyyy-MM-dd') : null,

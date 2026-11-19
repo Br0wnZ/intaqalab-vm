@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, ViewEncapsulation, computed, effect, inject, signal } from '@angular/core';
-import { FormField, FormRoot, form, pattern, schema, validateHttp } from '@angular/forms/signals';
+import { Component, ViewEncapsulation, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormField, FormRoot, form, pattern, schema, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,7 +10,6 @@ import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { injectFireTrialsEndpoint } from '@intaqalab/config';
 import { ClientsDataService } from '@intaqalab/data-access';
 import { IntaIconComponent, IntaSignalSelectComponent } from '@intaqalab/ui';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -20,8 +19,7 @@ import { StockListStore } from '../../../+state/stock-list.store';
 import type { MunitionDetailResponseModel } from '../../../models/munition-stock-detail.model';
 import type { MunitionStockListResponse, MunitionStockListSearch } from '../../../models/munition-stock-list.model';
 import { MunitionsStockCertificatesService } from '../../../services/munitions-stock-certificates.service';
-import type { SearchByTrialNumberResponse } from '../../../utils/search-trial.utils';
-import { PLANNED_TRIAL_PATTERN } from '../../../utils/search-trial.utils';
+import { PLANNED_TRIAL_PATTERN, injectTrialSearch, trialSearchError } from '../../../utils/search-trial.utils';
 
 type LinkFilter = {
   clientId: string;
@@ -96,7 +94,13 @@ const DEFAULT_COLUMNS = ['denomination', 'batch', 'client', 'plannedFireTrial'] 
             }
           }
           <div class="flex justify-end mt-4 gap-2">
-            <button mat-raised-button type="submit" [disabled]="!filterForm().dirty()">
+            <button
+              mat-raised-button
+              type="button"
+              role="button"
+              [disabled]="!filterForm().dirty() || filterForm.plannedFireTrialView().invalid() || trialSearchLoading()"
+              (click)="search()"
+            >
               {{ 'COMMONS.SEARCH' | translate }}
             </button>
           </div>
@@ -206,33 +210,12 @@ export class LinkCertificatesDialogComponent {
     plannedFireTrialView: '',
   });
 
-  urlTrialSearch = injectFireTrialsEndpoint();
+  readonly #trialSearch = injectTrialSearch(computed(() => this.formModel().plannedFireTrialView));
+  protected readonly trialSearchLoading = this.#trialSearch.isLoading;
   schemaForm = schema<LinkFilter>((rootPath) => {
     return (
       pattern(rootPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN),
-      validateHttp(rootPath.plannedFireTrialView, {
-        request: ({ value }) => {
-          if (!value()) return undefined;
-          return {
-            url: this.urlTrialSearch,
-            params: { trialNumber: value() },
-          };
-        },
-        onSuccess: (response: SearchByTrialNumberResponse) => {
-          if (response.items.length > 0) {
-            this.filterForm.plannedFireTrialId().controlValue.set(response.items[0].id);
-            return null;
-          }
-          return {
-            kind: 'trialNotFound',
-            message: 'WHAREHOUSE_MANAGMENT.TRIAL_NOT_FOUND',
-          };
-        },
-        onError: () => ({
-          kind: 'networkError',
-          message: 'WHAREHOUSE_MANAGMENT.TRIAL_NOT_FOUND_NETWORK',
-        }),
-      })
+      validate(rootPath.plannedFireTrialView, () => trialSearchError(this.#trialSearch))
     );
   });
 
@@ -267,6 +250,13 @@ export class LinkCertificatesDialogComponent {
     // if (this.data.stockDetail.generalData.plannedFireTrial) {
     //   this.filterForm.plannedFireTrialId().controlValue.set(this.data.stockDetail.generalData.plannedFireTrial.id);
     // }
+
+    effect(() => {
+      const trialId = this.#trialSearch.hasValue() ? (this.#trialSearch.value().items[0]?.id ?? '') : '';
+      if (untracked(() => this.formModel().plannedFireTrialId) !== trialId) {
+        this.filterForm.plannedFireTrialId().controlValue.set(trialId);
+      }
+    });
 
     effect(() => {
       const page = this.pageIndex() + 1;

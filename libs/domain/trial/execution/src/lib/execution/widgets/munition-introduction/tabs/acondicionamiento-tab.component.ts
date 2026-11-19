@@ -232,8 +232,6 @@ export class MunitionAcondicionamientoTabComponent {
   readonly plannedComponenteOptions = input<Array<{ value: string; label: string; category?: string }>>([]);
 
   readonly componenteOptions = computed(() => {
-    const chamberOptions = this.#climaticChambers.options();
-    if (chamberOptions.length > 0) return chamberOptions;
     const fromInput = this.plannedComponenteOptions();
     return fromInput.length > 0 ? fromInput : this.#store.munitionIntroduction().componenteOptions;
   });

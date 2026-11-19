@@ -1,4 +1,6 @@
-﻿import { signal } from '@angular/core';
+﻿import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { signal } from '@angular/core';
+import { MatTooltipHarness } from '@angular/material/tooltip/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -59,7 +61,8 @@ describe('MovementsListComponent', () => {
         provideTestingEnvironment(),
         // Ambos stores se inyectan con { skipSelf: true } en los componentes
         { provide: MovementsListStore, useValue: mockStore },
-        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore }, provideTranslateService(),
+        { provide: MunitionsDumpsStore, useValue: mockMunitionsDumpsStore },
+        provideTranslateService(),
       ],
     });
     view.fixture.detectChanges();
@@ -89,6 +92,20 @@ describe('MovementsListComponent', () => {
       expect(screen.getByText(mockItem.user.name)).toBeInTheDocument();
       expect(screen.getByText(mockItem.originMunitionDump.munitionDumpId)).toBeInTheDocument();
       expect(screen.getByText(mockItem.destinationMunitionDump.munitionDumpId)).toBeInTheDocument();
+    });
+
+    it('shows observations in the last column and its full text in the tooltip', async () => {
+      const observations = 'Observations for this movement';
+      const { fixture } = await setup([{ ...mockItem, observations }]);
+      const headers = screen.getAllByRole('columnheader');
+      expect(headers[headers.length - 1]).toHaveTextContent('COMMONS.OBSERVATIONS');
+      expect(screen.getByRole('cell', { name: observations })).toBeInTheDocument();
+
+      const tooltips = await TestbedHarnessEnvironment.loader(fixture).getAllHarnesses(MatTooltipHarness);
+      const tooltip = tooltips[0];
+      if (!tooltip) throw new Error('Expected observations tooltip');
+      await tooltip.show();
+      expect(await tooltip.getTooltipText()).toBe(observations);
     });
   });
 

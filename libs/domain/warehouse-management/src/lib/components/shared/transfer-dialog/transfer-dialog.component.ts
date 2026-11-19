@@ -57,7 +57,7 @@ import { MunitionsStockDetailService } from '../../../services/munitions-stock-d
             [placeholder]="'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.CELL_PLACEHOLDER' | translate"
             [options]="cellOptions()"
           />
-          @if (data.items.length === 1) {
+          @if (hasSingleItem) {
             <div>
               <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                 {{ 'WHAREHOUSE_MANAGMENT.DIALOG_TRANSFER.QUANTITY_LABEL' | translate }}
@@ -104,6 +104,7 @@ export class TransferDialogComponent {
   readonly data = inject<{
     items: MunitionDetailResponseModel[];
   }>(MAT_DIALOG_DATA);
+  readonly hasSingleItem = this.data.items.length === 1;
 
   readonly #munitionsStockDetailService = inject(MunitionsStockDetailService);
   munitionDumpsDataService = inject(MunitionsDumpsService);
@@ -129,7 +130,7 @@ export class TransferDialogComponent {
   });
 
   readonly formModel = signal<{ quantity: number; munitionDumpId: string; cellName: string }>({
-    quantity: 0,
+    quantity: this.hasSingleItem ? this.data.items[0].quantity : 0,
     munitionDumpId: '',
     cellName: '',
   });
@@ -138,7 +139,7 @@ export class TransferDialogComponent {
     (f) => {
       apply(f.quantity, boundedNumberSchema(0, 999999));
       validate(f.quantity, ({ value }) => {
-        if (this.data.items.length !== 1) return null;
+        if (!this.hasSingleItem) return null;
 
         const quantity = value();
 
@@ -167,7 +168,7 @@ export class TransferDialogComponent {
       cellName: formModelData.cellName,
       items: this.data.items.map((item) => {
         return {
-          quantity: this.data.items.length === 1 ? formModelData.quantity : item.quantity,
+          quantity: this.hasSingleItem ? formModelData.quantity : item.quantity,
           stockId: item.id,
         };
       }),

@@ -8,6 +8,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import type { Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
+import { ValueTooltip } from '@intaqalab/ui';
 import { IntaDatePipe } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -24,6 +25,7 @@ const DEFAULT_COLUMNS = [
   'totalNeq',
   'reason',
   'associatedFireTrialName',
+  'observations',
 ] as const;
 @Component({
   selector: 'inta-movements-list',
@@ -38,6 +40,7 @@ const DEFAULT_COLUMNS = [
     MatPaginatorModule,
     MatSortModule,
     MatCheckboxModule,
+    ValueTooltip,
   ],
   template: `
     <inta-movements-filter [stockId]="stockId" />
@@ -155,6 +158,22 @@ const DEFAULT_COLUMNS = [
             </th>
             <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-900 !bg-white">
               <span>{{ item?.associatedFireTrial?.name }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="observations">
+            <th *matHeaderCellDef mat-header-cell class="text-xs font-medium text-gray-600 px-6 py-3 !bg-gray-100">
+              {{ 'COMMONS.OBSERVATIONS' | translate }}
+            </th>
+            <td *matCellDef="let item" mat-cell class="px-6 py-4 text-sm text-gray-600 max-w-xs !bg-white">
+              <div
+                uiValueTooltip
+                uiValueTooltipPosition="above"
+                class="truncate"
+                [uiValueTooltipValue]="item.observations"
+              >
+                <span class="text-sm text-gray-900">{{ item.observations }}</span>
+              </div>
             </td>
           </ng-container>
 

@@ -22,10 +22,12 @@ export interface MunitionStockListSearch extends PaginatedSortedViewRequest {
 
 export interface MunitionStockListFilterForm {
   clientIds: string[];
+  denominationIds: string[];
   plannedFireTrialIds: string;
   plannedFireTrialView: string;
   munitionTypeIds: string[];
   munitionDumpIds: string[];
+  cellNames: string[];
   entryDateFrom: Date | null;
   entryDateTo: Date | null;
   retirementDateFrom: Date | null;

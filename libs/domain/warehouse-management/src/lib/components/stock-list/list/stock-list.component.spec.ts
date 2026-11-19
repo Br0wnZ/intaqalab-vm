@@ -12,6 +12,7 @@ import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 
+import { DenominationsStore } from '../../../+state/denominations.store';
 import { MunitionComponentStore } from '../../../+state/munition-component.store';
 import { MunitionsDumpsStore } from '../../../+state/munition-dumps.store';
 import { StockListStore } from '../../../+state/stock-list.store';
@@ -127,9 +128,11 @@ async function setup(opts: SetupOptions = {}) {
       { provide: AuthService, useValue: { userRoles } },
       { provide: StockListStore, useValue: stockListStore },
       { provide: MunitionComponentStore, useValue: munitionComponentStore },
+      { provide: DenominationsStore, useValue: { items: signal([]), search: vi.fn() } },
       { provide: MunitionsDumpsStore, useValue: munitionsDumpsStore },
       { provide: ClientsDataService, useValue: clientsDataService },
-      { provide: Router, useValue: mockRouter }, provideTranslateService(),
+      { provide: Router, useValue: mockRouter },
+      provideTranslateService(),
     ],
     componentProviders: [{ provide: MatDialog, useValue: mockDialog }],
   });
@@ -163,7 +166,9 @@ describe('StockListComponent', () => {
     it('should render the column headers', async () => {
       await setup();
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_TYPE')).toBeInTheDocument();
-      expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION')).toBeInTheDocument();
+      expect(
+        screen.getByRole('columnheader', { name: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_DENOMINATION' }),
+      ).toBeInTheDocument();
       expect(screen.getAllByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_BATCH').length).toBeGreaterThan(0);
       expect(screen.getByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.COL_STATUS')).toBeInTheDocument();
     });

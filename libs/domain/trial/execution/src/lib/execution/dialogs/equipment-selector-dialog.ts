@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import type { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
-import { ErrorState, SaveButton, Skeleton } from '@intaqalab/ui';
+import { ErrorState, SaveButton, Skeleton, ValueTooltip } from '@intaqalab/ui';
 import { RangePipe } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -46,6 +46,7 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
     Skeleton,
     ErrorState,
     SaveButton,
+    ValueTooltip,
     RangePipe,
   ],
   encapsulation: ViewEncapsulation.None,
@@ -170,6 +171,10 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                         <mat-label>{{ field.label }}</mat-label>
                         @if (field.type === 'select') {
                           <mat-select
+                            uiValueTooltip
+                            [uiValueTooltipValue]="
+                              getFieldOptionLabel(row.rowId, field.key, field.sourceCategoryId, row.series)
+                            "
                             [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-' + field.key"
                             [disabled]="
                               field.sourceCategoryId === 'municion' ||
@@ -233,7 +238,9 @@ export type EquipmentItemSelectionEntry = EquipmentItemSelection;
                         {{ 'TRIAL_EXECUTION.DIALOGS.EQUIPMENT_SELECTOR.SHOTS_PLACEHOLDER' | translate }}
                       </mat-label>
                       <mat-select
+                        uiValueTooltip
                         multiple
+                        [uiValueTooltipValue]="getShotOptionLabels(row.disparos, row.series)"
                         [id]="'equipment-' + selectedTagId() + '-' + row.rowId + '-shots'"
                         [value]="row.disparos"
                         [panelWidth]="null"
@@ -345,8 +352,25 @@ export class EquipmentSelectorDialog {
     return this.#store.getItemsByCategory(categoryId, series);
   }
 
+  getFieldOptionLabel(
+    rowId: string,
+    fieldKey: string,
+    categoryId: EquipmentTypeEnum | string | '',
+    series?: readonly string[],
+  ): string {
+    const value = this.getFieldValue(rowId, fieldKey);
+    return this.getItemsByCategory(categoryId, series).find((item) => item.id === value)?.label ?? '';
+  }
+
   getShotOptions(series: readonly string[]): EquipmentSelectorDialogData['disparoOptions'] {
     return this.#store.getShotOptions(series);
+  }
+
+  getShotOptionLabels(selectedValues: readonly string[], series: readonly string[]): string {
+    return this.getShotOptions(series)
+      .filter((option) => selectedValues.includes(option.value))
+      .map((option) => option.label)
+      .join(', ');
   }
 
   handleSeriesSelection(rowId: string, selectedValues: readonly string[]): void {
