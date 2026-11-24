@@ -76,14 +76,12 @@ export const MunitionsStore = signalStore(
         return (
           response?.items
             .filter((item: WarehouseMunitionTypeItem) => item.category === 'MUNITION')
-            .map(
-              (item: WarehouseMunitionTypeItem): MasterDataI18nItem => ({
-                id: item.id,
-                name: item.name as Record<string, string>,
-                label: item.label,
-                active: item.active,
-              }),
-            ) ?? []
+            .map((item: WarehouseMunitionTypeItem): MasterDataI18nItem => ({
+              id: item.id,
+              name: item.name as Record<string, string>,
+              label: item.label,
+              active: item.active,
+            })) ?? []
         );
       }),
       componentTypesPagination: computed(() => {
@@ -114,14 +112,12 @@ export const MunitionsStore = signalStore(
       denominations: computed<MasterDataI18nItem[]>(() => {
         const response = munitionsService.denominationsResource.value();
         return (
-          response?.items.map(
-            (item: WarehouseDenominationItem): MasterDataI18nItem => ({
-              id: item.id,
-              name: { es: item.name, en: item.name },
-              label: item.name,
-              active: item.active,
-            }),
-          ) ?? []
+          response?.items.map((item: WarehouseDenominationItem): MasterDataI18nItem => ({
+            id: item.id,
+            name: { es: item.name, en: item.name },
+            label: item.name,
+            active: item.active,
+          })) ?? []
         );
       }),
 

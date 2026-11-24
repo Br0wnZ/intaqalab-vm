@@ -11,7 +11,7 @@ import { vi } from 'vitest';
 import { MunitionsStore } from '../../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../../+state/series-and-shots.store';
-import { createEmptyComponentDetail } from '../../../utils-models/munitions.model';
+import { MAX_RECONDITIONING_VALUE, createEmptyComponentDetail } from '../../../utils-models/munitions.model';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog';
 
 describe('MassiveMunitionsConfigurationDialog Placeholder', () => {
@@ -104,6 +104,22 @@ describe('MassiveMunitionsConfigurationDialog', () => {
     expect(
       screen.getByText('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.COMPONENT_SELECTOR_LABEL'),
     ).toBeInTheDocument();
+  });
+
+  it('should apply the shared conditioning maximum to general and component fields', async () => {
+    const { fixture } = await renderDialog();
+    const dialog = fixture.componentInstance;
+
+    dialog.onConditioningToggle(true);
+    dialog.formData.selectedComponents = ['espoleta'];
+    dialog.onComponentConditioningToggle('espoleta', true);
+    fixture.detectChanges();
+
+    for (const label of [/temperature_label/i, /tolerance_label/i, /min_time_label/i, /max_time_label/i]) {
+      for (const input of screen.getAllByLabelText(label)) {
+        expect(input).toHaveAttribute('max', String(MAX_RECONDITIONING_VALUE));
+      }
+    }
   });
 
   it('should display action buttons', async () => {
@@ -447,6 +463,59 @@ describe('MassiveMunitionsConfigurationDialog', () => {
     expect(alertSpy).toHaveBeenCalled();
     expect(dialogRefMock.close).not.toHaveBeenCalled();
 
+    alertSpy.mockRestore();
+  });
+
+  it('should disable apply and reject general conditioning values above the maximum', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    mockMunitionsStore.updateMunitions.mockClear();
+    const { fixture } = await renderDialog();
+    const dialog = fixture.componentInstance;
+
+    dialog.formData.assignedShotIds = ['shot-1'];
+    dialog.formData.reconditioning = {
+      temperature: 20,
+      tolerance: 2,
+      timeMin: 24,
+      timeMax: MAX_RECONDITIONING_VALUE + 1,
+    };
+    fixture.detectChanges();
+
+    expect(
+      screen.getByRole('button', { name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i }),
+    ).toBeDisabled();
+
+    dialog.onApply();
+
+    expect(mockMunitionsStore.updateMunitions).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it('should disable apply and reject selected component conditioning above the maximum', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    mockMunitionsStore.updateMunitions.mockClear();
+    const { fixture } = await renderDialog();
+    const dialog = fixture.componentInstance;
+    const componentData = createEmptyComponentDetail('espoleta');
+
+    componentData.denomination = { id: 'denom-1', name: 'Espoleta 1' };
+    componentData.reconditioning = {
+      temperature: MAX_RECONDITIONING_VALUE + 1,
+      tolerance: 2,
+      timeMin: 24,
+    };
+    dialog.formData.assignedShotIds = ['shot-1'];
+    dialog.formData.selectedComponents = ['espoleta'];
+    dialog.formData.componentsData['espoleta'] = componentData;
+    fixture.detectChanges();
+
+    expect(
+      screen.getByRole('button', { name: /TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON/i }),
+    ).toBeDisabled();
+
+    dialog.onApply();
+
+    expect(mockMunitionsStore.updateMunitions).not.toHaveBeenCalled();
     alertSpy.mockRestore();
   });
 

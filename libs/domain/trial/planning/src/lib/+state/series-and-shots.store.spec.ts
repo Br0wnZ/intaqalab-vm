@@ -1,4 +1,4 @@
-import { signal, type WritableSignal } from '@angular/core';
+import { type WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createMockSeriesAndShotsService } from '@intaqalab/utils';
 

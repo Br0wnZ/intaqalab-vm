@@ -2,9 +2,9 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { Injector, Service, inject, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import {
+  type PlanningConditionsResponse,
   PlanningTrialContextService,
   planningRevisionParams,
-  type PlanningConditionsResponse,
 } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 import { firstValueFrom } from 'rxjs';
@@ -123,10 +123,7 @@ export class PlanningModificationsService {
     centerId?: string,
   ): Promise<PlanningChange[]> {
     return firstValueFrom(
-      this.#http.post<PlanningChange[]>(
-        this.#buildTrialPlanningUrl(fireTrialId, centerId, 'changes', 'apply'),
-        body,
-      ),
+      this.#http.post<PlanningChange[]>(this.#buildTrialPlanningUrl(fireTrialId, centerId, 'changes', 'apply'), body),
     );
   }
 

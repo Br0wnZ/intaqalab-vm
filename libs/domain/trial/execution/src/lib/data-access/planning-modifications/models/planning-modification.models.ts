@@ -69,11 +69,7 @@ export interface ReviewModificationRequest {
 // --- Planning Changes (GET /planning/changes) ---
 
 export type PlanningChangeResourceType =
-  | 'PLANNING_INFO'
-  | 'SHOT_CONDITIONS'
-  | 'MUNITION'
-  | 'MUNITION_COMPONENT'
-  | 'ARMAMENT';
+  'PLANNING_INFO' | 'SHOT_CONDITIONS' | 'MUNITION' | 'MUNITION_COMPONENT' | 'ARMAMENT';
 
 export type PlanningChangeStatus = 'DRAFT' | 'ACCEPTED' | 'PENDING' | 'REJECTED';
 

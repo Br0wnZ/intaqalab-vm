@@ -61,7 +61,9 @@ const FIELD_LABEL_MAP: Record<string, string> = {
   ],
   template: `
     @if (modifications().length === 0) {
-      <div class="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+      <div
+        class="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-500 border border-dashed border-gray-300 rounded-lg bg-gray-50"
+      >
         <mat-icon class="text-gray-400 !w-10 !h-10 !text-[40px] mb-2">playlist_add_check</mat-icon>
         <p class="text-sm m-0">
           {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.DIALOG.EMPTY_STATE' | translate }}
@@ -69,24 +71,24 @@ const FIELD_LABEL_MAP: Record<string, string> = {
       </div>
     } @else {
       <div class="overflow-x-auto border border-gray-200/80 rounded-xl bg-white shadow-xs">
-        <table mat-table [dataSource]="modifications()" class="w-full">
+        <table mat-table class="w-full" [dataSource]="modifications()">
           <ng-container matColumnDef="parameter">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.PARAMETER' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-sm text-gray-700 font-normal py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-sm text-gray-700 font-normal py-4 px-6">
               {{ getParameter(row) }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="action">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               <span class="inline-flex items-center gap-1">
                 <span>{{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.ACTION' | translate }}</span>
                 <span class="text-xs text-gray-400">↓</span>
               </span>
             </th>
-            <td mat-cell *matCellDef="let row" class="py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="py-4 px-6">
               <span
                 class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
                 [class]="getActionBadgeClass(row)"
@@ -97,40 +99,40 @@ const FIELD_LABEL_MAP: Record<string, string> = {
           </ng-container>
 
           <ng-container matColumnDef="previousValue">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.PREVIOUS_VALUE' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-sm text-gray-400 font-normal py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-sm text-gray-400 font-normal py-4 px-6">
               {{ getPreviousValue(row) }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="newValue">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.NEW_VALUE' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-sm text-gray-600 font-normal py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-sm text-gray-600 font-normal py-4 px-6">
               {{ getNewValue(row) }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="affectedShots">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.AFFECTED_SHOTS' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-sm text-gray-600 font-normal py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-sm text-gray-600 font-normal py-4 px-6">
               {{ getAffectedShots(row) }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef class="font-normal text-gray-500 text-sm py-3.5 px-6">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               <span class="inline-flex items-center gap-1">
                 <span>{{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.STATUS' | translate }}</span>
                 <span class="text-xs text-gray-400">↓</span>
               </span>
             </th>
-            <td mat-cell *matCellDef="let row" class="py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="py-4 px-6">
               <span
                 class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
                 [class]="getStatusBadgeClass(row)"
@@ -142,24 +144,24 @@ const FIELD_LABEL_MAP: Record<string, string> = {
 
           <ng-container matColumnDef="accept">
             <th
-              mat-header-cell
               *matHeaderCellDef
+              mat-header-cell
               class="font-normal text-gray-500 text-sm text-center py-3.5 px-6"
               [matTooltip]="'TRIAL_EXECUTION.PLANNING_MODIFICATION.CLASSIFICATION.ACCEPT_TOOLTIP' | translate"
             >
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.ACCEPT' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-center py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-center py-4 px-6">
               <div class="flex items-center justify-center">
                 <mat-slide-toggle
                   uiStopClick
+                  class="planning-slide-toggle"
                   [preventDefault]="false"
                   [checked]="isAcceptChecked(row)"
                   [disabled]="isClassificationDisabled(row)"
                   [attr.aria-label]="
                     ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.ACCEPT' | translate) + ' - ' + getParameter(row)
                   "
-                  class="planning-slide-toggle"
                   (change)="onToggleClassification(row, 'acepta')"
                 />
               </div>
@@ -168,32 +170,36 @@ const FIELD_LABEL_MAP: Record<string, string> = {
 
           <ng-container matColumnDef="request">
             <th
-              mat-header-cell
               *matHeaderCellDef
+              mat-header-cell
               class="font-normal text-gray-500 text-sm text-center py-3.5 px-6"
               [matTooltip]="'TRIAL_EXECUTION.PLANNING_MODIFICATION.CLASSIFICATION.REQUEST_TOOLTIP' | translate"
             >
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.REQUEST' | translate }}
             </th>
-            <td mat-cell *matCellDef="let row" class="text-center py-4 px-6">
+            <td *matCellDef="let row" mat-cell class="text-center py-4 px-6">
               <div class="flex items-center justify-center">
                 <mat-slide-toggle
                   uiStopClick
+                  class="planning-slide-toggle"
                   [preventDefault]="false"
                   [checked]="isRequestChecked(row)"
                   [disabled]="isClassificationDisabled(row)"
                   [attr.aria-label]="
                     ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.REQUEST' | translate) + ' - ' + getParameter(row)
                   "
-                  class="planning-slide-toggle"
                   (change)="onToggleClassification(row, 'solicita')"
                 />
               </div>
             </td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50/60 border-b border-gray-100"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns" class="border-b border-gray-100 hover:bg-gray-50/40 transition-colors"></tr>
+          <tr *matHeaderRowDef="displayedColumns" mat-header-row class="bg-gray-50/60 border-b border-gray-100"></tr>
+          <tr
+            *matRowDef="let row; columns: displayedColumns"
+            mat-row
+            class="border-b border-gray-100 hover:bg-gray-50/40 transition-colors"
+          ></tr>
         </table>
       </div>
     }
@@ -256,7 +262,7 @@ export class ModificationsTable {
   }
 
   protected getPreviousValue(row: PlanningModificationRow): string {
-    const val = 'previousValue' in row ? row.previousValue : ('oldValue' in row ? row.oldValue : null);
+    const val = 'previousValue' in row ? row.previousValue : 'oldValue' in row ? row.oldValue : null;
     if (val === null || val === undefined || val === '') {
       return '-';
     }
@@ -356,4 +362,3 @@ export class ModificationsTable {
     }
   }
 }
-

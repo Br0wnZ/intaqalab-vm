@@ -5,10 +5,7 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { PlanningTrialContextService } from '@intaqalab/data-access-planning';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type {
-  PlanningModification,
-  SubmitPlanningModificationsResponse,
-} from './models/planning-modification.models';
+import type { PlanningModification, SubmitPlanningModificationsResponse } from './models/planning-modification.models';
 import { PlanningModificationsService } from './planning-modifications.service';
 
 const MOCK_MODIFICATION: PlanningModification = {

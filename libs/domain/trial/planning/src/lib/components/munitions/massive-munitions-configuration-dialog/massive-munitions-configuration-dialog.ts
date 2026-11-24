@@ -27,6 +27,7 @@ import type {
   ReconditioningData,
 } from '../../../utils-models/munitions.model';
 import {
+  MAX_RECONDITIONING_VALUE,
   createEmptyComponentDetail,
   createEmptyMassiveConfigFormData,
   createEmptyReconditioning,
@@ -264,6 +265,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     id="temperature"
                     matInput
                     type="number"
+                    [attr.max]="maxReconditioningValue"
                     [value]="formData.reconditioning?.temperature ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('temperature', $any($event.target).valueAsNumber)"
@@ -283,6 +285,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     matInput
                     type="number"
                     libNoNegativeValues
+                    [attr.max]="maxReconditioningValue"
                     [value]="formData.reconditioning?.tolerance ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('tolerance', $any($event.target).valueAsNumber)"
@@ -303,6 +306,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     libNoNegativeValues
                     type="number"
                     libNoNegativeValues
+                    [attr.max]="maxReconditioningValue"
                     [value]="formData.reconditioning?.timeMin ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('timeMin', $any($event.target).valueAsNumber)"
@@ -322,6 +326,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                     matInput
                     libNoNegativeValues
                     type="number"
+                    [attr.max]="maxReconditioningValue"
                     [value]="formData.reconditioning?.timeMax ?? ''"
                     (keydown)="onDecimalKeydown($event)"
                     (input)="onReconditioningFieldChange('timeMax', $any($event.target).valueAsNumber)"
@@ -581,6 +586,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               placeholder="0"
                               matInput
                               type="number"
+                              [attr.max]="maxReconditioningValue"
                               [id]="'component-temperature-' + component"
                               [value]="getComponentData(component).reconditioning?.temperature ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -608,6 +614,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               matInput
                               type="number"
                               libNoNegativeValues
+                              [attr.max]="maxReconditioningValue"
                               [id]="'component-tolerance-' + component"
                               [value]="getComponentData(component).reconditioning?.tolerance ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -635,6 +642,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               matInput
                               type="number"
                               libNoNegativeValues
+                              [attr.max]="maxReconditioningValue"
                               [id]="'component-timeMin-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMin ?? '24'"
                               (keydown)="onDecimalKeydown($event)"
@@ -658,6 +666,7 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
                               matInput
                               type="number"
                               libNoNegativeValues
+                              [attr.max]="maxReconditioningValue"
                               [id]="'component-timeMax-' + component"
                               [value]="getComponentData(component).reconditioning?.timeMax ?? ''"
                               (keydown)="onDecimalKeydown($event)"
@@ -703,7 +712,9 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
       <mat-dialog-actions class="!flex !justify-center !gap-3 !px-6 !pb-6 !pt-4">
         <button
           mat-flat-button
-          [disabled]="!formData.assignedShotIds || formData.assignedShotIds.length === 0"
+          [disabled]="
+            !formData.assignedShotIds || formData.assignedShotIds.length === 0 || hasConditioningLimitViolation
+          "
           (click)="onApply()"
         >
           {{ 'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.APPLY_BUTTON' | translate }}
@@ -718,6 +729,8 @@ import { SuplementoDetailFormComponent } from '../component-detail-form/suplemen
   encapsulation: ViewEncapsulation.None,
 })
 export class MassiveMunitionsConfigurationDialog {
+  protected readonly maxReconditioningValue = MAX_RECONDITIONING_VALUE;
+
   readonly denominationSearchInputRef = viewChild<ElementRef<HTMLInputElement>>('denominationSearchInput');
   readonly #dialogRef = inject(MatDialogRef<MassiveMunitionsConfigurationDialog>);
   readonly #translate = inject(TranslateService);
@@ -821,6 +834,25 @@ export class MassiveMunitionsConfigurationDialog {
 
   get isConditioningEnabled(): boolean {
     return this.formData.reconditioning !== undefined;
+  }
+
+  protected get hasConditioningLimitViolation(): boolean {
+    return (
+      this.#hasReconditioningValueAboveMaximum(this.formData.reconditioning) ||
+      (this.formData.selectedComponents ?? []).some((component) =>
+        this.#hasReconditioningValueAboveMaximum(this.formData.componentsData[component]?.reconditioning),
+      )
+    );
+  }
+
+  #hasReconditioningValueAboveMaximum(data?: ReconditioningData | null): boolean {
+    return (
+      data !== undefined &&
+      data !== null &&
+      [data.temperature, data.tolerance, data.timeMin, data.timeMax].some(
+        (value) => value !== undefined && value !== null && value > MAX_RECONDITIONING_VALUE,
+      )
+    );
   }
 
   get assignedShotIdsDisplay(): string {
@@ -1061,6 +1093,16 @@ export class MassiveMunitionsConfigurationDialog {
           this.#translate.instant('TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.MAX_TIME_REQUIRED'),
         );
       }
+      if (this.#hasReconditioningValueAboveMaximum(this.formData.reconditioning)) {
+        errors.push(
+          this.#translate.instant(
+            'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.RECONDITIONING_MAX_EXCEEDED',
+            {
+              max: MAX_RECONDITIONING_VALUE,
+            },
+          ),
+        );
+      }
     }
 
     if (this.formData.clientNumber) {
@@ -1088,6 +1130,18 @@ export class MassiveMunitionsConfigurationDialog {
           .replace(/[\u0300-\u036f]/g, '');
         const isPowder = normType === 'polvora' || normType.startsWith('polvora-') || normType.startsWith('polvora');
         const componentData = this.formData.componentsData[component];
+
+        if (this.#hasReconditioningValueAboveMaximum(componentData?.reconditioning)) {
+          errors.push(
+            this.#translate.instant(
+              'TRIAL_PLANNING.MUNITIONS.MASSIVE_CONFIG_DIALOG.VALIDATION.COMPONENT_RECONDITIONING_MAX_EXCEEDED',
+              {
+                component: this.getComponentLabel(component),
+                max: MAX_RECONDITIONING_VALUE,
+              },
+            ),
+          );
+        }
 
         if (componentData && componentData.maxAllowedErrors > 99) {
           errors.push(`El número máximo de fallos de ${this.getComponentLabel(component)} no puede ser superior a 99`);

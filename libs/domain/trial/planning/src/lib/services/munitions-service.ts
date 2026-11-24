@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { signal, Service } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import {
   injectMunitionComponentTypesEndpoint,
   injectMunitionDenominationsEndpoint,

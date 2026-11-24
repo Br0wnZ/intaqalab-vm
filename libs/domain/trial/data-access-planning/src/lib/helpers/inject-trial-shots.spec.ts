@@ -65,7 +65,9 @@ describe('injectTrialShots', () => {
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-123' });
     TestBed.tick();
 
-    const req = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`);
+    const req = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`,
+    );
     expect(req.request.method).toBe('GET');
     req.flush(MOCK_SERIES);
     TestBed.tick();
@@ -86,7 +88,9 @@ describe('injectTrialShots', () => {
 
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-123' });
     TestBed.tick();
-    httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`).flush(MOCK_SERIES);
+    httpTestingController
+      .expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`)
+      .flush(MOCK_SERIES);
     TestBed.tick();
     await settle();
     expect(handle.shots()).toHaveLength(3);
@@ -94,7 +98,9 @@ describe('injectTrialShots', () => {
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-456' });
     TestBed.tick();
 
-    const req = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-456/planning/series?revision=execution`);
+    const req = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/fire-trials/trial-456/planning/series?revision=execution`,
+    );
     req.flush([]);
     TestBed.tick();
     await settle();

@@ -2,6 +2,7 @@ stages:
     - security-tests
     - unit-tests    
     - build
+    - version
     - compile
     - deploy
 
@@ -16,6 +17,7 @@ variables:
   KANIKO_IMAGE: "registry.tools.inta.es/builders/kaniko-executor:v1.23.2-debug" 
   KUBERNETES_MEMORY_REQUEST: "4Gi"
   KUBERNETES_MEMORY_LIMIT: "12Gi"
+  VERSION_JOB_IMAGE: "registry.tools.inta.es/builders/node:22.14.0"
 
 
 blackduck-des:
@@ -468,8 +470,13 @@ image-package-pre:
   tags: [k8s-des]  
   variables:
     ENV: "pre"
-    INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    INTA_REGISTRY_IMAGE_TAG: "${VERSION}"
   extends: .kaniko-package-image-job
+  needs:
+    - job: version-rc
+      artifacts: true
+    - job: build-pre
+      artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == "preprod"  
 
@@ -478,8 +485,13 @@ image-package-pro:
   tags: [k8s-des]  
   variables:
     ENV: "pro"
-    INTA_REGISTRY_IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    INTA_REGISTRY_IMAGE_TAG: "${VERSION}"
   extends: .kaniko-package-image-job
+  needs:
+    - job: version-release
+      artifacts: true
+    - job: build-pro
+      artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == "master"      
 
@@ -501,10 +513,15 @@ deploy-pre:
     project: "iac/intaqalab/intaqalab-pre"
     branch: main
     strategy: depend
+  needs:
+    - job: version-rc
+      artifacts: true
+    - job: image-package-pre
+      artifacts: false
   rules:
     - if: $CI_COMMIT_BRANCH == "preprod"
   variables:
-    IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
+    IMAGE_TAG: "${VERSION}"
     SERVICE_NAME: "${CI_PROJECT_NAME}"
 
 deploy-pro:
@@ -513,8 +530,152 @@ deploy-pro:
     project: "iac/intaqalab/intaqalab-pro"
     branch: main
     strategy: depend
+  needs:
+    - job: version-release
+      artifacts: true
+    - job: image-package-pro
+      artifacts: false
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   variables:
-    IMAGE_TAG: "1.0.${CI_PIPELINE_IID}"
-    SERVICE_NAME: "${CI_PROJECT_NAME}"    
+    IMAGE_TAG: "${VERSION}"
+    SERVICE_NAME: "${CI_PROJECT_NAME}"
+
+.version-tag-job:
+  stage: version
+  image:
+    name: ${VERSION_JOB_IMAGE}
+    entrypoint: [""]
+  tags: [k8s-tools]
+  variables:
+    GIT_DEPTH: 0
+    GIT_STRATEGY: fetch
+    KUBERNETES_MEMORY_REQUEST: "256Mi"
+    KUBERNETES_MEMORY_LIMIT: "512Mi"
+  dependencies: []
+  before_script:
+    - |
+      if [ -z "${VERSION_TAG_TOKEN:-}" ]; then
+        echo "ERROR: falta la variable CI/CD VERSION_TAG_TOKEN"
+        exit 1
+      fi
+      git config user.email "version-tagger@${CI_SERVER_HOST}"
+      git config user.name "version-tagger"
+      git config --unset-all "http.${CI_SERVER_URL}.extraheader" 2>/dev/null || true
+      git remote remove tagremote 2>/dev/null || true
+      git remote add tagremote "https://oauth2:${VERSION_TAG_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      git fetch tagremote --tags --force --quiet
+  interruptible: false
+
+.version-functions: &version-functions |
+  set -euo pipefail
+
+  RE_ANY='^v[0-9]+\.[0-9]+\.[0-9]+(-rc)?$'
+  RE_RC='^v[0-9]+\.[0-9]+\.[0-9]+-rc$'
+  RE_FINAL='^v[0-9]+\.[0-9]+\.[0-9]+$'
+
+  # Suma 1 al patch, con acarreo a minor y a major al pasar de 9
+  bump_version() {
+    local major minor patch
+    IFS='.' read -r major minor patch <<< "$1"
+    patch=$((patch + 1))
+    if [ "$patch" -gt 9 ]; then patch=0; minor=$((minor + 1)); fi
+    if [ "$minor" -gt 9 ]; then minor=0; major=$((major + 1)); fi
+    printf '%d.%d.%d' "$major" "$minor" "$patch"
+  }
+
+  highest_version() {
+    local out
+    out=$(git tag -l 'v*' | grep -E "$1" || true)
+    if [ -z "$out" ]; then return 0; fi
+    printf '%s\n' "$out" \
+      | sed -E 's/^v//; s/-rc$//' \
+      | sort -t. -k1,1n -k2,2n -k3,3n \
+      | tail -n1
+  }
+
+  next_rc_version() {
+    local last
+    last=$(highest_version "$RE_ANY")
+    if [ -z "$last" ]; then echo "1.0.0"; else bump_version "$last"; fi
+  }
+
+  create_tag() {
+    local tag="$1" msg="$2"
+
+    if [ -n "$(git ls-remote --tags tagremote "refs/tags/${tag}")" ]; then
+      echo "El tag ${tag} ya existe en el remoto"
+      return 2
+    fi
+
+    git tag -f -a "$tag" -m "$msg" "$CI_COMMIT_SHA" >/dev/null 2>&1
+
+    if git push -o ci.skip tagremote "refs/tags/${tag}" >/tmp/push.log 2>&1; then
+      echo "Tag ${tag} creado sobre ${CI_COMMIT_SHORT_SHA} (sin pipeline de tag)"
+      return 0
+    fi
+
+    if grep -qiE 'already exists|rejected' /tmp/push.log; then
+      git tag -d "$tag" >/dev/null 2>&1 || true
+      echo "El tag ${tag} ya existe en el remoto (carrera)"
+      return 2
+    fi
+
+    echo "ERROR al empujar ${tag}:"
+    sed "s#${VERSION_TAG_TOKEN}#***#g" /tmp/push.log
+    git tag -d "$tag" >/dev/null 2>&1 || true
+    return 1
+  }
+
+version-rc:
+  extends: .version-tag-job
+  script:
+    - *version-functions
+    - |
+      new_tag="v$(next_rc_version)-rc"
+      echo "Candidato: ${new_tag}"
+
+      for attempt in 1 2 3; do
+        rc=0
+        create_tag "$new_tag" "Release candidate ${new_tag} (pipeline ${CI_PIPELINE_ID})" || rc=$?
+        if [ "$rc" -eq 0 ]; then break; fi
+        if [ "$rc" -eq 1 ]; then exit 1; fi
+        if [ "$attempt" -eq 3 ]; then echo "Reintentos agotados"; exit 1; fi
+        git fetch tagremote --tags --force --quiet
+        new_tag="v$(next_rc_version)-rc"
+        echo "Colision, reintentando con ${new_tag}"
+      done
+      echo "VERSION=${new_tag}" > version.env
+  artifacts:
+    reports:
+      dotenv: version.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "preprod" && $CI_PIPELINE_SOURCE != "merge_request_event"'
+
+version-release:
+  extends: .version-tag-job
+  script:
+    - *version-functions
+    - |
+      last_rc=$(highest_version "$RE_RC")
+      if [ -n "$last_rc" ]; then
+        new_tag="v${last_rc}"
+      else
+        last_final=$(highest_version "$RE_FINAL")
+        if [ -z "$last_final" ]; then
+          new_tag="v1.0.0"
+        else
+          new_tag="v$(bump_version "$last_final")"
+        fi
+      fi
+      echo "Ultimo RC: ${last_rc:-ninguno}  ->  release ${new_tag}"
+
+      rc=0
+      create_tag "$new_tag" "Release ${new_tag} (pipeline ${CI_PIPELINE_ID})" || rc=$?
+      if [ "$rc" -eq 1 ]; then exit 1; fi
+      echo "VERSION=${new_tag}" > version.env
+  artifacts:
+    reports:
+      dotenv: version.env
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE != "merge_request_event"'

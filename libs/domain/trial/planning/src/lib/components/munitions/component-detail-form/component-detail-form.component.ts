@@ -19,7 +19,7 @@ import type {
   WarehousePaginatedResponse,
 } from '../../../utils-models/catalog.model';
 import type { ComponentDetail, ReconditioningData } from '../../../utils-models/munitions.model';
-import { hasReconditioning } from '../../../utils-models/munitions.model';
+import { MAX_RECONDITIONING_VALUE, hasReconditioning } from '../../../utils-models/munitions.model';
 import { ConditioningFieldsComponent } from '../conditioning-fields/conditioning-fields.component';
 import { CargaDetailFormComponent } from './carga-detail-form/carga-detail-form.component';
 import { EspoletaDetailFormComponent } from './espoleta-detail-form/espoleta-detail-form.component';
@@ -332,8 +332,14 @@ export class ComponentDetailFormComponent {
     if (!this.isConditioningEnabled()) return true;
     const r = this.formModel().reconditioning;
     if (!r) return false;
-    const isValidNum = (v: number | undefined | null): boolean => v !== undefined && v !== null && !isNaN(v);
-    return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin);
+    const isValidNum = (v: number | undefined | null): boolean =>
+      v !== undefined && v !== null && !isNaN(v) && v <= MAX_RECONDITIONING_VALUE;
+    return (
+      isValidNum(r.temperature) &&
+      isValidNum(r.tolerance) &&
+      isValidNum(r.timeMin) &&
+      (r.timeMax === undefined || r.timeMax === null || isValidNum(r.timeMax))
+    );
   });
 
   readonly detailForm = form(this.formModel, (f) => {

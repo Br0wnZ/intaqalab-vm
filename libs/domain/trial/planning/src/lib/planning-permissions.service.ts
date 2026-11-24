@@ -1,4 +1,4 @@
-import { computed, inject, Service } from '@angular/core';
+import { Service, computed, inject } from '@angular/core';
 import {
   AuthService,
   CAN_ACCESS_PLANNING_UNDER_REVIEW_ROLES,
@@ -99,8 +99,7 @@ export class PlanningPermissionsService {
    */
   canModifyPlanningDuringExecution(trialStatus: TrialStatus): boolean {
     return (
-      trialStatus === TrialStatus.INTERRUPTED &&
-      this.#hasAnyRole([Role.INTAQALAB_TRIAL_ENGINEER, Role.INTAQALAB_ADMIN])
+      trialStatus === TrialStatus.INTERRUPTED && this.#hasAnyRole([Role.INTAQALAB_TRIAL_ENGINEER, Role.INTAQALAB_ADMIN])
     );
   }
 

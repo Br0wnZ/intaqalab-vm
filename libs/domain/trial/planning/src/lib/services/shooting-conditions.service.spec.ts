@@ -66,7 +66,11 @@ describe('ShootingConditionsService', () => {
       service.getShootingConditions(MOCK_IDS.TRIAL, 'baseline');
       TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions?revision=baseline`, 'GET', mockResponse);
+      expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions?revision=baseline`,
+        'GET',
+        mockResponse,
+      );
     });
 
     it('should default powder weight to grams and projectile weight to kilograms', async () => {
@@ -81,7 +85,11 @@ describe('ShootingConditionsService', () => {
       service.getShootingConditions(MOCK_IDS.TRIAL, 'baseline');
       TestBed.flushEffects();
 
-      expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions?revision=baseline`, 'GET', mockResponse);
+      expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/conditions?revision=baseline`,
+        'GET',
+        mockResponse,
+      );
 
       await vi.waitFor(() => {
         const shot = service.conditionsResource.value()?.series[0]?.shots[0];

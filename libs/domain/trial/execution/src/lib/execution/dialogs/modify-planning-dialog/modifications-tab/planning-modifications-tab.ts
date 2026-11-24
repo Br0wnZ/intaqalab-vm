@@ -35,10 +35,7 @@ import { ModificationsTable, type PlanningModificationRow } from './modification
       }
 
       @if (validationErrors().length > 0) {
-        <div
-          role="alert"
-          class="flex items-start gap-3 p-4 rounded-lg border border-red-300 bg-red-50 text-red-900"
-        >
+        <div role="alert" class="flex items-start gap-3 p-4 rounded-lg border border-red-300 bg-red-50 text-red-900">
           <mat-icon class="text-red-600 shrink-0 mt-0.5">warning</mat-icon>
           <div class="flex flex-col gap-1">
             <span class="font-semibold text-sm">

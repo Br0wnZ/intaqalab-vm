@@ -30,7 +30,6 @@ import { mapBackendToLocal, mapLocalToRequest } from './munitions.mapper';
 
 // Helpers
 
-
 /** Serie con todos los campos requeridos por el formulario cubiertos */
 function createValidSerie(name: string): Serie {
   return {
@@ -456,6 +455,34 @@ describe('Munitions', () => {
         expect(component.isFormValid()).toBe(true);
       });
 
+      it('should keep save disabled when config-level timeMax exceeds 1000', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                assignedShotIds: ['shot-1'],
+                reconditioning: {
+                  temperature: 20,
+                  tolerance: 2,
+                  timeMin: 12,
+                  timeMax: 1001,
+                },
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(false);
+        expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
+      });
+
       it('should report the form as invalid when component-level reconditioning is enabled but numeric fields are undefined', async () => {
         const { component, view } = await runSetup();
 
@@ -558,6 +585,39 @@ describe('Munitions', () => {
         view.fixture.detectChanges();
 
         expect(component.isFormValid()).toBe(true);
+      });
+
+      it('should keep save disabled when component-level conditioning exceeds 1000', async () => {
+        const { component, view } = await runSetup();
+
+        component.seriesSignal.set([
+          {
+            ...createValidSerie('Serie 1'),
+            configurations: [
+              {
+                ...createEmptyConfiguration(),
+                denomination: 'Denom-1',
+                assignedShotIds: ['shot-1'],
+                components: [
+                  {
+                    ...createEmptyComponentDetail('espoleta'),
+                    denomination: { id: 'denom-1', name: 'Espoleta 1' },
+                    reconditioning: {
+                      temperature: 1001,
+                      tolerance: 2,
+                      timeMin: 12,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
+        component.seriesForm().markAsTouched();
+        view.fixture.detectChanges();
+
+        expect(component.isFormValid()).toBe(false);
+        expect(screen.getByRole('button', { name: 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' })).toBeDisabled();
       });
 
       it('should disable save button when reconditioning fields are invalid', async () => {

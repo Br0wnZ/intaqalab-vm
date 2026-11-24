@@ -26,7 +26,9 @@ import type { ModifyPlanningDialogData } from './modify-planning-dialog.models';
 
 @Component({
   selector: 'inta-feature-planning-general-data-shell',
-  template: `<div data-testid="planning-shell-stub">{{ mode() }}</div>`,
+  template: `
+    <div data-testid="planning-shell-stub">{{ mode() }}</div>
+  `,
 })
 class PlanningShellStub {
   readonly trial = input<TrialCreateModifyForm>();
@@ -72,13 +74,11 @@ describe('ModifyPlanningDialog', () => {
     closeMock = vi.fn();
     fetchModificationsMock = vi.fn<() => Promise<PlanningModification[]>>().mockResolvedValue([]);
     saveDraftMock = vi.fn<() => Promise<PlanningModification[]>>().mockResolvedValue([]);
-    submitModificationsMock = vi
-      .fn<() => Promise<SubmitPlanningModificationsResponse>>()
-      .mockResolvedValue({
-        modifications: [],
-        acceptedCount: 0,
-        pendingCount: 0,
-      });
+    submitModificationsMock = vi.fn<() => Promise<SubmitPlanningModificationsResponse>>().mockResolvedValue({
+      modifications: [],
+      acceptedCount: 0,
+      pendingCount: 0,
+    });
     toastrSuccessMock = vi.fn();
     toastrErrorMock = vi.fn();
   });

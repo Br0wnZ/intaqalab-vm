@@ -65,9 +65,7 @@ describe('ClientModificationsDialog', () => {
       error: vi.fn(),
     };
     const serviceMock = {
-      fetchModifications: loadError
-        ? vi.fn().mockRejectedValue(loadError)
-        : vi.fn().mockResolvedValue(modifications),
+      fetchModifications: loadError ? vi.fn().mockRejectedValue(loadError) : vi.fn().mockResolvedValue(modifications),
       approveModification: vi.fn().mockImplementation(async (_trialId: string, modId: string) => {
         const target = modifications.find((m) => m.id === modId);
         if (!target) {

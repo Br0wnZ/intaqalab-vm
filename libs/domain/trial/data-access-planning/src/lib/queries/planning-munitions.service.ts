@@ -1,10 +1,10 @@
 import { httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { TrialMunitionsRawItem } from '../models/planning-munitions.model';
-import { awaitResourceValue } from './await-resource';
 import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
+import { awaitResourceValue } from './await-resource';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**

@@ -127,9 +127,7 @@ export class ExecutionPageFacade {
    * Sin permisos sobre ningún tag, el botón "Seleccionar equipos" se deshabilita.
    */
   readonly canSelectEquipment = computed(() => resolveVisibleEquipmentTags(this.#userRoles(), TAG_CONFIGS).length > 0);
-  readonly isClientReviewer = computed(() =>
-    this.#userRoles().some((role) => CLIENT_REVIEW_ROLES.includes(role)),
-  );
+  readonly isClientReviewer = computed(() => this.#userRoles().some((role) => CLIENT_REVIEW_ROLES.includes(role)));
   readonly isTrialEngineer = computed(
     () => this.#userRoles().includes(Role.INTAQALAB_TRIAL_ENGINEER) || this.#userRoles().includes(Role.INTAQALAB_ADMIN),
   );

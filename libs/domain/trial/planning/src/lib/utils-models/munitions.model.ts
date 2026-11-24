@@ -6,6 +6,8 @@ export type ReconditioningData = {
   observations?: string;
 };
 
+export const MAX_RECONDITIONING_VALUE = 1000;
+
 export type MunitionComponentType = {
   id: string;
   type: string;

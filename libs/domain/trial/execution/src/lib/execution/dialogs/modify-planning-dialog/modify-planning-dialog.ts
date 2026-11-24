@@ -2,16 +2,16 @@ import { Component, type OnInit, computed, inject, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule, type MatTabChangeEvent } from '@angular/material/tabs';
+import { type MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import type { TrialCreateModifyForm } from '@intaqalab/models';
 import { FeaturePlanningGeneralDataShellComponent, type PlanningFieldChangeEvent } from '@intaqalab/planning';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 
 import {
-  PlanningModificationsStore,
   type PlanningChange,
   type PlanningModification,
+  PlanningModificationsStore,
 } from '../../../data-access/planning-modifications';
 import { PlanningModificationsTab } from './modifications-tab/planning-modifications-tab';
 import type {
@@ -181,9 +181,7 @@ export class ModifyPlanningDialog implements OnInit {
     const response = await this.#store.validateAndSave();
     if (!response) {
       if (this.#store.error()) {
-        this.#toastr?.error(
-          this.#translate.instant('TRIAL_EXECUTION.PLANNING_MODIFICATION.MESSAGES.SAVE_ERROR'),
-        );
+        this.#toastr?.error(this.#translate.instant('TRIAL_EXECUTION.PLANNING_MODIFICATION.MESSAGES.SAVE_ERROR'));
       }
       return;
     }

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { inject, signal, Service } from '@angular/core';
+import { Service, inject, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import { PlanningTrialContextService } from '../context/trial-context.service';

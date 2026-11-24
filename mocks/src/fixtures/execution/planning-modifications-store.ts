@@ -219,10 +219,7 @@ export function getPlanningModifications(
   return structuredClone(filtered);
 }
 
-export function saveDraftModifications(
-  fireTrialId: string,
-  inputs: DraftModificationInput[],
-): PlanningModification[] {
+export function saveDraftModifications(fireTrialId: string, inputs: DraftModificationInput[]): PlanningModification[] {
   const list = getOrInitTrialModifications(fireTrialId);
   const now = new Date().toISOString();
   const saved: PlanningModification[] = [];
@@ -272,10 +269,7 @@ export function updateModificationClassification(
   return structuredClone(entry);
 }
 
-export function submitModifications(
-  fireTrialId: string,
-  payload?: SubmitModificationsInput,
-): PlanningModification[] {
+export function submitModifications(fireTrialId: string, payload?: SubmitModificationsInput): PlanningModification[] {
   const list = getOrInitTrialModifications(fireTrialId);
   const now = new Date().toISOString();
 

@@ -71,7 +71,9 @@ describe('DataPlanningService', () => {
       service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
-      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`);
+      const req = httpMock.expectOne(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`,
+      );
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
@@ -80,7 +82,9 @@ describe('DataPlanningService', () => {
       service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL, 'baseline');
       TestBed.flushEffects();
 
-      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`);
+      const req = httpMock.expectOne(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`,
+      );
       req.flush('Error', { status: 500, statusText: 'Internal Server Error' });
 
       // Allow Promise rejection microtasks to complete in Zoneless

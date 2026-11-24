@@ -1,9 +1,6 @@
 import type { TrialCreateModifyForm } from '@intaqalab/models';
 
-import type {
-  ModificationClassification,
-  PlanningModification,
-} from '../../../data-access/planning-modifications';
+import type { ModificationClassification, PlanningModification } from '../../../data-access/planning-modifications';
 
 export interface ModifyPlanningDialogData {
   fireTrialId: string;
@@ -54,5 +51,4 @@ export interface NewMeasurePayload {
 }
 
 export type FieldChangeDetectionResult =
-  | { type: 'upsert'; modification: PlanningModification }
-  | { type: 'remove'; key: string };
+  { type: 'upsert'; modification: PlanningModification } | { type: 'remove'; key: string };

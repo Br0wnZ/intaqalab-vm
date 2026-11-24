@@ -44,7 +44,9 @@ describe('MeasuresService', () => {
       service.measuresResource.value();
       TestBed.tick();
 
-      const req = httpTestingController.expectOne(`${mockPlanningUrl}/fire-trials/${trialId}/planning/measures?revision=baseline`);
+      const req = httpTestingController.expectOne(
+        `${mockPlanningUrl}/fire-trials/${trialId}/planning/measures?revision=baseline`,
+      );
       expect(req.request.method).toBe('GET');
       req.flush({});
     });

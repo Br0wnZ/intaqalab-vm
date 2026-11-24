@@ -29,7 +29,16 @@ interface FilterTabOption {
 
 @Component({
   selector: 'inta-client-modifications-dialog',
-  imports: [NgClass, MatDialogModule, MatButtonModule, MatIconModule, MatTooltipModule, TranslatePipe, Skeleton, ErrorState],
+  imports: [
+    NgClass,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    TranslatePipe,
+    Skeleton,
+    ErrorState,
+  ],
   providers: [PlanningModificationsStore],
   template: `
     <div class="flex flex-col max-h-[85vh]">
@@ -56,13 +65,13 @@ interface FilterTabOption {
       </div>
 
       <!-- Filter Chips -->
-      <div class="flex flex-wrap items-center gap-2 py-4" role="tablist">
+      <div role="tablist" class="flex flex-wrap items-center gap-2 py-4">
         @for (tab of filterTabs(); track tab.id) {
           <button
             type="button"
             role="tab"
-            [attr.aria-selected]="activeFilter() === tab.id"
             class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer"
+            [attr.aria-selected]="activeFilter() === tab.id"
             [ngClass]="
               activeFilter() === tab.id
                 ? 'bg-[var(--inta-color-primary)] text-white border-[var(--inta-color-primary)]'
@@ -228,7 +237,9 @@ export class ClientModificationsDialog {
   protected readonly allowReview = computed(() => this.#data.allowReview !== false);
   protected readonly isLoading = this.#store.isLoading;
   protected readonly isSaving = this.#store.isSaving;
-  protected readonly hasError = computed(() => Boolean(this.#store.error()) && this.#store.modifications().length === 0);
+  protected readonly hasError = computed(
+    () => Boolean(this.#store.error()) && this.#store.modifications().length === 0,
+  );
   protected readonly errorMessage = computed(() => this.#store.error() ?? '');
 
   protected readonly filteredModifications = computed<PlanningModification[]>(() => {

@@ -149,27 +149,6 @@ import { PLANNED_TRIAL_PATTERN, injectTrialSearch, trialSearchError } from '../.
             <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
               <mat-date-range-input [rangePicker]="OnePicker">
                 <input
-                  id="plannedFireTrialView"
-                  matInput
-                  [formField]="form.plannedFireTrialView"
-                  [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.TRIAL_PREVIEW' | translate"
-                />
-              </mat-date-range-input>
-            </mat-form-field>
-            @if (form.plannedFireTrialView().touched() && form.plannedFireTrialView().errors()) {
-              @for (error of form.plannedFireTrialView().errors(); track error.kind) {
-                <mat-error>{{ error.message | translate }}</mat-error>
-              }
-            }
-          </div>
-
-          <div>
-            <label for="entryDateFrom" class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'WHAREHOUSE_MANAGMENT.STOCK_LIST.ENTERING_DATE' | translate }}
-            </label>
-            <mat-form-field appearance="outline" class="w-full" [subscriptSizing]="'dynamic'">
-              <mat-date-range-input [rangePicker]="OnePicker">
-                <input
                   id="entryDateFrom"
                   matStartDate
                   [placeholder]="'WHAREHOUSE_MANAGMENT.STOCK_LIST.FROM' | translate"
@@ -260,22 +239,14 @@ import { PLANNED_TRIAL_PATTERN, injectTrialSearch, trialSearchError } from '../.
           </div>
 
           <div>
-            <button mat-flat-button type="submit" [disabled]="!(form().dirty() && form().errorSummary().length === 0)">
+            <button
+              mat-flat-button
+              type="submit"
+              [disabled]="!(form().dirty() && form().errorSummary().length === 0) || trialSearchLoading()"
+            >
               {{ 'COMMONS.SEARCH' | translate }}
             </button>
           </div>
-        </div>
-
-        <div>
-          <button
-            mat-flat-button
-            type="button"
-            role="button"
-            [disabled]="!(form().dirty() && form().errorSummary().length === 0) || trialSearchLoading()"
-            (click)="search()"
-          >
-            {{ 'COMMONS.SEARCH' | translate }}
-          </button>
         </div>
       </form>
     </div>
@@ -355,80 +326,90 @@ export class StockListFilterComponent {
       .join(', ');
   });
 
-  readonly form = form(this.formModel, (schemaPath) => {
-    validate(schemaPath.quantity, ({ value }) => {
-      const { min, max } = value();
+  readonly form = form(
+    this.formModel,
+    (schemaPath) => {
+      validate(schemaPath.quantity, ({ value }) => {
+        const { min, max } = value();
 
-      if (!min && !max) return null;
+        if (!min && !max) return null;
 
-      const numMin = min ? +min : null;
-      const numMax = max ? +max : null;
+        const numMin = min ? +min : null;
+        const numMax = max ? +max : null;
 
-      if (numMin && numMin < 0)
-        return {
-          kind: 'min_greater_than_zero',
-          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MIN_GREATER_THAN_ZERO'),
-        };
+        if (numMin && numMin < 0)
+          return {
+            kind: 'min_greater_than_zero',
+            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MIN_GREATER_THAN_ZERO'),
+          };
 
-      if (numMax && numMax < 0)
-        return {
-          kind: 'max_greater_than_zero',
-          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MAX_GREATER_THAN_ZERO'),
-        };
+        if (numMax && numMax < 0)
+          return {
+            kind: 'max_greater_than_zero',
+            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.MAX_GREATER_THAN_ZERO'),
+          };
 
-      if (numMin && numMax && numMin > numMax)
-        return {
-          kind: 'wrong_interval',
-          message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG'),
-        };
+        if (numMin && numMax && numMin > numMax)
+          return {
+            kind: 'wrong_interval',
+            message: this.#translate.instant('WHAREHOUSE_MANAGMENT.VALIDATIONS.NUMERIC_INTERVAL_WRONG'),
+          };
 
-      return null;
-    });
-    pattern(schemaPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN);
-    validate(schemaPath.plannedFireTrialView, () => trialSearchError(this.#trialSearch));
-    validate(schemaPath.entryDateFrom, ({ value, valueOf }) => {
-      const startDate = value();
-      const endDate = valueOf(schemaPath.entryDateTo);
+        return null;
+      });
+      pattern(schemaPath.plannedFireTrialView, PLANNED_TRIAL_PATTERN);
+      validate(schemaPath.plannedFireTrialView, () => trialSearchError(this.#trialSearch));
+      validate(schemaPath.entryDateFrom, ({ value, valueOf }) => {
+        const startDate = value();
+        const endDate = valueOf(schemaPath.entryDateTo);
 
-      const startDateFilled = startDate instanceof Date;
-      const endDateFilled = endDate instanceof Date;
+        const startDateFilled = startDate instanceof Date;
+        const endDateFilled = endDate instanceof Date;
 
-      if (startDateFilled && !endDateFilled)
-        return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
+        if (startDateFilled && !endDateFilled)
+          return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
 
-      return null;
-    });
-    validate(schemaPath.retirementDateFrom, ({ value, valueOf }) => {
-      const startDate = value();
-      const endDate = valueOf(schemaPath.retirementDateTo);
+        return null;
+      });
+      validate(schemaPath.retirementDateFrom, ({ value, valueOf }) => {
+        const startDate = value();
+        const endDate = valueOf(schemaPath.retirementDateTo);
 
-      const startDateFilled = startDate instanceof Date;
-      const endDateFilled = endDate instanceof Date;
+        const startDateFilled = startDate instanceof Date;
+        const endDateFilled = endDate instanceof Date;
 
-      if (startDateFilled && !endDateFilled)
-        return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
+        if (startDateFilled && !endDateFilled)
+          return { kind: 'required_end_date', message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.DATE_ERROR' };
 
-      const entryStartDate = valueOf(schemaPath.entryDateFrom);
-      const entryEndDate = valueOf(schemaPath.entryDateTo);
+        const entryStartDate = valueOf(schemaPath.entryDateFrom);
+        const entryEndDate = valueOf(schemaPath.entryDateTo);
 
-      const entryDatesFilled = entryStartDate instanceof Date && entryEndDate instanceof Date;
-      const retirementDatesFilled = startDateFilled && endDateFilled;
+        const entryDatesFilled = entryStartDate instanceof Date && entryEndDate instanceof Date;
+        const retirementDatesFilled = startDateFilled && endDateFilled;
 
-      if (entryDatesFilled && retirementDatesFilled && startDate < entryStartDate)
-        return {
-          kind: 'retirement_start_date_higher_than_entry',
-          message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR',
-        };
+        if (entryDatesFilled && retirementDatesFilled && startDate < entryStartDate)
+          return {
+            kind: 'retirement_start_date_higher_than_entry',
+            message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_FROM_HIGHER_THAN_ENTRY_ERROR',
+          };
 
-      if (entryDatesFilled && retirementDatesFilled && endDate < entryEndDate)
-        return {
-          kind: 'retirement_end_date_higher_than_entry',
-          message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR',
-        };
+        if (entryDatesFilled && retirementDatesFilled && endDate < entryEndDate)
+          return {
+            kind: 'retirement_end_date_higher_than_entry',
+            message: 'WHAREHOUSE_MANAGMENT.STOCK_LIST.RETIREMENT_TO_HIGHER_THAN_ENTRY_ERROR',
+          };
 
-      return null;
-    });
-  });
+        return null;
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.search();
+        },
+      },
+    },
+  );
 
   search() {
     const criteria = this.formModel();

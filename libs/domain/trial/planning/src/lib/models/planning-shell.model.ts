@@ -11,12 +11,7 @@ export const PLANNING_REVISION_BY_SHELL_MODE: Readonly<Record<PlanningShellMode,
 export type PlanningFieldChangeAction = 'Alta' | 'Baja' | 'Modificación';
 
 export type PlanningSection =
-  | 'general-data'
-  | 'series-and-shots'
-  | 'shooting-conditions'
-  | 'munitions'
-  | 'armament'
-  | 'measures';
+  'general-data' | 'series-and-shots' | 'shooting-conditions' | 'munitions' | 'armament' | 'measures';
 
 export interface PlanningFieldChangeEvent {
   section: PlanningSection;

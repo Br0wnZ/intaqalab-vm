@@ -1170,7 +1170,9 @@ describe('ExecutionService', () => {
     const planningArmamentPromise = service.fetchPlanningArmament(DEMO_TRIAL_ID);
     TestBed.tick();
 
-    const planArmReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/armament?revision=execution`);
+    const planArmReq = httpMock.expectOne(
+      `${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/armament?revision=execution`,
+    );
     expect(planArmReq.request.method).toBe('GET');
     planArmReq.flush(mockPlanningArmament);
     TestBed.tick();

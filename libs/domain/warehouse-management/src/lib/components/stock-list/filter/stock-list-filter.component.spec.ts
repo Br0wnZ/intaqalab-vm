@@ -131,9 +131,10 @@ describe('StockListFilterComponent', () => {
       expect(screen.getAllByText('WHAREHOUSE_MANAGMENT.STOCK_LIST.TITLE').length).toBeGreaterThan(0);
     });
 
-    it('should render the search button', async () => {
+    it('should render a single search submit button', async () => {
       await setup();
-      expect(screen.getByText('COMMONS.SEARCH')).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'COMMONS.SEARCH' })).toHaveLength(1);
+      expect(screen.getByRole('button', { name: 'COMMONS.SEARCH' })).toHaveAttribute('type', 'submit');
     });
 
     it('should call MunitionComponentStore.search() on init with pageSize 100 and active true', async () => {
@@ -143,7 +144,7 @@ describe('StockListFilterComponent', () => {
 
     it('loads denomination options on initialization', async () => {
       const { denominationsStore } = await setup();
-      expect(denominationsStore.search).toHaveBeenCalledWith({ pageSize: 500 });
+      expect(denominationsStore.search).toHaveBeenCalledWith({ pageSize: 500, active: true });
     });
 
     it('should have the search button disabled initially (form is not dirty)', async () => {
@@ -414,6 +415,7 @@ describe('StockListFilterComponent', () => {
     });
 
     it('should submit via FormRoot when Search button is clicked on dirty valid form', async () => {
+      const user = userEvent.setup();
       const { component, fixture, filtersSpy } = await setup();
       component.form.batches().controlValue.set('LOT-C');
       component.form().markAsDirty();
@@ -421,9 +423,10 @@ describe('StockListFilterComponent', () => {
 
       const searchBtn = screen.getByRole('button', { name: 'COMMONS.SEARCH' });
       expect(searchBtn).toHaveAttribute('type', 'submit');
-      searchBtn.click();
-      await fixture.whenStable();
+      expect(searchBtn).toBeEnabled();
+      await user.click(searchBtn);
 
+      expect(filtersSpy).toHaveBeenCalledTimes(1);
       expect(filtersSpy).toHaveBeenCalledWith({ batches: 'LOT-C' });
     });
   });

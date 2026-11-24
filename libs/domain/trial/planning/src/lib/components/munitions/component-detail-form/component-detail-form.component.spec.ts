@@ -337,6 +337,20 @@ describe('ComponentDetailFormComponent', () => {
         expect(detailChangeSpy).toHaveBeenCalled();
       });
     });
+
+    it('should reject conditioning values above 1000', async () => {
+      const view = await render(ComponentDetailFormComponent, {
+        providers: [...defaultProviders, provideTranslateService()],
+        componentInputs: {
+          detail: {
+            ...defaultDetail,
+            reconditioning: { temperature: 1001, tolerance: 2, timeMin: 4, timeMax: 8 },
+          },
+        },
+      });
+
+      expect(view.fixture.componentInstance.conditioningValid()).toBe(false);
+    });
   });
 
   const powderDetail: ComponentDetail = {

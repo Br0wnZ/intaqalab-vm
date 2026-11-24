@@ -2400,10 +2400,12 @@
         "VALIDATION": {
           "COMPONENT_DENOMINATION_REQUIRED": "Bezeichnung erforderlich für {{component}}",
           "COMPONENT_LOT_REQUIRED": "Los erforderlich für {{component}}",
+          "COMPONENT_RECONDITIONING_MAX_EXCEEDED": "Konditionierungswerte für {{component}} dürfen {{max}} nicht überschreiten",
           "DENOMINATION_REQUIRED": "Bezeichnung ist erforderlich",
           "LOT_REQUIRED": "Los ist erforderlich",
           "MAX_TIME_REQUIRED": "Maximale Zeit ist erforderlich",
           "MIN_TIME_REQUIRED": "Minimale Zeit ist erforderlich",
+          "RECONDITIONING_MAX_EXCEEDED": "Konditionierungswerte dürfen {{max}} nicht überschreiten",
           "TEMPERATURE_REQUIRED": "Konditionierungstemperatur ist erforderlich",
           "TOLERANCE_REQUIRED": "Toleranz ist erforderlich"
         }

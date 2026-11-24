@@ -54,10 +54,7 @@ describe('PlanningModificationsStore', () => {
     mockService = createMockService();
 
     TestBed.configureTestingModule({
-      providers: [
-        PlanningModificationsStore,
-        { provide: PlanningModificationsService, useValue: mockService },
-      ],
+      providers: [PlanningModificationsStore, { provide: PlanningModificationsService, useValue: mockService }],
     });
 
     store = TestBed.inject(PlanningModificationsStore);
@@ -135,9 +132,7 @@ describe('PlanningModificationsStore', () => {
   });
 
   it('checks pending modifications and returns false when none are pending', async () => {
-    mockService.fetchModifications.mockResolvedValueOnce([
-      createModification({ id: 'm1', status: 'ACEPTADO' }),
-    ]);
+    mockService.fetchModifications.mockResolvedValueOnce([createModification({ id: 'm1', status: 'ACEPTADO' })]);
 
     const hasPending = await store.checkHasPendingModifications('trial-1');
 
@@ -235,12 +230,7 @@ describe('PlanningModificationsStore', () => {
 
     const result = await store.rejectModification('mod-1', 'Rejected');
 
-    expect(mockService.rejectModification).toHaveBeenCalledWith(
-      'trial-1',
-      'mod-1',
-      { comment: 'Rejected' },
-      undefined,
-    );
+    expect(mockService.rejectModification).toHaveBeenCalledWith('trial-1', 'mod-1', { comment: 'Rejected' }, undefined);
     expect(result).toEqual(rejected);
     expect(store.modifications()[0]?.status).toBe('RECHAZADO');
     expect(store.hasPendingModifications()).toBe(false);
@@ -282,9 +272,7 @@ describe('PlanningModificationsStore', () => {
     };
 
     mockService.changesResource.value.mockReturnValue([draftChange]);
-    mockService.applyChanges.mockResolvedValueOnce([
-      { ...draftChange, status: 'ACCEPTED' },
-    ]);
+    mockService.applyChanges.mockResolvedValueOnce([{ ...draftChange, status: 'ACCEPTED' }]);
 
     const result = await store.applyChanges();
 
@@ -323,9 +311,7 @@ describe('PlanningModificationsStore', () => {
     };
 
     mockService.changesResource.value.mockReturnValue([draftChange]);
-    mockService.applyChanges.mockResolvedValueOnce([
-      { ...draftChange, status: 'PENDING' },
-    ]);
+    mockService.applyChanges.mockResolvedValueOnce([{ ...draftChange, status: 'PENDING' }]);
 
     const result = await store.validateAndSave();
 

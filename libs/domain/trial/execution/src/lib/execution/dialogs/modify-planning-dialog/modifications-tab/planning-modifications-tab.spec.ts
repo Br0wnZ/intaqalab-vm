@@ -63,9 +63,7 @@ describe('PlanningModificationsTab', () => {
   it('displays the empty state when there are no modifications', async () => {
     await setup({ modifications: [] });
 
-    expect(
-      screen.getByText('TRIAL_EXECUTION.PLANNING_MODIFICATION.DIALOG.EMPTY_STATE'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_EXECUTION.PLANNING_MODIFICATION.DIALOG.EMPTY_STATE')).toBeInTheDocument();
   });
 
   it('renders modification rows with parameter, values, affected shots, and status', async () => {
@@ -148,9 +146,7 @@ describe('PlanningModificationsTab', () => {
     });
 
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(
-      screen.getByText('TRIAL_EXECUTION.PLANNING_MODIFICATION.BLOCKED_MODAL.TITLE'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('TRIAL_EXECUTION.PLANNING_MODIFICATION.BLOCKED_MODAL.TITLE')).toBeInTheDocument();
 
     const toggles = await loader.getAllHarnesses(MatSlideToggleHarness);
     expect(await toggles[0].isDisabled()).toBe(true);

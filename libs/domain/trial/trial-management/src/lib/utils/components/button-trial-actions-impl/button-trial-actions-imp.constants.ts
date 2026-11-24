@@ -82,6 +82,7 @@ export const config: ButtonTrialActionsConfiguration = [
       TrialStatus.EXECUTED,
       TrialStatus.ANALYZING,
       TrialStatus.FINALIZING,
+      TrialStatus.CANCELLED,
     ],
   },
 ];

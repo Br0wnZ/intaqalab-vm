@@ -246,11 +246,19 @@ describe('SeriesAndShotsService', () => {
     it('should handle multiple calls correctly', async () => {
       service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
-      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`, 'GET', []);
+      await expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`,
+        'GET',
+        [],
+      );
 
       service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
-      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`, 'GET', []);
+      await expectHttpRequest(
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`,
+        'GET',
+        [],
+      );
     });
   });
 });

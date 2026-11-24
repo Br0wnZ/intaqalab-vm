@@ -4,6 +4,9 @@ import { delay, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import type { Mock } from 'vitest';
 
+import { LOCALE_SIGNAL } from '../../tokens/locale-signal.token';
+import type { AppLocale } from '../../tokens/locale-signal.token';
+
 export type MockTranslateService = {
   instant: Mock;
   get: Mock;
@@ -24,9 +27,6 @@ export type MockRouter = {
   createUrlTree: Mock;
   serializeUrl: Mock;
 };
-
-import { LOCALE_SIGNAL } from '../../tokens/locale-signal.token';
-import type { AppLocale } from '../../tokens/locale-signal.token';
 
 /**
  * 🌍 Crear mock de LanguageService con signal reactivo

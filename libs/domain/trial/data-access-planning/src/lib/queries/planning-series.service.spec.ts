@@ -44,7 +44,9 @@ describe('PlanningSeriesService', () => {
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-123' });
     TestBed.tick();
 
-    const req = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`);
+    const req = httpTestingController.expectOne(
+      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`,
+    );
     expect(req.request.method).toBe('GET');
     req.flush([]);
     TestBed.tick();
@@ -56,14 +58,18 @@ describe('PlanningSeriesService', () => {
   it('should re-issue the request when the trial context changes', async () => {
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-123' });
     TestBed.tick();
-    httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`).flush([]);
+    httpTestingController
+      .expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`)
+      .flush([]);
     TestBed.tick();
     await settle();
     expect(service.seriesResource.value()).toEqual([]);
 
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-456' });
     TestBed.tick();
-    httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-456/planning/series?revision=execution`).flush([]);
+    httpTestingController
+      .expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-456/planning/series?revision=execution`)
+      .flush([]);
     TestBed.tick();
     await settle();
 
@@ -74,14 +80,18 @@ describe('PlanningSeriesService', () => {
     contextService.setTrial({ centerId: null, fireTrialId: 'trial-123' });
     TestBed.tick();
 
-    httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`).flush([]);
+    httpTestingController
+      .expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`)
+      .flush([]);
     TestBed.tick();
     await settle();
     expect(service.seriesResource.value()).toEqual([]);
 
     service.reload();
     TestBed.tick();
-    httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`).flush([]);
+    httpTestingController
+      .expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`)
+      .flush([]);
     TestBed.tick();
     await settle();
     expect(service.seriesResource.value()).toEqual([]);

@@ -88,7 +88,7 @@
       // States
       focus-state-layer-opacity: 0.08,
       hover-state-layer-opacity: 0.04,
-      state-layer-color: var(--inta-button)
+      state-layer-color: var(--inta-button),
     )
   );
 
@@ -218,7 +218,7 @@
       protected-focus-state-layer-opacity: 0.12,
       protected-disabled-container-color: var(--inta-elevated-button-disabled-bg),
       protected-disabled-label-text-color: var(--inta-elevated-button-disabled-color),
-      protected-container-shape: var(--inta-radius-md)
+      protected-container-shape: var(--inta-radius-md),
     )
   );
 
@@ -257,7 +257,7 @@
       small-pressed-state-layer-opacity: 0.12,
       small-focus-state-layer-opacity: 0.12,
       small-disabled-state-container-color: var(--inta-mini-fab-disabled-bg),
-      small-disabled-state-foreground-color: var(--inta-mini-fab-disabled-color)
+      small-disabled-state-foreground-color: var(--inta-mini-fab-disabled-color),
     )
   );
 

@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { signal, Service } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectFireTrialsEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
 import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type {

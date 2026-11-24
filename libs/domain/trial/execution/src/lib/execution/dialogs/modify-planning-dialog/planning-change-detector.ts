@@ -75,8 +75,7 @@ export class PlanningChangeDetector {
     parameter: string,
     affectedShots: ReadonlyArray<string> | null | undefined,
   ): string {
-    const shotsPart =
-      affectedShots && affectedShots.length > 0 ? [...affectedShots].sort().join(',') : 'global';
+    const shotsPart = affectedShots && affectedShots.length > 0 ? [...affectedShots].sort().join(',') : 'global';
     return `${section}::${parameter}::${shotsPart}`;
   }
 
@@ -149,10 +148,7 @@ export class PlanningChangeDetector {
    * New series has NO inheritance: registers an 'Alta' for the series itself
    * plus an individual 'Alta' for every explicitly configured field.
    */
-  detectNewSeries(
-    seriesLabel: string,
-    configuredFields: ReadonlyArray<SeriesFieldInput>,
-  ): PlanningModification[] {
+  detectNewSeries(seriesLabel: string, configuredFields: ReadonlyArray<SeriesFieldInput>): PlanningModification[] {
     const modifications: PlanningModification[] = [];
 
     const seriesKey = this.buildModificationKey('series-and-shots', `Nueva serie (${seriesLabel})`, null);
@@ -201,10 +197,7 @@ export class PlanningChangeDetector {
     const affectedShots = [input.shotLabel];
     const modifications: PlanningModification[] = [];
 
-    const allParams = new Set([
-      ...Object.keys(inheritedCopy),
-      ...Object.keys(input.currentValues),
-    ]);
+    const allParams = new Set([...Object.keys(inheritedCopy), ...Object.keys(input.currentValues)]);
 
     for (const parameter of allParams) {
       const key = this.buildModificationKey('shooting-conditions', parameter, affectedShots);
@@ -218,10 +211,8 @@ export class PlanningChangeDetector {
       }
 
       const unit = input.units?.[parameter];
-      const formattedNewValue =
-        currentValue !== null ? formatParameterValue(parameter, currentValue, unit) : null;
-      const formattedPreviousValue =
-        inheritedValue !== null && unit ? `${inheritedValue} ${unit}` : inheritedValue;
+      const formattedNewValue = currentValue !== null ? formatParameterValue(parameter, currentValue, unit) : null;
+      const formattedPreviousValue = inheritedValue !== null && unit ? `${inheritedValue} ${unit}` : inheritedValue;
 
       modifications.push({
         id: key,

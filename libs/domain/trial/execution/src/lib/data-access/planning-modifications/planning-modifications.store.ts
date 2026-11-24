@@ -75,9 +75,7 @@ export const PlanningModificationsStore = signalStore(
       });
     });
 
-    const draftChanges = computed(() =>
-      effectiveChanges().filter((c) => c.status === 'DRAFT'),
-    );
+    const draftChanges = computed(() => effectiveChanges().filter((c) => c.status === 'DRAFT'));
 
     const draftModifications = computed(() => store.modifications().filter((m) => m.status === 'BORRADOR'));
     const pendingModifications = computed(() => store.modifications().filter((m) => m.status === 'PENDIENTE'));
@@ -114,9 +112,7 @@ export const PlanningModificationsStore = signalStore(
 
     addModification(mod: PlanningModification): void {
       const current = store.modifications();
-      const matchIndex = current.findIndex((existing) =>
-        mod.key ? existing.key === mod.key : existing.id === mod.id,
-      );
+      const matchIndex = current.findIndex((existing) => (mod.key ? existing.key === mod.key : existing.id === mod.id));
 
       const updated =
         matchIndex >= 0
@@ -230,17 +226,13 @@ export const PlanningModificationsStore = signalStore(
 
           const nonDrafts = store.modifications().filter((m) => m.status !== 'BORRADOR');
           const submittedIds = new Set(response.modifications.map((m) => m.id));
-          allModifications = [
-            ...nonDrafts.filter((m) => !submittedIds.has(m.id)),
-            ...response.modifications,
-          ];
+          allModifications = [...nonDrafts.filter((m) => !submittedIds.has(m.id)), ...response.modifications];
         }
 
         patchState(store, {
           modifications: allModifications,
           changesOverrides: {},
-          hasPendingModifications:
-            pendingCount > 0 || allModifications.some((m) => m.status === 'PENDIENTE'),
+          hasPendingModifications: pendingCount > 0 || allModifications.some((m) => m.status === 'PENDIENTE'),
           isSaving: false,
         });
 
@@ -397,11 +389,7 @@ export const PlanningModificationsStore = signalStore(
             requestClient: Boolean(c.requestClient && !c.requiresApproval),
           }));
 
-        const applied = await store._service.applyChanges(
-          fireTrialId,
-          { changes: itemsToApply },
-          store.centerId(),
-        );
+        const applied = await store._service.applyChanges(fireTrialId, { changes: itemsToApply }, store.centerId());
 
         store._service.reloadChanges();
 

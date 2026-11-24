@@ -2400,10 +2400,12 @@
         "VALIDATION": {
           "COMPONENT_DENOMINATION_REQUIRED": "Denominación requerida para {{component}}",
           "COMPONENT_LOT_REQUIRED": "Lote requerido para {{component}}",
+          "COMPONENT_RECONDITIONING_MAX_EXCEEDED": "Los valores de acondicionamiento de {{component}} no pueden superar {{max}}",
           "DENOMINATION_REQUIRED": "Denominación es requerida",
           "LOT_REQUIRED": "Lote es requerido",
           "MAX_TIME_REQUIRED": "Tiempo máximo es requerido",
           "MIN_TIME_REQUIRED": "Tiempo mínimo es requerido",
+          "RECONDITIONING_MAX_EXCEEDED": "Los valores de acondicionamiento no pueden superar {{max}}",
           "TEMPERATURE_REQUIRED": "Temperatura de acondicionamiento es requerida",
           "TOLERANCE_REQUIRED": "Tolerancia es requerida"
         }

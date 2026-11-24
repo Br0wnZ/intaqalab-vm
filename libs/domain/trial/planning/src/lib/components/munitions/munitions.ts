@@ -1,13 +1,4 @@
-import {
-  Component,
-  Injector,
-  ViewEncapsulation,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { Component, Injector, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
 import { applyEach, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -20,8 +11,12 @@ import { firstValueFrom } from 'rxjs';
 import { MunitionsStore } from '../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import type { ComponentDetail, Serie } from '../../utils-models/munitions.model';
-import { createEmptyConfiguration, createEmptySerie } from '../../utils-models/munitions.model';
+import type { ComponentDetail, ReconditioningData, Serie } from '../../utils-models/munitions.model';
+import {
+  MAX_RECONDITIONING_VALUE,
+  createEmptyConfiguration,
+  createEmptySerie,
+} from '../../utils-models/munitions.model';
 import { MassiveMunitionsConfigurationDialog } from './massive-munitions-configuration-dialog/massive-munitions-configuration-dialog';
 import { mapBackendToLocal, mapLocalToRequest } from './munitions.mapper';
 import { SeriePanelComponent } from './serie-panel/serie-panel.component';
@@ -213,6 +208,23 @@ export class Munitions {
     ),
   );
 
+  readonly #hasConditioningLimitViolation = computed(() => {
+    const hasReconditioningValueAboveMaximum = (data?: ReconditioningData | null): boolean =>
+      data !== undefined &&
+      data !== null &&
+      [data.temperature, data.tolerance, data.timeMin, data.timeMax].some(
+        (value) => value !== undefined && value !== null && value > MAX_RECONDITIONING_VALUE,
+      );
+
+    return this.seriesSignal().some((serie) =>
+      serie.configurations.some(
+        (config) =>
+          hasReconditioningValueAboveMaximum(config.reconditioning) ||
+          (config.components ?? []).some((component) => hasReconditioningValueAboveMaximum(component.reconditioning)),
+      ),
+    );
+  });
+
   readonly trialCode = computed(() => this.#planningGeneralDataStore.fireTrialCode());
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
@@ -361,11 +373,14 @@ export class Munitions {
           const reconditioning = config.reconditioning;
           if (!reconditioning) return undefined; // conditioning not enabled
           const isValidNum = (v: number | undefined | null): boolean =>
-            v !== undefined && v !== null && !isNaN(v as number);
+            v !== undefined && v !== null && !isNaN(v) && v <= MAX_RECONDITIONING_VALUE;
+          const isValidOptionalNum = (v: number | undefined | null): boolean =>
+            v === undefined || v === null || (!isNaN(v) && v <= MAX_RECONDITIONING_VALUE);
           const valid =
             isValidNum(reconditioning.temperature) &&
             isValidNum(reconditioning.tolerance) &&
-            isValidNum(reconditioning.timeMin);
+            isValidNum(reconditioning.timeMin) &&
+            isValidOptionalNum(reconditioning.timeMax);
           return valid
             ? undefined
             : {
@@ -379,11 +394,18 @@ export class Munitions {
           const config = value();
           const components = config.components ?? [];
           const isValidNum = (v: number | undefined | null): boolean =>
-            v !== undefined && v !== null && !isNaN(v as number);
+            v !== undefined && v !== null && !isNaN(v) && v <= MAX_RECONDITIONING_VALUE;
+          const isValidOptionalNum = (v: number | undefined | null): boolean =>
+            v === undefined || v === null || (!isNaN(v) && v <= MAX_RECONDITIONING_VALUE);
           const allValid = components.every((comp) => {
             const r = comp.reconditioning;
             if (!r) return true; // not enabled
-            return isValidNum(r.temperature) && isValidNum(r.tolerance) && isValidNum(r.timeMin);
+            return (
+              isValidNum(r.temperature) &&
+              isValidNum(r.tolerance) &&
+              isValidNum(r.timeMin) &&
+              isValidOptionalNum(r.timeMax)
+            );
           });
           return allValid
             ? undefined
@@ -414,7 +436,7 @@ export class Munitions {
   }
 
   isFormValid(): boolean {
-    return this.#validSeries().length > 0;
+    return this.#validSeries().length > 0 && !this.#hasConditioningLimitViolation();
   }
 
   getFormValues(): Serie[] {

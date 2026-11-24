@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReconditioningData } from '../../../utils-models/munitions.model';
 import { ConditioningFieldsComponent } from './conditioning-fields.component';
 
-
 describe('ConditioningFieldsComponent', () => {
   let fixture: ComponentFixture<ConditioningFieldsComponent>;
 
@@ -30,7 +29,8 @@ describe('ConditioningFieldsComponent', () => {
   describe('Initial rendering', () => {
     it('should render all form fields', async () => {
       await render(ConditioningFieldsComponent, {
-        componentInputs: { data: defaultData }, providers: [provideTranslateService()]
+        componentInputs: { data: defaultData },
+        providers: [provideTranslateService()],
       });
 
       expect(
@@ -48,7 +48,8 @@ describe('ConditioningFieldsComponent', () => {
 
     it('should display initial values correctly', async () => {
       await render(ConditioningFieldsComponent, {
-        componentInputs: { data: defaultData }, providers: [provideTranslateService()]
+        componentInputs: { data: defaultData },
+        providers: [provideTranslateService()],
       });
 
       const tempInput = screen.getByLabelText(
@@ -82,7 +83,8 @@ describe('ConditioningFieldsComponent', () => {
       };
 
       await render(ConditioningFieldsComponent, {
-        componentInputs: { data: dataWithoutTimeMin }, providers: [provideTranslateService()]
+        componentInputs: { data: dataWithoutTimeMin },
+        providers: [provideTranslateService()],
       });
 
       const minTimeInput = screen.getByLabelText(
@@ -100,7 +102,8 @@ describe('ConditioningFieldsComponent', () => {
 
       await render(ConditioningFieldsComponent, {
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
+        on: { dataChange: dataChangeSpy },
+        providers: [provideTranslateService()],
       });
 
       const tempInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label/i);
@@ -119,7 +122,8 @@ describe('ConditioningFieldsComponent', () => {
 
       await render(ConditioningFieldsComponent, {
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
+        on: { dataChange: dataChangeSpy },
+        providers: [provideTranslateService()],
       });
 
       const toleranceInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.tolerance_label/i);
@@ -138,7 +142,8 @@ describe('ConditioningFieldsComponent', () => {
 
       await render(ConditioningFieldsComponent, {
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
+        on: { dataChange: dataChangeSpy },
+        providers: [provideTranslateService()],
       });
 
       const minTimeInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.min_time_label/i);
@@ -157,7 +162,8 @@ describe('ConditioningFieldsComponent', () => {
 
       await render(ConditioningFieldsComponent, {
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
+        on: { dataChange: dataChangeSpy },
+        providers: [provideTranslateService()],
       });
 
       const observationsInput = screen.getByLabelText(
@@ -180,7 +186,8 @@ describe('ConditioningFieldsComponent', () => {
 
       await render(ConditioningFieldsComponent, {
         componentInputs: { data: defaultData },
-        on: { dataChange: dataChangeSpy }, providers: [provideTranslateService()]
+        on: { dataChange: dataChangeSpy },
+        providers: [provideTranslateService()],
       });
 
       const tempInput = screen.getByLabelText(/TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.temperature_label/i);
@@ -197,6 +204,48 @@ describe('ConditioningFieldsComponent', () => {
   });
 
   describe('Validation', () => {
+    it('should accept 1000 and reject values above the maximum for every numeric field', async () => {
+      const { fixture } = await render(ConditioningFieldsComponent, {
+        componentInputs: {
+          data: {
+            temperature: 1000,
+            tolerance: 1000,
+            timeMin: 1000,
+            timeMax: 1000,
+          },
+        },
+        providers: [provideTranslateService()],
+      });
+
+      expect(fixture.componentInstance.isValid()).toBe(true);
+
+      fixture.componentInstance.formModel.update((current) => ({
+        ...current,
+        temperature: 1001,
+        tolerance: 1001,
+        timeMin: 1001,
+        timeMax: 1001,
+      }));
+
+      expect(fixture.componentInstance.isValid()).toBe(false);
+      expect(fixture.componentInstance.fieldErrors()).toEqual({
+        temperature: true,
+        tolerance: true,
+        timeMin: true,
+        timeMax: true,
+      });
+
+      const inputs = [
+        screen.getByLabelText(/temperature_label/i),
+        screen.getByLabelText(/tolerance_label/i),
+        screen.getByLabelText(/min_time_label/i),
+        screen.getByLabelText(/max_time_label/i),
+      ];
+      for (const input of inputs) {
+        expect(input).toHaveAttribute('max', '1000');
+      }
+    });
+
     it('should be valid when timeMax is undefined but other required fields are present', async () => {
       const { fixture } = await render(ConditioningFieldsComponent, {
         componentInputs: {
@@ -206,7 +255,8 @@ describe('ConditioningFieldsComponent', () => {
             timeMin: 4,
             timeMax: undefined,
           },
-        }, providers: [provideTranslateService()]
+        },
+        providers: [provideTranslateService()],
       });
 
       expect(fixture.componentInstance.isValid()).toBe(true);
@@ -223,7 +273,8 @@ describe('ConditioningFieldsComponent', () => {
             timeMin: 4,
             timeMax: undefined,
           },
-        }, providers: [provideTranslateService()]
+        },
+        providers: [provideTranslateService()],
       });
 
       expect(fixture.componentInstance.isValid()).toBe(false);
@@ -240,7 +291,8 @@ describe('ConditioningFieldsComponent', () => {
             timeMax: undefined,
           },
           showErrors: true,
-        }, providers: [provideTranslateService()]
+        },
+        providers: [provideTranslateService()],
       });
 
       expect(fixture.componentInstance.showFieldError('timeMax')).toBe(false);

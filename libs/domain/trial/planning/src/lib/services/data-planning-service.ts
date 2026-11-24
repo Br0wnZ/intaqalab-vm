@@ -1,5 +1,5 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { inject, Service, signal } from '@angular/core';
+import { Service, inject, signal } from '@angular/core';
 import { injectApiUrl, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
 import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { PaginatedApiResponse } from '@intaqalab/models';

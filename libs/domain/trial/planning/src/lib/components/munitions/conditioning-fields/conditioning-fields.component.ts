@@ -4,7 +4,7 @@ import { MatInputModule } from '@angular/material/input';
 import { NoNegativeValuesDirective } from '@intaqalab/utils';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import type { ReconditioningData } from '../../../utils-models/munitions.model';
+import { MAX_RECONDITIONING_VALUE, type ReconditioningData } from '../../../utils-models/munitions.model';
 
 type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
 
@@ -28,6 +28,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-temperature"
             matInput
             type="number"
+            [attr.max]="maxReconditioningValue"
             [value]="formModel().temperature ?? ''"
             [style.color]="temperatureColor()"
             [disabled]="readonly()"
@@ -47,6 +48,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             id="conditioning-tolerance"
             matInput
             type="number"
+            [attr.max]="maxReconditioningValue"
             [value]="formModel().tolerance ?? ''"
             [disabled]="readonly()"
             (input)="onFieldChange('tolerance', $any($event.target).valueAsNumber)"
@@ -66,6 +68,7 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
             matInput
             type="number"
             libNoNegativeValues
+            [attr.max]="maxReconditioningValue"
             [value]="formModel().timeMin ?? ''"
             [disabled]="readonly()"
             (input)="onFieldChange('timeMin', $any($event.target).valueAsNumber)"
@@ -78,13 +81,14 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
         <label for="conditioning-time-max" class="block text-xs font-medium text-gray-600 mb-2">
           {{ 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MAX_TIME_LABEL' | translate }}
         </label>
-        <mat-form-field appearance="outline" class="w-full">
+        <mat-form-field appearance="outline" class="w-full" [class.cond-invalid]="showFieldError('timeMax')">
           <input
             placeholder="0"
             id="conditioning-time-max"
             matInput
             type="number"
             libNoNegativeValues
+            [attr.max]="maxReconditioningValue"
             [value]="formModel().timeMax ?? ''"
             [disabled]="readonly()"
             (input)="onFieldChange('timeMax', $any($event.target).valueAsNumber)"
@@ -146,6 +150,8 @@ type NumericField = 'temperature' | 'tolerance' | 'timeMin' | 'timeMax';
   encapsulation: ViewEncapsulation.None,
 })
 export class ConditioningFieldsComponent {
+  protected readonly maxReconditioningValue = MAX_RECONDITIONING_VALUE;
+
   readonly data = input.required<ReconditioningData>();
   /** When true, forces all errors visible regardless of touched state (e.g. on save attempt) */
   readonly showErrors = input<boolean>(false);
@@ -170,11 +176,13 @@ export class ConditioningFieldsComponent {
   readonly fieldErrors = computed<Record<NumericField, boolean>>(() => {
     const d = this.formModel();
     const invalid = (v: number | undefined | null): boolean => v === undefined || v === null || isNaN(v as number);
+    const exceedsMaximum = (v: number | undefined | null): boolean =>
+      typeof v === 'number' && v > MAX_RECONDITIONING_VALUE;
     return {
-      temperature: invalid(d.temperature),
-      tolerance: invalid(d.tolerance),
-      timeMin: invalid(d.timeMin),
-      timeMax: false,
+      temperature: invalid(d.temperature) || exceedsMaximum(d.temperature),
+      tolerance: invalid(d.tolerance) || exceedsMaximum(d.tolerance),
+      timeMin: invalid(d.timeMin) || exceedsMaximum(d.timeMin),
+      timeMax: exceedsMaximum(d.timeMax),
     };
   });
 
