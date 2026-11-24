@@ -79,7 +79,7 @@ export const SeriesAndShotsStore = signalStore(
       loadSeries(): void {
         const id = planningStore.fireTrialId();
         if (id) {
-          seriesService.getSeriesAndShots(id);
+          seriesService.getSeriesAndShots(id, planningStore.revision());
           patchState(store, { isInitialized: true });
         }
       },

@@ -77,22 +77,22 @@ describe('ArmamentService', () => {
         ],
       };
 
-      service.getArmament(MOCK_IDS.TRIAL);
+      service.getArmament(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
       await expectHttpRequest(
-        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament?revision=baseline`,
         'GET',
         mockResponse,
       );
     });
 
     it('should handle error when fetching armament data', async () => {
-      service.getArmament(MOCK_IDS.TRIAL);
+      service.getArmament(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
       const req = httpTestingController.expectOne(
-        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament`,
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/armament?revision=baseline`,
       );
       req.error(new ErrorEvent('Network error'));
       await Promise.resolve();
@@ -106,8 +106,8 @@ describe('ArmamentService', () => {
         shots: [
           {
             shotId: 'shot-1',
-            weaponExternalId: 'weapon-2',
-            tubeExternalId: 'tube-2',
+            weaponExternalId: 12,
+            tubeExternalId: 23,
             isInstrumented: true,
             lifeUsefulPercentage: 50,
             observations: 'Updated',
@@ -131,8 +131,8 @@ describe('ArmamentService', () => {
         shots: [
           {
             shotId: 'shot-1',
-            weaponExternalId: 'weapon-1',
-            tubeExternalId: 'tube-1',
+            weaponExternalId: 12,
+            tubeExternalId: 23,
             isInstrumented: false,
             lifeUsefulPercentage: 100,
             observations: '',

@@ -14,3 +14,4 @@ export * from './lib/queries/planning-target-catalogs.service';
 export * from './lib/queries/planning-target-conditions.service';
 export * from './lib/queries/propellant-charge-parameters.service';
 export * from './lib/queries/trial-resource-url';
+export * from './lib/revision/planning-revision';

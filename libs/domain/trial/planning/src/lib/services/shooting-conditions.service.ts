@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { signal, Service } from '@angular/core';
 import { injectFireTrialsEndpoint, injectPlanningEndpoint } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type {
   CalendarTrialScheduleApiResponse,
   FireTrial,
@@ -118,7 +119,7 @@ export interface LoadingZone {
 
 @Service()
 export class ShootingConditionsService {
-  readonly #getConditionsParams = signal<{ trialId: FireTrial['id'] } | null>(null);
+  readonly #getConditionsParams = signal<{ trialId: FireTrial['id']; revision: PlanningRevision } | null>(null);
   readonly #getTrialSchedulesParams = signal<{ trialId: FireTrial['id'] } | null>(null);
   readonly #updateConditionsParams = signal<UpdateConditionsRequest | null>(null);
   readonly #shouldLoadTargetTypes = signal(false);
@@ -140,6 +141,7 @@ export class ShootingConditionsService {
       return {
         url: `${this.#planningUrl}/fire-trials/${encodedTrialId}/planning/conditions`,
         method: 'GET',
+        params: planningRevisionParams(params.revision),
       };
     },
     {
@@ -273,8 +275,8 @@ export class ShootingConditionsService {
     },
   );
 
-  readonly getShootingConditions = (trialId: FireTrial['id']) => {
-    this.#getConditionsParams.set({ trialId });
+  readonly getShootingConditions = (trialId: FireTrial['id'], revision: PlanningRevision) => {
+    this.#getConditionsParams.set({ trialId, revision });
   };
 
   readonly updateShootingConditions = (data: UpdateConditionsRequest) => {

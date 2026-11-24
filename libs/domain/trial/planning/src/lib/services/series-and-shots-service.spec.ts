@@ -73,22 +73,22 @@ describe('SeriesAndShotsService', () => {
     it('should fetch series and shots for a trial', async () => {
       const mockResponse = [createMockSerie()];
 
-      service.getSeriesAndShots(MOCK_IDS.TRIAL);
+      service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
       await expectHttpRequest(
-        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series`,
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`,
         'GET',
         mockResponse,
       );
     });
 
     it('should handle error when fetching series and shots', async () => {
-      service.getSeriesAndShots(MOCK_IDS.TRIAL);
+      service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
       const req = httpTestingController.expectOne(
-        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series`,
+        `${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`,
       );
       req.error(new ErrorEvent('Network error'));
       await Promise.resolve();
@@ -244,13 +244,13 @@ describe('SeriesAndShotsService', () => {
     });
 
     it('should handle multiple calls correctly', async () => {
-      service.getSeriesAndShots(MOCK_IDS.TRIAL);
+      service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
-      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series`, 'GET', []);
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`, 'GET', []);
 
-      service.getSeriesAndShots(MOCK_IDS.TRIAL);
+      service.getSeriesAndShots(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
-      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series`, 'GET', []);
+      await expectHttpRequest(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/series?revision=baseline`, 'GET', []);
     });
   });
 });

@@ -116,7 +116,7 @@ describe('MeasuresStore', () => {
     describe('Planning Methods', () => {
       it('loadMeasures should call service.getMeasures with trialId', () => {
         store.loadMeasures();
-        expect(measuresServiceMock.getMeasures).toHaveBeenCalledWith('trial-123');
+        expect(measuresServiceMock.getMeasures).toHaveBeenCalledWith('trial-123', 'baseline');
       });
 
       it('loadMeasures should NOT call service if trialId is missing', () => {

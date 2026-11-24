@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCOPE_DIR = path.join(ROOT_DIR, 'libs', 'domain', 'trial', 'execution', 'src');
 const PATTERN =
-  /planning\/(series|conditions|munitions|armament|measures|propelling-charge-parameters|stanag-criteria)/;
+  /planning\/(info|series|conditions|munitions|armament|measures|propelling-charge-parameters|stanag-criteria)/;
 // Líneas de comentario (JSDoc / línea) que citan el endpoint no cuentan como URL.
 const COMMENT_LINE = /^\s*(\*|\/\/|\/\*)/;
 
@@ -40,4 +40,20 @@ if (offenders.length > 0) {
   );
   process.exit(1);
 }
+// Regla `?revision=`: toda query de data-access-planning sobre los 6 GET versionados debe enviar `revision`.
+const QUERIES_DIR = path.join(ROOT_DIR, 'libs', 'domain', 'trial', 'data-access-planning', 'src', 'lib', 'queries');
+const REVISIONED_QUERY = /planning\/(info|series|conditions|munitions|armament|measures)'/;
+const missingRevision = collectSourceFiles(QUERIES_DIR).filter((file) => {
+  const content = fs.readFileSync(file, 'utf-8');
+  return REVISIONED_QUERY.test(content) && !content.includes('planningRevisionParams');
+});
+
+if (missingRevision.length > 0) {
+  console.error(
+    'Queries de planning sin `planningRevisionParams` (todo GET de planning debe enviar ?revision=):' + '\n' +
+      missingRevision.map((file) => path.relative(ROOT_DIR, file).replace(/\\/g, '/')).join('\n'),
+  );
+  process.exit(1);
+}
+
 console.log('check:planning-urls OK');

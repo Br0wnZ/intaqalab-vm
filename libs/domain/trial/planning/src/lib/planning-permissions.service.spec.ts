@@ -71,4 +71,42 @@ describe('PlanningPermissionsService', () => {
       expect(service.canAccessPlanningTab(TrialStatus.PLANNED)).toBe(false);
     });
   });
+
+  describe('canModifyPlanningDuringExecution', () => {
+    it('should allow Trial Engineer and Admin when trial status is INTERRUPTED', () => {
+      setRoles([Role.INTAQALAB_TRIAL_ENGINEER]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(true);
+
+      setRoles([Role.INTAQALAB_ADMIN]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(true);
+    });
+
+    it('should allow a user with multiple roles including Trial Engineer or Admin when trial status is INTERRUPTED', () => {
+      setRoles([Role.INTAQALAB_ADMIN, Role.INTAQALAB_TRIAL_ENGINEER]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(true);
+    });
+
+    it('should NOT allow Trial Engineer or Admin when trial status is not INTERRUPTED', () => {
+      setRoles([Role.INTAQALAB_TRIAL_ENGINEER]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.IN_PROGRESS)).toBe(false);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.PLANNED)).toBe(false);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.UNDER_REVIEW)).toBe(false);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.EXECUTED)).toBe(false);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.CLOSED)).toBe(false);
+
+      setRoles([Role.INTAQALAB_ADMIN]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.IN_PROGRESS)).toBe(false);
+    });
+
+    it('should NOT allow other roles even when trial status is INTERRUPTED', () => {
+      setRoles([Role.INTAQALAB_PLANNING_ANALYSIS_HEAD]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(false);
+
+      setRoles([Role.INTAQALAB_TRIAL_CONSULTANT]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(false);
+
+      setRoles([Role.INTAQALAB_VIEWER]);
+      expect(service.canModifyPlanningDuringExecution(TrialStatus.INTERRUPTED)).toBe(false);
+    });
+  });
 });

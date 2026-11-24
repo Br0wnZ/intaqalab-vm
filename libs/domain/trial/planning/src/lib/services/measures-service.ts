@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 
 import type {
@@ -30,7 +31,7 @@ export type {
 
 @Service()
 export class MeasuresService {
-  readonly #getMeasuresParams = signal<{ trialId: FireTrial['id'] } | null>(null);
+  readonly #getMeasuresParams = signal<{ trialId: FireTrial['id']; revision: PlanningRevision } | null>(null);
   readonly #updateMeasuresParams = signal<{ trialId: FireTrial['id']; body: MeasuresBulkUpdateRequest } | null>(null);
 
   readonly #getMeasuresCatalogParams = signal<MeasuresCatalogQueryParams | null>(null);
@@ -53,6 +54,7 @@ export class MeasuresService {
     return {
       url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/measures`,
       method: 'GET',
+      params: planningRevisionParams(params.revision),
     };
   });
 
@@ -135,8 +137,8 @@ export class MeasuresService {
 
   // --- Public Methods ---
 
-  getMeasures(trialId: FireTrial['id']) {
-    this.#getMeasuresParams.set({ trialId });
+  getMeasures(trialId: FireTrial['id'], revision: PlanningRevision) {
+    this.#getMeasuresParams.set({ trialId, revision });
   }
 
   updateMeasures(trialId: FireTrial['id'], body: MeasuresBulkUpdateRequest) {

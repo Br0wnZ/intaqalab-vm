@@ -90,7 +90,7 @@ export const MeasuresStore = signalStore(
     loadMeasures(): void {
       const trialId = planningStore.fireTrialId();
       if (trialId) {
-        measuresService.getMeasures(trialId);
+        measuresService.getMeasures(trialId, planningStore.revision());
         patchState(store, { isInitialized: true });
       }
     },

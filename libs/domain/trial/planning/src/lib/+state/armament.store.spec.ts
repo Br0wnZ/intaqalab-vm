@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import {
-    createArmamentCatalogTestData,
-    createArmamentTestData,
-    createMockArmamentService,
-    createMockPlanningGeneralDataStore,
+  createArmamentCatalogTestData,
+  createArmamentTestData,
+  createMockArmamentService,
+  createMockPlanningGeneralDataStore,
 } from '@intaqalab/utils';
 
 import { ArmamentService } from '../services/armament-service';
@@ -72,7 +72,7 @@ describe('ArmamentStore', () => {
       it('should call getArmament with current trial ID', () => {
         store.loadArmament();
 
-        expect(testSetup.armamentServiceMock.getArmament).toHaveBeenCalledWith('trial-123');
+        expect(testSetup.armamentServiceMock.getArmament).toHaveBeenCalledWith('trial-123', 'baseline');
       });
 
       it('should mark store as initialized after loading', () => {
@@ -114,8 +114,8 @@ describe('ArmamentStore', () => {
           shots: [
             {
               shotId: 'shot-1',
-              weaponExternalId: 'weapon-1',
-              tubeExternalId: 'tube-1',
+              weaponExternalId: 12,
+              tubeExternalId: 23,
               isInstrumented: true,
               lifeUsefulPercentage: 80,
               observations: 'Test observation',

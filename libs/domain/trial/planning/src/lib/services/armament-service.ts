@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { Service, computed, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 import { actionTrigger } from '@intaqalab/utils';
 
@@ -62,7 +63,7 @@ type TubeDenominationParams = {
 
 @Service()
 export class ArmamentService {
-  readonly #getArmamentParams = signal<{ trialId: FireTrial['id'] } | null>(null);
+  readonly #getArmamentParams = signal<{ trialId: FireTrial['id']; revision: PlanningRevision } | null>(null);
   readonly #updateArmamentTrigger = actionTrigger<{ trialId: FireTrial['id']; body: ArmamentBulkUpdateRequest }>();
 
   // Legacy catalog signals (mantenidos por compatibilidad con loadAllCatalogs)
@@ -83,6 +84,7 @@ export class ArmamentService {
     return {
       url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/armament`,
       method: 'GET',
+      params: planningRevisionParams(params.revision),
     };
   });
 
@@ -183,8 +185,8 @@ export class ArmamentService {
 
   readonly tubeDenominationsFamilyId = computed(() => this.#tubeDenominationParams()?.familyId);
 
-  getArmament(trialId: FireTrial['id']) {
-    this.#getArmamentParams.set({ trialId });
+  getArmament(trialId: FireTrial['id'], revision: PlanningRevision) {
+    this.#getArmamentParams.set({ trialId, revision });
   }
 
   updateArmament(trialId: FireTrial['id'], body: ArmamentBulkUpdateRequest) {

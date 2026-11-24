@@ -128,7 +128,7 @@ export const ArmamentStore = signalStore(
     loadArmament(): void {
       const trialId = planningStore.fireTrialId();
       if (trialId) {
-        armamentService.getArmament(trialId);
+        armamentService.getArmament(trialId, planningStore.revision());
         patchState(store, { isInitialized: true });
       }
     },

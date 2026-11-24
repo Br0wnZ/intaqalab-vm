@@ -4,6 +4,7 @@ import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import { PlanningTrialContextService } from '../context/trial-context.service';
 import type { PlanningConditionsResponse } from '../models/planning-conditions.model';
+import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**
@@ -14,6 +15,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
 export class PlanningConditionsService {
   readonly #trialContext = inject(PlanningTrialContextService);
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #revision = inject(PLANNING_REVISION);
   /** Trial fijado explícitamente por el llamador (prioridad sobre el contexto compartido). */
   readonly #explicitTrialId = signal<string | null>(null);
   readonly #reloadVersion = signal(0);
@@ -32,6 +34,7 @@ export class PlanningConditionsService {
         'planning/conditions',
       ),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 

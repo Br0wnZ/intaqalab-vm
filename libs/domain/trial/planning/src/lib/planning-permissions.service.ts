@@ -7,7 +7,7 @@ import {
   CAN_MODIFY_PLANNING_ROLES,
   CAN_SELF_ASSIGN_PLANNING_ROLES,
   CAN_VALIDATE_PLANNING_ROLES,
-  type Role,
+  Role,
 } from '@intaqalab/core';
 import { TrialStatus } from '@intaqalab/models';
 
@@ -91,6 +91,17 @@ export class PlanningPermissionsService {
    */
   canSelfAssign(): boolean {
     return this.#hasAnyRole(CAN_SELF_ASSIGN_PLANNING_ROLES);
+  }
+
+  /**
+   * Determina si el usuario puede MODIFICAR la planificación durante la ejecución.
+   * Ingeniero de Ensayos (INTAQALAB_TRIAL_ENGINEER) o Administrador (INTAQALAB_ADMIN) cuando la prueba está INTERRUPTED.
+   */
+  canModifyPlanningDuringExecution(trialStatus: TrialStatus): boolean {
+    return (
+      trialStatus === TrialStatus.INTERRUPTED &&
+      this.#hasAnyRole([Role.INTAQALAB_TRIAL_ENGINEER, Role.INTAQALAB_ADMIN])
+    );
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────

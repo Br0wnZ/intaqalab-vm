@@ -1195,10 +1195,12 @@
     "ACTION_CANCEL": "Cancel execution",
     "ACTION_EXPORT": "Export data",
     "ACTION_FINISH": "End execution",
+    "ACTION_MODIFY_PLANNING": "Modify planning",
     "ACTION_PAUSE": "Pause execution",
     "ACTION_RESUME": "Resume execution",
     "ACTION_START": "Start execution",
     "ACTION_STOP": "Interrupt execution",
+    "ACTION_VIEW_MODIFICATIONS": "View modifications",
     "ADD": "Add",
     "CATEGORIES": {
       "BALISTICA": "Ballistics",
@@ -1321,6 +1323,81 @@
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No widgets found",
+    "PLANNING_MODIFICATION": {
+      "ACTION_TYPES": {
+        "ALTA": "Addition",
+        "BAJA": "Removal",
+        "MODIFICACION": "Modification"
+      },
+      "BLOCKED_MODAL": {
+        "CLOSE_BTN": "Understood",
+        "MESSAGE": "There are modifications pending approval by the Client. New modifications cannot be started until they are resolved.",
+        "TITLE": "Modification blocked",
+        "VIEW_PENDING_BTN": "View pending modifications"
+      },
+      "CLASSIFICATION": {
+        "ACCEPT": "Accepts",
+        "ACCEPT_TOOLTIP": "Change proposed by the Center. Requires explicit Client approval.",
+        "NONE": "No approval required",
+        "NONE_TOOLTIP": "Internal Center change that does not affect the Client. Applied automatically upon saving.",
+        "REQUEST": "Requests",
+        "REQUEST_TOOLTIP": "Change requested by the Client. Requires explicit validation by the Client."
+      },
+      "CLIENT_REVIEW": {
+        "ACCEPT_BTN": "Accept",
+        "EMPTY_STATE": "No modifications match the selected filter.",
+        "FILTER_ACCEPTED": "Accepted",
+        "FILTER_ALL": "All",
+        "FILTER_PENDING": "Pending",
+        "FILTER_REJECTED": "Rejected",
+        "REJECT_BTN": "Reject",
+        "SUBTITLE": "Review and resolve the modifications recorded for the trial planning.",
+        "TITLE": "Planning modifications review"
+      },
+      "COLUMNS": {
+        "ACCEPT": "Accepts",
+        "ACTION": "Action",
+        "ACTIONS": "Actions",
+        "AFFECTED_SHOTS": "Affected shots",
+        "NEW_VALUE": "New value",
+        "PARAMETER": "Parameter",
+        "PREVIOUS_VALUE": "Previous value",
+        "REQUEST": "Requests",
+        "STATUS": "Status"
+      },
+      "DIALOG": {
+        "CLOSE_BTN": "Close",
+        "CLOSE_CONFIRM_MESSAGE": "There are unsaved draft modifications. Do you want to close and discard unsaved changes?",
+        "CLOSE_CONFIRM_TITLE": "Discard unsaved changes",
+        "EMPTY_STATE": "No modifications have been detected during this session.",
+        "SAVE_BTN": "Save changes",
+        "TAB_MODIFICATIONS": "Modifications",
+        "TAB_PLANNING": "Planning",
+        "TITLE": "Modify planning",
+        "TITLE_WITH_CODE": "Modify planning — {{code}}"
+      },
+      "MESSAGES": {
+        "APPROVE_ERROR": "Error accepting modification.",
+        "APPROVE_SUCCESS": "Modification accepted and applied successfully.",
+        "CLASSIFICATION_ERROR": "Error updating change classification.",
+        "LOAD_ERROR": "Could not load planning modifications.",
+        "REJECT_ERROR": "Error rejecting modification.",
+        "REJECT_SUCCESS": "Modification rejected successfully.",
+        "SAVE_ERROR": "Error saving planning modifications.",
+        "SAVE_SUCCESS": "Modifications saved successfully.",
+        "SAVE_SUCCESS_PENDING": "Modifications saved. Changes requiring approval have been sent to the Client."
+      },
+      "STATUS": {
+        "ACEPTADO": "Accepted",
+        "BORRADOR": "Draft",
+        "PENDIENTE": "Pending",
+        "RECHAZADO": "Rejected"
+      },
+      "VALIDATION": {
+        "PENDING_WARNING": "There are validation errors in the planning. Resolve the issues before saving changes.",
+        "PENDING_WARNING_COUNT": "Validation pending: {{count}} errors detected. Resolve the issues to enable saving."
+      }
+    },
     "PROGRESS": "% test progress",
     "SEARCH_WIDGET_PLACEHOLDER": "Search widget...",
     "SHOT_HISTORY_DESC": "Latest run records",

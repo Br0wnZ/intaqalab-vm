@@ -31,12 +31,16 @@ import { ExecutionHeader } from './execution-header/execution-header';
         [isSaving]="isSaving()"
         [editMode]="isEditMode()"
         [canSelectEquipment]="canSelectEquipment()"
+        [canModifyPlanning]="canModifyPlanning()"
+        [canViewModifications]="canViewModifications()"
         (startRequested)="startExecution()"
         (pauseRequested)="pauseExecution()"
         (resumeRequested)="resumeExecution()"
         (interruptRequested)="interruptExecution()"
         (cancelRequested)="cancelExecution()"
         (finishRequested)="finishExecution()"
+        (modifyPlanning)="openModifyPlanning()"
+        (viewModifications)="openClientModifications()"
         (equipmentSelectorRequested)="openEquipmentSelector()"
         (saveRequested)="saveAllChanges()"
         (widgetsPanelToggleRequested)="toggleWidgetsPanel()"
@@ -101,6 +105,8 @@ export class Execution implements OnDestroy {
   readonly loadError = this.#executionFacade.loadError;
   readonly placedWidgets = this.#executionFacade.placedWidgets;
   readonly canSelectEquipment = this.#executionFacade.canSelectEquipment;
+  readonly canModifyPlanning = this.#executionFacade.canModifyPlanning;
+  readonly canViewModifications = this.#executionFacade.canViewModifications;
   readonly isWidgetsPanelOpen = signal(false);
   readonly isEditMode = signal(false);
 
@@ -153,6 +159,14 @@ export class Execution implements OnDestroy {
 
   finishExecution(): Promise<void> {
     return this.#executionFacade.finishExecution();
+  }
+
+  openModifyPlanning(): Promise<void> {
+    return this.#executionFacade.openModifyPlanning();
+  }
+
+  openClientModifications(): Promise<void> {
+    return this.#executionFacade.openClientModifications();
   }
 
   openEquipmentSelector(): Promise<void> {

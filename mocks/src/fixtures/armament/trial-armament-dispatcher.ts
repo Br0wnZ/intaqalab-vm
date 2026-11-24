@@ -1,6 +1,8 @@
 import type { Request } from 'express';
 
 import { getFixture } from '../../utils';
+import { getAcceptedChanges, resolveRevision } from '../trial-planning/planning-revision';
+import { projectArmament } from '../trial-planning/planning-revision-projectors';
 
 interface TrialArmamentResponse {
   series: SeriesArmamentData[];
@@ -53,6 +55,14 @@ const defaultFixture = getFixture<TrialArmamentResponse>('fixtures/armament', 't
 export function getArmamentDispatcher(req: Request): TrialArmamentResponse {
   const { fireTrialId } = req.params;
 
+  const baseline = getBaselineArmament(fireTrialId);
+  if (resolveRevision(req) === 'baseline') {
+    return baseline;
+  }
+  return projectArmament(baseline, getAcceptedChanges(fireTrialId, 'ARMAMENT'));
+}
+
+function getBaselineArmament(fireTrialId: string): TrialArmamentResponse {
   const storedData = trialArmamentStore.get(fireTrialId);
   if (storedData) {
     return storedData;

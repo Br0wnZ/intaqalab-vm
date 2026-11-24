@@ -4,6 +4,7 @@ import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { TrialArmamentResponse } from '../models/planning-armament.model';
 import { awaitResourceValue } from './await-resource';
+import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**
@@ -16,6 +17,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
 @Service()
 export class PlanningArmamentService {
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #revision = inject(PLANNING_REVISION);
   readonly #injector = inject(Injector);
   readonly #explicitTrialId = signal<string | null>(null);
   readonly #fetchArmamentParams = signal<{ fireTrialId: string } | null>(null);
@@ -27,6 +29,7 @@ export class PlanningArmamentService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { fireTrialId: explicitTrialId }, 'planning/armament'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 
@@ -37,6 +40,7 @@ export class PlanningArmamentService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { fireTrialId: params.fireTrialId }, 'planning/armament'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 

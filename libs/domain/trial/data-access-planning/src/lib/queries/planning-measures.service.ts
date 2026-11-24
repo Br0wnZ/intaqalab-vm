@@ -4,6 +4,7 @@ import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import { PlanningTrialContextService } from '../context/trial-context.service';
 import type { TrialMeasuresResponse } from '../models/planning-measures.model';
+import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**
@@ -16,6 +17,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
 @Service()
 export class PlanningMeasuresService {
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #revision = inject(PLANNING_REVISION);
   readonly #explicitTrialId = signal<string | null>(null);
 
   readonly measuresResource = httpResource<TrialMeasuresResponse>(() => {
@@ -25,6 +27,7 @@ export class PlanningMeasuresService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { fireTrialId: explicitTrialId }, 'planning/measures'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 

@@ -39,12 +39,12 @@ describe('MeasuresService', () => {
 
   describe('Trial Endpoints (Planning)', () => {
     it('should call getMeasures and trigger measuresResource', () => {
-      service.getMeasures(trialId);
+      service.getMeasures(trialId, 'baseline');
 
       service.measuresResource.value();
       TestBed.tick();
 
-      const req = httpTestingController.expectOne(`${mockPlanningUrl}/fire-trials/${trialId}/planning/measures`);
+      const req = httpTestingController.expectOne(`${mockPlanningUrl}/fire-trials/${trialId}/planning/measures?revision=baseline`);
       expect(req.request.method).toBe('GET');
       req.flush({});
     });

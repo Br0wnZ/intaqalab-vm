@@ -15,7 +15,6 @@ vi.mock('@intaqalab/config', () => ({
   injectMunitionComponentTypesEndpoint: () => 'http://api.test/munition-component-types',
   injectMunitionDenominationsEndpoint: () => 'http://api.test/munition-denominations',
   injectWharehouseEndpoint: () => 'http://api.test/warehouse',
-  injectWharehouseEndpoint: () => 'http://api.test/warehouse',
 }));
 
 describe('MunitionsService', () => {
@@ -39,10 +38,10 @@ describe('MunitionsService', () => {
   });
 
   it('should GET munitions for a trial', () => {
-    service.getMunitions(TRIAL_ID);
+    service.getMunitions(TRIAL_ID, 'baseline');
     TestBed.tick();
 
-    const request = httpTestingController.expectOne(MUNITIONS_URL);
+    const request = httpTestingController.expectOne(`${MUNITIONS_URL}?revision=baseline`);
     expect(request.request.method).toBe('GET');
     request.flush({ series: [] });
   });

@@ -1,22 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 import { createMockResource } from './core';
+import type {
+  MockArmamentService,
+  MockDataPlanningService,
+  MockDialogResult,
+  MockMatDialog,
+  MockMeasuresService,
+  MockMunitionsService,
+  MockPlanningGeneralDataStore,
+  MockPlanningLifecycleService,
+  MockSeriesAndShotsService,
+  MockSeriesAndShotsStore,
+  MockShootingConditionsService,
+  MockTrialGeneralDataStore,
+  MockTrialsDataService,
+  TypedDialogData,
+} from './models';
 
-export type MockDialogResult = {
-  close: ReturnType<typeof vi.fn>;
-  afterClosed: ReturnType<typeof vi.fn>;
-  backdropClick: ReturnType<typeof vi.fn>;
-  keydownEvents: ReturnType<typeof vi.fn>;
-};
-
-export type TypedDialogData<T> = T & {
-  title?: string;
-  message?: string;
-  confirmText?: string;
-  cancelText?: string;
-  icon?: string;
-  iconColor?: string;
+export type {
+  MockArmamentService,
+  MockDataPlanningService,
+  MockDialogResult,
+  MockMatDialog,
+  MockMeasuresService,
+  MockMunitionsService,
+  MockPlanningGeneralDataStore,
+  MockPlanningLifecycleService,
+  MockSeriesAndShotsService,
+  MockSeriesAndShotsStore,
+  MockShootingConditionsService,
+  MockTrialGeneralDataStore,
+  MockTrialsDataService,
+  TypedDialogData,
 };
 
 // ============================================================================
@@ -44,7 +62,7 @@ export function createMockMatDialogRef(): MockDialogResult {
 /**
  * Crea un mock de MatDialog con configuración flexible
  */
-export function createMockMatDialog(config?: { defaultResult?: any; mockImplementation?: ReturnType<typeof vi.fn> }) {
+export function createMockMatDialog(config?: { defaultResult?: unknown; mockImplementation?: Mock }): MockMatDialog {
   const defaultResult = config?.defaultResult ?? null;
   const mockFn = config?.mockImplementation ?? vi.fn();
 
@@ -240,7 +258,7 @@ export function createMockDataPlanningService(initialData?: {
   };
   users?: Array<{ id: string; fullname: string }>;
   planningInfo?: any;
-}) {
+}): MockDataPlanningService {
   const specimenResource = createMockResource(initialData?.specimens ?? createSpecimens());
   const usersResource = createMockResource(initialData?.users ?? createUsers());
   const getPlanningDataResource = createMockResource(initialData?.planningInfo);
@@ -273,7 +291,7 @@ export function createMockDataPlanningService(initialData?: {
 /**
  * Factory para crear un mock de SeriesAndShotsService
  */
-export function createMockSeriesAndShotsService(initialData?: { series?: any[] }) {
+export function createMockSeriesAndShotsService(initialData?: { series?: any[] }): MockSeriesAndShotsService {
   const seriesAndShotsResource = createMockResource(initialData?.series ?? createSeries());
   const addNewSerieResource = createMockResource();
   const updateSerieResource = createMockResource();
@@ -306,7 +324,7 @@ export function createMockSeriesAndShotsService(initialData?: { series?: any[] }
 /**
  * Factory para crear un mock de ShootingConditionsService
  */
-export function createMockShootingConditionsService(initialData?: { conditions?: any[] }) {
+export function createMockShootingConditionsService(initialData?: { conditions?: any[] }): MockShootingConditionsService {
   const conditionsResource = createMockResource(initialData?.conditions ?? createShootingConditions());
   const updateConditionsResource = createMockResource();
   const getTargetTypesResource = createMockResource([]);
@@ -336,7 +354,7 @@ export function createMockShootingConditionsService(initialData?: { conditions?:
 /**
  * Factory para crear un mock de PlanningLifecycleService
  */
-export function createMockPlanningLifecycleService() {
+export function createMockPlanningLifecycleService(): MockPlanningLifecycleService {
   const validateResource = createMockResource();
   const unlockResource = createMockResource();
 
@@ -353,7 +371,7 @@ export function createMockPlanningLifecycleService() {
 /**
  * Factory para crear un mock de SeriesAndShotsStore
  */
-export function createMockSeriesAndShotsStore(initialData?: { series?: any[]; fireTrialId?: string }) {
+export function createMockSeriesAndShotsStore(initialData?: { series?: any[]; fireTrialId?: string }): MockSeriesAndShotsStore {
   const seriesResource = createMockResource(initialData?.series ?? createSeries());
   const addSerieResource = createMockResource();
   const updateSerieResource = createMockResource();
@@ -428,11 +446,12 @@ export function createMockPlanningGeneralDataStore(initialData?: {
   users?: Array<{ id: string; fullname: string }>;
   planningInfo?: any;
   fireTrialId?: string;
+  revision?: string;
   fireTrial?: any;
   shootingConditions?: any[];
   series?: Array<{ shotQuantity?: number; shots?: unknown[] }>;
   selectedSpecimens?: Array<{ specimenId: string; batch: string }>;
-}) {
+}): MockPlanningGeneralDataStore {
   const specimensResource = createMockResource(initialData?.specimens ?? createSpecimens());
   const usersResource = createMockResource(initialData?.users ?? createUsers());
   const planningInfoResource = createMockResource(initialData?.planningInfo);
@@ -449,6 +468,7 @@ export function createMockPlanningGeneralDataStore(initialData?: {
   return {
     // State
     fireTrialId: vi.fn(() => initialData?.fireTrialId ?? null),
+    revision: vi.fn(() => initialData?.revision ?? 'baseline'),
     fireTrial: vi.fn(() => initialData?.fireTrial ?? null),
     fireTrialCode: vi.fn(() => initialData?.fireTrial?.code ?? null),
 
@@ -540,6 +560,7 @@ export function createMockPlanningGeneralDataStore(initialData?: {
     isLoadingImpactZones: vi.fn(() => false),
 
     // Methods
+    setRevision: vi.fn(),
     setFireTrialId: vi.fn(),
     setFireTrialData: vi.fn(),
     setSelectedSpecimens: vi.fn(),
@@ -600,7 +621,7 @@ export function createMockPlanningGeneralDataStore(initialData?: {
 /**
  * Factory para crear un mock de TrialGeneralDataStore
  */
-export function createMockTrialGeneralDataStore(initialData?: { trial?: any; trialId?: string }) {
+export function createMockTrialGeneralDataStore(initialData?: { trial?: any; trialId?: string }): MockTrialGeneralDataStore {
   const trialResource = createMockResource(initialData?.trial ?? null);
 
   return {
@@ -615,7 +636,7 @@ export function createMockTrialGeneralDataStore(initialData?: { trial?: any; tri
 /**
  * Factory para crear un mock de TrialsDataService
  */
-export function createMockTrialsDataService() {
+export function createMockTrialsDataService(): MockTrialsDataService {
   const createTrialResource = createMockResource();
   const updateTrialResource = createMockResource();
   const sourceResource = createMockResource([]);
@@ -680,7 +701,7 @@ export function createMockMunitionsService(initialData?: {
   componentTypes?: { page: number; pageSize: number; totalElements: number; items: any[] };
   denominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
   fuseWorkingModes?: { page: number; pageSize: number; totalElements: number; items: any[] };
-}) {
+}): MockMunitionsService {
   // Trial Munitions resources
   const munitionsResource = createMockResource(initialData?.munitions);
   const updateMunitionsResource = createMockResource<void>();
@@ -901,7 +922,7 @@ export function createMockArmamentService(initialData?: {
   weaponDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
   mortarDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
   tubeDenominations?: { page: number; pageSize: number; totalElements: number; items: any[] };
-}) {
+}): MockArmamentService {
   // Trial Armament resources
   const armamentResource = createMockResource(initialData?.armament);
   const updateArmamentResource = createMockResource<void>();
@@ -1006,7 +1027,7 @@ export function createArmamentCatalogTestData() {
 export function createMockMeasuresService(initialData?: {
   measures?: { series: Array<{ seriesId: string; seriesName: string; measures: any[] }> };
   measuresCatalog?: { page: number; pageSize: number; totalElements: number; items: any[] };
-}) {
+}): MockMeasuresService {
   // Trial Measures resources
   const measuresResource = createMockResource(initialData?.measures);
   const updateMeasuresResource = createMockResource<void>();

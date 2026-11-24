@@ -55,3 +55,5 @@ export * from './execution/analytics/overpressure.service';
 export * from './execution/planning/planning-fuse.service';
 export * from './execution/planning/warehouse-catalog.service';
 export * from './execution/planning/planning-munition-options.service';
+
+export * from './planning-modifications';

@@ -2,6 +2,7 @@
 import { computed, effect, inject, untracked } from '@angular/core';
 import { Role } from '@intaqalab/core';
 import { UsersService } from '@intaqalab/data-access';
+import { DEFAULT_PLANNING_REVISION, type PlanningRevision } from '@intaqalab/data-access-planning';
 import type { MasterData, TargetDimension, TargetThickness, TrialCreateModifyForm } from '@intaqalab/models';
 import { TrialStatus } from '@intaqalab/models';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
@@ -27,12 +28,15 @@ interface PlanningState {
   fireTrialId: string | null;
   fireTrial: TrialCreateModifyForm | null;
   selectedSpecimens: UpsertTrialPlanningInfo['specimens'];
+  /** Revisión (`?revision=`) con la que se consultan los GET de planning (baseline | execution). */
+  revision: PlanningRevision;
 }
 
 const initialState: PlanningState = {
   fireTrialId: null,
   fireTrial: null,
   selectedSpecimens: [],
+  revision: DEFAULT_PLANNING_REVISION,
 };
 export const PlanningGeneralDataStore = signalStore(
   withState(initialState),
@@ -294,10 +298,15 @@ export const PlanningGeneralDataStore = signalStore(
       usersService = inject(UsersService),
       lifecycleService = inject(PlanningLifecycleService),
     ) => ({
+      /** Fija la revisión de los GET de planning. Debe llamarse antes de `setFireTrialData`. */
+      setRevision(revision: PlanningRevision): void {
+        patchState(store, { revision });
+      },
+
       setFireTrialData(fireTrialId: string, fireTrial: TrialCreateModifyForm): void {
         patchState(store, { fireTrialId, fireTrial, selectedSpecimens: [] });
 
-        dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
+        dataPlanningService.getFireTrialPlanningInfo(fireTrialId, store.revision());
       },
 
       setFireTrialId(fireTrialId: string | null): void {
@@ -355,7 +364,7 @@ export const PlanningGeneralDataStore = signalStore(
       reloadPlanningInfo(): void {
         const fireTrialId = store.fireTrialId();
 
-        if (fireTrialId) dataPlanningService.getFireTrialPlanningInfo(fireTrialId);
+        if (fireTrialId) dataPlanningService.getFireTrialPlanningInfo(fireTrialId, store.revision());
       },
 
       reloadSpecimens(): void {
@@ -372,7 +381,7 @@ export const PlanningGeneralDataStore = signalStore(
 
       loadSeries(): void {
         const id = store.fireTrialId();
-        if (id) seriesService.getSeriesAndShots(id);
+        if (id) seriesService.getSeriesAndShots(id, store.revision());
       },
 
       reloadSeries(): void {
@@ -423,7 +432,7 @@ export const PlanningGeneralDataStore = signalStore(
 
       getShootingConditions(): void {
         const id = store.fireTrialId();
-        if (id) shootingConditionsService.getShootingConditions(id);
+        if (id) shootingConditionsService.getShootingConditions(id, store.revision());
       },
 
       updateShootingConditions(request: Omit<UpdateConditionsRequest, 'trialId'>): void {
@@ -490,7 +499,7 @@ export const PlanningGeneralDataStore = signalStore(
           const hasInfo = store.hasPlanningInfo();
           const id = store.fireTrialId();
           if (hasInfo && id) {
-            seriesService.getSeriesAndShots(id);
+            seriesService.getSeriesAndShots(id, store.revision());
           }
         });
 

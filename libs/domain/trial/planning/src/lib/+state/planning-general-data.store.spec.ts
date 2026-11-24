@@ -88,12 +88,12 @@ describe('PlanningGeneralDataStore', () => {
       associatedTrialView: '',
     };
 
-    store.setFireTrialData(trialId, trial, true);
+    store.setFireTrialData(trialId, trial);
 
     expect(store.fireTrialId()).toBe(trialId);
     expect(store.fireTrial()).toEqual(trial);
     expect(store.fireTrialCode()).toBe('T-001');
-    expect(dataPlanningServiceMock.getFireTrialPlanningInfo).toHaveBeenCalledWith(trialId);
+    expect(dataPlanningServiceMock.getFireTrialPlanningInfo).toHaveBeenCalledWith(trialId, 'baseline');
   });
 
   it('should not read planning info value when the resource has errored', () => {

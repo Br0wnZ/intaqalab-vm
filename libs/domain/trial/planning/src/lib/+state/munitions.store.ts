@@ -207,7 +207,7 @@ export const MunitionsStore = signalStore(
       loadMunitions(): void {
         const trialId = planningStore.fireTrialId();
         if (trialId) {
-          munitionsService.getMunitions(trialId);
+          munitionsService.getMunitions(trialId, planningStore.revision());
           patchState(store, { isInitialized: true });
         }
       },

@@ -300,7 +300,7 @@ describe('ExecutionService', () => {
     const promise = service.fetchPlanningFuseGraduation(DEMO_TRIAL_ID, 'series-1', 'shot-2');
     TestBed.tick();
 
-    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions?revision=execution`);
     expect(req.request.method).toBe('GET');
     req.flush({
       series: [
@@ -327,7 +327,7 @@ describe('ExecutionService', () => {
     const promise = service.fetchPlanningFuseGraduation(DEMO_TRIAL_ID, 'series-1', 'shot-1');
     TestBed.tick();
 
-    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    const req = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions?revision=execution`);
     req.flush({
       series: [
         {
@@ -1159,12 +1159,18 @@ describe('ExecutionService', () => {
 
     // fetchPlanningArmament
     const mockPlanningArmament: PlanningArmamentResponse = {
-      series: [{ seriesId: 's-1', shots: [{ shotId: 'sh-1', armament: { weaponExternalId: 1 } }] }],
+      series: [
+        {
+          seriesId: 's-1',
+          seriesName: 'Series 1',
+          shots: [{ shotId: 'sh-1', armament: { weaponExternalId: 1 } }],
+        },
+      ],
     };
     const planningArmamentPromise = service.fetchPlanningArmament(DEMO_TRIAL_ID);
     TestBed.tick();
 
-    const planArmReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/armament`);
+    const planArmReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/fire-trials/${DEMO_TRIAL_ID}/planning/armament?revision=execution`);
     expect(planArmReq.request.method).toBe('GET');
     planArmReq.flush(mockPlanningArmament);
     TestBed.tick();
@@ -1496,7 +1502,7 @@ describe('ExecutionService', () => {
     expect(warehouseReq.request.method).toBe('GET');
     warehouseReq.flush({ items: [] });
 
-    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions?revision=execution`);
     expect(planningReq.request.method).toBe('GET');
     planningReq.flush(mockPlanningMunitions);
     TestBed.tick();
@@ -1592,7 +1598,7 @@ describe('ExecutionService', () => {
     expect(warehouseDenomsReq.request.method).toBe('GET');
     warehouseDenomsReq.flush(mockWarehouseDenominations);
 
-    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions`);
+    const planningReq = httpMock.expectOne(`${PLANNING_BASE_URL}/munitions?revision=execution`);
     planningReq.flush(mockPlanningMunitions);
     TestBed.tick();
 

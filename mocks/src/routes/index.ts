@@ -10,6 +10,7 @@ import { masterDataRouter } from './master-data.routes';
 import { measuresRouter } from './measures.routes';
 import { munitionsRouter } from './munitions.routes';
 import { planningGeneralDataRouter } from './planning-general-data.routes';
+import { planningModificationsRouter } from './planning-modifications.routes';
 import { trialsRouter } from './trials.routes';
 import { whareHouseRouter } from './warehouse.routes';
 
@@ -21,6 +22,7 @@ router.use('/centers', documentsRouter);
 router.use('/centers', calendarRouter);
 router.use('/centers', whareHouseRouter);
 router.use('/centers', executionRouter);
+router.use('/centers', planningModificationsRouter);
 router.use('/centers/:centerId', munitionsRouter);
 router.use('/centers/:centerId', armamentRouter);
 router.use('/centers/:centerId', equipmentRouter);

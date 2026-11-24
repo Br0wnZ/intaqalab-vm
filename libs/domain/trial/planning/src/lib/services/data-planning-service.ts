@@ -1,6 +1,7 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { inject, signal, Service } from '@angular/core';
+import { inject, Service, signal } from '@angular/core';
 import { injectApiUrl, injectPlanningEndpoint, injectWharehouseEndpoint } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { PaginatedApiResponse } from '@intaqalab/models';
 import type { Observable } from 'rxjs';
 
@@ -32,7 +33,7 @@ export class DataPlanningService {
   readonly #bundlesParams = signal<CatalogQueryParams | null>(null);
   readonly #denominationsParams = signal<CatalogQueryParams | null>(null);
   readonly #usersTrigger = signal<number>(0);
-  readonly #getPlanningDataParams = signal<{ fireTrialId: string } | null>(null);
+  readonly #getPlanningDataParams = signal<{ fireTrialId: string; revision: PlanningRevision } | null>(null);
   readonly #updatePlanningDataParams = signal<(UpsertTrialPlanningInfo & { fireTrialId: string }) | null>(null);
 
   loadGeneralData(trialId: string): Observable<PlanningDataApiResponse> {
@@ -46,6 +47,7 @@ export class DataPlanningService {
     return {
       url: `${this.#planningUrl}/fire-trials/${params.fireTrialId}/planning/info`,
       method: 'GET',
+      params: planningRevisionParams(params.revision),
     };
   });
 
@@ -136,8 +138,8 @@ export class DataPlanningService {
     };
   });
 
-  getFireTrialPlanningInfo(fireTrialId: string): void {
-    this.#getPlanningDataParams.set({ fireTrialId });
+  getFireTrialPlanningInfo(fireTrialId: string, revision: PlanningRevision): void {
+    this.#getPlanningDataParams.set({ fireTrialId, revision });
   }
 
   updateTrialPlanningInfoData(data: UpsertTrialPlanningInfo & { fireTrialId: string }): void {

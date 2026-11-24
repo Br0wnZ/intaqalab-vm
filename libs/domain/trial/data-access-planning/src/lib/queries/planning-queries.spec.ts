@@ -49,7 +49,7 @@ describe('planning query services (shared trial context)', () => {
 
   it('should not issue any planning request before the trial context is set', () => {
     TestBed.tick();
-    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series`);
+    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`);
   });
 
   it('should auto-issue series and conditions GETs when the trial context is set', async () => {
@@ -60,12 +60,12 @@ describe('planning query services (shared trial context)', () => {
     TestBed.tick();
     await settle();
 
-    const seriesReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series`);
+    const seriesReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`);
     expect(seriesReq.request.method).toBe('GET');
     seriesReq.flush([]);
 
     const conditionsReq = httpTestingController.expectOne(
-      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/conditions`,
+      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/conditions?revision=execution`,
     );
     expect(conditionsReq.request.method).toBe('GET');
     conditionsReq.flush({ units: {}, series: [] });
@@ -84,7 +84,7 @@ describe('planning query services (shared trial context)', () => {
     await settle();
 
     const conditionsReq = httpTestingController.expectOne(
-      `${MOCK_PLANNING_URL}/fire-trials/trial-targets/planning/conditions`,
+      `${MOCK_PLANNING_URL}/fire-trials/trial-targets/planning/conditions?revision=execution`,
     );
     const response = {
       units: {},
@@ -210,19 +210,19 @@ describe('planning query services (shared trial context)', () => {
     TestBed.tick();
     await settle();
 
-    const seriesReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series`);
+    const seriesReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/series?revision=execution`);
     seriesReq.flush([]);
     const conditionsReq = httpTestingController.expectOne(
-      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/conditions`,
+      `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/conditions?revision=execution`,
     );
     conditionsReq.flush({ units: {}, series: [] });
 
     TestBed.tick();
     await settle();
 
-    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/measures`);
-    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/munitions`);
-    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/armament`);
+    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/measures?revision=execution`);
+    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/munitions?revision=execution`);
+    httpTestingController.expectNone(`${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/armament?revision=execution`);
     httpTestingController.expectNone(
       `${MOCK_PLANNING_URL}/fire-trials/trial-123/planning/propelling-charge-parameters`,
     );
@@ -233,15 +233,15 @@ describe('planning query services (shared trial context)', () => {
     propellantService.load('trial-129');
     TestBed.tick();
 
-    const measuresReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/measures`);
+    const measuresReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/measures?revision=execution`);
     measuresReq.flush({ series: [] });
 
     const munitionsReq = httpTestingController.expectOne(
-      `${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/munitions`,
+      `${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/munitions?revision=execution`,
     );
     munitionsReq.flush({ series: [] });
 
-    const armamentReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/armament`);
+    const armamentReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-129/planning/armament?revision=execution`);
     armamentReq.flush({ series: [] });
 
     const propellantReq = httpTestingController.expectOne(
@@ -267,7 +267,7 @@ describe('planning query services (shared trial context)', () => {
     TestBed.tick();
 
     const munitionsReq = httpTestingController.expectOne(
-      `${MOCK_PLANNING_URL}/fire-trials/trial-126/planning/munitions`,
+      `${MOCK_PLANNING_URL}/fire-trials/trial-126/planning/munitions?revision=execution`,
     );
     expect(munitionsReq.request.method).toBe('GET');
     const munitionsResponse = {
@@ -275,7 +275,7 @@ describe('planning query services (shared trial context)', () => {
     };
     munitionsReq.flush(munitionsResponse);
 
-    const armamentReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-127/planning/armament`);
+    const armamentReq = httpTestingController.expectOne(`${MOCK_PLANNING_URL}/fire-trials/trial-127/planning/armament?revision=execution`);
     expect(armamentReq.request.method).toBe('GET');
     const armamentResponse = { series: [] };
     armamentReq.flush(armamentResponse);

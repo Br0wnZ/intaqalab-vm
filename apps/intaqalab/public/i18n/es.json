@@ -1195,10 +1195,12 @@
     "ACTION_CANCEL": "Cancelar ejecución",
     "ACTION_EXPORT": "Exportar datos",
     "ACTION_FINISH": "Finalizar ejecución",
+    "ACTION_MODIFY_PLANNING": "Modificar planificación",
     "ACTION_PAUSE": "Pausar ejecución",
     "ACTION_RESUME": "Reanudar ejecución",
     "ACTION_START": "Iniciar ejecución",
     "ACTION_STOP": "Interrumpir ejecución",
+    "ACTION_VIEW_MODIFICATIONS": "Ver modificaciones",
     "ADD": "Añadir",
     "CATEGORIES": {
       "BALISTICA": "Balística",
@@ -1321,6 +1323,81 @@
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "No se encontraron widgets",
+    "PLANNING_MODIFICATION": {
+      "ACTION_TYPES": {
+        "ALTA": "Alta",
+        "BAJA": "Baja",
+        "MODIFICACION": "Modificación"
+      },
+      "BLOCKED_MODAL": {
+        "CLOSE_BTN": "Entendido",
+        "MESSAGE": "Existen modificaciones pendientes de aprobación por parte del Cliente. No se pueden iniciar nuevas modificaciones hasta que sean resueltas.",
+        "TITLE": "Modificación bloqueada",
+        "VIEW_PENDING_BTN": "Ver modificaciones pendientes"
+      },
+      "CLASSIFICATION": {
+        "ACCEPT": "Acepta",
+        "ACCEPT_TOOLTIP": "Cambio propuesto por el Centro. Requiere aprobación explícita del Cliente.",
+        "NONE": "Sin aprobación",
+        "NONE_TOOLTIP": "Cambio interno del Centro que no afecta al Cliente. Se aplica automáticamente al guardar.",
+        "REQUEST": "Solicita",
+        "REQUEST_TOOLTIP": "Cambio solicitado por el Cliente. Requiere validación explícita por su parte."
+      },
+      "CLIENT_REVIEW": {
+        "ACCEPT_BTN": "Aceptar",
+        "EMPTY_STATE": "No hay modificaciones para el filtro seleccionado.",
+        "FILTER_ACCEPTED": "Aceptados",
+        "FILTER_ALL": "Todos",
+        "FILTER_PENDING": "Pendientes",
+        "FILTER_REJECTED": "Rechazados",
+        "REJECT_BTN": "Rechazar",
+        "SUBTITLE": "Revise y resuelva las modificaciones registradas sobre la planificación de la prueba.",
+        "TITLE": "Revisión de modificaciones de planificación"
+      },
+      "COLUMNS": {
+        "ACCEPT": "Acepta",
+        "ACTION": "Acción",
+        "ACTIONS": "Acciones",
+        "AFFECTED_SHOTS": "Disparos afectados",
+        "NEW_VALUE": "Valor nuevo",
+        "PARAMETER": "Parámetro",
+        "PREVIOUS_VALUE": "Valor anterior",
+        "REQUEST": "Solicita",
+        "STATUS": "Estado"
+      },
+      "DIALOG": {
+        "CLOSE_BTN": "Cerrar",
+        "CLOSE_CONFIRM_MESSAGE": "Hay modificaciones sin guardar en borrador. ¿Desea cerrar y descartar los cambios no guardados?",
+        "CLOSE_CONFIRM_TITLE": "Descartar cambios sin guardar",
+        "EMPTY_STATE": "No se han detectado modificaciones durante esta sesión.",
+        "SAVE_BTN": "Guardar cambios",
+        "TAB_MODIFICATIONS": "Modificaciones",
+        "TAB_PLANNING": "Planificación",
+        "TITLE": "Modificar planificación",
+        "TITLE_WITH_CODE": "Modificar planificación — {{code}}"
+      },
+      "MESSAGES": {
+        "APPROVE_ERROR": "Error al aceptar la modificación.",
+        "APPROVE_SUCCESS": "Modificación aceptada y aplicada correctamente.",
+        "CLASSIFICATION_ERROR": "Error al actualizar la clasificación del cambio.",
+        "LOAD_ERROR": "No se han podido cargar las modificaciones de planificación.",
+        "REJECT_ERROR": "Error al rechazar la modificación.",
+        "REJECT_SUCCESS": "Modificación rechazada correctamente.",
+        "SAVE_ERROR": "Error al guardar las modificaciones de planificación.",
+        "SAVE_SUCCESS": "Modificaciones guardadas correctamente.",
+        "SAVE_SUCCESS_PENDING": "Modificaciones guardadas. Los cambios que requieren aprobación han sido enviados al Cliente."
+      },
+      "STATUS": {
+        "ACEPTADO": "Aceptado",
+        "BORRADOR": "Borrador",
+        "PENDIENTE": "Pendiente",
+        "RECHAZADO": "Rechazado"
+      },
+      "VALIDATION": {
+        "PENDING_WARNING": "Existen errores de validación en la planificación. Subsane las incidencias antes de guardar los cambios.",
+        "PENDING_WARNING_COUNT": "Validación pendiente: {{count}} errores detectados. Subsane las incidencias para poder guardar."
+      }
+    },
     "PROGRESS": "% avance prueba",
     "SEARCH_WIDGET_PLACEHOLDER": "Buscar widget...",
     "SHOT_HISTORY_DESC": "Últimos registros de la ejecución",

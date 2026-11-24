@@ -6,6 +6,7 @@ import {
   injectPlanningEndpoint,
   injectWharehouseEndpoint,
 } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 
 import type {
@@ -58,7 +59,7 @@ export type {
 
 @Service()
 export class MunitionsService {
-  readonly #getMunitionsParams = signal<{ trialId: FireTrial['id'] } | null>(null);
+  readonly #getMunitionsParams = signal<{ trialId: FireTrial['id']; revision: PlanningRevision } | null>(null);
   readonly #updateMunitionsParams = signal<{ trialId: FireTrial['id']; body: MunitionBulkUpdateRequest } | null>(null);
 
   readonly #getComponentTypesParams = signal<CatalogQueryParams | null>(null);
@@ -92,6 +93,7 @@ export class MunitionsService {
       return {
         url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/munitions`,
         method: 'GET',
+        params: planningRevisionParams(params.revision),
       };
     },
     {
@@ -263,8 +265,8 @@ export class MunitionsService {
 
   // ─── Métodos públicos ─────────────────────────────────────────────────────
 
-  getMunitions(trialId: FireTrial['id']) {
-    this.#getMunitionsParams.set({ trialId });
+  getMunitions(trialId: FireTrial['id'], revision: PlanningRevision) {
+    this.#getMunitionsParams.set({ trialId, revision });
   }
   updateMunitions(trialId: FireTrial['id'], body: MunitionBulkUpdateRequest) {
     this.#updateMunitionsParams.set({ trialId, body });

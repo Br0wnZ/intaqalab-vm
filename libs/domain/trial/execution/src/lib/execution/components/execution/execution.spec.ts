@@ -33,6 +33,7 @@ import {
   ExecutionStateService,
   ExecutionTransitionService,
   JltPreparationService,
+  PlanningModificationsService,
   SecurityCountdownService,
   WidgetPreferencesService,
 } from '../../../data-access';
@@ -322,6 +323,12 @@ describe('Execution', () => {
         {
           provide: ExecutionTransitionService,
           useValue: executionService,
+        },
+        {
+          provide: PlanningModificationsService,
+          useValue: {
+            fetchModifications: vi.fn().mockResolvedValue([]),
+          },
         },
         {
           provide: ToastrService,

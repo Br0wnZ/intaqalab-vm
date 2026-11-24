@@ -4,6 +4,7 @@ import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import { PlanningTrialContextService } from '../context/trial-context.service';
 import type { PlanningSeriesItem } from '../models/planning-series.model';
+import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**
@@ -14,6 +15,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
 export class PlanningSeriesService {
   readonly #trialContext = inject(PlanningTrialContextService);
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #revision = inject(PLANNING_REVISION);
   /** Trial fijado explícitamente por el llamador (prioridad sobre el contexto compartido). */
   readonly #explicitTrialId = signal<string | null>(null);
 
@@ -26,6 +28,7 @@ export class PlanningSeriesService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { centerId: context?.centerId, fireTrialId }, 'planning/series'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 

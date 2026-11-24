@@ -2,6 +2,7 @@ import type { Request } from 'express';
 
 import { getFixture, getPagination, paginate } from '../../utils';
 import type { PaginatedApiResponse } from '../../utils.model';
+import { getTrialById } from './trial-transitions-store';
 
 type FireTrial = {
   id: string;
@@ -105,7 +106,5 @@ export function trialsDispatch(req: Request): PaginatedApiResponse<FireTrial> {
 }
 
 export function trialsDispatchById(id: string) {
-  const trials = getFixture('fixtures/trials', 'trials-fixture.json');
-  const trial = trials.find((trial: FireTrial) => trial.id === id);
-  return trial || null;
+  return getTrialById(id);
 }

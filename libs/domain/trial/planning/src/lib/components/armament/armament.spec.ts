@@ -504,7 +504,7 @@ describe('Armament', () => {
   describe('Data loading', () => {
     it('should load armament data on initialization when trialId exists', async () => {
       await runSetup();
-      expect(mockArmamentService.getArmament).toHaveBeenCalledWith('trial-123');
+      expect(mockArmamentService.getArmament).toHaveBeenCalledWith('trial-123', 'baseline');
     });
 
     it('should not load armament data when trialId is null', async () => {

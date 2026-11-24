@@ -1,6 +1,29 @@
 import { signal } from '@angular/core';
+import type { Observable } from 'rxjs';
 import { delay, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
+import type { Mock } from 'vitest';
+
+export type MockTranslateService = {
+  instant: Mock;
+  get: Mock;
+  stream: Mock;
+  use: Mock;
+  setDefaultLang: Mock;
+  setFallbackLang: Mock;
+  addLangs: Mock;
+  getLangs: Mock;
+  currentLang: string;
+};
+
+export type MockRouter = {
+  navigate: Mock;
+  navigateByUrl: Mock;
+  url: string;
+  events: Observable<unknown>;
+  createUrlTree: Mock;
+  serializeUrl: Mock;
+};
 
 import { LOCALE_SIGNAL } from '../../tokens/locale-signal.token';
 import type { AppLocale } from '../../tokens/locale-signal.token';
@@ -47,7 +70,7 @@ export function createLocaleSignalProvider(initialLocale: AppLocale = 'es-ES') {
 /**
  * 🎭 Crear mock de TranslateService (i18n)
  */
-export function createMockTranslateService() {
+export function createMockTranslateService(): MockTranslateService {
   return {
     instant: vi.fn((key: string, params?: Record<string, unknown>) => {
       // Simular interpolación básica
@@ -84,7 +107,7 @@ export function createMockHttpClient() {
 /**
  * 🎭 Crear mock de Router
  */
-export function createMockRouter() {
+export function createMockRouter(): MockRouter {
   return {
     navigate: vi.fn().mockResolvedValue(true),
     navigateByUrl: vi.fn().mockResolvedValue(true),

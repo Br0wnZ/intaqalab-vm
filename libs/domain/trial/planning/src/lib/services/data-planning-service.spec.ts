@@ -68,19 +68,19 @@ describe('DataPlanningService', () => {
         endDate: '2023-01-31',
       };
 
-      service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL);
+      service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL, 'baseline');
       TestBed.tick();
 
-      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info`);
+      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`);
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
 
     it('should handle error when fetching planning info', async () => {
-      service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL);
+      service.getFireTrialPlanningInfo(MOCK_IDS.TRIAL, 'baseline');
       TestBed.flushEffects();
 
-      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info`);
+      const req = httpMock.expectOne(`${MOCK_URLS.PLANNING}/fire-trials/${MOCK_IDS.TRIAL}/planning/info?revision=baseline`);
       req.flush('Error', { status: 500, statusText: 'Internal Server Error' });
 
       // Allow Promise rejection microtasks to complete in Zoneless
@@ -181,7 +181,7 @@ describe('DataPlanningService', () => {
     it('should get denominations when triggered by SpecimenType', () => {
       const mockResponse = { page: 1, pageSize: 100, totalElements: 0, items: [] };
 
-      service.getSpecimensByType(SpecimenType.Denomination, { name: 'test' });
+      service.getSpecimensByType(SpecimenType.Munition, { name: 'test' });
       TestBed.tick();
 
       const req = httpMock.expectOne((r) => r.url.includes(`${MOCK_URLS.WAREHOUSE}/denominations`));

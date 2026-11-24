@@ -91,9 +91,9 @@
       "description": "Golden Path domain specialist for INTAQALAB Master Data (libs/domain/master-data). Covers MasterDataShellComponent, createMasterDataResource with extendResource/withPreviousValueOnLoading, MasterDataStore with withProps/unprotected tests, and Signal Forms [formRoot] upsert dialogs."
     },
     "mock-server-expert": {
-      "version": "1.1.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "b37bbef51720a243",
+      "version": "1.1.1",
+      "lastUpdated": "2026-11-20",
+      "checksum": "a6745f4f6f290248",
       "path": ".agents/skills/mock-server-expert/SKILL.md",
       "description": "Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines."
     },
@@ -133,9 +133,9 @@
       "description": "Explore and understand Nx workspaces. USE WHEN answering questions about the workspace, projects, or tasks. ALSO USE WHEN an nx command fails or you need to check available targets/configuration before running a task. EXAMPLES: 'What projects are in this workspace?', 'How is project X configured?', 'What depends on library Y?', 'What targets can I run?', 'Cannot find configuration for task', 'debug nx task failure'."
     },
     "planning-specialist": {
-      "version": "1.2.0",
-      "lastUpdated": "2026-11-13",
-      "checksum": "6aa22135222054f0",
+      "version": "1.2.1",
+      "lastUpdated": "2026-11-20",
+      "checksum": "e7aadf8746c8f0e8",
       "path": ".agents/skills/planning-specialist/SKILL.md",
       "description": "Domain specialist for INTAQALAB Trial Planning (libs/domain/trial/planning) and shared planning read layer (@intaqalab/data-access-planning). Covers PlanningGeneralDataStore, ArmamentStore, MunitionsStore, Signal Trigger Pattern, schema() validation, and ADR-017/ADR-019 boundaries."
     },

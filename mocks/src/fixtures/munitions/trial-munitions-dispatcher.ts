@@ -1,6 +1,8 @@
 import type { Request } from 'express';
 
 import { getFixture } from '../../utils';
+import { getAcceptedChanges, resolveRevision } from '../trial-planning/planning-revision';
+import { projectMunitions } from '../trial-planning/planning-revision-projectors';
 
 function generateUuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -117,6 +119,14 @@ const defaultFixture = getFixture<TrialMunitionsResponse>('fixtures/munitions', 
 export function getMunitionsDispatcher(req: Request): TrialMunitionsResponse {
   const { fireTrialId } = req.params;
 
+  const baseline = getBaselineMunitions(fireTrialId);
+  if (resolveRevision(req) === 'baseline') {
+    return baseline;
+  }
+  return projectMunitions(baseline, getAcceptedChanges(fireTrialId, 'MUNITION', 'MUNITION_COMPONENT'));
+}
+
+function getBaselineMunitions(fireTrialId: string): TrialMunitionsResponse {
   const storedData = trialMunitionsStore.get(fireTrialId);
   if (storedData) {
     return storedData;

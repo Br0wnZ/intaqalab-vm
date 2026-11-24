@@ -132,6 +132,16 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
       <button mat-menu-item (click)="finishRequested.emit()">
         <span>{{ 'TRIAL_EXECUTION.ACTION_FINISH' | translate }}</span>
       </button>
+      @if (canModifyPlanning()) {
+        <button mat-menu-item (click)="modifyPlanning.emit()">
+          <span>{{ 'TRIAL_EXECUTION.ACTION_MODIFY_PLANNING' | translate }}</span>
+        </button>
+      }
+      @if (canViewModifications()) {
+        <button mat-menu-item (click)="viewModifications.emit()">
+          <span>{{ 'TRIAL_EXECUTION.ACTION_VIEW_MODIFICATIONS' | translate }}</span>
+        </button>
+      }
     </mat-menu>
 
     <mat-menu yPosition="below" class="!rounded-2xl !min-w-[600px] overflow-hidden" #shotHistoryMenu="matMenu">
@@ -202,6 +212,8 @@ export class ExecutionHeader {
   readonly isSaving = input.required<boolean>();
   readonly editMode = input.required<boolean>();
   readonly canSelectEquipment = input.required<boolean>();
+  readonly canModifyPlanning = input<boolean>(false);
+  readonly canViewModifications = input<boolean>(false);
 
   readonly startRequested = output<void>();
   readonly pauseRequested = output<void>();
@@ -209,6 +221,8 @@ export class ExecutionHeader {
   readonly interruptRequested = output<void>();
   readonly cancelRequested = output<void>();
   readonly finishRequested = output<void>();
+  readonly modifyPlanning = output<void>();
+  readonly viewModifications = output<void>();
   readonly equipmentSelectorRequested = output<void>();
   readonly saveRequested = output<void>();
   readonly widgetsPanelToggleRequested = output<void>();

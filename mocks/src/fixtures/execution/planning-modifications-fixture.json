@@ -1,0 +1,86 @@
+[
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000001",
+    "parameter": "elevation",
+    "action": "Modificación",
+    "previousValue": 40,
+    "newValue": 50,
+    "affectedShots": ["S1-D2"],
+    "status": "PENDIENTE",
+    "classification": "acepta",
+    "updatedAt": "2026-11-19T10:15:00.000Z",
+    "updatedBy": "ingeniero.ensayos@inta.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000002",
+    "parameter": "orientation",
+    "action": "Modificación",
+    "previousValue": 10,
+    "newValue": 15,
+    "affectedShots": ["S1-D2"],
+    "status": "PENDIENTE",
+    "classification": "solicita",
+    "updatedAt": "2026-11-19T10:16:00.000Z",
+    "updatedBy": "ingeniero.ensayos@inta.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000003",
+    "parameter": "distance",
+    "action": "Modificación",
+    "previousValue": 100,
+    "newValue": 150,
+    "affectedShots": ["S1-D2", "S2-D3"],
+    "status": "ACEPTADO",
+    "classification": "none",
+    "updatedAt": "2026-11-19T10:18:00.000Z",
+    "updatedBy": "ingeniero.ensayos@inta.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000004",
+    "parameter": "Velocidad inicial",
+    "action": "Alta",
+    "previousValue": null,
+    "newValue": "Límite inferior: 780 m/s. Límite superior: 820 m/s. Desviación máxima: 5 m/s",
+    "affectedShots": ["S2-D3", "S2-D4"],
+    "status": "PENDIENTE",
+    "classification": "acepta",
+    "updatedAt": "2026-11-19T10:20:00.000Z",
+    "updatedBy": "ingeniero.ensayos@inta.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000005",
+    "parameter": "powderWeight",
+    "action": "Modificación",
+    "previousValue": 3.5,
+    "newValue": 3.6,
+    "affectedShots": ["S1-D2"],
+    "status": "ACEPTADO",
+    "classification": "acepta",
+    "updatedAt": "2026-11-19T10:25:00.000Z",
+    "updatedBy": "cliente@empresa.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000006",
+    "parameter": "Serie 3",
+    "action": "Alta",
+    "previousValue": null,
+    "newValue": "S3",
+    "affectedShots": null,
+    "status": "BORRADOR",
+    "classification": "none",
+    "updatedAt": "2026-11-19T10:30:00.000Z",
+    "updatedBy": "ingeniero.ensayos@inta.es"
+  },
+  {
+    "id": "a1b2c3d4-1111-4000-8000-000000000007",
+    "parameter": "functioningHeight",
+    "action": "Baja",
+    "previousValue": 220,
+    "newValue": null,
+    "affectedShots": ["S2-D4"],
+    "status": "RECHAZADO",
+    "classification": "solicita",
+    "updatedAt": "2026-11-19T10:35:00.000Z",
+    "updatedBy": "cliente@empresa.es"
+  }
+]

@@ -450,6 +450,25 @@
   }
 
   // =========================================================================
+  // DIALOG - Pantalla completa (.fullscreen-dialog)
+  // =========================================================================
+  .cdk-overlay-pane.fullscreen-dialog {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    padding: 0 !important;
+
+    .mat-mdc-dialog-surface,
+    .mat-mdc-dialog-surface.mdc-dialog__surface {
+      padding: 0 !important;
+      border-radius: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  // =========================================================================
   // ESTILOS ADICIONALES PARA ELEVATED BUTTONS
   // =========================================================================
   // Aplicar borde y sombreado personalizado a los botones elevated

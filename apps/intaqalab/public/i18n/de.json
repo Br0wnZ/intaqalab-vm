@@ -1195,10 +1195,12 @@
     "ACTION_CANCEL": "Ausführung abbrechen",
     "ACTION_EXPORT": "Daten exportieren",
     "ACTION_FINISH": "Ausführung beenden",
+    "ACTION_MODIFY_PLANNING": "Planung ändern",
     "ACTION_PAUSE": "Ausführung pausieren",
     "ACTION_RESUME": "Ausführung fortsetzen",
     "ACTION_START": "Ausführung starten",
     "ACTION_STOP": "Ausführung unterbrechen",
+    "ACTION_VIEW_MODIFICATIONS": "Änderungen anzeigen",
     "ADD": "Hinzufügen",
     "CATEGORIES": {
       "BALISTICA": "Ballistik",
@@ -1321,6 +1323,81 @@
     },
     "MORE_INFO": "+Info",
     "NO_WIDGETS_FOUND": "Keine Widgets gefunden",
+    "PLANNING_MODIFICATION": {
+      "ACTION_TYPES": {
+        "ALTA": "Hinzufügung",
+        "BAJA": "Entfernung",
+        "MODIFICACION": "Änderung"
+      },
+      "BLOCKED_MODAL": {
+        "CLOSE_BTN": "Verstanden",
+        "MESSAGE": "Es liegen Änderungen vor, die noch vom Kunden genehmigt werden müssen. Neue Änderungen können erst gestartet werden, wenn diese geklärt sind.",
+        "TITLE": "Änderung gesperrt",
+        "VIEW_PENDING_BTN": "Ausstehende Änderungen anzeigen"
+      },
+      "CLASSIFICATION": {
+        "ACCEPT": "Akzeptiert",
+        "ACCEPT_TOOLTIP": "Vom Zentrum vorgeschlagene Änderung. Erfordert die ausdrückliche Genehmigung des Kunden.",
+        "NONE": "Keine Genehmigung erforderlich",
+        "NONE_TOOLTIP": "Interne Änderung des Zentrums ohne Auswirkung auf den Kunden. Wird beim Speichern automatisch angewendet.",
+        "REQUEST": "Fordert an",
+        "REQUEST_TOOLTIP": "Vom Kunden angeforderte Änderung. Erfordert eine ausdrückliche Bestätigung durch den Kunden."
+      },
+      "CLIENT_REVIEW": {
+        "ACCEPT_BTN": "Akzeptieren",
+        "EMPTY_STATE": "Keine Änderungen für den ausgewählten Filter vorhanden.",
+        "FILTER_ACCEPTED": "Akzeptiert",
+        "FILTER_ALL": "Alle",
+        "FILTER_PENDING": "Ausstehend",
+        "FILTER_REJECTED": "Abgelehnt",
+        "REJECT_BTN": "Ablehnen",
+        "SUBTITLE": "Prüfen und bearbeiten Sie die für die Versuchsplanung erfassten Änderungen.",
+        "TITLE": "Prüfung der Planungsänderungen"
+      },
+      "COLUMNS": {
+        "ACCEPT": "Akzeptiert",
+        "ACTION": "Aktion",
+        "ACTIONS": "Aktionen",
+        "AFFECTED_SHOTS": "Betroffene Schüsse",
+        "NEW_VALUE": "Neuer Wert",
+        "PARAMETER": "Parameter",
+        "PREVIOUS_VALUE": "Vorheriger Wert",
+        "REQUEST": "Fordert an",
+        "STATUS": "Status"
+      },
+      "DIALOG": {
+        "CLOSE_BTN": "Schließen",
+        "CLOSE_CONFIRM_MESSAGE": "Es gibt ungespeicherte Entwurfsänderungen. Möchten Sie schließen und nicht gespeicherte Änderungen verwerfen?",
+        "CLOSE_CONFIRM_TITLE": "Ungespeicherte Änderungen verwerfen",
+        "EMPTY_STATE": "Während dieser Sitzung wurden keine Änderungen erkannt.",
+        "SAVE_BTN": "Änderungen speichern",
+        "TAB_MODIFICATIONS": "Änderungen",
+        "TAB_PLANNING": "Planung",
+        "TITLE": "Planung ändern",
+        "TITLE_WITH_CODE": "Planung ändern — {{code}}"
+      },
+      "MESSAGES": {
+        "APPROVE_ERROR": "Fehler beim Akzeptieren der Änderung.",
+        "APPROVE_SUCCESS": "Änderung erfolgreich akzeptiert und angewendet.",
+        "CLASSIFICATION_ERROR": "Fehler beim Aktualisieren der Änderungsklassifizierung.",
+        "LOAD_ERROR": "Planungsänderungen konnten nicht geladen werden.",
+        "REJECT_ERROR": "Fehler beim Ablehnen der Änderung.",
+        "REJECT_SUCCESS": "Änderung erfolgreich abgelehnt.",
+        "SAVE_ERROR": "Fehler beim Speichern der Planungsänderungen.",
+        "SAVE_SUCCESS": "Änderungen erfolgreich gespeichert.",
+        "SAVE_SUCCESS_PENDING": "Änderungen gespeichert. Änderungen, die eine Genehmigung erfordern, wurden an den Kunden gesendet."
+      },
+      "STATUS": {
+        "ACEPTADO": "Akzeptiert",
+        "BORRADOR": "Entwurf",
+        "PENDIENTE": "Ausstehend",
+        "RECHAZADO": "Abgelehnt"
+      },
+      "VALIDATION": {
+        "PENDING_WARNING": "Es liegen Validierungsfehler in der Planung vor. Beheben Sie die Probleme, bevor Sie die Änderungen speichern.",
+        "PENDING_WARNING_COUNT": "Validierung ausstehend: {{count}} Fehler erkannt. Beheben Sie die Probleme, um speichern zu können."
+      }
+    },
     "PROGRESS": "% Testfortschritt",
     "SEARCH_WIDGET_PLACEHOLDER": "Widget suchen...",
     "SHOT_HISTORY_DESC": "Letzte Aufzeichnungen der Ausführung",

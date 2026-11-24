@@ -4,6 +4,7 @@ import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type { TrialMunitionsRawItem } from '../models/planning-munitions.model';
 import { awaitResourceValue } from './await-resource';
+import { PLANNING_REVISION, planningRevisionParams } from '../revision/planning-revision';
 import { buildTrialResourceUrl } from './trial-resource-url';
 
 /**
@@ -17,6 +18,7 @@ import { buildTrialResourceUrl } from './trial-resource-url';
 @Service()
 export class PlanningMunitionsService {
   readonly #planningUrl = injectPlanningEndpoint();
+  readonly #revision = inject(PLANNING_REVISION);
   readonly #injector = inject(Injector);
   readonly #explicitTrialId = signal<string | null>(null);
   readonly #fetchMunitionsParams = signal<{ fireTrialId: string } | null>(null);
@@ -28,6 +30,7 @@ export class PlanningMunitionsService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { fireTrialId: explicitTrialId }, 'planning/munitions'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 
@@ -38,6 +41,7 @@ export class PlanningMunitionsService {
     return {
       url: buildTrialResourceUrl(this.#planningUrl, { fireTrialId: params.fireTrialId }, 'planning/munitions'),
       method: 'GET',
+      params: planningRevisionParams(this.#revision),
     };
   });
 

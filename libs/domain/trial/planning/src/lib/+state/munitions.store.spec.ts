@@ -73,7 +73,7 @@ describe('MunitionsStore', () => {
       it('should call getMunitions with current trial ID', () => {
         store.loadMunitions();
 
-        expect(testSetup.munitionsServiceMock.getMunitions).toHaveBeenCalledWith('trial-123');
+        expect(testSetup.munitionsServiceMock.getMunitions).toHaveBeenCalledWith('trial-123', 'baseline');
       });
 
       it('should mark store as initialized after loading', () => {
@@ -115,7 +115,7 @@ describe('MunitionsStore', () => {
           configurations: [
             {
               seriesId: 'series-1',
-              denomination: 'Test Denom',
+              denominationId: 'denom-1',
               batch: 'Batch-1',
             },
           ],

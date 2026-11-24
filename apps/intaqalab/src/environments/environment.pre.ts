@@ -19,7 +19,6 @@ export const environment: AppEnvironment = {
   apiUrl: 'https://apis.pre.inta.es/intaqalab',
   endpoints: {
     ...baseEnvironment.endpoints,
-    users: 'https://apis.pre.inta.es/intaqalab-usersapitest/users-api/1.0.0',
     fireTrials: 'fire-trials-api/1.1.0/fire-trials',
     calendar: 'fire-trials-api/1.1.0/calendar',
     linesOfShot: 'fire-trials-api/1.1.0/lines-of-shoot',

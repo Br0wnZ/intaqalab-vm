@@ -1,7 +1,7 @@
 ---
 name: mock-server-expert
-version: 1.1.0
-last-updated: 2026-11-13
+version: 1.1.1
+last-updated: 2026-11-20
 description: Express Mock Server Specialist. Use when adding new mock endpoints, generating realistic JSON fixtures, or configuring simulated latency/pagination. Includes Swagger mock generation guidelines.
 argument-hint: "Endpoint: [path], Method: [GET/POST/PUT], Model: [TypeScript interface], Options: [paginated, delay]"
 user-invocable: true
@@ -37,6 +37,9 @@ You are the **Backend Mock Engineer** specialized in the Express `^4.22.3` devel
 
 4. **Router Registration (`mocks/src/routes/index.ts`):**
    - Always register newly created route files in the central router index (`router.use('/api/v1/xxx', xxxRouter)`).
+
+5. **Planning `?revision=` (ADR-029):**
+   - GET `planning/{info,conditions,munitions,armament}` must call `resolveRevision(req)` (`fixtures/trial-planning/planning-revision.ts`; default/invalid → `baseline`) and, for `execution`, project ACCEPTED changes with the pure projectors (`planning-revision-projectors.ts`) over a clone. `series`/`measures` return the same data in both revisions.
 
 ## ⚡ Quick Mode (Swagger Mock Generation)
 

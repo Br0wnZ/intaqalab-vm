@@ -479,6 +479,7 @@ Los datos planificados (series/disparos, conditions, measures, munitions, armame
 - Selector serie/disparo: `injectTrialShots()`; etiquetas de disparo: `formatShotLabel(globalNumber, index, 'plain' | 'padded')`.
 - Selectores puros: `getSeriesById`, `getShotById`, `getMeasureByMagnitudeCode`, `getMunitionConfigsByShotId`, `getArmamentByShotId`.
 - Regla: `npm run check:planning-urls`.
+- Revisión (ADR-029): todos estos GET envían `?revision=execution` (token `PLANNING_REVISION`, default `execution`); no añadir queries de planning sin `planningRevisionParams`.
 
 ### 🎯 Helpers reactivos de Munición y Almacén por Disparo (ADR-019)
 

@@ -2,17 +2,33 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Role, injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
+import { PlanningTrialContextService } from '@intaqalab/data-access-planning';
+import type { TrialStatus } from '@intaqalab/models';
+import { PlanningPermissionsService } from '@intaqalab/planning';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../+state/execution.store';
+import { PlanningModificationsService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
 import { CancelExecutionDialog } from '../dialogs/cancel-execution-dialog';
+import {
+  ClientModificationsDialog,
+  type ClientModificationsDialogData,
+  type ClientModificationsDialogResult,
+  PlanningModificationBlockedDialog,
+  type PlanningModificationBlockedDialogResult,
+} from '../dialogs/client-modifications-dialog';
 import { EquipmentSelectorDialog } from '../dialogs/equipment-selector-dialog';
 import { TAG_CONFIGS } from '../dialogs/equipment-selector-dialog.mapper';
 import { InterruptExecutionDialog } from '../dialogs/interrupt-execution-dialog';
+import {
+  ModifyPlanningDialog,
+  type ModifyPlanningDialogData,
+  type ModifyPlanningDialogResult,
+} from '../dialogs/modify-planning-dialog';
 import { PauseExecutionDialog } from '../dialogs/pause-execution-dialog';
 import { type EquipmentSelectorDialogResult, type TrialPlanningMeasuresResponse } from '../models';
 import type { PlacedWidget, Widget, WidgetPreferenceId } from '../models/execution-grid.models';
@@ -28,12 +44,16 @@ import { resolveWidgetsByMeasurements } from '../utils/widget-measures-filter';
 import { WidgetGridFullError, WidgetStateService } from './widget-state.service';
 
 const EXECUTION_STATE_POLLING_MS = 5_000;
+const CLIENT_REVIEW_ROLES: ReadonlyArray<Role> = [Role.INTAQALAB_TRIAL_CONSULTANT, Role.INTAQALAB_VIEWER];
 
 @Service({ autoProvided: false })
 export class ExecutionPageFacade {
   readonly #dialog = inject(MatDialog);
   readonly #store = inject(ExecutionStore);
   readonly #equipmentPlanning = inject(EquipmentPlanningService);
+  readonly #planningPermissions = inject(PlanningPermissionsService);
+  readonly #planningModificationsService = inject(PlanningModificationsService);
+  readonly #planningTrialContext = inject(PlanningTrialContextService, { optional: true });
   readonly #widgetState = inject(WidgetStateService);
   readonly #translate = inject(TranslateService);
   readonly #toastr = inject(ToastrService);
@@ -42,6 +62,8 @@ export class ExecutionPageFacade {
   readonly #pageVisible = injectPageVisibility();
   readonly #fireTrialId = signal<string | null>(null);
   readonly #isSaving = signal(false);
+  readonly #hasModifications = signal(false);
+  readonly #hasPendingModifications = signal(false);
 
   /**
    * Se activa una vez que se reciben los primeros datos de ejecución.
@@ -105,6 +127,23 @@ export class ExecutionPageFacade {
    * Sin permisos sobre ningún tag, el botón "Seleccionar equipos" se deshabilita.
    */
   readonly canSelectEquipment = computed(() => resolveVisibleEquipmentTags(this.#userRoles(), TAG_CONFIGS).length > 0);
+  readonly isClientReviewer = computed(() =>
+    this.#userRoles().some((role) => CLIENT_REVIEW_ROLES.includes(role)),
+  );
+  readonly isTrialEngineer = computed(
+    () => this.#userRoles().includes(Role.INTAQALAB_TRIAL_ENGINEER) || this.#userRoles().includes(Role.INTAQALAB_ADMIN),
+  );
+  readonly hasPendingModifications = this.#hasPendingModifications.asReadonly();
+  readonly canModifyPlanning = computed(() => {
+    const status = (this.#store.fireTrialData()?.status ?? this.#store.fireTrial()?.status) as TrialStatus | undefined;
+    if (!status) {
+      return false;
+    }
+    return this.#planningPermissions.canModifyPlanningDuringExecution(status);
+  });
+  readonly canViewModifications = computed(
+    () => this.isClientReviewer() || (this.isTrialEngineer() && this.#hasModifications()),
+  );
 
   readonly executionData = computed<ExecutionHeaderData>(() => {
     const trial = this.#store.fireTrialData();
@@ -226,6 +265,7 @@ export class ExecutionPageFacade {
     this.#store.setFireTrialId(fireTrialId);
     this.#store.loadPreferencesByUser(fireTrialId, this.#currentUser.preferred_username);
     this.#equipmentPlanning.load(fireTrialId);
+    void this.#syncModificationsStatus(fireTrialId);
   }
 
   toggleShowAllWidgets(): void {
@@ -332,6 +372,105 @@ export class ExecutionPageFacade {
     await this.#runTransition(() => this.#store.cancelExecution(fireTrialId, result.reason));
   }
 
+  async openModifyPlanning(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId || !this.canModifyPlanning()) {
+      return;
+    }
+
+    const hasPending = await this.#syncModificationsStatus(fireTrialId);
+    if (hasPending) {
+      const blockedResult = await firstValueFrom(
+        this.#dialog
+          .open<PlanningModificationBlockedDialog, undefined, PlanningModificationBlockedDialogResult>(
+            PlanningModificationBlockedDialog,
+            {
+              width: '520px',
+            },
+          )
+          .afterClosed(),
+      );
+      if (blockedResult?.action === 'viewPending') {
+        await this.openClientModifications();
+      }
+      return;
+    }
+
+    const result = await firstValueFrom(
+      this.#dialog
+        .open<ModifyPlanningDialog, ModifyPlanningDialogData, ModifyPlanningDialogResult>(ModifyPlanningDialog, {
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          panelClass: 'fullscreen-dialog',
+          disableClose: true,
+          data: {
+            fireTrialId,
+            centerId: this.#resolveCenterId(),
+            fireTrial: this.#store.fireTrial(),
+            executedShotIds: this.#resolveExecutedShotIds(),
+          },
+        })
+        .afterClosed(),
+    );
+
+    if (!result) {
+      return;
+    }
+
+    if (result.hasPendingChanges) {
+      this.#hasPendingModifications.set(true);
+      this.#hasModifications.set(true);
+    }
+
+    if (result.hasAcceptedChanges) {
+      this.#hasModifications.set(true);
+      this.#refreshTrialAndPlanningData(fireTrialId);
+    }
+
+    if (result.saved) {
+      void this.#syncModificationsStatus(fireTrialId);
+    }
+  }
+
+  async openClientModifications(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+
+    const result = await firstValueFrom(
+      this.#dialog
+        .open<ClientModificationsDialog, ClientModificationsDialogData, ClientModificationsDialogResult>(
+          ClientModificationsDialog,
+          {
+            width: '960px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            data: {
+              fireTrialId,
+              centerId: this.#resolveCenterId(),
+              allowReview: this.isClientReviewer(),
+            },
+          },
+        )
+        .afterClosed(),
+    );
+
+    if (!result) {
+      return;
+    }
+
+    if (result.hasDecisions) {
+      void this.#syncModificationsStatus(fireTrialId);
+    }
+
+    if (result.hasAcceptedChanges) {
+      this.#refreshTrialAndPlanningData(fireTrialId);
+    }
+  }
+
   #runTransition(transition: () => Promise<void>): Promise<void> {
     return transition().catch(() => undefined);
   }
@@ -411,6 +550,37 @@ export class ExecutionPageFacade {
     } finally {
       this.#isSaving.set(false);
     }
+  }
+
+  #resolveCenterId(): string | undefined {
+    return this.#planningTrialContext?.context()?.centerId ?? undefined;
+  }
+
+  #resolveExecutedShotIds(): string[] {
+    const progress = this.#store.executionProgress();
+    return (progress?.series ?? []).flatMap((serie) =>
+      serie.shots.filter((shot) => shot.status === 'FIRED').map((shot) => shot.shotId),
+    );
+  }
+
+  async #syncModificationsStatus(fireTrialId: string): Promise<boolean> {
+    try {
+      const modifications = await this.#planningModificationsService.fetchModifications(
+        fireTrialId,
+        this.#resolveCenterId(),
+      );
+      const hasPending = modifications.some((mod) => mod.status === 'PENDIENTE');
+      this.#hasModifications.set(modifications.length > 0);
+      this.#hasPendingModifications.set(hasPending);
+      return hasPending;
+    } catch {
+      return this.#hasPendingModifications();
+    }
+  }
+
+  #refreshTrialAndPlanningData(fireTrialId: string): void {
+    this.#store.setFireTrialId(fireTrialId);
+    this.#equipmentPlanning.load(fireTrialId);
   }
 
   #restoreWidgetLayout(layout: WidgetPreferenceId[]): void {

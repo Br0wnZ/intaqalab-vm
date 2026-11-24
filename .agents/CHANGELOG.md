@@ -421,3 +421,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/) y [Semantic Ver
 ## [angular-testing-expert - 1.1.4] - 2026-11-18
 
 - Sync skill checksum and version with current testing guidelines
+
+## [planning-specialist - 1.2.1] - 2026-11-20
+
+- Document ?revision query param (ADR-029)
+
+## [mock-server-expert - 1.1.1] - 2026-11-20
+
+- Document planning revision mocks (ADR-029)

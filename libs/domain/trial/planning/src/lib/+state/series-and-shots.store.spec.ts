@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { signal, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createMockSeriesAndShotsService } from '@intaqalab/utils';
 
@@ -10,14 +10,17 @@ import { SeriesAndShotsStore } from './series-and-shots.store';
 describe('SeriesAndShotsStore', () => {
   let store: InstanceType<typeof SeriesAndShotsStore>;
   let seriesServiceMock: ReturnType<typeof createMockSeriesAndShotsService>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let planningStoreMock: { fireTrialId: any };
+  let planningStoreMock: {
+    fireTrialId: WritableSignal<string | null>;
+    revision: WritableSignal<'baseline' | 'execution'>;
+  };
 
   beforeEach(() => {
     seriesServiceMock = createMockSeriesAndShotsService();
 
     planningStoreMock = {
       fireTrialId: signal<string | null>(null),
+      revision: signal<'baseline' | 'execution'>('baseline'),
     };
 
     TestBed.configureTestingModule({
@@ -42,7 +45,19 @@ describe('SeriesAndShotsStore', () => {
     });
 
     it('should select series from service resource', () => {
-      const mockSeries: Serie[] = [{ id: 's1', name: 'Series 1', executionOrder: 1, observations: '', shots: [] }];
+      const mockSeries: Serie[] = [
+        {
+          id: 's1',
+          name: 'Series 1',
+          shotQuantity: 1,
+          executionOrder: 1,
+          observations: 'Series observations',
+          shots: [{ id: 'sh1', globalNumber: 1, observation: 'Shot observation' } satisfies Shot],
+        },
+      ];
+      seriesServiceMock.seriesAndShotsResource._setValue(mockSeries);
+
+      expect(store.series()).toEqual(mockSeries);
     });
   });
 
@@ -50,7 +65,7 @@ describe('SeriesAndShotsStore', () => {
     it('loadSeries should call service.getSeriesAndShots when trialId is present', () => {
       planningStoreMock.fireTrialId.set('trial-123');
       store.loadSeries();
-      expect(seriesServiceMock.getSeriesAndShots).toHaveBeenCalledWith('trial-123');
+      expect(seriesServiceMock.getSeriesAndShots).toHaveBeenCalledWith('trial-123', 'baseline');
     });
 
     it('loadSeries should NOT call service.getSeriesAndShots when trialId is missing', () => {

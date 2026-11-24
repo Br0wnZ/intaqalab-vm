@@ -27,5 +27,6 @@ export * from './lib/signals/signal-history';
 export * from './lib/signals/storage-signal';
 export * from './lib/signals/throttled-signal';
 export * from './lib/testing/core/index';
+export * from './lib/testing/models/index';
 export * from './lib/testing/testing-helpers';
 export * from './lib/tokens/locale-signal.token';

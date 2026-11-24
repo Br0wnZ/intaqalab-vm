@@ -1,6 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { signal, Service } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
+import { type PlanningRevision, planningRevisionParams } from '@intaqalab/data-access-planning';
 import type { FireTrial } from '@intaqalab/models';
 
 import type {
@@ -16,7 +17,7 @@ import type { UpsertTrialSerieRequest } from '../utils-models/upsert-trial-serie
 
 @Service()
 export class SeriesAndShotsService {
-  readonly #getSeriesParams = signal<{ trialId: FireTrial['id'] } | null>(null);
+  readonly #getSeriesParams = signal<{ trialId: FireTrial['id']; revision: PlanningRevision } | null>(null);
   readonly #addNewSerieParams = signal<AddNewSerieRequest | null>(null);
   readonly #updateSerieParams = signal<UpsertTrialSerieRequest | null>(null);
   readonly #deleteSerieParams = signal<{ serieId: string } | null>(null);
@@ -34,6 +35,7 @@ export class SeriesAndShotsService {
     return {
       url: `${this.#planningUrl}/fire-trials/${params.trialId}/planning/series`,
       method: 'GET',
+      params: planningRevisionParams(params.revision),
     };
   });
 
@@ -107,8 +109,8 @@ export class SeriesAndShotsService {
     };
   });
 
-  getSeriesAndShots(trialId: FireTrial['id']) {
-    this.#getSeriesParams.set({ trialId });
+  getSeriesAndShots(trialId: FireTrial['id'], revision: PlanningRevision) {
+    this.#getSeriesParams.set({ trialId, revision });
   }
 
   addNewSerie(request: AddNewSerieRequest) {

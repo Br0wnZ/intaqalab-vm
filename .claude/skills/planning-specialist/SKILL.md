@@ -1,7 +1,7 @@
 ---
 name: planning-specialist
-version: 1.2.0
-last-updated: 2026-11-13
+version: 1.2.1
+last-updated: 2026-11-20
 description: Domain specialist for INTAQALAB Trial Planning (libs/domain/trial/planning) and shared planning read layer (@intaqalab/data-access-planning). Covers PlanningGeneralDataStore, ArmamentStore, MunitionsStore, Signal Trigger Pattern, schema() validation, and ADR-017/ADR-019 boundaries.
 ---
 
@@ -60,4 +60,5 @@ All HTTP communication in planning strictly adheres to the Signal Trigger Patter
 
 - GET reads of planning data consumed by Execution live in `libs/domain/trial/data-access-planning` (`@intaqalab/data-access-planning`): query services, models derived from `apis/planning-api.json`, pure selectors and `injectTrialShots()`. When adding or changing a planning GET model/endpoint, update that lib FIRST (models → query service → selectors → tests); execution must never re-declare it.
 - Execution widgets consume and project planning data per-shot through shared reactive helpers under `libs/domain/trial/execution/src/lib/data-access/` (ADR-019). Any changes to planning munitions/armament schemas must verify compatibility with execution normalizers.
+- **Revision query param (ADR-029):** GET `planning/{info,series,conditions,munitions,armament,measures}` always send `?revision=baseline|execution`. `data-access-planning` (execution) uses the `PLANNING_REVISION` token (default `execution`) + `planningRevisionParams()`; this lib passes `store.revision()` (from `PlanningGeneralDataStore`, set by the shell from `mode`: `planning→baseline`, `execution-modification→execution`) as an explicit service argument. Mutations never send it.
 - Mutations (PUT/POST) and feature stores remain in `libs/domain/trial/planning`. Migrating this lib's own GETs to data-access is a pending follow-up (see `docs/plans/planning-data-access-helpers-plan.md`).
