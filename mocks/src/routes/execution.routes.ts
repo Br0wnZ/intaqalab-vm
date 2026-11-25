@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
 import {
+  getCalibryCalculation,
+  recalculateCalibryCalculation,
+} from '../fixtures/execution/calibry-calculation-dispatcher';
+import {
   getEquipmentSelectorState,
   updateEquipmentSelectorState,
 } from '../fixtures/execution/equipment-selector-store';
@@ -53,7 +57,6 @@ import {
   setTrialOverpressureInfo,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
-import { getCalibryCalculation, recalculateCalibryCalculation } from '../fixtures/execution/calibry-calculation-dispatcher';
 import { getActiveTrialMetcmDocumentId } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getFixture } from '../utils';
 
