@@ -1,12 +1,20 @@
-import { patchState, signalStoreFeature, withMethods, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStoreFeature, withComputed, withMethods, withState } from '@ngrx/signals';
 
+import { CalibryCalculationService } from '../../data-access/execution/analytics/calibry-calculation.service';
+import { ExecutionStateService } from '../../data-access/execution/state/execution-state.service';
+import type { CalibryCalculation, ShotMeasurementsResponse } from '../../execution/models';
 import type { SeguimientoState, SeguimientoTab } from '../execution-state.models';
 
 interface SeguimientoSlice {
   seguimiento: SeguimientoState;
+  isRecalculatingCalibry: boolean;
+  calibryCalculationError: string | null;
 }
 
 const initialState: SeguimientoSlice = {
+  isRecalculatingCalibry: false,
+  calibryCalculationError: null,
   seguimiento: {
     activeTab: 'p-manom' as SeguimientoTab,
     presionVelocidadUnit: 'MPa',
@@ -114,13 +122,56 @@ const initialState: SeguimientoSlice = {
 export function withSeguimiento() {
   return signalStoreFeature(
     withState(initialState),
-    withMethods((store) => ({
-      /** Actualiza los campos del widget Seguimiento */
-      updateSeguimiento(updates: Partial<SeguimientoState>): void {
-        patchState(store, (state) => ({
-          seguimiento: { ...state.seguimiento, ...updates },
-        }));
-      },
+    withComputed((_, service = inject(ExecutionStateService)) => ({
+      shotMeasurements: computed((): ShotMeasurementsResponse | null => {
+        const resource = service.shotMeasurementsResource;
+        return resource.hasValue() ? resource.value() : null;
+      }),
+      shotMeasurementsLoading: computed(() => {
+        const resource = service.shotMeasurementsResource;
+        return resource.isLoading() && !resource.hasValue();
+      }),
+      shotMeasurementsRefreshing: computed(() => service.shotMeasurementsResource.isLoading()),
+      shotMeasurementsError: computed(() => {
+        const resource = service.shotMeasurementsResource;
+        return resource.status() === 'error' && !resource.hasValue();
+      }),
     })),
+    withMethods(
+      (
+        store,
+        executionStateService = inject(ExecutionStateService),
+        calibryCalculationService = inject(CalibryCalculationService),
+      ) => ({
+        /** Actualiza los campos del widget Seguimiento */
+        updateSeguimiento(updates: Partial<SeguimientoState>): void {
+          patchState(store, (state) => ({
+            seguimiento: { ...state.seguimiento, ...updates },
+          }));
+        },
+        loadShotMeasurements(fireTrialId: string): void {
+          executionStateService.getShotMeasurements(fireTrialId);
+        },
+        reloadShotMeasurements(): void {
+          executionStateService.reloadShotMeasurements();
+        },
+        async recalculateCalibryCalculation(fireTrialId: string): Promise<CalibryCalculation | null> {
+          if (store.isRecalculatingCalibry()) return null;
+          patchState(store, { isRecalculatingCalibry: true, calibryCalculationError: null });
+          try {
+            const calculation = await calibryCalculationService.recalculateCalibryCalculation(fireTrialId);
+            executionStateService.reloadShotMeasurements();
+            return calculation;
+          } catch (error) {
+            patchState(store, {
+              calibryCalculationError: error instanceof Error ? error.message : 'Calibry calculation failed',
+            });
+            return null;
+          } finally {
+            patchState(store, { isRecalculatingCalibry: false });
+          }
+        },
+      }),
+    ),
   );
 }

@@ -49,6 +49,7 @@ export * from './execution/equipment/equipment-selection.service';
 export * from './execution/equipment/armament-catalog.service';
 
 export * from './execution/analytics/propellant-charge.service';
+export * from './execution/analytics/calibry-calculation.service';
 export * from './execution/analytics/velocity-uniformity.service';
 export * from './execution/analytics/overpressure.service';
 

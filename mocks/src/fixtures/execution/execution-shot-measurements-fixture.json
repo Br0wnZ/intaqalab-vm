@@ -1,4 +1,9 @@
 {
+  "calibryCalculation": {
+    "status": "UP_TO_DATE",
+    "calculatedAt": "2026-03-03T10:15:30Z",
+    "error": null
+  },
   "series": [
     {
       "seriesId": "550e8400-e29b-41d4-a716-446655440100",

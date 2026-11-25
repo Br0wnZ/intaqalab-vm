@@ -102,6 +102,7 @@ describe('seguimiento options', () => {
 describe('mapShotMeasurements', () => {
   it('maps measurements by piezo position and resolves planned shot numbers', () => {
     const response: ShotMeasurementsResponse = {
+      calibryCalculation: { status: 'UP_TO_DATE', calculatedAt: null, error: null },
       series: [
         {
           seriesId: 'series-1',
@@ -181,6 +182,7 @@ describe('mapShotMeasurements', () => {
 
   it('falls back to response order when planning data is unavailable', () => {
     const response: ShotMeasurementsResponse = {
+      calibryCalculation: { status: 'PENDING', calculatedAt: null, error: null },
       series: [
         {
           seriesId: 'series-1',

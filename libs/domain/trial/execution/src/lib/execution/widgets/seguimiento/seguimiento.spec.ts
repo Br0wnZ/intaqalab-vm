@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { AuthService, Role } from '@intaqalab/core';
 import { PlanningMeasuresService } from '@intaqalab/data-access-planning';
 import { MeasureUnitEnum } from '@intaqalab/models';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -17,8 +18,8 @@ import { WidgetStateService } from '../../services/widget-state.service';
 import { SeguimientoWidget } from './seguimiento';
 
 describe('SeguimientoWidget', () => {
-  const renderWidget = (widgetId = 'test-seguimiento') =>
-    render(SeguimientoWidget, {
+  const renderWidget = async (widgetId = 'test-seguimiento', roles: Role[] = [Role.INTAQALAB_ADMIN]) => {
+    const view = await render(SeguimientoWidget, {
       inputs: { widgetId },
       providers: [
         provideTestingEnvironment(),
@@ -29,6 +30,9 @@ describe('SeguimientoWidget', () => {
         provideTranslateService(),
       ],
     });
+    TestBed.inject(AuthService).setRoles(roles);
+    return view;
+  };
 
   it('renders without errors', async () => {
     await renderWidget();
@@ -256,22 +260,22 @@ describe('SeguimientoWidget', () => {
     expect(fixture.componentInstance['activeSerieId']()).toBe('funcionamiento-1');
   });
 
-  it('calls getShotMeasurements and reloads shotMeasurementsResource when reload is invoked or reload button clicked', async () => {
+  it('loads shot measurements for the active trial and reloads them when the reload button is clicked', async () => {
     const { fixture } = await renderWidget();
     const service = TestBed.inject(ExecutionStateService);
     const store = TestBed.inject(ExecutionStore);
     const httpTesting = TestBed.inject(HttpTestingController);
 
+    const getSpy = vi.spyOn(service, 'getShotMeasurements');
+    const reloadSpy = vi.spyOn(service, 'reloadShotMeasurements');
     store.setFireTrialId('trial-abc');
     fixture.detectChanges();
+    expect(getSpy).toHaveBeenCalledWith('trial-abc');
 
     const initialReq = httpTesting.expectOne((req) => req.url.includes('/shot-measurements'));
-    initialReq.flush({ series: [] });
+    initialReq.flush({ calibryCalculation: { status: 'PENDING' }, series: [] });
     await Promise.resolve();
     fixture.detectChanges();
-
-    const getSpy = vi.spyOn(service, 'getShotMeasurements');
-    const reloadSpy = vi.spyOn(service.shotMeasurementsResource, 'reload');
 
     const reloadButton = screen.getByRole('button', {
       name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD',
@@ -285,10 +289,137 @@ describe('SeguimientoWidget', () => {
     reloadButton.click();
     fixture.detectChanges();
 
-    expect(getSpy).toHaveBeenCalledWith('trial-abc');
-    expect(reloadSpy).toHaveBeenCalled();
+    expect(reloadSpy).toHaveBeenCalledOnce();
 
     const reloadReq = httpTesting.expectOne((req) => req.url.includes('/shot-measurements'));
-    reloadReq.flush({ series: [] });
+    reloadReq.flush({ calibryCalculation: { status: 'PENDING' }, series: [] });
+  });
+
+  it('shows a skeleton that mirrors the widget while measurements load', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-loading');
+    fixture.detectChanges();
+
+    expect(screen.getAllByRole('status', { busy: true }).length).toBeGreaterThan(0);
+    httpTesting
+      .expectOne((req) => req.url.includes('/shot-measurements'))
+      .flush({
+        calibryCalculation: { status: 'PENDING' },
+        series: [],
+      });
+  });
+
+  it.each([
+    ['NO_DATA', 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.NO_DATA'],
+    ['PENDING', 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.CALIBRY_STATUS_PENDING'],
+    ['CALCULATING', 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.CALIBRY_STATUS_CALCULATING'],
+    ['UP_TO_DATE', 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.CALIBRY_STATUS_UP_TO_DATE'],
+    ['ERROR', 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.CALIBRY_STATUS_ERROR'],
+  ] as const)('shows readable Calibry status for %s', async (status, labelKey) => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId(`trial-status-${status}`);
+    fixture.detectChanges();
+    httpTesting
+      .expectOne((req) => req.url.includes('/shot-measurements'))
+      .flush({
+        calibryCalculation: { status },
+        series: [],
+      });
+
+    await waitFor(() => {
+      fixture.detectChanges();
+      expect(screen.getByRole('status', { name: labelKey })).toBeInTheDocument();
+    });
+  });
+
+  it('hides Calibry status and recalculation controls for non-admin users', async () => {
+    const { fixture } = await renderWidget('test-seguimiento', [Role.INTAQALAB_VIEWER]);
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-non-admin');
+    fixture.detectChanges();
+    httpTesting
+      .expectOne((req) => req.url.includes('/shot-measurements'))
+      .flush({
+        calibryCalculation: { status: 'PENDING' },
+        series: [],
+      });
+
+    await waitFor(() => {
+      fixture.detectChanges();
+      expect(
+        screen.queryByRole('status', {
+          name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.CALIBRY_STATUS_PENDING',
+        }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RECALCULATE_CALIBRY' }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows translated error state and retry action when initial measurements load fails', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-error');
+    fixture.detectChanges();
+    httpTesting
+      .expectOne((req) => req.url.includes('/shot-measurements'))
+      .flush({ title: 'Internal Server Error', status: 500 }, { status: 500, statusText: 'Internal Server Error' });
+
+    await waitFor(() => {
+      fixture.detectChanges();
+      expect(
+        screen.getByRole('heading', { name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.LOAD_ERROR_TITLE' }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText('TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.LOAD_ERROR_DETAIL')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RELOAD' })).toBeInTheDocument();
+  });
+
+  it('posts the temporary Calibry action and reloads measurements after success', async () => {
+    const { fixture } = await renderWidget();
+    const store = TestBed.inject(ExecutionStore);
+    const httpTesting = TestBed.inject(HttpTestingController);
+
+    store.setFireTrialId('trial-abc');
+    fixture.detectChanges();
+    httpTesting
+      .expectOne((req) => req.url.includes('/shot-measurements'))
+      .flush({
+        calibryCalculation: { status: 'PENDING' },
+        series: [],
+      });
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    const recalculateButton = await screen.findByRole('button', {
+      name: 'TRIAL_EXECUTION.WIDGETS.SEGUIMIENTO.RECALCULATE_CALIBRY',
+    });
+    recalculateButton.click();
+    fixture.detectChanges();
+
+    const postRequest = httpTesting.expectOne((req) => req.url.endsWith('/calibry-calculation'));
+    expect(postRequest.request.method).toBe('POST');
+    expect(postRequest.request.body).toBeNull();
+    postRequest.flush({ status: 'UP_TO_DATE', calculatedAt: '2026-03-03T10:15:30Z', error: null });
+
+    await waitFor(() => {
+      const [reloadRequest] = httpTesting.match((req) => req.url.includes('/shot-measurements'));
+      expect(reloadRequest).toBeDefined();
+      reloadRequest?.flush({
+        calibryCalculation: { status: 'UP_TO_DATE' },
+        series: [],
+      });
+    });
   });
 });

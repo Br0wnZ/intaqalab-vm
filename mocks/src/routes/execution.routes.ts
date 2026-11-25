@@ -53,6 +53,7 @@ import {
   setTrialOverpressureInfo,
   updateCountdownState,
 } from '../fixtures/execution/execution-store';
+import { getCalibryCalculation, recalculateCalibryCalculation } from '../fixtures/execution/calibry-calculation-dispatcher';
 import { getActiveTrialMetcmDocumentId } from '../fixtures/trials-docs/trials-docs-dispatcher';
 import { getFixture } from '../utils';
 
@@ -149,9 +150,24 @@ executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/progress', (r
   res.status(200).json(progress);
 });
 
-executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/shot-measurements', (_req, res) => {
-  const measurements = getFixture('fixtures/execution', 'execution-shot-measurements-fixture.json');
-  res.status(200).json(measurements);
+executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/shot-measurements', (req, res) => {
+  const measurements = getFixture<{
+    calibryCalculation: {
+      status: 'NO_DATA' | 'PENDING' | 'CALCULATING' | 'UP_TO_DATE' | 'ERROR';
+      calculatedAt: string | null;
+      error: { code: string; message: string } | null;
+    };
+    series: unknown[];
+  }>('fixtures/execution', 'execution-shot-measurements-fixture.json');
+  res.status(200).json({
+    ...measurements,
+    calibryCalculation: getCalibryCalculation(req.params['fireTrialId'], measurements.calibryCalculation),
+  });
+});
+
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/calibry-calculation', (req, res) => {
+  const calculation = recalculateCalibryCalculation(req.params['fireTrialId']);
+  res.status(200).json(calculation);
 });
 
 executionRouter.get('/:centerId/fire-trials/:fireTrialId/execution/propellant-charge-adjustment', (_req, res) => {

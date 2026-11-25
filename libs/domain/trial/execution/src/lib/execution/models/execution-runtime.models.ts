@@ -73,7 +73,21 @@ export interface ShotMeasurementSeries {
   shots: ShotMeasurementShot[];
 }
 
+export type CalibryCalculationStatus = 'NO_DATA' | 'PENDING' | 'CALCULATING' | 'UP_TO_DATE' | 'ERROR';
+
+export interface CalibryCalculationError {
+  code: string;
+  message: string;
+}
+
+export interface CalibryCalculation {
+  status: CalibryCalculationStatus;
+  calculatedAt?: string | null;
+  error?: CalibryCalculationError | null;
+}
+
 export interface ShotMeasurementsResponse {
+  calibryCalculation: CalibryCalculation;
   series: ShotMeasurementSeries[];
 }
 

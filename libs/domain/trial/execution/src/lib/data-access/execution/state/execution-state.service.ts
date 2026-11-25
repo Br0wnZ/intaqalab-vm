@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { signal, Service } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { injectExecutionEndpoint } from '@intaqalab/config';
 import type { FireTrial } from '@intaqalab/models';
 
@@ -61,5 +61,9 @@ export class ExecutionStateService {
 
   getShotMeasurements(fireTrialId: FireTrial['id']): void {
     this.#getShotMeasurementsParams.set({ fireTrialId });
+  }
+
+  reloadShotMeasurements(): void {
+    this.shotMeasurementsResource.reload();
   }
 }
